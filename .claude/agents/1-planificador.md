@@ -139,7 +139,10 @@ el plan tiene que dejar escritos porque son los que se olvidan: el subpaquete de
 (asunto, cuerpo y pie), con el pie compartido desde `PlantillaKey.PIE_GENERICO`.
 
 El evento **carga todo lo que el correo necesita** —nombre y correo del destinatario, más el dato
-legible del asunto— aunque duplique datos que el productor ya tiene. La dirección es de un solo
+legible del asunto— aunque duplique datos que el productor ya tiene. Cada dato que salga de un
+`Finder` se planifica **al inicio** del flujo con una `Rule` que rechace su ausencia antes de
+persistir; consultado tras escribir, su `VACIO` viaja en el evento y el correo muere en silencio
+(`arquisoft-arquitectura/references/eventos.md`). La dirección es de un solo
 sentido: el contexto productor nunca depende de `notificaciones`.
 
 **6. ¿Persistencia nueva o se reutiliza la existente?**
@@ -289,14 +292,15 @@ la FASE 3, así que **eso sí vive aquí**:
   domain. **Si no hay bundle: sin objeto de acción**, y el mapper devuelve el domain directo
   (`toDomain(command)` → `{Entidad}Domain.crear(...)`) — nunca un wrapper que solo reexpone el
   domain.
-  Declara sus **atributos**, y por defecto son `UUID` y escalares, no objetos de dominio:
+  Declara sus **atributos**. Si la acción modifica o referencia lo existente, son `UUID` y escalares:
   `CambioAsesorFichaDomain` es `(UUID fichaPerfil, UUID nuevoAsesorFicha)` y con eso basta para
   decidir y ejecutar. Planificar que cargue el domain entero para cambiarle un campo es
   sobreingeniería — bloquéalo en tu propia revisión.
-- **Objeto de acción compuesto:** solo cuando la acción crea varios objetos a la vez, el objeto de
-  acción contiene otros `Domain` (`RegistroFichaPerfilDomain`: ficha + estado inicial + estudiantes;
-  `EnvioSolicitudCambioAsesorDomain`: solicitud + remitente + destinatario). Si planificas uno, escribe el **orden de construcción de
-  menor a mayor jerarquía**:
+- **Objeto de acción compuesto:** cuando la acción **crea** un domain y arrastra algo más, el objeto
+  de acción contiene ese `Domain` (`RegistroFichaPerfilDomain`: ficha + estado inicial + estudiantes),
+  nunca copia sus campos para que el `UseCase` lo cree: así se valida una vez y antes de consultar la
+  BD (`arquisoft-arquitectura` → *El objeto de acción lleva solo lo que la acción necesita*). Si
+  planificas uno, escribe el **orden de construcción de menor a mayor jerarquía**:
   primero el domain (genera su id), luego cada pieza con el mapper **de su propia feature** usando
   ese id, y el compuesto al final. El `crear(...)` del compuesto solo valida `noNulo` de cada parte;
   las validaciones de cada pieza ya ocurrieron en su propio `crear(...)`.
@@ -402,7 +406,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | application | `.../command/primaryport/interactor/{Accion}{Entidad}Interactor.java` + `interactor/impl/...InteractorImpl.java` | Dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` |
 | application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/`. Firma `UseCase<{Algo}Domain, R>`: **nunca recibe el `Command`**, ni siquiera si la acción no crea domain (un job por lotes nominaliza igual) |
 | application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`. **Solo si la sección 3 declaró al menos una `Rule`** — sin restricciones de conjunto estas dos filas no existen (ver `notificaciones`) |
-| application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Extiende `Finder<T, R>` (método `obtener`). Uno por consulta que la `Rule` necesita — incluidas las de OTRA feature, en el paquete de esa feature. También el corte de idempotencia, que va sin `Rule` |
+| application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Extiende `Finder<T, R>` (método `obtener`), o `SupplierFinder<R>` (método `obtener()` sin parámetros) si el `OutputPort` no recibe argumentos — nunca `Finder<Void, R>` ni un parámetro fantasma. Uno por consulta que la `Rule` necesita — incluidas las de OTRA feature, en el paquete de esa feature. También el corte de idempotencia, que va sin `Rule` |
 | application | `.../command/secondaryport/{Entidad}OutputPort.java` + `secondaryport/entity/{Entidad}Entity.java` + `secondaryport/mapper/{Entidad}Mapper.java` | Habla `Entity` (record plano), nunca `Domain` |
 | application | `.../command/result/{Concepto}Result.java` + `result/mapper/{Concepto}ResultMapper.java` | SOLO si la pregunta 11 fue **C) Objeto específico**. Con A) UUID o B) Void estas dos filas no existen |
 | infrastructure | `{contexto}/infrastructure/.../{feature}/command/primaryadapter/web/{Accion}{Entidad}Controller.java` + `dto/{Accion}{Entidad}RequestDTO.java` (+`ResponseDTO` si retorna cuerpo) + `mapper/{Accion}{Entidad}RequestMapper.java` (+`mapper/{Accion}{Entidad}ResponseMapper.java` si la pregunta 11 fue **C**) | Un Controller por acción; el `Result` nunca se serializa directo |

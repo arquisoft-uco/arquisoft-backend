@@ -75,13 +75,13 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESORADAS_RESP_400 = "Filtro, operador, campo o valor inválido";
         public static final String CONSULTAR_ASESORADAS_RESP_403 = "Sin permisos — se requiere rol asesor de ficha";
 
-        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar ficha de perfil del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar las fichas de perfil del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
-                "Retorna el detalle de una ficha de perfil a la que pertenece el estudiante autenticado: "
-                        + "título, asesor asignado, estado actual y estudiantes vinculados.";
-        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Ficha de perfil encontrada";
-        public static final String CONSULTAR_ESTUDIANTE_RESP_404 =
-                "Ficha no encontrada, o el estudiante autenticado no está vinculado a ella";
+                "Retorna las fichas de perfil a las que pertenece el estudiante autenticado, cada una con su "
+                        + "título, asesor asignado, estado actual y estudiantes vinculados. El estudiante se toma "
+                        + "del token. Si no pertenece a ninguna ficha, devuelve una lista vacía.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Lista de fichas de perfil del estudiante (vacía si no pertenece a ninguna)";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permisos — se requiere rol estudiante";
     }
 
@@ -187,6 +187,17 @@ public final class FichasApiMessages {
                 "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "Sin el permiso para consultar los estados como estudiante";
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Consultar los estados de las fichas de perfil que asesora el asesor";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Devuelve, paginada y filtrable, la trazabilidad de estados de todas las fichas de perfil "
+                        + "asesoradas por el asesor autenticado. El asesor se toma del token.";
+        public static final String CONSULTAR_ASESOR_RESP_200 =
+                "Página de estados de ficha de perfil del asesor (vacía si no aplica)";
+        public static final String CONSULTAR_ASESOR_RESP_400 =
+                "Filtro con campo, operador o valor inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 =
+                "Sin el permiso para consultar los estados como asesor";
     }
 
     public static final class RevisionItem {
@@ -215,6 +226,27 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de revisiones de ítem elaboradas por el asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 = "Criterio de búsqueda inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar revisiones de ítem";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar revisiones de ítem de su ficha perfil";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Permite al estudiante consultar, de forma paginada y filtrable, las revisiones de ítem "
+                        + "de las fichas de perfil a las que está vinculado que ya tengan al menos una "
+                        + "observación de ítem asociada.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Página de revisiones de ítem visibles para el estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Criterio de búsqueda inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permiso para consultar revisiones de ítem";
+
+        public static final String VISUALIZAR_SUMMARY = "Marcar revisión de ítem como visualizada";
+        public static final String VISUALIZAR_DESCRIPTION =
+                "Permite al estudiante vinculado a la ficha confirmar que vio la revisión de un ítem, "
+                        + "llevándola de 'NUEVA' a 'VISUALIZADA'. Es idempotente: si la revisión ya salió "
+                        + "de 'NUEVA' responde igual, sin cambio. Una revisión cerrada se rechaza.";
+        public static final String VISUALIZAR_RESP_204 = "Revisión marcada como visualizada, o ya lo estaba";
+        public static final String VISUALIZAR_RESP_400 = "Identificador de revisión inválido";
+        public static final String VISUALIZAR_RESP_403 = "Sin permiso para marcar revisiones como visualizadas";
+        public static final String VISUALIZAR_RESP_422 =
+                "Revisión no encontrada, ficha no vinculada al estudiante autenticado o revisión cerrada";
     }
 
     public static final class ObservacionItem {
@@ -235,6 +267,14 @@ public final class FichasApiMessages {
         public static final String AGREGAR_RESP_422 =
                 "Revisión no encontrada, revisión cerrada, ficha no asesorada por el usuario autenticado "
                         + "o texto de observación duplicado";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar observaciones de ítem elaboradas";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Permite al asesor de ficha consultar, de forma paginada y filtrable, las observaciones "
+                        + "de ítem que él mismo ha elaborado sobre las revisiones de las fichas de perfil que asesora.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de observaciones de ítem elaboradas por el asesor";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "Criterio de búsqueda inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar observaciones de ítem";
     }
 
     public static final class EstudianteFichaPerfil {

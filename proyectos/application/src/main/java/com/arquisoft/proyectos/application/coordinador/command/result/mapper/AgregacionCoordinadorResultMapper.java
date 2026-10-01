@@ -13,6 +13,10 @@ public final class AgregacionCoordinadorResultMapper {
         return new AgregacionCoordinadorResult.Agregada(coordinador.getId());
     }
 
+    public static AgregacionCoordinadorResult.Reactivada toResultReactivada(CoordinadorDomain coordinador) {
+        return new AgregacionCoordinadorResult.Reactivada(coordinador.getId());
+    }
+
     public static AgregacionCoordinadorResult.Duplicada toResultDuplicada(CoordinadorDomain coordinador) {
         return new AgregacionCoordinadorResult.Duplicada(coordinador.getId());
     }

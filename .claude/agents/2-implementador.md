@@ -74,7 +74,9 @@ escalares (`CambioAsesorFichaDomain` son dos `UUID`), no el domain cargado. Solo
 un objeto de acción **compuesto** contiene otros `Domain`, y entonces su `{Accion}{Entidad}Mapper`
 los arma de menor a mayor jerarquía: primero `{Entidad}Domain.crear(...)`, luego cada pieza con el
 mapper de **su propia feature** pasándole `entidad.getId()`, y el compuesto al final
-(`RegistrarFichaPerfilMapper` es el patrón exacto). El `crear(...)` del compuesto solo valida
+(`RegistrarFichaPerfilMapper` es el patrón exacto). Un `{Entidad}Domain.crear(...)` dentro del
+`UseCase` es la señal de un domain que debió llegar armado en el objeto de acción: si el plan copia
+sus campos en vez de contenerlo, repórtalo como ambigüedad. El `crear(...)` del compuesto solo valida
 `noNulo` de cada componente: no repite las validaciones que cada pieza ya hizo.
 
 **Las invariantes del domain no tienen clase de excepción propia** — se acumulan con
@@ -107,7 +109,9 @@ omites).
   si te pide el objeto de acción completo para pasárselo a un tercero, ese paso es del que llama.
 - El `Validator` es **puro**: `@Component` con un **constructor sin argumentos** que hace
   `this.xRule = new XRuleImpl();`. Nada de `@RequiredArgsConstructor`, nada de `Finder`/`OutputPort`,
-  ni un solo `if` — solo arma el record de cada Rule y las invoca en orden.
+  ni un solo `if` — solo arma el record de cada Rule y las invoca en orden. Expone un único
+  `validar(...)` con todos los datos del caso de uso, y el `UseCase` lo llama una sola vez
+  (`arquisoft-estandares` → *Validator, Rule, Finder*).
 - Las `Rule`s **no son beans**: no llevan `@Component` y no se registran en ninguna config.
 - **Si la HU no declara ninguna `Rule`, no escribas `Validator`**: una capa que no orquesta nada es
   ruido. `notificaciones/.../EnviarNotificacionUseCaseImpl` es el caso real de un comando sin él.
@@ -137,7 +141,9 @@ omites).
   (`com.arquisoft.shared.publisher`, en `shared:application` — nunca una de sus dos
   implementaciones) y publica directamente tras persistir:
   `eventPublisher.publish(new {Entidad}{Accion}Event(...))`. Es la única forma: el domain es una
-  clase plana, no acumula eventos ni los drena.
+  clase plana, no acumula eventos ni los drena. Todo `Finder` que alimenta el evento corre al inicio
+  y su ausencia la rechaza una `Rule` antes de persistir — nunca entre `registrar(...)` y `publish`
+  (`arquisoft-arquitectura/references/eventos.md`).
 - **Si el evento va hacia `notificaciones`**, la clase de evento es la mitad del trabajo: faltando
   cualquiera de las ocho piezas del lado consumidor, el correo no sale y nada falla. Implementa las
   que el plan lista siguiendo `arquisoft-arquitectura/references/eventos.md` → *Transición de estado ⇒

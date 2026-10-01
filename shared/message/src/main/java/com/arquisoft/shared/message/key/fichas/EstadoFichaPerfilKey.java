@@ -10,6 +10,8 @@ public enum EstadoFichaPerfilKey implements ClaveMensaje {
     LOG_CREADO("fichas.aplicacion.estadofichaperfil.log.creado", 3),
     LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.estadofichaperfil.log.consultando-estudiante", 1),
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.estadofichaperfil.log.consulta-estudiante-completada", 1),
+    LOG_CONSULTANDO_ASESOR("fichas.aplicacion.estadofichaperfil.log.consultando-asesor", 4),
+    LOG_CONSULTA_ASESOR_COMPLETADA("fichas.aplicacion.estadofichaperfil.log.consulta-asesor-completada", 3),
     LOG_GUARDADO("fichas.infraestructura.estadofichaperfil.log.guardado", 2);
 
     private final String clave;

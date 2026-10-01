@@ -122,6 +122,7 @@
               "evaluaciones:item-cuantitativo-jurado:create",
               "usuarios:usuario:create",
               "usuarios:usuario:update",
+              "usuarios:estado-usuario:view",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:item-cualitativo-jurado:update",
               "usuarios:representante-comite-curriculum:create",
@@ -475,6 +476,15 @@
         {
           "id": "3f8a6d21-5c47-4b92-8e1a-7d2f4c9b60ae",
           "name": "usuarios:usuario:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c3618679-f43f-4386-bb54-0684269814f7",
+          "name": "usuarios:estado-usuario:view",
           "description": "",
           "composite": false,
           "clientRole": true,

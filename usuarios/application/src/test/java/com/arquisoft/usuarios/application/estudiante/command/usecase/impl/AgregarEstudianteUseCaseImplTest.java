@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.estudiante.command.usecase.impl;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.estudiante.command.finder.EstudiantePorUsuarioFinder;
 import com.arquisoft.usuarios.application.estudiante.command.secondaryport.EstudianteOutputPort;
 import com.arquisoft.usuarios.application.estudiante.command.secondaryport.entity.EstudianteEntity;
@@ -59,7 +60,7 @@ class AgregarEstudianteUseCaseImplTest {
     private UsuarioDomain usuario() {
         return UsuarioDomain.reconstruir(
                 UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", "573001112233",
-                EstadoUsuario.ACTIVO);
+                EstadoUsuario.ACTIVO, UtilFecha.VACIO);
     }
 
     @Test

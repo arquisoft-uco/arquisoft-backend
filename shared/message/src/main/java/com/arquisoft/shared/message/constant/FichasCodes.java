@@ -54,6 +54,7 @@ public final class FichasCodes {
 
         public static final String ITEM_REQUERIDO = "REVISION_ITEM_ITEM_REQUERIDO";
         public static final String ASESOR_FICHA_REQUERIDO = "REVISION_ITEM_ASESOR_FICHA_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO = "REVISION_ITEM_ESTUDIANTE_REQUERIDO";
         public static final String ESTADO_REVISION_REQUERIDO = "REVISION_ITEM_ESTADO_REVISION_REQUERIDO";
         public static final String ESTADO_REVISION_DEMASIADO_LARGO = "REVISION_ITEM_ESTADO_REVISION_DEMASIADO_LARGO";
         public static final String ESTADO_REVISION_NO_ENCONTRADO = "REVISION_ITEM_ESTADO_REVISION_NO_ENCONTRADO";
@@ -121,6 +122,7 @@ public final class FichasCodes {
         public static final String ESTADO_FICHA_REQUERIDO = "ESTADO_FICHA_PERFIL_ESTADO_FICHA_REQUERIDO";
         public static final String NO_ENCONTRADO = "ESTADO_FICHA_PERFIL_NO_ENCONTRADO";
         public static final String ESTADO_TERMINAL = "ESTADO_FICHA_PERFIL_ESTADO_TERMINAL";
+        public static final String ASESOR_FICHA_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_ASESOR_FICHA_ID_REQUERIDO";
     }
 
     public static final class EstadoFicha {
@@ -144,6 +146,11 @@ public final class FichasCodes {
         private RepresentanteComite() {}
 
         public static final String REPRESENTANTE_NO_ENCONTRADO = "REPRESENTANTE_NO_ENCONTRADO";
+        public static final String ID_REQUERIDO = "REPRESENTANTE_COMITE_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "REPRESENTANTE_COMITE_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "REPRESENTANTE_COMITE_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "REPRESENTANTE_COMITE_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "REPRESENTANTE_COMITE_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class EstadoEvaluacionFicha {

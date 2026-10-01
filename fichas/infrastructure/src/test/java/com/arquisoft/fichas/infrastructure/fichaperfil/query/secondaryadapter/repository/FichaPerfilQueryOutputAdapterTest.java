@@ -74,6 +74,35 @@ class FichaPerfilQueryOutputAdapterTest {
     }
 
     @Test
+    void debeSeguirListandoLaFicha_cuandoSuAsesorFueDadoDeBaja() {
+        // Arrange
+        var baja = Instant.parse("2026-09-24T10:00:00Z");
+        var asesor = AsesorFichaJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .identificador("DOC-099")
+                .nombre("Laura Gomez")
+                .email("laura.gomez@soyuco.edu.co")
+                .ocurridoEn(baja)
+                .eliminadoEn(baja)
+                .build();
+        entityManager.persist(asesor);
+        entityManager.persist(FichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .tituloProyecto("Proyecto con asesor dado de baja")
+                .asesorFicha(asesor)
+                .build());
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarTodas(FichaPerfilCriteria.builder().pagina(0).tamanio(10).build());
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(resultado.getContent().get(0).tituloProyecto()).isEqualTo("Proyecto con asesor dado de baja");
+        assertThat(resultado.getContent().get(0).asesorFicha().nombre()).isEqualTo("Laura Gomez");
+    }
+
+    @Test
     void debeRetornarVacio_cuandoNoHayFichasEnBD() {
         PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(
                 FichaPerfilCriteria.builder().pagina(0).tamanio(10).build());
