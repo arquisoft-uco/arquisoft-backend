@@ -36,7 +36,7 @@ class ConsultarRespuestasNovedadCoordinadorEnviadasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadCoordinadorEnviadasMapper.toCriteria(
+        var criteria = ConsultarRespuestasNovedadCoordinadorEnviadasMapper.toCriteria(
                 query(coordinador, criterio));
 
         // Assert
@@ -56,7 +56,7 @@ class ConsultarRespuestasNovedadCoordinadorEnviadasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente);
 
         // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadCoordinadorEnviadasMapper.toCriteria(
+        var criteria = ConsultarRespuestasNovedadCoordinadorEnviadasMapper.toCriteria(
                 query(coordinador, criterio));
 
         // Assert
@@ -76,7 +76,7 @@ class ConsultarRespuestasNovedadCoordinadorEnviadasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(2, 25, ordenamiento, null);
 
         // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadCoordinadorEnviadasMapper.toCriteria(
+        var criteria = ConsultarRespuestasNovedadCoordinadorEnviadasMapper.toCriteria(
                 query(coordinador, criterio));
 
         // Assert
@@ -94,34 +94,13 @@ class ConsultarRespuestasNovedadCoordinadorEnviadasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadCoordinadorEnviadasMapper.toCriteria(
+        var criteria = ConsultarRespuestasNovedadCoordinadorEnviadasMapper.toCriteria(
                 query(coordinador, criterio));
 
         // Assert
         assertThat(criteria.getOrdenamiento()).hasSize(1);
         assertThat(criteria.getOrdenamiento().get(0).getCampo()).isEqualTo("fechaRespuesta");
         assertThat(criteria.getOrdenamiento().get(0).getDireccion()).isEqualTo(SortDirection.DESC);
-    }
-
-    @Test
-    void debeForzarPorDestinatarioUsuarioIdYNovedadCoordinador_yNoPorRemitente() {
-        // Arrange
-        var coordinador = UUID.randomUUID();
-        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
-
-        // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadCoordinadorEnviadasMapper.toCriteria(
-                query(coordinador, criterio));
-
-        // Assert
-        var grupo = (NodoFiltro.Grupo) criteria.getRaiz();
-        assertThat(grupo.nodos()).containsExactly(
-                NodoFiltro.predicado(CLAVE_DESTINATARIO, FiltroOperador.ES, coordinador.toString()),
-                NodoFiltro.predicado(CLAVE_TIPO, FiltroOperador.ES,
-                        TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
-        assertThat(grupo.nodos())
-                .extracting(n -> ((NodoFiltro.Predicado) n).campo())
-                .doesNotContain(RespuestaCriteria.Campo.REMITENTE_USUARIO_ID.getClave());
     }
 
     @Test

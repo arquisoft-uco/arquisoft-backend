@@ -3,5 +3,6 @@ package com.arquisoft.fichas.application.asesorficha.command.secondaryport.entit
 import java.time.Instant;
 import java.util.UUID;
 
-public record AsesorFichaEntity(UUID id, String identificador, String nombre, String email, Instant ocurridoEn) {
+public record AsesorFichaEntity(UUID id, String identificador, String nombre, String email, Instant ocurridoEn,
+                                Instant eliminadoEn) {
 }

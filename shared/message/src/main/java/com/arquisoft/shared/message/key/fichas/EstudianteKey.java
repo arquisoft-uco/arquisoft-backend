@@ -18,7 +18,11 @@ public enum EstudianteKey implements ClaveMensaje {
     LOG_REMOCION_DESCARTADA("fichas.infraestructura.estudiante.log.remocion-descartada", 2),
     LOG_REACTIVADO("fichas.infraestructura.estudiante.log.reactivado", 1),
     LOG_VERIFICACION_REMOVER("fichas.aplicacion.estudiante.log.verificacion-remover", 2),
-    LOG_ACTUALIZADO("fichas.infraestructura.estudiante.log.actualizado", 1);
+    LOG_ACTUALIZADO("fichas.infraestructura.estudiante.log.actualizado", 1),
+    LOG_USUARIO_MODIFICADO_RECIBIDO("fichas.infraestructura.estudiante.log.usuario-modificado-recibido", 2),
+    LOG_VERIFICACION_ACTUALIZAR("fichas.aplicacion.estudiante.log.verificacion-actualizar", 2),
+    LOG_ACTUALIZACION_DESCARTADA("fichas.infraestructura.estudiante.log.actualizacion-descartada", 3),
+    LOG_ACTUALIZACION_NO_REPLICADO("fichas.infraestructura.estudiante.log.actualizacion-no-replicado", 1);
 
     private final String clave;
     private final int parametros;

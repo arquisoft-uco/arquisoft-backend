@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 class RespuestaCommandOutputAdapterTest {
 
     private static final String ESTADO = "EN_REVISION";
+    private static final Instant FECHA = Instant.parse("2026-03-01T09:00:00Z");
 
     @Autowired
     private RespuestaCommandRepository repository;
@@ -47,8 +48,7 @@ class RespuestaCommandOutputAdapterTest {
         UUID solicitudId = UUID.randomUUID();
 
         // Act
-        adapter.registrar(new RespuestaEntity(
-                id, solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "una respuesta", ESTADO));
+        adapter.registrar(new RespuestaEntity(id, solicitudId, FECHA, "una respuesta", ESTADO));
         entityManager.flush();
         entityManager.clear();
 
@@ -64,8 +64,7 @@ class RespuestaCommandOutputAdapterTest {
     void debeRetornarTrue_cuandoLaSolicitudYaTieneRespuesta() {
         // Arrange
         UUID solicitudId = UUID.randomUUID();
-        adapter.registrar(new RespuestaEntity(
-                UUID.randomUUID(), solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "r", ESTADO));
+        adapter.registrar(new RespuestaEntity(UUID.randomUUID(), solicitudId, FECHA, "r", ESTADO));
         entityManager.flush();
         entityManager.clear();
 
@@ -82,9 +81,9 @@ class RespuestaCommandOutputAdapterTest {
     @Test
     void debeRetornarElEstado_cuandoBuscaElEstadoDeUnaRespuestaExistente() {
         // Arrange
-        UUID solicitudId = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         adapter.registrar(new RespuestaEntity(
-                UUID.randomUUID(), solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "r", ESTADO));
+                UUID.randomUUID(), solicitudId, FECHA, "r", ESTADO));
         entityManager.flush();
         entityManager.clear();
 
@@ -101,10 +100,10 @@ class RespuestaCommandOutputAdapterTest {
     @Test
     void debeBorrarLaFila_cuandoEliminaPorSolicitud() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID solicitudId = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         adapter.registrar(new RespuestaEntity(
-                id, solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "r", ESTADO));
+                id, solicitudId, FECHA, "r", ESTADO));
         entityManager.flush();
         entityManager.clear();
 
