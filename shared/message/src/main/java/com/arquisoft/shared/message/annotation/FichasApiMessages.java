@@ -277,6 +277,26 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar observaciones de ítem";
     }
 
+    public static final class ObservacionEvaluacion {
+
+        private ObservacionEvaluacion() {}
+
+        public static final String TAG_NAME = "Observaciones de Evaluación";
+        public static final String TAG_DESCRIPTION =
+                "Gestión de observaciones sobre evaluaciones de fichas de perfil del Comité de Currículum";
+
+        public static final String AGREGAR_SUMMARY = "Agregar observación a una evaluación de ficha de perfil";
+        public static final String AGREGAR_DESCRIPTION =
+                "Permite al representante del comité que registró la evaluación agregarle una observación "
+                        + "de texto. No puede agregarse si la evaluación ya alcanzó un estado terminal.";
+        public static final String AGREGAR_RESP_201 = "Observación agregada exitosamente — retorna el UUID asignado";
+        public static final String AGREGAR_RESP_400 = "Observación inválida o ausente";
+        public static final String AGREGAR_RESP_403 = "Sin permiso para agregar observaciones a evaluaciones";
+        public static final String AGREGAR_RESP_422 =
+                "Evaluación no encontrada, registrada por otro representante, en estado terminal "
+                        + "o texto de observación duplicado";
+    }
+
     public static final class EstudianteFichaPerfil {
 
         private EstudianteFichaPerfil() {}

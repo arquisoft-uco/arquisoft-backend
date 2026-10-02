@@ -31,6 +31,7 @@ rutas:
       evaluaciones: /{fichaId}/evaluaciones
       evaluaciones-representante: /{fichaPerfilId}/evaluaciones/representante
       estudiante: /estudiante
+      evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
     minio-guia:

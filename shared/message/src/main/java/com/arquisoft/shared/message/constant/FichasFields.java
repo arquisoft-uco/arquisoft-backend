@@ -60,6 +60,16 @@ public final class FichasFields {
         public static final String ASESOR_FICHA = "asesorFicha";
     }
 
+    public static final class ObservacionEvaluacion {
+
+        private ObservacionEvaluacion() {}
+
+        public static final String EVALUACION_FICHA_PERFIL = "evaluacionFichaPerfil";
+        public static final String OBSERVACION = "observacion";
+        public static final String OBSERVACION_EVALUACION = "observacionEvaluacion";
+        public static final String REPRESENTANTE_COMITE = "representanteComite";
+    }
+
     public static final class EstudianteFichaPerfil {
 
         private EstudianteFichaPerfil() {}
