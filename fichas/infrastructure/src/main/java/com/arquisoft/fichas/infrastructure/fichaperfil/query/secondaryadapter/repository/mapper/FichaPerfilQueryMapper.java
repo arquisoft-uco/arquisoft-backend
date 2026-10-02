@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.repository.mapper;
 
 import com.arquisoft.fichas.application.asesorficha.query.readmodel.AsesorFichaReadModel;
+import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.EstadoFichaPerfilReadModel;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.repository.FichaPerfilJpaQueryEntity;
 
@@ -16,6 +17,10 @@ public final class FichaPerfilQueryMapper {
                         entity.getAsesorId(),
                         entity.getAsesorIdentificador(),
                         entity.getAsesorNombre(),
-                        entity.getAsesorEmail()));
+                        entity.getAsesorEmail()),
+                new EstadoFichaPerfilReadModel(
+                        entity.getEstadoId(),
+                        entity.getEstadoNombre(),
+                        entity.getEstadoFechaActualizacion()));
     }
 }
