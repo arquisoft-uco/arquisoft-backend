@@ -288,6 +288,26 @@ public final class FichasApiMessages {
                 "Sin permiso para consultar observaciones de ítem de su ficha";
     }
 
+    public static final class ObservacionEvaluacion {
+
+        private ObservacionEvaluacion() {}
+
+        public static final String TAG_NAME = "Observaciones de Evaluación";
+        public static final String TAG_DESCRIPTION =
+                "Gestión de observaciones sobre evaluaciones de fichas de perfil del Comité de Currículum";
+
+        public static final String AGREGAR_SUMMARY = "Agregar observación a una evaluación de ficha de perfil";
+        public static final String AGREGAR_DESCRIPTION =
+                "Permite al representante del comité que registró la evaluación agregarle una observación "
+                        + "de texto. No puede agregarse si la evaluación ya alcanzó un estado terminal.";
+        public static final String AGREGAR_RESP_201 = "Observación agregada exitosamente — retorna el UUID asignado";
+        public static final String AGREGAR_RESP_400 = "Observación inválida o ausente";
+        public static final String AGREGAR_RESP_403 = "Sin permiso para agregar observaciones a evaluaciones";
+        public static final String AGREGAR_RESP_422 =
+                "Evaluación no encontrada, registrada por otro representante, en estado terminal "
+                        + "o texto de observación duplicado";
+    }
+
     public static final class EstudianteFichaPerfil {
 
         private EstudianteFichaPerfil() {}
@@ -357,8 +377,9 @@ public final class FichasApiMessages {
         public static final String TAG_DESCRIPTION = "Catálogo de estados del ciclo de vida de las fichas de perfil";
 
         public static final String CONSULTAR_SUMMARY = "Consultar todos los estados ficha";
-        public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados ficha disponibles en el catálogo sin filtros ni paginación";
-        public static final String CONSULTAR_RESP_200 = "Lista de estados ficha retornada exitosamente";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Retorna los estados ficha habilitados para alguno de los roles del usuario autenticado, tomados del token JWT";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados ficha habilitados para el rol del usuario retornada exitosamente";
         public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }
@@ -387,6 +408,20 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_SUMMARY = "Consultar todos los estados de evaluación disponibles";
         public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados de evaluación del catálogo sin filtros ni paginación";
         public static final String CONSULTAR_RESP_200 = "Lista de estados de evaluación retornada exitosamente";
+        public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
+        public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
+    }
+
+    public static final class EstadoRevision {
+
+        private EstadoRevision() {}
+
+        public static final String TAG_NAME = "Estados de Revisión";
+        public static final String TAG_DESCRIPTION = "Catálogo de estados disponibles para las revisiones de ítem de una ficha de perfil";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar todos los estados de revisión disponibles";
+        public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados de revisión de ítem del catálogo sin filtros ni paginación";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados de revisión retornada exitosamente";
         public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }

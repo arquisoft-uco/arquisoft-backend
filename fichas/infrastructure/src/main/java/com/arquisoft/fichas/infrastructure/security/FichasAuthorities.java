@@ -42,9 +42,13 @@ public final class FichasAuthorities {
     public static final String OBSERVACION_ITEM_ASESOR_VIEW = "fichas:observacion-item-asesor:view";
     public static final String OBSERVACION_ITEM_ESTUDIANTE_VIEW = "fichas:observacion-item-estudiante:view";
 
+    public static final String OBSERVACION_EVALUACION_CREATE = "fichas:observacion-evaluacion:create";
+
     public static final String TIPO_ITEM_VIEW = "fichas:tipo-item:view";
 
     public static final String ESTADO_EVALUACION_VIEW = "fichas:estado-evaluacion:view";
+
+    public static final String ESTADO_REVISION_VIEW = "fichas:estado-revision:view";
 
     public static final class Expresiones {
 
@@ -101,6 +105,8 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + TIPO_ITEM_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_EVALUACION_VIEW =
                 HAS_AUTHORITY_INICIO + ESTADO_EVALUACION_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTADO_REVISION_VIEW =
+                HAS_AUTHORITY_INICIO + ESTADO_REVISION_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_REVISION_ITEM_CREATE =
                 HAS_AUTHORITY_INICIO + REVISION_ITEM_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_REVISION_ITEM_ASESOR_VIEW =
@@ -115,5 +121,7 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_ASESOR_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_OBSERVACION_ITEM_ESTUDIANTE_VIEW =
                 HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_EVALUACION_CREATE =
+                HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_CREATE + HAS_AUTHORITY_FIN;
     }
 }

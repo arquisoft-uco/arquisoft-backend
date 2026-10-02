@@ -62,6 +62,7 @@
               "fichas:estudiante-ficha-perfil:create",
               "fichas:estudiante-ficha-perfil:delete",
               "fichas:estudiante-ficha-perfil-coordinador:view",
+              "fichas:estado-ficha:view",
               "solicitudes:solicitud-novedad-coordinador-recibida:view"
             ]
           }
@@ -101,7 +102,8 @@
               "fichas:estado-ficha:view",
               "fichas:ficha-perfil:create",
               "fichas:tipo-item:view",
-              "fichas:observacion-item:create"
+              "fichas:observacion-item:create",
+              "fichas:estado-revision:view"
             ]
           }
         },
@@ -172,7 +174,6 @@
               "fichas:estado-ficha-perfil-estudiante:view",
               "solicitudes:solicitud-ampliacion-plazo:create",
               "solicitudes:solicitud-novedad-coordinador:delete",
-              "fichas:estado-ficha:view",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create"
@@ -227,7 +228,8 @@
               "fichas:estado-evaluacion-ficha:create",
               "fichas:evaluacion-ficha-perfil:create",
               "fichas:item-ficha-perfil-representante:view",
-              "fichas:evaluacion-ficha-perfil-representante:view"
+              "fichas:evaluacion-ficha-perfil-representante:view",
+              "fichas:observacion-evaluacion:create"
             ]
           }
         },
@@ -644,6 +646,15 @@
           "attributes": {}
         },
         {
+          "id": "14d00284-32ed-4cd8-8fa9-cefe71afc83b",
+          "name": "fichas:estado-revision:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "9582eb8b-526a-4b4f-8c12-94c5925fb242",
           "name": "fichas:evaluacion-ficha-perfil:create",
           "description": "",
@@ -799,6 +810,15 @@
         {
           "id": "b9f9342d-922f-4f0f-bbaf-77e62d2b5a0f",
           "name": "fichas:observacion-item:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "4be04b5d-0795-4270-acfe-0842ba3300af",
+          "name": "fichas:observacion-evaluacion:create",
           "description": "",
           "composite": false,
           "clientRole": true,
