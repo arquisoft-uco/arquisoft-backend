@@ -59,6 +59,10 @@ public final class FichasApiMessages {
                 "Retorna el listado paginado de fichas de perfil. Soporta filtros dinámicos con "
                         + "agrupación booleana (AND/OR anidados), ordenamiento multi-campo y paginación. "
                         + "El body es opcional: sin body devuelve todos los registros paginados. "
+                        + "Admite filtrar por el campo estadoFicha, que compara con el estado actual de la ficha "
+                        + "(ids del catálogo: APROBADA, APROBADA_CON_OBSERVACIONES, NO_APROBADA, EN_CONSTRUCCION, "
+                        + "DISPONIBLE_PARA_EVALUACION, DESCARTADA) con cualquier operador; no es ordenable. "
+                        + "Cada ficha incluye su estado actual en el campo estado. "
                         + "Acceso exclusivo para el rol coordinador.";
         public static final String CONSULTAR_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_RESP_400 = "Filtro, operador, campo o valor inválido";
@@ -70,6 +74,9 @@ public final class FichasApiMessages {
                         + "Soporta filtros dinámicos con agrupación booleana (AND/OR anidados), ordenamiento "
                         + "multi-campo y paginación, siempre acotado a las fichas que el asesor autenticado "
                         + "asesora. El body es opcional: sin body devuelve todas sus fichas paginadas. "
+                        + "Admite filtrar por el campo estadoFicha, que compara con el estado actual de la ficha "
+                        + "con cualquier operador; no es ordenable. "
+                        + "Cada ficha incluye su estado actual en el campo estado. "
                         + "Acceso exclusivo para el rol asesor de ficha.";
         public static final String CONSULTAR_ASESORADAS_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_ASESORADAS_RESP_400 = "Filtro, operador, campo o valor inválido";
