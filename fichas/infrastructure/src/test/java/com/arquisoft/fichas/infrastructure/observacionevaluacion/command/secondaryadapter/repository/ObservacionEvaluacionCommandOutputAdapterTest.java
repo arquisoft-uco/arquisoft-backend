@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.observacionevaluacion.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.entity.ObservacionEvaluacionEntity;
+import com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.entity.PertenenciaObservacionEvaluacionEntity;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.command.secondaryadapter.entity.ObservacionEvaluacionJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
@@ -12,11 +13,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,5 +65,48 @@ class ObservacionEvaluacionCommandOutputAdapterTest {
 
         // Assert
         assertThat(existe).isTrue();
+    }
+
+    @Test
+    void debeRetornarLaPertenenciaDelRepositorio_cuandoConsultaPorObservacionYRepresentante() {
+        // Arrange
+        var observacionEvaluacion = UtilUUID.generarNuevoUUID();
+        var representanteComite = UtilUUID.generarNuevoUUID();
+        var pertenencia = Optional.of(new PertenenciaObservacionEvaluacionEntity(
+                UtilUUID.generarNuevoUUID(), true, "EN_EVALUACION"));
+        when(repository.obtenerPertenencia(observacionEvaluacion, representanteComite)).thenReturn(pertenencia);
+
+        // Act
+        var resultado = adapter.obtenerPertenencia(observacionEvaluacion, representanteComite);
+
+        // Assert
+        assertThat(resultado).isSameAs(pertenencia);
+        verifyNoInteractions(logger);
+    }
+
+    @Test
+    void debeRetornarLaDuplicidadDelRepositorio_cuandoConsultaOtraConMismoTexto() {
+        // Arrange
+        var observacionEvaluacion = UtilUUID.generarNuevoUUID();
+        when(repository.existeOtraConMismoTexto(observacionEvaluacion, "Observación válida")).thenReturn(true);
+
+        // Act
+        var existe = adapter.existeOtraConMismoTexto(observacionEvaluacion, "Observación válida");
+
+        // Assert
+        assertThat(existe).isTrue();
+    }
+
+    @Test
+    void debeActualizarYRegistrarLog_cuandoActualizaObservacion() {
+        // Arrange
+        var observacionEvaluacion = UtilUUID.generarNuevoUUID();
+
+        // Act
+        adapter.actualizarObservacion(observacionEvaluacion, "Texto corregido");
+
+        // Assert
+        verify(repository).actualizarObservacion(observacionEvaluacion, "Texto corregido");
+        verify(logger).debug(any(ClaveMensaje.class), eq(observacionEvaluacion));
     }
 }
