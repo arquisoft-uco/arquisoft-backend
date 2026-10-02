@@ -10,6 +10,7 @@ import java.util.UUID;
 public record FichaPerfilResponseDTO(
         UUID id,
         String tituloProyecto,
-        AsesorFichaResponseDTO asesorFicha
+        AsesorFichaResponseDTO asesorFicha,
+        EstadoFichaPerfilResponseDTO estado
 ) {
 }
