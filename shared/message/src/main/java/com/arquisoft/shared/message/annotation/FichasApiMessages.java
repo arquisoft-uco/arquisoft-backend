@@ -295,6 +295,17 @@ public final class FichasApiMessages {
         public static final String AGREGAR_RESP_422 =
                 "Evaluación no encontrada, registrada por otro representante, en estado terminal "
                         + "o texto de observación duplicado";
+
+        public static final String MODIFICAR_SUMMARY = "Modificar el texto de una observación de evaluación";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Permite al representante del comité que registró la evaluación reemplazar el texto de una de sus "
+                        + "observaciones. No puede modificarse si la evaluación ya alcanzó un estado terminal.";
+        public static final String MODIFICAR_RESP_204 = "Observación modificada exitosamente";
+        public static final String MODIFICAR_RESP_400 = "Observación inválida o ausente";
+        public static final String MODIFICAR_RESP_403 = "Sin permiso para modificar observaciones de evaluaciones";
+        public static final String MODIFICAR_RESP_422 =
+                "Observación no encontrada, evaluación registrada por otro representante, en estado terminal "
+                        + "o texto duplicado";
     }
 
     public static final class EstudianteFichaPerfil {
