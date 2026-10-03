@@ -13,9 +13,6 @@ import org.hibernate.annotations.Synchronize;
 
 import java.util.UUID;
 
-// TODO HU242 (bibliotecarios): cuando exista la tabla bibliotecario (la crea HU240), agregar al @Subselect
-//  "CASE WHEN EXISTS (SELECT 1 FROM bibliotecario b WHERE b.usuario_id = u.id AND b.eliminado_en IS NULL)
-//  THEN TRUE ELSE FALSE END AS es_bibliotecario" y "bibliotecario" a @Synchronize.
 // TODO HU252 (jurados): cuando exista la tabla jurado (la crea HU250), agregar al @Subselect
 //  "CASE WHEN EXISTS (SELECT 1 FROM jurado j WHERE j.usuario_id = u.id AND j.eliminado_en IS NULL)
 //  THEN TRUE ELSE FALSE END AS es_jurado" y "jurado" a @Synchronize.
@@ -47,11 +44,14 @@ import java.util.UUID;
                     THEN TRUE ELSE FALSE END AS es_representante_comite,
                CASE WHEN EXISTS (SELECT 1 FROM administrador ad
                        WHERE ad.usuario_id = u.id AND ad.eliminado_en IS NULL)
-                    THEN TRUE ELSE FALSE END AS es_administrador
+                    THEN TRUE ELSE FALSE END AS es_administrador,
+               CASE WHEN EXISTS (SELECT 1 FROM bibliotecario b
+                       WHERE b.usuario_id = u.id AND b.eliminado_en IS NULL)
+                    THEN TRUE ELSE FALSE END AS es_bibliotecario
         FROM usuario u
         """)
 @Synchronize({"usuario", "estudiante", "asesor", "asesor_ficha", "coordinador", "representante_comite_curriculum",
-        "administrador"})
+        "administrador", "bibliotecario"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -98,6 +98,8 @@ public class UsuarioJpaQueryEntity {
     @Column(name = "es_administrador")
     private boolean esAdministrador;
 
-    // TODO HU242: @Column(name = "es_bibliotecario") private boolean esBibliotecario;
+    @Column(name = "es_bibliotecario")
+    private boolean esBibliotecario;
+
     // TODO HU252: @Column(name = "es_jurado") private boolean esJurado;
 }

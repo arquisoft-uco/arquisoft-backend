@@ -27,6 +27,7 @@ class UsuarioSortMapperTest {
         var esEstudiante = UsuarioSortMapper.traducir("esEstudiante");
         var esRepresentanteComite = UsuarioSortMapper.traducir("esRepresentanteComite");
         var esAdministrador = UsuarioSortMapper.traducir("esAdministrador");
+        var esBibliotecario = UsuarioSortMapper.traducir("esBibliotecario");
         var vigente = UsuarioSortMapper.traducir("vigente");
         var inexistente = UsuarioSortMapper.traducir("campoInexistente");
 
@@ -34,6 +35,7 @@ class UsuarioSortMapperTest {
         assertThat(esEstudiante).isNull();
         assertThat(esRepresentanteComite).isNull();
         assertThat(esAdministrador).isNull();
+        assertThat(esBibliotecario).isNull();
         assertThat(vigente).isNull();
         assertThat(inexistente).isNull();
     }
