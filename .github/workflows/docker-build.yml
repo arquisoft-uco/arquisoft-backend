@@ -83,7 +83,7 @@ jobs:
       # platforms: el servidor de despliegue (Oracle, Ampere A1) es arm64; se
       # incluye amd64 también para poder correr la imagen en local/x86 sin rebuild.
       - name: Build y push imagen Docker
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: true
