@@ -29,4 +29,5 @@ rutas:
       representantes-comite-administrador: /representantes-comite/administrador
       representantes-comite-vigentes: /representantes-comite/vigentes
       administradores-administrador: /administradores/administrador
+      bibliotecarios-administrador: /bibliotecarios/administrador
       estados: /estados

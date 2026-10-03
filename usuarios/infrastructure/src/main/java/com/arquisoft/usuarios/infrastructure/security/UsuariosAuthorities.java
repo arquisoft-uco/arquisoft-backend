@@ -28,6 +28,7 @@ public final class UsuariosAuthorities {
     public static final String ADMINISTRADOR_DELETE = "usuarios:administrador:delete";
     public static final String ADMINISTRADOR_ADMINISTRADOR_VIEW = "usuarios:administrador-administrador:view";
     public static final String BIBLIOTECARIO_DELETE = "usuarios:bibliotecario:delete";
+    public static final String BIBLIOTECARIO_ADMINISTRADOR_VIEW = "usuarios:bibliotecario-administrador:view";
 
     public static final class Expresiones {
 
@@ -107,5 +108,8 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_BIBLIOTECARIO_DELETE =
                 HAS_AUTHORITY_INICIO + BIBLIOTECARIO_DELETE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_BIBLIOTECARIO_ADMINISTRADOR_VIEW =
+                HAS_AUTHORITY_INICIO + BIBLIOTECARIO_ADMINISTRADOR_VIEW + HAS_AUTHORITY_FIN;
     }
 }

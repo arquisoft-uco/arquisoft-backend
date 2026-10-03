@@ -18,8 +18,8 @@ public record UsuarioResponseDTO(
         boolean esAsesorFicha,
         boolean esCoordinador,
         boolean esRepresentanteComite,
-        boolean esAdministrador
-        // TODO HU242: boolean esBibliotecario
+        boolean esAdministrador,
+        boolean esBibliotecario
         // TODO HU252: boolean esJurado
 ) {
 }
