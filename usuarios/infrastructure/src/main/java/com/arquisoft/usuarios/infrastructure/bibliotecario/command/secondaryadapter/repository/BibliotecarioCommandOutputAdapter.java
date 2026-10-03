@@ -8,6 +8,7 @@ import com.arquisoft.usuarios.infrastructure.bibliotecario.command.secondaryadap
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,12 @@ public class BibliotecarioCommandOutputAdapter implements BibliotecarioOutputPor
     public void guardar(BibliotecarioEntity bibliotecario) {
         bibliotecarioCommandRepository.save(BibliotecarioJpaMapper.toJpaEntity(bibliotecario));
         logger.debug(AgregarBibliotecarioKey.LOG_GUARDADO, bibliotecario.usuario());
+    }
+
+    @Override
+    public void eliminarLogica(UUID usuario, Instant eliminadoEn) {
+        bibliotecarioCommandRepository.eliminarLogica(usuario, BibliotecarioJpaMapper.aColumna(eliminadoEn));
+        logger.debug(AgregarBibliotecarioKey.LOG_ACTUALIZADO, usuario);
     }
 
     @Override

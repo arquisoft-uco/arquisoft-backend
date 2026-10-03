@@ -88,6 +88,22 @@ class BibliotecarioDomainTest {
     }
 
     @Test
+    void debeAsignarEliminadoEnYOcurridoEn_cuandoSeRemueve() {
+        // Arrange
+        var bibliotecario = BibliotecarioDomain.crear(
+                UtilUUID.generarNuevoUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", OCURRIDO_EN);
+        var nuevoOcurridoEn = Instant.parse("2026-09-24T12:00:00Z");
+
+        // Act
+        bibliotecario.remover(nuevoOcurridoEn);
+
+        // Assert
+        assertThat(bibliotecario.getEliminadoEn()).isEqualTo(nuevoOcurridoEn);
+        assertThat(bibliotecario.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+        assertThat(bibliotecario.estaEliminado()).isTrue();
+    }
+
+    @Test
     void debeActualizarDatosYLimpiarLaBaja_cuandoSeReactiva() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();

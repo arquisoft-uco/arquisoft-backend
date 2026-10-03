@@ -87,6 +87,35 @@ class BibliotecarioCommandOutputAdapterTest {
     }
 
     @Test
+    void debeActualizarEliminadoEnYOcurridoEnSoloDeEseId_cuandoSeEliminaLogica() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        entityManager.persistAndFlush(BibliotecarioJpaEntity.builder()
+                .id(id).identificador("20161020123").nombre("Ana Perez").email("ana@uco.edu.co")
+                .ocurridoEn(OCURRIDO_EN).build());
+        entityManager.persistAndFlush(BibliotecarioJpaEntity.builder()
+                .id(otro).identificador("20161020555").nombre("Luis Gomez").email("luis@uco.edu.co")
+                .ocurridoEn(OCURRIDO_EN).build());
+        var nuevoOcurridoEn = OCURRIDO_EN.plusSeconds(3600);
+
+        // Act
+        adapter.eliminarLogica(id, nuevoOcurridoEn);
+
+        // Assert
+        assertThat(adapter.obtenerPorId(id)).hasValueSatisfying(removido -> {
+            assertThat(removido.eliminadoEn()).isEqualTo(nuevoOcurridoEn);
+            assertThat(removido.ocurridoEn()).isEqualTo(nuevoOcurridoEn);
+            assertThat(removido.identificador()).isEqualTo("20161020123");
+        });
+        assertThat(adapter.obtenerPorId(otro)).hasValueSatisfying(intacto -> {
+            assertThat(intacto.eliminadoEn()).isEqualTo(UtilFecha.VACIO);
+            assertThat(intacto.ocurridoEn()).isEqualTo(OCURRIDO_EN);
+        });
+        verify(logger).debug(BibliotecarioKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
     void debeRetornarLaBajaOVacio_cuandoSeConsultaPorId() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();

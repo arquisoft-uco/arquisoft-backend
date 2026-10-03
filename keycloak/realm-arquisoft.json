@@ -128,7 +128,8 @@
               "evaluaciones:item-cualitativo-jurado:update",
               "usuarios:representante-comite-curriculum:create",
               "evaluaciones:item-cualitativo-jurado:view",
-              "evaluaciones:criterio-item-cualitativo-jurado:view"
+              "evaluaciones:criterio-item-cualitativo-jurado:view",
+              "usuarios:bibliotecario:delete"
             ]
           }
         },
@@ -488,6 +489,15 @@
         {
           "id": "c3618679-f43f-4386-bb54-0684269814f7",
           "name": "usuarios:estado-usuario:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "67bf86fe-d9e3-499e-9164-5376e646e070",
+          "name": "usuarios:bibliotecario:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

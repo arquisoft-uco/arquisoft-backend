@@ -216,6 +216,23 @@ public final class UsuariosApiMessages {
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 
+    public static final class Bibliotecario {
+
+        private Bibliotecario() {}
+
+        public static final String REMOVER_SUMMARY = "Remover información de un bibliotecario";
+        public static final String REMOVER_DESCRIPTION =
+                "Da de baja lógica el rol bibliotecario de un usuario: marca la fecha de eliminación sin borrar "
+                        + "la fila, revoca el realm role bibliotecario en Keycloak y notifica a los contextos "
+                        + "que replican al bibliotecario. El usuario y sus demás roles no cambian. "
+                        + "Exclusivo del rol administrador.";
+        public static final String REMOVER_RESP_204 = "Bibliotecario removido";
+        public static final String REMOVER_RESP_400 = "Identificador de usuario inválido";
+        public static final String REMOVER_RESP_422 = "El usuario no tiene un rol bibliotecario vigente";
+        public static final String REMOVER_RESP_503 =
+                "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+    }
+
     public static final class RepresentanteComite {
 
         private RepresentanteComite() {}

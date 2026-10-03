@@ -12,6 +12,10 @@ import java.util.UUID;
 public interface BibliotecarioCommandRepository extends JpaRepository<BibliotecarioJpaEntity, UUID> {
 
     @Modifying(clearAutomatically = true)
+    @Query("UPDATE BibliotecarioJpaEntity b SET b.eliminadoEn = :ocurridoEn, b.ocurridoEn = :ocurridoEn WHERE b.id = :id")
+    int eliminarLogica(@Param("id") UUID id, @Param("ocurridoEn") Instant ocurridoEn);
+
+    @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE BibliotecarioJpaEntity b
             SET b.identificador = :identificador, b.nombre = :nombre, b.email = :email,
