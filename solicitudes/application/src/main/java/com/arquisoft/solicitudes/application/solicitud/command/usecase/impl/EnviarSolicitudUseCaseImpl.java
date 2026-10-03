@@ -7,7 +7,6 @@ import com.arquisoft.solicitudes.application.destinatario.command.finder.Destina
 import com.arquisoft.solicitudes.application.destinatario.command.usecase.RegistrarDestinatarioUseCase;
 import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteDeUsuarioFinder;
 import com.arquisoft.solicitudes.application.remitente.command.usecase.RegistrarRemitenteUseCase;
-import com.arquisoft.solicitudes.application.solicitud.command.finder.DestinatarioAsignadoFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.mapper.SolicitudMapper;
@@ -17,7 +16,6 @@ import com.arquisoft.solicitudes.application.usuario.command.finder.UsuarioPorId
 import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
 import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudEnviadaEvent;
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
-import com.arquisoft.solicitudes.domain.solicitud.model.ConsultaAsignacionResponsable;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -34,7 +32,6 @@ public class EnviarSolicitudUseCaseImpl implements EnviarSolicitudUseCase {
     private final RemitenteDeUsuarioFinder remitenteDeUsuarioFinder;
     private final DestinatarioDeUsuarioFinder destinatarioDeUsuarioFinder;
     private final UsuarioPorIdFinder usuarioPorIdFinder;
-    private final DestinatarioAsignadoFinder destinatarioAsignadoFinder;
     private final SolicitudDuplicadaFinder solicitudDuplicadaFinder;
     private final EnviarSolicitudValidator validator;
     private final EventPublisher eventPublisher;
@@ -57,13 +54,11 @@ public class EnviarSolicitudUseCaseImpl implements EnviarSolicitudUseCase {
         var destinatario = usuarioPorIdFinder.obtener(envio.getDestinatarioUsuario());
         var clave = new ClaveSolicitud(destinatarioId, remitenteId,
                 solicitud.getFechaCreacion(), solicitud.getMensajeSolicitud());
-        var destinatarioAsignado = destinatarioAsignadoFinder.obtener(
-                new ConsultaAsignacionResponsable(envio.getRemitenteUsuario(), envio.getDestinatarioUsuario()));
         var yaExiste = solicitudDuplicadaFinder.obtener(clave);
 
-        logger.debug(SolicitudKey.LOG_VERIFICACION_ENVIO, destinatarioAsignado, yaExiste);
+        logger.debug(SolicitudKey.LOG_VERIFICACION_ENVIO, yaExiste);
 
-        validator.validar(envio, destinatarioAsignado, new DisponibilidadSolicitud(clave, yaExiste));
+        validator.validar(new DisponibilidadSolicitud(clave, yaExiste));
 
         solicitudOutputPort.registrar(SolicitudMapper.toEntity(solicitud, remitenteId, destinatarioId));
         eventPublisher.publish(new SolicitudEnviadaEvent(solicitud.getTipoSolicitud(), solicitud.getId(),

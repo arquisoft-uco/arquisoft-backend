@@ -7,7 +7,6 @@ import com.arquisoft.solicitudes.application.destinatario.command.finder.Destina
 import com.arquisoft.solicitudes.application.destinatario.command.usecase.RegistrarDestinatarioUseCase;
 import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteDeUsuarioFinder;
 import com.arquisoft.solicitudes.application.remitente.command.usecase.RegistrarRemitenteUseCase;
-import com.arquisoft.solicitudes.application.solicitud.command.finder.DestinatarioAsignadoFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper.EnviarSolicitudCambioAsesorMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper.EnviarSolicitudNovedadAsesorMapper;
@@ -21,10 +20,8 @@ import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEnc
 import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
 import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudEnviadaEvent;
-import com.arquisoft.solicitudes.domain.solicitud.exception.DestinatarioNoAsignadoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
-import com.arquisoft.solicitudes.domain.solicitud.model.ConsultaAsignacionResponsable;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
@@ -42,8 +39,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -60,7 +55,6 @@ class EnviarSolicitudUseCaseImplTest {
     @Mock private RemitenteDeUsuarioFinder remitenteDeUsuarioFinder;
     @Mock private DestinatarioDeUsuarioFinder destinatarioDeUsuarioFinder;
     @Mock private UsuarioPorIdFinder usuarioPorIdFinder;
-    @Mock private DestinatarioAsignadoFinder destinatarioAsignadoFinder;
     @Mock private SolicitudDuplicadaFinder solicitudDuplicadaFinder;
     @Mock private EnviarSolicitudValidator validator;
     @Mock private EventPublisher eventPublisher;
@@ -79,7 +73,7 @@ class EnviarSolicitudUseCaseImplTest {
         useCase = new EnviarSolicitudUseCaseImpl(
                 solicitudOutputPort, registrarRemitenteUseCase, registrarDestinatarioUseCase,
                 remitenteDeUsuarioFinder, destinatarioDeUsuarioFinder, usuarioPorIdFinder,
-                destinatarioAsignadoFinder, solicitudDuplicadaFinder, validator, eventPublisher, logger);
+                solicitudDuplicadaFinder, validator, eventPublisher, logger);
 
         var command = EnviarSolicitudNovedadAsesorCommand.crear(
                 UUID.randomUUID(), UUID.randomUUID().toString(), "novedad para el asesor");
@@ -89,7 +83,6 @@ class EnviarSolicitudUseCaseImplTest {
     private void stubFlujoValido(UUID remitenteFila, UUID destinatarioFila) {
         when(remitenteDeUsuarioFinder.obtener(envio.getRemitenteUsuario())).thenReturn(remitenteFila);
         when(destinatarioDeUsuarioFinder.obtener(envio.getDestinatarioUsuario())).thenReturn(destinatarioFila);
-        when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(false);
         when(usuarioPorIdFinder.obtener(envio.getRemitenteUsuario()))
                 .thenReturn(replica(envio.getRemitenteUsuario(), "Ana Estudiante", "ana@uco.edu.co"));
@@ -167,10 +160,6 @@ class EnviarSolicitudUseCaseImplTest {
         assertThat(claveCaptor.getValue().remitente()).isEqualTo(remitenteFila);
         assertThat(claveCaptor.getValue().destinatario()).isEqualTo(destinatarioFila);
 
-        var asignacionCaptor = ArgumentCaptor.forClass(ConsultaAsignacionResponsable.class);
-        verify(destinatarioAsignadoFinder).obtener(asignacionCaptor.capture());
-        assertThat(asignacionCaptor.getValue().estudianteUsuario()).isEqualTo(envio.getRemitenteUsuario());
-        assertThat(asignacionCaptor.getValue().responsableUsuario()).isEqualTo(envio.getDestinatarioUsuario());
     }
 
     @Test
@@ -184,7 +173,7 @@ class EnviarSolicitudUseCaseImplTest {
                 .isInstanceOf(RemitenteNoEncontradoException.class);
 
         verifyNoInteractions(registrarDestinatarioUseCase, remitenteDeUsuarioFinder, destinatarioDeUsuarioFinder,
-                destinatarioAsignadoFinder, solicitudDuplicadaFinder, solicitudOutputPort, eventPublisher);
+                solicitudDuplicadaFinder, solicitudOutputPort, eventPublisher);
     }
 
     @Test
@@ -198,26 +187,7 @@ class EnviarSolicitudUseCaseImplTest {
                 .isInstanceOf(DestinatarioNoEncontradoException.class);
 
         verify(registrarRemitenteUseCase).ejecutar(envio.getRemitente());
-        verifyNoInteractions(destinatarioAsignadoFinder, solicitudDuplicadaFinder, solicitudOutputPort,
-                eventPublisher);
-    }
-
-    @Test
-    void debeLanzarDestinatarioNoAsignado_cuandoElDestinatarioNoEsElResponsable() {
-        // Arrange
-        when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(UUID.randomUUID());
-        when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(UUID.randomUUID());
-        when(destinatarioAsignadoFinder.obtener(any())).thenReturn(false);
-        when(solicitudDuplicadaFinder.obtener(any())).thenReturn(false);
-        doThrow(new DestinatarioNoAsignadoException(envio.getDestinatarioUsuario(), envio.getRemitenteUsuario()))
-                .when(validator).validar(any(), eq(false), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(envio))
-                .isInstanceOf(DestinatarioNoAsignadoException.class);
-
-        verify(solicitudOutputPort, never()).registrar(any());
-        verify(eventPublisher, never()).publish(any());
+        verifyNoInteractions(solicitudDuplicadaFinder, solicitudOutputPort, eventPublisher);
     }
 
     @Test
@@ -225,10 +195,8 @@ class EnviarSolicitudUseCaseImplTest {
         // Arrange
         when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(UUID.randomUUID());
         when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(UUID.randomUUID());
-        when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(true);
-        doThrow(new SolicitudDuplicadaException()).when(validator).validar(any(), anyBoolean(),
-                any(DisponibilidadSolicitud.class));
+        doThrow(new SolicitudDuplicadaException()).when(validator).validar(any(DisponibilidadSolicitud.class));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(envio))
@@ -248,14 +216,13 @@ class EnviarSolicitudUseCaseImplTest {
 
         // Assert — registrar remitente (valida existencia) -> registrar destinatario -> finders -> validar -> persistir -> publicar
         InOrder inOrder = inOrder(registrarRemitenteUseCase, registrarDestinatarioUseCase,
-                remitenteDeUsuarioFinder, destinatarioAsignadoFinder, solicitudDuplicadaFinder,
+                remitenteDeUsuarioFinder, solicitudDuplicadaFinder,
                 validator, solicitudOutputPort, eventPublisher);
         inOrder.verify(registrarRemitenteUseCase).ejecutar(any());
         inOrder.verify(registrarDestinatarioUseCase).ejecutar(any());
         inOrder.verify(remitenteDeUsuarioFinder).obtener(any());
-        inOrder.verify(destinatarioAsignadoFinder).obtener(any());
         inOrder.verify(solicitudDuplicadaFinder).obtener(any());
-        inOrder.verify(validator).validar(any(), anyBoolean(), any());
+        inOrder.verify(validator).validar(any());
         inOrder.verify(solicitudOutputPort).registrar(any());
         inOrder.verify(eventPublisher).publish(any());
     }

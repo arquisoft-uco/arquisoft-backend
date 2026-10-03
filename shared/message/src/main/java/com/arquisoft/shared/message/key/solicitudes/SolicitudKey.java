@@ -7,17 +7,15 @@ public enum SolicitudKey implements ClaveMensaje {
 
     ERROR_REMITENTE_NO_ENCONTRADO("solicitudes.dominio.solicitud.error.remitente-no-encontrado", 1),
     ERROR_DESTINATARIO_NO_ENCONTRADO("solicitudes.dominio.solicitud.error.destinatario-no-encontrado", 1),
-    ERROR_DESTINATARIO_NO_ASIGNADO("solicitudes.dominio.solicitud.error.destinatario-no-asignado", 2),
     ERROR_SOLICITUD_DUPLICADA("solicitudes.dominio.solicitud.error.solicitud-duplicada", 0),
     LOG_ENVIANDO("solicitudes.aplicacion.solicitud.log.enviando", 3),
-    LOG_VERIFICACION_ENVIO("solicitudes.aplicacion.solicitud.log.verificacion-envio", 2),
+    LOG_VERIFICACION_ENVIO("solicitudes.aplicacion.solicitud.log.verificacion-envio", 1),
     LOG_ENVIADA("solicitudes.aplicacion.solicitud.log.enviada", 2),
     LOG_VERIFICACION_REGISTRO_REMITENTE(
             "solicitudes.aplicacion.remitente.log.verificacion-registro", 2),
     LOG_VERIFICACION_REGISTRO_DESTINATARIO(
             "solicitudes.aplicacion.destinatario.log.verificacion-registro", 2),
     LOG_GUARDADA("solicitudes.infraestructura.solicitud.log.guardada", 1),
-    LOG_ASIGNACION_NO_VERIFICADA("solicitudes.infraestructura.solicitud.log.asignacion-no-verificada", 2),
     ERROR_SOLICITUD_NO_ENCONTRADA("solicitudes.dominio.solicitud.error.no-encontrada", 1),
     ERROR_SOLICITUD_NO_PROPIA("solicitudes.dominio.solicitud.error.no-propia", 1),
     ERROR_SOLICITUD_TIPO_NO_COINCIDE("solicitudes.dominio.solicitud.error.tipo-no-coincide", 1),
