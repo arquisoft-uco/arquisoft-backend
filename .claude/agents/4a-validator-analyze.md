@@ -41,8 +41,9 @@ Después cruza el árbol con `git status -s` y lee también lo que la historia c
 tests del tester, los extras que el implementador anotó en la Trazabilidad, las claves de
 `shared:message` y `catalogo/`. `@4c-commit` commitea lo que este reporte lista en "Datos para la
 entrega" más lo que encuentre en el working tree, así que un archivo que no revisas llega al PR sin
-validar. Lo que no pertenece a la historia (cambios en `.claude/`, en otro contexto) no se revisa ni
-se lista.
+validar. La pertenencia la decide el plan, no la carpeta: lo que su árbol nombra es de la historia
+aunque viva en `.claude/`, `docs/` o la raíz, y se lista sin salvedades. Lo que ni el plan ni la
+Trazabilidad nombran (otro contexto, ajustes de agentes ajenos a la HU) no se revisa ni se lista.
 
 ## FASE 2 — Checks
 

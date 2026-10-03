@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
+import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
@@ -25,10 +26,12 @@ import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
+import com.arquisoft.shared.message.key.fichas.ObservacionEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.ObservacionItemKey;
 import com.arquisoft.shared.message.key.fichas.TipoItemKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
+import com.arquisoft.shared.message.key.fichas.EstadoRevisionKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
@@ -54,6 +57,7 @@ import com.arquisoft.shared.message.key.usuarios.AgregarCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarRepresentanteComiteKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarBibliotecarioKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAdministradoresAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresAdministradorKey;
@@ -134,10 +138,12 @@ public final class ClavesCatalogo {
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
             MinioGuiaKey.class,
+            ObservacionEvaluacionKey.class,
             ObservacionItemKey.class,
             TipoItemKey.class,
             RepresentanteComiteKey.class,
             RevisionItemKey.class,
+            EstadoRevisionKey.class,
             EstadoRespuestaKey.class,
             RespuestaKey.class,
             SolicitudKey.class,
@@ -173,6 +179,8 @@ public final class ClavesCatalogo {
             RemoverRepresentanteComiteKey.class,
             AgregarAdministradorKey.class,
             RemoverAdministradorKey.class,
+            AgregarBibliotecarioKey.class,
+            BibliotecarioKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
             ConsultarCoordinadoresAdministradorKey.class,

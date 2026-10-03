@@ -63,9 +63,11 @@ Contrástala con `git status -s` **antes** del Gate 1, no después: lo que el us
 ser exactamente lo que se commitea. El reporte lista lo que el validator revisó, y se le escapan
 archivos que el tester creó después (`??`, a menudo directorios de test enteros). Un `??` o `M` bajo
 los módulos del contexto de la HU/HT que el reporte no nombra va a la lista, marcado como "no listado
-en el reporte". Lo que no es de la historia —cambios en `.claude/`, en otro contexto, trabajo a medio
-hacer del usuario— se queda fuera y lo nombras en el Gate 1; ante la duda, pregunta en vez de
-incluirlo.
+en el reporte". La pertenencia la decide el plan, no la carpeta: un archivo que el reporte lista
+porque el plan lo nombra entra aunque viva en `.claude/` o en la raíz. Una HU que añade un contexto
+actualiza también `CLAUDE.md` y las skills, y dejarlas fuera publica código que la documentación de
+los agentes contradice. Lo que ni el reporte ni el plan nombran —otro contexto, trabajo a medio hacer
+del usuario— se queda fuera y lo nombras en el Gate 1; ante la duda, pregunta en vez de incluirlo.
 
 **El plan y el reporte de validación NO entran en el commit.** No son código y su sitio es
 `arquisoft-docs`, junto a las historias que documentan; la FASE 10 los publica ahí. De hecho no

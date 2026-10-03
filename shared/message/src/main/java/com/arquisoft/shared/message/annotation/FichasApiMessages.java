@@ -59,6 +59,10 @@ public final class FichasApiMessages {
                 "Retorna el listado paginado de fichas de perfil. Soporta filtros dinámicos con "
                         + "agrupación booleana (AND/OR anidados), ordenamiento multi-campo y paginación. "
                         + "El body es opcional: sin body devuelve todos los registros paginados. "
+                        + "Admite filtrar por el campo estadoFicha, que compara con el estado actual de la ficha "
+                        + "(ids del catálogo: APROBADA, APROBADA_CON_OBSERVACIONES, NO_APROBADA, EN_CONSTRUCCION, "
+                        + "DISPONIBLE_PARA_EVALUACION, DESCARTADA) con cualquier operador; no es ordenable. "
+                        + "Cada ficha incluye su estado actual en el campo estado. "
                         + "Acceso exclusivo para el rol coordinador.";
         public static final String CONSULTAR_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_RESP_400 = "Filtro, operador, campo o valor inválido";
@@ -70,18 +74,21 @@ public final class FichasApiMessages {
                         + "Soporta filtros dinámicos con agrupación booleana (AND/OR anidados), ordenamiento "
                         + "multi-campo y paginación, siempre acotado a las fichas que el asesor autenticado "
                         + "asesora. El body es opcional: sin body devuelve todas sus fichas paginadas. "
+                        + "Admite filtrar por el campo estadoFicha, que compara con el estado actual de la ficha "
+                        + "con cualquier operador; no es ordenable. "
+                        + "Cada ficha incluye su estado actual en el campo estado. "
                         + "Acceso exclusivo para el rol asesor de ficha.";
         public static final String CONSULTAR_ASESORADAS_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_ASESORADAS_RESP_400 = "Filtro, operador, campo o valor inválido";
         public static final String CONSULTAR_ASESORADAS_RESP_403 = "Sin permisos — se requiere rol asesor de ficha";
 
-        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar ficha de perfil del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar las fichas de perfil del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
-                "Retorna el detalle de una ficha de perfil a la que pertenece el estudiante autenticado: "
-                        + "título, asesor asignado, estado actual y estudiantes vinculados.";
-        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Ficha de perfil encontrada";
-        public static final String CONSULTAR_ESTUDIANTE_RESP_404 =
-                "Ficha no encontrada, o el estudiante autenticado no está vinculado a ella";
+                "Retorna las fichas de perfil a las que pertenece el estudiante autenticado, cada una con su "
+                        + "título, asesor asignado, estado actual y estudiantes vinculados. El estudiante se toma "
+                        + "del token. Si no pertenece a ninguna ficha, devuelve una lista vacía.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Lista de fichas de perfil del estudiante (vacía si no pertenece a ninguna)";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permisos — se requiere rol estudiante";
     }
 
@@ -287,6 +294,47 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar observaciones de ítem";
     }
 
+    public static final class ObservacionEvaluacion {
+
+        private ObservacionEvaluacion() {}
+
+        public static final String TAG_NAME = "Observaciones de Evaluación";
+        public static final String TAG_DESCRIPTION =
+                "Gestión de observaciones sobre evaluaciones de fichas de perfil del Comité de Currículum";
+
+        public static final String AGREGAR_SUMMARY = "Agregar observación a una evaluación de ficha de perfil";
+        public static final String AGREGAR_DESCRIPTION =
+                "Permite al representante del comité que registró la evaluación agregarle una observación "
+                        + "de texto. No puede agregarse si la evaluación ya alcanzó un estado terminal.";
+        public static final String AGREGAR_RESP_201 = "Observación agregada exitosamente — retorna el UUID asignado";
+        public static final String AGREGAR_RESP_400 = "Observación inválida o ausente";
+        public static final String AGREGAR_RESP_403 = "Sin permiso para agregar observaciones a evaluaciones";
+        public static final String AGREGAR_RESP_422 =
+                "Evaluación no encontrada, registrada por otro representante, en estado terminal "
+                        + "o texto de observación duplicado";
+
+        public static final String MODIFICAR_SUMMARY = "Modificar el texto de una observación de evaluación";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Permite al representante del comité que registró la evaluación reemplazar el texto de una de sus "
+                        + "observaciones. No puede modificarse si la evaluación ya alcanzó un estado terminal.";
+        public static final String MODIFICAR_RESP_204 = "Observación modificada exitosamente";
+        public static final String MODIFICAR_RESP_400 = "Observación inválida o ausente";
+        public static final String MODIFICAR_RESP_403 = "Sin permiso para modificar observaciones de evaluaciones";
+        public static final String MODIFICAR_RESP_422 =
+                "Observación no encontrada, evaluación registrada por otro representante, en estado terminal "
+                        + "o texto duplicado";
+
+        public static final String REMOVER_SUMMARY = "Remover una observación de evaluación";
+        public static final String REMOVER_DESCRIPTION =
+                "Permite al representante del comité que registró la evaluación eliminar una de sus observaciones. "
+                        + "No puede removerse si la evaluación ya alcanzó un estado terminal.";
+        public static final String REMOVER_RESP_204 = "Observación removida exitosamente";
+        public static final String REMOVER_RESP_400 = "Identificador de observación inválido";
+        public static final String REMOVER_RESP_403 = "Sin permiso para remover observaciones de evaluaciones";
+        public static final String REMOVER_RESP_422 =
+                "Observación no encontrada, evaluación registrada por otro representante o en estado terminal";
+    }
+
     public static final class EstudianteFichaPerfil {
 
         private EstudianteFichaPerfil() {}
@@ -356,8 +404,9 @@ public final class FichasApiMessages {
         public static final String TAG_DESCRIPTION = "Catálogo de estados del ciclo de vida de las fichas de perfil";
 
         public static final String CONSULTAR_SUMMARY = "Consultar todos los estados ficha";
-        public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados ficha disponibles en el catálogo sin filtros ni paginación";
-        public static final String CONSULTAR_RESP_200 = "Lista de estados ficha retornada exitosamente";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Retorna los estados ficha habilitados para alguno de los roles del usuario autenticado, tomados del token JWT";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados ficha habilitados para el rol del usuario retornada exitosamente";
         public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }
@@ -386,6 +435,20 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_SUMMARY = "Consultar todos los estados de evaluación disponibles";
         public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados de evaluación del catálogo sin filtros ni paginación";
         public static final String CONSULTAR_RESP_200 = "Lista de estados de evaluación retornada exitosamente";
+        public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
+        public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
+    }
+
+    public static final class EstadoRevision {
+
+        private EstadoRevision() {}
+
+        public static final String TAG_NAME = "Estados de Revisión";
+        public static final String TAG_DESCRIPTION = "Catálogo de estados disponibles para las revisiones de ítem de una ficha de perfil";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar todos los estados de revisión disponibles";
+        public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados de revisión de ítem del catálogo sin filtros ni paginación";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados de revisión retornada exitosamente";
         public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }

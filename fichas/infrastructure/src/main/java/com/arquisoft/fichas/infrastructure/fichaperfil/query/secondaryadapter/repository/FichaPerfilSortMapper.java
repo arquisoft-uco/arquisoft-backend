@@ -18,6 +18,7 @@ final class FichaPerfilSortMapper {
                 case ASESOR_NOMBRE   -> "asesorNombre";
                 case ASESOR_EMAIL    -> "asesorEmail";
                 case ASESOR_ID       -> null; // no ordenable
+                case ESTADO_FICHA    -> null; // no ordenable
             };
             if (ruta != null) {
                 m.put(campo.getClave(), ruta);

@@ -106,7 +106,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         UUID evaluacionId = UUID.randomUUID();
 
         when(estadoEvaluacionFichaRepository
-                .existsByEvaluacionFichaPerfilAndEstadoEvaluacion(evaluacionId, "EN_EVALUACION"))
+                .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(evaluacionId, "EN_EVALUACION"))
                 .thenReturn(true);
 
         // Act
@@ -115,7 +115,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         // Assert
         assertThat(existe).isTrue();
         verify(estadoEvaluacionFichaRepository)
-                .existsByEvaluacionFichaPerfilAndEstadoEvaluacion(evaluacionId, "EN_EVALUACION");
+                .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(evaluacionId, "EN_EVALUACION");
     }
 
     @Test
@@ -123,7 +123,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
 
-        when(estadoEvaluacionFichaRepository.countByEvaluacionFichaPerfil(evaluacionId))
+        when(estadoEvaluacionFichaRepository.countByEvaluacionFichaPerfilId(evaluacionId))
                 .thenReturn(2L);
 
         // Act
@@ -131,6 +131,6 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
 
         // Assert
         assertThat(count).isEqualTo(2);
-        verify(estadoEvaluacionFichaRepository).countByEvaluacionFichaPerfil(evaluacionId);
+        verify(estadoEvaluacionFichaRepository).countByEvaluacionFichaPerfilId(evaluacionId);
     }
 }

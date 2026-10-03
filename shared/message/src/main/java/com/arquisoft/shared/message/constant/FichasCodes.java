@@ -78,6 +78,22 @@ public final class FichasCodes {
                 "ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO";
     }
 
+    public static final class ObservacionEvaluacion {
+
+        private ObservacionEvaluacion() {}
+
+        public static final String EVALUACION_FICHA_PERFIL_REQUERIDA =
+                "OBSERVACION_EVALUACION_EVALUACION_FICHA_PERFIL_REQUERIDA";
+        public static final String OBSERVACION_REQUERIDA = "OBSERVACION_EVALUACION_OBSERVACION_REQUERIDA";
+        public static final String OBSERVACION_DEMASIADO_LARGA = "OBSERVACION_EVALUACION_OBSERVACION_DEMASIADO_LARGA";
+        public static final String OBSERVACION_EVALUACION_REQUERIDA =
+                "OBSERVACION_EVALUACION_OBSERVACION_EVALUACION_REQUERIDA";
+        public static final String REPRESENTANTE_COMITE_REQUERIDO = "OBSERVACION_EVALUACION_REPRESENTANTE_COMITE_REQUERIDO";
+        public static final String OBSERVACION_EVALUACION_DUPLICADA = "OBSERVACION_EVALUACION_DUPLICADA";
+        public static final String EVALUACION_CERRADA = "OBSERVACION_EVALUACION_EVALUACION_CERRADA";
+        public static final String OBSERVACION_EVALUACION_NO_ENCONTRADA = "OBSERVACION_EVALUACION_NO_ENCONTRADA";
+    }
+
     public static final class Estudiante {
 
         private Estudiante() {}
@@ -130,6 +146,7 @@ public final class FichasCodes {
         private EstadoFicha() {}
 
         public static final String NO_ENCONTRADO = "ESTADO_FICHA_NO_ENCONTRADO";
+        public static final String ROLES_REQUERIDO = "ESTADO_FICHA_ROLES_REQUERIDO";
     }
 
     public static final class EvaluacionFichaPerfil {

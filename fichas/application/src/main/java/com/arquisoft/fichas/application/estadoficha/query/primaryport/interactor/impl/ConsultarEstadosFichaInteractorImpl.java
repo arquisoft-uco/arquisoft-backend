@@ -1,6 +1,8 @@
 package com.arquisoft.fichas.application.estadoficha.query.primaryport.interactor.impl;
 
 import com.arquisoft.fichas.application.estadoficha.query.primaryport.interactor.ConsultarEstadosFichaInteractor;
+import com.arquisoft.fichas.application.estadoficha.query.primaryport.mapper.ConsultarEstadosFichaMapper;
+import com.arquisoft.fichas.application.estadoficha.query.primaryport.model.ConsultarEstadosFichaQuery;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.application.estadoficha.query.usecase.ConsultarEstadosFichaUseCase;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,7 @@ public class ConsultarEstadosFichaInteractorImpl implements ConsultarEstadosFich
 
     @Override
     @Transactional(readOnly = true, transactionManager = "fichasTransactionManager")
-    public List<EstadoFichaReadModel> ejecutar() {
-        return consultarEstadosFichaUseCase.ejecutar();
+    public List<EstadoFichaReadModel> ejecutar(ConsultarEstadosFichaQuery entrada) {
+        return consultarEstadosFichaUseCase.ejecutar(ConsultarEstadosFichaMapper.toCriteria(entrada));
     }
 }
