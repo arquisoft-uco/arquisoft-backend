@@ -4,22 +4,26 @@ import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 
 import java.util.UUID;
 
-public final class EliminacionSolicitudNovedadCoordinadorDomain {
+public final class EliminacionSolicitudDomain {
 
     private UUID solicitud;
     private UUID remitenteUsuario;
+    private TipoSolicitud tipoEsperado;
 
-    private EliminacionSolicitudNovedadCoordinadorDomain() {}
+    private EliminacionSolicitudDomain() {}
 
-    public static EliminacionSolicitudNovedadCoordinadorDomain crear(UUID solicitud, UUID remitenteUsuario) {
-        var eliminacion = new EliminacionSolicitudNovedadCoordinadorDomain();
+    public static EliminacionSolicitudDomain crear(UUID solicitud, UUID remitenteUsuario,
+                                                   TipoSolicitud tipoEsperado) {
+        var eliminacion = new EliminacionSolicitudDomain();
         var result = new ValidationResult();
 
         eliminacion.setSolicitud(solicitud, result);
         eliminacion.setRemitenteUsuario(remitenteUsuario, result);
+        eliminacion.setTipoEsperado(tipoEsperado, result);
 
         result.lanzarSiTieneErrores();
         return eliminacion;
@@ -43,11 +47,24 @@ public final class EliminacionSolicitudNovedadCoordinadorDomain {
         this.remitenteUsuario = remitenteUsuario;
     }
 
+    private void setTipoEsperado(TipoSolicitud tipoEsperado, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(tipoEsperado,
+                SolicitudesFields.Solicitud.TIPO_SOLICITUD,
+                SolicitudesCodes.Solicitud.TIPO_REQUERIDO, result)) {
+            return;
+        }
+        this.tipoEsperado = tipoEsperado;
+    }
+
     public UUID getSolicitud() {
         return solicitud;
     }
 
     public UUID getRemitenteUsuario() {
         return remitenteUsuario;
+    }
+
+    public TipoSolicitud getTipoEsperado() {
+        return tipoEsperado;
     }
 }

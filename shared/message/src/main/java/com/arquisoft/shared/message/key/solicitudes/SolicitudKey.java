@@ -23,14 +23,12 @@ public enum SolicitudKey implements ClaveMensaje {
     ERROR_SOLICITUD_TIPO_NO_COINCIDE("solicitudes.dominio.solicitud.error.tipo-no-coincide", 1),
     ERROR_SOLICITUD_CON_RESPUESTAS("solicitudes.dominio.solicitud.error.con-respuestas", 1),
     ERROR_SOLICITUD_NO_ES_DESTINATARIO("solicitudes.dominio.solicitud.error.no-es-destinatario", 1),
-    LOG_ELIMINANDO("solicitudes.aplicacion.solicitud.log.eliminando", 2),
+    LOG_ELIMINANDO("solicitudes.aplicacion.solicitud.log.eliminando", 3),
     LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.solicitud.log.verificacion-eliminacion", 2),
-    LOG_ELIMINADA("solicitudes.aplicacion.solicitud.log.eliminada", 1),
+    LOG_ELIMINADA("solicitudes.aplicacion.solicitud.log.eliminada", 2),
     LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.solicitud.log.eliminada", 1),
     ERROR_SOLICITUD_TIPO_NO_COINCIDE_ASESOR(
             "solicitudes.dominio.solicitud.error.tipo-no-coincide-asesor", 1),
-    LOG_ELIMINANDO_ASESOR("solicitudes.aplicacion.solicitud.log.eliminando-asesor", 2),
-    LOG_ELIMINADA_ASESOR("solicitudes.aplicacion.solicitud.log.eliminada-asesor", 1),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
             "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-recibidas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_RECIBIDAS_COMPLETADA(
