@@ -7,7 +7,7 @@ public enum RespuestaKey implements ClaveMensaje {
 
     ERROR_SOLICITUD_YA_RESPONDIDA("solicitudes.dominio.respuesta.error.solicitud-ya-respondida", 1),
     LOG_RESPONDIENDO("solicitudes.aplicacion.respuesta.log.respondiendo", 2),
-    LOG_VERIFICACION_RESPUESTA("solicitudes.aplicacion.respuesta.log.verificacion-respuesta", 2),
+    LOG_VERIFICACION_RESPUESTA("solicitudes.aplicacion.respuesta.log.verificacion-respuesta", 4),
     LOG_RESPONDIDA("solicitudes.aplicacion.respuesta.log.respondida", 1),
     LOG_GUARDADA("solicitudes.infraestructura.respuesta.log.guardada", 1),
     ERROR_RESPUESTA_NO_ENCONTRADA("solicitudes.dominio.respuesta.error.no-encontrada", 1),

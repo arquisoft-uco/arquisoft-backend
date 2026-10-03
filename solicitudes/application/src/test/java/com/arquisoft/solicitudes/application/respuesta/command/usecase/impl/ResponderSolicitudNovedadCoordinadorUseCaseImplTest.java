@@ -109,7 +109,7 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         assertThat(evento.getEstadoRespuesta()).isEqualTo("EN_REVISION");
 
         verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO), eq(solicitud), eq(coordinadorUsuario));
-        verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_RESPUESTA), eq(true), eq(false));
+        verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_RESPUESTA), eq(true), eq(false), eq(true), eq(true));
         verify(logger).info(eq(RespuestaKey.LOG_RESPONDIDA), any());
     }
 
@@ -133,6 +133,7 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         // Arrange
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(UsuarioDomain.VACIO);
         doThrow(new SolicitudYaRespondidaException(solicitud))
                 .when(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
 
@@ -142,6 +143,8 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
 
         verify(validator).validar(eq(solicitud), eq(ResumenSolicitud.VACIO), any(), any(),
                 eq(coordinadorUsuario), eq(false));
+        verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_RESPUESTA),
+                eq(false), eq(false), eq(false), eq(false));
         verify(respuestaOutputPort, never()).registrar(any());
     }
 

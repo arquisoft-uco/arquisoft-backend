@@ -40,7 +40,8 @@ public class ResponderSolicitudNovedadCoordinadorUseCaseImpl
         var remitente = datosUsuarioFinder.obtener(resumen.remitenteUsuario());
         var coordinador = datosUsuarioFinder.obtener(resumen.destinatarioUsuario());
 
-        logger.debug(RespuestaKey.LOG_VERIFICACION_RESPUESTA, !resumen.esVacio(), yaRespondida);
+        logger.debug(RespuestaKey.LOG_VERIFICACION_RESPUESTA,
+                !resumen.esVacio(), yaRespondida, !remitente.esVacio(), !coordinador.esVacio());
 
         validator.validar(entrada.getSolicitud(), resumen, remitente, coordinador,
                 entrada.getCoordinadorUsuario(), yaRespondida);
