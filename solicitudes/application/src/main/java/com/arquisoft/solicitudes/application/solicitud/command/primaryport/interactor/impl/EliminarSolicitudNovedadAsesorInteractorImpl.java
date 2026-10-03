@@ -3,7 +3,7 @@ package com.arquisoft.solicitudes.application.solicitud.command.primaryport.inte
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.EliminarSolicitudNovedadAsesorInteractor;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper.EliminarSolicitudNovedadAsesorMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EliminarSolicitudNovedadAsesorCommand;
-import com.arquisoft.solicitudes.application.solicitud.command.usecase.EliminarSolicitudNovedadAsesorUseCase;
+import com.arquisoft.solicitudes.application.solicitud.command.usecase.EliminarSolicitudUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class EliminarSolicitudNovedadAsesorInteractorImpl
         implements EliminarSolicitudNovedadAsesorInteractor {
 
-    private final EliminarSolicitudNovedadAsesorUseCase eliminarSolicitudNovedadAsesorUseCase;
+    private final EliminarSolicitudUseCase eliminarSolicitudUseCase;
 
     @Override
     @Transactional(transactionManager = "solicitudesTransactionManager")
     public void ejecutar(EliminarSolicitudNovedadAsesorCommand command) {
-        eliminarSolicitudNovedadAsesorUseCase.ejecutar(
+        eliminarSolicitudUseCase.ejecutar(
                 EliminarSolicitudNovedadAsesorMapper.toDomain(command));
     }
 }

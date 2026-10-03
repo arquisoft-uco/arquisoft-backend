@@ -1,7 +1,7 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +20,7 @@ class EnviarSolicitudNovedadCoordinadorMapperTest {
                 remitente, destinatario.toString(), "  novedad  ");
 
         // Act
-        EnvioSolicitudNovedadCoordinadorDomain envio =
+        EnvioSolicitudDomain envio =
                 EnviarSolicitudNovedadCoordinadorMapper.toDomain(command);
 
         // Assert
@@ -28,8 +28,8 @@ class EnviarSolicitudNovedadCoordinadorMapperTest {
         assertThat(envio.getDestinatarioUsuario()).isEqualTo(destinatario);
         assertThat(envio.getSolicitud().getMensajeSolicitud()).isEqualTo("novedad");
         assertThat(envio.getSolicitud().getTipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
-        assertThat(envio.getSolicitud().getRemitente()).isEqualTo(envio.getRemitente().getId());
-        assertThat(envio.getSolicitud().getDestinatario()).isEqualTo(envio.getDestinatario().getId());
+        assertThat(envio.getSolicitud().getRemitenteUsuario()).isEqualTo(envio.getRemitente().getUsuario());
+        assertThat(envio.getSolicitud().getDestinatarioUsuario()).isEqualTo(envio.getDestinatario().getUsuario());
     }
 
     @Test
@@ -39,7 +39,7 @@ class EnviarSolicitudNovedadCoordinadorMapperTest {
                 UUID.randomUUID(), UUID.randomUUID().toString(), "mensaje");
 
         // Act
-        EnvioSolicitudNovedadCoordinadorDomain envio =
+        EnvioSolicitudDomain envio =
                 EnviarSolicitudNovedadCoordinadorMapper.toDomain(command);
 
         // Assert

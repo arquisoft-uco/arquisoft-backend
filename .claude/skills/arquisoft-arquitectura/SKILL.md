@@ -47,17 +47,23 @@ límite que hay que conocer antes de copiar:
   (`AgregacionAsesorResult` → `Agregada`/`Duplicada`/`Descartada`): `Descartada` es el evento más
   viejo que el `ocurridoEn` guardado, que la réplica ignora en vez de sobrescribir. *Límite:* no
   tiene controllers, ni lado `query/`, ni eventos propios.
-- **`solicitudes`** — referencia de **varios comandos hermanos que comparten piezas** y del camino
-  completo hacia `notificaciones`. Los cuatro `EnviarSolicitud*UseCaseImpl` reutilizan
-  `RegistrarRemitente` y `RegistrarDestinatario` en vez de duplicarlos, validan con `Rule`s de
-  existencia, unicidad y asignación, y publican un evento `*Enviada` que `notificaciones` consume
-  (`amqp/solicitudes/solicitud/`). Mantiene además una réplica de `usuario` alimentada por los
-  eventos de `usuarios`, y es el primer caso de *Consulta síncrona entre contextos*
-  (`asignacionproyecto/`). *Límites:* el adaptador `webclient/AsignacionProyectoOutputAdapter` es un
-  stub documentado en `CLAUDE.md` → *Desviaciones conocidas*, así que `DestinatarioAsignadoRule`
-  todavía no rechaza nada; `UsuarioSolicitudesCommandOutputAdapter` y
-  `UsuarioSolicitudesCommandRepository` llevan el contexto en el nombre, que es la convención
-  retirada para réplicas (no se copia); y no tiene lado `query/`.
+- **`solicitudes`** — referencia de **un mismo flujo con varias variantes por tipo** y del camino
+  completo hacia `notificaciones`. Hay un `Interactor` por tipo de solicitud
+  (`EnviarSolicitud{Tipo}`, `EliminarSolicitud{Tipo}`, `ResponderSolicitud{Tipo}`) y todos convergen en
+  un único use case por acción (`EnviarSolicitudUseCase`, `EliminarSolicitudUseCase`,
+  `ResponderSolicitudUseCase`): el mapper de cada interactor fija el **tipo esperado** en el objeto de
+  acción (`EnvioSolicitudDomain`, `EliminacionSolicitudDomain`, `RespuestaSolicitudDomain`) y
+  `SolicitudEsDelTipoRule` despacha a la regla de ese tipo, de modo que los códigos de error por tipo no
+  cambian. `EnviarSolicitudUseCase` orquesta `RegistrarRemitente` y `RegistrarDestinatario` (use cases
+  `void`, cada uno con su `Validator` de existencia del usuario), valida la unicidad con un solo
+  `EnviarSolicitudValidator.validar(...)` y publica `SolicitudEnviadaEvent`, una clase cuyo tema y tipo
+  de evento salen del `TipoSolicitud`; `notificaciones` lo consume con un consumidor por tipo
+  (`amqp/solicitudes/solicitud/`). Responder conserva un evento por tipo
+  (`SolicitudRespondidaEvent.crear` elige el concreto) porque el campo del responsable difiere por tipo y
+  `notificaciones` lo lee por nombre. Mantiene además una réplica de `usuario` alimentada por los eventos
+  de `usuarios` y un lado `query/` (consultas del coordinador cuyo mapper fuerza el filtro por JWT y por
+  tipo). *Límites:* `UsuarioSolicitudesCommandOutputAdapter` y `UsuarioSolicitudesCommandRepository`
+  llevan el contexto en el nombre, que es la convención retirada para réplicas (no se copia).
 - **`biblioteca`** — el contexto más joven (HU-240) y el molde de un **contexto nuevo que nace como
   réplica**: su andamiaje completo (módulos Gradle, base, `BibliotecaDataSourceConfig`, Flyway,
   colas, catálogo) más la réplica de `bibliotecario` alimentada por `usuarios.bibliotecario.agregado`,

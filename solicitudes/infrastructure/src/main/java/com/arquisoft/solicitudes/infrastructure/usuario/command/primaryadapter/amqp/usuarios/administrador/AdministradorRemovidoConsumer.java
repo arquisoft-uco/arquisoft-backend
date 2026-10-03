@@ -34,7 +34,7 @@ public class AdministradorRemovidoConsumer extends AbstractEventConsumer {
 
             logger.info(UsuarioReplicaKey.LOG_ADMINISTRADOR_REMOVIDO_RECIBIDO_STUB,
                     payload.idEvento(), payload.usuario());
-            // TODO HU-???: implementar la baja/actualizacion real de la replica de administrador en
+            // TODO (stub deliberado de HU-232): implementar la baja/actualizacion real de la replica de administrador en
             //  solicitudes cuando se defina el caso de uso (hoy la replica de usuario es generica y
             //  no distingue el rol administrador). Ver AdministradorRemovidoEvent (usuarios).
         });
