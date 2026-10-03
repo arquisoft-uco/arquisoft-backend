@@ -292,6 +292,17 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de observaciones de ítem elaboradas por el asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 = "Criterio de búsqueda inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar observaciones de ítem";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar observaciones de ítem de mi ficha de perfil";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Permite al estudiante consultar, de forma paginada y filtrable, las observaciones de ítem "
+                        + "que el asesor dejó sobre las revisiones de las fichas de perfil a las que está vinculado, "
+                        + "para saber qué debe corregir.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Página de observaciones de ítem de las fichas del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Criterio de búsqueda inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
+                "Sin permiso para consultar observaciones de ítem de su ficha";
     }
 
     public static final class ObservacionEvaluacion {
