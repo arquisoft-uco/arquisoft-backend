@@ -84,6 +84,34 @@ class SolicitudDomainTest {
     }
 
     @Test
+    void debeAceptarElMensaje_cuandoMideCienCaracteresTrasRecortarLosEspacios() {
+        // Arrange
+        String mensaje = "  " + "a".repeat(100) + "  ";
+
+        // Act
+        SolicitudDomain solicitud = SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
+                mensaje, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
+
+        // Assert
+        assertThat(solicitud.getMensajeSolicitud()).isEqualTo("a".repeat(100));
+    }
+
+    @Test
+    void debeRechazarElMensaje_cuandoSuperaLosCienCaracteresTrasRecortarLosEspacios() {
+        // Arrange
+        String mensaje = "  " + "a".repeat(101) + "  ";
+
+        // Act
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
+                        mensaje, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
+
+        // Assert
+        assertThat(excepcion.getValidationResult()
+                .tieneErroresDeCampo(SolicitudesFields.Solicitud.MENSAJE)).isTrue();
+    }
+
+    @Test
     void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
         // Arrange
         UUID id = UUID.randomUUID();

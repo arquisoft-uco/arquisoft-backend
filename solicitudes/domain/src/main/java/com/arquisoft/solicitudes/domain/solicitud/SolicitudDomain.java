@@ -94,18 +94,19 @@ public final class SolicitudDomain {
     }
 
     private void setMensajeSolicitud(String mensajeSolicitud, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(mensajeSolicitud,
+        var recortado = UtilTexto.aplicarTrim(mensajeSolicitud);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 SolicitudesFields.Solicitud.MENSAJE,
                 SolicitudesCodes.Solicitud.MENSAJE_REQUERIDO, result)) {
             return;
         }
-        if (!ValidatorLongitud.longitudEntre(mensajeSolicitud,
+        if (!ValidatorLongitud.longitudEntre(recortado,
                 SolicitudesLimits.Solicitud.MENSAJE_MIN, SolicitudesLimits.Solicitud.MENSAJE_MAX,
                 SolicitudesFields.Solicitud.MENSAJE,
                 SolicitudesCodes.Solicitud.MENSAJE_DEMASIADO_LARGO, result)) {
             return;
         }
-        this.mensajeSolicitud = UtilTexto.aplicarTrim(mensajeSolicitud);
+        this.mensajeSolicitud = recortado;
     }
 
     private void setTipoSolicitud(TipoSolicitud tipoSolicitud, ValidationResult result) {
