@@ -1,6 +1,7 @@
 package com.arquisoft.solicitudes.application.solicitud.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.constant.EventTopics;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.destinatario.command.finder.DestinatarioDeUsuarioFinder;
 import com.arquisoft.solicitudes.application.destinatario.command.usecase.RegistrarDestinatarioUseCase;
@@ -19,8 +20,7 @@ import com.arquisoft.solicitudes.application.usuario.command.finder.UsuarioPorId
 import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEncontradoException;
 import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
-import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudCambioAsesorEnviadaEvent;
-import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadAsesorEnviadaEvent;
+import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudEnviadaEvent;
 import com.arquisoft.solicitudes.domain.solicitud.exception.DestinatarioNoAsignadoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
@@ -119,11 +119,11 @@ class EnviarSolicitudUseCaseImplTest {
         assertThat(persistida.mensajeSolicitud()).isEqualTo("novedad para el asesor");
         assertThat(persistida.tipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId());
 
-        var eventoCaptor = ArgumentCaptor.forClass(SolicitudNovedadAsesorEnviadaEvent.class);
+        var eventoCaptor = ArgumentCaptor.forClass(SolicitudEnviadaEvent.class);
         verify(eventPublisher).publish(eventoCaptor.capture());
         var evento = eventoCaptor.getValue();
         assertThat(evento.getSolicitudId()).isEqualTo(resultado);
-        assertThat(evento.getTemaEvento()).isEqualTo(SolicitudNovedadAsesorEnviadaEvent.EVENT_TOPIC);
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_ASESOR_ENVIADA);
         assertThat(evento.getRemitenteNombre()).isEqualTo("Ana Estudiante");
         assertThat(evento.getDestinatarioNombre()).isEqualTo("Pedro Asesor");
         assertThat(evento.getDestinatarioEmail()).isEqualTo("pedro@uco.edu.co");
@@ -145,7 +145,10 @@ class EnviarSolicitudUseCaseImplTest {
         var entityCaptor = ArgumentCaptor.forClass(SolicitudEntity.class);
         verify(solicitudOutputPort).registrar(entityCaptor.capture());
         assertThat(entityCaptor.getValue().tipoSolicitud()).isEqualTo(TipoSolicitud.CAMBIO_DE_ASESOR.getId());
-        verify(eventPublisher).publish(any(SolicitudCambioAsesorEnviadaEvent.class));
+        var eventoCaptor = ArgumentCaptor.forClass(SolicitudEnviadaEvent.class);
+        verify(eventPublisher).publish(eventoCaptor.capture());
+        assertThat(eventoCaptor.getValue().getTemaEvento())
+                .isEqualTo(EventTopics.Solicitudes.CAMBIO_ASESOR_ENVIADA);
     }
 
     @Test

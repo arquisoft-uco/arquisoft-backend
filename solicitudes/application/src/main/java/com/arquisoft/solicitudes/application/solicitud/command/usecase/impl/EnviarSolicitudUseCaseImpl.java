@@ -9,13 +9,13 @@ import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteD
 import com.arquisoft.solicitudes.application.remitente.command.usecase.RegistrarRemitenteUseCase;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DestinatarioAsignadoFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
-import com.arquisoft.solicitudes.application.solicitud.command.mapper.SolicitudEnviadaEventMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.mapper.SolicitudMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudUseCase;
 import com.arquisoft.solicitudes.application.solicitud.command.validator.EnviarSolicitudValidator;
 import com.arquisoft.solicitudes.application.usuario.command.finder.UsuarioPorIdFinder;
 import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
+import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudEnviadaEvent;
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.ConsultaAsignacionResponsable;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
@@ -66,7 +66,9 @@ public class EnviarSolicitudUseCaseImpl implements EnviarSolicitudUseCase {
         validator.validar(envio, destinatarioAsignado, new DisponibilidadSolicitud(clave, yaExiste));
 
         solicitudOutputPort.registrar(SolicitudMapper.toEntity(solicitud, remitenteId, destinatarioId));
-        eventPublisher.publish(SolicitudEnviadaEventMapper.toEvent(solicitud, remitente, destinatario));
+        eventPublisher.publish(new SolicitudEnviadaEvent(solicitud.getTipoSolicitud(), solicitud.getId(),
+                remitente.getNombre(), destinatario.getNombre(), destinatario.getEmail(),
+                solicitud.getMensajeSolicitud()));
 
         logger.info(SolicitudKey.LOG_ENVIADA, tipo, solicitud.getId());
         return solicitud.getId();
