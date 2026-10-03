@@ -110,4 +110,12 @@ public final class UsuariosCodes {
         public static final String ADMINISTRADOR_AUTOELIMINACION = "ADMINISTRADOR_AUTOELIMINACION";
         public static final String ADMINISTRADOR_UNICO_VIGENTE = "ADMINISTRADOR_UNICO_VIGENTE";
     }
+
+    public static final class Bibliotecario {
+
+        private Bibliotecario() {}
+
+        public static final String USUARIO_REQUERIDO = "BIBLIOTECARIO_USUARIO_REQUERIDO";
+        public static final String USUARIO_DUPLICADO = "BIBLIOTECARIO_USUARIO_DUPLICADO";
+    }
 }

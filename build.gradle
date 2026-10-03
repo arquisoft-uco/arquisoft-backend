@@ -316,7 +316,7 @@ subprojects { subproject ->
 // ---------------------------------------------------------------------------------------------
 def contextosHexagonales = [
         'seguridad', 'fichas', 'usuarios', 'notificaciones', 'evaluaciones', 'solicitudes',
-        'proyectos', 'artefactos', 'repositorio_artefactos', 'entregables'
+        'proyectos', 'artefactos', 'repositorio_artefactos', 'entregables', 'biblioteca'
 ]
 
 def prohibicionesPorCapa = [

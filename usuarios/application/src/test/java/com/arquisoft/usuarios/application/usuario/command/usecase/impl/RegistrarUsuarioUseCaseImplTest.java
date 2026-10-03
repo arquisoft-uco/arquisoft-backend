@@ -6,6 +6,7 @@ import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAse
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
 import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
 import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
+import com.arquisoft.usuarios.application.bibliotecario.command.usecase.AgregarBibliotecarioUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
@@ -71,6 +72,8 @@ class RegistrarUsuarioUseCaseImplTest {
     @Mock
     private AgregarAdministradorUseCase agregarAdministradorUseCase;
     @Mock
+    private AgregarBibliotecarioUseCase agregarBibliotecarioUseCase;
+    @Mock
     private AppLogger logger;
 
     private RegistrarUsuarioUseCaseImpl useCase;
@@ -82,7 +85,7 @@ class RegistrarUsuarioUseCaseImplTest {
                 emailUsuarioExisteFinder, emailIdentidadExisteFinder, contactoUsuarioExisteFinder,
                 registrarUsuarioValidator, agregarEstudianteUseCase, agregarCoordinadorUseCase,
                 agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
-                agregarAdministradorUseCase, logger);
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase, logger);
         when(identificadorUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailIdentidadExisteFinder.obtener(any())).thenReturn(false);
@@ -409,6 +412,39 @@ class RegistrarUsuarioUseCaseImplTest {
 
         // Assert
         verify(agregarAdministradorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarBibliotecario_cuandoRolesIncluyenBibliotecario() {
+        // Arrange
+        var registro = registro(List.of("bibliotecario"));
+        var identidadId = UUID.randomUUID();
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(identidadId);
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(UsuarioDomain.class);
+        var orden = inOrder(usuarioOutputPort, agregarBibliotecarioUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarBibliotecarioUseCase, times(1)).ejecutar(captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo(identidadId);
+        verify(agregarAdministradorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarBibliotecario_cuandoRolesNoLoIncluyen() {
+        // Arrange
+        var registro = registro(List.of("estudiante", "coordinador", "asesor-ficha", "asesor",
+                "representante-comite", "administrador"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarBibliotecarioUseCase, never()).ejecutar(any());
     }
 
     @Test
