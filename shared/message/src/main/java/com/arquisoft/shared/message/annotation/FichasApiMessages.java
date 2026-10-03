@@ -254,6 +254,16 @@ public final class FichasApiMessages {
         public static final String VISUALIZAR_RESP_403 = "Sin permiso para marcar revisiones como visualizadas";
         public static final String VISUALIZAR_RESP_422 =
                 "Revisión no encontrada, ficha no vinculada al estudiante autenticado o revisión cerrada";
+
+        public static final String REMOVER_SUMMARY = "Remover revisión de un ítem";
+        public static final String REMOVER_DESCRIPTION =
+                "Permite al asesor asignado a la ficha remover una revisión de ítem junto con sus "
+                        + "observaciones. Una revisión cerrada no se puede remover.";
+        public static final String REMOVER_RESP_204 = "Revisión removida exitosamente";
+        public static final String REMOVER_RESP_400 = "Identificador de revisión inválido";
+        public static final String REMOVER_RESP_403 = "Sin permiso para remover revisiones";
+        public static final String REMOVER_RESP_422 =
+                "Revisión no encontrada, ficha no asesorada por el usuario autenticado o revisión cerrada";
     }
 
     public static final class ObservacionItem {
