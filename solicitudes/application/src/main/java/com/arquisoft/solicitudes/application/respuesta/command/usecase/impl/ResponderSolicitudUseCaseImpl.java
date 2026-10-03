@@ -5,13 +5,13 @@ import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.mapper.RespuestaMapper;
-import com.arquisoft.solicitudes.application.respuesta.command.usecase.ResponderSolicitudNovedadCoordinadorUseCase;
-import com.arquisoft.solicitudes.application.respuesta.command.validator.ResponderSolicitudNovedadCoordinadorValidator;
+import com.arquisoft.solicitudes.application.respuesta.command.usecase.ResponderSolicitudUseCase;
+import com.arquisoft.solicitudes.application.respuesta.command.validator.ResponderSolicitudValidator;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudTieneRespuestasFinder;
-import com.arquisoft.solicitudes.domain.respuesta.RespuestaNovedadCoordinadorDomain;
-import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorRespondidaEvent;
+import com.arquisoft.solicitudes.domain.respuesta.RespuestaSolicitudDomain;
+import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudRespondidaEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,42 +19,39 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class ResponderSolicitudNovedadCoordinadorUseCaseImpl
-        implements ResponderSolicitudNovedadCoordinadorUseCase {
+public class ResponderSolicitudUseCaseImpl implements ResponderSolicitudUseCase {
 
     private final DatosSolicitudFinder datosSolicitudFinder;
     private final DatosUsuarioFinder datosUsuarioFinder;
     private final SolicitudTieneRespuestasFinder solicitudTieneRespuestasFinder;
-    private final ResponderSolicitudNovedadCoordinadorValidator validator;
+    private final ResponderSolicitudValidator validator;
     private final RespuestaOutputPort respuestaOutputPort;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
-    public UUID ejecutar(RespuestaNovedadCoordinadorDomain entrada) {
+    public UUID ejecutar(RespuestaSolicitudDomain entrada) {
+        var tipo = entrada.getTipoEsperado().getId();
         logger.info(RespuestaKey.LOG_RESPONDIENDO,
-                entrada.getSolicitud(), entrada.getCoordinadorUsuario());
+                tipo, entrada.getSolicitud(), entrada.getResponsableUsuario());
 
         var resumen = datosSolicitudFinder.obtener(entrada.getSolicitud());
         var yaRespondida = solicitudTieneRespuestasFinder.obtener(entrada.getSolicitud());
         var remitente = datosUsuarioFinder.obtener(resumen.remitenteUsuario());
-        var coordinador = datosUsuarioFinder.obtener(resumen.destinatarioUsuario());
+        var responsable = datosUsuarioFinder.obtener(resumen.destinatarioUsuario());
 
         logger.debug(RespuestaKey.LOG_VERIFICACION_RESPUESTA,
-                !resumen.esVacio(), yaRespondida, !remitente.esVacio(), !coordinador.esVacio());
+                !resumen.esVacio(), yaRespondida, !remitente.esVacio(), !responsable.esVacio());
 
-        validator.validar(entrada.getSolicitud(), resumen, remitente, coordinador,
-                entrada.getCoordinadorUsuario(), yaRespondida);
+        validator.validar(entrada, resumen, remitente, responsable, yaRespondida);
 
         var respuesta = entrada.getRespuesta();
         respuestaOutputPort.registrar(RespuestaMapper.toEntity(respuesta));
 
-        eventPublisher.publish(new SolicitudNovedadCoordinadorRespondidaEvent(
-                entrada.getSolicitud(), respuesta.getId(), respuesta.getContenido(),
-                respuesta.getEstadoRespuesta().getId(), remitente.getNombre(), remitente.getEmail(),
-                coordinador.getNombre()));
+        eventPublisher.publish(SolicitudRespondidaEvent.crear(
+                entrada.getTipoEsperado(), respuesta, remitente, responsable));
 
-        logger.info(RespuestaKey.LOG_RESPONDIDA, respuesta.getId());
+        logger.info(RespuestaKey.LOG_RESPONDIDA, tipo, respuesta.getId());
         return respuesta.getId();
     }
 }

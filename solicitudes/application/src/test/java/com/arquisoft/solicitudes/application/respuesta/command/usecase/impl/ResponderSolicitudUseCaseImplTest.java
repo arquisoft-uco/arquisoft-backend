@@ -5,13 +5,13 @@ import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.entity.RespuestaEntity;
-import com.arquisoft.solicitudes.application.respuesta.command.validator.ResponderSolicitudNovedadCoordinadorValidator;
+import com.arquisoft.solicitudes.application.respuesta.command.validator.ResponderSolicitudValidator;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudTieneRespuestasFinder;
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaDomain;
-import com.arquisoft.solicitudes.domain.respuesta.RespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.RespuestaSolicitudDomain;
 import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorRespondidaEvent;
 import com.arquisoft.solicitudes.domain.respuesta.exception.SolicitudYaRespondidaException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
@@ -40,26 +40,28 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
+class ResponderSolicitudUseCaseImplTest {
 
     @Mock private DatosSolicitudFinder datosSolicitudFinder;
     @Mock private DatosUsuarioFinder datosUsuarioFinder;
     @Mock private SolicitudTieneRespuestasFinder solicitudTieneRespuestasFinder;
-    @Mock private ResponderSolicitudNovedadCoordinadorValidator validator;
+    @Mock private ResponderSolicitudValidator validator;
     @Mock private RespuestaOutputPort respuestaOutputPort;
     @Mock private EventPublisher eventPublisher;
     @Mock private AppLogger logger;
 
-    private ResponderSolicitudNovedadCoordinadorUseCaseImpl useCase;
+    private ResponderSolicitudUseCaseImpl useCase;
+
+    private static final String TIPO = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId();
 
     private UUID solicitud;
     private UUID coordinadorUsuario;
     private UUID remitenteUsuario;
-    private RespuestaNovedadCoordinadorDomain entrada;
+    private RespuestaSolicitudDomain entrada;
 
     @BeforeEach
     void setUp() {
-        useCase = new ResponderSolicitudNovedadCoordinadorUseCaseImpl(
+        useCase = new ResponderSolicitudUseCaseImpl(
                 datosSolicitudFinder, datosUsuarioFinder, solicitudTieneRespuestasFinder,
                 validator, respuestaOutputPort, eventPublisher, logger);
 
@@ -67,7 +69,7 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         coordinadorUsuario = UUID.randomUUID();
         remitenteUsuario = UUID.randomUUID();
         var respuesta = RespuestaDomain.crear(solicitud, "No puedo asistir");
-        entrada = RespuestaNovedadCoordinadorDomain.crear(respuesta, coordinadorUsuario);
+        entrada = RespuestaSolicitudDomain.crear(respuesta, coordinadorUsuario, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
     }
 
     private void stubFlujoValido() {
@@ -108,9 +110,9 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         assertThat(evento.getCoordinadorNombre()).isEqualTo("Pedro Coordinador");
         assertThat(evento.getEstadoRespuesta()).isEqualTo("EN_REVISION");
 
-        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO), eq(solicitud), eq(coordinadorUsuario));
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO), eq(TIPO), eq(solicitud), eq(coordinadorUsuario));
         verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_RESPUESTA), eq(true), eq(false), eq(true), eq(true));
-        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIDA), any());
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIDA), eq(TIPO), any());
     }
 
     @Test
@@ -118,7 +120,7 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         // Arrange
         stubFlujoValido();
         doThrow(new SolicitudYaRespondidaException(solicitud))
-                .when(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
+                .when(validator).validar(any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
@@ -135,14 +137,13 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
         when(datosUsuarioFinder.obtener(any())).thenReturn(UsuarioDomain.VACIO);
         doThrow(new SolicitudYaRespondidaException(solicitud))
-                .when(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
+                .when(validator).validar(any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
                 .isInstanceOf(SolicitudYaRespondidaException.class);
 
-        verify(validator).validar(eq(solicitud), eq(ResumenSolicitud.VACIO), any(), any(),
-                eq(coordinadorUsuario), eq(false));
+        verify(validator).validar(eq(entrada), eq(ResumenSolicitud.VACIO), any(), any(), eq(false));
         verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_RESPUESTA),
                 eq(false), eq(false), eq(false), eq(false));
         verify(respuestaOutputPort, never()).registrar(any());
@@ -163,7 +164,7 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         inOrder.verify(solicitudTieneRespuestasFinder).obtener(solicitud);
         inOrder.verify(datosUsuarioFinder).obtener(remitenteUsuario);
         inOrder.verify(datosUsuarioFinder).obtener(coordinadorUsuario);
-        inOrder.verify(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
+        inOrder.verify(validator).validar(any(), any(), any(), any(), anyBoolean());
         inOrder.verify(respuestaOutputPort).registrar(any());
         inOrder.verify(eventPublisher).publish(any());
     }

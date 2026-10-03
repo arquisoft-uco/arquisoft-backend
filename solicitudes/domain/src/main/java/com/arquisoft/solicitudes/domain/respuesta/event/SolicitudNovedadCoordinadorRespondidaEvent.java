@@ -1,11 +1,10 @@
 package com.arquisoft.solicitudes.domain.respuesta.event;
 
-import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.message.constant.EventTopics;
 
 import java.util.UUID;
 
-public final class SolicitudNovedadCoordinadorRespondidaEvent extends DomainEvent {
+public final class SolicitudNovedadCoordinadorRespondidaEvent extends SolicitudRespondidaEvent {
 
     public static final String EVENT_TOPIC = EventTopics.Solicitudes.NOVEDAD_COORDINADOR_RESPONDIDA;
     public static final String EVENT_TYPE = "SolicitudNovedadCoordinadorRespondidaEvent";
