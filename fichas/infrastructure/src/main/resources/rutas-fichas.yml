@@ -22,6 +22,7 @@ rutas:
       item-revisiones: /items/{itemId}/revisiones
       revision-observaciones: /revisiones/{revisionItemId}/observaciones
       revision-visualizada: /revisiones/{revisionItemId}/visualizada
+      revision-por-id: /revisiones/{revisionItemId}
       revisiones-item-asesor: /revisiones-item/asesor
       observaciones-item-asesor: /observaciones-item/asesor
       observaciones-item-estudiante: /observaciones-item/estudiante
@@ -33,6 +34,7 @@ rutas:
       evaluaciones-representante: /{fichaPerfilId}/evaluaciones/representante
       estudiante: /estudiante
       evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
+      observacion-evaluacion-por-id: /observaciones-evaluacion/{observacionEvaluacionId}
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
     minio-guia:

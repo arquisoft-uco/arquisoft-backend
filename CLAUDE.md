@@ -63,7 +63,7 @@ Guía completa: [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md).
 
 ## Architecture
 
-Arquitectura hexagonal (Ports & Adapters) con **10 bounded contexts** y **14 módulos compartidos**.
+Arquitectura hexagonal (Ports & Adapters) con **11 bounded contexts** y **14 módulos compartidos**.
 Los contextos se comunican por eventos de dominio en RabbitMQ y **nunca se importan entre sí**, con
 una única excepción acotada: una **consulta síncrona de solo lectura** a otro contexto, hecha por
 HTTP (nunca un import), para un dato que un comando debe verificar *al momento de escribir* y no
@@ -73,8 +73,8 @@ de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 
 ### Bounded Contexts
 
-Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones` y
-`solicitudes`. Los otros tres (`artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje:
+Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`,
+`solicitudes` y `biblioteca`. Los otros tres (`artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje:
 solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
 `RegistrarUsuario` lo da de alta en Keycloak y publica los eventos con los que `fichas` y `proyectos`
 mantienen sus réplicas.
@@ -91,6 +91,7 @@ mantienen sus réplicas.
 | `entregables` | `entregables` |
 | `evaluaciones` | `evaluaciones` |
 | `solicitudes` | `solicitudes` |
+| `biblioteca` | `biblioteca` |
 
 **Contexto de referencia: `fichas`** — el único completo (escritura, consulta, eventos, consumidor).
 Los demás contextos con código aportan cada uno algo distinto y tienen un límite conocido; ver
@@ -411,7 +412,7 @@ Java puro.
 |-----------|---------|
 | Java | 21 (Virtual Threads activos automáticamente) |
 | Spring Boot | 4.0.5 |
-| Gradle | 9.0.0 |
+| Gradle | 9.8.0 |
 | PostgreSQL | 18 (una **base** por contexto, con su DataSource, EntityManagerFactory y Flyway) |
 | RabbitMQ | 4.2.5 |
 | Redis | 7 (Lettuce) |

@@ -92,6 +92,7 @@ public final class FichasCodes {
         public static final String REPRESENTANTE_COMITE_REQUERIDO = "OBSERVACION_EVALUACION_REPRESENTANTE_COMITE_REQUERIDO";
         public static final String OBSERVACION_EVALUACION_DUPLICADA = "OBSERVACION_EVALUACION_DUPLICADA";
         public static final String EVALUACION_CERRADA = "OBSERVACION_EVALUACION_EVALUACION_CERRADA";
+        public static final String OBSERVACION_EVALUACION_NO_ENCONTRADA = "OBSERVACION_EVALUACION_NO_ENCONTRADA";
     }
 
     public static final class Estudiante {

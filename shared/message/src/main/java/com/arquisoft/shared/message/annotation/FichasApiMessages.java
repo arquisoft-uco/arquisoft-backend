@@ -59,6 +59,10 @@ public final class FichasApiMessages {
                 "Retorna el listado paginado de fichas de perfil. Soporta filtros dinámicos con "
                         + "agrupación booleana (AND/OR anidados), ordenamiento multi-campo y paginación. "
                         + "El body es opcional: sin body devuelve todos los registros paginados. "
+                        + "Admite filtrar por el campo estadoFicha, que compara con el estado actual de la ficha "
+                        + "(ids del catálogo: APROBADA, APROBADA_CON_OBSERVACIONES, NO_APROBADA, EN_CONSTRUCCION, "
+                        + "DISPONIBLE_PARA_EVALUACION, DESCARTADA) con cualquier operador; no es ordenable. "
+                        + "Cada ficha incluye su estado actual en el campo estado. "
                         + "Acceso exclusivo para el rol coordinador.";
         public static final String CONSULTAR_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_RESP_400 = "Filtro, operador, campo o valor inválido";
@@ -70,6 +74,9 @@ public final class FichasApiMessages {
                         + "Soporta filtros dinámicos con agrupación booleana (AND/OR anidados), ordenamiento "
                         + "multi-campo y paginación, siempre acotado a las fichas que el asesor autenticado "
                         + "asesora. El body es opcional: sin body devuelve todas sus fichas paginadas. "
+                        + "Admite filtrar por el campo estadoFicha, que compara con el estado actual de la ficha "
+                        + "con cualquier operador; no es ordenable. "
+                        + "Cada ficha incluye su estado actual en el campo estado. "
                         + "Acceso exclusivo para el rol asesor de ficha.";
         public static final String CONSULTAR_ASESORADAS_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_ASESORADAS_RESP_400 = "Filtro, operador, campo o valor inválido";
@@ -247,6 +254,16 @@ public final class FichasApiMessages {
         public static final String VISUALIZAR_RESP_403 = "Sin permiso para marcar revisiones como visualizadas";
         public static final String VISUALIZAR_RESP_422 =
                 "Revisión no encontrada, ficha no vinculada al estudiante autenticado o revisión cerrada";
+
+        public static final String REMOVER_SUMMARY = "Remover revisión de un ítem";
+        public static final String REMOVER_DESCRIPTION =
+                "Permite al asesor asignado a la ficha remover una revisión de ítem junto con sus "
+                        + "observaciones. Una revisión cerrada no se puede remover.";
+        public static final String REMOVER_RESP_204 = "Revisión removida exitosamente";
+        public static final String REMOVER_RESP_400 = "Identificador de revisión inválido";
+        public static final String REMOVER_RESP_403 = "Sin permiso para remover revisiones";
+        public static final String REMOVER_RESP_422 =
+                "Revisión no encontrada, ficha no asesorada por el usuario autenticado o revisión cerrada";
     }
 
     public static final class ObservacionItem {
@@ -306,6 +323,27 @@ public final class FichasApiMessages {
         public static final String AGREGAR_RESP_422 =
                 "Evaluación no encontrada, registrada por otro representante, en estado terminal "
                         + "o texto de observación duplicado";
+
+        public static final String MODIFICAR_SUMMARY = "Modificar el texto de una observación de evaluación";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Permite al representante del comité que registró la evaluación reemplazar el texto de una de sus "
+                        + "observaciones. No puede modificarse si la evaluación ya alcanzó un estado terminal.";
+        public static final String MODIFICAR_RESP_204 = "Observación modificada exitosamente";
+        public static final String MODIFICAR_RESP_400 = "Observación inválida o ausente";
+        public static final String MODIFICAR_RESP_403 = "Sin permiso para modificar observaciones de evaluaciones";
+        public static final String MODIFICAR_RESP_422 =
+                "Observación no encontrada, evaluación registrada por otro representante, en estado terminal "
+                        + "o texto duplicado";
+
+        public static final String REMOVER_SUMMARY = "Remover una observación de evaluación";
+        public static final String REMOVER_DESCRIPTION =
+                "Permite al representante del comité que registró la evaluación eliminar una de sus observaciones. "
+                        + "No puede removerse si la evaluación ya alcanzó un estado terminal.";
+        public static final String REMOVER_RESP_204 = "Observación removida exitosamente";
+        public static final String REMOVER_RESP_400 = "Identificador de observación inválido";
+        public static final String REMOVER_RESP_403 = "Sin permiso para remover observaciones de evaluaciones";
+        public static final String REMOVER_RESP_422 =
+                "Observación no encontrada, evaluación registrada por otro representante o en estado terminal";
     }
 
     public static final class EstudianteFichaPerfil {
