@@ -24,7 +24,7 @@ group = 'com.arquisoft'
 version = '1.0.0'
 
 java {
-    sourceCompatibility = project.properties['javaVersion']
+    sourceCompatibility = project.findProperty('javaVersion')
 }
 
 // ==================== CHECKSTYLE ====================
@@ -263,7 +263,7 @@ subprojects { subproject ->
     version = parent.version
 
     java {
-        sourceCompatibility = project.properties['javaVersion']
+        sourceCompatibility = project.findProperty('javaVersion')
     }
 
     repositories {
