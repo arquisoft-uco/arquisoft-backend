@@ -641,7 +641,7 @@ Consecuencias que se notan al escribir código:
   `usuarios` y el andamio de los contextos vacíos) ya son de una línea; si copias uno viejo con la
   lista de dos paquetes, estás escaneando un paquete sin entidades y sugiriendo que `application`
   sabe de JPA, que es justo lo que la migración de `Entity`/`JpaEntity` eliminó.
-- **`baselineOnMigrate` está en `false`** en todo contexto con Flyway (`usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`, `solicitudes`). Flyway ya no
+- **`baselineOnMigrate` está en `false`** en todo contexto con Flyway, y un contexto nuevo lo hereda al copiar su `{Contexto}DataSourceConfig` (`BibliotecaDataSourceConfig` es el más reciente). Flyway ya no
   acepta en silencio una base con objetos preexistentes ni una versión fuera de orden — falla el
   arranque, que es justo lo que se quiere para no corromper el historial.
 - **La versión es un timestamp `VyyyyMMddHHmmss`** tomado al crear el archivo
