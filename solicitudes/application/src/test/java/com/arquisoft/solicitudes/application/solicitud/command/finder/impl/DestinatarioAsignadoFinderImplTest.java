@@ -27,7 +27,7 @@ class DestinatarioAsignadoFinderImplTest {
         // Arrange
         UUID estudiante = UUID.randomUUID();
         UUID coordinador = UUID.randomUUID();
-        when(asignacionProyectoOutputPort.esCoordinadorAsignado(estudiante, coordinador)).thenReturn(true);
+        when(asignacionProyectoOutputPort.esResponsableAsignado(estudiante, coordinador)).thenReturn(true);
 
         // Act & Assert
         assertThat(finder.obtener(new ConsultaAsignacionResponsable(estudiante, coordinador))).isTrue();
@@ -38,7 +38,7 @@ class DestinatarioAsignadoFinderImplTest {
         // Arrange
         UUID estudiante = UUID.randomUUID();
         UUID coordinador = UUID.randomUUID();
-        when(asignacionProyectoOutputPort.esCoordinadorAsignado(estudiante, coordinador)).thenReturn(false);
+        when(asignacionProyectoOutputPort.esResponsableAsignado(estudiante, coordinador)).thenReturn(false);
 
         // Act & Assert
         assertThat(finder.obtener(new ConsultaAsignacionResponsable(estudiante, coordinador))).isFalse();

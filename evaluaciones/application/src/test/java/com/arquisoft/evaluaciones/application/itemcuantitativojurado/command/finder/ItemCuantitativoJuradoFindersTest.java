@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.finder;
 
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.command.secondaryport.CategoriaItemCuantitativoJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.finder.impl.CategoriaItemCuantitativoJuradoExisteFinderImpl;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.finder.impl.NombreItemCuantitativoJuradoPorCategoriaExisteFinderImpl;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.ItemCuantitativoJuradoOutputPort;
@@ -21,16 +22,19 @@ class ItemCuantitativoJuradoFindersTest {
     @Mock
     private ItemCuantitativoJuradoOutputPort outputPort;
 
+    @Mock
+    private CategoriaItemCuantitativoJuradoOutputPort categoriaOutputPort;
+
     @Test
     void debeDelegarConsultaDeCategoria() {
         // Arrange
         UUID categoria = UUID.randomUUID();
-        when(outputPort.existeCategoriaPorId(categoria)).thenReturn(true);
-        var finder = new CategoriaItemCuantitativoJuradoExisteFinderImpl(outputPort);
+        when(categoriaOutputPort.existePorId(categoria)).thenReturn(true);
+        var finder = new CategoriaItemCuantitativoJuradoExisteFinderImpl(categoriaOutputPort);
 
         // Act & Assert
         assertThat(finder.obtener(categoria)).isTrue();
-        verify(outputPort).existeCategoriaPorId(categoria);
+        verify(categoriaOutputPort).existePorId(categoria);
     }
 
     @Test

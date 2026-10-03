@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RegistrarEvaluacionesCualitativasJuradoController.class)
@@ -103,6 +104,39 @@ class RegistrarEvaluacionesCualitativasJuradoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void debeRetornar400LoteVacio_cuandoElLoteNoLlega() throws Exception {
+        // Arrange
+        var body = "{}";
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA)
+                        .with(jwtConPermiso())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.length()").value(1))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("evaluaciones"));
+    }
+
+    @Test
+    void debeRetornar400ConCamposIndexados_cuandoUnParEsNulo() throws Exception {
+        // Arrange
+        var body = """
+                { "evaluaciones": [null] }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA)
+                        .with(jwtConPermiso())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.length()").value(2))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("evaluaciones[0].item"))
+                .andExpect(jsonPath("$.fieldErrors[1].field").value("evaluaciones[0].criterio"));
     }
 
     @Test

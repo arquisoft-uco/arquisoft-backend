@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.estadofichaperfil.query.criteria.EstadoFichaPerfilAsesorCriteria;
+import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.EstadoFichaPerfilAsesorReadModel;
 import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.EstadoFichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadoficha.command.secondaryadapter.entity.EstadoFichaJpaEntity;
@@ -7,6 +9,10 @@ import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryad
 import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
+import com.arquisoft.shared.query.FiltroConector;
+import com.arquisoft.shared.query.FiltroOperador;
+import com.arquisoft.shared.query.NodoFiltro;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +35,17 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
     @Autowired
     private EstadoFichaPerfilEstudianteQueryRepository repository;
 
+    @Autowired
+    private EstadoFichaPerfilAsesorQueryRepository asesorRepository;
+
     private EstadoFichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EstadoFichaPerfilQueryOutputAdapter(repository);
+        adapter = new EstadoFichaPerfilQueryOutputAdapter(
+                repository,
+                asesorRepository,
+                new EstadoFichaPerfilAsesorJpaSpecification());
 
         persistirEstadoFicha("EN_CONSTRUCCION", "En Construccion");
         persistirEstadoFicha("DISPONIBLE_PARA_EVALUACION", "Disponible Para Evaluacion");
@@ -111,6 +123,157 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
         // Assert
         assertThat(resultado).singleElement().satisfies(estado ->
                 assertThat(estado.id()).isEqualTo("EN_CONSTRUCCION"));
+    }
+
+    @Test
+    void debeDevolverSoloLasFilasDelAsesorPedido_cuandoConsultaPorAsesor() {
+        // Arrange
+        UUID asesorUno = persistirAsesor("DOC-100", "Asesor Uno", "asesor.uno@uco.edu.co");
+        UUID asesorDos = persistirAsesor("DOC-101", "Asesor Dos", "asesor.dos@uco.edu.co");
+        UUID fichaAsesorUno = persistirFicha("Proyecto Asesor Uno", asesorUno);
+        UUID fichaAsesorDos = persistirFicha("Proyecto Asesor Dos", asesorDos);
+        persistirTransicion(fichaAsesorUno, "EN_CONSTRUCCION", Instant.now());
+        persistirTransicion(fichaAsesorDos, "APROBADA", Instant.now());
+        entityManager.flush();
+
+        EstadoFichaPerfilAsesorCriteria criteria = EstadoFichaPerfilAsesorCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("asesorFicha", FiltroOperador.ES, asesorUno.toString()))
+                .build();
+
+        // Act
+        PaginatedResult<EstadoFichaPerfilAsesorReadModel> resultado = adapter.consultarPorAsesor(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(EstadoFichaPerfilAsesorReadModel::fichaPerfil)
+                .containsExactly(fichaAsesorUno);
+    }
+
+    @Test
+    void debeFiltrarPorFichaPerfil_combinandoConElForzadoPorAsesor() {
+        // Arrange
+        UUID asesor = persistirAsesor("DOC-110", "Asesor Tres", "asesor.tres@uco.edu.co");
+        UUID fichaA = persistirFicha("Proyecto A", asesor);
+        UUID fichaB = persistirFicha("Proyecto B", asesor);
+        persistirTransicion(fichaA, "EN_CONSTRUCCION", Instant.now());
+        persistirTransicion(fichaB, "APROBADA", Instant.now());
+        entityManager.flush();
+
+        var forzadoAsesor = NodoFiltro.predicado("asesorFicha", FiltroOperador.ES, asesor.toString());
+        var filtroFicha = NodoFiltro.predicado("fichaPerfil", FiltroOperador.ES, fichaA.toString());
+        EstadoFichaPerfilAsesorCriteria criteria = EstadoFichaPerfilAsesorCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(forzadoAsesor, filtroFicha)))
+                .build();
+
+        // Act
+        PaginatedResult<EstadoFichaPerfilAsesorReadModel> resultado = adapter.consultarPorAsesor(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(EstadoFichaPerfilAsesorReadModel::fichaPerfil)
+                .containsExactly(fichaA);
+    }
+
+    @Test
+    void debeFiltrarPorTituloProyecto_combinandoConElForzadoPorAsesor() {
+        // Arrange
+        UUID asesor = persistirAsesor("DOC-115", "Asesor Tres Bis", "asesor.tresbis@uco.edu.co");
+        UUID fichaA = persistirFicha("Sistema de gestion", asesor);
+        UUID fichaB = persistirFicha("Otro proyecto", asesor);
+        persistirTransicion(fichaA, "EN_CONSTRUCCION", Instant.now());
+        persistirTransicion(fichaB, "APROBADA", Instant.now());
+        entityManager.flush();
+
+        var forzadoAsesor = NodoFiltro.predicado("asesorFicha", FiltroOperador.ES, asesor.toString());
+        var filtroTitulo = NodoFiltro.predicado("tituloProyecto", FiltroOperador.CONTIENE, "gestion");
+        EstadoFichaPerfilAsesorCriteria criteria = EstadoFichaPerfilAsesorCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(forzadoAsesor, filtroTitulo)))
+                .build();
+
+        // Act
+        PaginatedResult<EstadoFichaPerfilAsesorReadModel> resultado = adapter.consultarPorAsesor(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(EstadoFichaPerfilAsesorReadModel::fichaPerfil)
+                .containsExactly(fichaA);
+    }
+
+    @Test
+    void debeFiltrarPorEstadoFicha_combinandoConElForzadoPorAsesor() {
+        // Arrange
+        UUID asesor = persistirAsesor("DOC-120", "Asesor Cuatro", "asesor.cuatro@uco.edu.co");
+        UUID ficha = persistirFicha("Proyecto Unico", asesor);
+        persistirTransicion(ficha, "EN_CONSTRUCCION", Instant.now().minus(1, ChronoUnit.HOURS));
+        persistirTransicion(ficha, "APROBADA", Instant.now());
+        entityManager.flush();
+
+        var forzadoAsesor = NodoFiltro.predicado("asesorFicha", FiltroOperador.ES, asesor.toString());
+        var filtroEstado = NodoFiltro.predicado("estadoFicha", FiltroOperador.ES, "APROBADA");
+        EstadoFichaPerfilAsesorCriteria criteria = EstadoFichaPerfilAsesorCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(forzadoAsesor, filtroEstado)))
+                .build();
+
+        // Act
+        PaginatedResult<EstadoFichaPerfilAsesorReadModel> resultado = adapter.consultarPorAsesor(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(EstadoFichaPerfilAsesorReadModel::estadoId)
+                .containsExactly("APROBADA");
+    }
+
+    @Test
+    void debeDevolverPaginaVacia_cuandoElFiltroDeFichaPerfilPerteneceAOtroAsesor() {
+        // Arrange
+        UUID asesorA = persistirAsesor("DOC-130", "Asesor A", "asesor.a@uco.edu.co");
+        UUID asesorB = persistirAsesor("DOC-131", "Asesor B", "asesor.b@uco.edu.co");
+        UUID fichaDeB = persistirFicha("Proyecto de B", asesorB);
+        persistirTransicion(fichaDeB, "EN_CONSTRUCCION", Instant.now());
+        entityManager.flush();
+
+        var forzadoAsesorA = NodoFiltro.predicado("asesorFicha", FiltroOperador.ES, asesorA.toString());
+        var filtroFichaDeB = NodoFiltro.predicado("fichaPerfil", FiltroOperador.ES, fichaDeB.toString());
+        EstadoFichaPerfilAsesorCriteria criteria = EstadoFichaPerfilAsesorCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(forzadoAsesorA, filtroFichaDeB)))
+                .build();
+
+        // Act
+        PaginatedResult<EstadoFichaPerfilAsesorReadModel> resultado = adapter.consultarPorAsesor(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isZero();
+    }
+
+    @Test
+    void debePaginarCorrectamente_cuandoConsultaPorAsesor() {
+        // Arrange
+        UUID asesor = persistirAsesor("DOC-140", "Asesor Cinco", "asesor.cinco@uco.edu.co");
+        UUID fichaUno = persistirFicha("Proyecto Uno", asesor);
+        UUID fichaDos = persistirFicha("Proyecto Dos", asesor);
+        UUID fichaTres = persistirFicha("Proyecto Tres", asesor);
+        persistirTransicion(fichaUno, "EN_CONSTRUCCION", Instant.now());
+        persistirTransicion(fichaDos, "DISPONIBLE_PARA_EVALUACION", Instant.now());
+        persistirTransicion(fichaTres, "APROBADA", Instant.now());
+        entityManager.flush();
+
+        EstadoFichaPerfilAsesorCriteria criteria = EstadoFichaPerfilAsesorCriteria.builder()
+                .pagina(0).tamanio(2)
+                .raiz(NodoFiltro.predicado("asesorFicha", FiltroOperador.ES, asesor.toString()))
+                .build();
+
+        // Act
+        PaginatedResult<EstadoFichaPerfilAsesorReadModel> resultado = adapter.consultarPorAsesor(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(2);
+        assertThat(resultado.getTotalElements()).isEqualTo(3L);
     }
 
     private void persistirEstadoFicha(String id, String nombre) {

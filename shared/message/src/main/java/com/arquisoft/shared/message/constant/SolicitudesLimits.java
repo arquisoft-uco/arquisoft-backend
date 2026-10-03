@@ -17,4 +17,12 @@ public final class SolicitudesLimits {
         public static final int MENSAJE_MIN = 1;
         public static final int MENSAJE_MAX = 100;
     }
+
+    public static final class Respuesta {
+
+        private Respuesta() {}
+
+        public static final int CONTENIDO_MIN = 1;
+        public static final int CONTENIDO_MAX = 100;
+    }
 }

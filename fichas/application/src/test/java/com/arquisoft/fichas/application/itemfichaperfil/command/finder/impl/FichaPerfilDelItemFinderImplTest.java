@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.finder.impl;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,10 +31,10 @@ class FichaPerfilDelItemFinderImplTest {
         when(itemFichaPerfilOutputPort.obtenerFichaPerfilId(itemId)).thenReturn(Optional.of(fichaId));
 
         // Act
-        Optional<UUID> resultado = finder.obtener(itemId);
+        var resultado = finder.obtener(itemId);
 
         // Assert
-        assertThat(resultado).contains(fichaId);
+        assertThat(resultado).isEqualTo(fichaId);
     }
 
     @Test
@@ -43,9 +44,9 @@ class FichaPerfilDelItemFinderImplTest {
         when(itemFichaPerfilOutputPort.obtenerFichaPerfilId(itemId)).thenReturn(Optional.empty());
 
         // Act
-        Optional<UUID> resultado = finder.obtener(itemId);
+        var resultado = finder.obtener(itemId);
 
         // Assert — el finder nunca lanza por "no encontrado"; eso lo decide la rule
-        assertThat(resultado).isEmpty();
+        assertThat(resultado).isEqualTo(UtilUUID.obtenerUUIDPorDefecto());
     }
 }

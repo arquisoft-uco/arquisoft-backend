@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.secondaryport.mapper;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ class EstudianteMapperTest {
         var id = UUID.randomUUID();
         var ocurridoEn = Instant.now();
         var entity = new EstudianteEntity(
-                id, "20161020123", "Juan Pérez", "juan.perez@example.com", ocurridoEn);
+                id, "20161020123", "Juan Pérez", "juan.perez@example.com", ocurridoEn, UtilFecha.VACIO);
 
         // Act
         var aggregate = EstudianteMapper.toDomain(entity);
@@ -41,7 +42,7 @@ class EstudianteMapperTest {
                 "Juan Pérez",
                 "juan.perez@example.com",
                 ocurridoEn
-        );
+        , UtilFecha.VACIO);
 
         // Act
         var entity = EstudianteMapper.toEntity(aggregate);
@@ -59,7 +60,7 @@ class EstudianteMapperTest {
         // Arrange
         var idOriginal = UUID.randomUUID();
         var entityOriginal = new EstudianteEntity(
-                idOriginal, "20161020123", "Juan Pérez", "juan.perez@example.com", Instant.now());
+                idOriginal, "20161020123", "Juan Pérez", "juan.perez@example.com", Instant.now(), UtilFecha.VACIO);
 
         // Act
         var aggregate = EstudianteMapper.toDomain(entityOriginal);
