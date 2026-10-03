@@ -46,4 +46,10 @@ public class ObservacionEvaluacionCommandOutputAdapter implements ObservacionEva
         repository.actualizarObservacion(observacionEvaluacion, observacion);
         logger.debug(ObservacionEvaluacionKey.LOG_ACTUALIZADA, observacionEvaluacion);
     }
+
+    @Override
+    public void removerObservacion(UUID observacionEvaluacion) {
+        repository.deleteById(observacionEvaluacion);
+        logger.debug(ObservacionEvaluacionKey.LOG_ELIMINADA, observacionEvaluacion);
+    }
 }

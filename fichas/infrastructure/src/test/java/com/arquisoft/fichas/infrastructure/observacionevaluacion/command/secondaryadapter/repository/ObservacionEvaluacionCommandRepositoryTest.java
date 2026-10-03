@@ -189,6 +189,27 @@ class ObservacionEvaluacionCommandRepositoryTest {
         assertThat(actualizada.getEvaluacionFichaPerfilId()).isEqualTo(evaluacionFichaPerfilId);
     }
 
+    @Test
+    void debeEliminarSoloLaFilaYLiberarElTexto_cuandoRemueveUnaObservacion() {
+        // Arrange
+        var removida = persistirObservacion(evaluacionFichaPerfilId, OTRA_OBSERVACION);
+        sincronizar();
+
+        // Act
+        repository.deleteById(removida.getId());
+        sincronizar();
+
+        // Assert — la otra observación de la evaluación sigue y el UNIQUE ya no bloquea el mismo texto
+        assertThat(entityManager.find(ObservacionEvaluacionJpaEntity.class, removida.getId())).isNull();
+        assertThat(repository.existsByEvaluacionFichaPerfilIdAndObservacion(evaluacionFichaPerfilId, OBSERVACION))
+                .isTrue();
+        assertThat(repository.existsByEvaluacionFichaPerfilIdAndObservacion(evaluacionFichaPerfilId, OTRA_OBSERVACION))
+                .isFalse();
+        var reagregada = persistirObservacion(evaluacionFichaPerfilId, OTRA_OBSERVACION);
+        sincronizar();
+        assertThat(entityManager.find(ObservacionEvaluacionJpaEntity.class, reagregada.getId())).isNotNull();
+    }
+
     private ObservacionEvaluacionJpaEntity persistirObservacion(UUID evaluacionFichaPerfil, String texto) {
         return entityManager.persist(ObservacionEvaluacionJpaEntity.builder()
                 .id(UtilUUID.generarNuevoUUID())

@@ -43,6 +43,7 @@ public final class FichasAuthorities {
 
     public static final String OBSERVACION_EVALUACION_CREATE = "fichas:observacion-evaluacion:create";
     public static final String OBSERVACION_EVALUACION_UPDATE = "fichas:observacion-evaluacion:update";
+    public static final String OBSERVACION_EVALUACION_DELETE = "fichas:observacion-evaluacion:delete";
 
     public static final String TIPO_ITEM_VIEW = "fichas:tipo-item:view";
 
@@ -123,5 +124,7 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_OBSERVACION_EVALUACION_UPDATE =
                 HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_UPDATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_EVALUACION_DELETE =
+                HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_DELETE + HAS_AUTHORITY_FIN;
     }
 }

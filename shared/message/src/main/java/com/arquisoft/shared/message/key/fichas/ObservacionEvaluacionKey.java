@@ -13,8 +13,12 @@ public enum ObservacionEvaluacionKey implements ClaveMensaje {
     LOG_MODIFICANDO("fichas.aplicacion.observacionevaluacion.log.modificando", 2),
     LOG_VERIFICACION_MODIFICAR("fichas.aplicacion.observacionevaluacion.log.verificacion-modificar", 4),
     LOG_MODIFICADA("fichas.aplicacion.observacionevaluacion.log.modificada", 2),
+    LOG_REMOVIENDO("fichas.aplicacion.observacionevaluacion.log.removiendo", 2),
+    LOG_VERIFICACION_REMOVER("fichas.aplicacion.observacionevaluacion.log.verificacion-remover", 3),
+    LOG_REMOVIDA("fichas.aplicacion.observacionevaluacion.log.removida", 2),
     LOG_GUARDADA("fichas.infraestructura.observacionevaluacion.log.guardada", 1),
-    LOG_ACTUALIZADA("fichas.infraestructura.observacionevaluacion.log.actualizada", 1);
+    LOG_ACTUALIZADA("fichas.infraestructura.observacionevaluacion.log.actualizada", 1),
+    LOG_ELIMINADA("fichas.infraestructura.observacionevaluacion.log.eliminada", 1);
 
     private final String clave;
     private final int parametros;
