@@ -411,7 +411,7 @@ Java puro.
 |-----------|---------|
 | Java | 21 (Virtual Threads activos automáticamente) |
 | Spring Boot | 4.0.5 |
-| Gradle | 9.0.0 |
+| Gradle | 9.8.0 |
 | PostgreSQL | 18 (una **base** por contexto, con su DataSource, EntityManagerFactory y Flyway) |
 | RabbitMQ | 4.2.5 |
 | Redis | 7 (Lettuce) |
