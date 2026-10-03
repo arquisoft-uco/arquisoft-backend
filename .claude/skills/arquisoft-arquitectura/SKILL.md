@@ -50,12 +50,9 @@ límite que hay que conocer antes de copiar:
 - **`solicitudes`** — referencia de **varios comandos hermanos que comparten piezas** y del camino
   completo hacia `notificaciones`. Los cuatro `EnviarSolicitud*UseCaseImpl` reutilizan
   `RegistrarRemitente` y `RegistrarDestinatario` en vez de duplicarlos, validan con `Rule`s de
-  existencia, unicidad y asignación, y publican un evento `*Enviada` que `notificaciones` consume
+  existencia y unicidad, y publican un evento `*Enviada` que `notificaciones` consume
   (`amqp/solicitudes/solicitud/`). Mantiene además una réplica de `usuario` alimentada por los
-  eventos de `usuarios`, y es el primer caso de *Consulta síncrona entre contextos*
-  (`asignacionproyecto/`). *Límites:* el adaptador `webclient/AsignacionProyectoOutputAdapter` es un
-  stub documentado en `CLAUDE.md` → *Desviaciones conocidas*, así que `DestinatarioAsignadoRule`
-  todavía no rechaza nada; `UsuarioSolicitudesCommandOutputAdapter` y
+  eventos de `usuarios`. *Límites:* `UsuarioSolicitudesCommandOutputAdapter` y
   `UsuarioSolicitudesCommandRepository` llevan el contexto en el nombre, que es la convención
   retirada para réplicas (no se copia); y no tiene lado `query/`.
 - **`biblioteca`** — el contexto más joven (HU-240) y el molde de un **contexto nuevo que nace como
