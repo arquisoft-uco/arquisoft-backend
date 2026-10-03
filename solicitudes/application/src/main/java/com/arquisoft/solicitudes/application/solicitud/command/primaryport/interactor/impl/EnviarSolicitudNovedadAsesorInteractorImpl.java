@@ -3,7 +3,7 @@ package com.arquisoft.solicitudes.application.solicitud.command.primaryport.inte
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.EnviarSolicitudNovedadAsesorInteractor;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper.EnviarSolicitudNovedadAsesorMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadAsesorCommand;
-import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudNovedadAsesorUseCase;
+import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,12 +15,12 @@ import java.util.UUID;
 public class EnviarSolicitudNovedadAsesorInteractorImpl
         implements EnviarSolicitudNovedadAsesorInteractor {
 
-    private final EnviarSolicitudNovedadAsesorUseCase enviarSolicitudNovedadAsesorUseCase;
+    private final EnviarSolicitudUseCase enviarSolicitudUseCase;
 
     @Override
     @Transactional(transactionManager = "solicitudesTransactionManager")
     public UUID ejecutar(EnviarSolicitudNovedadAsesorCommand command) {
-        return enviarSolicitudNovedadAsesorUseCase.ejecutar(
+        return enviarSolicitudUseCase.ejecutar(
                 EnviarSolicitudNovedadAsesorMapper.toDomain(command));
     }
 }

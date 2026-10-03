@@ -27,8 +27,8 @@ class SolicitudDomainTest {
         // Assert
         assertThat(solicitud.getId()).isNotNull();
         assertThat(solicitud.getFechaCreacion()).isNotNull();
-        assertThat(solicitud.getDestinatario()).isEqualTo(destinatario);
-        assertThat(solicitud.getRemitente()).isEqualTo(remitente);
+        assertThat(solicitud.getDestinatarioUsuario()).isEqualTo(destinatario);
+        assertThat(solicitud.getRemitenteUsuario()).isEqualTo(remitente);
         assertThat(solicitud.getMensajeSolicitud()).isEqualTo("Necesito reportar una novedad");
         assertThat(solicitud.getTipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
         assertThat(solicitud.esVacio()).isFalse();
@@ -79,7 +79,7 @@ class SolicitudDomainTest {
         // Assert
         assertThat(solicitud.getId()).isEqualTo(id);
         assertThat(solicitud.getFechaCreacion()).isEqualTo(fecha);
-        assertThat(solicitud.getDestinatario()).isNull();
+        assertThat(solicitud.getDestinatarioUsuario()).isNull();
         assertThat(solicitud.getMensajeSolicitud()).isNull();
     }
 
