@@ -109,4 +109,17 @@ class ObservacionEvaluacionCommandOutputAdapterTest {
         verify(repository).actualizarObservacion(observacionEvaluacion, "Texto corregido");
         verify(logger).debug(any(ClaveMensaje.class), eq(observacionEvaluacion));
     }
+
+    @Test
+    void debeEliminarPorIdYRegistrarLog_cuandoRemueveObservacion() {
+        // Arrange
+        var observacionEvaluacion = UtilUUID.generarNuevoUUID();
+
+        // Act
+        adapter.removerObservacion(observacionEvaluacion);
+
+        // Assert
+        verify(repository).deleteById(observacionEvaluacion);
+        verify(logger).debug(any(ClaveMensaje.class), eq(observacionEvaluacion));
+    }
 }

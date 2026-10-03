@@ -313,6 +313,16 @@ public final class FichasApiMessages {
         public static final String MODIFICAR_RESP_422 =
                 "Observación no encontrada, evaluación registrada por otro representante, en estado terminal "
                         + "o texto duplicado";
+
+        public static final String REMOVER_SUMMARY = "Remover una observación de evaluación";
+        public static final String REMOVER_DESCRIPTION =
+                "Permite al representante del comité que registró la evaluación eliminar una de sus observaciones. "
+                        + "No puede removerse si la evaluación ya alcanzó un estado terminal.";
+        public static final String REMOVER_RESP_204 = "Observación removida exitosamente";
+        public static final String REMOVER_RESP_400 = "Identificador de observación inválido";
+        public static final String REMOVER_RESP_403 = "Sin permiso para remover observaciones de evaluaciones";
+        public static final String REMOVER_RESP_422 =
+                "Observación no encontrada, evaluación registrada por otro representante o en estado terminal";
     }
 
     public static final class EstudianteFichaPerfil {

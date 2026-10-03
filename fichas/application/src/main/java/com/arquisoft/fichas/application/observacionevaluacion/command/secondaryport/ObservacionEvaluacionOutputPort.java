@@ -18,4 +18,6 @@ public interface ObservacionEvaluacionOutputPort {
     boolean existeOtraConMismoTexto(UUID observacionEvaluacion, String observacion);
 
     void actualizarObservacion(UUID observacionEvaluacion, String observacion);
+
+    void removerObservacion(UUID observacionEvaluacion);
 }
