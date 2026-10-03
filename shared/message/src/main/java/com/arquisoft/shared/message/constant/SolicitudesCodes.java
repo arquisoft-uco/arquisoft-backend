@@ -16,6 +16,7 @@ public final class SolicitudesCodes {
 
         public static final String ID_REQUERIDO = "SOLICITUD_ID_REQUERIDO";
         public static final String MENSAJE_REQUERIDO = "SOLICITUD_MENSAJE_REQUERIDO";
+        public static final String TIPO_REQUERIDO = "SOLICITUD_TIPO_REQUERIDO";
         public static final String MENSAJE_DEMASIADO_LARGO = "SOLICITUD_MENSAJE_DEMASIADO_LARGO";
         public static final String DESTINATARIO_REQUERIDO = "SOLICITUD_DESTINATARIO_REQUERIDO";
         public static final String DESTINATARIO_NO_ENCONTRADO = "DESTINATARIO_NO_ENCONTRADO";

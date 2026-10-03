@@ -110,8 +110,8 @@ public final class SolicitudDomain {
 
     private void setTipoSolicitud(TipoSolicitud tipoSolicitud, ValidationResult result) {
         if (!ValidatorObjeto.noNulo(tipoSolicitud,
-                SolicitudesFields.Solicitud.ID,
-                SolicitudesCodes.Solicitud.ID_REQUERIDO, result)) {
+                SolicitudesFields.Solicitud.TIPO_SOLICITUD,
+                SolicitudesCodes.Solicitud.TIPO_REQUERIDO, result)) {
             return;
         }
         this.tipoSolicitud = tipoSolicitud;

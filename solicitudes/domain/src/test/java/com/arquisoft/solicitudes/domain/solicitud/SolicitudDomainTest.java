@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.domain.solicitud;
 
+import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -48,7 +49,23 @@ class SolicitudDomainTest {
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.MENSAJE)).isTrue();
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.REMITENTE)).isTrue();
-        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.TIPO_SOLICITUD)).isTrue();
+    }
+
+    @Test
+    void debeReportarElErrorDelTipoConSuPropioCampoYCodigo_cuandoElTipoEsNulo() {
+        // Act
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(), "mensaje", null));
+
+        // Assert
+        var resultado = excepcion.getValidationResult();
+        assertThat(resultado.getErrores()).hasSize(1);
+        assertThat(resultado.getErrores().get(0).campo())
+                .isEqualTo(SolicitudesFields.Solicitud.TIPO_SOLICITUD);
+        assertThat(resultado.getErrores().get(0).codigoError())
+                .isEqualTo(SolicitudesCodes.Solicitud.TIPO_REQUERIDO);
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isFalse();
     }
 
     @Test
