@@ -1,9 +1,19 @@
 package com.arquisoft.fichas.infrastructure.observacionitem.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadoobservacionrevision.command.secondaryadapter.entity.EstadoObservacionRevisionJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadorevision.command.secondaryadapter.entity.EstadoRevisionJpaEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.entity.ItemFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.observacionitem.command.secondaryadapter.entity.ObservacionItemJpaEntity;
+import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.entity.RevisionItemJpaEntity;
+import com.arquisoft.fichas.infrastructure.tipoitem.command.secondaryadapter.entity.TipoItemJpaEntity;
+import com.arquisoft.shared.util.UtilUUID;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
@@ -23,6 +33,11 @@ class ObservacionItemCommandRepositoryTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private TestEntityManager testEntityManager;
+
+    private record FichaSembrada(UUID ficha, UUID asesor, UUID item) {}
 
     private void sembrarEstadoObservacionRevision(String id) {
         entityManager.createNativeQuery(
@@ -63,6 +78,47 @@ class ObservacionItemCommandRepositoryTest {
                 .setParameter(3, observacion)
                 .setParameter(4, "PENDIENTE")
                 .executeUpdate();
+    }
+
+    private FichaSembrada sembrarFichaConItem() {
+        var asesor = testEntityManager.persistAndFlush(AsesorFichaJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID()).identificador("ASE-001").nombre("Asesor de prueba")
+                .email("asesor@uco.edu.co").ocurridoEn(Instant.now()).build());
+        var ficha = testEntityManager.persistAndFlush(FichaPerfilJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID()).tituloProyecto("Ficha de prueba").asesorFicha(asesor).build());
+        var tipoItem = testEntityManager.find(TipoItemJpaEntity.class, "TIPO_PRUEBA");
+        if (tipoItem == null) {
+            tipoItem = testEntityManager.persistAndFlush(TipoItemJpaEntity.builder()
+                    .id("TIPO_PRUEBA").nombre("Tipo").descripcion("Tipo de prueba").build());
+        }
+        var item = testEntityManager.persistAndFlush(ItemFichaPerfilJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID()).fichaPerfilId(ficha.getId())
+                .tipoItem(tipoItem).contenido("Contenido").build());
+        return new FichaSembrada(ficha.getId(), asesor.getId(), item.getId());
+    }
+
+    private UUID sembrarRevisionDelItem(UUID item, String estado) {
+        var estadoRevision = testEntityManager.find(EstadoRevisionJpaEntity.class, estado);
+        if (estadoRevision == null) {
+            estadoRevision = testEntityManager.persistAndFlush(EstadoRevisionJpaEntity.builder()
+                    .id(estado).nombre(estado).descripcion("Estado de prueba " + estado).build());
+        }
+        var revision = testEntityManager.persistAndFlush(RevisionItemJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID()).itemId(item).estadoRevision(estadoRevision)
+                .fechaCreacion(Instant.now()).build());
+        return revision.getId();
+    }
+
+    private UUID sembrarObservacionDeLaRevision(UUID revision, String texto, String estado) {
+        var estadoObservacion = testEntityManager.find(EstadoObservacionRevisionJpaEntity.class, estado);
+        if (estadoObservacion == null) {
+            estadoObservacion = testEntityManager.persistAndFlush(EstadoObservacionRevisionJpaEntity.builder()
+                    .id(estado).nombre(estado).descripcion("Estado de prueba " + estado).build());
+        }
+        var observacion = testEntityManager.persistAndFlush(ObservacionItemJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID()).revisionItemId(revision).observacion(texto)
+                .estadoObservacionRevision(estadoObservacion).build());
+        return observacion.getId();
     }
 
     @Test
@@ -115,5 +171,104 @@ class ObservacionItemCommandRepositoryTest {
 
         // Assert
         assertThat(count).isZero();
+    }
+
+    @Test
+    void debeDevolverElContextoCompleto_cuandoLaObservacionExiste() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "EN_PROGRESO");
+        var observacion = sembrarObservacionDeLaRevision(revision, "Observación válida", "PENDIENTE");
+        testEntityManager.clear();
+
+        // Act
+        var resultado = repository.obtenerContexto(observacion);
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().revisionItem()).isEqualTo(revision);
+        assertThat(resultado.get().estadoRevision()).isEqualTo("EN_PROGRESO");
+        assertThat(resultado.get().fichaPerfil()).isEqualTo(ficha.ficha());
+        assertThat(resultado.get().asesorFicha()).isEqualTo(ficha.asesor());
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaObservacionNoExiste() {
+        // Act
+        var resultado = repository.obtenerContexto(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeExcluirLaPropiaObservacion_cuandoElTextoNuevoEsElActual() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "NUEVA");
+        var observacion = sembrarObservacionDeLaRevision(revision, "Observación válida", "PENDIENTE");
+        testEntityManager.clear();
+
+        // Act
+        var otrasIguales = repository.contarOtrasIgualesEnRevision(observacion, "Observación válida");
+
+        // Assert
+        assertThat(otrasIguales).isZero();
+    }
+
+    @Test
+    void debeContarLaHermana_cuandoOtraObservacionDeLaRevisionTieneElMismoTexto() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "NUEVA");
+        var observacion = sembrarObservacionDeLaRevision(revision, "Texto original", "PENDIENTE");
+        sembrarObservacionDeLaRevision(revision, "Texto nuevo", "PENDIENTE");
+        sembrarObservacionDeLaRevision(revision, "Texto distinto", "PENDIENTE");
+        testEntityManager.clear();
+
+        // Act
+        var otrasIguales = repository.contarOtrasIgualesEnRevision(observacion, "Texto nuevo");
+
+        // Assert
+        assertThat(otrasIguales).isEqualTo(1L);
+    }
+
+    @Test
+    void debeRetornarCero_cuandoElMismoTextoEstaEnObservacionDeOtraRevision() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "NUEVA");
+        var otraRevision = sembrarRevisionDelItem(ficha.item(), "NUEVA");
+        var observacion = sembrarObservacionDeLaRevision(revision, "Texto original", "PENDIENTE");
+        sembrarObservacionDeLaRevision(otraRevision, "Texto nuevo", "PENDIENTE");
+        testEntityManager.clear();
+
+        // Act
+        var otrasIguales = repository.contarOtrasIgualesEnRevision(observacion, "Texto nuevo");
+
+        // Assert
+        assertThat(otrasIguales).isZero();
+    }
+
+    @Test
+    void debePersistirSoloElTexto_cuandoActualizaLaObservacion() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "EN_PROGRESO");
+        var observacion = sembrarObservacionDeLaRevision(revision, "Texto original", "EN_PROGRESO");
+        var hermana = sembrarObservacionDeLaRevision(revision, "Texto de la hermana", "PENDIENTE");
+        testEntityManager.clear();
+
+        // Act
+        var filas = repository.actualizarObservacion(observacion, "Texto nuevo");
+
+        // Assert
+        var persistida = testEntityManager.find(ObservacionItemJpaEntity.class, observacion);
+        var intacta = testEntityManager.find(ObservacionItemJpaEntity.class, hermana);
+        assertThat(filas).isEqualTo(1);
+        assertThat(persistida.getObservacion()).isEqualTo("Texto nuevo");
+        assertThat(persistida.getRevisionItemId()).isEqualTo(revision);
+        assertThat(persistida.getEstadoObservacionRevision().getId()).isEqualTo("EN_PROGRESO");
+        assertThat(intacta.getObservacion()).isEqualTo("Texto de la hermana");
     }
 }

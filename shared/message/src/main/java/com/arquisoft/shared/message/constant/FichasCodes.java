@@ -69,6 +69,7 @@ public final class FichasCodes {
         public static final String ASESOR_FICHA_REQUERIDO = "OBSERVACION_ITEM_ASESOR_FICHA_REQUERIDO";
         public static final String OBSERVACION_ITEM_DUPLICADA = "OBSERVACION_ITEM_DUPLICADA";
         public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_ITEM_ESTUDIANTE_REQUERIDO";
+        public static final String NO_ENCONTRADA = "OBSERVACION_ITEM_NO_ENCONTRADA";
         public static final String ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO =
                 "ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO";
     }

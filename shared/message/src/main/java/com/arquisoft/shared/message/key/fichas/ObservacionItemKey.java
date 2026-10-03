@@ -6,10 +6,14 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum ObservacionItemKey implements ClaveMensaje {
 
     ERROR_OBSERVACION_ITEM_DUPLICADA("fichas.dominio.observacionitem.error.duplicada", 2),
+    ERROR_NO_ENCONTRADA("fichas.dominio.observacionitem.error.no-encontrada", 1),
     ERROR_ESTADO_NO_ENCONTRADO("fichas.dominio.estadoobservacionrevision.error.estado-no-encontrado", 1),
     LOG_AGREGANDO("fichas.aplicacion.observacionitem.log.agregando", 1),
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.observacionitem.log.verificacion-agregar", 4),
     LOG_AGREGADA("fichas.aplicacion.observacionitem.log.agregada", 2),
+    LOG_MODIFICANDO("fichas.aplicacion.observacionitem.log.modificando", 2),
+    LOG_VERIFICACION_MODIFICAR("fichas.aplicacion.observacionitem.log.verificacion-modificar", 4),
+    LOG_MODIFICADA("fichas.aplicacion.observacionitem.log.modificada", 1),
     LOG_CONSULTANDO_ELABORADAS("fichas.aplicacion.observacionitem.log.consultando-elaboradas", 2),
     LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.observacionitem.log.consulta-elaboradas-completada", 1),
     LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.observacionitem.log.consultando-estudiante", 2),
