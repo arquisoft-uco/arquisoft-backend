@@ -62,6 +62,20 @@ class BibliotecarioDomainTest {
     }
 
     @Test
+    void debeMarcarEliminado_cuandoSeRemueve() {
+        // Arrange
+        var bibliotecario = BibliotecarioDomain.crear(UtilUUID.generarNuevoUUID());
+        var instante = Instant.parse("2026-10-03T10:00:00Z");
+
+        // Act
+        bibliotecario.remover(instante);
+
+        // Assert
+        assertThat(bibliotecario.getEliminadoEn()).isEqualTo(instante);
+        assertThat(bibliotecario.estaEliminado()).isTrue();
+    }
+
+    @Test
     void debeQuedarVigente_cuandoSeReactivaUnEliminado() {
         // Arrange
         var bibliotecario = BibliotecarioDomain.reconstruir(

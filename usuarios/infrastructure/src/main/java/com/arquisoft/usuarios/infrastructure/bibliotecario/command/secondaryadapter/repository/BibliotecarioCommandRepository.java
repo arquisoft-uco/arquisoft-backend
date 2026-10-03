@@ -6,9 +6,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public interface BibliotecarioCommandRepository extends JpaRepository<BibliotecarioJpaEntity, UUID> {
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE BibliotecarioJpaEntity b SET b.eliminadoEn = :eliminadoEn WHERE b.usuarioId = :usuario")
+    int eliminarLogica(@Param("usuario") UUID usuario, @Param("eliminadoEn") Instant eliminadoEn);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE BibliotecarioJpaEntity b SET b.eliminadoEn = NULL WHERE b.usuarioId = :usuario")

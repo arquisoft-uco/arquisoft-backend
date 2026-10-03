@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,6 +30,12 @@ public class BibliotecarioCommandOutputAdapter implements BibliotecarioOutputPor
         bibliotecarioCommandRepository.reactivar(bibliotecario.id(), bibliotecario.identificador(),
                 bibliotecario.nombre(), bibliotecario.email(), bibliotecario.ocurridoEn());
         logger.debug(BibliotecarioKey.LOG_ACTUALIZADO, bibliotecario.id());
+    }
+
+    @Override
+    public void eliminarLogica(UUID id, Instant ocurridoEn) {
+        bibliotecarioCommandRepository.eliminarLogica(id, ocurridoEn);
+        logger.debug(BibliotecarioKey.LOG_ACTUALIZADO, id);
     }
 
     @Override

@@ -12,7 +12,12 @@ public enum BibliotecarioKey implements ClaveMensaje {
     LOG_DUPLICADO("biblioteca.aplicacion.bibliotecario.log.duplicado", 1),
     LOG_DESCARTADO("biblioteca.aplicacion.bibliotecario.log.descartado", 2),
     LOG_GUARDADO("biblioteca.infraestructura.bibliotecario.log.guardado", 1),
-    LOG_ACTUALIZADO("biblioteca.infraestructura.bibliotecario.log.actualizado", 1);
+    LOG_ACTUALIZADO("biblioteca.infraestructura.bibliotecario.log.actualizado", 1),
+    LOG_REMOVIDO_RECIBIDO("biblioteca.infraestructura.bibliotecario.log.removido-recibido", 2),
+    LOG_VERIFICACION_REMOVER("biblioteca.aplicacion.bibliotecario.log.verificacion-remover", 2),
+    LOG_REMOVIDO("biblioteca.aplicacion.bibliotecario.log.removido", 1),
+    LOG_LAPIDA("biblioteca.aplicacion.bibliotecario.log.lapida", 1),
+    LOG_REMOCION_DESCARTADA("biblioteca.aplicacion.bibliotecario.log.remocion-descartada", 2);
 
     private final String clave;
     private final int parametros;

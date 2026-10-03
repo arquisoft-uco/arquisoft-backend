@@ -78,6 +78,25 @@ class BibliotecarioCommandOutputAdapterTest {
     }
 
     @Test
+    void debeMarcarEliminadoEnSoloDeEseUsuario_cuandoSeEliminaLogica() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        var eliminadoEn = Instant.parse("2026-10-03T10:00:00Z");
+        entityManager.persistAndFlush(BibliotecarioJpaEntity.builder().usuarioId(usuario).build());
+        entityManager.persistAndFlush(BibliotecarioJpaEntity.builder().usuarioId(otro).build());
+
+        // Act
+        adapter.eliminarLogica(usuario, eliminadoEn);
+
+        // Assert
+        assertThat(adapter.obtenerPorUsuario(usuario)).map(BibliotecarioEntity::eliminadoEn).contains(eliminadoEn);
+        assertThat(adapter.obtenerPorUsuario(otro)).map(BibliotecarioEntity::eliminadoEn)
+                .contains(UtilFecha.VACIO);
+        verify(logger).debug(AgregarBibliotecarioKey.LOG_ACTUALIZADO, usuario);
+    }
+
+    @Test
     void debeRetornarVacio_cuandoElUsuarioNoEsBibliotecario() {
         // Act
         var bibliotecario = adapter.obtenerPorUsuario(UtilUUID.generarNuevoUUID());

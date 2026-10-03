@@ -6,6 +6,7 @@ import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.administrador.command.finder.AdministradorPorUsuarioFinder;
 import com.arquisoft.usuarios.application.asesor.command.finder.AsesorPorUsuarioFinder;
 import com.arquisoft.usuarios.application.asesorficha.command.finder.AsesorFichaPorUsuarioFinder;
+import com.arquisoft.usuarios.application.bibliotecario.command.finder.BibliotecarioPorUsuarioFinder;
 import com.arquisoft.usuarios.application.coordinador.command.finder.CoordinadorPorUsuarioFinder;
 import com.arquisoft.usuarios.application.estudiante.command.finder.EstudiantePorUsuarioFinder;
 import com.arquisoft.usuarios.application.representantecomite.command.finder.RepresentanteComitePorUsuarioFinder;
@@ -33,6 +34,7 @@ public class EliminarUsuarioUseCaseImpl implements EliminarUsuarioUseCase {
     private final CoordinadorPorUsuarioFinder coordinadorPorUsuarioFinder;
     private final RepresentanteComitePorUsuarioFinder representanteComitePorUsuarioFinder;
     private final AdministradorPorUsuarioFinder administradorPorUsuarioFinder;
+    private final BibliotecarioPorUsuarioFinder bibliotecarioPorUsuarioFinder;
     private final EliminarUsuarioValidator eliminarUsuarioValidator;
     private final CambiarEstadoUsuarioUseCase cambiarEstadoUsuarioUseCase;
     private final AppLogger logger;
@@ -48,18 +50,19 @@ public class EliminarUsuarioUseCaseImpl implements EliminarUsuarioUseCase {
         var coordinador = coordinadorPorUsuarioFinder.obtener(eliminacion.getUsuario());
         var representanteComite = representanteComitePorUsuarioFinder.obtener(eliminacion.getUsuario());
         var administrador = administradorPorUsuarioFinder.obtener(eliminacion.getUsuario());
-        // TODO HU251 (jurado), HU241 (bibliotecario):
+        var bibliotecario = bibliotecarioPorUsuarioFinder.obtener(eliminacion.getUsuario());
+        // TODO HU251 (jurado):
         //  obtener aqui el rol con su {Rol}PorUsuarioFinder y agregarlo a RolesUsuario, para que
         //  UsuarioSinRolesVigentesRule impida eliminar al usuario mientras ese rol no este removido.
 
         logger.debug(EliminarUsuarioKey.LOG_VERIFICACION_ELIMINAR, eliminacion.getUsuario(),
                 !usuario.esVacio(), usuario.estaEliminado(), usuario.estaActivo(), !estudiante.esVacio(),
                 !asesor.esVacio(), !asesorFicha.esVacio(), !coordinador.esVacio(), !representanteComite.esVacio(),
-                !administrador.esVacio());
+                !administrador.esVacio(), !bibliotecario.esVacio());
 
         eliminarUsuarioValidator.validar(eliminacion.getUsuario(), usuario, new RolesUsuario(
                 eliminacion.getUsuario(), estudiante, asesor, asesorFicha, coordinador, representanteComite,
-                administrador));
+                administrador, bibliotecario));
 
         usuario.eliminar(UtilFecha.generarInstanteActual());
         usuarioOutputPort.eliminarLogica(usuario.getId(), usuario.getEliminadoEn());

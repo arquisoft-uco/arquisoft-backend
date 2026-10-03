@@ -68,6 +68,11 @@ public final class BibliotecarioDomain {
         this.eliminadoEn = UtilFecha.VACIO;
     }
 
+    public void remover(Instant ocurridoEn) {
+        this.eliminadoEn = ocurridoEn;
+        this.ocurridoEn = ocurridoEn;
+    }
+
     public boolean estaEliminado() {
         return !UtilFecha.VACIO.equals(eliminadoEn);
     }

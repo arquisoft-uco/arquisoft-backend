@@ -117,5 +117,6 @@ public final class UsuariosCodes {
 
         public static final String USUARIO_REQUERIDO = "BIBLIOTECARIO_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "BIBLIOTECARIO_USUARIO_DUPLICADO";
+        public static final String BIBLIOTECARIO_NO_ENCONTRADO = "BIBLIOTECARIO_NO_ENCONTRADO";
     }
 }
