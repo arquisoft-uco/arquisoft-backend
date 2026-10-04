@@ -12,11 +12,9 @@ public enum RespuestaKey implements ClaveMensaje {
     LOG_GUARDADA("solicitudes.infraestructura.respuesta.log.guardada", 1),
     ERROR_RESPUESTA_NO_ENCONTRADA("solicitudes.dominio.respuesta.error.no-encontrada", 1),
     ERROR_RESPUESTA_NO_EN_REVISION("solicitudes.dominio.respuesta.error.no-en-revision", 1),
-    LOG_ELIMINANDO("solicitudes.aplicacion.respuesta.log.eliminando", 2),
+    LOG_ELIMINANDO("solicitudes.aplicacion.respuesta.log.eliminando", 3),
     LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.respuesta.log.verificacion-eliminacion", 2),
-    LOG_ELIMINADA("solicitudes.aplicacion.respuesta.log.eliminada", 1),
-    LOG_ELIMINANDO_NOVEDAD_ASESOR("solicitudes.aplicacion.respuesta.log.eliminando-novedad-asesor", 2),
-    LOG_ELIMINADA_NOVEDAD_ASESOR("solicitudes.aplicacion.respuesta.log.eliminada-novedad-asesor", 1),
+    LOG_ELIMINADA("solicitudes.aplicacion.respuesta.log.eliminada", 2),
     LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.respuesta.log.eliminada", 1),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
             "solicitudes.aplicacion.respuesta.log.consultando-novedad-coordinador-recibidas", 4),

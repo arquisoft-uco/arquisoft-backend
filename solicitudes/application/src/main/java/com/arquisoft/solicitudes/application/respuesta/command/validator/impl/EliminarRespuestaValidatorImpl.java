@@ -1,7 +1,7 @@
 package com.arquisoft.solicitudes.application.respuesta.command.validator.impl;
 
-import com.arquisoft.solicitudes.application.respuesta.command.validator.EliminarRespuestaNovedadCoordinadorValidator;
-import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.application.respuesta.command.validator.EliminarRespuestaValidator;
+import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.model.EstadoRespuestaActual;
 import com.arquisoft.solicitudes.domain.respuesta.model.ExistenciaRespuesta;
 import com.arquisoft.solicitudes.domain.respuesta.model.ResumenRespuesta;
@@ -14,43 +14,41 @@ import com.arquisoft.solicitudes.domain.solicitud.model.PropiedadDestinatarioSol
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.TipoSolicitudConcordante;
 import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudEsDelDestinatarioRule;
-import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudEsNovedadCoordinadorRule;
+import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudEsDelTipoRule;
 import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudExisteRule;
 import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudEsDelDestinatarioRuleImpl;
-import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudEsNovedadCoordinadorRuleImpl;
+import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudEsDelTipoRuleImpl;
 import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudExisteRuleImpl;
-import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EliminarRespuestaNovedadCoordinadorValidatorImpl
-        implements EliminarRespuestaNovedadCoordinadorValidator {
+public class EliminarRespuestaValidatorImpl implements EliminarRespuestaValidator {
 
     private final SolicitudExisteRule solicitudExisteRule;
-    private final SolicitudEsNovedadCoordinadorRule solicitudEsNovedadCoordinadorRule;
+    private final SolicitudEsDelTipoRule solicitudEsDelTipoRule;
     private final SolicitudEsDelDestinatarioRule solicitudEsDelDestinatarioRule;
     private final RespuestaExisteRule respuestaExisteRule;
     private final RespuestaEnRevisionRule respuestaEnRevisionRule;
 
-    public EliminarRespuestaNovedadCoordinadorValidatorImpl() {
+    public EliminarRespuestaValidatorImpl() {
         this.solicitudExisteRule = new SolicitudExisteRuleImpl();
-        this.solicitudEsNovedadCoordinadorRule = new SolicitudEsNovedadCoordinadorRuleImpl();
+        this.solicitudEsDelTipoRule = new SolicitudEsDelTipoRuleImpl();
         this.solicitudEsDelDestinatarioRule = new SolicitudEsDelDestinatarioRuleImpl();
         this.respuestaExisteRule = new RespuestaExisteRuleImpl();
         this.respuestaEnRevisionRule = new RespuestaEnRevisionRuleImpl();
     }
 
     @Override
-    public void validar(EliminacionRespuestaNovedadCoordinadorDomain entrada,
+    public void validar(EliminacionRespuestaDomain entrada,
                         ResumenSolicitud resumenSolicitud, ResumenRespuesta resumenRespuesta) {
         solicitudExisteRule.validar(new ExistenciaSolicitud(
                 entrada.getSolicitud(), !resumenSolicitud.esVacio()));
-        solicitudEsNovedadCoordinadorRule.validar(new TipoSolicitudConcordante(
+        solicitudEsDelTipoRule.validar(new TipoSolicitudConcordante(
                 entrada.getSolicitud(), resumenSolicitud.tipoSolicitud(),
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
+                entrada.getTipoEsperado().getId()));
         solicitudEsDelDestinatarioRule.validar(new PropiedadDestinatarioSolicitud(
                 entrada.getSolicitud(), resumenSolicitud.destinatarioUsuario(),
-                entrada.getCoordinadorUsuario()));
+                entrada.getResponsableUsuario()));
         respuestaExisteRule.validar(new ExistenciaRespuesta(
                 entrada.getSolicitud(), !resumenRespuesta.esVacio()));
         respuestaEnRevisionRule.validar(new EstadoRespuestaActual(
