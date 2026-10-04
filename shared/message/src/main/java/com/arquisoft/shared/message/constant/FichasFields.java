@@ -131,6 +131,7 @@ public final class FichasFields {
 
         public static final String REPRESENTANTE_COMITE = "representanteComite";
         public static final String FICHA_PERFIL = "fichaPerfil";
+        public static final String ESTUDIANTE = "estudiante";
     }
 
     public static final class EstadoEvaluacionFicha {

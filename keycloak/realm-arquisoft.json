@@ -177,7 +177,8 @@
               "solicitudes:solicitud-novedad-coordinador:delete",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
-              "solicitudes:solicitud-cambio-asesor:create"
+              "solicitudes:solicitud-cambio-asesor:create",
+              "fichas:evaluacion-ficha-perfil-estudiante:view"
             ]
           }
         },
@@ -876,6 +877,15 @@
         {
           "id": "bcd2e119-a9c7-4958-8034-d3c90306e151",
           "name": "fichas:evaluacion-ficha-perfil-representante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b7ff7f58-cdcd-4641-a469-7566c4306030",
+          "name": "fichas:evaluacion-ficha-perfil-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
