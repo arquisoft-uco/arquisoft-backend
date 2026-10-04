@@ -18,6 +18,7 @@ public final class MapasRutaCodes {
         public static final String FECHA_FIN_NO_POSTERIOR = "MAPA_RUTA_FECHA_FIN_NO_POSTERIOR";
         public static final String MAPA_RUTA_REQUERIDO = "MAPA_RUTA_REQUERIDO";
         public static final String MAPA_RUTA_DUPLICADO = "MAPA_RUTA_DUPLICADO";
+        public static final String ESTUDIANTE_REQUERIDO = "MAPA_RUTA_ESTUDIANTE_REQUERIDO";
     }
 
     public static final class ProyectoGrado {

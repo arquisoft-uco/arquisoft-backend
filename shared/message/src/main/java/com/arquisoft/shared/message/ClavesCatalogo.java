@@ -29,6 +29,7 @@ import com.arquisoft.shared.message.key.fichas.ObservacionItemKey;
 import com.arquisoft.shared.message.key.fichas.TipoItemKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
+import com.arquisoft.shared.message.key.mapas_ruta.AsignacionProyectoKey;
 import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
 import com.arquisoft.shared.message.key.mapas_ruta.ProyectoGradoKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
@@ -190,6 +191,7 @@ public final class ClavesCatalogo {
             ConsultarUsuariosAdministradorKey.class,
             ConsultarAdministradoresAdministradorKey.class,
             ConsultarEstadosUsuarioKey.class,
+            AsignacionProyectoKey.class,
             MapaRutaKey.class,
             ProyectoGradoKey.class
     );

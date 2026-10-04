@@ -7,3 +7,4 @@ rutas:
   mapas-ruta:
     mapas-ruta:
       base: /mapas-ruta
+      estudiante: /estudiante
