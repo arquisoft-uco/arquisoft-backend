@@ -97,4 +97,10 @@
         <property name="checks" value="MethodName"/>
         <property name="files" value=".*[\\/]test[\\/].*"/>
     </module>
+
+    <!-- FichasApiMessages agrupa los textos Swagger de todo el contexto fichas -->
+    <module name="SuppressionSingleFilter">
+        <property name="checks" value="FileLength"/>
+        <property name="files" value="FichasApiMessages\.java$"/>
+    </module>
 </module>
