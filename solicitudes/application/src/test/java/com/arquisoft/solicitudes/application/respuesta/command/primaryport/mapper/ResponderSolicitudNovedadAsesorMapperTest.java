@@ -14,8 +14,8 @@ class ResponderSolicitudNovedadAsesorMapperTest {
     @Test
     void debeMapearLosTresCampos_cuandoConvierteElComando() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID asesor = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var asesor = UUID.randomUUID();
         var command = new ResponderSolicitudNovedadAsesorCommand(solicitud, "contenido", asesor);
 
         // Act

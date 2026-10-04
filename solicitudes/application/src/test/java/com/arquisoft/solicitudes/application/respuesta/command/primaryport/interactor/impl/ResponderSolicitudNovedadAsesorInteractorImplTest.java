@@ -29,20 +29,19 @@ class ResponderSolicitudNovedadAsesorInteractorImplTest {
     @Test
     void debeMapearElComandoAObjetoDeAccionYDelegarEnElUseCase() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID asesor = UUID.randomUUID();
-        UUID esperado = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var asesor = UUID.randomUUID();
+        var esperado = UUID.randomUUID();
         var command = ResponderSolicitudNovedadAsesorCommand.crear(
                 solicitud.toString(), "una respuesta", asesor);
         when(useCase.ejecutar(any(RespuestaSolicitudDomain.class))).thenReturn(esperado);
 
         // Act
-        UUID resultado = interactor.ejecutar(command);
+        var resultado = interactor.ejecutar(command);
 
         // Assert
         assertThat(resultado).isEqualTo(esperado);
-        ArgumentCaptor<RespuestaSolicitudDomain> captor =
-                ArgumentCaptor.forClass(RespuestaSolicitudDomain.class);
+        var captor = ArgumentCaptor.forClass(RespuestaSolicitudDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
         assertThat(captor.getValue().getRespuesta().getContenido()).isEqualTo("una respuesta");

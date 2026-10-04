@@ -20,8 +20,8 @@ class ResponderSolicitudNovedadAsesorCommandTest {
     @Test
     void debeCrearElComando_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID asesor = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var asesor = UUID.randomUUID();
 
         // Act
         ResponderSolicitudNovedadAsesorCommand command =
@@ -50,7 +50,7 @@ class ResponderSolicitudNovedadAsesorCommandTest {
     @Test
     void debeLanzarErrorDeEntrada_cuandoElContenidoEstaEnBlanco() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> ResponderSolicitudNovedadAsesorCommand.crear(
                         UUID.randomUUID().toString(), "   ", UUID.randomUUID()));
 
@@ -62,7 +62,7 @@ class ResponderSolicitudNovedadAsesorCommandTest {
     @Test
     void debeLanzarErrorDeEntrada_cuandoElContenidoExcede100Caracteres() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> ResponderSolicitudNovedadAsesorCommand.crear(
                         UUID.randomUUID().toString(), "x".repeat(101), UUID.randomUUID()));
 
@@ -74,7 +74,7 @@ class ResponderSolicitudNovedadAsesorCommandTest {
     @Test
     void debeAcumularLosErrores_cuandoElIdDeSolicitudNoEsUuidYElAsesorEsNulo() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> ResponderSolicitudNovedadAsesorCommand.crear(
                         "no-es-uuid", "contenido", null));
 
