@@ -4,28 +4,28 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.solicitudes.application.respuesta.command.finder.DatosRespuestaFinder;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
-import com.arquisoft.solicitudes.application.respuesta.command.usecase.EliminarRespuestaNovedadCoordinadorUseCase;
-import com.arquisoft.solicitudes.application.respuesta.command.validator.EliminarRespuestaNovedadCoordinadorValidator;
+import com.arquisoft.solicitudes.application.respuesta.command.usecase.EliminarRespuestaUseCase;
+import com.arquisoft.solicitudes.application.respuesta.command.validator.EliminarRespuestaValidator;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
-import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class EliminarRespuestaNovedadCoordinadorUseCaseImpl
-        implements EliminarRespuestaNovedadCoordinadorUseCase {
+public class EliminarRespuestaUseCaseImpl implements EliminarRespuestaUseCase {
 
     private final DatosSolicitudFinder datosSolicitudFinder;
     private final DatosRespuestaFinder datosRespuestaFinder;
     private final RespuestaOutputPort respuestaOutputPort;
-    private final EliminarRespuestaNovedadCoordinadorValidator validator;
+    private final EliminarRespuestaValidator validator;
     private final AppLogger logger;
 
     @Override
-    public void ejecutar(EliminacionRespuestaNovedadCoordinadorDomain entrada) {
+    public void ejecutar(EliminacionRespuestaDomain entrada) {
+        var tipo = entrada.getTipoEsperado().getId();
         logger.info(RespuestaKey.LOG_ELIMINANDO,
-                entrada.getSolicitud(), entrada.getCoordinadorUsuario());
+                tipo, entrada.getSolicitud(), entrada.getResponsableUsuario());
 
         var resumenSolicitud = datosSolicitudFinder.obtener(entrada.getSolicitud());
         var resumenRespuesta = datosRespuestaFinder.obtener(entrada.getSolicitud());
@@ -37,6 +37,6 @@ public class EliminarRespuestaNovedadCoordinadorUseCaseImpl
 
         respuestaOutputPort.eliminarPorSolicitud(entrada.getSolicitud());
 
-        logger.info(RespuestaKey.LOG_ELIMINADA, entrada.getSolicitud());
+        logger.info(RespuestaKey.LOG_ELIMINADA, tipo, entrada.getSolicitud());
     }
 }

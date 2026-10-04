@@ -4,14 +4,15 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.solicitudes.application.respuesta.command.finder.DatosRespuestaFinder;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
-import com.arquisoft.solicitudes.application.respuesta.command.validator.EliminarRespuestaNovedadCoordinadorValidator;
+import com.arquisoft.solicitudes.application.respuesta.command.validator.EliminarRespuestaValidator;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
-import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisionException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontradaException;
 import com.arquisoft.solicitudes.domain.respuesta.model.ResumenRespuesta;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -36,46 +38,47 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
+class EliminarRespuestaUseCaseImplTest {
 
     @Mock private DatosSolicitudFinder datosSolicitudFinder;
     @Mock private DatosRespuestaFinder datosRespuestaFinder;
     @Mock private RespuestaOutputPort respuestaOutputPort;
-    @Mock private EliminarRespuestaNovedadCoordinadorValidator validator;
+    @Mock private EliminarRespuestaValidator validator;
     @Mock private AppLogger logger;
 
-    private EliminarRespuestaNovedadCoordinadorUseCaseImpl useCase;
+    private EliminarRespuestaUseCaseImpl useCase;
 
     private UUID solicitud;
-    private UUID coordinadorUsuario;
-    private EliminacionRespuestaNovedadCoordinadorDomain entrada;
-    private ResumenSolicitud resumenSolicitud;
-    private ResumenRespuesta resumenRespuesta;
+    private UUID responsableUsuario;
 
     @BeforeEach
     void setUp() {
-        useCase = new EliminarRespuestaNovedadCoordinadorUseCaseImpl(
+        useCase = new EliminarRespuestaUseCaseImpl(
                 datosSolicitudFinder, datosRespuestaFinder, respuestaOutputPort,
                 validator, logger);
 
         solicitud = UUID.randomUUID();
-        coordinadorUsuario = UUID.randomUUID();
-        entrada = EliminacionRespuestaNovedadCoordinadorDomain.crear(solicitud, coordinadorUsuario);
-        resumenSolicitud = new ResumenSolicitud(
-                solicitud, UUID.randomUUID(), coordinadorUsuario,
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
-        resumenRespuesta = new ResumenRespuesta(solicitud, "EN_REVISION");
+        responsableUsuario = UUID.randomUUID();
     }
 
-    private void stubFlujoValido() {
+    private ResumenSolicitud resumenSolicitud(TipoSolicitud tipo) {
+        return new ResumenSolicitud(solicitud, UUID.randomUUID(), responsableUsuario, tipo.getId());
+    }
+
+    private ResumenRespuesta resumenRespuesta() {
+        return new ResumenRespuesta(solicitud, "EN_REVISION");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = TipoSolicitud.class,
+            names = {"NOVEDAD_PARA_EL_ASESOR", "NOVEDAD_PARA_EL_COORDINADOR"})
+    void debeEliminarConLosLogsEnOrden_cuandoElFlujoEsValido(TipoSolicitud tipo) {
+        // Arrange
+        var entrada = EliminacionRespuestaDomain.crear(solicitud, responsableUsuario, tipo);
+        var resumenSolicitud = resumenSolicitud(tipo);
+        var resumenRespuesta = resumenRespuesta();
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(resumenSolicitud);
         when(datosRespuestaFinder.obtener(solicitud)).thenReturn(resumenRespuesta);
-    }
-
-    @Test
-    void debeEliminarConLosLogsEnOrden_cuandoElFlujoEsValido() {
-        // Arrange
-        stubFlujoValido();
 
         // Act
         useCase.ejecutar(entrada);
@@ -83,9 +86,10 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
         // Assert
         verify(respuestaOutputPort).eliminarPorSolicitud(solicitud);
 
-        verify(logger).info(eq(RespuestaKey.LOG_ELIMINANDO), eq(solicitud), eq(coordinadorUsuario));
+        verify(logger).info(eq(RespuestaKey.LOG_ELIMINANDO), eq(tipo.getId()), eq(solicitud),
+                eq(responsableUsuario));
         verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_ELIMINACION), eq(true), eq(true));
-        verify(logger).info(eq(RespuestaKey.LOG_ELIMINADA), eq(solicitud));
+        verify(logger).info(eq(RespuestaKey.LOG_ELIMINADA), eq(tipo.getId()), eq(solicitud));
 
         var inOrder = inOrder(datosSolicitudFinder, datosRespuestaFinder,
                 validator, respuestaOutputPort);
@@ -98,6 +102,8 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
     @Test
     void debeAbortarSinEliminar_cuandoLaSolicitudNoExiste() {
         // Arrange
+        var entrada = EliminacionRespuestaDomain.crear(
+                solicitud, responsableUsuario, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(datosRespuestaFinder.obtener(solicitud)).thenReturn(ResumenRespuesta.VACIO);
         doThrow(new SolicitudNoEncontradaException(solicitud))
@@ -113,6 +119,7 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
 
     static Stream<RuntimeException> excepcionesDelValidator() {
         return Stream.of(
+                new SolicitudTipoNoCoincideAsesorException(UUID.randomUUID()),
                 new SolicitudTipoNoCoincideException(UUID.randomUUID()),
                 new SolicitudNoEsDestinatarioException(UUID.randomUUID()),
                 new RespuestaNoEncontradaException(UUID.randomUUID()),
@@ -123,7 +130,12 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
     @MethodSource("excepcionesDelValidator")
     void debeAbortarSinEliminar_cuandoElValidatorRechazaPorReglaDeNegocio(RuntimeException excepcion) {
         // Arrange
-        stubFlujoValido();
+        var tipo = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR;
+        var entrada = EliminacionRespuestaDomain.crear(solicitud, responsableUsuario, tipo);
+        var resumenSolicitud = resumenSolicitud(tipo);
+        var resumenRespuesta = resumenRespuesta();
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(resumenSolicitud);
+        when(datosRespuestaFinder.obtener(solicitud)).thenReturn(resumenRespuesta);
         doThrow(excepcion).when(validator).validar(entrada, resumenSolicitud, resumenRespuesta);
 
         // Act & Assert

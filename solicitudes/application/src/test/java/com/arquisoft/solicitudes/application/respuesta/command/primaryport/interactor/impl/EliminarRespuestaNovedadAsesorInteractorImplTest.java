@@ -1,6 +1,6 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.impl;
 
-import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.EliminarRespuestaNovedadCoordinadorCommand;
+import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.EliminarRespuestaNovedadAsesorCommand;
 import com.arquisoft.solicitudes.application.respuesta.command.usecase.EliminarRespuestaUseCase;
 import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -17,21 +17,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class EliminarRespuestaNovedadCoordinadorInteractorImplTest {
+class EliminarRespuestaNovedadAsesorInteractorImplTest {
 
     @Mock
     private EliminarRespuestaUseCase useCase;
 
     @InjectMocks
-    private EliminarRespuestaNovedadCoordinadorInteractorImpl interactor;
+    private EliminarRespuestaNovedadAsesorInteractorImpl interactor;
 
     @Test
-    void debeMapearYDelegarEnElUseCase_cuandoEjecutaElComando() {
+    void debeMapearElComandoAObjetoDeAccionYDelegarEnElUseCase() {
         // Arrange
         var solicitud = UUID.randomUUID();
-        var coordinador = UUID.randomUUID();
-        var command = EliminarRespuestaNovedadCoordinadorCommand.crear(
-                solicitud.toString(), coordinador);
+        var asesor = UUID.randomUUID();
+        var command = EliminarRespuestaNovedadAsesorCommand.crear(solicitud.toString(), asesor);
 
         // Act
         interactor.ejecutar(command);
@@ -40,7 +39,7 @@ class EliminarRespuestaNovedadCoordinadorInteractorImplTest {
         var captor = ArgumentCaptor.forClass(EliminacionRespuestaDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
-        assertThat(captor.getValue().getResponsableUsuario()).isEqualTo(coordinador);
-        assertThat(captor.getValue().getTipoEsperado()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
+        assertThat(captor.getValue().getResponsableUsuario()).isEqualTo(asesor);
+        assertThat(captor.getValue().getTipoEsperado()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
     }
 }
