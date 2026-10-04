@@ -36,6 +36,7 @@ rutas:
       evaluaciones-estudiante: /{fichaPerfilId}/evaluaciones/estudiante
       estudiante: /estudiante
       evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
+      evaluacion-observaciones-estudiante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/estudiante
       observacion-evaluacion-por-id: /observaciones-evaluacion/{observacionEvaluacionId}
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
