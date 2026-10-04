@@ -57,6 +57,21 @@ class SolicitudRespondidaEventTest {
     }
 
     @Test
+    void debeExponerElTemaYElTipoDeEventoDelAsesor_cuandoElTipoEsNovedadParaElAsesor() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "Puedes presentar el lunes");
+
+        // Act
+        var evento = new SolicitudRespondidaEvent(
+                TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, respuesta, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.novedad_asesor_respondida");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudNovedadAsesorRespondidaEvent");
+    }
+
+    @Test
     void debeLanzarTipoNoEncontrado_cuandoElTipoNoTieneEventoDeRespuesta() {
         // Arrange
         var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "contenido");

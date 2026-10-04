@@ -18,7 +18,10 @@ public final class SolicitudRespondidaEvent extends DomainEvent {
     private static final Map<TipoSolicitud, IdentidadEvento> IDENTIDADES = Map.of(
             TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR, new IdentidadEvento(
                     EventTopics.Solicitudes.NOVEDAD_COORDINADOR_RESPONDIDA,
-                    "SolicitudNovedadCoordinadorRespondidaEvent"));
+                    "SolicitudNovedadCoordinadorRespondidaEvent"),
+            TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, new IdentidadEvento(
+                    EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA,
+                    "SolicitudNovedadAsesorRespondidaEvent"));
 
     private final UUID solicitudId;
     private final UUID respuestaId;
