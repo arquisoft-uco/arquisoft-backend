@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.revisionitem.command.secondaryport;
 
+import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.AsesoriaRevisionItemEntity;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.PertenenciaRevisionItemEntity;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.RevisionItemEntity;
 
@@ -16,5 +17,9 @@ public interface RevisionItemOutputPort {
 
     Optional<PertenenciaRevisionItemEntity> obtenerPertenencia(UUID revisionItem, UUID estudiante);
 
+    Optional<AsesoriaRevisionItemEntity> obtenerAsesoria(UUID revisionItem);
+
     void actualizarEstado(UUID revisionItem, String estadoActual, String estadoNuevo);
+
+    void removerRevision(UUID revisionItem);
 }

@@ -20,7 +20,11 @@ public enum RevisionItemKey implements ClaveMensaje {
     LOG_VERIFICACION_VISUALIZAR("fichas.aplicacion.revisionitem.log.verificacion-visualizar", 3),
     LOG_YA_VISUALIZADA("fichas.aplicacion.revisionitem.log.ya-visualizada", 2),
     LOG_VISUALIZADA("fichas.aplicacion.revisionitem.log.visualizada", 1),
-    LOG_ACTUALIZADO("fichas.infraestructura.revisionitem.log.actualizado", 2);
+    LOG_REMOVIENDO("fichas.aplicacion.revisionitem.log.removiendo", 2),
+    LOG_VERIFICACION_REMOVER("fichas.aplicacion.revisionitem.log.verificacion-remover", 3),
+    LOG_REMOVIDA("fichas.aplicacion.revisionitem.log.removida", 1),
+    LOG_ACTUALIZADO("fichas.infraestructura.revisionitem.log.actualizado", 2),
+    LOG_ELIMINADO("fichas.infraestructura.revisionitem.log.eliminado", 1);
 
     private final String clave;
     private final int parametros;

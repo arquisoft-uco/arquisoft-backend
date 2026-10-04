@@ -13,6 +13,7 @@ rutas:
       coordinador: /{usuarioId}/coordinador
       representante-comite: /{usuarioId}/representante-comite
       administrador: /{usuarioId}/administrador
+      bibliotecario: /{usuarioId}/bibliotecario
       modificar: /{usuarioId}
       eliminar: /{usuarioId}
       estado: /{usuarioId}/estado
@@ -28,4 +29,5 @@ rutas:
       representantes-comite-administrador: /representantes-comite/administrador
       representantes-comite-vigentes: /representantes-comite/vigentes
       administradores-administrador: /administradores/administrador
+      bibliotecarios-administrador: /bibliotecarios/administrador
       estados: /estados

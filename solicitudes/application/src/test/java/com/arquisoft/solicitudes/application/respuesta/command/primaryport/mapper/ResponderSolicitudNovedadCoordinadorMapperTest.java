@@ -1,7 +1,8 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ResponderSolicitudNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.domain.respuesta.RespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.RespuestaSolicitudDomain;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -18,12 +19,13 @@ class ResponderSolicitudNovedadCoordinadorMapperTest {
         var command = new ResponderSolicitudNovedadCoordinadorCommand(solicitud, "contenido", coordinador);
 
         // Act
-        RespuestaNovedadCoordinadorDomain accion =
+        RespuestaSolicitudDomain accion =
                 ResponderSolicitudNovedadCoordinadorMapper.toDomain(command);
 
         // Assert
         assertThat(accion.getSolicitud()).isEqualTo(solicitud);
         assertThat(accion.getRespuesta().getContenido()).isEqualTo("contenido");
-        assertThat(accion.getCoordinadorUsuario()).isEqualTo(coordinador);
+        assertThat(accion.getResponsableUsuario()).isEqualTo(coordinador);
+        assertThat(accion.getTipoEsperado()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
     }
 }

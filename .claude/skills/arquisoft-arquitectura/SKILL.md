@@ -47,17 +47,29 @@ límite que hay que conocer antes de copiar:
   (`AgregacionAsesorResult` → `Agregada`/`Duplicada`/`Descartada`): `Descartada` es el evento más
   viejo que el `ocurridoEn` guardado, que la réplica ignora en vez de sobrescribir. *Límite:* no
   tiene controllers, ni lado `query/`, ni eventos propios.
-- **`solicitudes`** — referencia de **varios comandos hermanos que comparten piezas** y del camino
-  completo hacia `notificaciones`. Los cuatro `EnviarSolicitud*UseCaseImpl` reutilizan
-  `RegistrarRemitente` y `RegistrarDestinatario` en vez de duplicarlos, validan con `Rule`s de
-  existencia, unicidad y asignación, y publican un evento `*Enviada` que `notificaciones` consume
-  (`amqp/solicitudes/solicitud/`). Mantiene además una réplica de `usuario` alimentada por los
-  eventos de `usuarios`, y es el primer caso de *Consulta síncrona entre contextos*
-  (`asignacionproyecto/`). *Límites:* el adaptador `webclient/AsignacionProyectoOutputAdapter` es un
-  stub documentado en `CLAUDE.md` → *Desviaciones conocidas*, así que `DestinatarioAsignadoRule`
-  todavía no rechaza nada; `UsuarioSolicitudesCommandOutputAdapter` y
-  `UsuarioSolicitudesCommandRepository` llevan el contexto en el nombre, que es la convención
-  retirada para réplicas (no se copia); y no tiene lado `query/`.
+- **`solicitudes`** — referencia de **un mismo flujo con varias variantes por tipo** y del camino
+  completo hacia `notificaciones`. Hay un `Interactor` por tipo de solicitud
+  (`EnviarSolicitud{Tipo}`, `EliminarSolicitud{Tipo}`, `ResponderSolicitud{Tipo}`, `ModificarEstadoRespuesta{Tipo}`) y todos convergen en
+  un único use case por acción (`EnviarSolicitudUseCase`, `EliminarSolicitudUseCase`,
+  `ResponderSolicitudUseCase`, `ModificarEstadoRespuestaUseCase`): el mapper de cada interactor fija el **tipo esperado** en el objeto de
+  acción (`EnvioSolicitudDomain`, `EliminacionSolicitudDomain`, `RespuestaSolicitudDomain`, `ModificacionEstadoRespuestaDomain`) y
+  `SolicitudEsDelTipoRule` despacha a la regla de ese tipo, de modo que los códigos de error por tipo no
+  cambian. `EnviarSolicitudUseCase` orquesta `RegistrarRemitente` y `RegistrarDestinatario` (use cases
+  `void`, cada uno con su `Validator` de existencia del usuario), valida la unicidad con un solo
+  `EnviarSolicitudValidator.validar(...)` y publica `SolicitudEnviadaEvent`, una clase cuyo tema y tipo
+  de evento salen del `TipoSolicitud`; `notificaciones` lo consume con un consumidor por tipo
+  (`amqp/solicitudes/solicitud/`). Responder y modificar el estado de la
+  respuesta siguen el mismo patrón (`SolicitudRespondidaEvent`, `SolicitudEstadoModificadoEvent`: una clase
+  cuyo tema y tipo salen del `TipoSolicitud`, con `responsableNombre` genérico) y `notificaciones` los consume
+  con un consumidor por tipo (`amqp/solicitudes/respuesta/`). Mantiene además una réplica de `usuario` alimentada por los eventos
+  de `usuarios` y un lado `query/` (consultas del coordinador cuyo mapper fuerza el filtro por JWT y por
+  tipo). *Límites:* `UsuarioSolicitudesCommandOutputAdapter` y `UsuarioSolicitudesCommandRepository`
+  llevan el contexto en el nombre, que es la convención retirada para réplicas (no se copia).
+- **`biblioteca`** — el contexto más joven (HU-240) y el molde de un **contexto nuevo que nace como
+  réplica**: su andamiaje completo (módulos Gradle, base, `BibliotecaDataSourceConfig`, Flyway,
+  colas, catálogo) más la réplica de `bibliotecario` alimentada por `usuarios.bibliotecario.agregado`,
+  calcada de `proyectos/coordinador`. *Límite:* solo el camino *Agregar* — sin consumidor de
+  `bibliotecario.removido` ni de `usuario.modificado`, sin lápida, y sin controllers ni lado `query/`.
 
 
 ### La dirección de dependencias la verifica el build
@@ -84,7 +96,7 @@ es que el tipo al que se está llegando está en la capa equivocada. Un enum de 
 necesita nombrar viaja como `String` y se convierte en el `Command.crear(...)` con su `desde(...)`;
 un domain que un adaptador quiere construir es señal de que el puerto debería hablar `Entity`.
 
-Los **diez** contextos están en `contextosHexagonales`, `notificaciones` incluido. Su consumidor no
+Los **once** contextos están en `contextosHexagonales`, `notificaciones` incluido. Su consumidor no
 nombra el enum de dominio: `AsesorFichaCambiadoConsumer` usa `TipoNotificacionEvento` (espejo propio
 de infraestructura) y pasa `getCodigo()`, y `EnviarNotificacionCommand.crear(...)` lo resuelve con
 `TipoNotificacion.desde(...)`. Ese es el patrón cuando un adaptador necesita nombrar un valor de
@@ -119,8 +131,8 @@ di explícitamente que el plan está desactualizado y qué partes hay que rehace
 
 ## Dirección de dependencias (no negociable)
 
-`domain ← application ← infrastructure`. Los 10 bounded contexts (`seguridad`, `usuarios`, `fichas`,
-`notificaciones`, `proyectos`, `evaluaciones` y `solicitudes` con código; `artefactos`,
+`domain ← application ← infrastructure`. Los 11 bounded contexts (`seguridad`, `usuarios`, `fichas`,
+`notificaciones`, `proyectos`, `evaluaciones`, `solicitudes` y `biblioteca` con código; `artefactos`,
 `repositorio_artefactos` y `entregables` solo con su `{Contexto}DataSourceConfig`) **nunca** se
 importan entre sí. Se comunican
 por eventos de dominio en RabbitMQ (`shared:amqp`), con **una única excepción acotada**: una consulta
@@ -636,7 +648,7 @@ Consecuencias que se notan al escribir código:
   `usuarios` y el andamio de los contextos vacíos) ya son de una línea; si copias uno viejo con la
   lista de dos paquetes, estás escaneando un paquete sin entidades y sugiriendo que `application`
   sabe de JPA, que es justo lo que la migración de `Entity`/`JpaEntity` eliminó.
-- **`baselineOnMigrate` está en `false`** en todo contexto con Flyway (`usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`, `solicitudes`). Flyway ya no
+- **`baselineOnMigrate` está en `false`** en todo contexto con Flyway, y un contexto nuevo lo hereda al copiar su `{Contexto}DataSourceConfig` (`BibliotecaDataSourceConfig` es el más reciente). Flyway ya no
   acepta en silencio una base con objetos preexistentes ni una versión fuera de orden — falla el
   arranque, que es justo lo que se quiere para no corromper el historial.
 - **La versión es un timestamp `VyyyyMMddHHmmss`** tomado al crear el archivo

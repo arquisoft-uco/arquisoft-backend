@@ -67,7 +67,7 @@ class SolicitudNovedadCoordinadorRespondidaConsumerTest {
                     "contenido": "Puedes presentar la novedad el lunes",
                     "remitenteNombre": "Ana Estudiante",
                     "remitenteEmail": "ana.est@soyuco.edu.co",
-                    "coordinadorNombre": "Pedro Coordinador"
+                    "responsableNombre": "Pedro Coordinador"
                 }
                 """.formatted(idEvento, UUID.randomUUID());
 

@@ -19,9 +19,8 @@ final class UsuarioSortMapper {
                 case NOMBRE        -> "nombre";
                 case EMAIL         -> "email";
                 case CONTACTO, ESTADO, VIGENTE, ES_ESTUDIANTE, ES_ASESOR, ES_ASESOR_FICHA, ES_COORDINADOR,
-                     ES_REPRESENTANTE_COMITE, ES_ADMINISTRADOR -> null;
-                // TODO HU242, HU252: sumar ES_BIBLIOTECARIO y ES_JURADO a la rama null
-                //  de arriba (los flags de rol no son ordenables).
+                     ES_REPRESENTANTE_COMITE, ES_ADMINISTRADOR, ES_BIBLIOTECARIO -> null;
+                // TODO HU252: sumar ES_JURADO a la rama null de arriba (los flags de rol no son ordenables).
             };
             if (UtilObjeto.noEsNulo(ruta)) {
                 m.put(campo.getClave(), ruta);

@@ -58,6 +58,11 @@ public final class EventTopics {
                 "usuarios.administrador.agregado";
         public static final String ADMINISTRADOR_REMOVIDO =
                 "usuarios.administrador.removido";
+
+        public static final String BIBLIOTECARIO_AGREGADO =
+                "usuarios.bibliotecario.agregado";
+        public static final String BIBLIOTECARIO_REMOVIDO =
+                "usuarios.bibliotecario.removido";
     }
 
     public static final class Evaluaciones {
@@ -86,6 +91,9 @@ public final class EventTopics {
 
         public static final String NOVEDAD_COORDINADOR_RESPONDIDA =
                 "solicitudes.respuesta.novedad_coordinador_respondida";
+
+        public static final String NOVEDAD_COORDINADOR_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.novedad_coordinador_estado_modificado";
     }
 
     public static final class MapasRuta {

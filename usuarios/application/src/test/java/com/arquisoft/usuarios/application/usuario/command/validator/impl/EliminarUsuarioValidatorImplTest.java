@@ -6,6 +6,7 @@ import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.usuarios.domain.administrador.AdministradorDomain;
 import com.arquisoft.usuarios.domain.asesor.AsesorDomain;
 import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
+import com.arquisoft.usuarios.domain.bibliotecario.BibliotecarioDomain;
 import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
@@ -36,12 +37,12 @@ class EliminarUsuarioValidatorImplTest {
                                       AsesorFichaDomain asesorFicha, CoordinadorDomain coordinador,
                                       RepresentanteComiteDomain representanteComite) {
         return new RolesUsuario(id, estudiante, asesor, asesorFicha, coordinador, representanteComite,
-                AdministradorDomain.VACIO);
+                AdministradorDomain.VACIO, BibliotecarioDomain.VACIO);
     }
 
     private static RolesUsuario rolesConAdministrador(UUID id, AdministradorDomain administrador) {
         return new RolesUsuario(id, EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO,
-                CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, administrador);
+                CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, administrador, BibliotecarioDomain.VACIO);
     }
 
     @Test
