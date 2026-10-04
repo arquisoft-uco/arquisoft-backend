@@ -14,4 +14,6 @@ public interface RespuestaOutputPort {
     Optional<String> buscarEstadoPorSolicitud(UUID solicitudId);
 
     void eliminarPorSolicitud(UUID solicitudId);
+
+    void actualizarEstadoPorSolicitud(UUID solicitudId, String nuevoEstado);
 }

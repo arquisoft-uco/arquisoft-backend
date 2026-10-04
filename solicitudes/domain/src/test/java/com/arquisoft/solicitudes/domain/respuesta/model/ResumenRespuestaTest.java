@@ -10,13 +10,22 @@ class ResumenRespuestaTest {
 
     @Test
     void debeReportarVacio_cuandoEsElCentinela() {
-        assertThat(ResumenRespuesta.VACIO.esVacio()).isTrue();
+        // Act
+        var esVacio = ResumenRespuesta.VACIO.esVacio();
+
+        // Assert
+        assertThat(esVacio).isTrue();
     }
 
     @Test
     void debeReportarNoVacio_cuandoTieneDatosReales() {
+        // Arrange
         var resumen = new ResumenRespuesta(UUID.randomUUID(), "EN_REVISION");
 
-        assertThat(resumen.esVacio()).isFalse();
+        // Act
+        var esVacio = resumen.esVacio();
+
+        // Assert
+        assertThat(esVacio).isFalse();
     }
 }

@@ -81,9 +81,9 @@ class ResponderSolicitudNovedadAsesorControllerTest {
     @Test
     void debe201YTomarElAsesorDelJwt_cuandoLaPeticionEsValida() throws Exception {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID asesor = UUID.randomUUID();
-        UUID respuestaId = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var asesor = UUID.randomUUID();
+        var respuestaId = UUID.randomUUID();
         when(interactor.ejecutar(any())).thenReturn(respuestaId);
 
         // Act & Assert
@@ -94,8 +94,7 @@ class ResponderSolicitudNovedadAsesorControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(respuestaId.toString()));
 
-        ArgumentCaptor<ResponderSolicitudNovedadAsesorCommand> captor =
-                ArgumentCaptor.forClass(ResponderSolicitudNovedadAsesorCommand.class);
+        var captor = ArgumentCaptor.forClass(ResponderSolicitudNovedadAsesorCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().solicitud()).isEqualTo(solicitud);
         assertThat(captor.getValue().contenido()).isEqualTo("No puedo asistir");
@@ -104,6 +103,7 @@ class ResponderSolicitudNovedadAsesorControllerTest {
 
     @Test
     void debe400_cuandoElContenidoEstaVacio() throws Exception {
+        // Act & Assert
         mockMvc.perform(post(RUTA.formatted(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"contenido\":\"\"}")
@@ -114,6 +114,7 @@ class ResponderSolicitudNovedadAsesorControllerTest {
 
     @Test
     void debe400_cuandoElIdDeLaSolicitudNoEsUuid() throws Exception {
+        // Act & Assert
         mockMvc.perform(post("/solicitudes/novedad-asesor/no-es-uuid/respuesta")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"contenido\":\"valido\"}")
@@ -124,6 +125,7 @@ class ResponderSolicitudNovedadAsesorControllerTest {
 
     @Test
     void debe401_cuandoNoHayToken() throws Exception {
+        // Act & Assert
         mockMvc.perform(post(RUTA.formatted(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"contenido\":\"valido\"}"))
@@ -132,10 +134,12 @@ class ResponderSolicitudNovedadAsesorControllerTest {
 
     @Test
     void debe403_cuandoElTokenNoTieneElClientRole() throws Exception {
+        // Act & Assert
         mockMvc.perform(post(RUTA.formatted(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"contenido\":\"valido\"}")
-                        .with(jwtDe(UUID.randomUUID(), "solicitudes:solicitud:read")))
+                        .with(jwtDe(UUID.randomUUID(),
+                                SolicitudesAuthorities.RESPUESTA_NOVEDAD_COORDINADOR_CREATE)))
                 .andExpect(status().isForbidden());
     }
 
@@ -150,8 +154,10 @@ class ResponderSolicitudNovedadAsesorControllerTest {
     @ParameterizedTest
     @MethodSource("excepcionesDeDominio")
     void debe422_cuandoElInteractorRechazaPorReglaDeNegocio(DomainException excepcion) throws Exception {
+        // Arrange
         doThrow(excepcion).when(interactor).ejecutar(any());
 
+        // Act & Assert
         mockMvc.perform(post(RUTA.formatted(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"contenido\":\"valido\"}")

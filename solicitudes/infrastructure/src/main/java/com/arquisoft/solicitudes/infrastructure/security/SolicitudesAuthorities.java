@@ -10,6 +10,8 @@ public final class SolicitudesAuthorities {
     public static final String SOLICITUD_AMPLIACION_PLAZO_CREATE = "solicitudes:solicitud-ampliacion-plazo:create";
     public static final String SOLICITUD_NOVEDAD_COORDINADOR_DELETE =
             "solicitudes:solicitud-novedad-coordinador:delete";
+    public static final String SOLICITUD_NOVEDAD_ASESOR_DELETE =
+            "solicitudes:solicitud-novedad-asesor:delete";
     public static final String SOLICITUD_NOVEDAD_COORDINADOR_RECIBIDA_VIEW =
             "solicitudes:solicitud-novedad-coordinador-recibida:view";
     public static final String SOLICITUD_NOVEDAD_COORDINADOR_ENVIADA_VIEW =
@@ -18,9 +20,15 @@ public final class SolicitudesAuthorities {
             "solicitudes:respuesta-novedad-coordinador:create";
     public static final String RESPUESTA_NOVEDAD_ASESOR_CREATE =
             "solicitudes:respuesta-novedad-asesor:create";
-
     public static final String RESPUESTA_NOVEDAD_COORDINADOR_DELETE =
             "solicitudes:respuesta-novedad-coordinador:delete";
+    public static final String RESPUESTA_NOVEDAD_COORDINADOR_UPDATE =
+            "solicitudes:respuesta-novedad-coordinador:update";
+    public static final String RESPUESTA_NOVEDAD_COORDINADOR_RECIBIDA_VIEW =
+            "solicitudes:respuesta-novedad-coordinador-recibida:view";
+    public static final String RESPUESTA_NOVEDAD_COORDINADOR_ENVIADA_VIEW =
+            "solicitudes:respuesta-novedad-coordinador-enviada:view";
+    public static final String TIPO_SOLICITUD_VIEW = "solicitudes:tipo-solicitud:view";
     public static final String RESPUESTA_NOVEDAD_ASESOR_DELETE =
             "solicitudes:respuesta-novedad-asesor:delete";
 
@@ -46,6 +54,9 @@ public final class SolicitudesAuthorities {
         public static final String HAS_SOLICITUD_NOVEDAD_COORDINADOR_DELETE =
                 HAS_AUTHORITY_INICIO + SOLICITUD_NOVEDAD_COORDINADOR_DELETE + HAS_AUTHORITY_FIN;
 
+        public static final String HAS_SOLICITUD_NOVEDAD_ASESOR_DELETE =
+                HAS_AUTHORITY_INICIO + SOLICITUD_NOVEDAD_ASESOR_DELETE + HAS_AUTHORITY_FIN;
+
         public static final String HAS_SOLICITUD_NOVEDAD_COORDINADOR_RECIBIDA_VIEW =
                 HAS_AUTHORITY_INICIO + SOLICITUD_NOVEDAD_COORDINADOR_RECIBIDA_VIEW + HAS_AUTHORITY_FIN;
 
@@ -63,5 +74,16 @@ public final class SolicitudesAuthorities {
 
         public static final String HAS_RESPUESTA_NOVEDAD_ASESOR_DELETE =
                 HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_ASESOR_DELETE + HAS_AUTHORITY_FIN;
+        public static final String HAS_RESPUESTA_NOVEDAD_COORDINADOR_UPDATE =
+                HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_COORDINADOR_UPDATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_RESPUESTA_NOVEDAD_COORDINADOR_RECIBIDA_VIEW =
+                HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_COORDINADOR_RECIBIDA_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_RESPUESTA_NOVEDAD_COORDINADOR_ENVIADA_VIEW =
+                HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_COORDINADOR_ENVIADA_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_TIPO_SOLICITUD_VIEW =
+                HAS_AUTHORITY_INICIO + TIPO_SOLICITUD_VIEW + HAS_AUTHORITY_FIN;
     }
 }

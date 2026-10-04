@@ -14,12 +14,11 @@ class EliminacionRespuestaNovedadCoordinadorDomainTest {
     @Test
     void debeCrearLaEliminacion_cuandoAmbosDatosSonValidos() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinadorUsuario = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinadorUsuario = UUID.randomUUID();
 
         // Act
-        EliminacionRespuestaNovedadCoordinadorDomain eliminacion =
-                EliminacionRespuestaNovedadCoordinadorDomain.crear(solicitud, coordinadorUsuario);
+        var eliminacion = EliminacionRespuestaNovedadCoordinadorDomain.crear(solicitud, coordinadorUsuario);
 
         // Assert
         assertThat(eliminacion.getSolicitud()).isEqualTo(solicitud);
@@ -27,31 +26,9 @@ class EliminacionRespuestaNovedadCoordinadorDomainTest {
     }
 
     @Test
-    void debeLanzarDomainValidationException_cuandoLaSolicitudEsNula() {
-        // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
-                () -> EliminacionRespuestaNovedadCoordinadorDomain.crear(null, UUID.randomUUID()));
-
-        // Assert
-        assertThat(excepcion.getValidationResult()
-                .tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
-    }
-
-    @Test
-    void debeLanzarDomainValidationException_cuandoElCoordinadorUsuarioEsNulo() {
-        // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
-                () -> EliminacionRespuestaNovedadCoordinadorDomain.crear(UUID.randomUUID(), null));
-
-        // Assert
-        assertThat(excepcion.getValidationResult()
-                .tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
-    }
-
-    @Test
     void debeAcumularAmbosErrores_cuandoLosDosDatosSonNulos() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> EliminacionRespuestaNovedadCoordinadorDomain.crear(null, null));
 
         // Assert

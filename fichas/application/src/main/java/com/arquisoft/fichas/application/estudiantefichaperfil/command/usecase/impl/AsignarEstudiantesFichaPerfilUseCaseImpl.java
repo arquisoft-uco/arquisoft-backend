@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
+import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesVigentesFinder;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
@@ -28,6 +29,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final FichaPerfilFinder fichaPerfilFinder;
+    private final EstadoActualFichaPerfilFinder estadoActualFichaPerfilFinder;
     private final EstudiantesVigentesFinder estudiantesVigentesFinder;
     private final EstudiantesFinder estudiantesFinder;
     private final EstudiantesYaVinculadosFinder estudiantesYaVinculadosFinder;
@@ -42,15 +44,16 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
                 entrada.getFichaPerfil(), entrada.getCantidad());
 
         var ficha = fichaPerfilFinder.obtener(entrada.getFichaPerfil());
+        var estadoActual = estadoActualFichaPerfilFinder.obtener(entrada.getFichaPerfil());
         var estudiantesVigentes = estudiantesVigentesFinder.obtener(entrada.getEstudiantes());
-        List<UUID> yaVinculados = estudiantesYaVinculadosFinder.obtener(entrada.getRelaciones());
-        long vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(entrada.getFichaPerfil());
+        var yaVinculados = estudiantesYaVinculadosFinder.obtener(entrada.getRelaciones());
+        var vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(entrada.getFichaPerfil());
 
         logger.debug(EstudianteFichaPerfilKey.LOG_VERIFICACION_ASIGNAR,
                 !ficha.esVacio(), estudiantesVigentes.size(), yaVinculados.size(), vinculadosActuales);
 
         asignarEstudiantesFichaPerfilValidator.validar(
-                entrada, ficha, estudiantesVigentes, yaVinculados, vinculadosActuales);
+                entrada, ficha, estadoActual, estudiantesVigentes, yaVinculados, vinculadosActuales);
 
         entrada.getRelaciones().stream()
                 .map(EstudianteFichaPerfilMapper::toEntity)

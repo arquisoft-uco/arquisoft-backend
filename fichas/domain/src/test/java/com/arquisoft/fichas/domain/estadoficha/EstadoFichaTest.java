@@ -2,6 +2,8 @@ package com.arquisoft.fichas.domain.estadoficha;
 
 import com.arquisoft.fichas.domain.estadoficha.exception.EstadoFichaNoEncontradoException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -44,10 +46,41 @@ class EstadoFichaTest {
     }
 
     @Test
+    void debeResolverDescartadaComoNoTerminal_cuandoLlegaDesdeElCatalogo() {
+        // Act
+        var estado = EstadoFicha.desde("DESCARTADA");
+
+        // Assert
+        assertThat(estado).isEqualTo(EstadoFicha.DESCARTADA);
+        assertThat(EstadoFicha.esValido("DESCARTADA")).isTrue();
+        assertThat(estado.esTerminal()).isFalse();
+        assertThat(estado.permiteModificacion()).isTrue();
+        assertThat(estado.getNombre()).isEqualTo("Descartada");
+    }
+
+    @Test
     void debeReportarValidez_sinLanzar_cuandoSeConsultaConEsValido() {
         assertThat(EstadoFicha.esValido("APROBADA")).isTrue();
         assertThat(EstadoFicha.esValido("NO_EXISTE")).isFalse();
         assertThat(EstadoFicha.esValido("VACIO")).isFalse();
         assertThat(EstadoFicha.esValido(null)).isFalse();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "EN_CONSTRUCCION,            false",
+            "DISPONIBLE_PARA_EVALUACION, false",
+            "APROBADA,                   true",
+            "APROBADA_CON_OBSERVACIONES, true",
+            "NO_APROBADA,                false",
+            "DESCARTADA,                 false",
+            "VACIO,                      false"
+    })
+    void debeIndicarSiEsAprobatorio_cuandoSeConsultaElEstado(EstadoFicha estado, boolean esperado) {
+        // Act
+        var aprobatorio = estado.esAprobatorio();
+
+        // Assert
+        assertThat(aprobatorio).isEqualTo(esperado);
     }
 }

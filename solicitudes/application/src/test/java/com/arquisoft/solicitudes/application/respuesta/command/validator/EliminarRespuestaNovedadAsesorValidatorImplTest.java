@@ -5,7 +5,7 @@ import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisio
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
-import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -58,7 +58,7 @@ class EliminarRespuestaNovedadAsesorValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(
                 UUID.randomUUID(), true, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(),
                 asesor, asesor, true, ESTADO_OK))
-                .isInstanceOf(SolicitudTipoNoCoincideException.class);
+                .isInstanceOf(SolicitudTipoNoCoincideAsesorException.class);
     }
 
     @Test

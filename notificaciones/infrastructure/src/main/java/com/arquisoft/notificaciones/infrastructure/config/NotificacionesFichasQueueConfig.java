@@ -69,4 +69,32 @@ public class NotificacionesFichasQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String FICHA_PERFIL_APROBADA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_APROBADA;
+
+    @Bean
+    public Declarables notificacionesFichaPerfilAprobadaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                FICHA_PERFIL_APROBADA_QUEUE,
+                EventTopics.Fichas.FICHA_PERFIL_APROBADA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String FICHA_PERFIL_NO_APROBADA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_NO_APROBADA;
+
+    @Bean
+    public Declarables notificacionesFichaPerfilNoAprobadaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                FICHA_PERFIL_NO_APROBADA_QUEUE,
+                EventTopics.Fichas.FICHA_PERFIL_NO_APROBADA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

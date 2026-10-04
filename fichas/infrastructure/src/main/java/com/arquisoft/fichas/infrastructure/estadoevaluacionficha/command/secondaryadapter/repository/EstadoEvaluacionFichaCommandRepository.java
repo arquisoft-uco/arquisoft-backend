@@ -11,14 +11,14 @@ import java.util.UUID;
 public interface EstadoEvaluacionFichaCommandRepository
         extends JpaRepository<EstadoEvaluacionFichaJpaEntity, UUID> {
 
-    boolean existsByEvaluacionFichaPerfilAndEstadoEvaluacion(
-            UUID evaluacionFichaPerfil,
-            String estadoEvaluacion);
+    boolean existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(
+            UUID evaluacionFichaPerfilId,
+            String estadoEvaluacionId);
 
-    long countByEvaluacionFichaPerfil(UUID evaluacionFichaPerfil);
+    long countByEvaluacionFichaPerfilId(UUID evaluacionFichaPerfilId);
 
     @Query("SELECT e FROM EstadoEvaluacionFichaJpaEntity e "
-            + "WHERE e.evaluacionFichaPerfil = :evaluacionId "
+            + "WHERE e.evaluacionFichaPerfil.id = :evaluacionId "
             + "ORDER BY e.fechaActualizacion DESC LIMIT 1")
     Optional<EstadoEvaluacionFichaJpaEntity> findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(
             @Param("evaluacionId") UUID evaluacionId);

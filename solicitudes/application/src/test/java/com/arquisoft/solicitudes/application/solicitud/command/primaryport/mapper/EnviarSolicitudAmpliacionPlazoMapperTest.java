@@ -1,7 +1,7 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudAmpliacionPlazoCommand;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudAmpliacionPlazoDomain;
+import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +20,7 @@ class EnviarSolicitudAmpliacionPlazoMapperTest {
                 remitente, destinatario.toString(), "  ampliacion de plazo  ");
 
         // Act
-        EnvioSolicitudAmpliacionPlazoDomain envio =
+        EnvioSolicitudDomain envio =
                 EnviarSolicitudAmpliacionPlazoMapper.toDomain(command);
 
         // Assert
@@ -28,8 +28,8 @@ class EnviarSolicitudAmpliacionPlazoMapperTest {
         assertThat(envio.getDestinatarioUsuario()).isEqualTo(destinatario);
         assertThat(envio.getSolicitud().getMensajeSolicitud()).isEqualTo("ampliacion de plazo");
         assertThat(envio.getSolicitud().getTipoSolicitud()).isEqualTo(TipoSolicitud.AMPLIACION_DE_PLAZO);
-        assertThat(envio.getSolicitud().getRemitente()).isEqualTo(envio.getRemitente().getId());
-        assertThat(envio.getSolicitud().getDestinatario()).isEqualTo(envio.getDestinatario().getId());
+        assertThat(envio.getSolicitud().getRemitenteUsuario()).isEqualTo(envio.getRemitente().getUsuario());
+        assertThat(envio.getSolicitud().getDestinatarioUsuario()).isEqualTo(envio.getDestinatario().getUsuario());
     }
 
     @Test
@@ -39,7 +39,7 @@ class EnviarSolicitudAmpliacionPlazoMapperTest {
                 UUID.randomUUID(), UUID.randomUUID().toString(), "mensaje");
 
         // Act
-        EnvioSolicitudAmpliacionPlazoDomain envio =
+        EnvioSolicitudDomain envio =
                 EnviarSolicitudAmpliacionPlazoMapper.toDomain(command);
 
         // Assert

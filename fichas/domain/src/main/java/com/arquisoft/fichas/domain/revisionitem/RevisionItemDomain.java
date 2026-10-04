@@ -18,12 +18,29 @@ import java.util.UUID;
 
 public final class RevisionItemDomain {
 
+    public static final RevisionItemDomain VACIO = new RevisionItemDomain(
+            UtilUUID.obtenerUUIDPorDefecto(),
+            UtilUUID.obtenerUUIDPorDefecto(),
+            EstadoRevision.VACIO,
+            UtilFecha.VACIO);
+
     private UUID id;
     private UUID item;
     private EstadoRevision estadoRevision;
     private Instant fechaCreacion;
 
     private RevisionItemDomain() {}
+
+    private RevisionItemDomain(UUID id, UUID item, EstadoRevision estadoRevision, Instant fechaCreacion) {
+        this.id = id;
+        this.item = item;
+        this.estadoRevision = estadoRevision;
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public static RevisionItemDomain reconstruir(UUID id, UUID item, EstadoRevision estadoRevision, Instant fechaCreacion) {
+        return new RevisionItemDomain(id, item, estadoRevision, fechaCreacion);
+    }
 
     public static RevisionItemDomain crear(UUID item) {
         var revisionItem = new RevisionItemDomain();
@@ -107,5 +124,9 @@ public final class RevisionItemDomain {
 
     public Instant getFechaCreacion() {
         return fechaCreacion;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }
