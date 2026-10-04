@@ -181,36 +181,35 @@ public final class FichasApiMessages {
         private EstadoFichaPerfil() {}
 
         public static final String TAG_NAME = "Estados Ficha Perfil";
-        public static final String TAG_DESCRIPTION =
-                "Consulta de la trazabilidad de estados de una ficha de perfil";
-        public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
-                "Consultar los estados de la ficha de perfil del estudiante";
+        public static final String TAG_DESCRIPTION = "Consulta de la trazabilidad de estados de una ficha de perfil";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar los estados de la ficha de perfil del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Devuelve la lista de transiciones de estado registradas para la ficha de perfil indicada, "
                         + "ordenada de la más reciente a la más antigua. El estudiante se toma del token.";
-        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
-                "Lista de estados de la ficha de perfil (vacía si no aplica)";
-        public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
-                "El identificador de la ficha de perfil no es un UUID válido";
-        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
-                "Sin el permiso para consultar los estados como estudiante";
-        public static final String CONSULTAR_ASESOR_SUMMARY =
-                "Consultar los estados de las fichas de perfil que asesora el asesor";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Lista de estados de la ficha de perfil (vacía si no aplica)";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin el permiso para consultar los estados como estudiante";
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar los estados de las fichas de perfil que asesora el asesor";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Devuelve, paginada y filtrable, la trazabilidad de estados de todas las fichas de perfil "
                         + "asesoradas por el asesor autenticado. El asesor se toma del token.";
-        public static final String CONSULTAR_ASESOR_RESP_200 =
-                "Página de estados de ficha de perfil del asesor (vacía si no aplica)";
-        public static final String CONSULTAR_ASESOR_RESP_400 =
-                "Filtro con campo, operador o valor inválido";
-        public static final String CONSULTAR_ASESOR_RESP_403 =
-                "Sin el permiso para consultar los estados como asesor";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de estados de ficha de perfil del asesor (vacía si no aplica)";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "Filtro con campo, operador o valor inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin el permiso para consultar los estados como asesor";
         public static final String AGREGAR_APROBACION_SUMMARY = "Registrar la decisión de aprobación de una ficha de perfil";
         public static final String AGREGAR_APROBACION_DESCRIPTION = "El coordinador acepta o no la ficha; el estado se deriva de las evaluaciones";
         public static final String AGREGAR_APROBACION_RESP_201 = "Estado de aprobación registrado; devuelve el id del nuevo estado";
         public static final String AGREGAR_APROBACION_RESP_400 = "Falta la decisión o el id de la ficha no es un UUID válido";
         public static final String AGREGAR_APROBACION_RESP_403 = "Sin el permiso para registrar la aprobación de una ficha de perfil";
         public static final String AGREGAR_APROBACION_RESP_422 = "Ficha inexistente, no disponible o sin evaluaciones/estudiantes que la respalden";
+        public static final String AGREGAR_ASESOR_SUMMARY = "Cambiar el estado de una ficha de perfil como asesor de ficha";
+        public static final String AGREGAR_ASESOR_DESCRIPTION =
+                "El asesor de ficha asignado envía la ficha a evaluación, la descarta o la devuelve a construcción. El asesor se toma del token.";
+        public static final String AGREGAR_ASESOR_RESP_201 = "Estado registrado; devuelve el id del nuevo estado";
+        public static final String AGREGAR_ASESOR_RESP_400 = "Falta el estado o el cuerpo de la petición es inválido";
+        public static final String AGREGAR_ASESOR_RESP_403 = "Sin el permiso para cambiar el estado de una ficha de perfil como asesor";
+        public static final String AGREGAR_ASESOR_RESP_422 =
+                "Estado no asignable, transición no permitida, ficha inexistente, ajena, finalizada, sin estudiantes o con evaluaciones en curso";
     }
 
     public static final class RevisionItem {

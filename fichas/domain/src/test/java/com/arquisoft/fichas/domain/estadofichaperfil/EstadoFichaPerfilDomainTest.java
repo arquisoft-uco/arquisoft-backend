@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.domain.estadofichaperfil;
 
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
@@ -7,9 +8,13 @@ import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.ConteoEvaluacione
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.ResumenEvaluacionesFicha;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -133,6 +138,65 @@ class EstadoFichaPerfilDomainTest {
 
         // Assert
         assertThat(estado.getEstadoFicha()).isEqualTo(EstadoFicha.APROBADA_CON_OBSERVACIONES);
+    }
+
+    @Test
+    void debeCrearElEstadoDelAsesor_cuandoElEstadoEsAsignable() {
+        // Arrange
+        var fichaPerfil = UUID.randomUUID();
+
+        // Act
+        var estado = EstadoFichaPerfilDomain.crearPorAsesor(fichaPerfil, "DISPONIBLE_PARA_EVALUACION");
+
+        // Assert
+        assertThat(estado.getId()).isNotNull();
+        assertThat(estado.getFichaPerfil()).isEqualTo(fichaPerfil);
+        assertThat(estado.getEstadoFicha()).isEqualTo(EstadoFicha.DISPONIBLE_PARA_EVALUACION);
+        assertThat(estado.getFechaActualizacion()).isNotNull();
+        assertThat(estado.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeRecortarElEstado_cuandoLlegaConEspacios() {
+        // Act
+        var estado = EstadoFichaPerfilDomain.crearPorAsesor(UUID.randomUUID(), "  DESCARTADA  ");
+
+        // Assert
+        assertThat(estado.getEstadoFicha()).isEqualTo(EstadoFicha.DESCARTADA);
+    }
+
+    private static Stream<Arguments> estadosNoAsignables() {
+        return Stream.of(
+                Arguments.of("   ", FichasCodes.EstadoFichaPerfil.ESTADO_FICHA_REQUERIDO),
+                Arguments.of("ESTADO_INEXISTENTE", FichasCodes.EstadoFichaPerfil.ESTADO_FICHA_INVALIDO),
+                Arguments.of("APROBADA", FichasCodes.EstadoFichaPerfil.ESTADO_NO_ASIGNABLE_POR_ASESOR),
+                Arguments.of("NO_APROBADA", FichasCodes.EstadoFichaPerfil.ESTADO_NO_ASIGNABLE_POR_ASESOR));
+    }
+
+    @ParameterizedTest
+    @MethodSource("estadosNoAsignables")
+    void debeRechazarElEstadoConSuCodigo_cuandoNoEsAsignablePorElAsesor(String estadoFicha, String codigoEsperado) {
+        // Act & Assert
+        assertThatThrownBy(() -> EstadoFichaPerfilDomain.crearPorAsesor(UUID.randomUUID(), estadoFicha))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .singleElement()
+                        .satisfies(error -> {
+                            assertThat(error.campo()).isEqualTo(FichasFields.EstadoFichaPerfil.ESTADO_FICHA);
+                            assertThat(error.codigoError()).isEqualTo(codigoEsperado);
+                        }));
+    }
+
+    @Test
+    void debeAcumularAmbosErrores_cuandoFichaPerfilEsNuloYElEstadoNoExiste() {
+        // Act & Assert
+        assertThatThrownBy(() -> EstadoFichaPerfilDomain.crearPorAsesor(null, "ESTADO_INEXISTENTE"))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(error -> error.codigoError())
+                        .containsExactlyInAnyOrder(
+                                FichasCodes.EstadoFichaPerfil.FICHA_PERFIL_ID_REQUERIDO,
+                                FichasCodes.EstadoFichaPerfil.ESTADO_FICHA_INVALIDO));
     }
 
     @Test

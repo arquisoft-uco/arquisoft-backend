@@ -25,6 +25,9 @@ public final class EventTopics {
 
         public static final String FICHA_PERFIL_NO_APROBADA =
                 "fichas.ficha_perfil.no_aprobada";
+
+        public static final String ESTADO_FICHA_PERFIL_AGREGADO =
+                "fichas.estado_ficha_perfil.agregado";
     }
 
     public static final class Proyectos {

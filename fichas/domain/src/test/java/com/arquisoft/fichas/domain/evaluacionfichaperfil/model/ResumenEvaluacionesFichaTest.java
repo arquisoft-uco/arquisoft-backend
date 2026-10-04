@@ -59,5 +59,21 @@ class ResumenEvaluacionesFichaTest {
         assertThat(resumen.finalizadas()).isZero();
         assertThat(resumen.aprobatorias()).isZero();
         assertThat(resumen.tieneObservacionesVigentes()).isFalse();
+        assertThat(resumen.enEvaluacion()).isZero();
+    }
+
+    @Test
+    void debeSumarSoloLasEnEvaluacion_cuandoHayConteosDeVariosEstados() {
+        // Arrange
+        var resumen = new ResumenEvaluacionesFicha(UUID.randomUUID(), List.of(
+                new ConteoEvaluacionesPorEstado(EstadoEvaluacion.EN_EVALUACION, 3, 1),
+                new ConteoEvaluacionesPorEstado(EstadoEvaluacion.APROBADA, 2, 0),
+                new ConteoEvaluacionesPorEstado(EstadoEvaluacion.DESCARTADA, 4, 0)));
+
+        // Act
+        var enEvaluacion = resumen.enEvaluacion();
+
+        // Assert
+        assertThat(enEvaluacion).isEqualTo(3);
     }
 }
