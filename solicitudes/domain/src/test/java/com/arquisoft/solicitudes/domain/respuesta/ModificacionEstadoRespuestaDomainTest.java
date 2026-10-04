@@ -4,6 +4,7 @@ import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -11,44 +12,56 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class ModificacionEstadoRespuestaNovedadCoordinadorDomainTest {
+class ModificacionEstadoRespuestaDomainTest {
 
     @Test
-    void debeCrearLaModificacionConElEstadoTipado_cuandoLosTresDatosSonValidos() {
+    void debeCrearLaModificacionConElEstadoTipado_cuandoLosCuatroDatosSonValidos() {
         // Arrange
         var solicitud = UUID.randomUUID();
-        var coordinadorUsuario = UUID.randomUUID();
+        var responsableUsuario = UUID.randomUUID();
 
         // Act
-        var modificacion = ModificacionEstadoRespuestaNovedadCoordinadorDomain.crear(
-                solicitud, coordinadorUsuario, "APROBADA");
+        var modificacion = ModificacionEstadoRespuestaDomain.crear(
+                solicitud, responsableUsuario, "APROBADA", TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 
         // Assert
         assertThat(modificacion.getSolicitud()).isEqualTo(solicitud);
-        assertThat(modificacion.getCoordinadorUsuario()).isEqualTo(coordinadorUsuario);
+        assertThat(modificacion.getResponsableUsuario()).isEqualTo(responsableUsuario);
+        assertThat(modificacion.getNuevoEstado()).isEqualTo(EstadoRespuesta.APROBADA);
+        assertThat(modificacion.getTipoEsperado()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
+    }
+
+    @Test
+    void debeAceptarElEstadoRecortado_cuandoLlegaConEspaciosAlrededor() {
+        // Act
+        var modificacion = ModificacionEstadoRespuestaDomain.crear(
+                UUID.randomUUID(), UUID.randomUUID(), "  APROBADA  ", TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
+
+        // Assert
         assertThat(modificacion.getNuevoEstado()).isEqualTo(EstadoRespuesta.APROBADA);
     }
 
     @Test
-    void debeAcumularLosTresErrores_cuandoLosTresDatosSonInvalidos() {
+    void debeAcumularLosCuatroErrores_cuandoLosCuatroDatosSonInvalidos() {
         // Act
         var excepcion = assertThrows(DomainValidationException.class,
-                () -> ModificacionEstadoRespuestaNovedadCoordinadorDomain.crear(null, null, "   "));
+                () -> ModificacionEstadoRespuestaDomain.crear(null, null, "   ", null));
 
         // Assert
         var resultado = excepcion.getValidationResult();
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Respuesta.ESTADO)).isTrue();
-        assertThat(resultado.getErrores()).hasSize(3);
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.TIPO_SOLICITUD)).isTrue();
+        assertThat(resultado.getErrores()).hasSize(4);
     }
 
     @Test
     void debeAcumularElErrorDeCatalogo_cuandoElNuevoEstadoNoPerteneceAlCatalogo() {
         // Act
         var excepcion = assertThrows(DomainValidationException.class,
-                () -> ModificacionEstadoRespuestaNovedadCoordinadorDomain.crear(
-                        null, UUID.randomUUID(), "XYZ"));
+                () -> ModificacionEstadoRespuestaDomain.crear(
+                        null, UUID.randomUUID(), "XYZ", TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
 
         // Assert
         var errores = excepcion.getValidationResult().getErrores();

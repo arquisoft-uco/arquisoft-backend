@@ -60,7 +60,7 @@ class SolicitudNovedadCoordinadorEstadoModificadoConsumerTest {
     }
 
     private Message mensajeCon(String idEvento, long deliveryTag) {
-        String payloadJson = """
+        var payloadJson = """
                 {
                     "idEvento": "%s",
                     "solicitudId": "%s",
@@ -72,7 +72,7 @@ class SolicitudNovedadCoordinadorEstadoModificadoConsumerTest {
                 }
                 """.formatted(idEvento, UUID.randomUUID());
 
-        MessageProperties props = new MessageProperties();
+        var props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
         props.setHeader("X-Trace-Id", "trace-123");
         props.setHeader("X-User-Id", "user-456");
@@ -83,7 +83,7 @@ class SolicitudNovedadCoordinadorEstadoModificadoConsumerTest {
     @Test
     void debeNotificarAlRemitente_cuandoElPayloadEsValido() throws Exception {
         // Arrange
-        String idEvento = UUID.randomUUID().toString();
+        var idEvento = UUID.randomUUID().toString();
 
         // Act
         adapter.onSolicitudNovedadCoordinadorEstadoModificado(mensajeCon(idEvento, 1L), channel);
@@ -93,7 +93,7 @@ class SolicitudNovedadCoordinadorEstadoModificadoConsumerTest {
                 ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
         verify(enviarNotificacionInteractor).ejecutar(captor.capture());
 
-        EnviarNotificacionCommand command = captor.getValue();
+        var command = captor.getValue();
         assertThat(command.idEvento()).isEqualTo(idEvento);
         assertThat(command.tipo()).isEqualTo(TipoNotificacion.SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO);
         assertThat(command.destinatarioNombre()).isEqualTo("Ana Estudiante");

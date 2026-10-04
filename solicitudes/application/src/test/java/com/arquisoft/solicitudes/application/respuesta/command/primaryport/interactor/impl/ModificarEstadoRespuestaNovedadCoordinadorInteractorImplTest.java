@@ -1,9 +1,10 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.impl;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ModificarEstadoRespuestaNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.application.respuesta.command.usecase.ModificarEstadoRespuestaNovedadCoordinadorUseCase;
+import com.arquisoft.solicitudes.application.respuesta.command.usecase.ModificarEstadoRespuestaUseCase;
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
-import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaDomain;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,7 +21,7 @@ import static org.mockito.Mockito.verify;
 class ModificarEstadoRespuestaNovedadCoordinadorInteractorImplTest {
 
     @Mock
-    private ModificarEstadoRespuestaNovedadCoordinadorUseCase useCase;
+    private ModificarEstadoRespuestaUseCase useCase;
 
     @InjectMocks
     private ModificarEstadoRespuestaNovedadCoordinadorInteractorImpl interactor;
@@ -37,10 +38,11 @@ class ModificarEstadoRespuestaNovedadCoordinadorInteractorImplTest {
         interactor.ejecutar(command);
 
         // Assert
-        var captor = ArgumentCaptor.forClass(ModificacionEstadoRespuestaNovedadCoordinadorDomain.class);
+        var captor = ArgumentCaptor.forClass(ModificacionEstadoRespuestaDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
-        assertThat(captor.getValue().getCoordinadorUsuario()).isEqualTo(coordinador);
+        assertThat(captor.getValue().getResponsableUsuario()).isEqualTo(coordinador);
+        assertThat(captor.getValue().getTipoEsperado()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
         assertThat(captor.getValue().getNuevoEstado()).isEqualTo(EstadoRespuesta.APROBADA);
     }
 }

@@ -49,18 +49,19 @@ límite que hay que conocer antes de copiar:
   tiene controllers, ni lado `query/`, ni eventos propios.
 - **`solicitudes`** — referencia de **un mismo flujo con varias variantes por tipo** y del camino
   completo hacia `notificaciones`. Hay un `Interactor` por tipo de solicitud
-  (`EnviarSolicitud{Tipo}`, `EliminarSolicitud{Tipo}`, `ResponderSolicitud{Tipo}`) y todos convergen en
+  (`EnviarSolicitud{Tipo}`, `EliminarSolicitud{Tipo}`, `ResponderSolicitud{Tipo}`, `ModificarEstadoRespuesta{Tipo}`) y todos convergen en
   un único use case por acción (`EnviarSolicitudUseCase`, `EliminarSolicitudUseCase`,
-  `ResponderSolicitudUseCase`): el mapper de cada interactor fija el **tipo esperado** en el objeto de
-  acción (`EnvioSolicitudDomain`, `EliminacionSolicitudDomain`, `RespuestaSolicitudDomain`) y
+  `ResponderSolicitudUseCase`, `ModificarEstadoRespuestaUseCase`): el mapper de cada interactor fija el **tipo esperado** en el objeto de
+  acción (`EnvioSolicitudDomain`, `EliminacionSolicitudDomain`, `RespuestaSolicitudDomain`, `ModificacionEstadoRespuestaDomain`) y
   `SolicitudEsDelTipoRule` despacha a la regla de ese tipo, de modo que los códigos de error por tipo no
   cambian. `EnviarSolicitudUseCase` orquesta `RegistrarRemitente` y `RegistrarDestinatario` (use cases
   `void`, cada uno con su `Validator` de existencia del usuario), valida la unicidad con un solo
   `EnviarSolicitudValidator.validar(...)` y publica `SolicitudEnviadaEvent`, una clase cuyo tema y tipo
   de evento salen del `TipoSolicitud`; `notificaciones` lo consume con un consumidor por tipo
-  (`amqp/solicitudes/solicitud/`). Responder conserva un evento por tipo
-  (`SolicitudRespondidaEvent.crear` elige el concreto) porque el campo del responsable difiere por tipo y
-  `notificaciones` lo lee por nombre. Mantiene además una réplica de `usuario` alimentada por los eventos
+  (`amqp/solicitudes/solicitud/`). Responder y modificar el estado de la
+  respuesta conservan un evento por tipo (`SolicitudRespondidaEvent.crear` y
+  `SolicitudEstadoModificadoEvent.crear` eligen el concreto) porque el campo del responsable difiere por
+  tipo y `notificaciones` lo lee por nombre. Mantiene además una réplica de `usuario` alimentada por los eventos
   de `usuarios` y un lado `query/` (consultas del coordinador cuyo mapper fuerza el filtro por JWT y por
   tipo). *Límites:* `UsuarioSolicitudesCommandOutputAdapter` y `UsuarioSolicitudesCommandRepository`
   llevan el contexto en el nombre, que es la convención retirada para réplicas (no se copia).

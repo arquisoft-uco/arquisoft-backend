@@ -4,29 +4,33 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.message.key.solicitudes.EstadoRespuestaKey;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 
 import java.util.UUID;
 
-public final class ModificacionEstadoRespuestaNovedadCoordinadorDomain {
+public final class ModificacionEstadoRespuestaDomain {
 
     private UUID solicitud;
-    private UUID coordinadorUsuario;
+    private UUID responsableUsuario;
     private EstadoRespuesta nuevoEstado;
+    private TipoSolicitud tipoEsperado;
 
-    private ModificacionEstadoRespuestaNovedadCoordinadorDomain() {}
+    private ModificacionEstadoRespuestaDomain() {}
 
-    public static ModificacionEstadoRespuestaNovedadCoordinadorDomain crear(
-            UUID solicitud, UUID coordinadorUsuario, String nuevoEstado) {
-        var modificacion = new ModificacionEstadoRespuestaNovedadCoordinadorDomain();
+    public static ModificacionEstadoRespuestaDomain crear(
+            UUID solicitud, UUID responsableUsuario, String nuevoEstado, TipoSolicitud tipoEsperado) {
+        var modificacion = new ModificacionEstadoRespuestaDomain();
         var result = new ValidationResult();
 
         modificacion.setSolicitud(solicitud, result);
-        modificacion.setCoordinadorUsuario(coordinadorUsuario, result);
+        modificacion.setResponsableUsuario(responsableUsuario, result);
         modificacion.setNuevoEstado(nuevoEstado, result);
+        modificacion.setTipoEsperado(tipoEsperado, result);
 
         result.lanzarSiTieneErrores();
         return modificacion;
@@ -41,40 +45,54 @@ public final class ModificacionEstadoRespuestaNovedadCoordinadorDomain {
         this.solicitud = solicitud;
     }
 
-    private void setCoordinadorUsuario(UUID coordinadorUsuario, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(coordinadorUsuario,
+    private void setResponsableUsuario(UUID responsableUsuario, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(responsableUsuario,
                 SolicitudesFields.Solicitud.DESTINATARIO,
                 SolicitudesCodes.Solicitud.DESTINATARIO_REQUERIDO, result)) {
             return;
         }
-        this.coordinadorUsuario = coordinadorUsuario;
+        this.responsableUsuario = responsableUsuario;
     }
 
     private void setNuevoEstado(String nuevoEstado, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(nuevoEstado,
+        var recortado = UtilTexto.aplicarTrim(nuevoEstado);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 SolicitudesFields.Respuesta.ESTADO,
                 SolicitudesCodes.Respuesta.ESTADO_REQUERIDO, result)) {
             return;
         }
-        if (!EstadoRespuesta.esValido(nuevoEstado)) {
+        if (!EstadoRespuesta.esValido(recortado)) {
             result.agregarError(
                     SolicitudesFields.Respuesta.ESTADO,
                     SolicitudesCodes.EstadoRespuesta.ESTADO_NO_ENCONTRADO,
-                    Mensajes.formatear(EstadoRespuestaKey.ERROR_ESTADO_RESPUESTA_NO_ENCONTRADO, nuevoEstado));
+                    Mensajes.formatear(EstadoRespuestaKey.ERROR_ESTADO_RESPUESTA_NO_ENCONTRADO, recortado));
             return;
         }
-        this.nuevoEstado = EstadoRespuesta.desde(nuevoEstado);
+        this.nuevoEstado = EstadoRespuesta.desde(recortado);
+    }
+
+    private void setTipoEsperado(TipoSolicitud tipoEsperado, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(tipoEsperado,
+                SolicitudesFields.Solicitud.TIPO_SOLICITUD,
+                SolicitudesCodes.Solicitud.TIPO_REQUERIDO, result)) {
+            return;
+        }
+        this.tipoEsperado = tipoEsperado;
     }
 
     public UUID getSolicitud() {
         return solicitud;
     }
 
-    public UUID getCoordinadorUsuario() {
-        return coordinadorUsuario;
+    public UUID getResponsableUsuario() {
+        return responsableUsuario;
     }
 
     public EstadoRespuesta getNuevoEstado() {
         return nuevoEstado;
+    }
+
+    public TipoSolicitud getTipoEsperado() {
+        return tipoEsperado;
     }
 }

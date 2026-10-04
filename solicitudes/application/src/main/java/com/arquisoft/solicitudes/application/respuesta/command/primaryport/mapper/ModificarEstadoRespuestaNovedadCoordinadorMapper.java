@@ -1,15 +1,17 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ModificarEstadoRespuestaNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaDomain;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 
 public final class ModificarEstadoRespuestaNovedadCoordinadorMapper {
 
     private ModificarEstadoRespuestaNovedadCoordinadorMapper() {}
 
-    public static ModificacionEstadoRespuestaNovedadCoordinadorDomain toDomain(
+    public static ModificacionEstadoRespuestaDomain toDomain(
             ModificarEstadoRespuestaNovedadCoordinadorCommand command) {
-        return ModificacionEstadoRespuestaNovedadCoordinadorDomain.crear(
-                command.solicitud(), command.coordinadorUsuario(), command.nuevoEstado());
+        return ModificacionEstadoRespuestaDomain.crear(
+                command.solicitud(), command.coordinadorUsuario(), command.nuevoEstado(),
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
     }
 }

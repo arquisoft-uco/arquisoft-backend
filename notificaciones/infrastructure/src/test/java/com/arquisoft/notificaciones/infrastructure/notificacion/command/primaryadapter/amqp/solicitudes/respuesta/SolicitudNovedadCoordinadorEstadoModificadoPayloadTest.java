@@ -86,7 +86,7 @@ class SolicitudNovedadCoordinadorEstadoModificadoPayloadTest {
     @Test
     void debeDejarNuevoEstadoNombreNulo_cuandoElProductorAunNoLoEnvia() {
         // Arrange
-        String json = """
+        var json = """
                 {"idEvento":"evt-1","solicitudId":"11111111-1111-1111-1111-111111111111",
                  "nuevoEstado":"APROBADA","remitenteNombre":"Ana Estudiante",
                  "remitenteEmail":"ana.est@soyuco.edu.co","coordinadorNombre":"Pedro Coordinador"}

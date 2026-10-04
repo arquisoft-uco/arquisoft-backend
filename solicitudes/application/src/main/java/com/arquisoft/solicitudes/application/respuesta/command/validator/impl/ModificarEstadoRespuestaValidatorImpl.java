@@ -1,13 +1,13 @@
 package com.arquisoft.solicitudes.application.respuesta.command.validator.impl;
 
-import com.arquisoft.solicitudes.application.respuesta.command.validator.ModificarEstadoRespuestaNovedadCoordinadorValidator;
+import com.arquisoft.solicitudes.application.respuesta.command.validator.ModificarEstadoRespuestaValidator;
 import com.arquisoft.solicitudes.domain.destinatario.model.ExistenciaDestinatario;
 import com.arquisoft.solicitudes.domain.destinatario.rules.DestinatarioExisteRule;
 import com.arquisoft.solicitudes.domain.destinatario.rules.impl.DestinatarioExisteRuleImpl;
 import com.arquisoft.solicitudes.domain.remitente.model.ExistenciaRemitente;
 import com.arquisoft.solicitudes.domain.remitente.rules.RemitenteExisteRule;
 import com.arquisoft.solicitudes.domain.remitente.rules.impl.RemitenteExisteRuleImpl;
-import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.model.EstadoRespuestaActual;
 import com.arquisoft.solicitudes.domain.respuesta.model.ExistenciaRespuesta;
 import com.arquisoft.solicitudes.domain.respuesta.model.NuevoEstadoRespuesta;
@@ -23,33 +23,32 @@ import com.arquisoft.solicitudes.domain.solicitud.model.PropiedadDestinatarioSol
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.TipoSolicitudConcordante;
 import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudEsDelDestinatarioRule;
-import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudEsNovedadCoordinadorRule;
+import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudEsDelTipoRule;
 import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudExisteRule;
 import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudEsDelDestinatarioRuleImpl;
-import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudEsNovedadCoordinadorRuleImpl;
+import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudEsDelTipoRuleImpl;
 import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudExisteRuleImpl;
-import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ModificarEstadoRespuestaNovedadCoordinadorValidatorImpl
-        implements ModificarEstadoRespuestaNovedadCoordinadorValidator {
+public class ModificarEstadoRespuestaValidatorImpl
+        implements ModificarEstadoRespuestaValidator {
 
     private final SolicitudExisteRule solicitudExisteRule;
     private final RemitenteExisteRule remitenteExisteRule;
     private final DestinatarioExisteRule destinatarioExisteRule;
-    private final SolicitudEsNovedadCoordinadorRule solicitudEsNovedadCoordinadorRule;
+    private final SolicitudEsDelTipoRule solicitudEsDelTipoRule;
     private final SolicitudEsDelDestinatarioRule solicitudEsDelDestinatarioRule;
     private final RespuestaExisteRule respuestaExisteRule;
     private final RespuestaEnRevisionRule respuestaEnRevisionRule;
     private final EstadoRespuestaResolutivoRule estadoRespuestaResolutivoRule;
 
-    public ModificarEstadoRespuestaNovedadCoordinadorValidatorImpl() {
+    public ModificarEstadoRespuestaValidatorImpl() {
         this.solicitudExisteRule = new SolicitudExisteRuleImpl();
         this.remitenteExisteRule = new RemitenteExisteRuleImpl();
         this.destinatarioExisteRule = new DestinatarioExisteRuleImpl();
-        this.solicitudEsNovedadCoordinadorRule = new SolicitudEsNovedadCoordinadorRuleImpl();
+        this.solicitudEsDelTipoRule = new SolicitudEsDelTipoRuleImpl();
         this.solicitudEsDelDestinatarioRule = new SolicitudEsDelDestinatarioRuleImpl();
         this.respuestaExisteRule = new RespuestaExisteRuleImpl();
         this.respuestaEnRevisionRule = new RespuestaEnRevisionRuleImpl();
@@ -57,21 +56,21 @@ public class ModificarEstadoRespuestaNovedadCoordinadorValidatorImpl
     }
 
     @Override
-    public void validar(ModificacionEstadoRespuestaNovedadCoordinadorDomain entrada,
+    public void validar(ModificacionEstadoRespuestaDomain entrada,
                         ResumenSolicitud resumenSolicitud, ResumenRespuesta resumenRespuesta,
-                        UsuarioDomain remitente, UsuarioDomain coordinador) {
+                        UsuarioDomain remitente, UsuarioDomain responsable) {
         solicitudExisteRule.validar(new ExistenciaSolicitud(
                 entrada.getSolicitud(), !resumenSolicitud.esVacio()));
         remitenteExisteRule.validar(new ExistenciaRemitente(
                 resumenSolicitud.remitenteUsuario(), remitente));
         destinatarioExisteRule.validar(new ExistenciaDestinatario(
-                resumenSolicitud.destinatarioUsuario(), coordinador));
-        solicitudEsNovedadCoordinadorRule.validar(new TipoSolicitudConcordante(
+                resumenSolicitud.destinatarioUsuario(), responsable));
+        solicitudEsDelTipoRule.validar(new TipoSolicitudConcordante(
                 entrada.getSolicitud(), resumenSolicitud.tipoSolicitud(),
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
+                entrada.getTipoEsperado().getId()));
         solicitudEsDelDestinatarioRule.validar(new PropiedadDestinatarioSolicitud(
                 entrada.getSolicitud(), resumenSolicitud.destinatarioUsuario(),
-                entrada.getCoordinadorUsuario()));
+                entrada.getResponsableUsuario()));
         respuestaExisteRule.validar(new ExistenciaRespuesta(
                 entrada.getSolicitud(), !resumenRespuesta.esVacio()));
         respuestaEnRevisionRule.validar(new EstadoRespuestaActual(

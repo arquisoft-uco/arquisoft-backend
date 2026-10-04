@@ -5,13 +5,13 @@ import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.respuesta.command.finder.DatosRespuestaFinder;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
-import com.arquisoft.solicitudes.application.respuesta.command.validator.ModificarEstadoRespuestaNovedadCoordinadorValidator;
+import com.arquisoft.solicitudes.application.respuesta.command.validator.ModificarEstadoRespuestaValidator;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEncontradoException;
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
-import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorEstadoModificadoEvent;
 import com.arquisoft.solicitudes.domain.respuesta.exception.EstadoRespuestaNoResolutivoException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisionException;
@@ -48,22 +48,24 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
+class ModificarEstadoRespuestaUseCaseImplTest {
 
     @Mock private DatosSolicitudFinder datosSolicitudFinder;
     @Mock private DatosRespuestaFinder datosRespuestaFinder;
     @Mock private DatosUsuarioFinder datosUsuarioFinder;
     @Mock private RespuestaOutputPort respuestaOutputPort;
-    @Mock private ModificarEstadoRespuestaNovedadCoordinadorValidator validator;
+    @Mock private ModificarEstadoRespuestaValidator validator;
     @Mock private EventPublisher eventPublisher;
     @Mock private AppLogger logger;
 
-    private ModificarEstadoRespuestaNovedadCoordinadorUseCaseImpl useCase;
+    private ModificarEstadoRespuestaUseCaseImpl useCase;
+
+    private static final String TIPO = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId();
 
     private UUID solicitud;
     private UUID coordinadorUsuario;
     private UUID remitenteUsuario;
-    private ModificacionEstadoRespuestaNovedadCoordinadorDomain entrada;
+    private ModificacionEstadoRespuestaDomain entrada;
     private ResumenSolicitud resumenSolicitud;
     private ResumenRespuesta resumenRespuesta;
     private UsuarioDomain remitente;
@@ -71,15 +73,15 @@ class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new ModificarEstadoRespuestaNovedadCoordinadorUseCaseImpl(
+        useCase = new ModificarEstadoRespuestaUseCaseImpl(
                 datosSolicitudFinder, datosRespuestaFinder, datosUsuarioFinder,
                 respuestaOutputPort, validator, eventPublisher, logger);
 
         solicitud = UUID.randomUUID();
         coordinadorUsuario = UUID.randomUUID();
         remitenteUsuario = UUID.randomUUID();
-        entrada = ModificacionEstadoRespuestaNovedadCoordinadorDomain.crear(
-                solicitud, coordinadorUsuario, "APROBADA");
+        entrada = ModificacionEstadoRespuestaDomain.crear(
+                solicitud, coordinadorUsuario, "APROBADA", TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
         resumenSolicitud = new ResumenSolicitud(
                 solicitud, remitenteUsuario, coordinadorUsuario,
                 TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
@@ -125,9 +127,10 @@ class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
         verify(datosUsuarioFinder, times(1)).obtener(coordinadorUsuario);
 
         // Assert — logs
-        verify(logger).info(eq(RespuestaKey.LOG_MODIFICANDO_ESTADO), eq(solicitud), eq(coordinadorUsuario));
-        verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_MODIFICACION_ESTADO), eq(true), eq(true));
-        verify(logger).info(eq(RespuestaKey.LOG_ESTADO_MODIFICADO), eq(solicitud), eq("APROBADA"));
+        verify(logger).info(eq(RespuestaKey.LOG_MODIFICANDO_ESTADO), eq(TIPO), eq(solicitud), eq(coordinadorUsuario));
+        verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_MODIFICACION_ESTADO),
+                eq(true), eq(true), eq(true), eq(true));
+        verify(logger).info(eq(RespuestaKey.LOG_ESTADO_MODIFICADO), eq(TIPO), eq(solicitud), eq("APROBADA"));
     }
 
     @Test
@@ -165,7 +168,8 @@ class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
                 .isInstanceOf(SolicitudNoEncontradaException.class);
 
-        verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_MODIFICACION_ESTADO), eq(false), eq(false));
+        verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_MODIFICACION_ESTADO),
+                eq(false), eq(false), eq(false), eq(false));
         verify(respuestaOutputPort, never()).actualizarEstadoPorSolicitud(any(), any());
         verify(eventPublisher, never()).publish(any());
     }

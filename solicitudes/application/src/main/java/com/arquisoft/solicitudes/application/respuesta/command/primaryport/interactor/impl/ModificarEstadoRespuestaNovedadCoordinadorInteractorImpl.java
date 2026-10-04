@@ -3,7 +3,7 @@ package com.arquisoft.solicitudes.application.respuesta.command.primaryport.inte
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.ModificarEstadoRespuestaNovedadCoordinadorInteractor;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper.ModificarEstadoRespuestaNovedadCoordinadorMapper;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ModificarEstadoRespuestaNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.application.respuesta.command.usecase.ModificarEstadoRespuestaNovedadCoordinadorUseCase;
+import com.arquisoft.solicitudes.application.respuesta.command.usecase.ModificarEstadoRespuestaUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class ModificarEstadoRespuestaNovedadCoordinadorInteractorImpl
         implements ModificarEstadoRespuestaNovedadCoordinadorInteractor {
 
-    private final ModificarEstadoRespuestaNovedadCoordinadorUseCase modificarEstadoRespuestaNovedadCoordinadorUseCase;
+    private final ModificarEstadoRespuestaUseCase modificarEstadoRespuestaUseCase;
 
     @Override
     @Transactional(transactionManager = "solicitudesTransactionManager")
     public void ejecutar(ModificarEstadoRespuestaNovedadCoordinadorCommand command) {
-        modificarEstadoRespuestaNovedadCoordinadorUseCase.ejecutar(
+        modificarEstadoRespuestaUseCase.ejecutar(
                 ModificarEstadoRespuestaNovedadCoordinadorMapper.toDomain(command));
     }
 }

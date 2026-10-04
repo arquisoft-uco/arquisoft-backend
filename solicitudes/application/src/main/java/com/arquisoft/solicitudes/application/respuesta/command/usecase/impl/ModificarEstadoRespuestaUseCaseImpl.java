@@ -5,50 +5,51 @@ import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.respuesta.command.finder.DatosRespuestaFinder;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
-import com.arquisoft.solicitudes.application.respuesta.command.usecase.ModificarEstadoRespuestaNovedadCoordinadorUseCase;
-import com.arquisoft.solicitudes.application.respuesta.command.validator.ModificarEstadoRespuestaNovedadCoordinadorValidator;
+import com.arquisoft.solicitudes.application.respuesta.command.usecase.ModificarEstadoRespuestaUseCase;
+import com.arquisoft.solicitudes.application.respuesta.command.validator.ModificarEstadoRespuestaValidator;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
-import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
-import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorEstadoModificadoEvent;
+import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaDomain;
+import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudEstadoModificadoEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImpl
-        implements ModificarEstadoRespuestaNovedadCoordinadorUseCase {
+public class ModificarEstadoRespuestaUseCaseImpl
+        implements ModificarEstadoRespuestaUseCase {
 
     private final DatosSolicitudFinder datosSolicitudFinder;
     private final DatosRespuestaFinder datosRespuestaFinder;
     private final DatosUsuarioFinder datosUsuarioFinder;
     private final RespuestaOutputPort respuestaOutputPort;
-    private final ModificarEstadoRespuestaNovedadCoordinadorValidator validator;
+    private final ModificarEstadoRespuestaValidator validator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
-    public void ejecutar(ModificacionEstadoRespuestaNovedadCoordinadorDomain entrada) {
+    public void ejecutar(ModificacionEstadoRespuestaDomain entrada) {
+        var tipo = entrada.getTipoEsperado().getId();
         logger.info(RespuestaKey.LOG_MODIFICANDO_ESTADO,
-                entrada.getSolicitud(), entrada.getCoordinadorUsuario());
+                tipo, entrada.getSolicitud(), entrada.getResponsableUsuario());
 
         var resumenSolicitud = datosSolicitudFinder.obtener(entrada.getSolicitud());
         var resumenRespuesta = datosRespuestaFinder.obtener(entrada.getSolicitud());
         var remitente = datosUsuarioFinder.obtener(resumenSolicitud.remitenteUsuario());
-        var coordinador = datosUsuarioFinder.obtener(resumenSolicitud.destinatarioUsuario());
+        var responsable = datosUsuarioFinder.obtener(resumenSolicitud.destinatarioUsuario());
 
         logger.debug(RespuestaKey.LOG_VERIFICACION_MODIFICACION_ESTADO,
-                !resumenSolicitud.esVacio(), !resumenRespuesta.esVacio());
+                !resumenSolicitud.esVacio(), !resumenRespuesta.esVacio(),
+                !remitente.esVacio(), !responsable.esVacio());
 
-        validator.validar(entrada, resumenSolicitud, resumenRespuesta, remitente, coordinador);
+        validator.validar(entrada, resumenSolicitud, resumenRespuesta, remitente, responsable);
 
         var nuevoEstado = entrada.getNuevoEstado();
         respuestaOutputPort.actualizarEstadoPorSolicitud(entrada.getSolicitud(), nuevoEstado.getId());
 
-        eventPublisher.publish(new SolicitudNovedadCoordinadorEstadoModificadoEvent(
-                entrada.getSolicitud(), nuevoEstado.getId(), nuevoEstado.getNombre(),
-                remitente.getNombre(), remitente.getEmail(), coordinador.getNombre()));
+        eventPublisher.publish(SolicitudEstadoModificadoEvent.crear(
+                entrada.getTipoEsperado(), entrada.getSolicitud(), nuevoEstado, remitente, responsable));
 
-        logger.info(RespuestaKey.LOG_ESTADO_MODIFICADO, entrada.getSolicitud(), nuevoEstado.getId());
+        logger.info(RespuestaKey.LOG_ESTADO_MODIFICADO, tipo, entrada.getSolicitud(), nuevoEstado.getId());
     }
 }

@@ -2,6 +2,7 @@ package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapp
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ModificarEstadoRespuestaNovedadCoordinadorCommand;
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -11,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ModificarEstadoRespuestaNovedadCoordinadorMapperTest {
 
     @Test
-    void debeCopiarSolicitudCoordinadorYNuevoEstado_cuandoMapeaElComando() {
+    void debeCopiarSolicitudResponsableNuevoEstadoYTipo_cuandoMapeaElComando() {
         // Arrange
         var solicitud = UUID.randomUUID();
         var coordinador = UUID.randomUUID();
@@ -23,7 +24,8 @@ class ModificarEstadoRespuestaNovedadCoordinadorMapperTest {
 
         // Assert
         assertThat(dominio.getSolicitud()).isEqualTo(solicitud);
-        assertThat(dominio.getCoordinadorUsuario()).isEqualTo(coordinador);
+        assertThat(dominio.getResponsableUsuario()).isEqualTo(coordinador);
+        assertThat(dominio.getTipoEsperado()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
         assertThat(dominio.getNuevoEstado()).isEqualTo(EstadoRespuesta.APROBADA);
     }
 }

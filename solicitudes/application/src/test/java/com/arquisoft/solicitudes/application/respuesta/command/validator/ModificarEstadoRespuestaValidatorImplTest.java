@@ -1,9 +1,9 @@
 package com.arquisoft.solicitudes.application.respuesta.command.validator;
 
-import com.arquisoft.solicitudes.application.respuesta.command.validator.impl.ModificarEstadoRespuestaNovedadCoordinadorValidatorImpl;
+import com.arquisoft.solicitudes.application.respuesta.command.validator.impl.ModificarEstadoRespuestaValidatorImpl;
 import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEncontradoException;
 import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
-import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.exception.EstadoRespuestaNoResolutivoException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisionException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontradaException;
@@ -22,17 +22,18 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class ModificarEstadoRespuestaNovedadCoordinadorValidatorImplTest {
+class ModificarEstadoRespuestaValidatorImplTest {
 
-    private final ModificarEstadoRespuestaNovedadCoordinadorValidatorImpl validator =
-            new ModificarEstadoRespuestaNovedadCoordinadorValidatorImpl();
+    private final ModificarEstadoRespuestaValidatorImpl validator =
+            new ModificarEstadoRespuestaValidatorImpl();
 
     private static final String TIPO_OK = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId();
     private static final String ESTADO_ACTUAL_OK = "EN_REVISION";
 
-    private static ModificacionEstadoRespuestaNovedadCoordinadorDomain entrada(
+    private static ModificacionEstadoRespuestaDomain entrada(
             UUID solicitud, UUID coordinador, String nuevoEstado) {
-        return ModificacionEstadoRespuestaNovedadCoordinadorDomain.crear(solicitud, coordinador, nuevoEstado);
+        return ModificacionEstadoRespuestaDomain.crear(
+                solicitud, coordinador, nuevoEstado, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
     }
 
     private static ResumenSolicitud resumenSolicitud(
