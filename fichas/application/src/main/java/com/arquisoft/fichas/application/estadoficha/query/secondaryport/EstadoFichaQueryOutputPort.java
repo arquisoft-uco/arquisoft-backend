@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface EstadoFichaQueryOutputPort {
 
-    List<EstadoFichaReadModel> findAll();
+    List<EstadoFichaReadModel> consultarPorRoles(List<String> roles);
 }

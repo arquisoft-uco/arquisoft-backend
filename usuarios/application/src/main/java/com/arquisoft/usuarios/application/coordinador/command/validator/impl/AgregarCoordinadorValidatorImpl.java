@@ -1,6 +1,7 @@
 package com.arquisoft.usuarios.application.coordinador.command.validator.impl;
 
 import com.arquisoft.usuarios.application.coordinador.command.validator.AgregarCoordinadorValidator;
+import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.coordinador.model.DisponibilidadCoordinadorUsuario;
 import com.arquisoft.usuarios.domain.coordinador.rules.CoordinadorUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.coordinador.rules.impl.CoordinadorUsuarioUnicoRuleImpl;
@@ -18,7 +19,7 @@ public class AgregarCoordinadorValidatorImpl implements AgregarCoordinadorValida
     }
 
     @Override
-    public void validar(UUID usuario, boolean yaEsCoordinador) {
-        coordinadorUsuarioUnicoRule.validar(new DisponibilidadCoordinadorUsuario(usuario, yaEsCoordinador));
+    public void validar(UUID usuario, CoordinadorDomain coordinador) {
+        coordinadorUsuarioUnicoRule.validar(new DisponibilidadCoordinadorUsuario(usuario, coordinador));
     }
 }

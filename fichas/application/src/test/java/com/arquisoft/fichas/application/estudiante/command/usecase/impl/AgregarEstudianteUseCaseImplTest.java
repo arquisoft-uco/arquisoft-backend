@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.usecase.impl;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantePorIdFinder;
 import com.arquisoft.fichas.application.estudiante.command.result.AgregacionEstudianteResult;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
@@ -9,12 +10,12 @@ import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +52,7 @@ class AgregarEstudianteUseCaseImplTest {
         // Arrange
         var id = UUID.randomUUID();
         var estudiante = estudiante(id, Instant.now());
-        when(estudiantePorIdFinder.obtener(id)).thenReturn(Optional.empty());
+        when(estudiantePorIdFinder.obtener(id)).thenReturn(EstudianteDomain.VACIO);
 
         // Act
         var resultado = useCase.ejecutar(estudiante);
@@ -69,8 +70,8 @@ class AgregarEstudianteUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now().minus(1, ChronoUnit.HOURS);
         var estudiante = estudiante(id, Instant.now());
-        when(estudiantePorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(estudiantePorIdFinder.obtener(id))
+                .thenReturn(EstudianteDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente, UtilFecha.VACIO));
 
         // Act
         var resultado = useCase.ejecutar(estudiante);
@@ -88,8 +89,8 @@ class AgregarEstudianteUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var estudiante = estudiante(id, vigente.minus(1, ChronoUnit.HOURS));
-        when(estudiantePorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(estudiantePorIdFinder.obtener(id))
+                .thenReturn(EstudianteDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente, UtilFecha.VACIO));
 
         // Act
         var resultado = useCase.ejecutar(estudiante);
@@ -109,14 +110,57 @@ class AgregarEstudianteUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var estudiante = estudiante(id, vigente);
-        when(estudiantePorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(estudiantePorIdFinder.obtener(id))
+                .thenReturn(EstudianteDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente, UtilFecha.VACIO));
 
         // Act
         var resultado = useCase.ejecutar(estudiante);
 
         // Assert
         assertThat(resultado).isInstanceOf(AgregacionEstudianteResult.Descartada.class);
+        verify(estudianteOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeReactivarSinGuardar_cuandoElEventoEsPosteriorALaBaja() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var baja = Instant.now().minus(1, ChronoUnit.HOURS);
+        var ocurridoEn = Instant.now();
+        when(estudiantePorIdFinder.obtener(id)).thenReturn(
+                EstudianteDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", baja, baja));
+        var estudiante = EstudianteDomain.crear(id, "20161020999", "Ana Gomez", "ana.gomez@uco.edu.co", ocurridoEn);
+
+        // Act
+        var resultado = useCase.ejecutar(estudiante);
+
+        // Assert
+        assertThat(resultado).isInstanceOfSatisfying(AgregacionEstudianteResult.Reactivada.class,
+                reactivada -> assertThat(reactivada.estudiante()).isEqualTo(id));
+        var captor = ArgumentCaptor.forClass(EstudianteEntity.class);
+        verify(estudianteOutputPort, times(1)).reactivar(captor.capture());
+        assertThat(captor.getValue().identificador()).isEqualTo("20161020999");
+        assertThat(captor.getValue().nombre()).isEqualTo("Ana Gomez");
+        assertThat(captor.getValue().email()).isEqualTo("ana.gomez@uco.edu.co");
+        assertThat(captor.getValue().ocurridoEn()).isEqualTo(ocurridoEn);
+        assertThat(captor.getValue().eliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        verify(estudianteOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeDescartarSinReactivar_cuandoElAgregadoEsAnteriorALaLapida() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var baja = Instant.now();
+        when(estudiantePorIdFinder.obtener(id)).thenReturn(
+                EstudianteDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", baja, baja));
+
+        // Act
+        var resultado = useCase.ejecutar(estudiante(id, baja.minus(1, ChronoUnit.HOURS)));
+
+        // Assert
+        assertThat(resultado).isInstanceOf(AgregacionEstudianteResult.Descartada.class);
+        verify(estudianteOutputPort, never()).reactivar(any());
         verify(estudianteOutputPort, never()).guardar(any());
     }
 }

@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.estudiante.command.validator.impl;
 
+import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
 import com.arquisoft.usuarios.domain.estudiante.exception.EstudianteUsuarioDuplicadoException;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ class AgregarEstudianteValidatorImplTest {
     @Test
     void debeOrquestarRuleUnica_enAgregarEstudianteValidator() {
         // Act & Assert
-        assertThatCode(() -> validator.validar(UUID.randomUUID(), false))
+        assertThatCode(() -> validator.validar(UUID.randomUUID(), EstudianteDomain.VACIO))
                 .doesNotThrowAnyException();
     }
 
@@ -25,7 +26,7 @@ class AgregarEstudianteValidatorImplTest {
         var usuario = UUID.randomUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(usuario, true))
+        assertThatThrownBy(() -> validator.validar(usuario, EstudianteDomain.crear(usuario)))
                 .isInstanceOf(EstudianteUsuarioDuplicadoException.class);
     }
 }

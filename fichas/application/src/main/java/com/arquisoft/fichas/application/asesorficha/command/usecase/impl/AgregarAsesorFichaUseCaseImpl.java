@@ -23,17 +23,24 @@ public class AgregarAsesorFichaUseCaseImpl implements AgregarAsesorFichaUseCase 
     @Override
     public AgregacionAsesorFichaResult ejecutar(AsesorFichaDomain asesorFicha) {
         var vigente = asesorFichaPorIdFinder.obtener(asesorFicha.getId());
-        logger.debug(AsesorFichaKey.LOG_VERIFICACION_AGREGAR, asesorFicha.getId(), vigente.isPresent());
+        logger.debug(AsesorFichaKey.LOG_VERIFICACION_AGREGAR, asesorFicha.getId(), !vigente.esVacio());
 
-        if (vigente.isPresent()) {
-            if (!asesorFicha.getOcurridoEn().isAfter(vigente.get().ocurridoEn())) {
-                return AgregacionAsesorFichaResultMapper.toResultDescartada(
-                        asesorFicha, vigente.get().ocurridoEn());
-            }
+        if (vigente.esVacio()) {
+            asesorFichaOutputPort.guardar(AsesorFichaMapper.toEntity(asesorFicha));
+            return AgregacionAsesorFichaResultMapper.toResultAgregada(asesorFicha);
+        }
+
+        if (!asesorFicha.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
+            return AgregacionAsesorFichaResultMapper.toResultDescartada(asesorFicha, vigente.getOcurridoEn());
+        }
+
+        if (!vigente.estaEliminado()) {
             return AgregacionAsesorFichaResultMapper.toResultDuplicada(asesorFicha);
         }
 
-        asesorFichaOutputPort.guardar(AsesorFichaMapper.toEntity(asesorFicha));
-        return AgregacionAsesorFichaResultMapper.toResultAgregada(asesorFicha);
+        vigente.reactivar(asesorFicha.getIdentificador(), asesorFicha.getNombre(), asesorFicha.getEmail(),
+                asesorFicha.getOcurridoEn());
+        asesorFichaOutputPort.reactivar(AsesorFichaMapper.toEntity(vigente));
+        return AgregacionAsesorFichaResultMapper.toResultReactivada(vigente);
     }
 }

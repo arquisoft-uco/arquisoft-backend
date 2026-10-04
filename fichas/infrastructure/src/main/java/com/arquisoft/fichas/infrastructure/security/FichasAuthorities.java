@@ -25,19 +25,38 @@ public final class FichasAuthorities {
 
     public static final String EVALUACION_FICHA_PERFIL_CREATE = "fichas:evaluacion-ficha-perfil:create";
     public static final String EVALUACION_FICHA_PERFIL_REPRESENTANTE_VIEW = "fichas:evaluacion-ficha-perfil-representante:view";
+    public static final String EVALUACION_FICHA_PERFIL_ESTUDIANTE_VIEW = "fichas:evaluacion-ficha-perfil-estudiante:view";
 
     public static final String ESTADO_EVALUACION_FICHA_CREATE = "fichas:estado-evaluacion-ficha:create";
 
     public static final String ESTADO_FICHA_VIEW = "fichas:estado-ficha:view";
 
     public static final String ESTADO_FICHA_PERFIL_ESTUDIANTE_VIEW = "fichas:estado-ficha-perfil-estudiante:view";
+    public static final String ESTADO_FICHA_PERFIL_ASESOR_VIEW = "fichas:estado-ficha-perfil-asesor:view";
+    public static final String ESTADO_FICHA_PERFIL_APROBACION_CREATE = "fichas:estado-ficha-perfil-aprobacion:create";
+    public static final String ESTADO_FICHA_PERFIL_ASESOR_CREATE = "fichas:estado-ficha-perfil-asesor:create";
+    public static final String ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW = "fichas:estado-ficha-perfil-representante:view";
 
     public static final String REVISION_ITEM_CREATE = "fichas:revision-item:create";
     public static final String REVISION_ITEM_ASESOR_VIEW = "fichas:revision-item-asesor:view";
+    public static final String REVISION_ITEM_ESTUDIANTE_VIEW = "fichas:revision-item-estudiante:view";
+    public static final String REVISION_ITEM_VISUALIZADA_UPDATE = "fichas:revision-item-visualizada:update";
+    public static final String REVISION_ITEM_DELETE = "fichas:revision-item:delete";
+
+    public static final String OBSERVACION_ITEM_CREATE = "fichas:observacion-item:create";
+    public static final String OBSERVACION_ITEM_ASESOR_VIEW = "fichas:observacion-item-asesor:view";
+    public static final String OBSERVACION_ITEM_ESTUDIANTE_VIEW = "fichas:observacion-item-estudiante:view";
+
+    public static final String OBSERVACION_EVALUACION_CREATE = "fichas:observacion-evaluacion:create";
+    public static final String OBSERVACION_EVALUACION_UPDATE = "fichas:observacion-evaluacion:update";
+    public static final String OBSERVACION_EVALUACION_DELETE = "fichas:observacion-evaluacion:delete";
+    public static final String OBSERVACION_EVALUACION_ESTUDIANTE_VIEW = "fichas:observacion-evaluacion-estudiante:view";
 
     public static final String TIPO_ITEM_VIEW = "fichas:tipo-item:view";
 
     public static final String ESTADO_EVALUACION_VIEW = "fichas:estado-evaluacion:view";
+
+    public static final String ESTADO_REVISION_VIEW = "fichas:estado-revision:view";
 
     public static final class Expresiones {
 
@@ -82,19 +101,51 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + EVALUACION_FICHA_PERFIL_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_EVALUACION_FICHA_PERFIL_REPRESENTANTE_VIEW =
                 HAS_AUTHORITY_INICIO + EVALUACION_FICHA_PERFIL_REPRESENTANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_EVALUACION_FICHA_PERFIL_ESTUDIANTE_VIEW =
+                HAS_AUTHORITY_INICIO + EVALUACION_FICHA_PERFIL_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_EVALUACION_FICHA_CREATE =
                 HAS_AUTHORITY_INICIO + ESTADO_EVALUACION_FICHA_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_FICHA_VIEW =
                 HAS_AUTHORITY_INICIO + ESTADO_FICHA_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_FICHA_PERFIL_ESTUDIANTE_VIEW =
                 HAS_AUTHORITY_INICIO + ESTADO_FICHA_PERFIL_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTADO_FICHA_PERFIL_ASESOR_VIEW =
+                HAS_AUTHORITY_INICIO + ESTADO_FICHA_PERFIL_ASESOR_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTADO_FICHA_PERFIL_APROBACION_CREATE =
+                HAS_AUTHORITY_INICIO + ESTADO_FICHA_PERFIL_APROBACION_CREATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTADO_FICHA_PERFIL_ASESOR_CREATE =
+                HAS_AUTHORITY_INICIO + ESTADO_FICHA_PERFIL_ASESOR_CREATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW =
+                HAS_AUTHORITY_INICIO + ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_TIPO_ITEM_VIEW =
                 HAS_AUTHORITY_INICIO + TIPO_ITEM_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_EVALUACION_VIEW =
                 HAS_AUTHORITY_INICIO + ESTADO_EVALUACION_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTADO_REVISION_VIEW =
+                HAS_AUTHORITY_INICIO + ESTADO_REVISION_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_REVISION_ITEM_CREATE =
                 HAS_AUTHORITY_INICIO + REVISION_ITEM_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_REVISION_ITEM_ASESOR_VIEW =
                 HAS_AUTHORITY_INICIO + REVISION_ITEM_ASESOR_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_REVISION_ITEM_ESTUDIANTE_VIEW =
+                HAS_AUTHORITY_INICIO + REVISION_ITEM_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_REVISION_ITEM_VISUALIZADA_UPDATE =
+                HAS_AUTHORITY_INICIO + REVISION_ITEM_VISUALIZADA_UPDATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_REVISION_ITEM_DELETE =
+                HAS_AUTHORITY_INICIO + REVISION_ITEM_DELETE + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_ITEM_CREATE =
+                HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_CREATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_ITEM_ASESOR_VIEW =
+                HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_ASESOR_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_ITEM_ESTUDIANTE_VIEW =
+                HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_EVALUACION_CREATE =
+                HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_CREATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_EVALUACION_UPDATE =
+                HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_UPDATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_EVALUACION_DELETE =
+                HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_DELETE + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_EVALUACION_ESTUDIANTE_VIEW =
+                HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
     }
 }

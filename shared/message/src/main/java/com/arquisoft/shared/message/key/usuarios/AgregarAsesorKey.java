@@ -6,8 +6,10 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum AgregarAsesorKey implements ClaveMensaje {
 
     ERROR_USUARIO_DUPLICADO("usuarios.dominio.asesor.error.usuario-duplicado", 1),
-    LOG_VERIFICACION_AGREGAR("usuarios.aplicacion.asesor.log.verificacion-agregar", 2),
-    LOG_GUARDADO("usuarios.infraestructura.asesor.log.guardado", 1);
+    LOG_VERIFICACION_AGREGAR("usuarios.aplicacion.asesor.log.verificacion-agregar", 3),
+    LOG_REACTIVADO("usuarios.aplicacion.asesor.log.reactivado", 1),
+    LOG_GUARDADO("usuarios.infraestructura.asesor.log.guardado", 1),
+    LOG_ACTUALIZADO("usuarios.infraestructura.asesor.log.actualizado", 1);
 
     private final String clave;
     private final int parametros;

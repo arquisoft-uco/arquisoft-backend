@@ -13,7 +13,8 @@ public final class AsesorMapper {
                 entity.identificador(),
                 entity.nombre(),
                 entity.email(),
-                entity.ocurridoEn());
+                entity.ocurridoEn(),
+                entity.eliminadoEn());
     }
 
     public static AsesorEntity toEntity(AsesorDomain asesor) {
@@ -22,6 +23,7 @@ public final class AsesorMapper {
                 asesor.getIdentificador(),
                 asesor.getNombre(),
                 asesor.getEmail(),
-                asesor.getOcurridoEn());
+                asesor.getOcurridoEn(),
+                asesor.getEliminadoEn());
     }
 }
