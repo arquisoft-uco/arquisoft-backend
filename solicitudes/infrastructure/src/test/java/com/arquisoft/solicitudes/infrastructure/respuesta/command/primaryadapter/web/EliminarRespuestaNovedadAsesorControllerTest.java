@@ -10,7 +10,7 @@ import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisio
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
-import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -121,7 +121,7 @@ class EliminarRespuestaNovedadAsesorControllerTest {
     static Stream<DomainException> excepcionesDeDominio() {
         return Stream.of(
                 new SolicitudNoEncontradaException(UUID.randomUUID()),
-                new SolicitudTipoNoCoincideException(UUID.randomUUID()),
+                new SolicitudTipoNoCoincideAsesorException(UUID.randomUUID()),
                 new SolicitudNoEsDestinatarioException(UUID.randomUUID()),
                 new RespuestaNoEncontradaException(UUID.randomUUID()),
                 new RespuestaNoEnRevisionException(UUID.randomUUID()));
