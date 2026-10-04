@@ -1,13 +1,13 @@
 package com.arquisoft.solicitudes.application.respuesta.command.validator;
 
 import com.arquisoft.solicitudes.application.respuesta.command.validator.impl.ModificarEstadoRespuestaNovedadCoordinadorValidatorImpl;
+import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEncontradoException;
+import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
 import com.arquisoft.solicitudes.domain.respuesta.exception.EstadoRespuestaNoResolutivoException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisionException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontradaException;
 import com.arquisoft.solicitudes.domain.respuesta.model.ResumenRespuesta;
-import com.arquisoft.solicitudes.domain.solicitud.exception.DestinatarioNoEncontradoException;
-import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
