@@ -10,5 +10,5 @@ public record SolicitudNovedadCoordinadorEstadoModificadoPayload(
         String nuevoEstadoNombre,
         String remitenteNombre,
         String remitenteEmail,
-        String coordinadorNombre) {
+        String responsableNombre) {
 }

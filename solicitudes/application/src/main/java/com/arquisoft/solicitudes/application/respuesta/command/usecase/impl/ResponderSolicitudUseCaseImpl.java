@@ -48,7 +48,7 @@ public class ResponderSolicitudUseCaseImpl implements ResponderSolicitudUseCase 
         var respuesta = entrada.getRespuesta();
         respuestaOutputPort.registrar(RespuestaMapper.toEntity(respuesta));
 
-        eventPublisher.publish(SolicitudRespondidaEvent.crear(
+        eventPublisher.publish(new SolicitudRespondidaEvent(
                 entrada.getTipoEsperado(), respuesta, remitente, responsable));
 
         logger.info(RespuestaKey.LOG_RESPONDIDA, tipo, respuesta.getId());

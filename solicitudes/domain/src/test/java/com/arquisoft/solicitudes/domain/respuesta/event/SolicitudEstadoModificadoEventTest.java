@@ -21,25 +21,12 @@ class SolicitudEstadoModificadoEventTest {
             UUID.randomUUID(), "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now());
 
     @Test
-    void debeCrearElEventoDelCoordinador_cuandoElTipoEsNovedadParaElCoordinador() {
-        // Act
-        var evento = SolicitudEstadoModificadoEvent.crear(
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR, UUID.randomUUID(),
-                EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE);
-
-        // Assert
-        assertThat(evento).isInstanceOf(SolicitudNovedadCoordinadorEstadoModificadoEvent.class);
-        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_COORDINADOR_ESTADO_MODIFICADO);
-        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudNovedadCoordinadorEstadoModificadoEvent");
-    }
-
-    @Test
-    void debeLlevarElEstadoYLosUsuarios_cuandoConstruyeElEvento() {
+    void debeAsignarTodosLosCampos_cuandoSeConstruye() {
         // Arrange
         var solicitud = UUID.randomUUID();
 
         // Act
-        var evento = (SolicitudNovedadCoordinadorEstadoModificadoEvent) SolicitudEstadoModificadoEvent.crear(
+        var evento = new SolicitudEstadoModificadoEvent(
                 TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR, solicitud,
                 EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE);
 
@@ -49,14 +36,38 @@ class SolicitudEstadoModificadoEventTest {
         assertThat(evento.getNuevoEstadoNombre()).isEqualTo(EstadoRespuesta.APROBADA.getNombre());
         assertThat(evento.getRemitenteNombre()).isEqualTo("Ana Estudiante");
         assertThat(evento.getRemitenteEmail()).isEqualTo("ana@uco.edu.co");
-        assertThat(evento.getCoordinadorNombre()).isEqualTo("Pedro Coordinador");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+        assertThat(evento.getIdEvento()).isNotBlank();
+        assertThat(evento.getOcurridoEn()).isNotNull();
+    }
+
+    @Test
+    void debeExponerElTemaYElTipoDeEventoDelCoordinador_cuandoElTipoEsNovedadParaElCoordinador() {
+        // Act
+        var evento = new SolicitudEstadoModificadoEvent(
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR, UUID.randomUUID(),
+                EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_COORDINADOR_ESTADO_MODIFICADO);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.novedad_coordinador_estado_modificado");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudNovedadCoordinadorEstadoModificadoEvent");
     }
 
     @Test
     void debeLanzarTipoNoEncontrado_cuandoElTipoNoTieneEventoDeEstadoModificado() {
         // Act & Assert
-        assertThatThrownBy(() -> SolicitudEstadoModificadoEvent.crear(
+        assertThatThrownBy(() -> new SolicitudEstadoModificadoEvent(
                 TipoSolicitud.CAMBIO_DE_ASESOR, UUID.randomUUID(),
+                EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE))
+                .isInstanceOf(TipoSolicitudNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarTipoNoEncontrado_cuandoElTipoEsElCentinelaVacio() {
+        // Act & Assert
+        assertThatThrownBy(() -> new SolicitudEstadoModificadoEvent(
+                TipoSolicitud.VACIO, UUID.randomUUID(),
                 EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE))
                 .isInstanceOf(TipoSolicitudNoEncontradoException.class);
     }

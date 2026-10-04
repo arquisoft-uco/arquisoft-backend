@@ -21,11 +21,11 @@ class SolicitudNovedadCoordinadorEstadoModificadoPayloadTest {
         private final String nuevoEstadoNombre;
         private final String remitenteNombre;
         private final String remitenteEmail;
-        private final String coordinadorNombre;
+        private final String responsableNombre;
 
         private SolicitudNovedadCoordinadorEstadoModificadoEventoDePrueba(
                 UUID solicitudId, String nuevoEstado, String nuevoEstadoNombre,
-                String remitenteNombre, String remitenteEmail, String coordinadorNombre) {
+                String remitenteNombre, String remitenteEmail, String responsableNombre) {
             super(EventTopics.Solicitudes.NOVEDAD_COORDINADOR_ESTADO_MODIFICADO,
                     "SolicitudNovedadCoordinadorEstadoModificadoEvent");
             this.solicitudId = solicitudId;
@@ -33,7 +33,7 @@ class SolicitudNovedadCoordinadorEstadoModificadoPayloadTest {
             this.nuevoEstadoNombre = nuevoEstadoNombre;
             this.remitenteNombre = remitenteNombre;
             this.remitenteEmail = remitenteEmail;
-            this.coordinadorNombre = coordinadorNombre;
+            this.responsableNombre = responsableNombre;
         }
 
         public UUID getSolicitudId() {
@@ -56,8 +56,8 @@ class SolicitudNovedadCoordinadorEstadoModificadoPayloadTest {
             return remitenteEmail;
         }
 
-        public String getCoordinadorNombre() {
-            return coordinadorNombre;
+        public String getResponsableNombre() {
+            return responsableNombre;
         }
     }
 
@@ -80,7 +80,7 @@ class SolicitudNovedadCoordinadorEstadoModificadoPayloadTest {
         assertThat(payload.nuevoEstadoNombre()).isEqualTo(evento.getNuevoEstadoNombre());
         assertThat(payload.remitenteNombre()).isEqualTo(evento.getRemitenteNombre());
         assertThat(payload.remitenteEmail()).isEqualTo(evento.getRemitenteEmail());
-        assertThat(payload.coordinadorNombre()).isEqualTo(evento.getCoordinadorNombre());
+        assertThat(payload.responsableNombre()).isEqualTo(evento.getResponsableNombre());
     }
 
     @Test
@@ -89,7 +89,7 @@ class SolicitudNovedadCoordinadorEstadoModificadoPayloadTest {
         var json = """
                 {"idEvento":"evt-1","solicitudId":"11111111-1111-1111-1111-111111111111",
                  "nuevoEstado":"APROBADA","remitenteNombre":"Ana Estudiante",
-                 "remitenteEmail":"ana.est@soyuco.edu.co","coordinadorNombre":"Pedro Coordinador"}
+                 "remitenteEmail":"ana.est@soyuco.edu.co","responsableNombre":"Pedro Coordinador"}
                 """;
 
         // Act

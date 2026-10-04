@@ -21,27 +21,12 @@ class SolicitudRespondidaEventTest {
             UUID.randomUUID(), "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now());
 
     @Test
-    void debeCrearElEventoDelCoordinador_cuandoElTipoEsNovedadParaElCoordinador() {
+    void debeAsignarTodosLosCampos_cuandoSeConstruye() {
         // Arrange
         var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "No puedo asistir");
 
         // Act
-        var evento = SolicitudRespondidaEvent.crear(
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR, respuesta, REMITENTE, RESPONSABLE);
-
-        // Assert
-        assertThat(evento).isInstanceOf(SolicitudNovedadCoordinadorRespondidaEvent.class);
-        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_COORDINADOR_RESPONDIDA);
-        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudNovedadCoordinadorRespondidaEvent");
-    }
-
-    @Test
-    void debeLlevarLosDatosDeLaRespuestaYLosUsuarios_cuandoConstruyeElEvento() {
-        // Arrange
-        var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "No puedo asistir");
-
-        // Act
-        var evento = (SolicitudNovedadCoordinadorRespondidaEvent) SolicitudRespondidaEvent.crear(
+        var evento = new SolicitudRespondidaEvent(
                 TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR, respuesta, REMITENTE, RESPONSABLE);
 
         // Assert
@@ -51,7 +36,24 @@ class SolicitudRespondidaEventTest {
         assertThat(evento.getEstadoRespuesta()).isEqualTo(respuesta.getEstadoRespuesta().getId());
         assertThat(evento.getRemitenteNombre()).isEqualTo("Ana Estudiante");
         assertThat(evento.getRemitenteEmail()).isEqualTo("ana@uco.edu.co");
-        assertThat(evento.getCoordinadorNombre()).isEqualTo("Pedro Coordinador");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+        assertThat(evento.getIdEvento()).isNotBlank();
+        assertThat(evento.getOcurridoEn()).isNotNull();
+    }
+
+    @Test
+    void debeExponerElTemaYElTipoDeEventoDelCoordinador_cuandoElTipoEsNovedadParaElCoordinador() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "No puedo asistir");
+
+        // Act
+        var evento = new SolicitudRespondidaEvent(
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR, respuesta, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_COORDINADOR_RESPONDIDA);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.novedad_coordinador_respondida");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudNovedadCoordinadorRespondidaEvent");
     }
 
     @Test
@@ -60,8 +62,19 @@ class SolicitudRespondidaEventTest {
         var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "contenido");
 
         // Act & Assert
-        assertThatThrownBy(() -> SolicitudRespondidaEvent.crear(
+        assertThatThrownBy(() -> new SolicitudRespondidaEvent(
                 TipoSolicitud.CAMBIO_DE_ASESOR, respuesta, REMITENTE, RESPONSABLE))
+                .isInstanceOf(TipoSolicitudNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarTipoNoEncontrado_cuandoElTipoEsElCentinelaVacio() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "contenido");
+
+        // Act & Assert
+        assertThatThrownBy(() -> new SolicitudRespondidaEvent(
+                TipoSolicitud.VACIO, respuesta, REMITENTE, RESPONSABLE))
                 .isInstanceOf(TipoSolicitudNoEncontradoException.class);
     }
 }

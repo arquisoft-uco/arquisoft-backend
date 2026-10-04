@@ -59,9 +59,9 @@ límite que hay que conocer antes de copiar:
   `EnviarSolicitudValidator.validar(...)` y publica `SolicitudEnviadaEvent`, una clase cuyo tema y tipo
   de evento salen del `TipoSolicitud`; `notificaciones` lo consume con un consumidor por tipo
   (`amqp/solicitudes/solicitud/`). Responder y modificar el estado de la
-  respuesta conservan un evento por tipo (`SolicitudRespondidaEvent.crear` y
-  `SolicitudEstadoModificadoEvent.crear` eligen el concreto) porque el campo del responsable difiere por
-  tipo y `notificaciones` lo lee por nombre. Mantiene además una réplica de `usuario` alimentada por los eventos
+  respuesta siguen el mismo patrón (`SolicitudRespondidaEvent`, `SolicitudEstadoModificadoEvent`: una clase
+  cuyo tema y tipo salen del `TipoSolicitud`, con `responsableNombre` genérico) y `notificaciones` los consume
+  con un consumidor por tipo (`amqp/solicitudes/respuesta/`). Mantiene además una réplica de `usuario` alimentada por los eventos
   de `usuarios` y un lado `query/` (consultas del coordinador cuyo mapper fuerza el filtro por JWT y por
   tipo). *Límites:* `UsuarioSolicitudesCommandOutputAdapter` y `UsuarioSolicitudesCommandRepository`
   llevan el contexto en el nombre, que es la convención retirada para réplicas (no se copia).

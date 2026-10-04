@@ -68,7 +68,7 @@ class SolicitudNovedadCoordinadorEstadoModificadoConsumerTest {
                     "nuevoEstadoNombre": "Aprobada",
                     "remitenteNombre": "Ana Estudiante",
                     "remitenteEmail": "ana.est@soyuco.edu.co",
-                    "coordinadorNombre": "Pedro Coordinador"
+                    "responsableNombre": "Pedro Coordinador"
                 }
                 """.formatted(idEvento, UUID.randomUUID());
 

@@ -48,7 +48,7 @@ public class SolicitudNovedadCoordinadorEstadoModificadoConsumer extends Abstrac
                     payload.remitenteEmail(),
                     plantilla(PlantillaKey.ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO),
                     plantilla(PlantillaKey.CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO,
-                            payload.remitenteNombre(), payload.coordinadorNombre(), payload.nuevoEstadoNombre()),
+                            payload.remitenteNombre(), payload.responsableNombre(), payload.nuevoEstadoNombre()),
                     plantilla(PlantillaKey.PIE_GENERICO))));
         });
     }

@@ -47,7 +47,7 @@ public class ModificarEstadoRespuestaUseCaseImpl
         var nuevoEstado = entrada.getNuevoEstado();
         respuestaOutputPort.actualizarEstadoPorSolicitud(entrada.getSolicitud(), nuevoEstado.getId());
 
-        eventPublisher.publish(SolicitudEstadoModificadoEvent.crear(
+        eventPublisher.publish(new SolicitudEstadoModificadoEvent(
                 entrada.getTipoEsperado(), entrada.getSolicitud(), nuevoEstado, remitente, responsable));
 
         logger.info(RespuestaKey.LOG_ESTADO_MODIFICADO, tipo, entrada.getSolicitud(), nuevoEstado.getId());

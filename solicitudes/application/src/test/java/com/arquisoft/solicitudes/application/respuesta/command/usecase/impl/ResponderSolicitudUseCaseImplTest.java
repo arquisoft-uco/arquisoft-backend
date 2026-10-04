@@ -12,7 +12,7 @@ import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudT
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaSolicitudDomain;
-import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorRespondidaEvent;
+import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudRespondidaEvent;
 import com.arquisoft.solicitudes.domain.respuesta.exception.SolicitudYaRespondidaException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -100,14 +100,13 @@ class ResponderSolicitudUseCaseImplTest {
         assertThat(persistida.contenido()).isEqualTo("No puedo asistir");
         assertThat(id).isEqualTo(persistida.id());
 
-        ArgumentCaptor<SolicitudNovedadCoordinadorRespondidaEvent> eventCaptor =
-                ArgumentCaptor.forClass(SolicitudNovedadCoordinadorRespondidaEvent.class);
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudRespondidaEvent.class);
         verify(eventPublisher).publish(eventCaptor.capture());
-        SolicitudNovedadCoordinadorRespondidaEvent evento = eventCaptor.getValue();
+        var evento = eventCaptor.getValue();
         assertThat(evento.getSolicitudId()).isEqualTo(solicitud);
         assertThat(evento.getRemitenteNombre()).isEqualTo("Ana Estudiante");
         assertThat(evento.getRemitenteEmail()).isEqualTo("ana@uco.edu.co");
-        assertThat(evento.getCoordinadorNombre()).isEqualTo("Pedro Coordinador");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
         assertThat(evento.getEstadoRespuesta()).isEqualTo("EN_REVISION");
 
         verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO), eq(TIPO), eq(solicitud), eq(coordinadorUsuario));

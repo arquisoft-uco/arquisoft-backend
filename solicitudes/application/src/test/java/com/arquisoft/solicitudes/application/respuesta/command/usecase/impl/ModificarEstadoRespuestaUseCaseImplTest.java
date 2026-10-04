@@ -12,7 +12,7 @@ import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEnc
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaDomain;
-import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorEstadoModificadoEvent;
+import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudEstadoModificadoEvent;
 import com.arquisoft.solicitudes.domain.respuesta.exception.EstadoRespuestaNoResolutivoException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisionException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontradaException;
@@ -110,7 +110,7 @@ class ModificarEstadoRespuestaUseCaseImplTest {
         // Assert — flujo principal
         verify(respuestaOutputPort).actualizarEstadoPorSolicitud(solicitud, "APROBADA");
 
-        var eventCaptor = ArgumentCaptor.forClass(SolicitudNovedadCoordinadorEstadoModificadoEvent.class);
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudEstadoModificadoEvent.class);
         verify(eventPublisher).publish(eventCaptor.capture());
         var evento = eventCaptor.getValue();
         assertThat(evento.getSolicitudId()).isEqualTo(solicitud);
@@ -118,7 +118,7 @@ class ModificarEstadoRespuestaUseCaseImplTest {
         assertThat(evento.getNuevoEstadoNombre()).isEqualTo(EstadoRespuesta.APROBADA.getNombre());
         assertThat(evento.getRemitenteNombre()).isEqualTo("Ana Estudiante");
         assertThat(evento.getRemitenteEmail()).isEqualTo("ana@uco.edu.co");
-        assertThat(evento.getCoordinadorNombre()).isEqualTo("Pedro Coordinador");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
 
         // Assert — presupuesto de I/O: un viaje por finder en el camino feliz
         verify(datosSolicitudFinder, times(1)).obtener(solicitud);
