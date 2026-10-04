@@ -13,6 +13,7 @@ rutas:
       asesor: /asesor
       estados-ficha: /estados-ficha
       estado-asesor: /{fichaPerfilId}/estados-ficha
+      estados-ficha-representante: /{fichaPerfilId}/estados-ficha/representante
       tipos-item: /tipos-item
       estados-evaluacion: /estados-evaluacion
       estados-revision: /estados-revision

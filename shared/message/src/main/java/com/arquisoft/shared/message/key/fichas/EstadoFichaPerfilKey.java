@@ -28,7 +28,10 @@ public enum EstadoFichaPerfilKey implements ClaveMensaje {
     ERROR_EVALUACION_EN_CURSO("fichas.dominio.estadofichaperfil.error.evaluacion-en-curso", 2),
     LOG_AGREGANDO("fichas.aplicacion.estadofichaperfil.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.estadofichaperfil.log.verificacion-agregar", 4),
-    LOG_AGREGADO("fichas.aplicacion.estadofichaperfil.log.agregado", 3);
+    LOG_AGREGADO("fichas.aplicacion.estadofichaperfil.log.agregado", 3),
+    LOG_CONSULTANDO_REPRESENTANTE("fichas.aplicacion.estadofichaperfil.log.consultando-representante", 1),
+    LOG_CONSULTA_REPRESENTANTE_COMPLETADA(
+            "fichas.aplicacion.estadofichaperfil.log.consulta-representante-completada", 1);
 
     private final String clave;
     private final int parametros;
