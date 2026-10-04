@@ -26,33 +26,33 @@ public final class SolicitudDomain {
             TipoSolicitud.VACIO);
 
     private UUID id;
-    private UUID destinatario;
-    private UUID remitente;
+    private UUID destinatarioUsuario;
+    private UUID remitenteUsuario;
     private Instant fechaCreacion;
     private String mensajeSolicitud;
     private TipoSolicitud tipoSolicitud;
 
     private SolicitudDomain() {}
 
-    private SolicitudDomain(UUID id, UUID destinatario, UUID remitente, Instant fechaCreacion,
+    private SolicitudDomain(UUID id, UUID destinatarioUsuario, UUID remitenteUsuario, Instant fechaCreacion,
                             String mensajeSolicitud, TipoSolicitud tipoSolicitud) {
         this.id = id;
-        this.destinatario = destinatario;
-        this.remitente = remitente;
+        this.destinatarioUsuario = destinatarioUsuario;
+        this.remitenteUsuario = remitenteUsuario;
         this.fechaCreacion = fechaCreacion;
         this.mensajeSolicitud = mensajeSolicitud;
         this.tipoSolicitud = tipoSolicitud;
     }
 
-    public static SolicitudDomain crear(UUID destinatario, UUID remitente,
+    public static SolicitudDomain crear(UUID destinatarioUsuario, UUID remitenteUsuario,
                                         String mensajeSolicitud, TipoSolicitud tipoSolicitud) {
         var solicitud = new SolicitudDomain();
         var result = new ValidationResult();
 
         solicitud.setId();
         solicitud.setFechaCreacion();
-        solicitud.setDestinatario(destinatario, result);
-        solicitud.setRemitente(remitente, result);
+        solicitud.setDestinatarioUsuario(destinatarioUsuario, result);
+        solicitud.setRemitenteUsuario(remitenteUsuario, result);
         solicitud.setMensajeSolicitud(mensajeSolicitud, result);
         solicitud.setTipoSolicitud(tipoSolicitud, result);
 
@@ -60,10 +60,11 @@ public final class SolicitudDomain {
         return solicitud;
     }
 
-    public static SolicitudDomain reconstruir(UUID id, UUID destinatario, UUID remitente,
+    public static SolicitudDomain reconstruir(UUID id, UUID destinatarioUsuario, UUID remitenteUsuario,
                                               Instant fechaCreacion, String mensajeSolicitud,
                                               TipoSolicitud tipoSolicitud) {
-        return new SolicitudDomain(id, destinatario, remitente, fechaCreacion, mensajeSolicitud, tipoSolicitud);
+        return new SolicitudDomain(id, destinatarioUsuario, remitenteUsuario, fechaCreacion,
+                mensajeSolicitud, tipoSolicitud);
     }
 
     private void setId() {
@@ -74,43 +75,44 @@ public final class SolicitudDomain {
         this.fechaCreacion = UtilFecha.generarInstanteActual();
     }
 
-    private void setDestinatario(UUID destinatario, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(destinatario,
+    private void setDestinatarioUsuario(UUID destinatarioUsuario, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(destinatarioUsuario,
                 SolicitudesFields.Solicitud.DESTINATARIO,
                 SolicitudesCodes.Solicitud.DESTINATARIO_REQUERIDO, result)) {
             return;
         }
-        this.destinatario = destinatario;
+        this.destinatarioUsuario = destinatarioUsuario;
     }
 
-    private void setRemitente(UUID remitente, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(remitente,
+    private void setRemitenteUsuario(UUID remitenteUsuario, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(remitenteUsuario,
                 SolicitudesFields.Solicitud.REMITENTE,
                 SolicitudesCodes.Solicitud.REMITENTE_REQUERIDO, result)) {
             return;
         }
-        this.remitente = remitente;
+        this.remitenteUsuario = remitenteUsuario;
     }
 
     private void setMensajeSolicitud(String mensajeSolicitud, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(mensajeSolicitud,
+        var recortado = UtilTexto.aplicarTrim(mensajeSolicitud);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 SolicitudesFields.Solicitud.MENSAJE,
                 SolicitudesCodes.Solicitud.MENSAJE_REQUERIDO, result)) {
             return;
         }
-        if (!ValidatorLongitud.longitudEntre(mensajeSolicitud,
+        if (!ValidatorLongitud.longitudEntre(recortado,
                 SolicitudesLimits.Solicitud.MENSAJE_MIN, SolicitudesLimits.Solicitud.MENSAJE_MAX,
                 SolicitudesFields.Solicitud.MENSAJE,
                 SolicitudesCodes.Solicitud.MENSAJE_DEMASIADO_LARGO, result)) {
             return;
         }
-        this.mensajeSolicitud = UtilTexto.aplicarTrim(mensajeSolicitud);
+        this.mensajeSolicitud = recortado;
     }
 
     private void setTipoSolicitud(TipoSolicitud tipoSolicitud, ValidationResult result) {
         if (!ValidatorObjeto.noNulo(tipoSolicitud,
-                SolicitudesFields.Solicitud.ID,
-                SolicitudesCodes.Solicitud.ID_REQUERIDO, result)) {
+                SolicitudesFields.Solicitud.TIPO_SOLICITUD,
+                SolicitudesCodes.Solicitud.TIPO_REQUERIDO, result)) {
             return;
         }
         this.tipoSolicitud = tipoSolicitud;
@@ -120,12 +122,12 @@ public final class SolicitudDomain {
         return id;
     }
 
-    public UUID getDestinatario() {
-        return destinatario;
+    public UUID getDestinatarioUsuario() {
+        return destinatarioUsuario;
     }
 
-    public UUID getRemitente() {
-        return remitente;
+    public UUID getRemitenteUsuario() {
+        return remitenteUsuario;
     }
 
     public Instant getFechaCreacion() {

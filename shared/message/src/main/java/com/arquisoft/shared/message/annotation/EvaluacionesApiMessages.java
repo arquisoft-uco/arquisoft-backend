@@ -49,4 +49,54 @@ public final class EvaluacionesApiMessages {
                         + "ordenados por nombre";
         public static final String CONSULTAR_RESP_200 = "Listado de criterios cualitativos del jurado";
     }
+
+    public static final class EvaluacionCualitativaJurado {
+
+        private EvaluacionCualitativaJurado() {}
+
+        public static final String TAG_NAME = "Evaluaciones cualitativas del jurado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de las evaluaciones cualitativas asociadas a una evaluación de jurado";
+        public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cualitativas del jurado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta todas las evaluaciones cualitativas de una evaluación de jurado";
+        public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cualitativas del jurado";
+        public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String CONSULTAR_RESP_422 = "La evaluación de jurado no existe";
+        public static final String REGISTRAR_SUMMARY = "Registrar lote de evaluaciones cualitativas";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra un lote de evaluaciones cualitativas del jurado sobre una evaluación de jurado";
+        public static final String REGISTRAR_RESP_201 = "Lote registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación no existe, está finalizada, "
+                        + "o algún ítem/criterio no existe o ya fue registrado";
+    }
+
+    public static final class ItemCuantitativoJurado {
+
+        private ItemCuantitativoJurado() {}
+
+        public static final String TAG_NAME = "Ítems cuantitativos del jurado";
+        public static final String TAG_DESCRIPTION =
+                "Administración de los ítems cuantitativos usados por el jurado";
+        public static final String REGISTRAR_SUMMARY = "Registrar ítem cuantitativo";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra un nuevo ítem cuantitativo disponible para el jurado";
+        public static final String REGISTRAR_RESP_201 = "Ítem cuantitativo registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La categoría no existe o el nombre ya está registrado en ella";
+        public static final String MODIFICAR_SUMMARY = "Modificar descripción del ítem cuantitativo";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica la descripción de un ítem cuantitativo existente del jurado";
+        public static final String MODIFICAR_RESP_204 = "Descripción actualizada";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 = "El ítem cuantitativo no existe";
+        public static final String CONSULTAR_SUMMARY = "Consultar ítems cuantitativos";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta todos los ítems cuantitativos disponibles para que el jurado evalúe un "
+                        + "trabajo de grado, ordenados por categoría y luego por nombre";
+        public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del jurado";
+    }
 }

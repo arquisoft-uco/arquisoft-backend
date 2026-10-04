@@ -3,6 +3,7 @@ package com.arquisoft.proyectos.application.estudiante.command.secondaryport;
 import com.arquisoft.proyectos.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,4 +16,8 @@ public interface EstudianteOutputPort {
     void reactivar(EstudianteEntity estudiante);
 
     Optional<EstudianteEntity> obtenerPorId(UUID id);
+
+    void actualizar(EstudianteEntity estudiante);
+
+    List<EstudianteEntity> obtenerVigentesPorIds(List<UUID> ids);
 }

@@ -1,7 +1,8 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EliminarSolicitudNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudDomain;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -19,11 +20,24 @@ class EliminarSolicitudNovedadCoordinadorMapperTest {
                 solicitud.toString(), remitente);
 
         // Act
-        EliminacionSolicitudNovedadCoordinadorDomain dominio =
+        EliminacionSolicitudDomain dominio =
                 EliminarSolicitudNovedadCoordinadorMapper.toDomain(command);
 
         // Assert
         assertThat(dominio.getSolicitud()).isEqualTo(solicitud);
         assertThat(dominio.getRemitenteUsuario()).isEqualTo(remitente);
+    }
+
+    @Test
+    void debeFijarElTipoEsperadoDelFlujo_cuandoMapeaElComando() {
+        // Arrange
+        var command = EliminarSolicitudNovedadCoordinadorCommand.crear(
+                UUID.randomUUID().toString(), UUID.randomUUID());
+
+        // Act
+        var dominio = EliminarSolicitudNovedadCoordinadorMapper.toDomain(command);
+
+        // Assert
+        assertThat(dominio.getTipoEsperado()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
     }
 }

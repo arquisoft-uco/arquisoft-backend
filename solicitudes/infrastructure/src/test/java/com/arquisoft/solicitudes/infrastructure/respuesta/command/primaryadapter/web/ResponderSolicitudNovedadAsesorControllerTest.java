@@ -81,9 +81,9 @@ class ResponderSolicitudNovedadAsesorControllerTest {
     @Test
     void debe201YTomarElAsesorDelJwt_cuandoLaPeticionEsValida() throws Exception {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID asesor = UUID.randomUUID();
-        UUID respuestaId = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var asesor = UUID.randomUUID();
+        var respuestaId = UUID.randomUUID();
         when(interactor.ejecutar(any())).thenReturn(respuestaId);
 
         // Act & Assert

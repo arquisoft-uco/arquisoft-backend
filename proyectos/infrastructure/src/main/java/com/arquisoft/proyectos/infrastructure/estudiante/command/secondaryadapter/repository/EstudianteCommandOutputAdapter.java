@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,5 +42,18 @@ public class EstudianteCommandOutputAdapter implements EstudianteOutputPort {
     @Override
     public Optional<EstudianteEntity> obtenerPorId(UUID id) {
         return estudianteRepository.findById(id).map(EstudianteJpaMapper::toEntity);
+    }
+
+    @Override
+    public void actualizar(EstudianteEntity estudiante) {
+        estudianteRepository.save(EstudianteJpaMapper.toJpaEntity(estudiante));
+        logger.debug(EstudianteProyectosKey.LOG_ACTUALIZADO, estudiante.id());
+    }
+
+    @Override
+    public List<EstudianteEntity> obtenerVigentesPorIds(List<UUID> ids) {
+        return estudianteRepository.findAllByIdInAndEliminadoEnIsNull(ids).stream()
+                .map(EstudianteJpaMapper::toEntity)
+                .toList();
     }
 }

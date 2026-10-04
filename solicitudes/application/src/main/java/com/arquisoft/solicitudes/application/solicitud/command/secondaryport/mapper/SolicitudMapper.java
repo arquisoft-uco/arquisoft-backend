@@ -2,29 +2,20 @@ package com.arquisoft.solicitudes.application.solicitud.command.secondaryport.ma
 
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.entity.SolicitudEntity;
 import com.arquisoft.solicitudes.domain.solicitud.SolicitudDomain;
-import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
+
+import java.util.UUID;
 
 public final class SolicitudMapper {
 
     private SolicitudMapper() {}
 
-    public static SolicitudEntity toEntity(SolicitudDomain domain) {
+    public static SolicitudEntity toEntity(SolicitudDomain domain, UUID remitente, UUID destinatario) {
         return new SolicitudEntity(
                 domain.getId(),
-                domain.getDestinatario(),
-                domain.getRemitente(),
+                destinatario,
+                remitente,
                 domain.getFechaCreacion(),
                 domain.getMensajeSolicitud(),
                 domain.getTipoSolicitud().getId());
-    }
-
-    public static SolicitudDomain toDomain(SolicitudEntity entity) {
-        return SolicitudDomain.reconstruir(
-                entity.id(),
-                entity.destinatario(),
-                entity.remitente(),
-                entity.fechaCreacion(),
-                entity.mensajeSolicitud(),
-                TipoSolicitud.desde(entity.tipoSolicitud()));
     }
 }

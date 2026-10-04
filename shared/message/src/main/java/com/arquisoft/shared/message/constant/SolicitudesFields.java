@@ -19,6 +19,7 @@ public final class SolicitudesFields {
         public static final String DESTINATARIO = "destinatario";
         public static final String REMITENTE = "remitente";
         public static final String MENSAJE = "mensajeSolicitud";
+        public static final String TIPO_SOLICITUD = "tipoSolicitud";
     }
 
     public static final class Respuesta {

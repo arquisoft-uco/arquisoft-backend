@@ -36,8 +36,7 @@ public class SolicitudNovedadAsesorRespondidaConsumer extends AbstractNotificaci
     @RabbitListener(queues = NotificacionesSolicitudesQueueConfig.NOVEDAD_ASESOR_RESPONDIDA_QUEUE)
     public void onSolicitudNovedadAsesorRespondida(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
-            SolicitudNovedadAsesorRespondidaPayload payload =
-                    deserialize(message, SolicitudNovedadAsesorRespondidaPayload.class);
+            var payload = deserialize(message, SolicitudNovedadAsesorRespondidaPayload.class);
 
             logger.info(
                     ConsumidorKey.LOG_SOLICITUD_NOVEDAD_ASESOR_RESPONDIDA_RECIBIDO,
@@ -53,7 +52,7 @@ public class SolicitudNovedadAsesorRespondidaConsumer extends AbstractNotificaci
                     plantilla(
                             PlantillaKey.CUERPO_SOLICITUD_NOVEDAD_ASESOR_RESPONDIDA,
                             payload.remitenteNombre(),
-                            payload.asesorNombre(),
+                            payload.responsableNombre(),
                             payload.contenido()),
                     plantilla(PlantillaKey.PIE_GENERICO))));
         });

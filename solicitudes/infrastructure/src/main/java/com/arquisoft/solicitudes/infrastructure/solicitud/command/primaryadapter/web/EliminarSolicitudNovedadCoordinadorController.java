@@ -25,8 +25,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("${rutas.solicitudes.solicitud.base:/solicitudes}")
 @RequiredArgsConstructor
@@ -61,7 +59,7 @@ public class EliminarSolicitudNovedadCoordinadorController {
     public ResponseEntity<Void> eliminar(@PathVariable String solicitudId,
                                          @AuthenticationPrincipal Jwt jwt) {
 
-        UUID remitenteUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var remitenteUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
 
         eliminarSolicitudNovedadCoordinadorInteractor.ejecutar(
                 EliminarSolicitudNovedadCoordinadorCommand.crear(solicitudId, remitenteUsuario));

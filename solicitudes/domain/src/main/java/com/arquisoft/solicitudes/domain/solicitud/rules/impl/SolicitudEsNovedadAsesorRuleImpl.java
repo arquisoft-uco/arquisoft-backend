@@ -1,6 +1,6 @@
 package com.arquisoft.solicitudes.domain.solicitud.rules.impl;
 
-import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.model.TipoSolicitudConcordante;
 import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudEsNovedadAsesorRule;
 
@@ -9,7 +9,7 @@ public class SolicitudEsNovedadAsesorRuleImpl implements SolicitudEsNovedadAseso
     @Override
     public void validar(TipoSolicitudConcordante concordancia) {
         if (!concordancia.tipoEsperado().equals(concordancia.tipoActual())) {
-            throw new SolicitudTipoNoCoincideException(concordancia.solicitud());
+            throw new SolicitudTipoNoCoincideAsesorException(concordancia.solicitud());
         }
     }
 }

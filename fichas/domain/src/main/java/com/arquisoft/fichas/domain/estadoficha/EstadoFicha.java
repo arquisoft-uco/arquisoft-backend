@@ -12,6 +12,7 @@ public enum EstadoFicha {
     APROBADA("Aprobada"),
     APROBADA_CON_OBSERVACIONES("Aprobada Con Observaciones"),
     NO_APROBADA("No Aprobada"),
+    DESCARTADA("Descartada"),
 
     VACIO("");
 
@@ -33,6 +34,10 @@ public enum EstadoFicha {
 
     public boolean esTerminal() {
         return this == APROBADA || this == APROBADA_CON_OBSERVACIONES || this == NO_APROBADA;
+    }
+
+    public boolean esAprobatorio() {
+        return this == APROBADA || this == APROBADA_CON_OBSERVACIONES;
     }
 
     public boolean permiteModificacion() {
