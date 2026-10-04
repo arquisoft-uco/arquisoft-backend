@@ -2,6 +2,7 @@
 name: 4b-validator-report
 description: Agente de persistencia del reporte de validación (parte 2 de 2). Invocar SOLO después de que @4a-validator-analyze haya producido un análisis APROBADO o RECHAZADO. Recibe el contenido del análisis y lo persiste en .workspace/validator/validator-{HU|HT}-{ID}.md, actualizando la fila Validación del plan. NO analiza, NO compila, NO hace commits — solo persiste lo que ya fue analizado.
 model: sonnet
+effort: low
 tools: Read, Write, Edit, Bash
 ---
 
