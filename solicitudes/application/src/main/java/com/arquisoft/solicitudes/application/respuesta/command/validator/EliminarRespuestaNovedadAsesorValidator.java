@@ -1,10 +1,11 @@
 package com.arquisoft.solicitudes.application.respuesta.command.validator;
 
-import java.util.UUID;
+import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaNovedadAsesorDomain;
+import com.arquisoft.solicitudes.domain.respuesta.model.ResumenRespuesta;
+import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 
 public interface EliminarRespuestaNovedadAsesorValidator {
 
-    void validar(UUID solicitud, boolean existeSolicitud, String tipoProyectado,
-                 UUID destinatarioUsuarioProyectado, UUID solicitante,
-                 boolean existeRespuesta, String estadoActual);
+    void validar(EliminacionRespuestaNovedadAsesorDomain entrada,
+                 ResumenSolicitud resumenSolicitud, ResumenRespuesta resumenRespuesta);
 }

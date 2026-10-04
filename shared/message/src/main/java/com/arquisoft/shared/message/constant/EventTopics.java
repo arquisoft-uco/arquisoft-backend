@@ -112,12 +112,6 @@ public final class EventTopics {
         public static final String NOVEDAD_ASESOR_RESPONDIDA =
                 "solicitudes.respuesta.novedad_asesor_respondida";
 
-        public static final String NOVEDAD_COORDINADOR_RESPUESTA_ELIMINADA =
-                "solicitudes.respuesta.novedad_coordinador_respuesta_eliminada";
-
-        public static final String NOVEDAD_ASESOR_RESPUESTA_ELIMINADA =
-                "solicitudes.respuesta.novedad_asesor_respuesta_eliminada";
-
         public static final String NOVEDAD_COORDINADOR_ESTADO_MODIFICADO =
                 "solicitudes.respuesta.novedad_coordinador_estado_modificado";
     }
