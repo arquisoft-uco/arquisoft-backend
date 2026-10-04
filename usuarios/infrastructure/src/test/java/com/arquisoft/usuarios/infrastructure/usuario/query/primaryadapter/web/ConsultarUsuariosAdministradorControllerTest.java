@@ -79,7 +79,7 @@ class ConsultarUsuariosAdministradorControllerTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var readModel = new UsuarioReadModel(id, "1002", "Bruno Diaz", "bruno.diaz@uco.edu.co",
-                "3000000000", "ACTIVO", true, true, true, false, false, true, true);
+                "3000000000", "ACTIVO", true, true, true, false, false, true, true, false);
         when(consultarUsuariosAdministradorInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(readModel), 0, 20, 1L));
         var body = """
@@ -112,6 +112,7 @@ class ConsultarUsuariosAdministradorControllerTest {
                 .andExpect(jsonPath("$.content[0].esCoordinador").value(false))
                 .andExpect(jsonPath("$.content[0].esRepresentanteComite").value(true))
                 .andExpect(jsonPath("$.content[0].esAdministrador").value(true))
+                .andExpect(jsonPath("$.content[0].esBibliotecario").value(false))
                 .andExpect(jsonPath("$.totalElements").value(1));
         var captor = ArgumentCaptor.forClass(ConsultaCriteriaQuery.class);
         verify(consultarUsuariosAdministradorInteractor).ejecutar(captor.capture());

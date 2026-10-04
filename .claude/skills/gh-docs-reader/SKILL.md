@@ -392,8 +392,8 @@ Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 | `entregables` | `Entregables Proyectos de Grado - Event Storming.md` | `11_delimitar_contextos_entregables_proyectos_grado.md` | `11_entregables_proyectos_grado_modelo_enriquecido.md` | `08_tablas_entregables.sql` | `data/08_data_entregables.sql` |
 | `evaluaciones` | `Evaluaciones Definitivas - Event Storming.md` | `12_delimitar_contextos_evaluaciones_definitivas.md` | `12_evaluaciones_definitivas_modelo_enriquecido.md` | `09_tablas_evaluaciones.sql` | `data/09_data_evaluaciones.sql` |
 | (mapas_ruta)* | `Mapa Ruta - Event Storming.md` | `09_delimitar_contextos_mapas_ruta.md` | `09_mapas_ruta_modelo_enriquecido.md` | `06_tablas_mapas_ruta.sql` | `data/06_data_mapas_ruta.sql` |
-| (biblioteca)* | `Biblioteca - Event Storming.md` | `14_delimitar_contextos_biblioteca.md` | `14_biblioteca_modelo_enriquecido.md` | `10_tablas_biblioteca.sql` | `data/10_data_biblioteca.sql` |
-| (solicitudes)* | `Solicitudes - Event Storming.md` | `15_delimitar_contextos_solicitudes.md` | `15_solicitudes_modelo_enriquecido.md` | `11_tablas_solicitudes.sql` | `data/11_data_solicitudes.sql` |
+| `biblioteca` | `Biblioteca - Event Storming.md` | `14_delimitar_contextos_biblioteca.md` | `14_biblioteca_modelo_enriquecido.md` | `10_tablas_biblioteca.sql` | `data/10_data_biblioteca.sql` |
+| `solicitudes` | `Solicitudes - Event Storming.md` | `15_delimitar_contextos_solicitudes.md` | `15_solicitudes_modelo_enriquecido.md` | `11_tablas_solicitudes.sql` | `data/11_data_solicitudes.sql` |
 
 **`notificaciones` no tiene fila, y no es un olvido: es el caso inverso.** Es un bounded context real
 del backend (con su modulo Gradle, su base y sus migraciones) que **no existe en arquisoft-docs** —
@@ -410,9 +410,9 @@ transversal que nacio del backend, no del modelado de negocio. Consecuencias al 
 - Si te descubres buscando `13_delimitar_contextos_notificaciones.md` o `data/12_data_notificaciones.sql`,
   para: no existen, y el `gh api` va a devolver 404. El dato que buscas esta en el contexto productor.
 
-*Contextos documentados en arquisoft-docs que aun no tienen bounded context en el backend. `biblioteca`
-y `solicitudes` ya tienen DDL y data propios en el MER, pero **eso no crea el contexto**: los 9
-bounded contexts del backend son los de `CLAUDE.md`, y ninguno de esos tres esta entre ellos.
+*Contexto documentado en arquisoft-docs que aun no tiene bounded context en el backend. `mapas_ruta`
+tiene DDL y data propios en el MER, pero **eso no crea el contexto**: los bounded contexts del
+backend son los de `CLAUDE.md`, y el marcado no esta entre ellos.
 Modelarlos requiere antes su modulo Gradle, su `{Contexto}DataSourceConfig` y su base en
 `init-db.sql` — no lo asumas planificando.
 

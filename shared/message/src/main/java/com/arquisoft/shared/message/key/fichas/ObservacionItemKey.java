@@ -12,6 +12,8 @@ public enum ObservacionItemKey implements ClaveMensaje {
     LOG_AGREGADA("fichas.aplicacion.observacionitem.log.agregada", 2),
     LOG_CONSULTANDO_ELABORADAS("fichas.aplicacion.observacionitem.log.consultando-elaboradas", 2),
     LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.observacionitem.log.consulta-elaboradas-completada", 1),
+    LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.observacionitem.log.consultando-estudiante", 2),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.observacionitem.log.consulta-estudiante-completada", 1),
     LOG_GUARDADA("fichas.infraestructura.observacionitem.log.guardada", 1);
 
     private final String clave;

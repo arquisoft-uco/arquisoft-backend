@@ -1,8 +1,10 @@
 package com.arquisoft.fichas.infrastructure.observacionitem.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.observacionitem.query.criteria.ObservacionItemCriteria;
+import com.arquisoft.fichas.application.observacionitem.query.criteria.ObservacionItemEstudianteCriteria;
 import com.arquisoft.fichas.application.observacionitem.query.readmodel.ObservacionItemReadModel;
 import com.arquisoft.fichas.application.observacionitem.query.secondaryport.ObservacionItemQueryOutputPort;
+import com.arquisoft.fichas.infrastructure.observacionitem.query.secondaryadapter.repository.mapper.ObservacionItemEstudianteQueryMapper;
 import com.arquisoft.fichas.infrastructure.observacionitem.query.secondaryadapter.repository.mapper.ObservacionItemQueryMapper;
 import com.arquisoft.shared.jpa.util.PageableMapper;
 import com.arquisoft.shared.jpa.util.PaginationMapper;
@@ -21,6 +23,8 @@ public class ObservacionItemQueryOutputAdapter implements ObservacionItemQueryOu
 
     private final ObservacionItemQueryRepository observacionItemRepository;
     private final ObservacionItemJpaSpecification specification;
+    private final ObservacionItemEstudianteQueryRepository observacionItemEstudianteRepository;
+    private final ObservacionItemEstudianteJpaSpecification estudianteSpecification;
 
     @Override
     public PaginatedResult<ObservacionItemReadModel> consultarTodas(ObservacionItemCriteria criteria) {
@@ -31,6 +35,18 @@ public class ObservacionItemQueryOutputAdapter implements ObservacionItemQueryOu
         return PaginationMapper.toResult(
                 observacionItemRepository.findAll(spec, pageable)
                         .map(ObservacionItemQueryMapper::toReadModel));
+    }
+
+    @Override
+    public PaginatedResult<ObservacionItemReadModel> consultarTodasEstudiante(
+            ObservacionItemEstudianteCriteria criteria) {
+        var pageable = conDesempate(
+                PageableMapper.toPageable(criteria, ObservacionItemEstudianteSortMapper::traducir));
+        var spec = estudianteSpecification.desdeCriteria(criteria);
+
+        return PaginationMapper.toResult(
+                observacionItemEstudianteRepository.findAll(spec, pageable)
+                        .map(ObservacionItemEstudianteQueryMapper::toReadModel));
     }
 
     private static Pageable conDesempate(Pageable pageable) {

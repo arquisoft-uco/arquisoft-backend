@@ -69,4 +69,23 @@ class ConsultarFichasPerfilAsesoradasMapperTest {
         assertThat(criteria.getOrdenamiento()).hasSize(1);
         assertThat(criteria.getOrdenamiento().get(0).getCampo()).isEqualTo("tituloProyecto");
     }
+
+    @Test
+    void debeCombinarElFiltroForzadoConUnFiltroDeEstado_cuandoQueryTraeEstadoFicha() {
+        // Arrange
+        var asesorFicha = UUID.randomUUID();
+        var raizCliente = NodoFiltro.predicado("estadoFicha", FiltroOperador.ES, "APROBADA");
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente);
+        var query = ConsultarFichasPerfilAsesoradasQuery.crear(asesorFicha, criterio);
+
+        var forzado = NodoFiltro.predicado(FichaPerfilCriteria.Campo.ASESOR_ID.getClave(),
+                FiltroOperador.ES, asesorFicha.toString());
+
+        // Act
+        var criteria = ConsultarFichasPerfilAsesoradasMapper.toCriteria(query);
+
+        // Assert
+        assertThat(criteria.getRaiz()).isEqualTo(
+                NodoFiltro.grupo(FiltroConector.AND, List.of(forzado, raizCliente)));
+    }
 }
