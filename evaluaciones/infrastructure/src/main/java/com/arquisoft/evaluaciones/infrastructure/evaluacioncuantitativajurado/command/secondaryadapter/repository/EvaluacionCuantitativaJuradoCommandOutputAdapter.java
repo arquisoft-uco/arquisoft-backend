@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -32,5 +33,16 @@ public class EvaluacionCuantitativaJuradoCommandOutputAdapter implements Evaluac
     @Override
     public boolean existePorItem(UUID item) {
         return repository.existsByItemId(item);
+    }
+
+    @Override
+    public Set<UUID> consultarIdsPorEvaluacionJurado(UUID evaluacionJurado, Set<UUID> evaluaciones) {
+        return repository.findIdsPorEvaluacionJurado(evaluacionJurado, evaluaciones);
+    }
+
+    @Override
+    public void eliminarPorIds(UUID evaluacionJurado, Set<UUID> evaluaciones) {
+        repository.eliminarPorIds(evaluacionJurado, evaluaciones);
+        logger.debug(EvaluacionCuantitativaJuradoKey.LOG_LOTE_ELIMINADO, evaluaciones.size());
     }
 }

@@ -130,6 +130,17 @@ public final class EvaluacionesApiMessages {
         public static final String CAMBIAR_PUNTAJE_RESP_422 =
                 "La evaluación no existe, no pertenece al jurado autenticado, su evaluación de jurado "
                         + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
+        public static final String OMITIR_SUMMARY = "Omitir evaluaciones cuantitativas del jurado";
+        public static final String OMITIR_DESCRIPTION =
+                "Omite (elimina) una o varias evaluaciones cuantitativas ya registradas en una evaluación de jurado, "
+                        + "todo o nada. No se puede omitir una evaluación que tenga observaciones asociadas";
+        public static final String OMITIR_REQUEST_BODY =
+                "Identificadores de las evaluaciones cuantitativas a omitir";
+        public static final String OMITIR_RESP_204 = "Evaluaciones cuantitativas omitidas";
+        public static final String OMITIR_RESP_400 = "Datos de entrada inválidos";
+        public static final String OMITIR_RESP_422 =
+                "La evaluación de jurado no existe, está finalizada, alguna evaluación cuantitativa no existe en ella "
+                        + "o está repetida, o alguna tiene observaciones asociadas";
     }
 
     public static final class Evaluacion {

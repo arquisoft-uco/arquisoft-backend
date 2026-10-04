@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @DataJpaTest
 class ObservacionItemJuradoCommandOutputAdapterTest {
@@ -187,5 +189,22 @@ class ObservacionItemJuradoCommandOutputAdapterTest {
         assertThat(actualizada.getEvaluacionCuantitativaJuradoId()).isEqualTo(evaluacionCuantitativaJurado);
         assertThat(intacta.getDescripcion()).isEqualTo("Descripción de otra observación");
         verify(logger).debug(any(ClaveMensaje.class), eq(observacion));
+    }
+
+    @Test
+    void debeDelegarEnRepositorioSinLogear_cuandoConsultaObservacionesDeEvaluacionesCuantitativas() {
+        // Arrange
+        var conObservacion = UUID.randomUUID();
+        var sinObservacion = UUID.randomUUID();
+        sembrarObservacion(conObservacion, "Sustenta el puntaje otorgado");
+
+        // Act
+        var existen = adapter.existenPorEvaluacionesCuantitativas(Set.of(conObservacion, sinObservacion));
+        var noExisten = adapter.existenPorEvaluacionesCuantitativas(Set.of(sinObservacion));
+
+        // Assert
+        assertThat(existen).isTrue();
+        assertThat(noExisten).isFalse();
+        verifyNoInteractions(logger);
     }
 }
