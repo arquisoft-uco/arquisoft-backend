@@ -15,3 +15,4 @@ rutas:
       cualitativas: /{evaluacionJuradoId}/cualitativas
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
+      por-id: /{itemId}

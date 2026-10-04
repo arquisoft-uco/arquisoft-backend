@@ -53,5 +53,6 @@ public final class EvaluacionesFields {
         public static final String DESCRIPCION = "descripcion";
         public static final String CATEGORIA = "categoria";
         public static final String VALOR = "valor";
+        public static final String ITEM = "itemCuantitativoJurado";
     }
 }
