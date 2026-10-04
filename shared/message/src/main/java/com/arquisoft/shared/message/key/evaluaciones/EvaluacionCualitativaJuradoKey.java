@@ -12,12 +12,20 @@ public enum EvaluacionCualitativaJuradoKey implements ClaveMensaje {
             "evaluaciones.dominio.evaluacioncualitativajurado.error.criterios-no-encontrados", 1),
     ERROR_ITEMS_YA_REGISTRADOS(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.items-ya-registrados", 1),
+    ERROR_EVALUACIONES_NO_ENCONTRADAS(
+            "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluaciones-no-encontradas", 2),
+    ERROR_EVALUACION_JURADO_FINALIZADA(
+            "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluacion-jurado-finalizada", 1),
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consulta-completada", 1),
     LOG_REGISTRANDO_LOTE("evaluaciones.aplicacion.evaluacioncualitativajurado.log.registrando-lote", 2),
     LOG_VERIFICACION_LOTE("evaluaciones.aplicacion.evaluacioncualitativajurado.log.verificacion-lote", 3),
     LOG_LOTE_REGISTRADO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.lote-registrado", 3),
-    LOG_LOTE_GUARDADO("evaluaciones.infraestructura.evaluacioncualitativajurado.log.lote-guardado", 1);
+    LOG_OMITIENDO_LOTE("evaluaciones.aplicacion.evaluacioncualitativajurado.log.omitiendo-lote", 2),
+    LOG_VERIFICACION_OMISION("evaluaciones.aplicacion.evaluacioncualitativajurado.log.verificacion-omision", 4),
+    LOG_LOTE_OMITIDO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.lote-omitido", 2),
+    LOG_LOTE_GUARDADO("evaluaciones.infraestructura.evaluacioncualitativajurado.log.lote-guardado", 1),
+    LOG_LOTE_ELIMINADO("evaluaciones.infraestructura.evaluacioncualitativajurado.log.lote-eliminado", 1);
 
     private final String clave;
     private final int parametros;

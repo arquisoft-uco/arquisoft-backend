@@ -77,6 +77,20 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_JURADO_CRITERIOS_NO_ENCONTRADOS";
         public static final String ITEMS_YA_REGISTRADOS =
                 "EVALUACION_CUALITATIVA_JURADO_ITEMS_YA_REGISTRADOS";
+        public static final String EVALUACIONES_NO_ENCONTRADAS =
+                "EVALUACION_CUALITATIVA_JURADO_EVALUACIONES_NO_ENCONTRADAS";
+        public static final String EVALUACION_JURADO_FINALIZADA =
+                "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_FINALIZADA";
+    }
+
+    public static final class OmisionEvaluacionesCualitativasJurado {
+
+        private OmisionEvaluacionesCualitativasJurado() {}
+
+        public static final String LOTE_VACIO = "OMISION_EVALUACIONES_CUALITATIVAS_LOTE_VACIO";
+        public static final String EVALUACIONES_REPETIDAS = "OMISION_EVALUACIONES_CUALITATIVAS_EVALUACIONES_REPETIDAS";
+        public static final String EVALUACION_REQUERIDA = "OMISION_EVALUACIONES_CUALITATIVAS_EVALUACION_REQUERIDA";
+        public static final String EVALUACION_INVALIDA = "OMISION_EVALUACIONES_CUALITATIVAS_EVALUACION_INVALIDA";
     }
 
     public static final class RegistroEvaluacionesCualitativasJurado {

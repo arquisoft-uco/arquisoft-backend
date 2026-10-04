@@ -95,6 +95,17 @@ public final class EvaluacionesApiMessages {
         public static final String REGISTRAR_RESP_422 =
                 "La evaluación no existe, está finalizada, "
                         + "o algún ítem/criterio no existe o ya fue registrado";
+        public static final String OMITIR_SUMMARY = "Omitir evaluaciones cualitativas del jurado";
+        public static final String OMITIR_DESCRIPTION =
+                "Omite (elimina) una o varias evaluaciones cualitativas ya registradas en una evaluación de jurado, "
+                        + "todo o nada";
+        public static final String OMITIR_REQUEST_BODY =
+                "Identificadores de las evaluaciones cualitativas a omitir";
+        public static final String OMITIR_RESP_204 = "Evaluaciones cualitativas omitidas";
+        public static final String OMITIR_RESP_400 = "Datos de entrada inválidos";
+        public static final String OMITIR_RESP_422 =
+                "La evaluación de jurado no existe, está finalizada, "
+                        + "o alguna evaluación cualitativa no existe en ella o está repetida";
     }
 
     public static final class EvaluacionCuantitativaJurado {

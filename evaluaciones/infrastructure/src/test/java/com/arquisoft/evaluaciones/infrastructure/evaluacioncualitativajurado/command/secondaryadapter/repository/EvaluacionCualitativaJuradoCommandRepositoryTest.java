@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +20,9 @@ class EvaluacionCualitativaJuradoCommandRepositoryTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private TestEntityManager testEntityManager;
 
     @Test
     void debePersistirYEncontrarItemsRegistrados_cuandoElLoteSeGuarda() {
@@ -101,5 +105,56 @@ class EvaluacionCualitativaJuradoCommandRepositoryTest {
 
         // Assert
         assertThat(existe).isFalse();
+    }
+
+    @Test
+    void debeRetornarSoloLosIdsDeLaEvaluacionJurado_cuandoUnIdPerteneceAOtraEvaluacionJurado() {
+        // Arrange
+        var evaluacionJuradoA = UUID.randomUUID();
+        var evaluacionJuradoB = UUID.randomUUID();
+        var idDeA = sembrar(evaluacionJuradoA);
+        var otroIdDeA = sembrar(evaluacionJuradoA);
+        var idDeB = sembrar(evaluacionJuradoB);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        // Act
+        var encontrados = repository.findIdsPorEvaluacionJurado(
+                evaluacionJuradoA, Set.of(idDeA, idDeB, UUID.randomUUID()));
+
+        // Assert
+        assertThat(encontrados).containsExactly(idDeA);
+        assertThat(encontrados).doesNotContain(otroIdDeA, idDeB);
+    }
+
+    @Test
+    void debeEliminarSoloLosIdsPedidosDeLaEvaluacionJurado_cuandoUnIdPerteneceAOtraEvaluacionJurado() {
+        // Arrange
+        var evaluacionJuradoA = UUID.randomUUID();
+        var evaluacionJuradoB = UUID.randomUUID();
+        var idPedido = sembrar(evaluacionJuradoA);
+        var idNoPedido = sembrar(evaluacionJuradoA);
+        var idDeOtraEvaluacion = sembrar(evaluacionJuradoB);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        // Act
+        repository.eliminarPorIds(evaluacionJuradoA, Set.of(idPedido, idDeOtraEvaluacion));
+
+        // Assert
+        var restantes = repository.findAll().stream()
+                .map(EvaluacionCualitativaJuradoJpaEntity::getId)
+                .toList();
+        assertThat(restantes).containsExactlyInAnyOrder(idNoPedido, idDeOtraEvaluacion);
+    }
+
+    private UUID sembrar(UUID evaluacionJurado) {
+        var entidad = EvaluacionCualitativaJuradoJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .evaluacionJurado(evaluacionJurado)
+                .item(UUID.randomUUID())
+                .criterio(UUID.randomUUID())
+                .build();
+        return testEntityManager.persist(entidad).getId();
     }
 }

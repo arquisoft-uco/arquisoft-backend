@@ -81,4 +81,34 @@ class EvaluacionCualitativaJuradoCommandOutputAdapterTest {
         assertThat(resultado).isTrue();
         verify(repository).existsByItem(item);
     }
+
+    @Test
+    void debeDelegarEnRepositorio_cuandoConsultaIdsPorEvaluacionJurado() {
+        // Arrange
+        var evaluacionJurado = UUID.randomUUID();
+        var perteneciente = UUID.randomUUID();
+        var evaluaciones = Set.of(perteneciente, UUID.randomUUID());
+        when(repository.findIdsPorEvaluacionJurado(evaluacionJurado, evaluaciones)).thenReturn(Set.of(perteneciente));
+
+        // Act
+        var resultado = adapter.consultarIdsPorEvaluacionJurado(evaluacionJurado, evaluaciones);
+
+        // Assert
+        assertThat(resultado).containsExactly(perteneciente);
+        verify(repository).findIdsPorEvaluacionJurado(evaluacionJurado, evaluaciones);
+    }
+
+    @Test
+    void debeEliminarYLogearElLote_cuandoEliminaPorIds() {
+        // Arrange
+        var evaluacionJurado = UUID.randomUUID();
+        var evaluaciones = Set.of(UUID.randomUUID(), UUID.randomUUID());
+
+        // Act
+        adapter.eliminarPorIds(evaluacionJurado, evaluaciones);
+
+        // Assert
+        verify(repository).eliminarPorIds(evaluacionJurado, evaluaciones);
+        verify(logger).debug(any(ClaveMensaje.class), eq(2));
+    }
 }
