@@ -11,6 +11,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -169,5 +170,23 @@ class EstudianteCommandOutputAdapterTest {
         // Assert
         var guardado = entityManager.find(EstudianteJpaEntity.class, id);
         assertThat(guardado.getEliminadoEn()).isEqualTo(baja);
+    }
+
+    @Test
+    void debeDevolverSoloLosVigentesPedidos_cuandoEntreLosIdsHayBajasYDesconocidos() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var instante = Instant.parse("2026-09-01T10:00:00Z");
+        var vigente1 = sembrar(instante, null);
+        var vigente2 = sembrar(instante, null);
+        var dadoDeBaja = sembrar(instante, instante);
+        sembrar(instante, null);
+
+        // Act
+        var resultado = adapter.obtenerVigentesPorIds(
+                List.of(vigente1, vigente2, dadoDeBaja, UUID.randomUUID()));
+
+        // Assert
+        assertThat(resultado).extracting(EstudianteEntity::id).containsExactlyInAnyOrder(vigente1, vigente2);
     }
 }

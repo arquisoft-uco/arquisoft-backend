@@ -7,9 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public interface EstudianteCommandRepository extends JpaRepository<EstudianteJpaEntity, UUID> {
+
+    List<EstudianteJpaEntity> findAllByIdInAndEliminadoEnIsNull(Collection<UUID> ids);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE EstudianteJpaEntity e SET e.eliminadoEn = :ocurridoEn, e.ocurridoEn = :ocurridoEn WHERE e.id = :id")

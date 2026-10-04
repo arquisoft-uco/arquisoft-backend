@@ -36,6 +36,10 @@ public enum EstadoFicha {
         return this == APROBADA || this == APROBADA_CON_OBSERVACIONES || this == NO_APROBADA;
     }
 
+    public boolean esAprobatorio() {
+        return this == APROBADA || this == APROBADA_CON_OBSERVACIONES;
+    }
+
     public boolean permiteModificacion() {
         return !esTerminal();
     }

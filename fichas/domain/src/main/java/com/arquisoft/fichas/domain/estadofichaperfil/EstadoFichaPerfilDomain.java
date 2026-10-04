@@ -3,6 +3,7 @@ package com.arquisoft.fichas.domain.estadofichaperfil;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.ResumenEvaluacionesFicha;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -46,6 +47,18 @@ public final class EstadoFichaPerfilDomain {
         return aggregate;
     }
 
+    public static EstadoFichaPerfilDomain crearPorDecision(UUID fichaPerfil, boolean acepta,
+                                                           ResumenEvaluacionesFicha resumen) {
+        var aggregate = new EstadoFichaPerfilDomain();
+
+        aggregate.setId();
+        aggregate.setFichaPerfil(fichaPerfil);
+        aggregate.setEstadoPorDecision(acepta, resumen);
+        aggregate.setFechaActualizacion();
+
+        return aggregate;
+    }
+
     public static EstadoFichaPerfilDomain reconstruir(UUID id, UUID fichaPerfilId,
                                                          EstadoFicha estadoFicha,
                                                          Instant fechaActualizacion) {
@@ -65,8 +78,22 @@ public final class EstadoFichaPerfilDomain {
         this.fichaPerfil = fichaPerfil;
     }
 
+    private void setFichaPerfil(UUID fichaPerfil) {
+        this.fichaPerfil = fichaPerfil;
+    }
+
     private void setEstadoFichaInicial() {
         this.estadoFicha = EstadoFicha.EN_CONSTRUCCION;
+    }
+
+    private void setEstadoPorDecision(boolean acepta, ResumenEvaluacionesFicha resumen) {
+        if (!acepta) {
+            this.estadoFicha = EstadoFicha.NO_APROBADA;
+            return;
+        }
+        this.estadoFicha = resumen.tieneObservacionesVigentes()
+                ? EstadoFicha.APROBADA_CON_OBSERVACIONES
+                : EstadoFicha.APROBADA;
     }
 
     private void setFechaActualizacion() {

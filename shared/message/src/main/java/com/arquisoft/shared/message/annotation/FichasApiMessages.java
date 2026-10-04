@@ -205,6 +205,12 @@ public final class FichasApiMessages {
                 "Filtro con campo, operador o valor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 =
                 "Sin el permiso para consultar los estados como asesor";
+        public static final String AGREGAR_APROBACION_SUMMARY = "Registrar la decisión de aprobación de una ficha de perfil";
+        public static final String AGREGAR_APROBACION_DESCRIPTION = "El coordinador acepta o no la ficha; el estado se deriva de las evaluaciones";
+        public static final String AGREGAR_APROBACION_RESP_201 = "Estado de aprobación registrado; devuelve el id del nuevo estado";
+        public static final String AGREGAR_APROBACION_RESP_400 = "Falta la decisión o el id de la ficha no es un UUID válido";
+        public static final String AGREGAR_APROBACION_RESP_403 = "Sin el permiso para registrar la aprobación de una ficha de perfil";
+        public static final String AGREGAR_APROBACION_RESP_422 = "Ficha inexistente, no disponible o sin evaluaciones/estudiantes que la respalden";
     }
 
     public static final class RevisionItem {

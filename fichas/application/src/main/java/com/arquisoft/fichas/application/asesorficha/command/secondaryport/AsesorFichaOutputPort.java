@@ -19,4 +19,6 @@ public interface AsesorFichaOutputPort {
     void eliminarLogica(UUID id, Instant ocurridoEn);
 
     void reactivar(AsesorFichaEntity asesorFicha);
+
+    Optional<AsesorFichaEntity> obtenerPorFichaPerfil(UUID fichaPerfil);
 }

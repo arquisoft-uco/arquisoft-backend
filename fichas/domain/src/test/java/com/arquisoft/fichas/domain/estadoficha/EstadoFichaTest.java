@@ -2,6 +2,8 @@ package com.arquisoft.fichas.domain.estadoficha;
 
 import com.arquisoft.fichas.domain.estadoficha.exception.EstadoFichaNoEncontradoException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -62,5 +64,23 @@ class EstadoFichaTest {
         assertThat(EstadoFicha.esValido("NO_EXISTE")).isFalse();
         assertThat(EstadoFicha.esValido("VACIO")).isFalse();
         assertThat(EstadoFicha.esValido(null)).isFalse();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "EN_CONSTRUCCION,            false",
+            "DISPONIBLE_PARA_EVALUACION, false",
+            "APROBADA,                   true",
+            "APROBADA_CON_OBSERVACIONES, true",
+            "NO_APROBADA,                false",
+            "DESCARTADA,                 false",
+            "VACIO,                      false"
+    })
+    void debeIndicarSiEsAprobatorio_cuandoSeConsultaElEstado(EstadoFicha estado, boolean esperado) {
+        // Act
+        var aprobatorio = estado.esAprobatorio();
+
+        // Assert
+        assertThat(aprobatorio).isEqualTo(esperado);
     }
 }

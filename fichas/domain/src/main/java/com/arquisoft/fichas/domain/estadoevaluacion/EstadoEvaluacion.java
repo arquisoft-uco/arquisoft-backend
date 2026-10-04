@@ -39,6 +39,18 @@ public enum EstadoEvaluacion {
         return this == EN_EVALUACION;
     }
 
+    public boolean esFinalizada() {
+        return this == APROBADA || this == APROBADA_CON_OBSERVACIONES || this == NO_APROBADA;
+    }
+
+    public boolean esAprobatoria() {
+        return this == APROBADA || this == APROBADA_CON_OBSERVACIONES;
+    }
+
+    public boolean esDescartada() {
+        return this == DESCARTADA;
+    }
+
     public static EstadoEvaluacion desde(String id) {
         return delCatalogo(id).orElseThrow(() -> new EstadoEvaluacionNoEncontradoException(id));
     }
