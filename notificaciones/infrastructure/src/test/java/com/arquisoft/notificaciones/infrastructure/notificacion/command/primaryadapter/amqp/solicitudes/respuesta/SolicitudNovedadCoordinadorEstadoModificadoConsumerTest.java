@@ -34,7 +34,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class SolicitudNovedadCoordinadorRespondidaConsumerTest {
+class SolicitudNovedadCoordinadorEstadoModificadoConsumerTest {
 
     @Mock
     private EnviarNotificacionInteractor enviarNotificacionInteractor;
@@ -45,11 +45,11 @@ class SolicitudNovedadCoordinadorRespondidaConsumerTest {
     @Mock
     private AppLogger logger;
 
-    private SolicitudNovedadCoordinadorRespondidaConsumer adapter;
+    private SolicitudNovedadCoordinadorEstadoModificadoConsumer adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new SolicitudNovedadCoordinadorRespondidaConsumer(
+        adapter = new SolicitudNovedadCoordinadorEstadoModificadoConsumer(
                 enviarNotificacionInteractor,
                 new ObjectMapper(),
                 logger,
@@ -60,18 +60,19 @@ class SolicitudNovedadCoordinadorRespondidaConsumerTest {
     }
 
     private Message mensajeCon(String idEvento, long deliveryTag) {
-        String payloadJson = """
+        var payloadJson = """
                 {
                     "idEvento": "%s",
                     "solicitudId": "%s",
-                    "contenido": "Puedes presentar la novedad el lunes",
+                    "nuevoEstado": "APROBADA",
+                    "nuevoEstadoNombre": "Aprobada",
                     "remitenteNombre": "Ana Estudiante",
                     "remitenteEmail": "ana.est@soyuco.edu.co",
                     "responsableNombre": "Pedro Coordinador"
                 }
                 """.formatted(idEvento, UUID.randomUUID());
 
-        MessageProperties props = new MessageProperties();
+        var props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
         props.setHeader("X-Trace-Id", "trace-123");
         props.setHeader("X-User-Id", "user-456");
@@ -82,33 +83,34 @@ class SolicitudNovedadCoordinadorRespondidaConsumerTest {
     @Test
     void debeNotificarAlRemitente_cuandoElPayloadEsValido() throws Exception {
         // Arrange
-        String idEvento = UUID.randomUUID().toString();
+        var idEvento = UUID.randomUUID().toString();
 
         // Act
-        adapter.onSolicitudNovedadCoordinadorRespondida(mensajeCon(idEvento, 1L), channel);
+        adapter.onSolicitudNovedadCoordinadorEstadoModificado(mensajeCon(idEvento, 1L), channel);
 
         // Assert
         ArgumentCaptor<EnviarNotificacionCommand> captor =
                 ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
         verify(enviarNotificacionInteractor).ejecutar(captor.capture());
 
-        EnviarNotificacionCommand command = captor.getValue();
+        var command = captor.getValue();
         assertThat(command.idEvento()).isEqualTo(idEvento);
-        assertThat(command.tipo()).isEqualTo(TipoNotificacion.SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA);
+        assertThat(command.tipo()).isEqualTo(TipoNotificacion.SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO);
         assertThat(command.destinatarioNombre()).isEqualTo("Ana Estudiante");
         assertThat(command.destinatarioEmail()).isEqualTo("ana.est@soyuco.edu.co");
         assertThat(command.asunto()).isNotEmpty();
         assertThat(command.cuerpo())
                 .contains("Ana Estudiante")
                 .contains("Pedro Coordinador")
-                .contains("Puedes presentar la novedad el lunes");
+                .contains("Aprobada");
         assertThat(command.pie()).isNotEmpty();
     }
 
     @Test
     void debeConfirmarElMensaje_cuandoElProcesamientoTermina() throws Exception {
         // Act
-        adapter.onSolicitudNovedadCoordinadorRespondida(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
+        adapter.onSolicitudNovedadCoordinadorEstadoModificado(
+                mensajeCon(UUID.randomUUID().toString(), 1L), channel);
 
         // Assert
         verify(channel).basicAck(1L, false);
@@ -121,7 +123,8 @@ class SolicitudNovedadCoordinadorRespondidaConsumerTest {
                 .when(enviarNotificacionInteractor).ejecutar(any());
 
         // Act
-        adapter.onSolicitudNovedadCoordinadorRespondida(mensajeCon(UUID.randomUUID().toString(), 2L), channel);
+        adapter.onSolicitudNovedadCoordinadorEstadoModificado(
+                mensajeCon(UUID.randomUUID().toString(), 2L), channel);
 
         // Assert
         verify(channel).basicNack(2L, false, false);
@@ -150,7 +153,7 @@ class SolicitudNovedadCoordinadorRespondidaConsumerTest {
 
         try {
             // Act
-            adapter.onSolicitudNovedadCoordinadorRespondida(
+            adapter.onSolicitudNovedadCoordinadorEstadoModificado(
                     mensajeCon(UUID.randomUUID().toString(), 3L), channel);
 
             // Assert

@@ -20,11 +20,11 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 @Component
-public class SolicitudNovedadCoordinadorRespondidaConsumer extends AbstractNotificacionConsumer {
+public class SolicitudNovedadCoordinadorEstadoModificadoConsumer extends AbstractNotificacionConsumer {
 
     private final EnviarNotificacionInteractor enviarNotificacionInteractor;
 
-    public SolicitudNovedadCoordinadorRespondidaConsumer(
+    public SolicitudNovedadCoordinadorEstadoModificadoConsumer(
             EnviarNotificacionInteractor enviarNotificacionInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
@@ -33,27 +33,22 @@ public class SolicitudNovedadCoordinadorRespondidaConsumer extends AbstractNotif
         this.enviarNotificacionInteractor = enviarNotificacionInteractor;
     }
 
-    @RabbitListener(queues = NotificacionesSolicitudesQueueConfig.NOVEDAD_COORDINADOR_RESPONDIDA_QUEUE)
-    public void onSolicitudNovedadCoordinadorRespondida(Message message, Channel channel) throws IOException {
+    @RabbitListener(queues = NotificacionesSolicitudesQueueConfig.NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_QUEUE)
+    public void onSolicitudNovedadCoordinadorEstadoModificado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
-            var payload = deserialize(message, SolicitudNovedadCoordinadorRespondidaPayload.class);
+            var payload = deserialize(message, SolicitudNovedadCoordinadorEstadoModificadoPayload.class);
 
-            logger.info(
-                    ConsumidorKey.LOG_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA_RECIBIDO,
-                    payload.solicitudId(),
-                    UtilTexto.enmascararCorreo(payload.remitenteEmail()));
+            logger.info(ConsumidorKey.LOG_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_RECIBIDO,
+                    payload.solicitudId(), UtilTexto.enmascararCorreo(payload.remitenteEmail()));
 
             registrar(enviarNotificacionInteractor.ejecutar(EnviarNotificacionCommand.crear(
                     payload.idEvento(),
-                    TipoNotificacionEvento.SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA.getCodigo(),
+                    TipoNotificacionEvento.SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO.getCodigo(),
                     payload.remitenteNombre(),
                     payload.remitenteEmail(),
-                    plantilla(PlantillaKey.ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA),
-                    plantilla(
-                            PlantillaKey.CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA,
-                            payload.remitenteNombre(),
-                            payload.responsableNombre(),
-                            payload.contenido()),
+                    plantilla(PlantillaKey.ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO),
+                    plantilla(PlantillaKey.CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO,
+                            payload.remitenteNombre(), payload.responsableNombre(), payload.nuevoEstadoNombre()),
                     plantilla(PlantillaKey.PIE_GENERICO))));
         });
     }

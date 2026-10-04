@@ -2,11 +2,12 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.primary
 
 import java.time.Instant;
 
-public record SolicitudNovedadCoordinadorRespondidaPayload(
+public record SolicitudNovedadCoordinadorEstadoModificadoPayload(
         String idEvento,
         Instant ocurridoEn,
         String solicitudId,
-        String contenido,
+        String nuevoEstado,
+        String nuevoEstadoNombre,
         String remitenteNombre,
         String remitenteEmail,
         String responsableNombre) {
