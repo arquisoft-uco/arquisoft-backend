@@ -1,7 +1,9 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.evaluacionfichaperfil.query.readmodel.EvaluacionFichaPerfilEstudianteReadModel;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.readmodel.EvaluacionFichaPerfilReadModel;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.secondaryport.EvaluacionFichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.secondaryadapter.repository.mapper.EvaluacionFichaPerfilEstudianteQueryMapper;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.secondaryadapter.repository.mapper.EvaluacionFichaPerfilQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import java.util.UUID;
 public class EvaluacionFichaPerfilQueryOutputAdapter implements EvaluacionFichaPerfilQueryOutputPort {
 
     private final EvaluacionFichaPerfilQueryRepository evaluacionFichaPerfilQueryRepository;
+    private final EvaluacionFichaPerfilEstudianteQueryRepository evaluacionFichaPerfilEstudianteQueryRepository;
 
     @Override
     public List<EvaluacionFichaPerfilReadModel> consultarPorFichaYRepresentante(
@@ -22,6 +25,15 @@ public class EvaluacionFichaPerfilQueryOutputAdapter implements EvaluacionFichaP
                 .findByFichaPerfilIdAndRepresentanteComiteIdOrderByFechaCreacionAsc(fichaPerfil, representanteComite)
                 .stream()
                 .map(EvaluacionFichaPerfilQueryMapper::toReadModel)
+                .toList();
+    }
+
+    @Override
+    public List<EvaluacionFichaPerfilEstudianteReadModel> consultarPorFichaYEstudiante(UUID fichaPerfil, UUID estudiante) {
+        return evaluacionFichaPerfilEstudianteQueryRepository
+                .findByFichaPerfilIdAndEstudianteIdOrderByFechaCreacionAsc(fichaPerfil, estudiante)
+                .stream()
+                .map(EvaluacionFichaPerfilEstudianteQueryMapper::toReadModel)
                 .toList();
     }
 }
