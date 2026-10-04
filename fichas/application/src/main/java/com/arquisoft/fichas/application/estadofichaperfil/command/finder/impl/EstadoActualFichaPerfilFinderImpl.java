@@ -7,7 +7,6 @@ import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -17,8 +16,9 @@ public class EstadoActualFichaPerfilFinderImpl implements EstadoActualFichaPerfi
     private final EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
 
     @Override
-    public Optional<EstadoFichaPerfilDomain> obtener(UUID fichaPerfil) {
+    public EstadoFichaPerfilDomain obtener(UUID fichaPerfil) {
         return estadoFichaPerfilOutputPort.obtenerEstadoActual(fichaPerfil)
-                .map(EstadoFichaPerfilMapper::toDomain);
+                .map(EstadoFichaPerfilMapper::toDomain)
+                .orElse(EstadoFichaPerfilDomain.VACIO);
     }
 }

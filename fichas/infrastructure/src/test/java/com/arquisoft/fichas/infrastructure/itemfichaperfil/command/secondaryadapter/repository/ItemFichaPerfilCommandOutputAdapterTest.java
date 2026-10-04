@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -240,5 +241,114 @@ class ItemFichaPerfilCommandOutputAdapterTest {
 
         // Assert
         assertThat(repository.existsById(saved.getId())).isFalse();
+    }
+
+    @Test
+    void debeTraerFichaPropiedadYUltimoEstado_cuandoElEstudianteEstaVinculado() {
+        // Arrange
+        var fichaPerfilId = UUID.randomUUID();
+        var estudiante = UUID.randomUUID();
+        var item = registrarItem(fichaPerfilId);
+        insertarEstadoFicha("EN_CONSTRUCCION");
+        insertarEstadoFicha("EN_REVISION");
+        insertarEstadoFichaPerfil(UUID.randomUUID(), fichaPerfilId, "EN_CONSTRUCCION",
+                Instant.parse("2026-01-01T00:00:00Z"));
+        var ultimoEstado = UUID.randomUUID();
+        insertarEstadoFichaPerfil(ultimoEstado, fichaPerfilId, "EN_REVISION",
+                Instant.parse("2026-02-01T00:00:00Z"));
+        insertarVinculo(fichaPerfilId, estudiante);
+
+        // Act
+        var resultado = adapter.obtenerPertenencia(item, estudiante);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(pertenencia -> {
+            assertThat(pertenencia.fichaPerfilId()).isEqualTo(fichaPerfilId);
+            assertThat(pertenencia.esPropietario()).isTrue();
+            assertThat(pertenencia.estadoId()).isEqualTo(ultimoEstado);
+            assertThat(pertenencia.estadoFicha()).isEqualTo("EN_REVISION");
+        });
+    }
+
+    @Test
+    void debeMarcarNoPropietarioYSinEstado_cuandoNoHayVinculoNiEstado() {
+        // Arrange
+        var fichaPerfilId = UUID.randomUUID();
+        var item = registrarItem(fichaPerfilId);
+        insertarVinculo(fichaPerfilId, UUID.randomUUID());
+
+        // Act
+        var resultado = adapter.obtenerPertenencia(item, UUID.randomUUID());
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(pertenencia -> {
+            assertThat(pertenencia.fichaPerfilId()).isEqualTo(fichaPerfilId);
+            assertThat(pertenencia.esPropietario()).isFalse();
+            assertThat(pertenencia.estadoId()).isNull();
+        });
+    }
+
+    @Test
+    void debeTraerUnaSolaFila_cuandoDosEstadosEmpatanEnFecha() {
+        // Arrange
+        var fichaPerfilId = UUID.randomUUID();
+        var item = registrarItem(fichaPerfilId);
+        insertarEstadoFicha("EN_CONSTRUCCION");
+        var fecha = Instant.parse("2026-03-01T00:00:00Z");
+        var menor = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        var mayor = UUID.fromString("00000000-0000-0000-0000-000000000002");
+        insertarEstadoFichaPerfil(menor, fichaPerfilId, "EN_CONSTRUCCION", fecha);
+        insertarEstadoFichaPerfil(mayor, fichaPerfilId, "EN_CONSTRUCCION", fecha);
+
+        // Act
+        var resultado = adapter.obtenerPertenencia(item, UUID.randomUUID());
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(pertenencia ->
+                assertThat(pertenencia.estadoId()).isEqualTo(mayor));
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElItemNoExisteParaPertenencia() {
+        // Act
+        var resultado = adapter.obtenerPertenencia(UUID.randomUUID(), UUID.randomUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    private UUID registrarItem(UUID fichaPerfilId) {
+        var aggregate = ItemFichaPerfilDomain.crear(fichaPerfilId, "OBJETIVO_GENERAL", "Contenido");
+        adapter.registrarItem(ItemFichaPerfilMapper.toEntity(aggregate));
+        entityManager.flush();
+        entityManager.clear();
+        return aggregate.getId();
+    }
+
+    private void insertarEstadoFicha(String id) {
+        entityManager.createNativeQuery("INSERT INTO estado_ficha (id, nombre, descripcion) VALUES (?, ?, ?)")
+                .setParameter(1, id)
+                .setParameter(2, id)
+                .setParameter(3, id)
+                .executeUpdate();
+    }
+
+    private void insertarEstadoFichaPerfil(UUID id, UUID fichaPerfilId, String estadoFicha, Instant fecha) {
+        entityManager.createNativeQuery("INSERT INTO estado_ficha_perfil "
+                        + "(id, ficha_perfil_id, estado_ficha_id, fecha_actualizacion) VALUES (?, ?, ?, ?)")
+                .setParameter(1, id)
+                .setParameter(2, fichaPerfilId)
+                .setParameter(3, estadoFicha)
+                .setParameter(4, fecha)
+                .executeUpdate();
+    }
+
+    private void insertarVinculo(UUID fichaPerfilId, UUID estudiante) {
+        entityManager.createNativeQuery("INSERT INTO estudiante_ficha_perfil "
+                        + "(id, ficha_perfil_id, estudiante_id) VALUES (?, ?, ?)")
+                .setParameter(1, UUID.randomUUID())
+                .setParameter(2, fichaPerfilId)
+                .setParameter(3, estudiante)
+                .executeUpdate();
     }
 }

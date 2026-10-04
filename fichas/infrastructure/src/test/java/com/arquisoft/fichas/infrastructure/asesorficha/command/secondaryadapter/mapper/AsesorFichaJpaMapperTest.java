@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter
 
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
+import com.arquisoft.shared.util.UtilFecha;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -16,7 +17,7 @@ class AsesorFichaJpaMapperTest {
         // Arrange
         var ocurridoEn = Instant.now();
         var entity = new AsesorFichaEntity(
-                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn);
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn, java.time.Instant.EPOCH);
 
         // Act
         var jpaEntity = AsesorFichaJpaMapper.toJpaEntity(entity);
@@ -50,5 +51,28 @@ class AsesorFichaJpaMapperTest {
         assertThat(entity.nombre()).isEqualTo(jpaEntity.getNombre());
         assertThat(entity.email()).isEqualTo(jpaEntity.getEmail());
         assertThat(entity.ocurridoEn()).isEqualTo(ocurridoEn);
+    }
+
+    @Test
+    void debeTraducirVacioANuloYViceversa_cuandoMapeaEliminadoEn() {
+        // Arrange
+        var ocurridoEn = Instant.parse("2026-09-20T10:00:00Z");
+        var eliminadoEn = Instant.parse("2026-09-24T10:00:00Z");
+        var vigente = new AsesorFichaEntity(
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn, UtilFecha.VACIO);
+        var eliminado = new AsesorFichaEntity(
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn, eliminadoEn);
+
+        // Act
+        var jpaVigente = AsesorFichaJpaMapper.toJpaEntity(vigente);
+        var jpaEliminado = AsesorFichaJpaMapper.toJpaEntity(eliminado);
+        var leidoVigente = AsesorFichaJpaMapper.toEntity(jpaVigente);
+        var leidoEliminado = AsesorFichaJpaMapper.toEntity(jpaEliminado);
+
+        // Assert
+        assertThat(jpaVigente.getEliminadoEn()).isNull();
+        assertThat(jpaEliminado.getEliminadoEn()).isEqualTo(eliminadoEn);
+        assertThat(leidoVigente.eliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(leidoEliminado.eliminadoEn()).isEqualTo(eliminadoEn);
     }
 }

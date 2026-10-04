@@ -7,11 +7,24 @@ public enum RevisionItemKey implements ClaveMensaje {
 
     ERROR_ESTADO_NO_ENCONTRADO("fichas.dominio.revisionitem.error.estado-no-encontrado", 1),
     ERROR_YA_EXISTE("fichas.dominio.revisionitem.error.ya-existe", 1),
+    ERROR_NO_ENCONTRADA("fichas.dominio.revisionitem.error.no-encontrada", 1),
+    ERROR_CERRADA("fichas.dominio.revisionitem.error.cerrada", 1),
     LOG_AGREGANDO("fichas.aplicacion.revisionitem.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.revisionitem.log.verificacion-agregar", 3),
     LOG_AGREGADO("fichas.aplicacion.revisionitem.log.agregado", 2),
     LOG_CONSULTANDO_ELABORADAS("fichas.aplicacion.revisionitem.log.consultando-elaboradas", 2),
-    LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.revisionitem.log.consulta-elaboradas-completada", 1);
+    LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.revisionitem.log.consulta-elaboradas-completada", 1),
+    LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.revisionitem.log.consultando-estudiante", 2),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.revisionitem.log.consulta-estudiante-completada", 1),
+    LOG_VISUALIZANDO("fichas.aplicacion.revisionitem.log.visualizando", 2),
+    LOG_VERIFICACION_VISUALIZAR("fichas.aplicacion.revisionitem.log.verificacion-visualizar", 3),
+    LOG_YA_VISUALIZADA("fichas.aplicacion.revisionitem.log.ya-visualizada", 2),
+    LOG_VISUALIZADA("fichas.aplicacion.revisionitem.log.visualizada", 1),
+    LOG_REMOVIENDO("fichas.aplicacion.revisionitem.log.removiendo", 2),
+    LOG_VERIFICACION_REMOVER("fichas.aplicacion.revisionitem.log.verificacion-remover", 3),
+    LOG_REMOVIDA("fichas.aplicacion.revisionitem.log.removida", 1),
+    LOG_ACTUALIZADO("fichas.infraestructura.revisionitem.log.actualizado", 2),
+    LOG_ELIMINADO("fichas.infraestructura.revisionitem.log.eliminado", 1);
 
     private final String clave;
     private final int parametros;

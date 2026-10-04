@@ -41,7 +41,7 @@ class ConsultarCompanerosFichaPerfilUseCaseImplTest {
         var estudiante = UUID.randomUUID();
         var criteria = new EstudianteFichaPerfilCompaneroCriteria(fichaPerfil, estudiante);
         var esperado = List.of(new EstudianteFichaPerfilReadModel(
-                UUID.randomUUID(), fichaPerfil, UUID.randomUUID(), "Ana Ruiz", "ana.ruiz@uco.edu.co"));
+                UUID.randomUUID(), fichaPerfil, UUID.randomUUID(), "Ana Ruiz", "ana.ruiz@uco.edu.co", true));
         when(estudianteFichaPerfilQueryOutputPort.consultarCompanerosPorFichaYEstudiante(fichaPerfil, estudiante))
                 .thenReturn(esperado);
 

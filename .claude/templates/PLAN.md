@@ -49,6 +49,11 @@ Destino: .workspace/h-plan/PLAN-{HU|HT}-{ID}.md
 > llamador tiene que poder distinguir "ya estaba hecho" de "se hizo ahora". Declararlo como `Rule`
 > haría que lanzara, mandando el mensaje a la DLQ por una reentrega normal del broker. Y si la HU no
 > tiene ninguna restricción de conjunto, tampoco hay `Validator`: no planifiques una capa vacía.
+>
+> En una **consulta**, la política de acceso sobre la instancia pedida (existencia, pertenencia,
+> estado) también va en esta tabla, con su `{X}QueryFinder` y el criterio de la HU del que sale. Si
+> la HU no pone ninguna, escribe bajo la tabla `Política de acceso: ninguna`, para que se lea como
+> decisión y no como olvido.
 
 | # | Regla | Dónde se valida (Domain / Rule) | Finder que trae el dato | Excepción → HTTP |
 |---|---|---|---|---|

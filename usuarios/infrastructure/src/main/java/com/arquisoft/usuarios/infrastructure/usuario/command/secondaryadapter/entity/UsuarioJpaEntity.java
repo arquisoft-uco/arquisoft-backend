@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -37,4 +38,7 @@ public class UsuarioJpaEntity {
 
     @Column(name = "estado_id", nullable = false, length = 60)
     private String estadoId;
+
+    @Column(name = "eliminado_en")
+    private Instant eliminadoEn;
 }
