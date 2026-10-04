@@ -18,7 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProyectoGradoDeEstudianteQueryOutputAdapter implements ProyectoGradoDeEstudianteQueryOutputPort {
 
-    private static final UUID PROYECTO_GRADO_SIMULADO = UUID.fromString("e9a68645-49ac-438c-b421-8f636cc6ee82");
+    private static final UUID PROYECTO_GRADO_SIMULADO = UUID.fromString("7f5c3c0f-ec10-4662-bbf7-c89d135ffd7b");
 
     private final AppLogger logger;
 
