@@ -1,11 +1,5 @@
 package com.arquisoft.shared.message.constant;
 
-/**
- * Códigos de error del contexto fichas.
- *
- * <p>Contrato de la API, no texto: viajan en {@code ErrorResponseDTO.errorCode}. Ver la nota de
- * {@link AppCodes} sobre por qué no salen al bundle.
- */
 public final class FichasCodes {
 
     private FichasCodes() {}
@@ -94,6 +88,7 @@ public final class FichasCodes {
         public static final String EVALUACION_CERRADA = "OBSERVACION_EVALUACION_EVALUACION_CERRADA";
         public static final String OBSERVACION_EVALUACION_NO_ENCONTRADA = "OBSERVACION_EVALUACION_NO_ENCONTRADA";
         public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_EVALUACION_ESTUDIANTE_REQUERIDO";
+        public static final String ASESOR_FICHA_REQUERIDO = "OBSERVACION_EVALUACION_ASESOR_FICHA_REQUERIDO";
     }
 
     public static final class Estudiante {

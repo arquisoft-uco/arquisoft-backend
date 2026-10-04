@@ -1,13 +1,5 @@
 package com.arquisoft.shared.message.constant;
 
-/**
- * Nombres de campo del contexto fichas.
- *
- * <p>Identifican el campo dentro de {@code fieldErrors[]} y dentro de los agregados al acumular
- * errores de validación. Son identificadores del contrato — el cliente los usa para asociar un
- * error a un campo del formulario — y además se referencian desde anotaciones, así que se quedan
- * como constantes en lugar de salir al bundle.
- */
 public final class FichasFields {
 
     private FichasFields() {}
@@ -70,6 +62,7 @@ public final class FichasFields {
         public static final String OBSERVACION_EVALUACION = "observacionEvaluacion";
         public static final String REPRESENTANTE_COMITE = "representanteComite";
         public static final String ESTUDIANTE = "estudiante";
+        public static final String ASESOR_FICHA = "asesorFicha";
     }
 
     public static final class EstudianteFichaPerfil {

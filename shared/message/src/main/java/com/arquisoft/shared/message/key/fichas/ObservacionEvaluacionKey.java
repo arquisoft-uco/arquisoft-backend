@@ -18,6 +18,8 @@ public enum ObservacionEvaluacionKey implements ClaveMensaje {
     LOG_REMOVIDA("fichas.aplicacion.observacionevaluacion.log.removida", 2),
     LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.observacionevaluacion.log.consultando-estudiante", 2),
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.observacionevaluacion.log.consulta-estudiante-completada", 1),
+    LOG_CONSULTANDO_ASESOR("fichas.aplicacion.observacionevaluacion.log.consultando-asesor", 2),
+    LOG_CONSULTA_ASESOR_COMPLETADA("fichas.aplicacion.observacionevaluacion.log.consulta-asesor-completada", 1),
     LOG_GUARDADA("fichas.infraestructura.observacionevaluacion.log.guardada", 1),
     LOG_ACTUALIZADA("fichas.infraestructura.observacionevaluacion.log.actualizada", 1),
     LOG_ELIMINADA("fichas.infraestructura.observacionevaluacion.log.eliminada", 1);
