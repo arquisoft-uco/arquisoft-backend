@@ -30,6 +30,15 @@ public final class EvaluacionesFields {
         public static final String CRITERIO = "criterio";
     }
 
+    public static final class EvaluacionCuantitativaJurado {
+
+        private EvaluacionCuantitativaJurado() {}
+
+        public static final String EVALUACION_JURADO = "evaluacionJurado";
+        public static final String ITEM = "item";
+        public static final String PUNTAJE = "puntaje";
+    }
+
     public static final class RegistroEvaluacionesCualitativasJurado {
 
         private RegistroEvaluacionesCualitativasJurado() {}

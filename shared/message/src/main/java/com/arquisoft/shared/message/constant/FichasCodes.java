@@ -93,6 +93,7 @@ public final class FichasCodes {
         public static final String OBSERVACION_EVALUACION_DUPLICADA = "OBSERVACION_EVALUACION_DUPLICADA";
         public static final String EVALUACION_CERRADA = "OBSERVACION_EVALUACION_EVALUACION_CERRADA";
         public static final String OBSERVACION_EVALUACION_NO_ENCONTRADA = "OBSERVACION_EVALUACION_NO_ENCONTRADA";
+        public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_EVALUACION_ESTUDIANTE_REQUERIDO";
     }
 
     public static final class Estudiante {
@@ -140,6 +141,19 @@ public final class FichasCodes {
         public static final String NO_ENCONTRADO = "ESTADO_FICHA_PERFIL_NO_ENCONTRADO";
         public static final String ESTADO_TERMINAL = "ESTADO_FICHA_PERFIL_ESTADO_TERMINAL";
         public static final String ASESOR_FICHA_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_ASESOR_FICHA_ID_REQUERIDO";
+        public static final String ACEPTA_REQUERIDO = "ESTADO_FICHA_PERFIL_ACEPTA_REQUERIDO";
+        public static final String COORDINADOR_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_COORDINADOR_ID_REQUERIDO";
+        public static final String NO_DISPONIBLE_PARA_EVALUACION = "ESTADO_FICHA_PERFIL_NO_DISPONIBLE_PARA_EVALUACION";
+        public static final String SIN_EVALUACION_FINALIZADA = "ESTADO_FICHA_PERFIL_SIN_EVALUACION_FINALIZADA";
+        public static final String APROBACION_SIN_EVALUACION_APROBATORIA =
+                "ESTADO_FICHA_PERFIL_APROBACION_SIN_EVALUACION_APROBATORIA";
+        public static final String SIN_ESTUDIANTES_VIGENTES = "ESTADO_FICHA_PERFIL_SIN_ESTUDIANTES_VIGENTES";
+        public static final String ESTADO_FICHA_INVALIDO = "ESTADO_FICHA_PERFIL_ESTADO_FICHA_INVALIDO";
+        public static final String ESTADO_NO_ASIGNABLE_POR_ASESOR = "ESTADO_FICHA_PERFIL_ESTADO_NO_ASIGNABLE_POR_ASESOR";
+        public static final String ESTADO_REPETIDO = "ESTADO_FICHA_PERFIL_ESTADO_REPETIDO";
+        public static final String TRANSICION_NO_PERMITIDA = "ESTADO_FICHA_PERFIL_TRANSICION_NO_PERMITIDA";
+        public static final String EVALUACION_EN_CURSO = "ESTADO_FICHA_PERFIL_EVALUACION_EN_CURSO";
+        public static final String REPRESENTANTE_COMITE_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_REPRESENTANTE_COMITE_ID_REQUERIDO";
     }
 
     public static final class EstadoFicha {
@@ -157,6 +171,7 @@ public final class FichasCodes {
         public static final String EVALUACION_DUPLICADA = "EVALUACION_DUPLICADA";
         public static final String REPRESENTANTE_REQUERIDO = "REPRESENTANTE_REQUERIDO";
         public static final String FICHA_REQUERIDA = "FICHA_REQUERIDA";
+        public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_REQUERIDO";
     }
 
     public static final class RepresentanteComite {

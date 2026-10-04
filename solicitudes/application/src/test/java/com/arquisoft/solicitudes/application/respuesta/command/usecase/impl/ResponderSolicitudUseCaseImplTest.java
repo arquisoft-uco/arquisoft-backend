@@ -1,6 +1,7 @@
 package com.arquisoft.solicitudes.application.respuesta.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.constant.EventTopics;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
@@ -112,6 +113,34 @@ class ResponderSolicitudUseCaseImplTest {
         verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO), eq(TIPO), eq(solicitud), eq(coordinadorUsuario));
         verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_RESPUESTA), eq(true), eq(false), eq(true), eq(true));
         verify(logger).info(eq(RespuestaKey.LOG_RESPONDIDA), eq(TIPO), any());
+    }
+
+    @Test
+    void debePublicarElEventoDelAsesor_cuandoElTipoEsNovedadParaElAsesor() {
+        // Arrange
+        var asesorUsuario = UUID.randomUUID();
+        var respuesta = RespuestaDomain.crear(solicitud, "Puedes presentar el lunes");
+        var entradaAsesor = RespuestaSolicitudDomain.crear(
+                respuesta, asesorUsuario, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteUsuario, asesorUsuario, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()));
+        when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now()));
+        when(datosUsuarioFinder.obtener(asesorUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(asesorUsuario, "ASE-1", "Pedro Asesor", "pedro@uco.edu.co", Instant.now()));
+
+        // Act
+        useCase.ejecutar(entradaAsesor);
+
+        // Assert
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudRespondidaEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        var evento = eventCaptor.getValue();
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA);
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Asesor");
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO),
+                eq(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()), eq(solicitud), eq(asesorUsuario));
     }
 
     @Test

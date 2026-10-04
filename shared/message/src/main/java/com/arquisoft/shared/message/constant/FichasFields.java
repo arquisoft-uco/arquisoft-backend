@@ -69,6 +69,7 @@ public final class FichasFields {
         public static final String OBSERVACION = "observacion";
         public static final String OBSERVACION_EVALUACION = "observacionEvaluacion";
         public static final String REPRESENTANTE_COMITE = "representanteComite";
+        public static final String ESTUDIANTE = "estudiante";
     }
 
     public static final class EstudianteFichaPerfil {
@@ -121,6 +122,9 @@ public final class FichasFields {
         public static final String ESTADO_FICHA = "estadoFicha";
         public static final String ESTUDIANTE = "estudiante";
         public static final String ASESOR_FICHA = "asesorFicha";
+        public static final String ACEPTA = "acepta";
+        public static final String COORDINADOR = "coordinador";
+        public static final String REPRESENTANTE_COMITE = "representanteComite";
     }
 
     public static final class EvaluacionFichaPerfil {
@@ -129,6 +133,7 @@ public final class FichasFields {
 
         public static final String REPRESENTANTE_COMITE = "representanteComite";
         public static final String FICHA_PERFIL = "fichaPerfil";
+        public static final String ESTUDIANTE = "estudiante";
     }
 
     public static final class EstadoEvaluacionFicha {
