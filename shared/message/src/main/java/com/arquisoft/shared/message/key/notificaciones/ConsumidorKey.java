@@ -10,6 +10,11 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_ESTUDIANTES_ASIGNADOS_RECIBIDO("notificaciones.infraestructura.consumidor.log.estudiantes-asignados-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_COORDINADOR_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-recibido", 2),
+    LOG_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-respondida-recibido", 2),
+    LOG_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-estado-modificado-recibido",
+            2),
     LOG_SOLICITUD_NOVEDAD_ASESOR_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-recibido", 2),
     LOG_SOLICITUD_CAMBIO_ASESOR_RECIBIDO(
@@ -17,6 +22,8 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_SOLICITUD_AMPLIACION_PLAZO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-ampliacion-plazo-recibido", 2),
     LOG_REVISION_ITEM_AGREGADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.revision-item-agregado-recibido", 2),
+    LOG_USUARIO_ESTADO_CAMBIADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.usuario-estado-cambiado-recibido", 3),
     LOG_NOTIFICACION_ENVIADA("notificaciones.infraestructura.consumidor.log.notificacion-enviada", 2),
     LOG_NOTIFICACION_DUPLICADA("notificaciones.infraestructura.consumidor.log.notificacion-duplicada", 2),
     LOG_NOTIFICACION_FALLIDA("notificaciones.infraestructura.consumidor.log.notificacion-fallida", 2),

@@ -4,7 +4,6 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.solicitudes.application.usuario.command.finder.UsuarioPorIdFinder;
 import com.arquisoft.solicitudes.application.usuario.command.result.AgregacionUsuarioResult;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.UsuarioOutputPort;
-import com.arquisoft.solicitudes.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +49,7 @@ class RegistrarUsuarioUseCaseImplTest {
         // Arrange
         var id = UUID.randomUUID();
         var usuario = usuario(id, Instant.now());
-        when(usuarioPorIdFinder.obtener(id)).thenReturn(Optional.empty());
+        when(usuarioPorIdFinder.obtener(id)).thenReturn(UsuarioDomain.VACIO);
 
         // Act
         var resultado = useCase.ejecutar(usuario);
@@ -69,8 +67,8 @@ class RegistrarUsuarioUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now().minus(1, ChronoUnit.HOURS);
         var usuario = usuario(id, Instant.now());
-        when(usuarioPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new UsuarioEntity(id, "EST-9", "Nombre Completo", "n@uco.edu.co", vigente)));
+        when(usuarioPorIdFinder.obtener(id))
+                .thenReturn(UsuarioDomain.reconstruir(id, "EST-9", "Nombre Completo", "n@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(usuario);
@@ -88,8 +86,8 @@ class RegistrarUsuarioUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var usuario = usuario(id, vigente.minus(1, ChronoUnit.HOURS));
-        when(usuarioPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new UsuarioEntity(id, "EST-9", "Nombre Completo", "n@uco.edu.co", vigente)));
+        when(usuarioPorIdFinder.obtener(id))
+                .thenReturn(UsuarioDomain.reconstruir(id, "EST-9", "Nombre Completo", "n@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(usuario);

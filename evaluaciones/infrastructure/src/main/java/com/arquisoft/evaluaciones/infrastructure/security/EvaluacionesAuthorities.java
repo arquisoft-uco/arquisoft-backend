@@ -15,6 +15,16 @@ public final class EvaluacionesAuthorities {
     public static final String CRITERIO_ITEM_CUALITATIVO_JURADO_VIEW =
             "evaluaciones:criterio-item-cualitativo-jurado:view";
 
+    public static final String EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW =
+            "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view";
+    public static final String ITEM_CUANTITATIVO_JURADO_CREATE =
+            "evaluaciones:item-cuantitativo-jurado:create";
+    public static final String ITEM_CUANTITATIVO_JURADO_VIEW =
+            "evaluaciones:item-cuantitativo-jurado:view";
+
+    public static final String EVALUACION_CUALITATIVA_JURADO_CREATE =
+            "evaluaciones:evaluacion-cualitativa-jurado:create";
+
     public static final class Expresiones {
 
         private Expresiones() {}
@@ -32,5 +42,15 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_CRITERIO_ITEM_CUALITATIVO_JURADO_VIEW =
                 HAS_AUTHORITY_INICIO + CRITERIO_ITEM_CUALITATIVO_JURADO_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW =
+                HAS_AUTHORITY_INICIO + EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ITEM_CUANTITATIVO_JURADO_CREATE =
+                HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_CREATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_EVALUACION_CUALITATIVA_JURADO_CREATE =
+                HAS_AUTHORITY_INICIO + EVALUACION_CUALITATIVA_JURADO_CREATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_ITEM_CUANTITATIVO_JURADO_VIEW =
+                HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_VIEW + HAS_AUTHORITY_FIN;
     }
 }

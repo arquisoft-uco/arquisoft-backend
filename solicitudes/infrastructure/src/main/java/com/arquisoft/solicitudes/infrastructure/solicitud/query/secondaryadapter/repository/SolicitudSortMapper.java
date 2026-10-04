@@ -14,10 +14,13 @@ final class SolicitudSortMapper {
         Map<String, String> m = new LinkedHashMap<>();
         for (SolicitudCriteria.Campo campo : SolicitudCriteria.Campo.values()) {
             String ruta = switch (campo) {
-                case REMITENTE_NOMBRE -> "remitenteNombre";
-                case FECHA_CREACION   -> "fechaCreacion";
+                case REMITENTE_NOMBRE    -> "remitenteNombre";
+                case DESTINATARIO_NOMBRE -> "destinatarioNombre";
+                case FECHA_CREACION      -> "fechaCreacion";
                 case REMITENTE_IDENTIFICADOR, REMITENTE_EMAIL,
-                     DESTINATARIO_USUARIO_ID, TIPO_SOLICITUD_ID -> null; // no ordenables
+                     DESTINATARIO_USUARIO_ID, TIPO_SOLICITUD_ID,
+                     REMITENTE_USUARIO_ID, DESTINATARIO_IDENTIFICADOR,
+                     DESTINATARIO_EMAIL -> null; // no ordenables
             };
             if (ruta != null) {
                 m.put(campo.getClave(), ruta);

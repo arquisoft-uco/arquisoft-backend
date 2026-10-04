@@ -31,10 +31,22 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.solicitud-ampliacion-plazo", 1),
     CUERPO_SOLICITUD_AMPLIACION_PLAZO(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo", 3),
+    ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador-respondida", 0),
+    CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-novedad-coordinador-respondida", 3),
+    ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador-estado-modificado", 0),
+    CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-novedad-coordinador-estado-modificado", 3),
     ASUNTO_REVISION_ITEM_AGREGADA(
             "notificaciones.aplicacion.plantilla.asunto.revision-item-agregada", 1),
     CUERPO_REVISION_ITEM_AGREGADA(
             "notificaciones.aplicacion.plantilla.cuerpo.revision-item-agregada", 2),
+    ASUNTO_USUARIO_ESTADO_CAMBIADO(
+            "notificaciones.aplicacion.plantilla.asunto.usuario-estado-cambiado", 1),
+    CUERPO_USUARIO_ESTADO_CAMBIADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.usuario-estado-cambiado", 2),
     PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;

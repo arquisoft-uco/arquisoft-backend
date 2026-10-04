@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.query.usecase.impl;
 
+import com.arquisoft.solicitudes.application.destinatario.query.readmodel.DestinatarioReadModel;
 import com.arquisoft.solicitudes.application.remitente.query.readmodel.RemitenteReadModel;
 import com.arquisoft.solicitudes.application.solicitud.query.criteria.SolicitudCriteria;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
@@ -44,9 +45,11 @@ class ConsultarSolicitudesNovedadCoordinadorRecibidasUseCaseImplTest {
         // Arrange
         var criteria = criteria();
         var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana", "ana@uco.edu.co");
+        var destinatario = new DestinatarioReadModel(
+                UUID.randomUUID(), "COORD-1", "Coordinadora", "coord@uco.edu.co");
         var solicitud = new SolicitudReadModel(UUID.randomUUID(), "una novedad",
                 Instant.now(), "NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
-                remitente);
+                remitente, destinatario);
         var esperado = PaginatedResult.of(List.of(solicitud), 0, 10, 1L);
         when(solicitudQueryOutputPort.consultar(criteria)).thenReturn(esperado);
 

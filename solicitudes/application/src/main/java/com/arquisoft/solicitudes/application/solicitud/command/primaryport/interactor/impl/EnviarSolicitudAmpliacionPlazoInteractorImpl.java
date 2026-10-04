@@ -3,7 +3,7 @@ package com.arquisoft.solicitudes.application.solicitud.command.primaryport.inte
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.EnviarSolicitudAmpliacionPlazoInteractor;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper.EnviarSolicitudAmpliacionPlazoMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudAmpliacionPlazoCommand;
-import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudAmpliacionPlazoUseCase;
+import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,12 +15,12 @@ import java.util.UUID;
 public class EnviarSolicitudAmpliacionPlazoInteractorImpl
         implements EnviarSolicitudAmpliacionPlazoInteractor {
 
-    private final EnviarSolicitudAmpliacionPlazoUseCase enviarSolicitudAmpliacionPlazoUseCase;
+    private final EnviarSolicitudUseCase enviarSolicitudUseCase;
 
     @Override
     @Transactional(transactionManager = "solicitudesTransactionManager")
     public UUID ejecutar(EnviarSolicitudAmpliacionPlazoCommand command) {
-        return enviarSolicitudAmpliacionPlazoUseCase.ejecutar(
+        return enviarSolicitudUseCase.ejecutar(
                 EnviarSolicitudAmpliacionPlazoMapper.toDomain(command));
     }
 }
