@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ResponderSolicitudNovedadAsesorCommand;
-import com.arquisoft.solicitudes.domain.respuesta.RespuestaSolicitudDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
@@ -19,8 +18,7 @@ class ResponderSolicitudNovedadAsesorMapperTest {
         var command = new ResponderSolicitudNovedadAsesorCommand(solicitud, "contenido", asesor);
 
         // Act
-        RespuestaSolicitudDomain accion =
-                ResponderSolicitudNovedadAsesorMapper.toDomain(command);
+        var accion = ResponderSolicitudNovedadAsesorMapper.toDomain(command);
 
         // Assert
         assertThat(accion.getSolicitud()).isEqualTo(solicitud);

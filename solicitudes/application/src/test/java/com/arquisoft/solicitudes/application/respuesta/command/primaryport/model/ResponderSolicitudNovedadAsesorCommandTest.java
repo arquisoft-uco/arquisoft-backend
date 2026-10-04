@@ -24,9 +24,8 @@ class ResponderSolicitudNovedadAsesorCommandTest {
         var asesor = UUID.randomUUID();
 
         // Act
-        ResponderSolicitudNovedadAsesorCommand command =
-                ResponderSolicitudNovedadAsesorCommand.crear(
-                        solicitud.toString(), "Contenido valido", asesor);
+        var command = ResponderSolicitudNovedadAsesorCommand.crear(
+                solicitud.toString(), "Contenido valido", asesor);
 
         // Assert
         assertThat(command.solicitud()).isEqualTo(solicitud);
