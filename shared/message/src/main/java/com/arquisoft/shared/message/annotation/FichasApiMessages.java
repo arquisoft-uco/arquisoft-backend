@@ -1,23 +1,5 @@
 package com.arquisoft.shared.message.annotation;
 
-/**
- * Textos de documentación OpenAPI, listos para las anotaciones {@code @Tag}, {@code @Operation} y
- * {@code @ApiResponse}.
- *
- * <p>Van incrustados aquí y no en el catálogo de Redis, a diferencia del resto de los textos del
- * proyecto. La especificación OpenAPI se construye una vez al arrancar y no vuelve a consultarse,
- * así que estos textos no se benefician de nada de lo que ADR-013 aporta —recarga sin desplegar,
- * degradación en caliente— y sí pagarían su coste: cada {@code summary} sería una clave más que el
- * fail-fast de arranque exige en Redis, capaz de impedir que la aplicación levante.
- *
- * <p>Hay además una restricción del lenguaje. Un valor de anotación tiene que ser una expresión
- * constante (JLS §9.7.1), así que estos textos no pueden resolverse en tiempo de ejecución: el
- * mecanismo anterior los sacaba a un {@code .properties} y dejaba en el código un
- * {@code "${clave}"} que springdoc sustituía contra el {@code Environment} de Spring. Eso implicaba
- * un {@code @PropertySource} propio, un segundo camino de resolución paralelo al catálogo, y una
- * clase que ya llevaba incrustados {@code TAG_NAME} y {@code TAG_DESCRIPTION} porque springdoc no
- * resuelve {@code ${...}} en {@code @Tag}. Con el texto aquí no hay indirección ni excepción.
- */
 public final class FichasApiMessages {
 
     private FichasApiMessages() {}
@@ -371,6 +353,18 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador de evaluación o de estudiante inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "Sin permiso para consultar observaciones de evaluaciones de su ficha";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Consultar las observaciones de una evaluación de una ficha que asesora";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Permite al asesor ficha consultar las observaciones registradas por el comité de currículum sobre "
+                        + "una evaluación de una ficha de perfil que asesora. Si la evaluación no existe o la ficha no "
+                        + "es asesorada por él, la lista llega vacía.";
+        public static final String CONSULTAR_ASESOR_RESP_200 =
+                "Observaciones de la evaluación (lista vacía si no existe o no es de una ficha que asesora)";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "Identificador de evaluación o de asesor ficha inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 =
+                "Sin permiso para consultar observaciones de evaluaciones de las fichas que asesora";
     }
 
     public static final class EstudianteFichaPerfil {

@@ -51,6 +51,7 @@ public final class FichasAuthorities {
     public static final String OBSERVACION_EVALUACION_UPDATE = "fichas:observacion-evaluacion:update";
     public static final String OBSERVACION_EVALUACION_DELETE = "fichas:observacion-evaluacion:delete";
     public static final String OBSERVACION_EVALUACION_ESTUDIANTE_VIEW = "fichas:observacion-evaluacion-estudiante:view";
+    public static final String OBSERVACION_EVALUACION_ASESOR_VIEW = "fichas:observacion-evaluacion-asesor:view";
 
     public static final String TIPO_ITEM_VIEW = "fichas:tipo-item:view";
 
@@ -147,5 +148,7 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_DELETE + HAS_AUTHORITY_FIN;
         public static final String HAS_OBSERVACION_EVALUACION_ESTUDIANTE_VIEW =
                 HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_OBSERVACION_EVALUACION_ASESOR_VIEW =
+                HAS_AUTHORITY_INICIO + OBSERVACION_EVALUACION_ASESOR_VIEW + HAS_AUTHORITY_FIN;
     }
 }

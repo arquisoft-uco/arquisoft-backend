@@ -1,8 +1,10 @@
 package com.arquisoft.fichas.infrastructure.observacionevaluacion.query.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.observacionevaluacion.query.criteria.ObservacionEvaluacionAsesorCriteria;
 import com.arquisoft.fichas.application.observacionevaluacion.query.criteria.ObservacionEvaluacionEstudianteCriteria;
 import com.arquisoft.fichas.application.observacionevaluacion.query.readmodel.ObservacionEvaluacionReadModel;
 import com.arquisoft.fichas.application.observacionevaluacion.query.secondaryport.ObservacionEvaluacionQueryOutputPort;
+import com.arquisoft.fichas.infrastructure.observacionevaluacion.query.secondaryadapter.repository.mapper.ObservacionEvaluacionAsesorQueryMapper;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.query.secondaryadapter.repository.mapper.ObservacionEvaluacionEstudianteQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import java.util.List;
 public class ObservacionEvaluacionQueryOutputAdapter implements ObservacionEvaluacionQueryOutputPort {
 
     private final ObservacionEvaluacionEstudianteQueryRepository observacionEvaluacionEstudianteQueryRepository;
+    private final ObservacionEvaluacionAsesorQueryRepository observacionEvaluacionAsesorQueryRepository;
 
     @Override
     public List<ObservacionEvaluacionReadModel> consultarPorEvaluacionYEstudiante(
@@ -23,6 +26,17 @@ public class ObservacionEvaluacionQueryOutputAdapter implements ObservacionEvalu
                         criteria.evaluacionFichaPerfil(), criteria.estudiante())
                 .stream()
                 .map(ObservacionEvaluacionEstudianteQueryMapper::toReadModel)
+                .toList();
+    }
+
+    @Override
+    public List<ObservacionEvaluacionReadModel> consultarPorEvaluacionYAsesorFicha(
+            ObservacionEvaluacionAsesorCriteria criteria) {
+        return observacionEvaluacionAsesorQueryRepository
+                .findByEvaluacionFichaPerfilIdAndAsesorFichaIdOrderByObservacionAscIdAsc(
+                        criteria.evaluacionFichaPerfil(), criteria.asesorFicha())
+                .stream()
+                .map(ObservacionEvaluacionAsesorQueryMapper::toReadModel)
                 .toList();
     }
 }
