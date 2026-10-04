@@ -5,6 +5,7 @@ import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.solicitudes.application.destinatario.query.readmodel.DestinatarioReadModel;
 import com.arquisoft.solicitudes.application.remitente.query.readmodel.RemitenteReadModel;
 import com.arquisoft.solicitudes.application.solicitud.query.primaryport.interactor.ConsultarSolicitudesNovedadAsesorRecibidasInteractor;
 import com.arquisoft.solicitudes.application.solicitud.query.primaryport.model.ConsultarSolicitudesNovedadAsesorRecibidasQuery;
@@ -97,9 +98,11 @@ class ConsultarSolicitudesNovedadAsesorRecibidasControllerTest {
         UUID asesor = UUID.randomUUID();
         var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana Estudiante",
                 "ana@uco.edu.co");
+        var destinatario = new DestinatarioReadModel(UUID.randomUUID(), "ASE-1", "Asesor Uno",
+                "asesor1@uco.edu.co");
         var solicitud = new SolicitudReadModel(UUID.randomUUID(), "una novedad",
                 Instant.parse("2026-03-01T10:00:00Z"), "NOVEDAD_PARA_EL_ASESOR",
-                "Novedad para el Asesor", remitente);
+                "Novedad para el Asesor", remitente, destinatario);
         when(interactor.ejecutar(any(ConsultarSolicitudesNovedadAsesorRecibidasQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(solicitud), 0, 10, 1L));
 

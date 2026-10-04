@@ -15,8 +15,8 @@ public class EstadoFichaQueryOutputAdapter implements EstadoFichaQueryOutputPort
     private final EstadoFichaQueryRepository repository;
 
     @Override
-    public List<EstadoFichaReadModel> findAll() {
-        return repository.findAll()
+    public List<EstadoFichaReadModel> consultarPorRoles(List<String> roles) {
+        return repository.findByRolIn(roles)
                 .stream()
                 .map(EstadoFichaQueryMapper::toReadModel)
                 .toList();

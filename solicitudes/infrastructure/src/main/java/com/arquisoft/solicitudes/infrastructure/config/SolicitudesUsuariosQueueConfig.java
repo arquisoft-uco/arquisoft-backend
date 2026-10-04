@@ -55,4 +55,46 @@ public class SolicitudesUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String USUARIO_MODIFICADO_QUEUE =
+            SolicitudesQueues.PREFIJO + EventTopics.Usuarios.USUARIO_MODIFICADO;
+
+    @Bean
+    public Declarables solicitudesUsuarioModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                USUARIO_MODIFICADO_QUEUE,
+                EventTopics.Usuarios.USUARIO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String ADMINISTRADOR_AGREGADO_QUEUE =
+            SolicitudesQueues.PREFIJO + EventTopics.Usuarios.ADMINISTRADOR_AGREGADO;
+
+    @Bean
+    public Declarables solicitudesAdministradorAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ADMINISTRADOR_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ADMINISTRADOR_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String ADMINISTRADOR_REMOVIDO_QUEUE =
+            SolicitudesQueues.PREFIJO + EventTopics.Usuarios.ADMINISTRADOR_REMOVIDO;
+
+    @Bean
+    public Declarables solicitudesAdministradorRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ADMINISTRADOR_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ADMINISTRADOR_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

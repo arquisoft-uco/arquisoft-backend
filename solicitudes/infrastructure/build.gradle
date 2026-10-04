@@ -10,13 +10,11 @@ dependencies {
     // shared:amqp lo declara con 'implementation', asi que no llega transitivamente.
     implementation project(':shared:tracing')
     implementation project(':shared:web')
-    implementation project(':shared:minio')
     implementation project(':shared:jpa')
 
     // Spring Security (para @PreAuthorize y @EnableMethodSecurity)
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
-    implementation "org.springframework.boot:spring-boot-starter-validation"
 
     // AMQP — spring-amqp no es transitivo en compilación desde shared:amqp (Gradle 'implementation').
     // Se declara aquí para acceder a @RabbitListener, Message, Channel, QueueBuilder, etc.

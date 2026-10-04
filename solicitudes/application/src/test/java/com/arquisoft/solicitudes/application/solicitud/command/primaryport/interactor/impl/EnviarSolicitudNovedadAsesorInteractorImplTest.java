@@ -1,8 +1,8 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.impl;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadAsesorCommand;
-import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudNovedadAsesorUseCase;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadAsesorDomain;
+import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudUseCase;
+import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class EnviarSolicitudNovedadAsesorInteractorImplTest {
 
     @Mock
-    private EnviarSolicitudNovedadAsesorUseCase useCase;
+    private EnviarSolicitudUseCase useCase;
 
     @InjectMocks
     private EnviarSolicitudNovedadAsesorInteractorImpl interactor;
@@ -34,15 +34,15 @@ class EnviarSolicitudNovedadAsesorInteractorImplTest {
         UUID esperado = UUID.randomUUID();
         var command = EnviarSolicitudNovedadAsesorCommand.crear(
                 remitente, destinatario.toString(), "novedad");
-        when(useCase.ejecutar(any(EnvioSolicitudNovedadAsesorDomain.class))).thenReturn(esperado);
+        when(useCase.ejecutar(any(EnvioSolicitudDomain.class))).thenReturn(esperado);
 
         // Act
         UUID resultado = interactor.ejecutar(command);
 
         // Assert
         assertThat(resultado).isEqualTo(esperado);
-        ArgumentCaptor<EnvioSolicitudNovedadAsesorDomain> captor =
-                ArgumentCaptor.forClass(EnvioSolicitudNovedadAsesorDomain.class);
+        ArgumentCaptor<EnvioSolicitudDomain> captor =
+                ArgumentCaptor.forClass(EnvioSolicitudDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getRemitenteUsuario()).isEqualTo(remitente);
         assertThat(captor.getValue().getDestinatarioUsuario()).isEqualTo(destinatario);

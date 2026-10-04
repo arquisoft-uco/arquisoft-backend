@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.finder.impl;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
-import com.arquisoft.fichas.application.representantecomite.command.finder.impl.RepresentanteComiteExisteFinderImpl;
+import com.arquisoft.fichas.application.representantecomite.command.finder.impl.RepresentanteComiteVigenteFinderImpl;
 import com.arquisoft.fichas.application.representantecomite.command.secondaryport.RepresentanteComiteOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ class EvaluacionesFinderTest {
     private EvaluacionDeRepresentanteExisteFinderImpl evaluacionDeRepresentanteFinder;
 
     @InjectMocks
-    private RepresentanteComiteExisteFinderImpl representanteExisteFinder;
+    private RepresentanteComiteVigenteFinderImpl representanteVigenteFinder;
 
     private final UUID representante = UUID.randomUUID();
     private final UUID ficha = UUID.randomUUID();
@@ -58,18 +58,18 @@ class EvaluacionesFinderTest {
     @Test
     void debeTrasladarLaExistenciaDelRepresentante_cuandoExiste() {
         // Arrange
-        when(representanteComiteOutputPort.existePorId(representante)).thenReturn(true);
+        when(representanteComiteOutputPort.existeVigentePorId(representante)).thenReturn(true);
 
         // Act & Assert
-        assertThat(representanteExisteFinder.obtener(representante)).isTrue();
+        assertThat(representanteVigenteFinder.obtener(representante)).isTrue();
     }
 
     @Test
     void debeTrasladarLaAusenciaDelRepresentante_cuandoNoExiste() {
         // Arrange
-        when(representanteComiteOutputPort.existePorId(representante)).thenReturn(false);
+        when(representanteComiteOutputPort.existeVigentePorId(representante)).thenReturn(false);
 
         // Act & Assert
-        assertThat(representanteExisteFinder.obtener(representante)).isFalse();
+        assertThat(representanteVigenteFinder.obtener(representante)).isFalse();
     }
 }

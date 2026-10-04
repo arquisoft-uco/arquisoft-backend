@@ -14,18 +14,27 @@ rutas:
       estados-ficha: /estados-ficha
       tipos-item: /tipos-item
       estados-evaluacion: /estados-evaluacion
+      estados-revision: /estados-revision
       items: /{fichaPerfilId}/items
       items-estudiante: /{fichaPerfilId}/items/estudiante
       items-representante: /{fichaPerfilId}/items/representante
       item-por-id: /items/{itemId}
       item-revisiones: /items/{itemId}/revisiones
+      revision-observaciones: /revisiones/{revisionItemId}/observaciones
+      revision-visualizada: /revisiones/{revisionItemId}/visualizada
+      revision-por-id: /revisiones/{revisionItemId}
       revisiones-item-asesor: /revisiones-item/asesor
+      observaciones-item-asesor: /observaciones-item/asesor
+      observaciones-item-estudiante: /observaciones-item/estudiante
+      revisiones-item-estudiante: /revisiones-item/estudiante
       estudiantes: /{fichaPerfilId}/estudiantes
       estudiante-por-id: /{fichaPerfilId}/estudiantes/{estudianteId}
       estudiantes-companeros: /{fichaPerfilId}/estudiantes/companeros
       evaluaciones: /{fichaId}/evaluaciones
       evaluaciones-representante: /{fichaPerfilId}/evaluaciones/representante
-      ficha-estudiante: /{fichaPerfilId}/estudiante
+      estudiante: /estudiante
+      evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
+      observacion-evaluacion-por-id: /observaciones-evaluacion/{observacionEvaluacionId}
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
     minio-guia:

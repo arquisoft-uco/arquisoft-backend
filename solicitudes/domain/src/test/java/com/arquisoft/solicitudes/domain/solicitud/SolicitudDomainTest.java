@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.domain.solicitud;
 
+import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -27,8 +28,8 @@ class SolicitudDomainTest {
         // Assert
         assertThat(solicitud.getId()).isNotNull();
         assertThat(solicitud.getFechaCreacion()).isNotNull();
-        assertThat(solicitud.getDestinatario()).isEqualTo(destinatario);
-        assertThat(solicitud.getRemitente()).isEqualTo(remitente);
+        assertThat(solicitud.getDestinatarioUsuario()).isEqualTo(destinatario);
+        assertThat(solicitud.getRemitenteUsuario()).isEqualTo(remitente);
         assertThat(solicitud.getMensajeSolicitud()).isEqualTo("Necesito reportar una novedad");
         assertThat(solicitud.getTipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
         assertThat(solicitud.esVacio()).isFalse();
@@ -48,7 +49,23 @@ class SolicitudDomainTest {
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.MENSAJE)).isTrue();
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.REMITENTE)).isTrue();
-        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.TIPO_SOLICITUD)).isTrue();
+    }
+
+    @Test
+    void debeReportarElErrorDelTipoConSuPropioCampoYCodigo_cuandoElTipoEsNulo() {
+        // Act
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(), "mensaje", null));
+
+        // Assert
+        var resultado = excepcion.getValidationResult();
+        assertThat(resultado.getErrores()).hasSize(1);
+        assertThat(resultado.getErrores().get(0).campo())
+                .isEqualTo(SolicitudesFields.Solicitud.TIPO_SOLICITUD);
+        assertThat(resultado.getErrores().get(0).codigoError())
+                .isEqualTo(SolicitudesCodes.Solicitud.TIPO_REQUERIDO);
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isFalse();
     }
 
     @Test
@@ -60,6 +77,34 @@ class SolicitudDomainTest {
         DomainValidationException excepcion = assertThrows(DomainValidationException.class,
                 () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
                         mensajeLargo, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
+
+        // Assert
+        assertThat(excepcion.getValidationResult()
+                .tieneErroresDeCampo(SolicitudesFields.Solicitud.MENSAJE)).isTrue();
+    }
+
+    @Test
+    void debeAceptarElMensaje_cuandoMideCienCaracteresTrasRecortarLosEspacios() {
+        // Arrange
+        String mensaje = "  " + "a".repeat(100) + "  ";
+
+        // Act
+        SolicitudDomain solicitud = SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
+                mensaje, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
+
+        // Assert
+        assertThat(solicitud.getMensajeSolicitud()).isEqualTo("a".repeat(100));
+    }
+
+    @Test
+    void debeRechazarElMensaje_cuandoSuperaLosCienCaracteresTrasRecortarLosEspacios() {
+        // Arrange
+        String mensaje = "  " + "a".repeat(101) + "  ";
+
+        // Act
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
+                        mensaje, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
 
         // Assert
         assertThat(excepcion.getValidationResult()
@@ -79,7 +124,7 @@ class SolicitudDomainTest {
         // Assert
         assertThat(solicitud.getId()).isEqualTo(id);
         assertThat(solicitud.getFechaCreacion()).isEqualTo(fecha);
-        assertThat(solicitud.getDestinatario()).isNull();
+        assertThat(solicitud.getDestinatarioUsuario()).isNull();
         assertThat(solicitud.getMensajeSolicitud()).isNull();
     }
 
