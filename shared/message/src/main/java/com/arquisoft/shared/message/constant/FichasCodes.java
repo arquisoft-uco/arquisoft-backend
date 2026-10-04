@@ -93,6 +93,7 @@ public final class FichasCodes {
         public static final String OBSERVACION_EVALUACION_DUPLICADA = "OBSERVACION_EVALUACION_DUPLICADA";
         public static final String EVALUACION_CERRADA = "OBSERVACION_EVALUACION_EVALUACION_CERRADA";
         public static final String OBSERVACION_EVALUACION_NO_ENCONTRADA = "OBSERVACION_EVALUACION_NO_ENCONTRADA";
+        public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_EVALUACION_ESTUDIANTE_REQUERIDO";
     }
 
     public static final class Estudiante {

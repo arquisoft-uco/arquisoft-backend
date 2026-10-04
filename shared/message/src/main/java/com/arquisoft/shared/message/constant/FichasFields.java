@@ -69,6 +69,7 @@ public final class FichasFields {
         public static final String OBSERVACION = "observacion";
         public static final String OBSERVACION_EVALUACION = "observacionEvaluacion";
         public static final String REPRESENTANTE_COMITE = "representanteComite";
+        public static final String ESTUDIANTE = "estudiante";
     }
 
     public static final class EstudianteFichaPerfil {

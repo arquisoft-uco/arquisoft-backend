@@ -349,6 +349,18 @@ public final class FichasApiMessages {
         public static final String REMOVER_RESP_403 = "Sin permiso para remover observaciones de evaluaciones";
         public static final String REMOVER_RESP_422 =
                 "Observación no encontrada, evaluación registrada por otro representante o en estado terminal";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
+                "Consultar las observaciones de una evaluación de su ficha de perfil";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Permite al estudiante consultar las observaciones registradas por el comité de currículum sobre una "
+                        + "evaluación de su ficha de perfil. Si la evaluación no existe o no pertenece a una ficha del "
+                        + "estudiante, la lista llega vacía.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Observaciones de la evaluación (lista vacía si no existe o no es de su ficha)";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador de evaluación o de estudiante inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
+                "Sin permiso para consultar observaciones de evaluaciones de su ficha";
     }
 
     public static final class EstudianteFichaPerfil {
