@@ -12,6 +12,7 @@ rutas:
       coordinador: /coordinador
       asesor: /asesor
       estados-ficha: /estados-ficha
+      estado-asesor: /{fichaPerfilId}/estados-ficha
       tipos-item: /tipos-item
       estados-evaluacion: /estados-evaluacion
       estados-revision: /estados-revision

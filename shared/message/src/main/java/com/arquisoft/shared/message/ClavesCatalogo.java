@@ -41,7 +41,10 @@ import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.message.key.proyectos.AsesorKey;
 import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
+import com.arquisoft.shared.message.key.proyectos.EstadoProyectoGradoKey;
+import com.arquisoft.shared.message.key.proyectos.EstudianteProyectoGradoKey;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectosKey;
+import com.arquisoft.shared.message.key.proyectos.ProyectoGradoKey;
 import com.arquisoft.shared.message.key.solicitudes.EstadoRespuestaKey;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
@@ -189,6 +192,9 @@ public final class ClavesCatalogo {
             BibliotecarioKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
+            ProyectoGradoKey.class,
+            EstudianteProyectoGradoKey.class,
+            EstadoProyectoGradoKey.class,
             ConsultarCoordinadoresAdministradorKey.class,
             ConsultarCoordinadoresVigentesKey.class,
             ConsultarEstudiantesAdministradorKey.class,

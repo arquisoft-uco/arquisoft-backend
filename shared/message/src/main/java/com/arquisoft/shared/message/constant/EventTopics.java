@@ -19,6 +19,26 @@ public final class EventTopics {
 
         public static final String REVISION_ITEM_AGREGADO =
                 "fichas.revision_item.agregado";
+
+        public static final String FICHA_PERFIL_APROBADA =
+                "fichas.ficha_perfil.aprobada";
+
+        public static final String FICHA_PERFIL_NO_APROBADA =
+                "fichas.ficha_perfil.no_aprobada";
+
+        public static final String ESTADO_FICHA_PERFIL_AGREGADO =
+                "fichas.estado_ficha_perfil.agregado";
+    }
+
+    public static final class Proyectos {
+
+        private Proyectos() {}
+
+        public static final String PROYECTO_GRADO_REGISTRADO =
+                "proyectos.proyecto_grado.registrado";
+
+        public static final String ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS =
+                "proyectos.estudiante_proyecto_grado.asignados";
     }
 
     public static final class Usuarios {
