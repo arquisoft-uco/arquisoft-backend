@@ -153,6 +153,7 @@ public final class FichasCodes {
         public static final String ESTADO_REPETIDO = "ESTADO_FICHA_PERFIL_ESTADO_REPETIDO";
         public static final String TRANSICION_NO_PERMITIDA = "ESTADO_FICHA_PERFIL_TRANSICION_NO_PERMITIDA";
         public static final String EVALUACION_EN_CURSO = "ESTADO_FICHA_PERFIL_EVALUACION_EN_CURSO";
+        public static final String REPRESENTANTE_COMITE_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_REPRESENTANTE_COMITE_ID_REQUERIDO";
     }
 
     public static final class EstadoFicha {

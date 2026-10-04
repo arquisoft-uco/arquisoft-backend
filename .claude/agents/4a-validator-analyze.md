@@ -2,6 +2,7 @@
 name: 4a-validator-analyze
 description: Agente de análisis de validación para Arquisoft Backend. Invocar cuando el usuario pida validar o analizar una implementación de HU/HT. Lee el plan y el código implementado, aplica checks DDD + arquitectura hexagonal y produce el reporte de análisis. Es la PRIMERA parte del proceso de validación — su output es el insumo para @4b-validator-report.
 model: sonnet
+effort: high
 tools: Read, Grep, Glob, Bash, Skill
 ---
 
