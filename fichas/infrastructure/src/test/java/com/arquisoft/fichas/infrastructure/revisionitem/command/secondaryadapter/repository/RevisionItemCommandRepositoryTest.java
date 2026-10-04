@@ -1,7 +1,9 @@
 package com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadorevision.command.secondaryadapter.entity.EstadoRevisionJpaEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.entity.ItemFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.entity.RevisionItemJpaEntity;
 import com.arquisoft.fichas.infrastructure.tipoitem.command.secondaryadapter.entity.TipoItemJpaEntity;
@@ -13,6 +15,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -176,5 +179,81 @@ class RevisionItemCommandRepositoryTest {
         var persistida = testEntityManager.find(RevisionItemJpaEntity.class, revision.getId());
         assertThat(filas).isZero();
         assertThat(persistida.getEstadoRevision().getId()).isEqualTo("EN_PROGRESO");
+    }
+
+    private ItemFichaPerfilJpaEntity sembrarItemDeFicha(UUID fichaPerfil, UUID asesor) {
+        var asesorFicha = testEntityManager.persistAndFlush(AsesorFichaJpaEntity.builder()
+                .id(asesor).identificador("ASE-" + asesor.toString().substring(0, 8)).nombre("Asesor").email("asesor@uco.edu.co")
+                .ocurridoEn(Instant.now()).build());
+        testEntityManager.persistAndFlush(FichaPerfilJpaEntity.builder()
+                .id(fichaPerfil).tituloProyecto("Proyecto").asesorFicha(asesorFicha).build());
+        var tipoItem = testEntityManager.persistAndFlush(TipoItemJpaEntity.builder()
+                .id("TIPO_PRUEBA").nombre("Tipo").descripcion("Tipo de prueba").build());
+        return testEntityManager.persistAndFlush(ItemFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID()).fichaPerfilId(fichaPerfil).tipoItem(tipoItem).contenido("Contenido").build());
+    }
+
+    private RevisionItemJpaEntity sembrarRevisionEnItem(UUID item, String estado) {
+        var estadoRevision = Optional.ofNullable(testEntityManager.find(EstadoRevisionJpaEntity.class, estado))
+                .orElseGet(() -> testEntityManager.persistAndFlush(EstadoRevisionJpaEntity.builder()
+                        .id(estado).nombre(estado).descripcion("Estado de prueba " + estado).build()));
+        return testEntityManager.persistAndFlush(RevisionItemJpaEntity.builder()
+                .id(UUID.randomUUID()).itemId(item).estadoRevision(estadoRevision)
+                .fechaCreacion(Instant.now()).build());
+    }
+
+    @Test
+    void debeObtenerFichaAsesorYEstado_cuandoLaRevisionExiste() {
+        // Arrange
+        var fichaPerfil = UUID.randomUUID();
+        var asesor = UUID.randomUUID();
+        var item = sembrarItemDeFicha(fichaPerfil, asesor);
+        var revision = sembrarRevisionEnItem(item.getId(), "CORRECCION_DISPONIBLE");
+        testEntityManager.clear();
+
+        // Act
+        var resultado = repository.obtenerAsesoria(revision.getId());
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().fichaPerfilId()).isEqualTo(fichaPerfil);
+        assertThat(resultado.get().asesorFichaId()).isEqualTo(asesor);
+        assertThat(resultado.get().estadoRevision()).isEqualTo("CORRECCION_DISPONIBLE");
+    }
+
+    @Test
+    void debeRetornarVacioLaAsesoria_cuandoLaRevisionNoExiste() {
+        // Act
+        var resultado = repository.obtenerAsesoria(UUID.randomUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeRemoverSoloLaRevisionIndicada_cuandoExisteYElItemTieneOtras() {
+        // Arrange
+        var item = sembrarItemDeFicha(UUID.randomUUID(), UUID.randomUUID());
+        var aRemover = sembrarRevisionEnItem(item.getId(), "NUEVA");
+        var aConservar = sembrarRevisionEnItem(item.getId(), "VISUALIZADA");
+        testEntityManager.clear();
+
+        // Act
+        var filas = repository.removerPorId(aRemover.getId());
+
+        // Assert
+        assertThat(filas).isEqualTo(1);
+        assertThat(testEntityManager.find(RevisionItemJpaEntity.class, aRemover.getId())).isNull();
+        assertThat(testEntityManager.find(RevisionItemJpaEntity.class, aConservar.getId())).isNotNull();
+        assertThat(repository.countByItemId(item.getId())).isEqualTo(1);
+    }
+
+    @Test
+    void debeAfectarCeroFilas_cuandoLaRevisionARemoverNoExiste() {
+        // Act
+        var filas = repository.removerPorId(UUID.randomUUID());
+
+        // Assert
+        assertThat(filas).isZero();
     }
 }

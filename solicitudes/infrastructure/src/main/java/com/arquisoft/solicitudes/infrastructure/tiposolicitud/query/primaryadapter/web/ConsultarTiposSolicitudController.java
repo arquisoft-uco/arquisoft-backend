@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web;
 
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.ConsultarTiposSolicitudInteractor;
-import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
 import com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web.dto.TipoSolicitudResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web.mapper.TipoSolicitudResponseMapper;
 import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
@@ -56,7 +55,7 @@ public class ConsultarTiposSolicitudController {
                     content = @Content)
     })
     public ResponseEntity<List<TipoSolicitudResponseDTO>> consultarTiposSolicitud() {
-        List<TipoSolicitudReadModel> tipos = consultarTiposSolicitudInteractor.ejecutar();
+        var tipos = consultarTiposSolicitudInteractor.ejecutar();
 
         return ResponseEntity.ok(tipos.stream()
                 .map(TipoSolicitudResponseMapper::toResponse)

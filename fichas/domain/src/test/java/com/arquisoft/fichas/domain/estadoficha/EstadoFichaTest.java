@@ -44,6 +44,19 @@ class EstadoFichaTest {
     }
 
     @Test
+    void debeResolverDescartadaComoNoTerminal_cuandoLlegaDesdeElCatalogo() {
+        // Act
+        var estado = EstadoFicha.desde("DESCARTADA");
+
+        // Assert
+        assertThat(estado).isEqualTo(EstadoFicha.DESCARTADA);
+        assertThat(EstadoFicha.esValido("DESCARTADA")).isTrue();
+        assertThat(estado.esTerminal()).isFalse();
+        assertThat(estado.permiteModificacion()).isTrue();
+        assertThat(estado.getNombre()).isEqualTo("Descartada");
+    }
+
+    @Test
     void debeReportarValidez_sinLanzar_cuandoSeConsultaConEsValido() {
         assertThat(EstadoFicha.esValido("APROBADA")).isTrue();
         assertThat(EstadoFicha.esValido("NO_EXISTE")).isFalse();

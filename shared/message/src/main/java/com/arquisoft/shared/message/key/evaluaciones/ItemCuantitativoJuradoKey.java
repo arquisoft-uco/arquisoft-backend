@@ -12,7 +12,8 @@ public enum ItemCuantitativoJuradoKey implements ClaveMensaje {
     LOG_VERIFICACION_REGISTRAR(
             "evaluaciones.aplicacion.itemcuantitativojurado.log.verificacion-registrar", 2),
     LOG_REGISTRADO("evaluaciones.aplicacion.itemcuantitativojurado.log.registrado", 1),
-    LOG_GUARDADO("evaluaciones.infraestructura.itemcuantitativojurado.log.guardado", 1);
+    LOG_GUARDADO("evaluaciones.infraestructura.itemcuantitativojurado.log.guardado", 1),
+    LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.itemcuantitativojurado.log.consulta-completada", 1);
 
     private final String clave;
     private final int parametros;

@@ -52,7 +52,7 @@ public class SolicitudNovedadCoordinadorRespondidaConsumer extends AbstractNotif
                     plantilla(
                             PlantillaKey.CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA,
                             payload.remitenteNombre(),
-                            payload.coordinadorNombre(),
+                            payload.responsableNombre(),
                             payload.contenido()),
                     plantilla(PlantillaKey.PIE_GENERICO))));
         });

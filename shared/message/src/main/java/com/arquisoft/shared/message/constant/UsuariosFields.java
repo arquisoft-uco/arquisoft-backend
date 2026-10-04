@@ -64,4 +64,11 @@ public final class UsuariosFields {
         public static final String USUARIO = "usuario";
         public static final String ACTOR = "actor";
     }
+
+    public static final class Bibliotecario {
+
+        private Bibliotecario() {}
+
+        public static final String USUARIO = "usuario";
+    }
 }

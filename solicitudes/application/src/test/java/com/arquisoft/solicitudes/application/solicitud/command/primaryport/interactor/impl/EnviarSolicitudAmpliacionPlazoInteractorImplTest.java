@@ -1,8 +1,8 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.impl;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudAmpliacionPlazoCommand;
-import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudAmpliacionPlazoUseCase;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudAmpliacionPlazoDomain;
+import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudUseCase;
+import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class EnviarSolicitudAmpliacionPlazoInteractorImplTest {
 
     @Mock
-    private EnviarSolicitudAmpliacionPlazoUseCase useCase;
+    private EnviarSolicitudUseCase useCase;
 
     @InjectMocks
     private EnviarSolicitudAmpliacionPlazoInteractorImpl interactor;
@@ -34,15 +34,15 @@ class EnviarSolicitudAmpliacionPlazoInteractorImplTest {
         UUID esperado = UUID.randomUUID();
         var command = EnviarSolicitudAmpliacionPlazoCommand.crear(
                 remitente, destinatario.toString(), "ampliacion de plazo");
-        when(useCase.ejecutar(any(EnvioSolicitudAmpliacionPlazoDomain.class))).thenReturn(esperado);
+        when(useCase.ejecutar(any(EnvioSolicitudDomain.class))).thenReturn(esperado);
 
         // Act
         UUID resultado = interactor.ejecutar(command);
 
         // Assert
         assertThat(resultado).isEqualTo(esperado);
-        ArgumentCaptor<EnvioSolicitudAmpliacionPlazoDomain> captor =
-                ArgumentCaptor.forClass(EnvioSolicitudAmpliacionPlazoDomain.class);
+        ArgumentCaptor<EnvioSolicitudDomain> captor =
+                ArgumentCaptor.forClass(EnvioSolicitudDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getRemitenteUsuario()).isEqualTo(remitente);
         assertThat(captor.getValue().getDestinatarioUsuario()).isEqualTo(destinatario);

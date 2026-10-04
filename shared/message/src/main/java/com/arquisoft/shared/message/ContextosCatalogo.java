@@ -38,11 +38,14 @@ public final class ContextosCatalogo {
     /** Contexto solicitudes. */
     public static final String SOLICITUDES = "solicitudes";
 
+    /** Contexto biblioteca. */
+    public static final String BIBLIOTECA = "biblioteca";
+
     /** Contexto mapas de ruta. */
     public static final String MAPAS_RUTA = "mapas_ruta";
 
     /** Todos los contextos, en el orden en que se cargan. */
     public static final List<String> TODOS = List.of(
             APP, FICHAS, SEGURIDAD, USUARIOS, NOTIFICACIONES, EVALUACIONES, PROYECTOS, SOLICITUDES,
-            MAPAS_RUTA);
+            BIBLIOTECA, MAPAS_RUTA);
 }

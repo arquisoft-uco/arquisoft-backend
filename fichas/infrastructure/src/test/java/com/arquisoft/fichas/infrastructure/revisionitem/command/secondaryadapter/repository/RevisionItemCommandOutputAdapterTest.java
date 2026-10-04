@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.AsesoriaRevisionItemEntity;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.PertenenciaRevisionItemEntity;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.RevisionItemEntity;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.entity.RevisionItemJpaEntity;
@@ -141,5 +142,34 @@ class RevisionItemCommandOutputAdapterTest {
         // Assert
         verify(repository, times(1)).actualizarEstado(revisionItem, "NUEVA", "VISUALIZADA");
         verify(logger, times(1)).debug(RevisionItemKey.LOG_ACTUALIZADO, revisionItem, "VISUALIZADA");
+    }
+
+    @Test
+    void debeDelegarSinLogear_cuandoObtieneAsesoria() {
+        // Arrange
+        var revisionItem = UUID.randomUUID();
+        var entity = new AsesoriaRevisionItemEntity(UUID.randomUUID(), UUID.randomUUID(), "NUEVA");
+        when(repository.obtenerAsesoria(revisionItem)).thenReturn(Optional.of(entity));
+
+        // Act
+        var resultado = adapter.obtenerAsesoria(revisionItem);
+
+        // Assert
+        assertThat(resultado).containsSame(entity);
+        verify(repository, times(1)).obtenerAsesoria(revisionItem);
+        verifyNoInteractions(logger);
+    }
+
+    @Test
+    void debeDelegarYLogearEnDebug_cuandoRemueveLaRevision() {
+        // Arrange
+        var revisionItem = UUID.randomUUID();
+
+        // Act
+        adapter.removerRevision(revisionItem);
+
+        // Assert
+        verify(repository, times(1)).removerPorId(revisionItem);
+        verify(logger, times(1)).debug(RevisionItemKey.LOG_ELIMINADO, revisionItem);
     }
 }

@@ -63,7 +63,7 @@ Guía completa: [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md).
 
 ## Architecture
 
-Arquitectura hexagonal (Ports & Adapters) con **11 bounded contexts** y **14 módulos compartidos**.
+Arquitectura hexagonal (Ports & Adapters) con **12 bounded contexts** y **14 módulos compartidos**.
 Los contextos se comunican por eventos de dominio en RabbitMQ y **nunca se importan entre sí**, con
 una única excepción acotada: una **consulta síncrona de solo lectura** a otro contexto, hecha por
 HTTP (nunca un import), para un dato que un comando debe verificar *al momento de escribir* y no
@@ -74,7 +74,7 @@ de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 ### Bounded Contexts
 
 Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`,
-`solicitudes` y `mapas_ruta`. Los otros tres (`artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje:
+`solicitudes`, `biblioteca` y `mapas_ruta`. Los otros tres (`artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje:
 solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
 `RegistrarUsuario` lo da de alta en Keycloak y publica los eventos con los que `fichas` y `proyectos`
 mantienen sus réplicas.
@@ -91,6 +91,7 @@ mantienen sus réplicas.
 | `entregables` | `entregables` |
 | `evaluaciones` | `evaluaciones` |
 | `solicitudes` | `solicitudes` |
+| `biblioteca` | `biblioteca` |
 | `mapas_ruta` | `mapas_ruta` |
 
 **Contexto de referencia: `fichas`** — el único completo (escritura, consulta, eventos, consumidor).
@@ -135,7 +136,7 @@ Lo que hay que saber de cada uno para no romper el grafo:
 crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
 prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
 tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Aún
-no existe (lo trae una HT aparte); hasta entonces esos adaptadores son stubs — ver *Desviaciones*.
+no existe (lo trae una HT aparte).
 
 ### Consultas síncronas entre contextos
 
@@ -144,12 +145,11 @@ replica local, A lee su tabla. Se recurre a una consulta HTTP síncrona **solo**
 tres: (1) el dato es una **precondición de una escritura** en A y debe ser correcto al instante de
 escribir, no eventualmente — una réplica desactualizada dejaría pasar un comando inválido; (2) A no
 necesita el dato para nada más, así que mantener una réplica (más su backfill y su consumer) es puro
-lastre; (3) B ya expone una consulta que responde. Primer caso: el asesor/coordinador asignado al
-estudiante, verificado cuando `solicitudes` crea una solicitud de novedad / cambio de asesor.
+lastre; (3) B ya expone una consulta que responde. Hoy no hay ningún caso implementado.
 
 Forma, espejando cualquier otro puerto secundario:
 - Puerto en `application/{feature}/command/secondaryport/{Concepto}OutputPort` (o su propio paquete
-  fino si no mapea a un agregado, p. ej. `application/asignacionproyecto/command/secondaryport/`),
+  fino si no mapea a un agregado),
   devuelve un `boolean`/valor plano — **la `Rule` sigue decidiendo**, el puerto solo responde.
 - Un `Finder` de comando lo consume, igual que un chequeo contra réplica.
 - Adaptador en `infrastructure/{feature}/command/secondaryadapter/webclient/{Concepto}OutputAdapter`,
@@ -412,7 +412,7 @@ Java puro.
 |-----------|---------|
 | Java | 21 (Virtual Threads activos automáticamente) |
 | Spring Boot | 4.0.5 |
-| Gradle | 9.0.0 |
+| Gradle | 9.8.0 |
 | PostgreSQL | 18 (una **base** por contexto, con su DataSource, EntityManagerFactory y Flyway) |
 | RabbitMQ | 4.2.5 |
 | Redis | 7 (Lettuce) |
@@ -501,7 +501,6 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 | `EstadoEvaluacionCommandRepository` | `fichas/…/estadoevaluacion/…/repository/` | Código muerto: ningún `OutputPort`/`OutputAdapter` lo consume |
 | Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/auth/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
 | Enums de catálogo en dos ubicaciones | `domain/{catalogo}/` vs `domain/{feature}/model/` | **Decisión abierta del proyecto, no la "arregles".** Un enum nuevo sigue lo que ya use su contexto |
-| `AsignacionProyectoOutputAdapter` stub | `solicitudes/…/asignacionproyecto/…/webclient/` | **Deliberado, HU-081.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `DestinatarioAsignadoRule` + `DestinatarioAsignadoFinder` están cableados y activos; el adaptador devuelve `true` y loguea `warn`. Consecuencia: la regla no rechaza nada todavía. Activar = reemplazar el cuerpo del adaptador; checklist en `PLAN-HU-081.md` §3.1 |
 | `AdministradorRemovidoConsumer` stub | `solicitudes/…/usuario/…/amqp/usuarios/administrador/` | **Deliberado, HU-232.** Consume `usuarios.administrador.removido` para que el evento tenga cola enlazada, pero solo loguea `info` y confirma: la réplica de `usuario` en `solicitudes` es genérica y no distingue el rol, y qué significa "dejó de ser administrador" ahí es una decisión de negocio pendiente. Activar = invocar un `Interactor` de baja/actualización de la réplica cuando una HU lo defina |
 | `UsuarioSolicitudesCommandOutputAdapter` / `UsuarioSolicitudesCommandRepository` | `solicitudes/…/usuario/…/repository/` | La réplica lleva el contexto en el nombre. Con los beans nombrados por FQN, una réplica usa el nombre natural (`UsuarioCommandOutputAdapter`); ver `arquisoft-arquitectura/references/eventos.md` → *Replicación entre contextos* |
 | `ProyectoGradoDeEstudianteQueryOutputAdapter` stub | `mapas_ruta/…/asignacionproyecto/query/secondaryadapter/webclient/` | **Deliberado, HU-052.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `ProyectoGradoDeEstudianteQueryFinder` + el corte del use case están cableados y activos; el adaptador ignora al estudiante, devuelve siempre el proyecto fijo de su constante `PROYECTO_GRADO_SIMULADO` y loguea `warn`. Consecuencia: `GET /mapas-ruta/estudiante` devuelve **el mismo mapa a todo estudiante** (no verifica pertenencia), o 404 si ese proyecto no tiene mapa sembrado. Activar = reemplazar el cuerpo del adaptador y borrar la constante; checklist en `PLAN-HU-052.md` §5 |

@@ -15,14 +15,13 @@ se cumplen las **tres**:
    consumer) es puro lastre.
 3. B ya **expone una consulta** que responde.
 
-Primer caso: el asesor/coordinador asignado al estudiante, verificado cuando `solicitudes` crea una
-solicitud de novedad / cambio de asesor (`AsignacionProyectoOutputPort` → `proyectos`).
+Hoy no hay ningún caso implementado.
 
 Forma, espejando cualquier otro puerto secundario:
 
 | Pieza | Dónde | Regla |
 |---|---|---|
-| Puerto | `application/{feature}/command/secondaryport/{Concepto}OutputPort` (o su propio paquete fino si no mapea a un agregado, p. ej. `application/asignacionproyecto/command/secondaryport/`) | Devuelve un `boolean`/valor plano. **La `Rule` sigue decidiendo**, el puerto solo responde |
+| Puerto | `application/{feature}/command/secondaryport/{Concepto}OutputPort` (o su propio paquete fino si no mapea a un agregado) | Devuelve un `boolean`/valor plano. **La `Rule` sigue decidiendo**, el puerto solo responde |
 | `Finder` | `application/{feature}/command/finder/` | Lo consume igual que un chequeo contra réplica |
 | Adaptador | `infrastructure/{feature}/command/secondaryadapter/webclient/{Concepto}OutputAdapter`, `@Component` | Habla por **`shared:web-client`** — nunca `RestClient`/`WebClient` inline, nunca un cliente generado que importe B. Reenvía el bearer del llamante. Fallo de transporte → `InfrastructureException` (503): un peer caído falla la petición, no salta el chequeo |
 

@@ -12,6 +12,7 @@ import com.arquisoft.usuarios.application.usuario.query.readmodel.UsuarioReadMod
 import com.arquisoft.usuarios.infrastructure.administrador.command.secondaryadapter.entity.AdministradorJpaEntity;
 import com.arquisoft.usuarios.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
 import com.arquisoft.usuarios.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
+import com.arquisoft.usuarios.infrastructure.bibliotecario.command.secondaryadapter.entity.BibliotecarioJpaEntity;
 import com.arquisoft.usuarios.infrastructure.coordinador.command.secondaryadapter.entity.CoordinadorJpaEntity;
 import com.arquisoft.usuarios.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
 import com.arquisoft.usuarios.infrastructure.representantecomite.command.secondaryadapter.entity.RepresentanteComiteJpaEntity;
@@ -75,9 +76,11 @@ class UsuarioQueryOutputAdapterTest {
         entityManager.persist(AsesorJpaEntity.builder().usuarioId(eliminado).eliminadoEn(baja).build());
 
         sinRolesInactivo = persistirUsuario("1006", "Felipe Mora", "INACTIVO", null);
+        entityManager.persist(BibliotecarioJpaEntity.builder().usuarioId(sinRolesInactivo).eliminadoEn(baja).build());
 
         administrador = persistirUsuario("1007", "Gina Paz", "ACTIVO", null);
         entityManager.persist(AdministradorJpaEntity.builder().usuarioId(administrador).build());
+        entityManager.persist(BibliotecarioJpaEntity.builder().usuarioId(administrador).build());
 
         administradorDadoDeBaja = persistirUsuario("1008", "Hugo Tello", "ACTIVO", null);
         entityManager.persist(AdministradorJpaEntity.builder().usuarioId(administradorDadoDeBaja).eliminadoEn(baja).build());
@@ -98,16 +101,17 @@ class UsuarioQueryOutputAdapterTest {
         assertThat(resultado.getContent())
                 .extracting(UsuarioReadModel::id, UsuarioReadModel::vigente, UsuarioReadModel::esEstudiante,
                         UsuarioReadModel::esAsesor, UsuarioReadModel::esAsesorFicha, UsuarioReadModel::esCoordinador,
-                        UsuarioReadModel::esRepresentanteComite, UsuarioReadModel::esAdministrador)
+                        UsuarioReadModel::esRepresentanteComite, UsuarioReadModel::esAdministrador,
+                        UsuarioReadModel::esBibliotecario)
                 .containsExactlyInAnyOrder(
-                        tuple(estudiante, true, true, false, false, false, false, false),
-                        tuple(estudianteAsesor, true, true, true, false, false, false, false),
-                        tuple(coordinadorAsesorFicha, true, false, false, true, true, true, false),
-                        tuple(estudianteDadoDeBaja, true, false, false, false, false, false, false),
-                        tuple(eliminado, false, false, false, false, false, false, false),
-                        tuple(sinRolesInactivo, true, false, false, false, false, false, false),
-                        tuple(administrador, true, false, false, false, false, false, true),
-                        tuple(administradorDadoDeBaja, true, false, false, false, false, false, false));
+                        tuple(estudiante, true, true, false, false, false, false, false, false),
+                        tuple(estudianteAsesor, true, true, true, false, false, false, false, false),
+                        tuple(coordinadorAsesorFicha, true, false, false, true, true, true, false, false),
+                        tuple(estudianteDadoDeBaja, true, false, false, false, false, false, false, false),
+                        tuple(eliminado, false, false, false, false, false, false, false, false),
+                        tuple(sinRolesInactivo, true, false, false, false, false, false, false, false),
+                        tuple(administrador, true, false, false, false, false, false, true, true),
+                        tuple(administradorDadoDeBaja, true, false, false, false, false, false, false, false));
         assertThat(resultado.getContent())
                 .filteredOn(u -> u.id().equals(estudiante))
                 .extracting(UsuarioReadModel::identificador, UsuarioReadModel::nombre, UsuarioReadModel::email,
@@ -158,6 +162,38 @@ class UsuarioQueryOutputAdapterTest {
                 .extracting(UsuarioReadModel::id)
                 .containsExactly(administrador)
                 .doesNotContain(administradorDadoDeBaja);
+    }
+
+    @Test
+    void debeFiltrarBibliotecariosVigentes_cuandoEsBibliotecarioEsTrue() {
+        // Arrange
+        var criteria = conFiltro(NodoFiltro.predicado("esBibliotecario", FiltroOperador.ES, "true"));
+
+        // Act
+        var resultado = adapter.consultarTodos(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(UsuarioReadModel::id)
+                .containsExactly(administrador)
+                .doesNotContain(sinRolesInactivo);
+    }
+
+    @Test
+    void debeRetornarUnaSolaFila_cuandoElUsuarioEsBibliotecarioYAdministradorALaVez() {
+        // Arrange
+        var criteria = conFiltro(NodoFiltro.grupo(FiltroConector.OR, List.of(
+                NodoFiltro.predicado("esBibliotecario", FiltroOperador.ES, "true"),
+                NodoFiltro.predicado("esAdministrador", FiltroOperador.ES, "true"))));
+
+        // Act
+        var resultado = adapter.consultarTodos(criteria);
+
+        // Assert
+        assertThat(resultado.getTotalElements()).isEqualTo(1L);
+        assertThat(resultado.getContent())
+                .extracting(UsuarioReadModel::id, UsuarioReadModel::esAdministrador, UsuarioReadModel::esBibliotecario)
+                .containsExactly(tuple(administrador, true, true));
     }
 
     @Test
@@ -287,6 +323,7 @@ class UsuarioQueryOutputAdapterTest {
                 NodoFiltro.predicado("esAsesorFicha", FiltroOperador.ES, "true"),
                 NodoFiltro.predicado("esCoordinador", FiltroOperador.ES, "true"),
                 NodoFiltro.predicado("esRepresentanteComite", FiltroOperador.ES, "true"),
+                NodoFiltro.predicado("esBibliotecario", FiltroOperador.ES, "false"),
                 NodoFiltro.predicado("identificador", FiltroOperador.ES, "1003"),
                 NodoFiltro.predicado("nombre", FiltroOperador.CONTIENE, "Carla"),
                 NodoFiltro.predicado("email", FiltroOperador.CONTIENE, "1003@"),
