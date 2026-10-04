@@ -68,6 +68,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.estudiantes-proyecto-grado-asignados", 1),
     CUERPO_ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS(
             "notificaciones.aplicacion.plantilla.cuerpo.estudiantes-proyecto-grado-asignados", 2),
+    ASUNTO_ESTADO_FICHA_PERFIL_AGREGADO(
+            "notificaciones.aplicacion.plantilla.asunto.estado-ficha-perfil-agregado", 2),
+    CUERPO_ESTADO_FICHA_PERFIL_AGREGADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.estado-ficha-perfil-agregado", 3),
     PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;

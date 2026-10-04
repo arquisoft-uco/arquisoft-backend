@@ -25,6 +25,13 @@ public record ResumenEvaluacionesFicha(UUID fichaPerfil, List<ConteoEvaluaciones
                 .sum();
     }
 
+    public long enEvaluacion() {
+        return conteos.stream()
+                .filter(conteo -> conteo.estado().esEnEvaluacion())
+                .mapToLong(ConteoEvaluacionesPorEstado::evaluaciones)
+                .sum();
+    }
+
     public boolean tieneObservacionesVigentes() {
         return conteos.stream()
                 .filter(conteo -> !conteo.estado().esDescartada())

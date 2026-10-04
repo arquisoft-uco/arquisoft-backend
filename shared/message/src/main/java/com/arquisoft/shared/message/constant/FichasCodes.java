@@ -147,6 +147,11 @@ public final class FichasCodes {
         public static final String APROBACION_SIN_EVALUACION_APROBATORIA =
                 "ESTADO_FICHA_PERFIL_APROBACION_SIN_EVALUACION_APROBATORIA";
         public static final String SIN_ESTUDIANTES_VIGENTES = "ESTADO_FICHA_PERFIL_SIN_ESTUDIANTES_VIGENTES";
+        public static final String ESTADO_FICHA_INVALIDO = "ESTADO_FICHA_PERFIL_ESTADO_FICHA_INVALIDO";
+        public static final String ESTADO_NO_ASIGNABLE_POR_ASESOR = "ESTADO_FICHA_PERFIL_ESTADO_NO_ASIGNABLE_POR_ASESOR";
+        public static final String ESTADO_REPETIDO = "ESTADO_FICHA_PERFIL_ESTADO_REPETIDO";
+        public static final String TRANSICION_NO_PERMITIDA = "ESTADO_FICHA_PERFIL_TRANSICION_NO_PERMITIDA";
+        public static final String EVALUACION_EN_CURSO = "ESTADO_FICHA_PERFIL_EVALUACION_EN_CURSO";
     }
 
     public static final class EstadoFicha {
