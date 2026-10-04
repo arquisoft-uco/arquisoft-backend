@@ -78,8 +78,8 @@ class EvaluacionJuradoQueryOutputAdapterTest {
         var id = UUID.randomUUID();
         testEntityManager.persist(EvaluacionJuradoJpaEntity.builder()
                 .id(id)
-                .evaluacionId(evaluacion)
-                .juradoId(jurado)
+                .evaluacion(evaluacion)
+                .jurado(jurado)
                 .build());
         return id;
     }

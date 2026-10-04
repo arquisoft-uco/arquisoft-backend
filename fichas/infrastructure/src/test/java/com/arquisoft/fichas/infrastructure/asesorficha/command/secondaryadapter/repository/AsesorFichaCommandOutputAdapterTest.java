@@ -58,6 +58,25 @@ class AsesorFichaCommandOutputAdapterTest {
     }
 
     @Test
+    void debeMapearElAsesorDeLaFicha_cuandoObtenerPorFichaPerfilLoEncuentra() {
+        // Arrange
+        var fichaId = UUID.randomUUID();
+        var asesorId = UUID.randomUUID();
+        when(asesorFichaRepository.findByFichaPerfilId(fichaId)).thenReturn(Optional.of(AsesorFichaJpaEntity.builder()
+                .id(asesorId).identificador("A001").nombre("Ana Asesora").email("ana@arquisoft.com").build()));
+
+        // Act
+        var encontrado = adapter.obtenerPorFichaPerfil(fichaId);
+        var ausente = adapter.obtenerPorFichaPerfil(UUID.randomUUID());
+
+        // Assert
+        assertThat(encontrado).isPresent();
+        assertThat(encontrado.get().id()).isEqualTo(asesorId);
+        assertThat(encontrado.get().nombre()).isEqualTo("Ana Asesora");
+        assertThat(ausente).isEmpty();
+    }
+
+    @Test
     void debeRetornarVacio_cuandoAsesorNoExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();

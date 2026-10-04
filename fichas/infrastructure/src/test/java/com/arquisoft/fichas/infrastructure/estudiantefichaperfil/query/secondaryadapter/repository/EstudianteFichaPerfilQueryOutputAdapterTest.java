@@ -236,6 +236,111 @@ class EstudianteFichaPerfilQueryOutputAdapterTest {
                 .containsExactly(vigente);
     }
 
+    @Test
+    void debeRetornarTodosLosVigentesDeSusFichasIncluidoElPropio_cuandoPerteneceAVariasFichas() {
+        // Arrange
+        var fichaUno = UUID.randomUUID();
+        var fichaDos = UUID.randomUUID();
+        var yo = persistirEstudiante("EST-200", "Luis Paz", "luis200@uco.edu.co");
+        var companero = persistirEstudiante("EST-201", "Ana Ruiz", "ana201@uco.edu.co");
+        var otro = persistirEstudiante("EST-202", "Pedro Zapata", "pedro202@uco.edu.co");
+        vincular(fichaUno, yo);
+        vincular(fichaUno, companero);
+        vincular(fichaDos, yo);
+        vincular(fichaDos, otro);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarVigentesDeFichasDelEstudiante(yo);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(EstudianteFichaPerfilReadModel::fichaPerfilId, EstudianteFichaPerfilReadModel::estudianteId)
+                .containsExactlyInAnyOrder(
+                        tuple(fichaUno, yo), tuple(fichaUno, companero),
+                        tuple(fichaDos, yo), tuple(fichaDos, otro));
+    }
+
+    @Test
+    void debeExcluirFichasAjenas_cuandoConsultaLasFichasDelEstudiante() {
+        // Arrange
+        var fichaPropia = UUID.randomUUID();
+        var fichaAjena = UUID.randomUUID();
+        var yo = persistirEstudiante("EST-210", "Luis Paz", "luis210@uco.edu.co");
+        var otro = persistirEstudiante("EST-211", "Ana Ruiz", "ana211@uco.edu.co");
+        vincular(fichaPropia, yo);
+        vincular(fichaAjena, otro);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarVigentesDeFichasDelEstudiante(yo);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(EstudianteFichaPerfilReadModel::fichaPerfilId)
+                .containsExactly(fichaPropia);
+    }
+
+    @Test
+    void debeExcluirCompanerosDadosDeBaja_cuandoConsultaLasFichasDelEstudiante() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var yo = persistirEstudiante("EST-220", "Luis Paz", "luis220@uco.edu.co");
+        var dadoDeBaja = persistirEstudiante("EST-221", "Pedro Zapata", "pedro221@uco.edu.co", Instant.now());
+        vincular(ficha, yo);
+        vincular(ficha, dadoDeBaja);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarVigentesDeFichasDelEstudiante(yo);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(EstudianteFichaPerfilReadModel::estudianteId)
+                .containsExactly(yo);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElEstudianteFueDadoDeBaja() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var dadoDeBaja = persistirEstudiante("EST-230", "Luis Paz", "luis230@uco.edu.co", Instant.now());
+        var companero = persistirEstudiante("EST-231", "Ana Ruiz", "ana231@uco.edu.co");
+        vincular(ficha, dadoDeBaja);
+        vincular(ficha, companero);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.consultarVigentesDeFichasDelEstudiante(dadoDeBaja)).isEmpty();
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElEstudianteNoPerteneceANingunaFicha() {
+        // Act & Assert
+        assertThat(adapter.consultarVigentesDeFichasDelEstudiante(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
+    void debeOrdenarPorNombreAscendente_cuandoConsultaLasFichasDelEstudiante() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var zoe = persistirEstudiante("EST-240", "Zoe Mora", "zoe240@uco.edu.co");
+        var ana = persistirEstudiante("EST-241", "Ana Ruiz", "ana241@uco.edu.co");
+        var luis = persistirEstudiante("EST-242", "Luis Paz", "luis242@uco.edu.co");
+        vincular(ficha, zoe);
+        vincular(ficha, ana);
+        vincular(ficha, luis);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarVigentesDeFichasDelEstudiante(zoe);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(EstudianteFichaPerfilReadModel::nombre)
+                .containsExactly("Ana Ruiz", "Luis Paz", "Zoe Mora");
+    }
+
     private UUID persistirEstudiante(String identificador, String nombre, String email) {
         return persistirEstudiante(identificador, nombre, email, null);
     }

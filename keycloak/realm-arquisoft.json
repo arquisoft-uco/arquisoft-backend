@@ -62,6 +62,7 @@
               "fichas:estudiante-ficha-perfil:create",
               "fichas:estudiante-ficha-perfil:delete",
               "fichas:estudiante-ficha-perfil-coordinador:view",
+              "fichas:estado-ficha:view",
               "solicitudes:solicitud-novedad-coordinador-recibida:view"
             ]
           }
@@ -101,7 +102,8 @@
               "fichas:estado-ficha:view",
               "fichas:ficha-perfil:create",
               "fichas:tipo-item:view",
-              "fichas:observacion-item:create"
+              "fichas:observacion-item:create",
+              "fichas:estado-revision:view"
             ]
           }
         },
@@ -121,11 +123,13 @@
               "evaluaciones:item-cuantitativo-jurado:create",
               "usuarios:usuario:create",
               "usuarios:usuario:update",
+              "usuarios:estado-usuario:view",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:item-cualitativo-jurado:update",
               "usuarios:representante-comite-curriculum:create",
               "evaluaciones:item-cualitativo-jurado:view",
-              "evaluaciones:criterio-item-cualitativo-jurado:view"
+              "evaluaciones:criterio-item-cualitativo-jurado:view",
+              "usuarios:bibliotecario:delete"
             ]
           }
         },
@@ -171,10 +175,10 @@
               "fichas:estado-ficha-perfil-estudiante:view",
               "solicitudes:solicitud-ampliacion-plazo:create",
               "solicitudes:solicitud-novedad-coordinador:delete",
-              "fichas:estado-ficha:view",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
-              "solicitudes:solicitud-cambio-asesor:create"
+              "solicitudes:solicitud-cambio-asesor:create",
+              "fichas:evaluacion-ficha-perfil-estudiante:view"
             ]
           }
         },
@@ -226,7 +230,10 @@
               "fichas:estado-evaluacion-ficha:create",
               "fichas:evaluacion-ficha-perfil:create",
               "fichas:item-ficha-perfil-representante:view",
-              "fichas:evaluacion-ficha-perfil-representante:view"
+              "fichas:evaluacion-ficha-perfil-representante:view",
+              "fichas:observacion-evaluacion:create",
+              "fichas:observacion-evaluacion:update",
+              "fichas:observacion-evaluacion:delete"
             ]
           }
         },
@@ -481,6 +488,24 @@
           "attributes": {}
         },
         {
+          "id": "c3618679-f43f-4386-bb54-0684269814f7",
+          "name": "usuarios:estado-usuario:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "67bf86fe-d9e3-499e-9164-5376e646e070",
+          "name": "usuarios:bibliotecario:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "0dd5b3e7-039d-43b5-94ee-3d2f1364432d",
           "name": "fichas:ficha-perfil-estudiante:view",
           "description": "",
@@ -627,6 +652,15 @@
         {
           "id": "d699bbcf-608d-4c40-a22a-f2e6cf28be0a",
           "name": "fichas:estado-evaluacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "14d00284-32ed-4cd8-8fa9-cefe71afc83b",
+          "name": "fichas:estado-revision:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -796,6 +830,33 @@
           "attributes": {}
         },
         {
+          "id": "4be04b5d-0795-4270-acfe-0842ba3300af",
+          "name": "fichas:observacion-evaluacion:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "02bb11a2-077d-4c1d-9b9e-ec43cf461cc0",
+          "name": "fichas:observacion-evaluacion:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8d8b0792-0864-41e6-852f-18461c81aeda",
+          "name": "fichas:observacion-evaluacion:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "7e70823b-ff92-4fe1-a263-2a69b1fe157f",
           "name": "fichas:item-ficha-perfil-estudiante:view",
           "description": "",
@@ -816,6 +877,15 @@
         {
           "id": "bcd2e119-a9c7-4958-8034-d3c90306e151",
           "name": "fichas:evaluacion-ficha-perfil-representante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b7ff7f58-cdcd-4641-a469-7566c4306030",
+          "name": "fichas:evaluacion-ficha-perfil-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,

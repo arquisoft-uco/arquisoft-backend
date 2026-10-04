@@ -11,9 +11,13 @@ rutas:
       asesor: /{usuarioId}/asesor
       asesor-ficha: /{usuarioId}/asesor-ficha
       coordinador: /{usuarioId}/coordinador
+      representante-comite: /{usuarioId}/representante-comite
+      administrador: /{usuarioId}/administrador
+      bibliotecario: /{usuarioId}/bibliotecario
       modificar: /{usuarioId}
       eliminar: /{usuarioId}
       estado: /{usuarioId}/estado
+      usuarios-administrador: /administrador
       coordinadores-administrador: /coordinadores/administrador
       coordinadores-vigentes: /coordinadores/vigentes
       estudiantes-administrador: /estudiantes/administrador
@@ -22,3 +26,8 @@ rutas:
       asesores-vigentes: /asesores/vigentes
       asesores-ficha-administrador: /asesores-ficha/administrador
       asesores-ficha-vigentes: /asesores-ficha/vigentes
+      representantes-comite-administrador: /representantes-comite/administrador
+      representantes-comite-vigentes: /representantes-comite/vigentes
+      administradores-administrador: /administradores/administrador
+      bibliotecarios-administrador: /bibliotecarios/administrador
+      estados: /estados

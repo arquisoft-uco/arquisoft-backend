@@ -22,10 +22,7 @@ public interface SolicitudCommandRepository extends JpaRepository<SolicitudJpaEn
             @Param("mensajeSolicitud") String mensajeSolicitud);
 
     @Query("SELECT new com.arquisoft.solicitudes.application.solicitud.command.secondaryport.entity."
-            + "DatosSolicitudEntity(s.remitente.usuarioId, s.tipoSolicitud.id) "
+            + "DatosSolicitudEntity(s.remitente.usuarioId, s.destinatario.usuarioId, s.tipoSolicitud.id) "
             + "FROM SolicitudJpaEntity s WHERE s.id = :id")
     Optional<DatosSolicitudEntity> buscarDatos(@Param("id") UUID id);
-
-    @Query(value = "SELECT COUNT(*) > 0 FROM respuesta WHERE solicitud_id = :id", nativeQuery = true)
-    boolean tieneRespuestas(@Param("id") UUID id);
 }

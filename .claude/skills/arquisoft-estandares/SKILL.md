@@ -33,7 +33,7 @@ dato cuya integridad no se validó primero.
 
 | Componente | Pureza | Puede lanzar | Ejemplo real |
 |---|---|---|---|
-| `Validator` | Construye sus `Rule`s con `new` en un **constructor sin argumentos** (no `@RequiredArgsConstructor`); nunca inyecta `OutputPort`/`Finder`; **cero `if`** | No decide, solo orquesta en orden | `fichas/application/.../fichaperfil/command/validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
+| `Validator` | Construye sus `Rule`s con `new` en un **constructor sin argumentos** (no `@RequiredArgsConstructor`); nunca inyecta `OutputPort`/`Finder`; **cero `if`**; expone **un único método `validar(...)`** que recibe todo lo que sus `Rule`s necesitan — partirlo (`validarExistencia` + `validarReglasDeNegocio`) deja que otro llamador invoque solo una parte y se salte reglas sin que nada falle | No decide, solo orquesta en orden | `fichas/application/.../fichaperfil/command/validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
 | `Rule` | Pura: sin Spring, sin Lombok, **sin dependencias de constructor**; no es un bean | Sí, sobre un `record` ya cargado con el dato | `fichas/domain/.../fichaperfil/rules/impl/FichaPerfilTituloUnicoRuleImpl.java` |
 | `Finder` | Delega en un `OutputPort` | Nunca por "no encontrado" — devuelve `Boolean`/`Long`, `Domain` o `UUID`; la ausencia es `{X}Domain.VACIO` o `UtilUUID.obtenerUUIDPorDefecto()`, nunca `Optional` | `fichas/application/.../asesorficha/command/finder/impl/AsesorFichaExisteFinderImpl.java` |
 
@@ -134,7 +134,10 @@ public EstudianteDomain obtener(UUID id) {
 
 Quien llama pregunta con `vigente.esVacio()` (identidad) o `UtilUUID.esPorDefecto(uuid)`; nunca
 `isPresent()`/`get()`/`.orElse(...)` en el `UseCase`. Si el agregado aún no tiene `VACIO`, se le
-añade antes de escribir el `Finder`. Si en la rama "no existe" no debe consultarse nada más, se
+añade antes de escribir el `Finder`, con cada campo en el valor por defecto de su `Util`
+(`UtilUUID.obtenerUUIDPorDefecto()`, `UtilTexto.VACIO`, `UtilFecha.VACIO`, `UtilNumero.CERO` o `UtilNumero.CERO_DECIMAL`, el
+`VACIO` del enum) y nunca con un literal (`""`, `0`, `Instant.EPOCH`): así un solo sitio define qué
+significa "ausente" para cada tipo. Si en la rama "no existe" no debe consultarse nada más, se
 corta con el booleano (`var itemExiste = !UtilUUID.esPorDefecto(ficha); var esPropietario =
 itemExiste && vinculoFinder.obtener(...)`). Un domain ausente viaja así como su centinela
 `VACIO` (con `esVacio()` comparando identidad); un valor suelto
@@ -622,7 +625,8 @@ nueva "para que se entienda" — si hace falta explicarla, el razonamiento va a 
 `UtilTexto` (`aplicarTrim`, `esVacioONulo`, `correoValido`, `enmascararCorreo`), `UtilUUID`
 (`generarUUIDDesdeTexto`, `uuidValido`, `generarNuevoUUID`, `obtenerUUIDPorDefecto`), `UtilColeccion`
 (`esVaciaONula`, `aplicarPorDefecto`, `primerDuplicado`), `UtilObjeto` (`esNulo`, `noEsNulo`,
-`aplicarPorDefecto`), `UtilFecha`, `UtilNumero`, `UtilEnum`.
+`aplicarPorDefecto`), `UtilFecha`, `UtilNumero` (`esCero`, `tieneParteDecimal`, `obtenerPorDefecto`,
+aceptan cualquier subtipo de `Number`), `UtilEnum`.
 
 Dos que se olvidan y sí importan:
 

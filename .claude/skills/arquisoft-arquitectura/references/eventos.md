@@ -41,7 +41,7 @@ corre al inicio del `UseCase`, en la fase de existencia, y una `Rule` rechaza su
 persistir. Consultado después de `registrar(...)`, un `Finder` que no encuentra devuelve el centinela
 sin lanzar: el evento sale con nombre y correo vacíos, `notificaciones` lo rechaza y la escritura ya
 quedó confirmada sin correo. Compila y pasa los tests. Referencia:
-`EnviarSolicitudCambioAsesorUseCaseImpl` (`validarExistenciaUsuarios` antes de registrar). Quedan
+`EnviarSolicitudUseCaseImpl` (los `Registrar{Remitente,Destinatario}` validan la existencia del usuario y los datos del evento se consultan antes de persistir). Quedan
 fuera lo que genera la propia escritura (id, fecha) y una ausencia que la HU declare aceptable; en ese
 caso el plan dice qué hace el evento sin el dato.
 

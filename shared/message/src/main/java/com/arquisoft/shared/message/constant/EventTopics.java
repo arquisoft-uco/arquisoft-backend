@@ -19,6 +19,26 @@ public final class EventTopics {
 
         public static final String REVISION_ITEM_AGREGADO =
                 "fichas.revision_item.agregado";
+
+        public static final String FICHA_PERFIL_APROBADA =
+                "fichas.ficha_perfil.aprobada";
+
+        public static final String FICHA_PERFIL_NO_APROBADA =
+                "fichas.ficha_perfil.no_aprobada";
+
+        public static final String ESTADO_FICHA_PERFIL_AGREGADO =
+                "fichas.estado_ficha_perfil.agregado";
+    }
+
+    public static final class Proyectos {
+
+        private Proyectos() {}
+
+        public static final String PROYECTO_GRADO_REGISTRADO =
+                "proyectos.proyecto_grado.registrado";
+
+        public static final String ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS =
+                "proyectos.estudiante_proyecto_grado.asignados";
     }
 
     public static final class Usuarios {
@@ -48,6 +68,21 @@ public final class EventTopics {
                 "usuarios.asesor.agregado";
         public static final String ASESOR_REMOVIDO =
                 "usuarios.asesor.removido";
+
+        public static final String REPRESENTANTE_COMITE_AGREGADO =
+                "usuarios.representantecomite.agregado";
+        public static final String REPRESENTANTE_COMITE_REMOVIDO =
+                "usuarios.representantecomite.removido";
+
+        public static final String ADMINISTRADOR_AGREGADO =
+                "usuarios.administrador.agregado";
+        public static final String ADMINISTRADOR_REMOVIDO =
+                "usuarios.administrador.removido";
+
+        public static final String BIBLIOTECARIO_AGREGADO =
+                "usuarios.bibliotecario.agregado";
+        public static final String BIBLIOTECARIO_REMOVIDO =
+                "usuarios.bibliotecario.removido";
     }
 
     public static final class Evaluaciones {
@@ -73,5 +108,11 @@ public final class EventTopics {
 
         public static final String AMPLIACION_PLAZO_ENVIADA =
                 "solicitudes.solicitud.ampliacion_plazo_enviada";
+
+        public static final String NOVEDAD_COORDINADOR_RESPONDIDA =
+                "solicitudes.respuesta.novedad_coordinador_respondida";
+
+        public static final String NOVEDAD_COORDINADOR_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.novedad_coordinador_estado_modificado";
     }
 }

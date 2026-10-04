@@ -41,8 +41,9 @@ Después cruza el árbol con `git status -s` y lee también lo que la historia c
 tests del tester, los extras que el implementador anotó en la Trazabilidad, las claves de
 `shared:message` y `catalogo/`. `@4c-commit` commitea lo que este reporte lista en "Datos para la
 entrega" más lo que encuentre en el working tree, así que un archivo que no revisas llega al PR sin
-validar. Lo que no pertenece a la historia (cambios en `.claude/`, en otro contexto) no se revisa ni
-se lista.
+validar. La pertenencia la decide el plan, no la carpeta: lo que su árbol nombra es de la historia
+aunque viva en `.claude/`, `docs/` o la raíz, y se lista sin salvedades. Lo que ni el plan ni la
+Trazabilidad nombran (otro contexto, ajustes de agentes ajenos a la HU) no se revisa ni se lista.
 
 ## FASE 2 — Checks
 
@@ -175,7 +176,7 @@ del commit y no en un plan cuando el cambio no vino de una HU: búscala ahí ant
 | Invariante local de la sección 3 del plan (formato, longitud, obligatoriedad) validada **dentro** de la entidad, acumulando en `ValidationResult` | ❌ |
 | Invariante nueva con clase de excepción propia (`{Entidad}{Regla}Exception`) en vez de `ValidationResult.agregarError(...)` + `lanzarSiTieneErrores()` | ❌ (excepción real: `seguridad/AuthenticationException`, por choque con Spring Security) |
 | Setter privado que no corta con `return` cuando la validación falla (asigna un valor inválido) | ❌ |
-| Domain que puede venir ausente sin centinela `VACIO` + `esVacio()` (comparando identidad, no campos) | ⚠️ |
+| Domain que puede venir ausente sin centinela `VACIO` + `esVacio()` (comparando identidad, no campos), o con un `VACIO` que rellena algún campo con un literal (`""`, `0`, `Instant.EPOCH`) en vez del valor por defecto de su `Util` (`arquisoft-estandares` → *Sin `Optional` fuera del `OutputPort`*) | ⚠️ |
 | Objeto de acción `{Accion}{Entidad}Domain` que declara un `{Otro}Domain` como campo cuando la acción no crea ese objeto — la forma por defecto son `UUID` y escalares (`CambioAsesorFichaDomain` = dos `UUID`) | ⚠️ |
 | Objeto de acción **compuesto** cuyo `{Accion}{Entidad}Mapper` no construye de menor a mayor jerarquía: domain primero, cada pieza con el mapper de **su propia feature** recibiendo `entidad.getId()`, compuesto al final (`RegistrarFichaPerfilMapper`) | ❌ |
 | `crear(...)` de un objeto de acción compuesto que repite validaciones de sus piezas en vez de solo `noNulo` de cada componente | ⚠️ |
@@ -258,10 +259,11 @@ excepción o mapear a `Entity`.
 | `Finder` lanza por "no encontrado" en vez de devolver valor | ❌ |
 | `Finder` cuyo contrato o `obtener` devuelve `Optional<...>`, o devuelve un `Entity` en vez del `Domain` — debe resolver la ausencia dentro: `.map(XMapper::toDomain).orElse(XDomain.VACIO)` o `.orElseGet(UtilUUID::obtenerUUIDPorDefecto)` | ❌ |
 | `UseCase` que hace `isPresent()`, `get()`, `.orElse(...)`, `map`/`flatMap` sobre el resultado de un `Finder` — debe preguntar `esVacio()` o `UtilUUID.esPorDefecto(...)` | ❌ |
-| `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
+| `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre. Excepción correcta: un `Finder` cuyo `OutputPort` no recibe argumentos (un conteo global, p. ej. `AdministradoresVigentesCountFinder`) extiende `SupplierFinder<R>` con `obtener()` sin parámetros — no reportar. Sí es hallazgo `Finder<Void, R>` o `Finder<UUID, R>` con un parámetro que la consulta ignora (`arquisoft-arquitectura` → *Shared Modules*) | ❌ |
 | `FinderImpl` que encadena otro `Finder`, compara/deriva (`a.equals(b)`, `count > 0`) o hace lookups en varios pasos — un `Finder` es una sola llamada a un `OutputPort`. Combinar fuentes lo hace el `UseCase`; decidir sobre lo consultado es una `Rule` | ❌ |
 | El `UseCase` calcula un veredicto (`boolean esPropietario = ficha.getAsesorFicha().equals(solicitante)`) y se lo pasa al `Validator` — al `Validator` va el dato crudo del `Finder` (el agregado, los `UUID`, el conteo); la comparación de identidad/pertenencia vive en la `Rule` | ❌ |
 | **`Finder` dependiente**: uno cuya entrada es la salida de otro, pudiendo colapsarse en un método del `OutputPort` que navegue la relación. Las dos formas —el peldaño y el N+1— y sus excepciones están en `arquisoft-estandares` → *El `Finder` dependiente*. Cada `Finder` es un viaje a la BD. **No** es hallazgo si el plan justifica la cascada: lookup condicional que ahorra el viaje en el camino corto, `OutputPort` de features/contextos distintos (entre contextos no hay `JOIN`), o el id intermedio lo necesita una `Rule`. Tampoco lo es tener varios `Finder`s **independientes**: el límite es a las cascadas, no a la cantidad | ⚠️ |
+| `Validator` con más de un método público (`validarExistencia` + `validarReglasDeNegocio`, o cualquier partición) o `UseCase` que invoca varios métodos del mismo `Validator` — debe ser un único `validar(...)` con todos los datos, para que ningún llamador pueda ejecutar solo una parte de las reglas | ❌ |
 | `Validator` **vacío** o que no orquesta ninguna `Rule`, creado solo porque la plantilla lo listaba. Un comando sin restricciones de conjunto no lleva `Validator`: ver `notificaciones/.../EnviarNotificacionUseCaseImpl` | ❌ |
 | Clase con sufijo `Validator` que en realidad inyecta un `OutputPort` y devuelve un `boolean` — eso es un `Finder`, no un `Validator`; renómbralo y muévelo a `command/finder/` | ❌ |
 | `{Entidad}OutputPort` declara un método sobre **otro** domain (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |

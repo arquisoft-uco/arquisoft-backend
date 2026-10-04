@@ -1,6 +1,6 @@
 ---
 name: context7-stack
-description: IDs de librerias Context7 del stack Arquisoft (Spring Boot 4.0.5, Java 21, Gradle 9.0.0). Usar antes de generar cualquier archivo Java o de configuracion para obtener documentacion actualizada y especifica por version de cada dependencia del proyecto. Incluye tabla de IDs directos validados, IDs alternativos con mas snippets, y ejemplos de consulta por tipo de archivo.
+description: IDs de librerias Context7 del stack Arquisoft (Spring Boot 4.0.5, Java 21, Gradle 9.8.0). Usar antes de generar cualquier archivo Java o de configuracion para obtener documentacion actualizada y especifica por version de cada dependencia del proyecto. Incluye tabla de IDs directos validados, IDs alternativos con mas snippets, y ejemplos de consulta por tipo de archivo.
 ---
 
 # Skill: context7-stack
@@ -11,7 +11,7 @@ Usa estos IDs directamente con `query-docs` para saltarte el paso `resolve-libra
 > IMPORTANTE: Siempre usar el ID de mayor score de snippets disponible para obtener
 > la documentacion mas completa. Los IDs marcados con ★ son los recomendados.
 >
-> **Stack real:** Spring Boot 4.0.5 · Java 21 · Gradle 9.0.0 · JUnit 6.0.3 · Keycloak 26.6
+> **Stack real:** Spring Boot 4.0.5 · Java 21 · Gradle 9.8.0 · JUnit 6.0.3 · Keycloak 26.6
 > **Nota JUnit:** El ID `/websites/junit_current` cubre JUnit 5 — las anotaciones son compatibles con JUnit 6.0.3.
 
 ---
@@ -35,7 +35,7 @@ Usa estos IDs directamente con `query-docs` para saltarte el paso `resolve-libra
 | Mockito | `/mockito/mockito` | 120 | via Boot 4.0 |
 | AssertJ | `/assertj/assertj` | 81 | via Boot 4.0 |
 | Lombok | `/projectlombok/lombok` | 638 | **1.18.36** |
-| Gradle | `/websites/gradle_current_userguide` | 4 607 | **9.0.0** |
+| Gradle | `/websites/gradle_current_userguide` | 4 607 | **9.8.0** |
 | Keycloak | `/keycloak/keycloak` | 2 453 | **26.6** (solo como IdP — sin `keycloak-admin-client`) |
 | Bucket4j | `/bucket4j/bucket4j` | 301 | **8.18.0** (`com.bucket4j:bucket4j_jdk17-core`) |
 | Jackson 3 | `/fasterxml/jackson-databind` | 47 | **3.1.2** vía BOM — paquete `tools.jackson.databind.*` |

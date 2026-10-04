@@ -137,6 +137,30 @@ class EstudianteFichaPerfilCommandRepositoryTest {
                 .containsExactly("1000000031@soyuco.edu.co");
     }
 
+    @Test
+    void debeDevolverSoloLosIntegrantesVigentesDeLaFicha_cuandoHayBajasYOtrasFichas() {
+        // Arrange
+        var fichaId = UUID.randomUUID();
+        var vigente1 = persistirEstudiante("1000000041", null);
+        var vigente2 = persistirEstudiante("1000000042", null);
+        vincular(fichaId, vigente1);
+        vincular(fichaId, vigente2);
+        vincular(fichaId, persistirEstudiante("1000000043", Instant.now()));
+        vincular(UUID.randomUUID(), persistirEstudiante("1000000044", null));
+
+        // Act
+        var integrantes = repository.findIntegrantesVigentesByFichaPerfilId(fichaId);
+
+        // Assert
+        assertThat(integrantes)
+                .extracting("estudiante", "nombre", "email")
+                .containsExactlyInAnyOrder(
+                        org.assertj.core.groups.Tuple.tuple(vigente1, "Estudiante 1000000041",
+                                "1000000041@soyuco.edu.co"),
+                        org.assertj.core.groups.Tuple.tuple(vigente2, "Estudiante 1000000042",
+                                "1000000042@soyuco.edu.co"));
+    }
+
     private UUID persistirEstudiante(String identificador, Instant eliminadoEn) {
         var estudiante = EstudianteJpaEntity.builder()
                 .id(UUID.randomUUID()).identificador(identificador).nombre("Estudiante " + identificador)

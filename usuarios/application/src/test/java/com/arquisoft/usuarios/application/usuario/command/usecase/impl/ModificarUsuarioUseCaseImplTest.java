@@ -8,6 +8,10 @@ import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUs
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
+import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
+import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
+import com.arquisoft.usuarios.application.bibliotecario.command.usecase.AgregarBibliotecarioUseCase;
+import com.arquisoft.usuarios.domain.bibliotecario.exception.BibliotecarioUsuarioDuplicadoException;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoOtroUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtraIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtroUsuarioExisteFinder;
@@ -73,6 +77,12 @@ class ModificarUsuarioUseCaseImplTest {
     @Mock
     private AgregarAsesorUseCase agregarAsesorUseCase;
     @Mock
+    private AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
+    @Mock
+    private AgregarAdministradorUseCase agregarAdministradorUseCase;
+    @Mock
+    private AgregarBibliotecarioUseCase agregarBibliotecarioUseCase;
+    @Mock
     private EventPublisher eventPublisher;
     @Mock
     private AppLogger logger;
@@ -88,7 +98,8 @@ class ModificarUsuarioUseCaseImplTest {
                 usuarioPorIdFinder, identificadorOtroUsuarioExisteFinder, emailOtroUsuarioExisteFinder,
                 emailOtraIdentidadExisteFinder, contactoOtroUsuarioExisteFinder, modificarUsuarioValidator,
                 agregarEstudianteUseCase, agregarCoordinadorUseCase, agregarAsesorFichaUseCase,
-                agregarAsesorUseCase, eventPublisher, logger);
+                agregarAsesorUseCase, agregarRepresentanteComiteUseCase, agregarAdministradorUseCase,
+                agregarBibliotecarioUseCase, eventPublisher, logger);
         usuarioId = UUID.randomUUID();
         usuarioActivo = UsuarioDomain.reconstruir(usuarioId, "usr001", "Nombre Original",
                 "original@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO, UtilFecha.VACIO);
@@ -109,7 +120,8 @@ class ModificarUsuarioUseCaseImplTest {
         verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of());
         verify(proveedorIdentidadOutputPort, never()).actualizar(any());
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
-                agregarAsesorFichaUseCase, agregarAsesorUseCase);
+                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase);
         // presupuesto de I/O: un solo viaje por finder de unicidad tocado
         verify(usuarioPorIdFinder, times(1)).obtener(usuarioId);
         verify(identificadorOtroUsuarioExisteFinder, never()).obtener(any());
@@ -132,6 +144,7 @@ class ModificarUsuarioUseCaseImplTest {
         verify(agregarCoordinadorUseCase, never()).ejecutar(any());
         verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
         verify(agregarAsesorUseCase, never()).ejecutar(any());
+        verify(agregarRepresentanteComiteUseCase, never()).ejecutar(any());
         verify(eventPublisher, never()).publish(any());
         verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of("estudiante"));
     }
@@ -194,6 +207,86 @@ class ModificarUsuarioUseCaseImplTest {
         verify(agregarAsesorFichaUseCase, times(1)).ejecutar(usuarioActivo);
         verify(agregarAsesorUseCase, times(1)).ejecutar(usuarioActivo);
         verify(agregarEstudianteUseCase, never()).ejecutar(any());
+        verify(agregarRepresentanteComiteUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarRolRepresentanteComiteConUsuarioModificado_cuandoRolesIncluyeRepresentanteComite() {
+        // Arrange
+        var modificacion = modificacionConRol("representante-comite");
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+
+        // Act
+        useCase.ejecutar(modificacion);
+
+        // Assert
+        var orden = inOrder(usuarioOutputPort, agregarRepresentanteComiteUseCase, proveedorIdentidadOutputPort);
+        orden.verify(usuarioOutputPort).actualizar(any());
+        orden.verify(agregarRepresentanteComiteUseCase, times(1)).ejecutar(usuarioActivo);
+        orden.verify(proveedorIdentidadOutputPort)
+                .asignarRealmRoles(usuarioId, List.of("representante-comite"));
+        verify(agregarEstudianteUseCase, never()).ejecutar(any());
+        verify(agregarCoordinadorUseCase, never()).ejecutar(any());
+        verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
+        verify(agregarAsesorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarRolAdministradorConUsuarioModificado_cuandoLaModificacionIncluyeAdministrador() {
+        // Arrange
+        var modificacion = modificacionConRol("administrador");
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+
+        // Act
+        useCase.ejecutar(modificacion);
+
+        // Assert
+        var orden = inOrder(usuarioOutputPort, agregarAdministradorUseCase, proveedorIdentidadOutputPort);
+        orden.verify(usuarioOutputPort).actualizar(any());
+        orden.verify(agregarAdministradorUseCase, times(1)).ejecutar(usuarioActivo);
+        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(usuarioId, List.of("administrador"));
+        verify(agregarEstudianteUseCase, never()).ejecutar(any());
+        verify(agregarCoordinadorUseCase, never()).ejecutar(any());
+        verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
+        verify(agregarAsesorUseCase, never()).ejecutar(any());
+        verify(agregarRepresentanteComiteUseCase, never()).ejecutar(any());
+        verify(agregarBibliotecarioUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarRolBibliotecarioAntesDeKeycloak_cuandoLaModificacionIncluyeBibliotecario() {
+        // Arrange
+        var modificacion = modificacionConRol("bibliotecario");
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+
+        // Act
+        useCase.ejecutar(modificacion);
+
+        // Assert
+        var orden = inOrder(usuarioOutputPort, agregarBibliotecarioUseCase, proveedorIdentidadOutputPort);
+        orden.verify(usuarioOutputPort).actualizar(any());
+        orden.verify(agregarBibliotecarioUseCase, times(1)).ejecutar(usuarioActivo);
+        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(usuarioId, List.of("bibliotecario"));
+        verify(agregarEstudianteUseCase, never()).ejecutar(any());
+        verify(agregarCoordinadorUseCase, never()).ejecutar(any());
+        verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
+        verify(agregarAsesorUseCase, never()).ejecutar(any());
+        verify(agregarRepresentanteComiteUseCase, never()).ejecutar(any());
+        verify(agregarAdministradorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void noDebeTocarKeycloak_cuandoAgregarBibliotecarioLanzaDuplicado() {
+        // Arrange
+        var modificacion = modificacionConRol("bibliotecario");
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+        doThrow(new BibliotecarioUsuarioDuplicadoException(usuarioId))
+                .when(agregarBibliotecarioUseCase).ejecutar(any());
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(modificacion))
+                .isInstanceOf(BibliotecarioUsuarioDuplicadoException.class);
+        verifyNoInteractions(proveedorIdentidadOutputPort);
     }
 
     @Test
@@ -240,7 +333,8 @@ class ModificarUsuarioUseCaseImplTest {
         verify(eventPublisher, never()).publish(any());
         verifyNoInteractions(proveedorIdentidadOutputPort);
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
-                agregarAsesorFichaUseCase, agregarAsesorUseCase);
+                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase);
     }
 
     @Test
@@ -259,7 +353,8 @@ class ModificarUsuarioUseCaseImplTest {
         verify(usuarioOutputPort, never()).actualizar(any());
         verifyNoInteractions(eventPublisher, proveedorIdentidadOutputPort);
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
-                agregarAsesorFichaUseCase, agregarAsesorUseCase);
+                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase);
     }
 
     @Test

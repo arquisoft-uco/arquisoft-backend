@@ -24,8 +24,8 @@ public class EvaluacionJuradoJpaEntity {
     private UUID id;
 
     @Column(name = "evaluacion_id", nullable = false, columnDefinition = "uuid")
-    private UUID evaluacionId;
+    private UUID evaluacion;
 
     @Column(name = "jurado_id", nullable = false, columnDefinition = "uuid")
-    private UUID juradoId;
+    private UUID jurado;
 }

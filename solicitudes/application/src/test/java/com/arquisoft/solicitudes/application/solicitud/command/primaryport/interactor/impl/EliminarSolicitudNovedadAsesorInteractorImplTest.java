@@ -1,8 +1,8 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.impl;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EliminarSolicitudNovedadAsesorCommand;
-import com.arquisoft.solicitudes.application.solicitud.command.usecase.EliminarSolicitudNovedadAsesorUseCase;
-import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudNovedadAsesorDomain;
+import com.arquisoft.solicitudes.application.solicitud.command.usecase.EliminarSolicitudUseCase;
+import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verify;
 class EliminarSolicitudNovedadAsesorInteractorImplTest {
 
     @Mock
-    private EliminarSolicitudNovedadAsesorUseCase useCase;
+    private EliminarSolicitudUseCase useCase;
 
     @InjectMocks
     private EliminarSolicitudNovedadAsesorInteractorImpl interactor;
@@ -35,7 +35,7 @@ class EliminarSolicitudNovedadAsesorInteractorImplTest {
         interactor.ejecutar(command);
 
         // Assert
-        var captor = ArgumentCaptor.forClass(EliminacionSolicitudNovedadAsesorDomain.class);
+        var captor = ArgumentCaptor.forClass(EliminacionSolicitudDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
         assertThat(captor.getValue().getRemitenteUsuario()).isEqualTo(remitente);
