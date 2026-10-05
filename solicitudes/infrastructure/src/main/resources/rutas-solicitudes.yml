@@ -25,3 +25,4 @@ rutas:
       novedad-coordinador-recibidas: /novedad-coordinador/respuestas/recibidas
       novedad-asesor-recibidas: /novedad-asesor/respuestas/recibidas
       novedad-coordinador-enviadas: /novedad-coordinador/respuestas/enviadas
+      novedad-asesor-enviadas: /novedad-asesor/respuestas/enviadas

@@ -224,6 +224,39 @@ class RespuestaQueryOutputAdapterTest {
     }
 
     @Test
+    void debeRetornarSoloRespuestasDelAsesorDestinatario_cuandoElCriteriaFuerzaDestinatarioYTipoAsesor() {
+        // Arrange
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var asesorUno = sembrarDestinatario("Asesor Uno", "ASES-1", "ases1@uco.edu.co");
+        var asesorDos = sembrarDestinatario("Asesor Dos", "ASES-2", "ases2@uco.edu.co");
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        var fecha = LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC);
+        var fechaRespuesta = LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC);
+        var solicitudUno = sembrarSolicitud(ana, asesorUno, TIPO_NOVEDAD_ASESOR, fecha, "para asesor uno");
+        var solicitudDos = sembrarSolicitud(ana, asesorDos, TIPO_NOVEDAD_ASESOR, fecha, "para asesor dos");
+        var solicitudCoord = sembrarSolicitud(ana, coord, TIPO_NOVEDAD, fecha, "para coordinador");
+        sembrarRespuesta(solicitudUno, ESTADO_EN_REVISION, fechaRespuesta, "de asesor uno");
+        sembrarRespuesta(solicitudDos, ESTADO_EN_REVISION, fechaRespuesta, "de asesor dos");
+        sembrarRespuesta(solicitudCoord, ESTADO_EN_REVISION, fechaRespuesta, "de coordinador");
+        sincronizar();
+
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
+                                asesorUno.getUsuarioId().toString()),
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_NOVEDAD_ASESOR))))
+                .build();
+
+        // Act
+        var resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(RespuestaReadModel::contenido)
+                .containsExactly("de asesor uno");
+    }
+
+    @Test
     void debeFiltrarPorDestinatarioUsuarioId_cuandoElCriteriaTraeEsePredicado() {
         // Arrange
         var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
