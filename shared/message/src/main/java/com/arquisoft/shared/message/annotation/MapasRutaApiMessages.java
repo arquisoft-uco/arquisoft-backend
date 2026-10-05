@@ -37,5 +37,13 @@ public final class MapasRutaApiMessages {
                 "El identificador del estudiante del token no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_404 =
                 "El estudiante no tiene proyecto de grado asignado o su proyecto no tiene mapa de ruta";
+        public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar mapas de ruta según fechas";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Lista paginada de los mapas de ruta de los proyectos de grado asignados al coordinador autenticado, "
+                        + "con su título y sus fechas de inicio y fin; admite filtros y orden por fechaInicio y fechaFin; "
+                        + "sin orden se devuelve el de fechaInicio más reciente primero y, a igual fechaInicio, "
+                        + "el de fechaFin más cercana";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 = "Página de mapas de ruta del coordinador";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 = "Criterio de filtro u ordenamiento inválido";
     }
 }

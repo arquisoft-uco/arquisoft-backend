@@ -8,3 +8,4 @@ rutas:
     mapas-ruta:
       base: /mapas-ruta
       estudiante: /estudiante
+      coordinador: /coordinador

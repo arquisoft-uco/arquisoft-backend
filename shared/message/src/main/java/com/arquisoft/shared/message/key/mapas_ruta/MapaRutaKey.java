@@ -10,7 +10,9 @@ public enum MapaRutaKey implements ClaveMensaje {
     LOG_AGREGADO("mapas_ruta.aplicacion.maparuta.log.agregado", 2),
     LOG_GUARDADO("mapas_ruta.infraestructura.maparuta.log.guardado", 1),
     LOG_CONSULTANDO_ESTUDIANTE("mapas_ruta.aplicacion.maparuta.log.consultando-estudiante", 1),
-    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("mapas_ruta.aplicacion.maparuta.log.consulta-estudiante-completada", 2);
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("mapas_ruta.aplicacion.maparuta.log.consulta-estudiante-completada", 2),
+    LOG_CONSULTANDO("mapas_ruta.aplicacion.maparuta.log.consultando", 4),
+    LOG_CONSULTA_COMPLETADA("mapas_ruta.aplicacion.maparuta.log.consulta-completada", 3);
 
     private final String clave;
     private final int parametros;

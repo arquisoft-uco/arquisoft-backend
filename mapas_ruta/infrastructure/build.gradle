@@ -5,6 +5,7 @@ dependencies {
     implementation project(':mapas_ruta:application')
     implementation project(':shared:domain')
     implementation project(':shared:application')
+    implementation project(':shared:query')
     implementation project(':shared:amqp')
     implementation project(':shared:logger')
 
