@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.tiposolicitud.query.usecase.impl;
 
+import com.arquisoft.solicitudes.application.tiposolicitud.query.criteria.TipoSolicitudCriteria;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.secondaryport.TipoSolicitudQueryOutputPort;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.usecase.ConsultarTiposSolicitudUseCase;
@@ -18,8 +19,12 @@ public class ConsultarTiposSolicitudUseCaseImpl implements ConsultarTiposSolicit
     private final AppLogger logger;
 
     @Override
-    public List<TipoSolicitudReadModel> ejecutar() {
-        var resultado = queryOutputPort.findAll();
+    public List<TipoSolicitudReadModel> ejecutar(TipoSolicitudCriteria entrada) {
+        logger.debug(TipoSolicitudKey.LOG_CONSULTANDO, entrada.tipos().size());
+
+        var resultado = entrada.tipos().isEmpty()
+                ? List.<TipoSolicitudReadModel>of()
+                : queryOutputPort.consultarPorIds(entrada.tipos());
 
         logger.debug(TipoSolicitudKey.LOG_CONSULTA_COMPLETADA, resultado.size());
 

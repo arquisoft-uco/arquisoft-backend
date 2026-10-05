@@ -63,7 +63,8 @@
               "fichas:estudiante-ficha-perfil:delete",
               "fichas:estudiante-ficha-perfil-coordinador:view",
               "fichas:estado-ficha:view",
-              "solicitudes:solicitud-novedad-coordinador-recibida:view"
+              "solicitudes:solicitud-novedad-coordinador-recibida:view",
+              "solicitudes:solicitud-registro-modificacion-usuarios:create"
             ]
           }
         },
@@ -625,6 +626,15 @@
         {
           "id": "c56b7146-afa9-42d0-945f-8e0605c77926",
           "name": "solicitudes:solicitud-ampliacion-plazo:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3997a998-3e78-4e22-9415-de2d04ca415d",
+          "name": "solicitudes:solicitud-registro-modificacion-usuarios:create",
           "description": "",
           "composite": false,
           "clientRole": true,

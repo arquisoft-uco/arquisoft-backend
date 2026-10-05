@@ -249,9 +249,11 @@ public final class SolicitudesApiMessages {
         public static final String TAG_DESCRIPTION =
                 "Catálogo de tipos de solicitud disponibles en el flujo de solicitudes";
 
-        public static final String CONSULTAR_SUMMARY = "Consultar todos los tipos de solicitud";
+        public static final String CONSULTAR_SUMMARY = "Consultar los tipos de solicitud que el usuario puede enviar";
         public static final String CONSULTAR_DESCRIPTION =
-                "Retorna todos los tipos de solicitud disponibles en el catálogo, sin filtros ni paginación.";
-        public static final String CONSULTAR_RESP_200 = "Lista de tipos de solicitud retornada exitosamente";
+                "Retorna los tipos de solicitud que el usuario autenticado puede enviar, según sus roles de envío. "
+                        + "No admite filtros ni paginación. Si el usuario no tiene ningún rol de envío, retorna una lista vacía.";
+        public static final String CONSULTAR_RESP_200 =
+                "Lista de tipos de solicitud que el usuario puede enviar (puede ser vacía)";
     }
 }

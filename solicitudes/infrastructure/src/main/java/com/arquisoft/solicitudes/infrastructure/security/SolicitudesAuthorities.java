@@ -8,6 +8,8 @@ public final class SolicitudesAuthorities {
     public static final String SOLICITUD_NOVEDAD_ASESOR_CREATE = "solicitudes:solicitud-novedad-asesor:create";
     public static final String SOLICITUD_CAMBIO_ASESOR_CREATE = "solicitudes:solicitud-cambio-asesor:create";
     public static final String SOLICITUD_AMPLIACION_PLAZO_CREATE = "solicitudes:solicitud-ampliacion-plazo:create";
+    public static final String SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_CREATE =
+            "solicitudes:solicitud-registro-modificacion-usuarios:create";
     public static final String SOLICITUD_NOVEDAD_COORDINADOR_DELETE =
             "solicitudes:solicitud-novedad-coordinador:delete";
     public static final String SOLICITUD_NOVEDAD_ASESOR_DELETE =
