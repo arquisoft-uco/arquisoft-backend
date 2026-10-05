@@ -39,6 +39,14 @@ public final class EvaluacionesCodes {
                 "CRITERIO_ITEM_CUALITATIVO_JURADO_DESCRIPCION_DEMASIADO_LARGA";
     }
 
+    public static final class CategoriaItemCuantitativoAsesor {
+
+        private CategoriaItemCuantitativoAsesor() {}
+
+        public static final String NOMBRE_FILTRO_DEMASIADO_LARGO =
+                "CATEGORIA_ITEM_CUANTITATIVO_ASESOR_NOMBRE_FILTRO_DEMASIADO_LARGO";
+    }
+
     public static final class CategoriaItemCuantitativoJurado {
 
         private CategoriaItemCuantitativoJurado() {}

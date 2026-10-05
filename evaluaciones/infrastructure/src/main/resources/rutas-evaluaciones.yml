@@ -12,6 +12,8 @@ rutas:
       base: /evaluaciones/criterios-item-cualitativo-jurado
     categorias-item-cuantitativo-jurado:
       base: /evaluaciones/categorias-item-cuantitativo-jurado
+    categorias-item-cuantitativo-asesor:
+      base: /evaluaciones/categorias-item-cuantitativo-asesor
     evaluaciones-jurado:
       base: /evaluaciones/evaluaciones-jurado
       cualitativas: /{evaluacionJuradoId}/cualitativas
