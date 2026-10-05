@@ -35,7 +35,6 @@ import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.message.key.fichas.EstadoRevisionKey;
 import com.arquisoft.shared.message.key.mapas_ruta.AsignacionProyectoKey;
 import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
-import com.arquisoft.shared.message.key.mapas_ruta.ProyectoGradoKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
@@ -213,7 +212,7 @@ public final class ClavesCatalogo {
             ConsultarEstadosUsuarioKey.class,
             AsignacionProyectoKey.class,
             MapaRutaKey.class,
-            ProyectoGradoKey.class
+            com.arquisoft.shared.message.key.mapas_ruta.ProyectoGradoKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */
