@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
+import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
 import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
@@ -189,6 +190,7 @@ public final class ClavesCatalogo {
             AgregarBibliotecarioKey.class,
             RemoverBibliotecarioKey.class,
             BibliotecarioKey.class,
+            RevisionAsesorKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
             ProyectoGradoKey.class,
