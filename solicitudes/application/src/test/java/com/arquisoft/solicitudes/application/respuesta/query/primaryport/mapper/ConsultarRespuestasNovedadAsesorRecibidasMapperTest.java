@@ -36,7 +36,7 @@ class ConsultarRespuestasNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
                 query(estudiante, criterio));
 
         // Assert
@@ -56,7 +56,7 @@ class ConsultarRespuestasNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente);
 
         // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
                 query(estudiante, criterio));
 
         // Assert
@@ -76,7 +76,7 @@ class ConsultarRespuestasNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(2, 25, ordenamiento, null);
 
         // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
                 query(estudiante, criterio));
 
         // Assert
@@ -94,7 +94,7 @@ class ConsultarRespuestasNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
                 query(estudiante, criterio));
 
         // Assert
@@ -110,7 +110,7 @@ class ConsultarRespuestasNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
-        RespuestaCriteria criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
                 query(estudiante, criterio));
 
         // Assert
