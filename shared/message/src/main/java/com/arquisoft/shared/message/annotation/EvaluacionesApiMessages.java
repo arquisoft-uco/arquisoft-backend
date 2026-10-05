@@ -73,6 +73,21 @@ public final class EvaluacionesApiMessages {
                         + "o algún ítem/criterio no existe o ya fue registrado";
     }
 
+    public static final class EvaluacionCuantitativaJurado {
+
+        private EvaluacionCuantitativaJurado() {}
+
+        public static final String TAG_NAME = "Evaluaciones cuantitativas del jurado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de las evaluaciones cuantitativas asociadas a una evaluación de jurado";
+        public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cuantitativas del jurado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta todas las evaluaciones cuantitativas de una evaluación de jurado";
+        public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cuantitativas del jurado";
+        public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String CONSULTAR_RESP_422 = "La evaluación de jurado no existe";
+    }
+
     public static final class ItemCuantitativoJurado {
 
         private ItemCuantitativoJurado() {}

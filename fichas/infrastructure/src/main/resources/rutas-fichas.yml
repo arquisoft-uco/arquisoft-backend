@@ -13,6 +13,7 @@ rutas:
       asesor: /asesor
       estados-ficha: /estados-ficha
       estado-asesor: /{fichaPerfilId}/estados-ficha
+      estados-ficha-representante: /{fichaPerfilId}/estados-ficha/representante
       tipos-item: /tipos-item
       estados-evaluacion: /estados-evaluacion
       estados-revision: /estados-revision
@@ -33,8 +34,11 @@ rutas:
       estudiantes-companeros: /{fichaPerfilId}/estudiantes/companeros
       evaluaciones: /{fichaId}/evaluaciones
       evaluaciones-representante: /{fichaPerfilId}/evaluaciones/representante
+      evaluaciones-estudiante: /{fichaPerfilId}/evaluaciones/estudiante
       estudiante: /estudiante
       evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
+      evaluacion-observaciones-estudiante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/estudiante
+      evaluacion-observaciones-asesor: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/asesor
       observacion-evaluacion-por-id: /observaciones-evaluacion/{observacionEvaluacionId}
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha

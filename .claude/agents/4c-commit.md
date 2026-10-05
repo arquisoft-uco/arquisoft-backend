@@ -2,6 +2,7 @@
 name: 4c-commit
 description: Agente de entrega. Invocar manualmente después de que @4b-validator-report haya persistido un reporte APROBADO en .workspace/validator/. Ejecuta la cadena completa de entrega — commit, push, Pull Request hacia develop con la plantilla de .github, y publicacion del plan y el reporte de validacion en arquisoft-docs — con dos confirmaciones explícitas del usuario. No escribe código, no valida.
 model: sonnet
+effort: low
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 

@@ -2,6 +2,7 @@
 name: 4a-validator-analyze
 description: Agente de análisis de validación para Arquisoft Backend. Invocar cuando el usuario pida validar o analizar una implementación de HU/HT. Lee el plan y el código implementado, aplica checks DDD + arquitectura hexagonal y produce el reporte de análisis. Es la PRIMERA parte del proceso de validación — su output es el insumo para @4b-validator-report.
 model: sonnet
+effort: high
 tools: Read, Grep, Glob, Bash, Skill
 ---
 
@@ -176,7 +177,7 @@ del commit y no en un plan cuando el cambio no vino de una HU: búscala ahí ant
 | Invariante local de la sección 3 del plan (formato, longitud, obligatoriedad) validada **dentro** de la entidad, acumulando en `ValidationResult` | ❌ |
 | Invariante nueva con clase de excepción propia (`{Entidad}{Regla}Exception`) en vez de `ValidationResult.agregarError(...)` + `lanzarSiTieneErrores()` | ❌ (excepción real: `seguridad/AuthenticationException`, por choque con Spring Security) |
 | Setter privado que no corta con `return` cuando la validación falla (asigna un valor inválido) | ❌ |
-| Domain que puede venir ausente sin centinela `VACIO` + `esVacio()` (comparando identidad, no campos) | ⚠️ |
+| Domain que puede venir ausente sin centinela `VACIO` + `esVacio()` (comparando identidad, no campos), o con un `VACIO` que rellena algún campo con un literal (`""`, `0`, `Instant.EPOCH`) en vez del valor por defecto de su `Util` (`arquisoft-estandares` → *Sin `Optional` fuera del `OutputPort`*) | ⚠️ |
 | Objeto de acción `{Accion}{Entidad}Domain` que declara un `{Otro}Domain` como campo cuando la acción no crea ese objeto — la forma por defecto son `UUID` y escalares (`CambioAsesorFichaDomain` = dos `UUID`) | ⚠️ |
 | Objeto de acción **compuesto** cuyo `{Accion}{Entidad}Mapper` no construye de menor a mayor jerarquía: domain primero, cada pieza con el mapper de **su propia feature** recibiendo `entidad.getId()`, compuesto al final (`RegistrarFichaPerfilMapper`) | ❌ |
 | `crear(...)` de un objeto de acción compuesto que repite validaciones de sus piezas en vez de solo `noNulo` de cada componente | ⚠️ |

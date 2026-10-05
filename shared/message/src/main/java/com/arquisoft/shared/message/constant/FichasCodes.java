@@ -1,11 +1,5 @@
 package com.arquisoft.shared.message.constant;
 
-/**
- * Códigos de error del contexto fichas.
- *
- * <p>Contrato de la API, no texto: viajan en {@code ErrorResponseDTO.errorCode}. Ver la nota de
- * {@link AppCodes} sobre por qué no salen al bundle.
- */
 public final class FichasCodes {
 
     private FichasCodes() {}
@@ -93,6 +87,8 @@ public final class FichasCodes {
         public static final String OBSERVACION_EVALUACION_DUPLICADA = "OBSERVACION_EVALUACION_DUPLICADA";
         public static final String EVALUACION_CERRADA = "OBSERVACION_EVALUACION_EVALUACION_CERRADA";
         public static final String OBSERVACION_EVALUACION_NO_ENCONTRADA = "OBSERVACION_EVALUACION_NO_ENCONTRADA";
+        public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_EVALUACION_ESTUDIANTE_REQUERIDO";
+        public static final String ASESOR_FICHA_REQUERIDO = "OBSERVACION_EVALUACION_ASESOR_FICHA_REQUERIDO";
     }
 
     public static final class Estudiante {
@@ -152,6 +148,7 @@ public final class FichasCodes {
         public static final String ESTADO_REPETIDO = "ESTADO_FICHA_PERFIL_ESTADO_REPETIDO";
         public static final String TRANSICION_NO_PERMITIDA = "ESTADO_FICHA_PERFIL_TRANSICION_NO_PERMITIDA";
         public static final String EVALUACION_EN_CURSO = "ESTADO_FICHA_PERFIL_EVALUACION_EN_CURSO";
+        public static final String REPRESENTANTE_COMITE_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_REPRESENTANTE_COMITE_ID_REQUERIDO";
     }
 
     public static final class EstadoFicha {
@@ -169,6 +166,7 @@ public final class FichasCodes {
         public static final String EVALUACION_DUPLICADA = "EVALUACION_DUPLICADA";
         public static final String REPRESENTANTE_REQUERIDO = "REPRESENTANTE_REQUERIDO";
         public static final String FICHA_REQUERIDA = "FICHA_REQUERIDA";
+        public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_REQUERIDO";
     }
 
     public static final class RepresentanteComite {

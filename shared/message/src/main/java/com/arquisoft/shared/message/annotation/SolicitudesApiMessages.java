@@ -108,6 +108,18 @@ public final class SolicitudesApiMessages {
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de novedad para el coordinador recibidas";
 
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_SUMMARY =
+                "Consultar solicitudes de novedad para el asesor recibidas";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_DESCRIPTION =
+                "Permite a un asesor consultar de forma paginada y filtrable las solicitudes de "
+                        + "novedad para el asesor que ha recibido. El alcance se limita a las "
+                        + "solicitudes dirigidas al asesor autenticado.";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_RESP_200 =
+                "Página de solicitudes de novedad para el asesor recibidas";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de novedad para el asesor recibidas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_SUMMARY =
                 "Consultar solicitudes de novedad para el coordinador enviadas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_DESCRIPTION =
@@ -142,6 +154,19 @@ public final class SolicitudesApiMessages {
         public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_422 =
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
 
+        public static final String RESPONDER_NOVEDAD_ASESOR_SUMMARY =
+                "Responder solicitud de novedad para el asesor";
+        public static final String RESPONDER_NOVEDAD_ASESOR_DESCRIPTION =
+                "Permite a un asesor responder una solicitud de novedad para el asesor que le fue "
+                        + "dirigida, registrando el contenido de la respuesta.";
+        public static final String RESPONDER_NOVEDAD_ASESOR_RESP_201 =
+                "Respuesta registrada — retorna el UUID asignado";
+        public static final String RESPONDER_NOVEDAD_ASESOR_RESP_400 = "Datos inválidos";
+        public static final String RESPONDER_NOVEDAD_ASESOR_RESP_403 =
+                "Sin permisos para responder solicitudes de novedad para el asesor";
+        public static final String RESPONDER_NOVEDAD_ASESOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro asesor, o ya respondida";
+
         public static final String ELIMINAR_NOVEDAD_COORDINADOR_SUMMARY =
                 "Eliminar respuesta de solicitud de novedad para el coordinador";
         public static final String ELIMINAR_NOVEDAD_COORDINADOR_DESCRIPTION =
@@ -154,6 +179,20 @@ public final class SolicitudesApiMessages {
                 "Sin permisos para eliminar respuestas de solicitudes de novedad para el coordinador";
         public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_422 =
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
+                        + "encontrada o ya no está en revisión";
+
+        public static final String ELIMINAR_NOVEDAD_ASESOR_SUMMARY =
+                "Eliminar respuesta de solicitud de novedad para el asesor";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_DESCRIPTION =
+                "Permite a un asesor eliminar definitivamente la respuesta que registró para una "
+                        + "solicitud de novedad para el asesor, mientras siga en revisión.";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_204 = "Respuesta eliminada";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_403 =
+                "Sin permisos para eliminar respuestas de solicitudes de novedad para el asesor";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro asesor; respuesta no "
                         + "encontrada o ya no está en revisión";
 
         public static final String MODIFICAR_ESTADO_NOVEDAD_COORDINADOR_SUMMARY =

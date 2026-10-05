@@ -1,23 +1,5 @@
 package com.arquisoft.shared.message.annotation;
 
-/**
- * Textos de documentación OpenAPI, listos para las anotaciones {@code @Tag}, {@code @Operation} y
- * {@code @ApiResponse}.
- *
- * <p>Van incrustados aquí y no en el catálogo de Redis, a diferencia del resto de los textos del
- * proyecto. La especificación OpenAPI se construye una vez al arrancar y no vuelve a consultarse,
- * así que estos textos no se benefician de nada de lo que ADR-013 aporta —recarga sin desplegar,
- * degradación en caliente— y sí pagarían su coste: cada {@code summary} sería una clave más que el
- * fail-fast de arranque exige en Redis, capaz de impedir que la aplicación levante.
- *
- * <p>Hay además una restricción del lenguaje. Un valor de anotación tiene que ser una expresión
- * constante (JLS §9.7.1), así que estos textos no pueden resolverse en tiempo de ejecución: el
- * mecanismo anterior los sacaba a un {@code .properties} y dejaba en el código un
- * {@code "${clave}"} que springdoc sustituía contra el {@code Environment} de Spring. Eso implicaba
- * un {@code @PropertySource} propio, un segundo camino de resolución paralelo al catálogo, y una
- * clase que ya llevaba incrustados {@code TAG_NAME} y {@code TAG_DESCRIPTION} porque springdoc no
- * resuelve {@code ${...}} en {@code @Tag}. Con el texto aquí no hay indirección ni excepción.
- */
 public final class FichasApiMessages {
 
     private FichasApiMessages() {}
@@ -196,6 +178,16 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de estados de ficha de perfil del asesor (vacía si no aplica)";
         public static final String CONSULTAR_ASESOR_RESP_400 = "Filtro con campo, operador o valor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin el permiso para consultar los estados como asesor";
+        public static final String CONSULTAR_REPRESENTANTE_SUMMARY =
+                "Consultar los estados de la ficha de perfil que evalúa el representante del comité";
+        public static final String CONSULTAR_REPRESENTANTE_DESCRIPTION =
+                "Devuelve la trazabilidad de estados de la ficha de perfil indicada, ordenada de la más antigua a la más reciente, "
+                        + "solo si el representante autenticado la evalúa. El representante se toma del token.";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_200 =
+                "Lista de estados de la ficha de perfil (vacía si el representante no la evalúa)";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
+                "Sin el permiso para consultar los estados como representante del comité";
         public static final String AGREGAR_APROBACION_SUMMARY = "Registrar la decisión de aprobación de una ficha de perfil";
         public static final String AGREGAR_APROBACION_DESCRIPTION = "El coordinador acepta o no la ficha; el estado se deriva de las evaluaciones";
         public static final String AGREGAR_APROBACION_RESP_201 = "Estado de aprobación registrado; devuelve el id del nuevo estado";
@@ -349,6 +341,30 @@ public final class FichasApiMessages {
         public static final String REMOVER_RESP_403 = "Sin permiso para remover observaciones de evaluaciones";
         public static final String REMOVER_RESP_422 =
                 "Observación no encontrada, evaluación registrada por otro representante o en estado terminal";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
+                "Consultar las observaciones de una evaluación de su ficha de perfil";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Permite al estudiante consultar las observaciones registradas por el comité de currículum sobre una "
+                        + "evaluación de su ficha de perfil. Si la evaluación no existe o no pertenece a una ficha del "
+                        + "estudiante, la lista llega vacía.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Observaciones de la evaluación (lista vacía si no existe o no es de su ficha)";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador de evaluación o de estudiante inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
+                "Sin permiso para consultar observaciones de evaluaciones de su ficha";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Consultar las observaciones de una evaluación de una ficha que asesora";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Permite al asesor ficha consultar las observaciones registradas por el comité de currículum sobre "
+                        + "una evaluación de una ficha de perfil que asesora. Si la evaluación no existe o la ficha no "
+                        + "es asesorada por él, la lista llega vacía.";
+        public static final String CONSULTAR_ASESOR_RESP_200 =
+                "Observaciones de la evaluación (lista vacía si no existe o no es de una ficha que asesora)";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "Identificador de evaluación o de asesor ficha inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 =
+                "Sin permiso para consultar observaciones de evaluaciones de las fichas que asesora";
     }
 
     public static final class EstudianteFichaPerfil {
@@ -395,6 +411,18 @@ public final class FichasApiMessages {
                 "El identificador de ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
                 "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-representante:view";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
+                "Consultar información de evaluación de la Ficha Perfil que pertenece";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Devuelve todas las evaluaciones, con su estado actual y el representante del comité que las realizó, "
+                        + "de la ficha de perfil indicada a la que pertenece el estudiante autenticado.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Listado de evaluaciones de la ficha (vacío si no hay evaluaciones o el estudiante no pertenece a la ficha)";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
+                "El identificador de ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
+                "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-estudiante:view";
     }
 
     public static final class EstadoEvaluacionFicha {

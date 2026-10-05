@@ -2,6 +2,7 @@
 name: 1-planificador
 description: Agente planificador de Historias de Usuario/Técnicas para Arquisoft Backend. Invocar cuando el usuario pida planificar una HU o HT, generar un plan de implementación, o mencione identificadores como HU-208, HT-007, etc. Genera el archivo PLAN-{HU|HT}-{ID}.md en .workspace/h-plan/. NO escribe código.
 model: sonnet
+effort: high
 tools: Read, Grep, Glob, Bash, Write, Skill, mcp__context7__resolve-library-id, mcp__context7__query-docs
 ---
 

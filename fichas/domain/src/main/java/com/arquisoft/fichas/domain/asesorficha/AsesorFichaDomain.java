@@ -16,7 +16,7 @@ import java.util.UUID;
 public final class AsesorFichaDomain {
 
     public static final AsesorFichaDomain VACIO = reconstruir(
-            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, Instant.EPOCH,
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, UtilFecha.VACIO,
             UtilFecha.VACIO);
 
     private UUID id;
