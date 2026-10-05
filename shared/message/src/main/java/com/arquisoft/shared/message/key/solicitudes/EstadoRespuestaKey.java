@@ -4,7 +4,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum EstadoRespuestaKey implements ClaveMensaje {
 
-    ERROR_ESTADO_RESPUESTA_NO_ENCONTRADO("solicitudes.dominio.estadorespuesta.error.no-encontrado", 1);
+    ERROR_ESTADO_RESPUESTA_NO_ENCONTRADO("solicitudes.dominio.estadorespuesta.error.no-encontrado", 1),
+    LOG_CONSULTA_COMPLETADA("solicitudes.aplicacion.estadorespuesta.log.consulta-completada", 1);
 
     private final String clave;
     private final int parametros;
