@@ -37,7 +37,7 @@ class ConsultarFichasPerfilAsesoradasUseCaseImplTest {
     void debeConsultarPuertoYRetornarResultado_cuandoSeEjecuta() {
         // Arrange
         var criteria = FichaPerfilCriteria.builder().pagina(0).tamanio(10).build();
-        var ficha = new FichaPerfilReadModel(UUID.randomUUID(), "Arquisoft Backend", null);
+        var ficha = new FichaPerfilReadModel(UUID.randomUUID(), "Arquisoft Backend", null, null);
         var resultadoEsperado = PaginatedResult.of(List.of(ficha), 0, 10, 1L);
 
         when(fichaPerfilQueryOutputPort.consultarTodas(criteria)).thenReturn(resultadoEsperado);

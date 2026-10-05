@@ -1,0 +1,17 @@
+package com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport;
+
+import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.entity.ItemCuantitativoJuradoEntity;
+
+import java.util.UUID;
+
+public interface ItemCuantitativoJuradoOutputPort {
+
+    void registrar(ItemCuantitativoJuradoEntity item);
+
+    boolean existePorNombreYCategoriaIgnorandoMayusculas(
+            String nombre, UUID categoriaId);
+
+    boolean existePorId(UUID id);
+
+    void actualizarDescripcion(UUID id, String descripcion);
+}

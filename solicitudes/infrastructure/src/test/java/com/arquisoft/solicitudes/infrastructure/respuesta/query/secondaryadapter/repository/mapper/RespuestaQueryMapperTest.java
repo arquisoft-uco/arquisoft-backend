@@ -4,7 +4,6 @@ import com.arquisoft.solicitudes.infrastructure.respuesta.query.secondaryadapter
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +16,7 @@ class RespuestaQueryMapperTest {
         var entity = RespuestaJpaQueryEntity.builder()
                 .id(UUID.randomUUID())
                 .contenido("contenido de la respuesta")
-                .fechaRespuesta(LocalDateTime.of(2026, 3, 5, 9, 0))
+                .fechaRespuesta(Instant.parse("2026-03-05T09:00:00Z"))
                 .estadoRespuestaId("EN_REVISION")
                 .estadoRespuestaNombre("En revisión")
                 .solicitudId(UUID.randomUUID())

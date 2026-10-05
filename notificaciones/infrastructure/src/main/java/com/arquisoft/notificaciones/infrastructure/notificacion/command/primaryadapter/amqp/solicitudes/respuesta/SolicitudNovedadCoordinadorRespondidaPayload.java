@@ -9,5 +9,5 @@ public record SolicitudNovedadCoordinadorRespondidaPayload(
         String contenido,
         String remitenteNombre,
         String remitenteEmail,
-        String coordinadorNombre) {
+        String responsableNombre) {
 }

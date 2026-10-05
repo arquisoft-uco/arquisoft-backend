@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -38,5 +39,10 @@ public class ItemCualitativoJuradoCommandOutputAdapter
     public void actualizarDescripcion(UUID id, String descripcion) {
         repository.actualizarDescripcion(id, descripcion);
         logger.debug(ItemCualitativoJuradoKey.LOG_DESCRIPCION_ACTUALIZADA, id);
+    }
+
+    @Override
+    public Set<UUID> consultarIdsExistentes(Set<UUID> ids) {
+        return repository.findIdsByIdIn(ids);
     }
 }

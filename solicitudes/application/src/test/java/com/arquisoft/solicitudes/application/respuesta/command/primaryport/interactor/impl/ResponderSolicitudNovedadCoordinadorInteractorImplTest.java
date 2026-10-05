@@ -1,8 +1,8 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.impl;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ResponderSolicitudNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.application.respuesta.command.usecase.ResponderSolicitudNovedadCoordinadorUseCase;
-import com.arquisoft.solicitudes.domain.respuesta.RespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.application.respuesta.command.usecase.ResponderSolicitudUseCase;
+import com.arquisoft.solicitudes.domain.respuesta.RespuestaSolicitudDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class ResponderSolicitudNovedadCoordinadorInteractorImplTest {
 
     @Mock
-    private ResponderSolicitudNovedadCoordinadorUseCase useCase;
+    private ResponderSolicitudUseCase useCase;
 
     @InjectMocks
     private ResponderSolicitudNovedadCoordinadorInteractorImpl interactor;
@@ -34,18 +34,18 @@ class ResponderSolicitudNovedadCoordinadorInteractorImplTest {
         UUID esperado = UUID.randomUUID();
         var command = ResponderSolicitudNovedadCoordinadorCommand.crear(
                 solicitud.toString(), "una respuesta", coordinador);
-        when(useCase.ejecutar(any(RespuestaNovedadCoordinadorDomain.class))).thenReturn(esperado);
+        when(useCase.ejecutar(any(RespuestaSolicitudDomain.class))).thenReturn(esperado);
 
         // Act
         UUID resultado = interactor.ejecutar(command);
 
         // Assert
         assertThat(resultado).isEqualTo(esperado);
-        ArgumentCaptor<RespuestaNovedadCoordinadorDomain> captor =
-                ArgumentCaptor.forClass(RespuestaNovedadCoordinadorDomain.class);
+        ArgumentCaptor<RespuestaSolicitudDomain> captor =
+                ArgumentCaptor.forClass(RespuestaSolicitudDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
-        assertThat(captor.getValue().getContenido()).isEqualTo("una respuesta");
-        assertThat(captor.getValue().getCoordinadorUsuario()).isEqualTo(coordinador);
+        assertThat(captor.getValue().getRespuesta().getContenido()).isEqualTo("una respuesta");
+        assertThat(captor.getValue().getResponsableUsuario()).isEqualTo(coordinador);
     }
 }

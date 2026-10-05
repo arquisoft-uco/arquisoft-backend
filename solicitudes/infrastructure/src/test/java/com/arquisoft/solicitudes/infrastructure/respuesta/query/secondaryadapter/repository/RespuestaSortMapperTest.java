@@ -10,7 +10,7 @@ class RespuestaSortMapperTest {
     @Test
     void debeTraducirFechaRespuesta_cuandoCampoOrdenable() {
         // Act
-        String ruta = RespuestaSortMapper.traducir("fechaRespuesta");
+        var ruta = RespuestaSortMapper.traducir("fechaRespuesta");
 
         // Assert
         assertThat(ruta).isEqualTo("fechaRespuesta");
@@ -19,7 +19,7 @@ class RespuestaSortMapperTest {
     @Test
     void debeTraducirDestinatarioNombre_cuandoCampoOrdenable() {
         // Act
-        String ruta = RespuestaSortMapper.traducir("destinatarioNombre");
+        var ruta = RespuestaSortMapper.traducir("destinatarioNombre");
 
         // Assert
         assertThat(ruta).isEqualTo("destinatarioNombre");
@@ -32,6 +32,7 @@ class RespuestaSortMapperTest {
         assertThat(RespuestaSortMapper.traducir("estadoRespuestaId")).isNull();
         assertThat(RespuestaSortMapper.traducir("tipoSolicitudId")).isNull();
         assertThat(RespuestaSortMapper.traducir("remitenteUsuarioId")).isNull();
+        assertThat(RespuestaSortMapper.traducir("destinatarioUsuarioId")).isNull();
         assertThat(RespuestaSortMapper.traducir("destinatarioIdentificador")).isNull();
         assertThat(RespuestaSortMapper.traducir("destinatarioEmail")).isNull();
     }
@@ -39,7 +40,7 @@ class RespuestaSortMapperTest {
     @Test
     void debeRetornarNull_cuandoCampoNoExiste() {
         // Act
-        String ruta = RespuestaSortMapper.traducir("campoInexistente");
+        var ruta = RespuestaSortMapper.traducir("campoInexistente");
 
         // Assert
         assertThat(ruta).isNull();
@@ -49,7 +50,7 @@ class RespuestaSortMapperTest {
     void debeResolverUnaRutaJpa_paraTodoCampoQueElCriteriaDeclaraOrdenable() {
         for (RespuestaCriteria.Campo campo : RespuestaCriteria.Campo.values()) {
             // Act
-            String ruta = RespuestaSortMapper.traducir(campo.getClave());
+            var ruta = RespuestaSortMapper.traducir(campo.getClave());
 
             // Assert
             assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar(campo.getClave()))

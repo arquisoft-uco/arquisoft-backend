@@ -5,8 +5,8 @@ import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConf
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.EnviarSolicitudCambioAsesorInteractor;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudCambioAsesorCommand;
-import com.arquisoft.solicitudes.domain.solicitud.exception.DestinatarioNoEncontradoException;
-import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontradoException;
+import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEncontradoException;
+import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaException;
 import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import org.junit.jupiter.api.Test;

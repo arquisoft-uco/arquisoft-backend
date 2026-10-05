@@ -16,16 +16,17 @@ public final class SolicitudesCodes {
 
         public static final String ID_REQUERIDO = "SOLICITUD_ID_REQUERIDO";
         public static final String MENSAJE_REQUERIDO = "SOLICITUD_MENSAJE_REQUERIDO";
+        public static final String TIPO_REQUERIDO = "SOLICITUD_TIPO_REQUERIDO";
         public static final String MENSAJE_DEMASIADO_LARGO = "SOLICITUD_MENSAJE_DEMASIADO_LARGO";
         public static final String DESTINATARIO_REQUERIDO = "SOLICITUD_DESTINATARIO_REQUERIDO";
         public static final String DESTINATARIO_NO_ENCONTRADO = "DESTINATARIO_NO_ENCONTRADO";
-        public static final String DESTINATARIO_NO_ASIGNADO = "DESTINATARIO_NO_ASIGNADO";
         public static final String REMITENTE_REQUERIDO = "SOLICITUD_REMITENTE_REQUERIDO";
         public static final String REMITENTE_NO_ENCONTRADO = "REMITENTE_NO_ENCONTRADO";
         public static final String SOLICITUD_DUPLICADA = "SOLICITUD_DUPLICADA";
         public static final String SOLICITUD_NO_ENCONTRADA = "SOLICITUD_NO_ENCONTRADA";
         public static final String SOLICITUD_NO_PROPIA = "SOLICITUD_NO_PROPIA";
         public static final String SOLICITUD_TIPO_NO_COINCIDE = "SOLICITUD_TIPO_NO_COINCIDE";
+        public static final String SOLICITUD_TIPO_NO_COINCIDE_ASESOR = "SOLICITUD_TIPO_NO_COINCIDE_ASESOR";
         public static final String SOLICITUD_CON_RESPUESTAS = "SOLICITUD_CON_RESPUESTAS";
         public static final String SOLICITUD_NO_ES_DESTINATARIO = "SOLICITUD_NO_ES_DESTINATARIO";
     }
@@ -40,6 +41,8 @@ public final class SolicitudesCodes {
         public static final String SOLICITUD_YA_RESPONDIDA = "SOLICITUD_YA_RESPONDIDA";
         public static final String RESPUESTA_NO_ENCONTRADA = "RESPUESTA_NO_ENCONTRADA";
         public static final String RESPUESTA_NO_EN_REVISION = "RESPUESTA_NO_EN_REVISION";
+        public static final String ESTADO_REQUERIDO = "RESPUESTA_ESTADO_REQUERIDO";
+        public static final String ESTADO_NO_RESOLUTIVO = "RESPUESTA_ESTADO_NO_RESOLUTIVO";
     }
 
     public static final class EstadoRespuesta {

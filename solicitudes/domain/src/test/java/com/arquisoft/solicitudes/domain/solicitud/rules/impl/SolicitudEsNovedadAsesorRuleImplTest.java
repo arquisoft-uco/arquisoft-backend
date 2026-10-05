@@ -1,6 +1,6 @@
 package com.arquisoft.solicitudes.domain.solicitud.rules.impl;
 
-import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.model.TipoSolicitudConcordante;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
@@ -25,14 +25,14 @@ class SolicitudEsNovedadAsesorRuleImplTest {
     }
 
     @Test
-    void debeLanzarSolicitudTipoNoCoincide_cuandoElTipoActualDifiere() {
+    void debeLanzarSolicitudTipoNoCoincideAsesor_cuandoElTipoActualDifiere() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new TipoSolicitudConcordante(
-                solicitud, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), ESPERADO)))
-                .isInstanceOf(SolicitudTipoNoCoincideException.class)
+                solicitud, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), ESPERADO)))
+                .isInstanceOf(SolicitudTipoNoCoincideAsesorException.class)
                 .hasMessageContaining(solicitud.toString());
     }
 }

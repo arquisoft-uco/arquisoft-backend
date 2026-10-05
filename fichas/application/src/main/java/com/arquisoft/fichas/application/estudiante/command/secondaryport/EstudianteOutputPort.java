@@ -22,4 +22,6 @@ public interface EstudianteOutputPort {
     void reactivar(EstudianteEntity estudiante);
 
     Optional<EstudianteEntity> obtenerPorId(UUID id);
+
+    void actualizar(EstudianteEntity estudiante);
 }

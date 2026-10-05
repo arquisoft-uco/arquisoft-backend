@@ -23,6 +23,7 @@ class RespuestaJpaSpecification extends QueryJpaSpecification<RespuestaJpaQueryE
                 case ESTADO_RESPUESTA_ID         -> CampoSpec.texto(root -> root.get("estadoRespuestaId"));
                 case TIPO_SOLICITUD_ID           -> CampoSpec.texto(root -> root.get("tipoSolicitudId"));
                 case REMITENTE_USUARIO_ID        -> CampoSpec.uuid(root -> root.get("remitenteUsuarioId"));
+                case DESTINATARIO_USUARIO_ID     -> CampoSpec.uuid(root -> root.get("destinatarioUsuarioId"));
                 case DESTINATARIO_IDENTIFICADOR  -> CampoSpec.texto(root -> root.get("destinatarioIdentificador"));
                 case DESTINATARIO_NOMBRE         -> CampoSpec.texto(root -> root.get("destinatarioNombre"));
                 case DESTINATARIO_EMAIL          -> CampoSpec.texto(root -> root.get("destinatarioEmail"));

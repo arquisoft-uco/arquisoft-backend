@@ -1,8 +1,9 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.impl;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.EliminarRespuestaNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.application.respuesta.command.usecase.EliminarRespuestaNovedadCoordinadorUseCase;
-import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.application.respuesta.command.usecase.EliminarRespuestaUseCase;
+import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaDomain;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,16 +20,16 @@ import static org.mockito.Mockito.verify;
 class EliminarRespuestaNovedadCoordinadorInteractorImplTest {
 
     @Mock
-    private EliminarRespuestaNovedadCoordinadorUseCase useCase;
+    private EliminarRespuestaUseCase useCase;
 
     @InjectMocks
     private EliminarRespuestaNovedadCoordinadorInteractorImpl interactor;
 
     @Test
-    void debeMapearElComandoAObjetoDeAccionYDelegarEnElUseCase() {
+    void debeMapearYDelegarEnElUseCase_cuandoEjecutaElComando() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
         var command = EliminarRespuestaNovedadCoordinadorCommand.crear(
                 solicitud.toString(), coordinador);
 
@@ -36,10 +37,10 @@ class EliminarRespuestaNovedadCoordinadorInteractorImplTest {
         interactor.ejecutar(command);
 
         // Assert
-        ArgumentCaptor<EliminacionRespuestaNovedadCoordinadorDomain> captor =
-                ArgumentCaptor.forClass(EliminacionRespuestaNovedadCoordinadorDomain.class);
+        var captor = ArgumentCaptor.forClass(EliminacionRespuestaDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
-        assertThat(captor.getValue().getCoordinadorUsuario()).isEqualTo(coordinador);
+        assertThat(captor.getValue().getResponsableUsuario()).isEqualTo(coordinador);
+        assertThat(captor.getValue().getTipoEsperado()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
     }
 }

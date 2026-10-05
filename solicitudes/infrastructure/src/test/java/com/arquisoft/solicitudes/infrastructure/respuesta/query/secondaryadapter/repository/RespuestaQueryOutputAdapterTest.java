@@ -13,7 +13,6 @@ import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
-import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.query.pagination.SortDirection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,7 +99,7 @@ class RespuestaQueryOutputAdapterTest {
     }
 
     private void sembrarRespuesta(SolicitudJpaEntity solicitud, String estadoId,
-            LocalDateTime fechaRespuesta, String contenido) {
+            Instant fechaRespuesta, String contenido) {
         entityManager.persist(RespuestaJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .solicitudId(solicitud.getId())
@@ -133,17 +132,17 @@ class RespuestaQueryOutputAdapterTest {
         var solicitudBeto = sembrarSolicitud(beto, coord, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "novedad de Beto");
         sembrarRespuesta(solicitudAna, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "respuesta para Ana");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "respuesta para Ana");
         sembrarRespuesta(solicitudBeto, ESTADO_APROBADA,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "respuesta para Beto");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "respuesta para Beto");
         sincronizar();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(porRemitente(ana.getUsuarioId()));
+        var resultado = adapter.consultar(porRemitente(ana.getUsuarioId()));
 
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
-        RespuestaReadModel leida = resultado.getContent().get(0);
+        var leida = resultado.getContent().get(0);
         assertThat(leida.contenido()).isEqualTo("respuesta para Ana");
         assertThat(leida.estadoRespuestaId()).isEqualTo(ESTADO_EN_REVISION);
         assertThat(leida.estadoRespuestaNombre()).isEqualTo("En revisión");
@@ -169,12 +168,12 @@ class RespuestaQueryOutputAdapterTest {
         var solicitudCambio = sembrarSolicitud(ana, coord, TIPO_CAMBIO,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es cambio");
         sembrarRespuesta(solicitudNovedad, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "sobre novedad");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "sobre novedad");
         sembrarRespuesta(solicitudCambio, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "sobre cambio");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "sobre cambio");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
@@ -182,7 +181,7 @@ class RespuestaQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -201,12 +200,12 @@ class RespuestaQueryOutputAdapterTest {
         var solicitudAsesor = sembrarSolicitud(ana, asesor, TIPO_NOVEDAD_ASESOR,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "para asesor");
         sembrarRespuesta(solicitudCoordinador, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "responde el coordinador");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "responde el coordinador");
         sembrarRespuesta(solicitudAsesor, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "responde el asesor");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "responde el asesor");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
@@ -214,7 +213,7 @@ class RespuestaQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -222,6 +221,36 @@ class RespuestaQueryOutputAdapterTest {
                 .containsExactly("responde el asesor");
         assertThat(resultado.getContent().get(0).solicitud().tipoSolicitudId())
                 .isEqualTo(TIPO_NOVEDAD_ASESOR);
+    }
+
+    @Test
+    void debeFiltrarPorDestinatarioUsuarioId_cuandoElCriteriaTraeEsePredicado() {
+        // Arrange
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var coordUno = sembrarDestinatario("Coordinadora Uno", "COORD-1", "coord1@uco.edu.co");
+        var coordDos = sembrarDestinatario("Coordinador Dos", "COORD-2", "coord2@uco.edu.co");
+        var solicitudUno = sembrarSolicitud(ana, coordUno, TIPO_NOVEDAD,
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "para coord uno");
+        var solicitudDos = sembrarSolicitud(ana, coordDos, TIPO_NOVEDAD,
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "para coord dos");
+        sembrarRespuesta(solicitudUno, ESTADO_EN_REVISION,
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "respuesta para coord uno");
+        sembrarRespuesta(solicitudDos, ESTADO_EN_REVISION,
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "respuesta para coord dos");
+        sincronizar();
+
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
+                        coordUno.getUsuarioId().toString()))
+                .build();
+
+        // Act
+        var resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(RespuestaReadModel::contenido)
+                .containsExactly("respuesta para coord uno");
     }
 
     @Test
@@ -234,12 +263,12 @@ class RespuestaQueryOutputAdapterTest {
         var solicitud2 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "m2");
         sembrarRespuesta(solicitud1, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "aprobado con observaciones");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "aprobado con observaciones");
         sembrarRespuesta(solicitud2, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "rechazado por incompleto");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "rechazado por incompleto");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
@@ -247,7 +276,7 @@ class RespuestaQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -265,12 +294,12 @@ class RespuestaQueryOutputAdapterTest {
         var solicitud2 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "m2");
         sembrarRespuesta(solicitud1, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "en revision todavia");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "en revision todavia");
         sembrarRespuesta(solicitud2, ESTADO_APROBADA,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "ya aprobada");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "ya aprobada");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
@@ -278,7 +307,7 @@ class RespuestaQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -296,19 +325,19 @@ class RespuestaQueryOutputAdapterTest {
         var solicitud2 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "s2");
         sembrarRespuesta(solicitud1, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 1, 15, 8, 0), "vieja");
+                LocalDateTime.of(2026, 1, 15, 8, 0).toInstant(ZoneOffset.UTC), "vieja");
         sembrarRespuesta(solicitud2, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 5, 25, 8, 0), "nueva");
+                LocalDateTime.of(2026, 5, 25, 8, 0).toInstant(ZoneOffset.UTC), "nueva");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                         ana.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("fechaRespuesta", SortDirection.DESC)))
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -327,19 +356,19 @@ class RespuestaQueryOutputAdapterTest {
         var solicitudAlba = sembrarSolicitud(ana, alba, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "para alba");
         sembrarRespuesta(solicitudZulma, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 1, 15, 8, 0), "z");
+                LocalDateTime.of(2026, 1, 15, 8, 0).toInstant(ZoneOffset.UTC), "z");
         sembrarRespuesta(solicitudAlba, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 5, 25, 8, 0), "a");
+                LocalDateTime.of(2026, 5, 25, 8, 0).toInstant(ZoneOffset.UTC), "a");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                         ana.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("destinatarioNombre", SortDirection.ASC)))
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -356,18 +385,18 @@ class RespuestaQueryOutputAdapterTest {
             var solicitud = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
                     LocalDateTime.of(2026, 3, 1 + i, 10, 0).toInstant(ZoneOffset.UTC), "m" + i);
             sembrarRespuesta(solicitud, ESTADO_EN_REVISION,
-                    LocalDateTime.of(2026, 3, 1 + i, 8, 0), "r" + i);
+                    LocalDateTime.of(2026, 3, 1 + i, 8, 0).toInstant(ZoneOffset.UTC), "r" + i);
         }
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(1).tamanio(2)
+        var criteria = RespuestaCriteria.builder().pagina(1).tamanio(2)
                 .raiz(NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                         ana.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("fechaRespuesta", SortDirection.ASC)))
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
@@ -379,7 +408,7 @@ class RespuestaQueryOutputAdapterTest {
     @Test
     void debeRetornarVacio_cuandoNoHayRespuestasParaElEstudiante() {
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(porRemitente(UUID.randomUUID()));
+        var resultado = adapter.consultar(porRemitente(UUID.randomUUID()));
 
         // Assert
         assertThat(resultado.getContent()).isEmpty();

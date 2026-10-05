@@ -22,25 +22,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SecondaryPortMappersTest {
 
     @Test
-    void debeConvertirLaSolicitudEnAmbasDirecciones() {
+    void debeConvertirLaSolicitudUsandoLosIdsDeFilaDeRemitenteYDestinatario() {
         // Arrange
         UUID id = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
-        UUID remitente = UUID.randomUUID();
+        UUID destinatarioUsuario = UUID.randomUUID();
+        UUID remitenteUsuario = UUID.randomUUID();
+        UUID destinatarioFila = UUID.randomUUID();
+        UUID remitenteFila = UUID.randomUUID();
         Instant fecha = Instant.now();
-        SolicitudDomain domain = SolicitudDomain.reconstruir(
-                id, destinatario, remitente, fecha, "mensaje", TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
+        SolicitudDomain domain = SolicitudDomain.reconstruir(id, destinatarioUsuario, remitenteUsuario, fecha,
+                "mensaje", TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 
         // Act
-        SolicitudEntity entity = SolicitudMapper.toEntity(domain);
-        SolicitudDomain vuelta = SolicitudMapper.toDomain(entity);
+        SolicitudEntity entity = SolicitudMapper.toEntity(domain, remitenteFila, destinatarioFila);
 
         // Assert
+        assertThat(entity.id()).isEqualTo(id);
         assertThat(entity.tipoSolicitud()).isEqualTo("NOVEDAD_PARA_EL_COORDINADOR");
-        assertThat(entity.destinatario()).isEqualTo(destinatario);
-        assertThat(vuelta.getTipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
-        assertThat(vuelta.getId()).isEqualTo(id);
-        assertThat(vuelta.getMensajeSolicitud()).isEqualTo("mensaje");
+        assertThat(entity.destinatario()).isEqualTo(destinatarioFila);
+        assertThat(entity.remitente()).isEqualTo(remitenteFila);
+        assertThat(entity.fechaCreacion()).isEqualTo(fecha);
+        assertThat(entity.mensajeSolicitud()).isEqualTo("mensaje");
     }
 
     @Test

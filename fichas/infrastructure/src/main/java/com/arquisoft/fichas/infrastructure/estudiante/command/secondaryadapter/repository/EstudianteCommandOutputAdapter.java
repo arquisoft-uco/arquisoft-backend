@@ -60,4 +60,10 @@ public class EstudianteCommandOutputAdapter implements EstudianteOutputPort {
     public Optional<EstudianteEntity> obtenerPorId(UUID id) {
         return estudianteRepository.findById(id).map(EstudianteJpaMapper::toEntity);
     }
+
+    @Override
+    public void actualizar(EstudianteEntity estudiante) {
+        estudianteRepository.save(EstudianteJpaMapper.toJpaEntity(estudiante));
+        logger.debug(EstudianteKey.LOG_ACTUALIZADO, estudiante.id());
+    }
 }

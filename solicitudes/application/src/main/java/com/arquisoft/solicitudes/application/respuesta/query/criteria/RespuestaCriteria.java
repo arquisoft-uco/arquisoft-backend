@@ -14,6 +14,7 @@ public final class RespuestaCriteria extends QueryCriteria {
         ESTADO_RESPUESTA_ID       ("estadoRespuestaId",          true,  false),
         TIPO_SOLICITUD_ID         ("tipoSolicitudId",            true,  false),
         REMITENTE_USUARIO_ID      ("remitenteUsuarioId",         true,  false),
+        DESTINATARIO_USUARIO_ID   ("destinatarioUsuarioId",      true,  false),
         DESTINATARIO_IDENTIFICADOR("destinatarioIdentificador",  true,  false),
         DESTINATARIO_NOMBRE       ("destinatarioNombre",         true,  true),
         DESTINATARIO_EMAIL        ("destinatarioEmail",          true,  false);
@@ -41,10 +42,6 @@ public final class RespuestaCriteria extends QueryCriteria {
                 .filter(c -> c.ordenable)
                 .map(Campo::getClave)
                 .collect(Collectors.toUnmodifiableSet());
-
-        public static boolean esValidoParaFiltrar(String clave) {
-            return CLAVES_FILTRABLES.contains(clave);
-        }
 
         public static boolean esValidoParaOrdenar(String clave) {
             return CLAVES_ORDENABLES.contains(clave);

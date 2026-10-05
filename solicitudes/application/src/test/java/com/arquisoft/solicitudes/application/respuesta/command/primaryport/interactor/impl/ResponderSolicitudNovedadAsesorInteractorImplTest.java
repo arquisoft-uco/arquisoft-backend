@@ -1,8 +1,8 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.impl;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ResponderSolicitudNovedadAsesorCommand;
-import com.arquisoft.solicitudes.application.respuesta.command.usecase.ResponderSolicitudNovedadAsesorUseCase;
-import com.arquisoft.solicitudes.domain.respuesta.RespuestaNovedadAsesorDomain;
+import com.arquisoft.solicitudes.application.respuesta.command.usecase.ResponderSolicitudUseCase;
+import com.arquisoft.solicitudes.domain.respuesta.RespuestaSolicitudDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class ResponderSolicitudNovedadAsesorInteractorImplTest {
 
     @Mock
-    private ResponderSolicitudNovedadAsesorUseCase useCase;
+    private ResponderSolicitudUseCase useCase;
 
     @InjectMocks
     private ResponderSolicitudNovedadAsesorInteractorImpl interactor;
@@ -29,23 +29,22 @@ class ResponderSolicitudNovedadAsesorInteractorImplTest {
     @Test
     void debeMapearElComandoAObjetoDeAccionYDelegarEnElUseCase() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID asesor = UUID.randomUUID();
-        UUID esperado = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var asesor = UUID.randomUUID();
+        var esperado = UUID.randomUUID();
         var command = ResponderSolicitudNovedadAsesorCommand.crear(
                 solicitud.toString(), "una respuesta", asesor);
-        when(useCase.ejecutar(any(RespuestaNovedadAsesorDomain.class))).thenReturn(esperado);
+        when(useCase.ejecutar(any(RespuestaSolicitudDomain.class))).thenReturn(esperado);
 
         // Act
-        UUID resultado = interactor.ejecutar(command);
+        var resultado = interactor.ejecutar(command);
 
         // Assert
         assertThat(resultado).isEqualTo(esperado);
-        ArgumentCaptor<RespuestaNovedadAsesorDomain> captor =
-                ArgumentCaptor.forClass(RespuestaNovedadAsesorDomain.class);
+        var captor = ArgumentCaptor.forClass(RespuestaSolicitudDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
-        assertThat(captor.getValue().getContenido()).isEqualTo("una respuesta");
-        assertThat(captor.getValue().getAsesorUsuario()).isEqualTo(asesor);
+        assertThat(captor.getValue().getRespuesta().getContenido()).isEqualTo("una respuesta");
+        assertThat(captor.getValue().getResponsableUsuario()).isEqualTo(asesor);
     }
 }

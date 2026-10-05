@@ -60,18 +60,18 @@ class SolicitudNovedadAsesorRespondidaConsumerTest {
     }
 
     private Message mensajeCon(String idEvento, long deliveryTag) {
-        String payloadJson = """
+        var payloadJson = """
                 {
                     "idEvento": "%s",
                     "solicitudId": "%s",
                     "contenido": "Puedes presentar la novedad el lunes",
                     "remitenteNombre": "Ana Estudiante",
                     "remitenteEmail": "ana.est@soyuco.edu.co",
-                    "asesorNombre": "Pedro Asesor"
+                    "responsableNombre": "Pedro Asesor"
                 }
                 """.formatted(idEvento, UUID.randomUUID());
 
-        MessageProperties props = new MessageProperties();
+        var props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
         props.setHeader("X-Trace-Id", "trace-123");
         props.setHeader("X-User-Id", "user-456");
@@ -82,17 +82,16 @@ class SolicitudNovedadAsesorRespondidaConsumerTest {
     @Test
     void debeNotificarAlRemitente_cuandoElPayloadEsValido() throws Exception {
         // Arrange
-        String idEvento = UUID.randomUUID().toString();
+        var idEvento = UUID.randomUUID().toString();
 
         // Act
         adapter.onSolicitudNovedadAsesorRespondida(mensajeCon(idEvento, 1L), channel);
 
         // Assert
-        ArgumentCaptor<EnviarNotificacionCommand> captor =
-                ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
+        var captor = ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
         verify(enviarNotificacionInteractor).ejecutar(captor.capture());
 
-        EnviarNotificacionCommand command = captor.getValue();
+        var command = captor.getValue();
         assertThat(command.idEvento()).isEqualTo(idEvento);
         assertThat(command.tipo()).isEqualTo(TipoNotificacion.SOLICITUD_NOVEDAD_ASESOR_RESPONDIDA);
         assertThat(command.destinatarioNombre()).isEqualTo("Ana Estudiante");
