@@ -1,11 +1,23 @@
 <!--
-Plantilla de la cabecera invariable de un plan. La usan @1-planificador (al generar) y
-@4a-validator-analyze (al leer). Copia este bloque tal cual y sustituye los {marcadores}.
+Cabecera invariable de un plan. La usan @1-planificador (al generar) y @4a-validator-analyze (al
+leer). Copia desde "# PLAN" hasta la tabla de la sección 3 y sustituye los {marcadores}. Este
+comentario NO se copia al plan.
 
-Lo que sigue a la sección 3 NO vive aquí: las secciones 4 a 14 son condicionales — dependen de si
-la HU escribe o consulta, de si emite eventos, de si toca la base de datos — y su forma la decide
-@1-planificador según sus preguntas. Esta plantilla fija lo que no cambia nunca: el título, la
-metadata y las tres secciones que toda HU/HT tiene, escriba lo que escriba.
+Las secciones 4 a 14 son condicionales y su forma la decide @1-planificador (FASE 4).
+
+Guía para llenar la sección 3 (no se copia):
+- Invariante LOCAL (formato, longitud, obligatoriedad) → dentro del {Entidad}Domain, acumulado en
+  ValidationResult → 422 con fieldErrors[], sin excepción propia. "Dónde" = Domain, sin Finder.
+- Restricción de CONJUNTO (unicidad, existencia, propiedad) → {Concepto}Rule con su record de
+  entrada, orquestada por el {Accion}{Entidad}Validator sobre lo que trajeron los Finders → 422 con
+  su DomainException. Nunca if/throw en el use case; no hay 403 para "no eres el dueño".
+- Un corte que no es error de negocio (idempotencia de un consumidor AMQP) NO es Rule: es un Finder
+  consultado directo que devuelve la variante de su sellada. Como Rule lanzaría y mandaría una
+  reentrega normal a la DLQ.
+- Sin restricciones de conjunto no hay Validator.
+- En una consulta, la política de acceso (existencia, pertenencia, estado) va en esta tabla con su
+  {X}QueryFinder y el criterio de la HU del que sale; sin ninguna, escribe bajo la tabla
+  "Política de acceso: ninguna".
 
 Destino: .workspace/h-plan/PLAN-{HU|HT}-{ID}.md
 -->
@@ -17,15 +29,16 @@ Destino: .workspace/h-plan/PLAN-{HU|HT}-{ID}.md
 - **Bounded Context:** {contexto}
 - **Tipo de Use Case:** {Escritura/Consulta/Mixto}
 - **Módulos Gradle afectados:** `{contexto}:domain`, `:application`, `:infrastructure`
-- **Autor:** {Nombre} <{correo}>   <!-- git config user.name / user.email — nunca lo preguntes -->
+- **Autor:** {Nombre} <{correo}>
 - **Fecha de plan:** {yyyy-MM-dd}
 - **Rama sugerida:** `feature/{HU|HT}-{ID}-{descripcion_snake_case}`
-- **Fuentes consultadas:** {archivos de arquisoft-docs}
-- **Observaciones del usuario:** {o "Ninguna"}
+- **Fuentes consultadas:** {archivos de arquisoft-docs, separados por coma}
+- **Observaciones del usuario:** {una línea por observación, o "Ninguna"}
 
 ## 1. Resumen Funcional
 
-{2-4 oraciones: qué hace, qué NO cubre}
+{1-2 oraciones: qué hace la historia, en lenguaje de negocio.}
+**Fuera de alcance:** {lista corta separada por punto y coma, o "Nada relevante"}
 
 ## 2. Criterios de Aceptación
 
@@ -34,26 +47,5 @@ Destino: .workspace/h-plan/PLAN-{HU|HT}-{ID}.md
 
 ## 3. Reglas de Negocio
 
-> Invariante LOCAL (formato, longitud, obligatoriedad de la propia instancia) → dentro del
-> `{Entidad}Domain`, acumulado en `ValidationResult` → 422 con `fieldErrors[]`, sin clase de
-> excepción propia. Restricción de CONJUNTO (unicidad, existencia, propiedad) → `{Concepto}Rule`
-> de dominio con su record de entrada, orquestada por el `{Accion}{Entidad}Validator` sobre lo que
-> los `Finder`s ya trajeron → 422 con su propia `DomainException`. **Nunca `if/throw` en el use
-> case, y no hay caso 403 para "no eres el dueño".** Ver skill `arquisoft-estandares`.
->
-> Antes de declarar una `Rule`, pregúntate si el caso debe **lanzar**. Si la consulta solo decide si
-> vale la pena seguir y su resultado no es un error de negocio — el corte de idempotencia de un
-> consumidor AMQP es el caso típico — entonces **no hay `Rule`**: es un `Finder` que el use case
-> consulta directo, y el corte **devuelve la variante correspondiente de su sellada**
-> (`return EnvioNotificacionResultMapper.toResultDuplicada(entrada);`), no un `return;` mudo — el
-> llamador tiene que poder distinguir "ya estaba hecho" de "se hizo ahora". Declararlo como `Rule`
-> haría que lanzara, mandando el mensaje a la DLQ por una reentrega normal del broker. Y si la HU no
-> tiene ninguna restricción de conjunto, tampoco hay `Validator`: no planifiques una capa vacía.
->
-> En una **consulta**, la política de acceso sobre la instancia pedida (existencia, pertenencia,
-> estado) también va en esta tabla, con su `{X}QueryFinder` y el criterio de la HU del que sale. Si
-> la HU no pone ninguna, escribe bajo la tabla `Política de acceso: ninguna`, para que se lea como
-> decisión y no como olvido.
-
-| # | Regla | Dónde se valida (Domain / Rule) | Finder que trae el dato | Excepción → HTTP |
+| # | Regla | Dónde (Domain / Rule) | Finder | Excepción → HTTP |
 |---|---|---|---|---|

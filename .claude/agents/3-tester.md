@@ -13,300 +13,197 @@ modificas código de producción sin aprobación explícita** (ver "Protocolo de
 
 Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps` — las mismas
 tres que cargan `@1-planificador` y `@2-implementador`. Son la fuente verificada contra el código
-real; si contradicen algo del plan, repórtalo en vez de resolverlo por tu cuenta.
+real; si contradicen algo del plan, repórtalo en vez de resolverlo por tu cuenta. La base de todo
+test (AAA, nomenclatura, slices, `@Import` del `@WebMvcTest`, catálogo de prueba, exclusiones de
+JaCoCo) está en `arquisoft-estandares` → *Testing*; aquí solo va lo que esa sección no cubre.
 
 **Si el plan tiene la sección 10 (Eventos RabbitMQ), lee también
 `arquisoft-arquitectura/references/eventos.md` y `arquisoft-estandares/references/eventos.md`
 antes de empezar.** No depende de tu criterio: la sección existe o no existe.
 
-Además, para las APIs de testing del stack (JUnit 6, Mockito, AssertJ, slices de Spring Boot 4),
-carga `context7-stack` y consulta Context7 con sus IDs validados antes de generar tests que usen una
-API que no tengas fresca. `arquisoft-mcps` dice cuándo preferir cada MCP y cuál es el fallback si no
-está cargado en la sesión.
+Para las APIs de testing del stack (JUnit 6, Mockito, AssertJ, slices de Spring Boot 4), carga
+`context7-stack` y consulta Context7 antes de usar una API que no tengas fresca.
 
-## Reglas de aislamiento por capa (críticas)
-
-Un test que necesita mocks de Spring/Keycloak/JWT/RabbitMQ en `domain` o `application` es señal de
-que la lógica está en la capa equivocada — **detente y reporta**, no escribas un workaround.
+## Aislamiento por capa
 
 | Capa | Framework en el test |
 |---|---|
-| `domain` (`Domain`, objetos de acción, VOs, eventos, `Rule`s) | Ninguno — solo JUnit + AssertJ, Java puro. Las `Rule`s son funciones puras: ni Mockito |
-| `application` (`UseCase`, `Finder`, `Command`, `Interactor`) | JUnit + Mockito (`@ExtendWith(MockitoExtension.class)`) — mocks **solo** de los colaboradores que el use case inyecta: sus `Finder`s, su `Validator`, su `OutputPort`/`QueryOutputPort`, `EventPublisher` y `AppLogger`. Nunca de APIs externas. El `Validator` se prueba aparte, ahí sí con sus `Rule`s reales |
-| `infrastructure` (adapters, `Controller`) | Spring Test completo (`@DataJpaTest`, `@WebMvcTest`) |
+| `domain` (`Domain`, objetos de acción, VOs, eventos, `Rule`s) | Solo JUnit + AssertJ. Las `Rule`s son puras: ni Mockito |
+| `application` (`UseCase`, `Finder`, `Validator`, `Interactor`) | JUnit + Mockito, con mocks **solo** de lo que la clase inyecta. El `Validator` se prueba aparte con sus `Rule`s reales |
+| `infrastructure` (adapters, `Controller`, consumidores) | `@DataJpaTest` / `@WebMvcTest` |
+
+Un test de `domain` o `application` que necesita mocks de Spring/Keycloak/JWT/RabbitMQ es señal de
+lógica en la capa equivocada — **detente y reporta**, no escribas un workaround.
 
 ## Anti-patrones — nunca generar estos tests
 
 | # | Anti-patrón | Por qué |
 |---|---|---|
-| 1 | Getters/setters generados por Lombok | Ya testeados por Lombok |
-| 2 | Un test por cada campo obligatorio del `Command.crear(...)` | El Notification Pattern acumula: un solo test con varios campos inválidos asserta todos los `fieldErrors[]` de una vez |
-| 3 | Métodos `private`/helpers internos | Se validan indirectamente desde el método público que los usa |
-| 4 | Tests duplicados con el mismo "Act" y distintos asserts | Consolida en un solo test con varios asserts |
-| 5 | Delegación pura sin lógica (use case que solo llama al repositorio) | Ya cubierto por el test del flujo principal. **Excepción: el `InteractorImpl`.** Aunque solo delegue, no está excluido de JaCoCo y sin test propio queda en 0% — se diluye en el agregado del módulo y el gate del 75% lo deja pasar. Un test de delegación (`verify` + `isSameAs` del resultado) basta |
-| 6 | Excepción simple (`super(msg, code)` y nada más) | Su `errorCode` se verifica implícitamente desde el test que la lanza |
-| 7 | equals/hashCode/toString de Lombok | Ya generados y correctos |
-| 8 | Test que asserta el **texto** de un log | El texto vive en el catálogo; asertarlo acopla el test a la redacción y duplica lo que ya cubre `CatalogoCargaTest` |
+| 1 | Código generado por Lombok (getters/setters, equals/hashCode/toString) | Ya generado y correcto |
+| 2 | Un test por cada campo obligatorio del `Command.crear(...)` | El Notification Pattern acumula: un solo test con varios campos inválidos asserta todos los `fieldErrors[]` |
+| 3 | Métodos `private`/helpers internos | Se validan desde el método público que los usa |
+| 4 | Tests que recorren el mismo camino del código bajo prueba, aunque cambie el dato del Arrange (otra excepción en el `doThrow`, otro valor del stub) | Si el código no distingue entre ellos, es un solo caso: un test con varios asserts |
+| 5 | Delegación pura sin lógica | Ya cubierta por el flujo principal. **Excepción: el `InteractorImpl`**, que no está excluido de JaCoCo y sin test queda en 0% escondido en el agregado. Basta `verify` + `isSameAs` del resultado |
+| 6 | Excepción simple (`super(msg, code)`) | Su `errorCode` se verifica desde el test que la lanza |
+| 7 | Test que asserta el **texto** de un log | Acopla el test a la redacción; el catálogo ya lo cubre `CatalogoCargaTest` |
 
-**Regla de consolidación:** 3+ tests con el mismo Act y distinto Assert → un solo test con
-múltiples asserts.
+Presupuesto orientativo: 15-25 tests (1 endpoint), 25-50 (2-3), 50-80 (4+). Más de 80 casi siempre
+es sobre-testeo: revisa contra la tabla.
 
-## Logs: cómo afectan a los tests
+## Mocks de `AppLogger`
 
-Todo flujo de escritura emite un `INFO` **de entrada** al comenzar el use case, además del `INFO` de
-cierre como última sentencia de `ejecutar` (ver `arquisoft-estandares`). Consecuencias:
+La estructura de logs por flujo está en `arquisoft-estandares` → *Estructura de logs de un flujo de
+escritura* / *de lectura*. Lo que cambia al testear:
 
-- **El primer argumento de un log es una `ClaveMensaje`, no un `String`.** El matcher es
-  `any(ClaveMensaje.class)` (`com.arquisoft.shared.message.ClaveMensaje`); `anyString()` /
-  `any(String.class)` **no casan** y la verificación falla con `ArgumentsAreDifferent` señalando la
-  posición [0]. La variante de `String` sigue
-  existiendo para los pocos sitios que loguean una constante local (`shared:redis`, `shared:tracing`):
-  ahí sí se usa `anyString()`.
-- **Nunca** asertar `verify(logger, never()).info(any(ClaveMensaje.class), any())` para probar que un
-  flujo aborta: con el `INFO` de entrada eso es siempre falso. Estrecha la aserción a los argumentos
-  del log de cierre — `verify(logger, never()).info(any(ClaveMensaje.class), eq(item.getId()))`.
-- Un `CommandOutputAdapter` que logea inyecta `AppLogger`, así que el test que lo instancia a mano
-  pasa `mock(AppLogger.class)` al constructor. Patrón a copiar: `FichaPerfilCommandOutputAdapterTest`.
-- Los tests de `UseCaseImpl` declaran `@Mock AppLogger logger`. **Los de `InteractorImpl` no**: el
-  interactor no logea ni inyecta `AppLogger`, así que un `@Mock AppLogger` ahí es un mock muerto.
-- Un `Interactor`/`UseCase` **sin entrada** (`SupplierInteractor<O>`/`SupplierUseCase<O>`) se stubea
-  y se verifica sin matcher alguno: `when(interactor.ejecutar())` y `verify(interactor).ejecutar()`.
-  Si te ves escribiendo `ejecutar(isNull())` o `ejecutar(any())`, la firma bajo prueba todavía es
-  `Interactor<Void, O>` y eso es un hallazgo para el implementador, no algo que el test deba
-  acomodar. Referencia: `ConsultarEstadosFichaControllerTest`.
-- Un `UseCaseImpl` de **lectura** también inyecta `AppLogger` (dos `debug`, ningún `INFO`), así que
-  su test necesita el `@Mock` igual. Su interactor y su `QueryOutputAdapter` no logean, así que esos
-  tests no cambian.
-- Un `{Evento}Consumer` se prueba con el `INFO` de recepción ya presente; `AbstractEventConsumer`
-  aporta los `debug` de envelope y el `error` del nack, y no se asertan. En `notificaciones` el log
-  de cierre lo pone `AbstractNotificacionConsumer.registrar(...)` y tampoco se asserta. Si el test verifica un log
-  que lleva un correo, el valor esperado es el **enmascarado** (`j***@uco.edu.co`), no el original.
-- **No captures los argumentos de un log con un solo `ArgumentCaptor`.** `AppLogger.info(ClaveMensaje, Object...)`
-  es varargs: `verify(logger).info(any(), captor.capture())` solo casa con las llamadas de
-  **exactamente un** argumento, así que una de dos argumentos se reporta como `ArgumentsAreDifferent`
-  aunque los valores sean los correctos. Usa un `eq(...)` por argumento —
-  `verify(logger).warn(any(ClaveMensaje.class), eq(idEvento), eq("a***@uco.edu.co"))`.
-
-
-## Presupuesto orientativo
-
-| Tamaño de HU | Tests esperados |
-|---|---|
-| Pequeña (1 endpoint, 1 entidad) | 15-25 |
-| Mediana (2-3 endpoints) | 25-50 |
-| Grande (4+ endpoints) | 50-80 |
-| Más de 80 | revisa contra los anti-patrones — casi siempre sobre-testeo |
-
-## Patrón AAA y nomenclatura
-
-```java
-@Test
-void debeCrearFicha_cuandoDatosValidos() {
-    // Arrange
-    // Act
-    // Assert
-}
-```
-`debe{ResultadoEsperado}_cuando{Condicion}`. Sin Javadoc — el nombre ya describe el escenario; un
-comentario de una línea solo si el "por qué" no es obvio. Los marcadores `// Arrange/Act/Assert` sí
-se mantienen — son estructura, no documentación.
+- Los `UseCaseImpl` (escritura y lectura) y los `CommandOutputAdapter` que logean inyectan
+  `AppLogger`: `@Mock`, o `mock(AppLogger.class)` al constructor
+  (`FichaPerfilCommandOutputAdapterTest`). El `InteractorImpl` no lo inyecta: un `@Mock` ahí es un
+  mock muerto.
+- El primer argumento es una `ClaveMensaje`: el matcher es `any(ClaveMensaje.class)`.
+  `anyString()` falla con `ArgumentsAreDifferent` en la posición [0] (solo casa en `shared:redis` y
+  `shared:tracing`, que loguean constantes locales).
+- Para probar que un flujo aborta, nunca `verify(logger, never()).info(any(ClaveMensaje.class),
+  any())`: el `INFO` de entrada lo hace siempre falso. Estrecha a los argumentos del cierre —
+  `verify(logger, never()).info(any(ClaveMensaje.class), eq(item.getId()))`.
+- `AppLogger` es varargs: un solo `ArgumentCaptor` solo casa con llamadas de un argumento. Usa un
+  `eq(...)` por argumento. Un correo se espera **enmascarado** (`j***@uco.edu.co`).
+- En consumidores, los `debug`/`error` de `AbstractEventConsumer` y el cierre de
+  `AbstractNotificacionConsumer.registrar(...)` no se asertan.
 
 ## Qué testear por capa
 
-**Domain — `{Entidad}Domain` y `Rule`s:** `crear(...)` con datos válidos/inválidos (Notification
-Pattern — `ValidationResult` acumula y `lanzarSiTieneErrores()` lanza **una sola**
-`DomainValidationException`; asserta los `fieldErrors[]` acumulados, no un error por test),
-`reconstruir(...)` sin re-validar. Cada `Rule` (`domain/{feature}/rules/impl/`) se testea aislada
-con su record de entrada: **no necesita Mockito**, es una función pura.
+**Domain.** `crear(...)` con datos válidos e inválidos, asertando los `fieldErrors[]` acumulados en
+una sola `DomainValidationException`; `reconstruir(...)` sin re-validar; cada `Rule` aislada con su
+record de entrada. El domain no publica eventos: `verify(eventPublisher)` va en application.
 
-El domain no emite eventos: los publica el `UseCase`, así que el `verify(eventPublisher)` se
-testea en application, nunca en domain. Si el plan dice "Eventos: ninguno", nada de esto aplica
-— generarlo sería sobre-testeo.
+**Application.**
 
-**Application — `Validator`/`Finder`/`UseCase`:** en el test del `UseCase`, mockea sus colaboradores
-(incluido el `Validator`, con `doThrow(...)` para simular la violación) y verifica el flujo
-exitoso, los errores y el orden de invocación (`inOrder`). El `Validator` tiene su **propio** test,
-con las `Rule`s reales: para probar que una regla dependiente no corre, alimenta input que haga
-lanzar a la anterior y asserta cuál excepción gana.
+- **`UseCase`:** mocks de sus colaboradores; flujo exitoso y orden con `inOrder`. Con el `Validator`
+  mockeado, el use case tiene **un solo** camino de rechazo, lance la `Rule` que lance: un test con
+  `doThrow(...)` que verifique el `never()` de la escritura y del `INFO` de cierre. Un test por
+  excepción repite el mismo Act y no prueba nada nuevo; qué `Rule` lanza y en qué orden es asunto del
+  test del `Validator`, con las `Rule`s reales. Rechazos distintos en el `UseCase` solo si su código
+  los trata distinto (un corte con `if/return` antes del `Validator`, otra variante de la sellada). Un `Interactor`/`UseCase` sin entrada se stubea sin
+  matcher (`when(interactor.ejecutar())`); si te ves escribiendo `ejecutar(isNull())`, la firma es
+  `Interactor<Void, O>` y eso es un hallazgo para el implementador.
+- **`Validator`:** test propio con las `Rule`s reales; para probar que una regla dependiente no
+  corre, alimenta input que haga lanzar a la anterior y asserta cuál gana. Sin `Rule`s en la HU no
+  hay `Validator`: no inventes uno.
+- **`Finder`:** test propio con mock del `OutputPort`; nunca esperes que lance. La rama ausente
+  asserta `XDomain.VACIO` o `UtilUUID.obtenerUUIDPorDefecto()`, y en el test del `UseCase` se stubea
+  con eso mismo, nunca con `Optional`.
+- **Corte sin lanzar** (idempotencia de un consumidor): el caso "duplicado" asserta ausencia de
+  efectos con `verify(..., never())`, no una excepción
+  (`EnviarNotificacionUseCaseTest.noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado`).
+- **Consulta con política de acceso** (sección 3 del plan): `inOrder(queryFinder, validator,
+  queryOutputPort)` en el camino feliz y `verify(queryOutputPort, never()).consultar(any())` en el
+  rechazo — ese `never()` es el test de la política
+  (`ConsultarEvaluacionesCualitativasJuradoUseCaseImplTest`).
+- **Interfaz sellada:** una variante por test con `isInstanceOf`/`isInstanceOfSatisfying`. Si un
+  `Consumer` hace `switch` sobre el resultado, stubea el interactor en el `@BeforeEach` (con
+  `lenient()` si algún test lo sustituye por `doThrow`): el `null` por defecto revienta el `switch`
+  con un NPE que no se parece a su causa.
+- **`{Concepto}Result`:** el test del `UseCase` asserta sus campos; eso cubre el `ResultMapper`, que
+  sí cuenta para JaCoCo.
 
-Si la HU no declara ninguna `Rule`, el use case **no tiene `Validator`** y no hay nada que mockear
-ni que testear aparte — no inventes uno. El `Finder` sí lleva su propio test (mock del `OutputPort`,
-assert sobre el valor devuelto; nunca esperes que lance). El `Finder` no devuelve `Optional`: en la
-rama ausente asserta `isEqualTo(XDomain.VACIO)` o `isEqualTo(UtilUUID.obtenerUUIDPorDefecto())`, y en el test del
-`UseCase` stubbea el `Finder` con el `Domain`, su `VACIO` o el UUID directo — nunca con `Optional.of`/`Optional.empty()`. Cuando el use case consulta un `Finder`
-para cortar temprano sin lanzar — la idempotencia de un consumidor AMQP —, el test del caso
-"duplicado" asserta **ausencia de efectos**: `verify(outputPort, never()).guardar(any())` y
-`verify(envioOutputPort, never()).enviar(any())`, no una excepción. Ver
-`notificaciones/.../EnviarNotificacionUseCaseTest.noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado`.
+**El presupuesto de I/O se asserta en el test de flujo exitoso del `UseCase`** (mismo Act, más
+asserts — no tests nuevos):
 
-**Una consulta con política de acceso** (sección 3 del plan) se prueba como un comando: el
-`Consultar{…}Validator` tiene su propio test con las `Rule`s reales, y el del `UseCase` fija el
-orden `inOrder(queryFinder, validator, queryOutputPort)` en el camino feliz y, en el de rechazo,
-`verify(queryOutputPort, never()).consultar(any())`. Ese `never()` es el test de la política: sin
-él, una implementación que lee y después valida pasa verde. Referencia:
-`ConsultarEvaluacionesCualitativasJuradoUseCaseImplTest.debeLanzarYNoConsultar_cuandoLaEvaluacionNoExiste`
-(copia la estructura, no el `InOrder orden` explícito: va `var`).
+- Un `verify(finder, times(1)).obtener(...)` por `Finder`; así el presupuesto de la pregunta 8c del
+  plan lo defiende el build.
+- Contra el N+1, siembra la colección con **al menos 3** elementos y verifica una sola llamada: con
+  uno no se distingue 1 de N.
+- Una cascada condicional se prueba por su camino corto: `verify(segundoFinder, never())`.
 
-**El test del `UseCase` es donde el presupuesto de I/O se vuelve observable, así que assértalo.**
-Cada `Finder` es un `@Mock`: el número de viajes a la BD está a la vista y no hace falta un perfilador
-para contarlo.
+Si en Arrange stubeas un `Finder` para alimentar la entrada de otro, eso es un `Finder` dependiente.
+Si el plan no lo justifica con una cascada legítima de `arquisoft-estandares` → *El `Finder`
+dependiente*, **repórtalo antes de escribir el test**: un `inOrder` sobre una cascada que debía
+colapsar la atornilla, y al corregir el `OutputPort` el test se pone rojo como si la mejora rompiera
+algo.
 
-- **Un `verify(finder, times(1)).obtener(...)` por `Finder`** en el camino feliz. Es lo que convierte
-  el presupuesto de la pregunta 8c del plan en algo que el build defiende. Son asserts **dentro del
-  test de flujo exitoso que ya escribes** — no tests nuevos, por la regla de consolidación: mismo
-  Act, otro Assert.
-- **Contra el N+1, siembra la colección con al menos 3 elementos** y verifica **una sola** llamada.
-  Con un elemento el test no distingue 1 de N y el defecto pasa verde.
-- **Una cascada condicional se prueba por su camino corto:** `verify(segundoFinder,
-  never()).obtener(any())` cuando el primero decidió que no hacía falta. Sin ese test, "es
-  condicional" es una afirmación del plan que nada sostiene — y era justo la razón por la que se
-  permitió la cascada.
+**Eventos — solo si el plan los declara:** `verify(eventPublisher, times(N)).publish(any())`. Con
+"Eventos: ninguno" no mockees `EventPublisher`: el use case no lo inyecta y el `@Mock` sobrante
+sugiere que el flujo publica. Si el evento va a `notificaciones`, captúralo con `ArgumentCaptor` y
+asegura que carga nombre, correo del destinatario y el dato legible del asunto: sin ellos compila,
+se publica y el correo sale vacío.
 
-Y la trampa a evitar: **no cimentes una cascada con el test.** Si ves en Arrange que estás stubeando
-un `Finder` para alimentar la entrada de otro (`when(idFichaPerfilPorItemFinder.obtener(item))
-.thenReturn(idFicha); when(fichaPerfilPorIdFinder.obtener(idFicha))...`), eso es el `Finder`
-dependiente del plan mirado desde el test. Si el plan no la justifica con alguna de las cascadas
-legítimas de `arquisoft-estandares` → *El `Finder` dependiente*, **repórtalo antes de escribir el
-test**, igual que una violación de capas — no lo arregles, que no tocas producción. Un
-`inOrder(finderA, finderB)` sobre una cascada que debía colapsar la deja atornillada: al corregir el
-`OutputPort` después, el test se pone rojo y parece que la mejora rompió algo.
+**Infrastructure.**
 
-**Cuando el use case devuelve una interfaz sellada**, cada test cubre una variante y lo asserta con
-`assertThat(resultado).isInstanceOf(X.Variante.class)` —o `isInstanceOfSatisfying` si además hay que
-mirar dentro—, no con un `instanceof` en un `if`. Y si un `Consumer` hace `switch` sobre ese
-resultado, su test **tiene que stubear el interactor**: devolver `null` por defecto hace que el
-`switch` reviente con `NullPointerException` y el fallo no se parece en nada a su causa. Usa
-`lenient().when(...)` en el `@BeforeEach` cuando algún test del archivo sustituya ese stub por un
-`doThrow`.
+- **`OutputAdapter`:** `@DataJpaTest` sembrando con `TestEntityManager`; confirma que lee con
+  `reconstruir(...)`. Un `QueryOutputAdapter` con `@Subselect` va con `@DataJpaTest` aunque solo
+  delegue. Si toca una réplica con `eliminado_en`, siembra también una fila dada de baja y verifica
+  que se excluya o salga con `vigente = false` (`EstudianteFichaPerfilQueryOutputAdapterTest`).
+- **`Controller`:** `@WebMvcTest` con el `@Import` y la autenticación de `arquisoft-estandares` →
+  *Testing*. Casos: 200/201 válido, 400 request inválido (`Command.crear` lanza
+  `ApplicationValidationException`), 401, 403 y 422 regla de dominio. En un contexto sin ancla
+  `{Contexto}InfrastructureTestApplication`, créala.
+- **`{Entidad}SortMapperTest`** (consulta con orden): la whitelist del `Criteria` y las claves de
+  `traducir(...)` no divergen.
+- **Consumidor AMQP:** las ramas de `AbstractEventConsumer`, sobre el consumidor concreto
+  (`arquisoft-arquitectura/references/eventos.md` → *El `nack` distingue fallo transitorio de
+  mensaje envenenado*):
 
-**Solo si el plan declara eventos:** `verify(eventPublisher, times(N)).publish(any())` sobre el mock
-de `EventPublisher` que inyecta el use case — es el único punto de observación, porque el domain
-no guarda eventos que se le puedan preguntar después. **Si el plan dice "Eventos: ninguno", no
-mockees `EventPublisher`**: el use case no lo inyecta, así que un `@Mock` de más rompe el test con
-`UnnecessaryStubbingException` y, peor, sugiere que el flujo publica algo.
+  | Caso | Arrange | Assert |
+  |---|---|---|
+  | Éxito | payload válido | `basicAck(tag, false)` |
+  | Transitorio, 1ª entrega | `doThrow(new QueryTimeoutException(...))`, `setRedelivered(false)` | `basicNack(tag, false, true)` |
+  | Transitorio reentregado | igual con `setRedelivered(true)` | `basicNack(tag, false, false)` |
+  | Envenenado | `doThrow(new IllegalArgumentException(...))` | `basicNack(tag, false, false)` |
 
-Cuando el evento va hacia `notificaciones`, captúralo con `ArgumentCaptor` en vez de `any()` y
-asegura que **carga los datos del destinatario** (nombre, correo) y el dato legible del asunto: un
-evento sin ellos compila y se publica, pero deja al consumidor sin con qué armar el correo. El
-consumidor se prueba aparte, como el adaptador que es — deserializa el payload y verifica la llamada
-al `Interactor` con el `TipoNotificacion` y los textos esperados (`AsesorFichaCambiadoConsumer` es
-la referencia).
-
-Si el comando devuelve un `{Concepto}Result`, el test del `UseCase` asserta sus campos — con eso
-queda cubierto el `{Concepto}ResultMapper`, que **sí cuenta para JaCoCo** (`*Result` y
-`*ResultMapper` no están en la lista de exclusiones, a diferencia de `*Command` y `*ReadModel`). No
-le escribas un test propio al mapper salvo que tenga lógica que el flujo del use case no ejercite.
-
-**Infrastructure — `OutputAdapter`/`Controller`:** `@DataJpaTest` con H2, sembrando con
-`TestEntityManager` (nunca con un `QueryRepository`, que no tiene `save`); confirma que el adapter
-usa `reconstruir(...)`, nunca `crear(...)`, al leer de BD. Un `QueryOutputAdapter` sobre una entidad
-con `@Subselect` va con `@DataJpaTest` aunque solo delegue: mockear el `QueryRepository` deja la
-vista sin ejecutar y no detecta un alias que no case con su `@Column`. Si la consulta toca una
-réplica con `eliminado_en`, siembra también una fila dada de baja y verifica que se excluya, o que
-aparezca con `vigente = false` en la vista de quien administra el vínculo
-(`EstudianteFichaPerfilQueryOutputAdapterTest`). Con solo datos vigentes, un filtro olvidado pasa el test.
-
-`@WebMvcTest` en `fichas` necesita `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class,
-TrazabilidadConfig.class, {Test}.TestSecurityConfig.class})` — sin `GlobalAppExceptionHandler` toda
-excepción del interactor mockeado escapa como 500 en vez del 400/422 real, y sin `AppLoggerConfig`
-no hay bean `AppLogger`. Mocks con `@MockitoBean` sobre el `Interactor` (Spring Boot 4.x — nunca
-`@MockBean`); autenticación con
-`SecurityMockMvcRequestPostProcessors.jwt().authorities(new SimpleGrantedAuthority(FichasAuthorities.X))`,
-usando la constante, nunca `@WithMockUser` (prefija `ROLE_` y no casa con `hasAuthority`). Casos:
-200/201 válido, 400 request inválido, 401 sin autenticar, 403 sin permiso, 422 regla de negocio.
-Copia la estructura de `RegistrarFichaPerfilControllerTest.java` (el `@Import`, los mocks y la
-autenticación), no su estilo: es anterior a la regla de `var` y declara tipos explícitos y
-`UUID.randomUUID()`. Un request inválido es 400 (`Command.crear` lanza
-`ApplicationValidationException`) y una regla de dominio es 422. El ancla
-`FichasInfrastructureTestApplication` ya existe en `fichas/infrastructure/src/test/` — no la
-dupliques; en un contexto que no la tenga, créala.
-
-**Catálogo de mensajes en tests:** el catálogo de prueba se instala solo (`InstaladorCatalogoPrueba`
-vía `ServiceLoader`), así que los mensajes resuelven su texto real y `CatalogoMensajesPrueba`
-**lanza** si la aridad declarada no coincide — un `formatear` mal llamado revienta el test, que es
-justo lo que se busca. Al comparar contra un código o un campo, importa la constante de
-`{Contexto}Codes`/`{Contexto}Fields`; no dupliques el literal. Excepción:
-`hasMessageContaining("fragmento genérico")` y valores de prueba que no son mensajes del sistema.
-
-**`{Entidad}SortMapperTest`** (si la HU es de consulta con orden): confirma que la whitelist del
-`Criteria` y las claves de `traducir(...)` no divergen — son dos declaraciones de "qué es
-ordenable".
-
-
-**Consumidor AMQP — las tres ramas del `nack`.** `AbstractEventConsumer` clasifica el fallo, así que
-un consumidor nuevo hereda tres comportamientos y los tres se prueban sobre él (no sobre la clase
-abstracta, que no tiene *source set* de tests):
-
-| Caso | Arrange | Assert |
-|---|---|---|
-| Éxito | payload válido | `verify(channel).basicAck(tag, false)` |
-| Transitorio, 1ª entrega | `doThrow(new QueryTimeoutException(...))`, `props.setRedelivered(false)` | `basicNack(tag, false, true)` |
-| Transitorio reentregado | igual con `setRedelivered(true)` | `basicNack(tag, false, false)` |
-| Envenenado | `doThrow(new IllegalArgumentException(...))` | `basicNack(tag, false, false)` |
-
-Si el consumidor hace `switch` sobre el resultado, stubea el interactor en el `@BeforeEach` (ver
-"Cuando el use case devuelve una interfaz sellada", arriba).
-
-**`{Evento}PayloadTest`** — obligatorio con cada payload nuevo. Usa `new RabbitMQConfig().rabbitObjectMapper()`,
-nunca un `ObjectMapper` propio, y cubre el viaje completo del evento y la lectura tolerante del campo
-ausente. La forma exacta está en la skill `arquisoft-estandares`.
-
-**`{Enum}{Evento|Persistencia}Test`** — con cada enum espejo de infraestructura: un test de deriva,
-no dos tests paralelos. Dos aserciones: cada código resuelve con `desde(...)`, y ambos enums declaran
-el **mismo conjunto** de constantes, recorriendo `values()`, para que agregar una constante de un solo
-lado rompa el build. No es un `@DataJpaTest`: comparar dos enums no necesita H2 ni contexto de
-Spring, así que va en su propio archivo y no dentro del test del adapter. Ver
-`TipoNotificacionEventoTest`.
-
-**Reintento desde base de datos** (caso de uso `@Scheduled`): tres casos — reenvío correcto (estado
-`ENVIADA`, `intentos` incrementado, `detalle_error` a `null`), agotamiento al alcanzar el máximo, y
-lista vacía (`verify(..., never())` sobre el puerto de envío y el de guardado).
+  Además verifica la llamada al `Interactor` con lo que el payload trae
+  (`AsesorFichaCambiadoConsumer`).
+- **`{Evento}PayloadTest`**, obligatorio con cada payload nuevo:
+  `arquisoft-estandares/references/eventos.md` → *Payload de evento*.
+- **`{Enum}{Evento|Persistencia}Test`**, con cada enum espejo: un test de deriva en archivo propio,
+  sin H2 (`arquisoft-estandares/references/enums-catalogo.md`, `TipoNotificacionEventoTest`).
+- **Reintento `@Scheduled` desde BD:** reenvío correcto (estado, `intentos`, `detalle_error`),
+  agotamiento al máximo, y lista vacía con `verify(..., never())`.
 
 ## Flujo de trabajo
 
-1. **Cargar plan y código.** Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa) y cada
-   archivo de producción implementado, incluidos los que la fila `Desarrollo` de la Trazabilidad
-   anota como tocados fuera del árbol: también cuentan para la cobertura. Extrae: contexto, tipo de
-   use case, eventos declarados, árbol de archivos.
-2. **Estimar y confirmar.** Presenta la distribución de tests por capa con la estimación total y
-   los anti-patrones que vas a evitar. Espera "sí"/"ajustar" antes de generar. Si supera 80, avisa
-   explícitamente del riesgo de sobre-testeo.
+1. **Cargar plan y código.** Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` y cada archivo de
+   producción implementado, incluidos los que la fila `Desarrollo` de la Trazabilidad anota como
+   tocados fuera del árbol: también cuentan para la cobertura.
+2. **Estimar y confirmar.** Presenta la distribución de tests por capa, el total y los anti-patrones
+   que vas a evitar. Espera "sí"/"ajustar". Si supera 80, avisa del riesgo de sobre-testeo.
 3. **Por cada capa** (domain → application → infrastructure): anuncia los archivos, genera, escribe
-   en `src/test/java/...` (nunca en `src/main/`), ejecuta `./gradlew :{contexto}:{capa}:test`,
-   reporta con el formato de abajo, espera aprobación explícita antes de avanzar.
-4. **Verificación final:**
+   en `src/test/java/...` (nunca en `src/main/`), revisa el estilo, ejecuta
+   `./gradlew :{contexto}:{capa}:test`, reporta con el formato de abajo y espera aprobación
+   explícita antes de avanzar.
+
+   **Toda variable local del test se declara con `var`**: Arrange, Act y capturas por igual, sea
+   `boolean`, `long`, `UUID`, `String`, un `ArgumentCaptor`, un `InOrder` o un agregado
+   (`var resultado = useCase.ejecutar(comando);`, `var orden = inOrder(finder, outputPort);`).
+   Solo se sale de `var` donde no compila o cambia la semántica (diamante sin tipar, array por
+   llaves, lambda o referencia a método, inicializador `null`); campos `@Mock`/`@InjectMocks` y
+   constantes de la clase van explícitos. Checkstyle no lo detecta, así que un test con tipos
+   explícitos pasa `check` y llega así al PR; el validator lo marca y obliga a otra vuelta. Los
+   tests anteriores del repo (p. ej. `RegistrarFichaPerfilControllerTest`) son previos a la regla:
+   copia su estructura, no sus declaraciones (ni sus `UUID.randomUUID()`: va
+   `UtilUUID.generarNuevoUUID()`).
+
+   Antes de ejecutar Gradle, busca declaraciones locales tipadas en los archivos que acabas de
+   escribir y conviértelas:
    ```
-   ./gradlew -p {contexto} check
+   grep -nE '^\s+(final\s+)?[A-Z][A-Za-z0-9_<>,? ]*(\[\])?\s+[a-z][A-Za-z0-9_]*\s*=' {archivos de test de la capa} | grep -v 'private\|static\|@'
+   grep -nE '^\s+(boolean|int|long|double|char|byte|short|float)\s+[a-z][A-Za-z0-9_]*\s*=' {archivos de test de la capa}
    ```
-   `check` es el gate real: arrastra `test`, `jacocoTestReport`, `checkstyleMain`/`checkstyleTest` y
-   `jacocoTestCoverageVerification` (mínimo 75%). `-p {contexto}` lo corre en `domain`,
-   `application` e `infrastructure`; la forma `:{contexto}:test` no sirve, porque solo ejecuta el
-   proyecto contenedor vacío y sale en verde sin correr un test. Si la historia tocó un `shared:*`,
-   añade `./gradlew :shared:{modulo}:check`. JaCoCo no se aplica a `shared:*`, y dentro de un contexto excluye
-   `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity` y
-   `JpaQueryEntity`) y `config/**`. **`*Domain` NO está excluido** — el domain cuenta para el
-   umbral, así que sus tests de `crear`/`reconstruir` son los que sostienen el porcentaje.
-   **Un `UP-TO-DATE` no es un verde.** Gradle omite la tarea si nada cambió desde la última
-   ejecución, así que un `BUILD SUCCESSFUL` con todas las tareas `UP-TO-DATE` no prueba que un
-   solo test haya corrido. Cuando la salida no muestre `> Task :{contexto}:{capa}:test` como
-   ejecutada, repite con `--rerun-tasks` antes de reportar.
+   Cada coincidencia que no sea una de las excepciones se corrige antes de correr los tests.
+4. **Verificación final:** `./gradlew -p {contexto} check` (más `./gradlew :shared:{modulo}:check`
+   si la historia tocó un `shared:*`). `check` es el gate: tests, checkstyle y cobertura ≥75%.
+   `:{contexto}:test` no sirve — ejecuta el proyecto contenedor vacío y sale en verde sin correr
+   nada. Antes de reportar:
+   - **Un `UP-TO-DATE` no es un verde.** Si la salida no muestra `> Task :{contexto}:{capa}:test`
+     ejecutada, repite con `--rerun-tasks`.
+   - **La cobertura del módulo esconde clases en cero.** Revisa el XML de JaCoCo por clase
+     (`build/reports/jacoco/test/jacocoTestReport.xml`, contador `INSTRUCTION`) y justifica toda
+     clase productiva por debajo del 80%.
+   - **Un assert sobre texto de catálogo no prueba lo que producción envía:** los tests leen el
+     `.properties` con `Properties.load` (escapes Java) y producción con `catalogo/cargar.sh`
+     (shell). Si el texto necesita algo más que `\n`, va literal en el `.properties`.
 
-   **La cobertura del módulo esconde clases en cero.** El umbral del 75% es un agregado: una clase
-   sin un solo test se diluye entre las demás y el gate pasa igual. Antes de reportar, revisa el
-   XML de JaCoCo por clase (`build/reports/jacoco/test/jacocoTestReport.xml`, contador
-   `INSTRUCTION` de cada `<class>`) y justifica toda clase productiva por debajo del 80%.
-
-   **Un test sobre el catálogo no prueba lo que producción envía.** Los tests leen
-   `catalogo/*.properties` con `Properties.load`, que interpreta los escapes de Java; en producción
-   lo lee `catalogo/cargar.sh`, que es shell. Un assert sobre el texto renderizado pasa con el
-   salto de línea real mientras el correo sale con la barra invertida literal. La compuerta de esa
-   clase de desvio es `CatalogoCargaTest`, no un assert del contexto: si el texto necesita algo más
-   que `\n`, ponlo literal en el `.properties`.
-
-   Reportar verde habiendo corrido solo `test` es un error — un import sin usar o cobertura <75%
-   rompen el build igual. Si falla: agrega tests significativos sobre las ramas no cubiertas (mira
-   el reporte HTML de JaCoCo) o limpia checkstyle — nunca bajes el umbral ni infles con tests
-   triviales.
+   Si falla, agrega tests significativos sobre las ramas no cubiertas o limpia checkstyle — nunca
+   bajes el umbral ni infles con tests triviales.
 5. **Actualiza la trazabilidad:** fila `Tests` en `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`
    (`✅ Completado`, fecha, "Cobertura: XX% — CUMPLE/POR DEBAJO del 75%"). No toques otras filas.
 6. **Sugiere el siguiente paso:** `@4a-validator-analyze valida la implementacion de {HU|HT}-{ID}`.
@@ -339,12 +236,9 @@ antes de tocar cualquier archivo de producción). Nunca decidas por tu cuenta cu
 6. `@MockitoBean`, nunca `@MockBean` (Spring Boot 4.x).
 7. Tests de domain/application aislados de frameworks externos — si no lo están, reporta violación
    de capas antes de escribir el test.
-8. Nunca generes los 8 anti-patrones de la tabla; consolida asserts complementarios.
+8. Nunca generes los 7 anti-patrones de la tabla; consolida asserts complementarios.
 9. Confirmación previa obligatoria antes del primer test — con estimación y distribución.
 10. Sin Javadoc en tests.
-11. `var` en toda variable local del test — Arrange, Act y capturas por igual, sea `boolean`, `long`,
-    `UUID`, `String` o un agregado (`var resultado = useCase.ejecutar(comando);`,
-    `var idFicha = UtilUUID.generarNuevoUUID();`). Solo se exceptúa donde `var` no compila o cambia
-    la semántica (diamante sin tipar, array por llaves, lambda o referencia a método, inicializador
-    `null`); los campos `@Mock`/`@InjectMocks` y las constantes de la clase van explícitos.
+11. `var` en toda variable local del test, revisado con `grep` antes de cada ejecución (paso 3 del
+    flujo).
 12. Al finalizar, actualiza la fila `Tests` y sugiere `@4a-validator-analyze` con el comando exacto.
