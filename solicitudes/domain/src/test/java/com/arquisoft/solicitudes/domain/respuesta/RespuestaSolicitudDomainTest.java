@@ -16,12 +16,12 @@ class RespuestaSolicitudDomainTest {
     @Test
     void debeCrearLaAccion_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID responsable = UUID.randomUUID();
-        RespuestaDomain respuesta = RespuestaDomain.crear(solicitud, "contenido");
+        var solicitud = UUID.randomUUID();
+        var responsable = UUID.randomUUID();
+        var respuesta = RespuestaDomain.crear(solicitud, "contenido");
 
         // Act
-        RespuestaSolicitudDomain accion = RespuestaSolicitudDomain.crear(
+        var accion = RespuestaSolicitudDomain.crear(
                 respuesta, responsable, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 
         // Assert
@@ -34,7 +34,7 @@ class RespuestaSolicitudDomainTest {
     @Test
     void debeAcumularErrores_cuandoRespuestaResponsableYTipoSonNulos() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> RespuestaSolicitudDomain.crear(null, null, null));
 
         // Assert
@@ -48,10 +48,10 @@ class RespuestaSolicitudDomainTest {
     @Test
     void debeReportarElTipoConSuPropioCodigo_cuandoElTipoEsperadoEsNulo() {
         // Arrange
-        RespuestaDomain respuesta = RespuestaDomain.crear(UUID.randomUUID(), "contenido");
+        var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "contenido");
 
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> RespuestaSolicitudDomain.crear(respuesta, UUID.randomUUID(), null));
 
         // Assert

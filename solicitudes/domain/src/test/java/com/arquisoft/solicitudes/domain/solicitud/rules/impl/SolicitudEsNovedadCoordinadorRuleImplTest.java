@@ -27,7 +27,7 @@ class SolicitudEsNovedadCoordinadorRuleImplTest {
     @Test
     void debeLanzarSolicitudTipoNoCoincide_cuandoElTipoActualDifiere() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new TipoSolicitudConcordante(

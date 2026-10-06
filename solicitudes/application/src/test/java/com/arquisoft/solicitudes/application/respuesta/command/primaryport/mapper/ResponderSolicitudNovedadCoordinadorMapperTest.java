@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ResponderSolicitudNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.domain.respuesta.RespuestaSolicitudDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
@@ -14,12 +13,12 @@ class ResponderSolicitudNovedadCoordinadorMapperTest {
     @Test
     void debeMapearLosTresCampos_cuandoConvierteElComando() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
         var command = new ResponderSolicitudNovedadCoordinadorCommand(solicitud, "contenido", coordinador);
 
         // Act
-        RespuestaSolicitudDomain accion =
+        var accion =
                 ResponderSolicitudNovedadCoordinadorMapper.toDomain(command);
 
         // Assert

@@ -17,10 +17,10 @@ class SolicitudEnviadaEventTest {
     @Test
     void debeAsignarTodosLosCampos_cuandoSeConstruye() {
         // Arrange
-        UUID solicitudId = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
 
         // Act
-        SolicitudEnviadaEvent evento = new SolicitudEnviadaEvent(
+        var evento = new SolicitudEnviadaEvent(
                 TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, solicitudId, "Ana Estudiante", "Pedro Asesor",
                 "pedro@uco.edu.co", "novedad para el asesor");
 
@@ -48,7 +48,7 @@ class SolicitudEnviadaEventTest {
     void debeExponerElTemaYElTipoDeEventoDelTipoDeSolicitud(
             TipoSolicitud tipo, String temaEsperado, String tipoEventoEsperado) {
         // Act
-        SolicitudEnviadaEvent evento = new SolicitudEnviadaEvent(
+        var evento = new SolicitudEnviadaEvent(
                 tipo, UUID.randomUUID(), "Ana Estudiante", "Pedro Asesor", "pedro@uco.edu.co", "mensaje");
 
         // Assert

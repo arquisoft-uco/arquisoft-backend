@@ -14,11 +14,11 @@ class EnviarSolicitudNovedadCoordinadorCommandTest {
     @Test
     void debeCrearElComando_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
 
         // Act
-        EnviarSolicitudNovedadCoordinadorCommand command =
+        var command =
                 EnviarSolicitudNovedadCoordinadorCommand.crear(
                         remitente, destinatario.toString(), "  Hola coordinador  ");
 
@@ -31,7 +31,7 @@ class EnviarSolicitudNovedadCoordinadorCommandTest {
     @Test
     void debeAcumularLosErroresDeFormato_cuandoLosDatosSonInvalidos() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EnviarSolicitudNovedadCoordinadorCommand.crear(
                         null, "tampoco-es-uuid", "a".repeat(101)));
 

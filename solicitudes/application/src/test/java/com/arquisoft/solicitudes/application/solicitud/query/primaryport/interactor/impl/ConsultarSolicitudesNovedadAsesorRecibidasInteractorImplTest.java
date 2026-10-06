@@ -45,7 +45,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasInteractorImplTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
         var query = ConsultarSolicitudesNovedadAsesorRecibidasQuery.crear(asesor, criterio);
 
-        PaginatedResult<SolicitudReadModel> esperado = PaginatedResult.of(List.of(), 0, 10, 0L);
+        var esperado = PaginatedResult.of(List.<SolicitudReadModel>of(), 0, 10, 0L);
         when(useCase.ejecutar(any(SolicitudCriteria.class))).thenReturn(esperado);
 
         // Act

@@ -120,7 +120,6 @@ public final class SolicitudesApiMessages {
                 "Criterio de filtro, orden o paginación inválido";
         public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de novedad para el asesor recibidas";
-
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_SUMMARY =
                 "Consultar solicitudes de novedad para el coordinador enviadas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_DESCRIPTION =
@@ -133,7 +132,6 @@ public final class SolicitudesApiMessages {
                 "Criterio de filtro, orden o paginación inválido";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de novedad para el coordinador enviadas";
-
         public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_SUMMARY =
                 "Consultar solicitudes de novedad para el asesor enviadas";
         public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_DESCRIPTION =

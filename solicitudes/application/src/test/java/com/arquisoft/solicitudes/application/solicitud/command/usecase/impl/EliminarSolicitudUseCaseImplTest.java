@@ -13,7 +13,6 @@ import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -163,7 +162,7 @@ class EliminarSolicitudUseCaseImplTest {
         useCase.ejecutar(entrada);
 
         // Assert
-        InOrder inOrder = inOrder(datosSolicitudFinder, solicitudTieneRespuestasFinder,
+        var inOrder = inOrder(datosSolicitudFinder, solicitudTieneRespuestasFinder,
                 validator, solicitudOutputPort);
         inOrder.verify(datosSolicitudFinder).obtener(solicitud);
         inOrder.verify(solicitudTieneRespuestasFinder).obtener(solicitud);

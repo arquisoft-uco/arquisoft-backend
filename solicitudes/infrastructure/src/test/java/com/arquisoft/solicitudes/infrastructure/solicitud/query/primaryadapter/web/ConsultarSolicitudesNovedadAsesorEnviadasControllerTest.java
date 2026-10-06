@@ -96,7 +96,7 @@ class ConsultarSolicitudesNovedadAsesorEnviadasControllerTest {
     void debeSerializarSolicitudResponseDTOConRemitenteEmbebido_yTomarElEstudianteDelJwt()
             throws Exception {
         // Arrange
-        UUID estudiante = UUID.randomUUID();
+        var estudiante = UUID.randomUUID();
         var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana Estudiante",
                 "ana@uco.edu.co");
         var destinatario = new DestinatarioReadModel(UUID.randomUUID(), "ASE-1", "Asesor Uno",
@@ -117,7 +117,9 @@ class ConsultarSolicitudesNovedadAsesorEnviadasControllerTest {
                 .andExpect(jsonPath("$.content[0].mensajeSolicitud").value("una novedad"))
                 .andExpect(jsonPath("$.content[0].tipoSolicitudNombre").value("Novedad para el Asesor"))
                 .andExpect(jsonPath("$.content[0].remitente.nombre").value("Ana Estudiante"))
-                .andExpect(jsonPath("$.content[0].remitente.email").value("ana@uco.edu.co"));
+                .andExpect(jsonPath("$.content[0].remitente.email").value("ana@uco.edu.co"))
+                .andExpect(jsonPath("$.content[0].destinatario.nombre").value("Asesor Uno"))
+                .andExpect(jsonPath("$.content[0].destinatario.email").value("asesor1@uco.edu.co"));
 
         // Assert
         var captor = ArgumentCaptor.forClass(ConsultarSolicitudesNovedadAsesorEnviadasQuery.class);
@@ -132,7 +134,7 @@ class ConsultarSolicitudesNovedadAsesorEnviadasControllerTest {
                 .thenThrow(new FiltroException("campo de filtro no permitido: mensajeSolicitud",
                         "app.consulta.campo-filtro-no-permitido"));
 
-        String body = """
+        var body = """
                 {
                   "filtros": {
                     "tipo": "PREDICADO",

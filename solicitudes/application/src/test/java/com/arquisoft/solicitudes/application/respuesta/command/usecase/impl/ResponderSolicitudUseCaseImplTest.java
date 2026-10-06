@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -90,12 +89,12 @@ class ResponderSolicitudUseCaseImplTest {
         stubFlujoValido();
 
         // Act
-        UUID id = useCase.ejecutar(entrada);
+        var id = useCase.ejecutar(entrada);
 
         // Assert
-        ArgumentCaptor<RespuestaEntity> entityCaptor = ArgumentCaptor.forClass(RespuestaEntity.class);
+        var entityCaptor = ArgumentCaptor.forClass(RespuestaEntity.class);
         verify(respuestaOutputPort).registrar(entityCaptor.capture());
-        RespuestaEntity persistida = entityCaptor.getValue();
+        var persistida = entityCaptor.getValue();
         assertThat(persistida.solicitud()).isEqualTo(solicitud);
         assertThat(persistida.estadoRespuesta()).isEqualTo(EstadoRespuesta.EN_REVISION.getId());
         assertThat(persistida.contenido()).isEqualTo("No puedo asistir");
@@ -186,7 +185,7 @@ class ResponderSolicitudUseCaseImplTest {
         useCase.ejecutar(entrada);
 
         // Assert
-        InOrder inOrder = inOrder(datosSolicitudFinder, solicitudTieneRespuestasFinder,
+        var inOrder = inOrder(datosSolicitudFinder, solicitudTieneRespuestasFinder,
                 datosUsuarioFinder, validator, respuestaOutputPort, eventPublisher);
         inOrder.verify(datosSolicitudFinder).obtener(solicitud);
         inOrder.verify(solicitudTieneRespuestasFinder).obtener(solicitud);

@@ -28,7 +28,7 @@ class DatosUsuarioFinderImplTest {
     @Test
     void debeMapearLaReplicaADominio_cuandoElPuertoLaTiene() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
         when(usuarioOutputPort.buscarPorId(usuario))
                 .thenReturn(Optional.of(new UsuarioEntity(usuario, "EST-1", "Ana", "ana@uco.edu.co", Instant.now())));
 
@@ -44,7 +44,7 @@ class DatosUsuarioFinderImplTest {
     @Test
     void debeRetornarVacio_cuandoElPuertoNoTieneLaReplica() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
         when(usuarioOutputPort.buscarPorId(usuario)).thenReturn(Optional.empty());
 
         // Act & Assert

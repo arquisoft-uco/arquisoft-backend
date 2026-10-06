@@ -79,9 +79,9 @@ class EnviarSolicitudCambioAsesorControllerTest {
     @Test
     void debe201YTomarElRemitenteDelJwt_cuandoLaPeticionEsValida() throws Exception {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
-        UUID solicitudId = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         when(interactor.ejecutar(any())).thenReturn(solicitudId);
 
         // Act & Assert
@@ -92,7 +92,7 @@ class EnviarSolicitudCambioAsesorControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(solicitudId.toString()));
 
-        ArgumentCaptor<EnviarSolicitudCambioAsesorCommand> captor =
+        var captor =
                 ArgumentCaptor.forClass(EnviarSolicitudCambioAsesorCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().remitenteUsuario()).isEqualTo(remitente);
