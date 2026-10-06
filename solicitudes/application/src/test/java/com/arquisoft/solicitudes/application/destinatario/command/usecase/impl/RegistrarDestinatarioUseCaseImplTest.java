@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -111,7 +110,7 @@ class RegistrarDestinatarioUseCaseImplTest {
         useCase.ejecutar(destinatario);
 
         // Assert
-        InOrder inOrder = inOrder(usuarioPorIdFinder, validator, destinatarioDeUsuarioFinder, destinatarioOutputPort);
+        var inOrder = inOrder(usuarioPorIdFinder, validator, destinatarioDeUsuarioFinder, destinatarioOutputPort);
         inOrder.verify(usuarioPorIdFinder).obtener(destinatario.getUsuario());
         inOrder.verify(validator).validar(any(), any());
         inOrder.verify(destinatarioDeUsuarioFinder).obtener(destinatario.getUsuario());

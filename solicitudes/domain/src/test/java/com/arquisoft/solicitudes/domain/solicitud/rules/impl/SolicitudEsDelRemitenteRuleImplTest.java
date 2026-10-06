@@ -16,7 +16,7 @@ class SolicitudEsDelRemitenteRuleImplTest {
     @Test
     void debeNoLanzar_cuandoElRemitenteEsElSolicitante() {
         // Arrange
-        UUID solicitante = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
 
         // Act & Assert
         assertThatCode(() -> regla.validar(
@@ -27,7 +27,7 @@ class SolicitudEsDelRemitenteRuleImplTest {
     @Test
     void debeLanzarSolicitudNoPropia_cuandoElRemitenteDifiereDelSolicitante() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(

@@ -1,0 +1,40 @@
+package com.arquisoft.solicitudes.application.solicitud.query.primaryport.model;
+
+import com.arquisoft.shared.query.ConsultaCriteriaQuery;
+import com.arquisoft.shared.validation.ApplicationValidationException;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class ConsultarSolicitudesNovedadAsesorEnviadasQueryTest {
+
+    @Test
+    void debeCrearQuery_cuandoEstudianteUsuarioValido() {
+        // Arrange
+        var estudianteUsuario = UUID.randomUUID();
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
+
+        // Act
+        var query = ConsultarSolicitudesNovedadAsesorEnviadasQuery.crear(
+                estudianteUsuario, criterio);
+
+        // Assert
+        assertThat(query.estudianteUsuario()).isEqualTo(estudianteUsuario);
+        assertThat(query.criterio()).isSameAs(criterio);
+    }
+
+    @Test
+    void debeLanzarApplicationValidationException_cuandoEstudianteUsuarioEsNulo() {
+        // Arrange
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
+
+        // Act & Assert
+        assertThatThrownBy(() -> ConsultarSolicitudesNovedadAsesorEnviadasQuery.crear(
+                null, criterio))
+                .isInstanceOf(ApplicationValidationException.class);
+    }
+}

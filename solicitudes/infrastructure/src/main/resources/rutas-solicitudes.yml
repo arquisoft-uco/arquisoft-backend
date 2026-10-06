@@ -13,6 +13,7 @@ rutas:
       novedad-coordinador-enviadas: /novedad-coordinador/enviadas
       novedad-asesor: /novedad-asesor
       novedad-asesor-recibidas: /novedad-asesor/recibidas
+      novedad-asesor-enviadas: /novedad-asesor/enviadas
       novedad-asesor-por-id: /novedad-asesor/{solicitudId}
       cambio-asesor: /cambio-asesor
       ampliacion-plazo: /ampliacion-plazo

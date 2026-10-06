@@ -11,7 +11,6 @@ import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
-import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.query.pagination.SortDirection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -121,12 +120,12 @@ class SolicitudQueryOutputAdapterTest {
         sincronizar();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(
+        var resultado = adapter.consultar(
                 porDestinatario(coord.getUsuarioId()));
 
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
-        SolicitudReadModel leida = resultado.getContent().get(0);
+        var leida = resultado.getContent().get(0);
         assertThat(leida.mensajeSolicitud()).isEqualTo("novedad de Ana");
         assertThat(leida.tipoSolicitudId()).isEqualTo(TIPO_NOVEDAD);
         assertThat(leida.tipoSolicitudNombre()).isEqualTo("Novedad para el Coordinador");
@@ -151,7 +150,7 @@ class SolicitudQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es cambio");
         sincronizar();
 
-        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
                                 coord.getUsuarioId().toString()),
@@ -159,7 +158,7 @@ class SolicitudQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -179,7 +178,7 @@ class SolicitudQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "de Luis");
         sincronizar();
 
-        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
                                 coord.getUsuarioId().toString()),
@@ -187,7 +186,7 @@ class SolicitudQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -207,14 +206,14 @@ class SolicitudQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "nueva");
         sincronizar();
 
-        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
                         coord.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("fechaCreacion", SortDirection.DESC)))
                 .build();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -233,14 +232,14 @@ class SolicitudQueryOutputAdapterTest {
         }
         sincronizar();
 
-        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(1).tamanio(2)
+        var criteria = SolicitudCriteria.builder().pagina(1).tamanio(2)
                 .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
                         coord.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("fechaCreacion", SortDirection.ASC)))
                 .build();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
@@ -252,7 +251,7 @@ class SolicitudQueryOutputAdapterTest {
     @Test
     void debeRetornarVacio_cuandoNoHaySolicitudesParaElActor() {
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(
+        var resultado = adapter.consultar(
                 porDestinatario(UUID.randomUUID()));
 
         // Assert
@@ -272,14 +271,14 @@ class SolicitudQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "a");
         sincronizar();
 
-        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
                         coord.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("remitenteNombre", SortDirection.ASC)))
                 .build();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -302,13 +301,13 @@ class SolicitudQueryOutputAdapterTest {
         sincronizar();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(porRemitente(ana.getUsuarioId()));
+        var resultado = adapter.consultar(porRemitente(ana.getUsuarioId()));
 
         // Assert
         assertThat(resultado.getContent())
                 .extracting(SolicitudReadModel::mensajeSolicitud)
                 .containsExactly("de Ana");
-        SolicitudReadModel leida = resultado.getContent().get(0);
+        var leida = resultado.getContent().get(0);
         assertThat(leida.remitente().usuarioId()).isEqualTo(ana.getUsuarioId());
         assertThat(leida.destinatario().usuarioId()).isEqualTo(coord.getUsuarioId());
         assertThat(leida.destinatario().identificador()).isEqualTo("COORD-1");
@@ -327,7 +326,7 @@ class SolicitudQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es cambio");
         sincronizar();
 
-        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
@@ -335,7 +334,7 @@ class SolicitudQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -355,7 +354,7 @@ class SolicitudQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "para Perez");
         sincronizar();
 
-        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
@@ -363,7 +362,7 @@ class SolicitudQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -383,14 +382,14 @@ class SolicitudQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "a");
         sincronizar();
 
-        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                         ana.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("destinatarioNombre", SortDirection.ASC)))
                 .build();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())

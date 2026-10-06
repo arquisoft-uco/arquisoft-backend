@@ -44,8 +44,8 @@ class RespuestaCommandOutputAdapterTest {
     @Test
     void debeInsertarLaFilaEnRevision_cuandoRegistra() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID solicitudId = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
 
         // Act
         adapter.registrar(new RespuestaEntity(id, solicitudId, FECHA, "una respuesta", ESTADO));
@@ -53,7 +53,7 @@ class RespuestaCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        RespuestaJpaEntity guardada = entityManager.find(RespuestaJpaEntity.class, id);
+        var guardada = entityManager.find(RespuestaJpaEntity.class, id);
         assertThat(guardada).isNotNull();
         assertThat(guardada.getSolicitudId()).isEqualTo(solicitudId);
         assertThat(guardada.getContenido()).isEqualTo("una respuesta");
@@ -63,7 +63,7 @@ class RespuestaCommandOutputAdapterTest {
     @Test
     void debeRetornarTrue_cuandoLaSolicitudYaTieneRespuesta() {
         // Arrange
-        UUID solicitudId = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         adapter.registrar(new RespuestaEntity(UUID.randomUUID(), solicitudId, FECHA, "r", ESTADO));
         entityManager.flush();
         entityManager.clear();

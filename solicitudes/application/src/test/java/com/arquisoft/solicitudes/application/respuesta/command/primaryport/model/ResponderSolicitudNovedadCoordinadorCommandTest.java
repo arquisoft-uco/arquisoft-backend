@@ -20,11 +20,11 @@ class ResponderSolicitudNovedadCoordinadorCommandTest {
     @Test
     void debeCrearElComando_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         // Act
-        ResponderSolicitudNovedadCoordinadorCommand command =
+        var command =
                 ResponderSolicitudNovedadCoordinadorCommand.crear(
                         solicitud.toString(), "Contenido valido", coordinador);
 
@@ -50,7 +50,7 @@ class ResponderSolicitudNovedadCoordinadorCommandTest {
     @Test
     void debeLanzarErrorDeEntrada_cuandoElContenidoEstaEnBlanco() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> ResponderSolicitudNovedadCoordinadorCommand.crear(
                         UUID.randomUUID().toString(), "   ", UUID.randomUUID()));
 
@@ -62,7 +62,7 @@ class ResponderSolicitudNovedadCoordinadorCommandTest {
     @Test
     void debeLanzarErrorDeEntrada_cuandoElContenidoExcede100Caracteres() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> ResponderSolicitudNovedadCoordinadorCommand.crear(
                         UUID.randomUUID().toString(), "x".repeat(101), UUID.randomUUID()));
 
@@ -74,7 +74,7 @@ class ResponderSolicitudNovedadCoordinadorCommandTest {
     @Test
     void debeAcumularLosErrores_cuandoElIdDeSolicitudNoEsUuidYElCoordinadorEsNulo() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> ResponderSolicitudNovedadCoordinadorCommand.crear(
                         "no-es-uuid", "contenido", null));
 

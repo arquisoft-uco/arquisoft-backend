@@ -81,9 +81,9 @@ class ResponderSolicitudNovedadCoordinadorControllerTest {
     @Test
     void debe201YTomarElCoordinadorDelJwt_cuandoLaPeticionEsValida() throws Exception {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
-        UUID respuestaId = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
+        var respuestaId = UUID.randomUUID();
         when(interactor.ejecutar(any())).thenReturn(respuestaId);
 
         // Act & Assert
@@ -94,7 +94,7 @@ class ResponderSolicitudNovedadCoordinadorControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(respuestaId.toString()));
 
-        ArgumentCaptor<ResponderSolicitudNovedadCoordinadorCommand> captor =
+        var captor =
                 ArgumentCaptor.forClass(ResponderSolicitudNovedadCoordinadorCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().solicitud()).isEqualTo(solicitud);

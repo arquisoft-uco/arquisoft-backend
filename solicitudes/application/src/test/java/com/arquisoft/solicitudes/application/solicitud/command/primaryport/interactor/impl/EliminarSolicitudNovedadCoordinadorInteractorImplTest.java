@@ -27,8 +27,8 @@ class EliminarSolicitudNovedadCoordinadorInteractorImplTest {
     @Test
     void debeMapearElComandoAObjetoDeAccionYDelegarEnElUseCase() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID remitente = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
         var command = EliminarSolicitudNovedadCoordinadorCommand.crear(
                 solicitud.toString(), remitente);
 
@@ -36,7 +36,7 @@ class EliminarSolicitudNovedadCoordinadorInteractorImplTest {
         interactor.ejecutar(command);
 
         // Assert
-        ArgumentCaptor<EliminacionSolicitudDomain> captor =
+        var captor =
                 ArgumentCaptor.forClass(EliminacionSolicitudDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);

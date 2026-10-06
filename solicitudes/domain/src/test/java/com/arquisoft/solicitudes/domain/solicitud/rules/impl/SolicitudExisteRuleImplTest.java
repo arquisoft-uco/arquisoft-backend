@@ -23,7 +23,7 @@ class SolicitudExisteRuleImplTest {
     @Test
     void debeLanzarSolicitudNoEncontrada_cuandoLaSolicitudNoExiste() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new ExistenciaSolicitud(solicitud, false)))
