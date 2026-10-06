@@ -57,4 +57,11 @@ public final class SolicitudesFields {
         public static final String EMAIL = "email";
         public static final String OCURRIDO_EN = "ocurridoEn";
     }
+
+    public static final class TipoSolicitud {
+
+        private TipoSolicitud() {}
+
+        public static final String TIPOS = "tipos";
+    }
 }

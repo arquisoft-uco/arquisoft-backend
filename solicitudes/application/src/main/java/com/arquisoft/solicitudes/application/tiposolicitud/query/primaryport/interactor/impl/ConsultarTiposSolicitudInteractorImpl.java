@@ -1,6 +1,8 @@
 package com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.impl;
 
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.ConsultarTiposSolicitudInteractor;
+import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.mapper.ConsultarTiposSolicitudMapper;
+import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.model.ConsultarTiposSolicitudQuery;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.usecase.ConsultarTiposSolicitudUseCase;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,7 @@ public class ConsultarTiposSolicitudInteractorImpl implements ConsultarTiposSoli
 
     @Override
     @Transactional(readOnly = true, transactionManager = "solicitudesTransactionManager")
-    public List<TipoSolicitudReadModel> ejecutar() {
-        return consultarTiposSolicitudUseCase.ejecutar();
+    public List<TipoSolicitudReadModel> ejecutar(ConsultarTiposSolicitudQuery entrada) {
+        return consultarTiposSolicitudUseCase.ejecutar(ConsultarTiposSolicitudMapper.toCriteria(entrada));
     }
 }

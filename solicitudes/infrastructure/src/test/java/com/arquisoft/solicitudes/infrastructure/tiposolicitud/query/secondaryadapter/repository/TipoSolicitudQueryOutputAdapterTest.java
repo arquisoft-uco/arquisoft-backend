@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -27,20 +29,35 @@ class TipoSolicitudQueryOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarLosTiposDelCatalogo_cuandoExistenEnBD() {
+    void debeRetornarSoloLosIdsPedidos_cuandoExistenMasTiposEnBD() {
         // Arrange
         persistirTipo("NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
                 "Solicitud para temas que surgen de improvisto y que no están tipados");
         persistirTipo("CAMBIO_DE_ASESOR", "Cambio de Asesor", "Solicitud para modificar el asesor");
+        persistirTipo("AMPLIACION_DE_PLAZO", "Ampliación de Plazo",
+                "Solicitud para extender la fecha de entrega del proyecto");
         entityManager.flush();
 
         // Act
-        var resultado = adapter.findAll();
+        var resultado = adapter.consultarPorIds(Set.of("NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR"));
 
         // Assert
         assertThat(resultado)
                 .extracting(TipoSolicitudReadModel::id)
                 .containsExactlyInAnyOrder("NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR");
+    }
+
+    @Test
+    void debeIgnorarIdsInexistentes_cuandoSePidenIdsQueNoEstanEnBD() {
+        // Arrange
+        persistirTipo("CAMBIO_DE_ASESOR", "Cambio de Asesor", "Solicitud para modificar el asesor");
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarPorIds(Set.of("CAMBIO_DE_ASESOR", "NO_EXISTE"));
+
+        // Assert
+        assertThat(resultado).extracting(TipoSolicitudReadModel::id).containsExactly("CAMBIO_DE_ASESOR");
     }
 
     @Test
@@ -51,7 +68,7 @@ class TipoSolicitudQueryOutputAdapterTest {
         entityManager.flush();
 
         // Act
-        var resultado = adapter.findAll();
+        var resultado = adapter.consultarPorIds(Set.of("AMPLIACION_DE_PLAZO"));
 
         // Assert
         assertThat(resultado).singleElement().satisfies(tipo -> {
@@ -62,9 +79,9 @@ class TipoSolicitudQueryOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarVacio_cuandoNoHayTiposEnBD() {
+    void debeRetornarVacio_cuandoNingunIdCoincide() {
         // Act & Assert
-        assertThat(adapter.findAll()).isEmpty();
+        assertThat(adapter.consultarPorIds(Set.of("CAMBIO_DE_ASESOR"))).isEmpty();
     }
 
     private void persistirTipo(String id, String nombre, String descripcion) {
