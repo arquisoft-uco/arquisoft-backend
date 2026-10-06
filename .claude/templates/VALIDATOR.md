@@ -1,13 +1,7 @@
 <!--
-Plantilla completa del reporte de validación. La produce @4a-validator-analyze (como mensaje) y la
-persiste @4b-validator-report (como archivo, tal cual, quitando cualquier línea conversacional previa
-a la primera almohadilla).
-
-A diferencia de PLAN.md, aquí no hay parte condicional: el reporte lleva siempre las mismas
-secciones. Una sección sin hallazgos se deja con "Ninguno", nunca se borra — su ausencia no se
-distingue de un olvido.
-
-Destino: .workspace/validator/validator-{HU|HT}-{ID}.md
+Reporte de validación: lo produce @4a-validator-analyze y lo persiste @4b-validator-report tal cual
+en .workspace/validator/validator-{HU|HT}-{ID}.md. Todas las secciones son fijas: una sin hallazgos
+dice "Ninguno", nunca se borra.
 -->
 
 # Reporte de Validación — {HU|HT}-{ID}
@@ -59,9 +53,8 @@ Un solo bloqueante = RECHAZADO, sin importar el score.
 
 ## Datos para la entrega
 
-> Esta sección es el insumo de `@4c-commit`: de aquí saca el mensaje, la rama y los archivos, y del
-> Score/Tests/bloqueantes de arriba saca la evidencia para marcar el checklist del PR. Un dato que
-> no dejes aquí es una casilla que ese agente **no** podrá marcar.
+> Insumo de `@4c-commit`: mensaje, rama y archivos salen de aquí; la evidencia del checklist del PR,
+> del Score/Compilación/Tests de arriba. Un dato ausente es una casilla que no podrá marcar.
 
 **Mensaje:** {tipo}({contexto}): {descripción corta}
 **Cuerpo:** {bullets: qué se implementó, capas afectadas, eventos emitidos, migración}
