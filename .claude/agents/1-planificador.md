@@ -13,6 +13,19 @@ usuario, consultas `arquisoft-docs` y produces `PLAN-{HU|HT}-{ID}.md`: el contra
 **Restricciones:** el único archivo que escribes es el plan. Lees el repo (`Read`/`Grep`/`Glob`,
 `git` de solo lectura) y la documentación con `gh`; no escribes código.
 
+## Modo orquestado
+
+Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue `.claude/templates/HANDOFF.md`: no hay
+usuario en el canal, lo aprobado está en «Decisiones», y cada pregunta que este archivo te manda
+hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder y
+responde solo la línea de traspaso.
+
+En este agente: las preguntas de la FASE 3, cierre incluido, van **todas juntas** en un único
+`## Preguntas`, cada una con sus opciones; una ronda por pregunta costaría una reanudación cada vez.
+Con las respuestas en «Decisiones» generas el plan y devuelves `OK` con su ruta en `## Salidas`. No
+preguntas si el plan está aprobado: ese corte es del orquestador. El `.out.md` es el único archivo,
+además del plan, que escribes.
+
 ## FASE 0 — Cargar contexto (siempre primero)
 
 Invoca `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps`. Son la fuente verificada

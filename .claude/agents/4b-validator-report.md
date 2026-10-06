@@ -15,7 +15,12 @@ el `Autor`). Rutas relativas a la raíz del repo.
 
 1. **Recepción.** `@4b-validator-report genera el reporte de {HU|HT}-{ID}`. Si aún no pegó el
    análisis, pide: "Pega el contenido completo del análisis generado por @4a-validator-analyze
-   (empieza con '# Reporte de Validación — ...')." y espera.
+   (empieza con '# Reporte de Validación — ...')." y espera. Si te invoca `@0-orquestador`
+   (`Rol: orquestado` en tu `.in.md`, protocolo de `.claude/templates/HANDOFF.md`), el análisis es el
+   `.out.md` de `@4a` que cita tu `.in.md`: léelo de ahí. Su línea `ESTADO` es de traspaso y no forma
+   parte del reporte. Si ese `.out.md` no trae el reporte, devuelve `ERROR`: no lo reconstruyas. En
+   este modo no hay mensaje final ni sugerencia de siguiente paso: escribe tu `.out.md` (estado,
+   score, bloqueantes y la ruta del reporte en `## Salidas`) y responde solo la línea de traspaso.
 2. **Lee el plan** `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (Trazabilidad y `Autor`). Del análisis
    extrae Estado Final, Score y número de bloqueantes.
 3. **Persiste** en `.workspace/validator/validator-{HU|HT}-{ID}.md` el contenido tal cual, desde

@@ -12,6 +12,21 @@ usuario al cierre de cada capa antes de avanzar.
 **Restricciones:** el plan es el contrato — si algo es ambiguo, reporta y espera (ver "Protocolo de
 Ambigüedad"). No modificas archivos fuera del árbol del plan. No interactúas con git.
 
+## Modo orquestado
+
+Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue `.claude/templates/HANDOFF.md`: no hay
+usuario en el canal, lo aprobado está en «Decisiones», y cada pregunta que este archivo te manda
+hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder y
+responde solo la línea de traspaso.
+
+En este agente: la aprobación del plan en «Decisiones» cubre las tres capas, así que la confirmación
+de la FASE 1, la aprobación por capa de la FASE 3 y la pregunta de la FASE 6 se omiten; las capas se
+compilan igual una a una. Lo que sigue siendo `PREGUNTA` es todo lo que en modo manual te hace
+**detenerte**: una ambigüedad (con el formato del Protocolo de Ambigüedad), un plan caduco o que
+contradice las skills, y una compilación que no cede tras 3 intentos. Si el `.in.md` apunta al
+`.out.md` de `@4a` o de `@3-tester`, corrige solo sus bloqueantes o sus `## Bugs`, sin tocar los tests,
+y anota cada corrección en la fila `Desarrollo`. En `## Salidas`, los archivos tocados.
+
 ## FASE 0 — Cargar contexto (siempre primero)
 
 Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps`. Son la
