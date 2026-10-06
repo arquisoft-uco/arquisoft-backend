@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.rules;
 
+import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.EvaluacionCuantitativaJuradoNoEncontradaException;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.EvaluacionCuantitativaJuradoNoPerteneceJuradoException;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.EvaluacionJuradoFinalizadaException;
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class EvaluacionCuantitativaJuradoRulesTest {
 
     private static final UUID EVALUACION_CUANTITATIVA_JURADO = UUID.randomUUID();
+    private static final UUID JURADO = UUID.randomUUID();
 
     @Test
     void debeAceptar_cuandoEvaluacionExiste() {
@@ -49,7 +51,7 @@ class EvaluacionCuantitativaJuradoRulesTest {
     void debeAceptar_cuandoPerteneceAlJurado() {
         // Act & Assert
         assertThatCode(() -> new EvaluacionCuantitativaJuradoPropiedadJuradoRuleImpl()
-                .validar(new PropiedadEvaluacionCuantitativaJuradoJurado(EVALUACION_CUANTITATIVA_JURADO, true)))
+                .validar(new PropiedadEvaluacionCuantitativaJuradoJurado(EVALUACION_CUANTITATIVA_JURADO, JURADO, JURADO)))
                 .doesNotThrowAnyException();
     }
 
@@ -57,7 +59,8 @@ class EvaluacionCuantitativaJuradoRulesTest {
     void debeRechazar_cuandoNoPerteneceAlJurado() {
         // Act & Assert
         assertThatThrownBy(() -> new EvaluacionCuantitativaJuradoPropiedadJuradoRuleImpl()
-                .validar(new PropiedadEvaluacionCuantitativaJuradoJurado(EVALUACION_CUANTITATIVA_JURADO, false)))
+                .validar(new PropiedadEvaluacionCuantitativaJuradoJurado(
+                        EVALUACION_CUANTITATIVA_JURADO, UUID.randomUUID(), JURADO)))
                 .isInstanceOfSatisfying(
                         EvaluacionCuantitativaJuradoNoPerteneceJuradoException.class, exception -> {
                             assertThat(exception.getCodigoError()).isEqualTo(
@@ -70,7 +73,7 @@ class EvaluacionCuantitativaJuradoRulesTest {
     void debeAceptar_cuandoEvaluacionJuradoNoEstaFinalizada() {
         // Act & Assert
         assertThatCode(() -> new EvaluacionJuradoFinalizadaRuleImpl()
-                .validar(new EstadoEvaluacionJurado(EVALUACION_CUANTITATIVA_JURADO, false)))
+                .validar(new EstadoEvaluacionJurado(EVALUACION_CUANTITATIVA_JURADO, EstadoEvaluacion.EN_PROGRESO)))
                 .doesNotThrowAnyException();
     }
 
@@ -78,7 +81,7 @@ class EvaluacionCuantitativaJuradoRulesTest {
     void debeRechazar_cuandoEvaluacionJuradoEstaFinalizada() {
         // Act & Assert
         assertThatThrownBy(() -> new EvaluacionJuradoFinalizadaRuleImpl()
-                .validar(new EstadoEvaluacionJurado(EVALUACION_CUANTITATIVA_JURADO, true)))
+                .validar(new EstadoEvaluacionJurado(EVALUACION_CUANTITATIVA_JURADO, EstadoEvaluacion.FINALIZADA)))
                 .isInstanceOfSatisfying(EvaluacionJuradoFinalizadaException.class, exception -> {
                     assertThat(exception.getCodigoError()).isEqualTo(
                             EvaluacionesCodes.EvaluacionCuantitativaJurado.EVALUACION_FINALIZADA);

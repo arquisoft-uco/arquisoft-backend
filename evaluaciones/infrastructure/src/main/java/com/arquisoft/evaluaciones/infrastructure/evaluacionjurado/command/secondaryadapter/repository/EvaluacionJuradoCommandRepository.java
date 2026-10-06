@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secon
 
 import com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.entity.EvaluacionJuradoJpaEntity;
 import com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.projection.ContextoRegistroEvaluacionJuradoProjection;
+import com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.projection.EstadoEvaluacionJuradoProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.repository.query.Param;
@@ -25,13 +26,15 @@ public interface EvaluacionJuradoCommandRepository extends JpaRepository<Evaluac
     Optional<ContextoRegistroEvaluacionJuradoProjection> buscarContextoBloqueado(
             @Param("evaluacionJurado") UUID evaluacionJurado);
 
+    // Mismo bloqueo que buscarContextoBloqueado: el estado leido es precondicion del cambio de
+    // puntaje y no puede pasar a finalizada antes del commit de esa escritura.
     @NativeQuery("""
-            SELECT (ej.jurado_id = :jurado) AS pertenece,
-                   (e.estado_evaluacion_id = 'FINALIZADA') AS finalizada
+            SELECT ej.id AS id, ej.jurado_id AS jurado, e.estado_evaluacion_id AS estado
             FROM evaluacion_jurado ej
             JOIN evaluacion e ON e.id = ej.evaluacion_id
             WHERE ej.id = :evaluacionJurado
+            FOR UPDATE OF e, ej
             """)
-    Optional<EstadoEvaluacionJuradoProjection> obtenerEstado(
-            @Param("evaluacionJurado") UUID evaluacionJurado, @Param("jurado") UUID jurado);
+    Optional<EstadoEvaluacionJuradoProjection> buscarEstadoBloqueado(
+            @Param("evaluacionJurado") UUID evaluacionJurado);
 }

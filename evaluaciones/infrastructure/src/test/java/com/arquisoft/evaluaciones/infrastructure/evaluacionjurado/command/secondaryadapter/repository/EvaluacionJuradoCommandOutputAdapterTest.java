@@ -11,7 +11,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Las tablas evaluacion/estado_evaluacion no tienen @Entity en el lado de comando (esta HU solo lee
-// dos flags booleanos, no gestiona EvaluacionJurado/Evaluacion como recursos propios), asi que
+// el jurado y el estado, no gestiona EvaluacionJurado/Evaluacion como recursos propios), asi que
 // Hibernate no las genera con ddl-auto. Se crean aqui con el mismo DDL de la migracion
 // V20260906143120 para poder ejercitar el @Query nativo real con JOIN, tal como exige la skill de
 // testing (nada de mockear el repository en una consulta nativa).
@@ -70,55 +70,38 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         return evaluacionJurado;
     }
 
+    // H2 entrega las columnas uuid de una consulta nativa como byte[] (PostgreSQL las entrega como
+    // UUID), asi que aqui se ejercita la consulta real por su columna de texto y el mapeo de los
+    // identificadores se cubre en EstadoEvaluacionJuradoJpaMapperTest.
     @Test
-    void debeRetornarPerteneceTrueYFinalizadaFalse_cuandoJuradoCorrectoYEvaluacionPendiente() {
+    void debeLeerElEstadoDeLaEvaluacion_cuandoLaEvaluacionJuradoExiste() {
         // Arrange
-        UUID jurado = UUID.randomUUID();
-        UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, "PENDIENTE");
+        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "PENDIENTE");
 
         // Act
-        var estado = adapter.obtenerEstado(evaluacionJurado, jurado);
+        var estado = repository.buscarEstadoBloqueado(evaluacionJurado);
 
         // Assert
-        assertThat(estado.pertenece()).isTrue();
-        assertThat(estado.finalizada()).isFalse();
+        assertThat(estado).hasValueSatisfying(encontrado ->
+                assertThat(encontrado.getEstado()).isEqualTo("PENDIENTE"));
     }
 
     @Test
-    void debeRetornarFinalizadaTrue_cuandoLaEvaluacionEstaFinalizada() {
+    void debeLeerEstadoFinalizada_cuandoLaEvaluacionEstaFinalizada() {
         // Arrange
-        UUID jurado = UUID.randomUUID();
-        UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, "FINALIZADA");
+        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "FINALIZADA");
 
         // Act
-        var estado = adapter.obtenerEstado(evaluacionJurado, jurado);
+        var estado = repository.buscarEstadoBloqueado(evaluacionJurado);
 
         // Assert
-        assertThat(estado.pertenece()).isTrue();
-        assertThat(estado.finalizada()).isTrue();
+        assertThat(estado).hasValueSatisfying(encontrado ->
+                assertThat(encontrado.getEstado()).isEqualTo("FINALIZADA"));
     }
 
     @Test
-    void debeRetornarPerteneceFalse_cuandoElJuradoEsDistinto() {
-        // Arrange
-        UUID jurado = UUID.randomUUID();
-        UUID otroJurado = UUID.randomUUID();
-        UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, "PENDIENTE");
-
-        // Act
-        var estado = adapter.obtenerEstado(evaluacionJurado, otroJurado);
-
-        // Assert
-        assertThat(estado.pertenece()).isFalse();
-    }
-
-    @Test
-    void debeRetornarPerteneceFalseYFinalizadaFalse_cuandoLaEvaluacionJuradoNoExiste() {
-        // Act
-        var estado = adapter.obtenerEstado(UUID.randomUUID(), UUID.randomUUID());
-
-        // Assert
-        assertThat(estado.pertenece()).isFalse();
-        assertThat(estado.finalizada()).isFalse();
+    void debeRetornarVacio_cuandoLaEvaluacionJuradoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerEstadoBloqueado(UUID.randomUUID())).isEmpty();
     }
 }

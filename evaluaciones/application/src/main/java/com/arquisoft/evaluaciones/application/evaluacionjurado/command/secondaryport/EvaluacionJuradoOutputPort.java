@@ -2,9 +2,10 @@ package com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondar
 
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EstadoEvaluacionJuradoEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface EvaluacionJuradoOutputPort {
 
-    EstadoEvaluacionJuradoEntity obtenerEstado(UUID evaluacionJurado, UUID jurado);
+    Optional<EstadoEvaluacionJuradoEntity> obtenerEstadoBloqueado(UUID evaluacionJurado);
 }

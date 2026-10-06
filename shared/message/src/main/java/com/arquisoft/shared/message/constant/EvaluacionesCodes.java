@@ -95,6 +95,8 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_REQUERIDO";
         public static final String PUNTAJE_FUERA_DE_RANGO =
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_FUERA_DE_RANGO";
+        public static final String PUNTAJE_NO_ENTERO =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_NO_ENTERO";
         public static final String NO_ENCONTRADA =
                 "EVALUACION_CUANTITATIVA_JURADO_NO_ENCONTRADA";
         public static final String NO_PERTENECE_JURADO =
