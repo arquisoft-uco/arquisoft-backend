@@ -37,4 +37,8 @@ public interface ObservacionItemCommandRepository extends JpaRepository<Observac
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ObservacionItemJpaEntity o SET o.observacion = :observacion WHERE o.id = :id")
     int actualizarObservacion(@Param("id") UUID id, @Param("observacion") String observacion);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM ObservacionItemJpaEntity o WHERE o.id = :id")
+    int removerPorId(@Param("id") UUID id);
 }
