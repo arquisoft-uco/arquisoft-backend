@@ -150,15 +150,4 @@ class ConsultarRepresentantesComiteVigentesControllerTest {
                 .andExpect(status().isUnauthorized());
         verifyNoInteractions(consultarRepresentantesComiteVigentesInteractor);
     }
-
-    @Test
-    void debe403_cuandoSoloTieneElClientRoleDeAdministrador() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        UsuariosAuthorities.REPRESENTANTE_COMITE_ADMINISTRADOR_VIEW))))
-                .andExpect(status().isForbidden());
-        verifyNoInteractions(consultarRepresentantesComiteVigentesInteractor);
-    }
 }

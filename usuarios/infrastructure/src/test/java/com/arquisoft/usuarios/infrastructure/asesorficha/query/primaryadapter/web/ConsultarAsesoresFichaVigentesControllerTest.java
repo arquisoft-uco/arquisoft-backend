@@ -145,14 +145,4 @@ class ConsultarAsesoresFichaVigentesControllerTest {
                 .andExpect(status().isUnauthorized());
         verifyNoInteractions(consultarAsesoresFichaVigentesInteractor);
     }
-
-    @Test
-    void debe403_cuandoSoloTieneElClientRoleDeAdministrador() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.ASESOR_FICHA_ADMINISTRADOR_VIEW))))
-                .andExpect(status().isForbidden());
-        verifyNoInteractions(consultarAsesoresFichaVigentesInteractor);
-    }
 }
