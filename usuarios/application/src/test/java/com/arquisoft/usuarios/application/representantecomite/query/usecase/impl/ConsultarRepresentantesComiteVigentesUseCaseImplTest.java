@@ -52,7 +52,6 @@ class ConsultarRepresentantesComiteVigentesUseCaseImplTest {
         // Assert
         assertThat(resultado).isSameAs(esperado);
         verify(representanteComiteQueryOutputPort, times(1)).consultarVigentes(criteria);
-        verify(representanteComiteQueryOutputPort, never()).consultarTodos(any());
         verify(logger).debug(eq(ConsultarRepresentantesComiteVigentesKey.LOG_CONSULTANDO),
                 eq(1), eq(5), eq(false), eq(false));
         verify(logger).debug(eq(ConsultarRepresentantesComiteVigentesKey.LOG_CONSULTA_COMPLETADA),
