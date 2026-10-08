@@ -11,6 +11,7 @@ public enum EvaluacionCuantitativaJuradoKey implements ClaveMensaje {
             "evaluaciones.aplicacion.evaluacioncuantitativajurado.log.verificacion-cambiar-puntaje", 3),
     LOG_PUNTAJE_CAMBIADO("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.puntaje-cambiado", 1),
     LOG_GUARDADO("evaluaciones.infraestructura.evaluacioncuantitativajurado.log.guardado", 1),
+    ERROR_PUNTAJE_NO_ENTERO("evaluaciones.aplicacion.evaluacioncuantitativajurado.error.puntaje-no-entero", 0),
     ERROR_NO_ENCONTRADA("evaluaciones.dominio.evaluacioncuantitativajurado.error.no-encontrada", 1),
     ERROR_NO_PERTENECE_JURADO(
             "evaluaciones.dominio.evaluacioncuantitativajurado.error.no-pertenece-jurado", 1),

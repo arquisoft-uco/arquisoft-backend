@@ -81,11 +81,8 @@ public final class EvaluacionesCodes {
 
         private RegistroEvaluacionesCualitativasJurado() {}
 
-        public static final String LOTE_REQUERIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_LOTE_REQUERIDO";
         public static final String LOTE_VACIO = "REGISTRO_EVALUACIONES_CUALITATIVAS_LOTE_VACIO";
-        public static final String PAR_REQUERIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_PAR_REQUERIDO";
         public static final String ITEMS_REPETIDOS = "REGISTRO_EVALUACIONES_CUALITATIVAS_ITEMS_REPETIDOS";
-        public static final String PADRES_DISTINTOS = "REGISTRO_EVALUACIONES_CUALITATIVAS_PADRES_DISTINTOS";
     }
 
     public static final class Evaluacion {
@@ -114,6 +111,8 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_REQUERIDO";
         public static final String PUNTAJE_FUERA_DE_RANGO =
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_FUERA_DE_RANGO";
+        public static final String PUNTAJE_NO_ENTERO =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_NO_ENTERO";
         public static final String NO_ENCONTRADA =
                 "EVALUACION_CUANTITATIVA_JURADO_NO_ENCONTRADA";
         public static final String NO_PERTENECE_JURADO =

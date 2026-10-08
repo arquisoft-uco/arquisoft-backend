@@ -33,13 +33,13 @@ class FichaPerfilFinderImplTest {
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(entity));
 
         // Act
-        Optional<FichaPerfilDomain> resultado = finder.obtener(fichaId);
+        var resultado = finder.obtener(fichaId);
 
         // Assert
-        assertThat(resultado).isPresent();
-        assertThat(resultado.get().getId()).isEqualTo(fichaId);
-        assertThat(resultado.get().getTituloProyecto()).isEqualTo("Titulo de prueba");
-        assertThat(resultado.get().getAsesorFicha()).isEqualTo(asesorId);
+        assertThat(resultado.esVacio()).isFalse();
+        assertThat(resultado.getId()).isEqualTo(fichaId);
+        assertThat(resultado.getTituloProyecto()).isEqualTo("Titulo de prueba");
+        assertThat(resultado.getAsesorFicha()).isEqualTo(asesorId);
     }
 
     @Test
@@ -49,9 +49,9 @@ class FichaPerfilFinderImplTest {
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.empty());
 
         // Act
-        Optional<FichaPerfilDomain> resultado = finder.obtener(fichaId);
+        var resultado = finder.obtener(fichaId);
 
         // Assert — el finder nunca lanza por "no encontrado"; eso lo decide la rule
-        assertThat(resultado).isEmpty();
+        assertThat(resultado).isEqualTo(FichaPerfilDomain.VACIO);
     }
 }

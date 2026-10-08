@@ -2,9 +2,11 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secon
 
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EstadoEvaluacionJuradoEntity;
+import com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.mapper.EstadoEvaluacionJuradoJpaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -14,9 +16,8 @@ public class EvaluacionJuradoCommandOutputAdapter implements EvaluacionJuradoOut
     private final EvaluacionJuradoCommandRepository repository;
 
     @Override
-    public EstadoEvaluacionJuradoEntity obtenerEstado(UUID evaluacionJurado, UUID jurado) {
-        return repository.obtenerEstado(evaluacionJurado, jurado)
-                .map(p -> new EstadoEvaluacionJuradoEntity(p.isPertenece(), p.isFinalizada()))
-                .orElse(new EstadoEvaluacionJuradoEntity(false, false));
+    public Optional<EstadoEvaluacionJuradoEntity> obtenerEstadoBloqueado(UUID evaluacionJurado) {
+        return repository.buscarEstadoBloqueado(evaluacionJurado)
+                .map(EstadoEvaluacionJuradoJpaMapper::toEntity);
     }
 }

@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.finder.impl;
 
+import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.UsuarioOutputPort;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import org.junit.jupiter.api.Test;
@@ -27,13 +28,13 @@ class DatosUsuarioFinderImplTest {
     @Test
     void debeMapearLaReplicaADominio_cuandoElPuertoLaTiene() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
         when(usuarioOutputPort.buscarPorId(usuario))
                 .thenReturn(Optional.of(new UsuarioEntity(usuario, "EST-1", "Ana", "ana@uco.edu.co", Instant.now())));
 
         // Act & Assert
         assertThat(finder.obtener(usuario))
-                .hasValueSatisfying(dominio -> {
+                .satisfies(dominio -> {
                     assertThat(dominio.getId()).isEqualTo(usuario);
                     assertThat(dominio.getNombre()).isEqualTo("Ana");
                     assertThat(dominio.getEmail()).isEqualTo("ana@uco.edu.co");
@@ -43,10 +44,10 @@ class DatosUsuarioFinderImplTest {
     @Test
     void debeRetornarVacio_cuandoElPuertoNoTieneLaReplica() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
         when(usuarioOutputPort.buscarPorId(usuario)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThat(finder.obtener(usuario)).isEmpty();
+        assertThat(finder.obtener(usuario)).isEqualTo(UsuarioDomain.VACIO);
     }
 }

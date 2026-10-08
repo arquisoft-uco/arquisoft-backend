@@ -7,7 +7,6 @@ import com.arquisoft.evaluaciones.domain.itemcuantitativojurado.ItemCuantitativo
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -17,7 +16,9 @@ public class ItemCuantitativoJuradoPorIdFinderImpl implements ItemCuantitativoJu
     private final ItemCuantitativoJuradoOutputPort outputPort;
 
     @Override
-    public Optional<ItemCuantitativoJuradoDomain> obtener(UUID id) {
-        return outputPort.obtenerPorId(id).map(ItemCuantitativoJuradoMapper::toDomain);
+    public ItemCuantitativoJuradoDomain obtener(UUID id) {
+        return outputPort.obtenerPorId(id)
+                .map(ItemCuantitativoJuradoMapper::toDomain)
+                .orElse(ItemCuantitativoJuradoDomain.VACIO);
     }
 }

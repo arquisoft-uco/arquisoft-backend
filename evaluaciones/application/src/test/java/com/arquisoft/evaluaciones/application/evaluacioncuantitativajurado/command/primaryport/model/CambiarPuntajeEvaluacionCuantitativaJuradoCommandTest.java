@@ -41,6 +41,40 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoCommandTest {
     }
 
     @Test
+    void debeAceptarPuntaje_cuandoLlegaComoDecimalSinParteFraccionaria() {
+        // Act
+        var command = CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
+                UUID.randomUUID(), 350.0, UUID.randomUUID().toString());
+
+        // Assert
+        assertThat(command.nuevoPuntaje()).isEqualTo(350);
+    }
+
+    @Test
+    void debeRechazarPuntaje_cuandoTieneParteDecimal() {
+        // Act & Assert
+        assertThatThrownBy(() -> CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
+                UUID.randomUUID(), 320.7, UUID.randomUUID().toString()))
+                .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
+                        assertThat(exception.getValidationResult().getErrores())
+                                .extracting(error -> error.codigoError())
+                                .containsExactly(
+                                        EvaluacionesCodes.EvaluacionCuantitativaJurado.PUNTAJE_NO_ENTERO));
+    }
+
+    @Test
+    void debeRechazarPuntaje_cuandoDesbordaElRangoEntero() {
+        // Act & Assert
+        assertThatThrownBy(() -> CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
+                UUID.randomUUID(), 99_999_999_999L, UUID.randomUUID().toString()))
+                .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
+                        assertThat(exception.getValidationResult().getErrores())
+                                .extracting(error -> error.codigoError())
+                                .containsExactly(
+                                        EvaluacionesCodes.EvaluacionCuantitativaJurado.PUNTAJE_FUERA_DE_RANGO));
+    }
+
+    @Test
     void debeAcumularErrorJurado_cuandoSubjectNoEsUuidValido() {
         // Act & Assert
         assertThatThrownBy(() -> CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(

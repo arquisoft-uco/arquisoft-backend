@@ -9,7 +9,7 @@ public class EvaluacionCuantitativaJuradoPropiedadJuradoRuleImpl
 
     @Override
     public void validar(PropiedadEvaluacionCuantitativaJuradoJurado propiedad) {
-        if (!propiedad.pertenece()) {
+        if (!propiedad.juradoAsignado().equals(propiedad.juradoSolicitante())) {
             throw new EvaluacionCuantitativaJuradoNoPerteneceJuradoException(propiedad.evaluacionCuantitativaJurado());
         }
     }

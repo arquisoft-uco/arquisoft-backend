@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.domain.solicitud;
 
+import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -16,19 +17,19 @@ class SolicitudDomainTest {
     @Test
     void debeCrearLaSolicitud_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID destinatario = UUID.randomUUID();
-        UUID remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
 
         // Act
-        SolicitudDomain solicitud = SolicitudDomain.crear(
+        var solicitud = SolicitudDomain.crear(
                 destinatario, remitente, "  Necesito reportar una novedad  ",
                 TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 
         // Assert
         assertThat(solicitud.getId()).isNotNull();
         assertThat(solicitud.getFechaCreacion()).isNotNull();
-        assertThat(solicitud.getDestinatario()).isEqualTo(destinatario);
-        assertThat(solicitud.getRemitente()).isEqualTo(remitente);
+        assertThat(solicitud.getDestinatarioUsuario()).isEqualTo(destinatario);
+        assertThat(solicitud.getRemitenteUsuario()).isEqualTo(remitente);
         assertThat(solicitud.getMensajeSolicitud()).isEqualTo("Necesito reportar una novedad");
         assertThat(solicitud.getTipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
         assertThat(solicitud.esVacio()).isFalse();
@@ -40,7 +41,7 @@ class SolicitudDomainTest {
         // (mensaje en blanco + destinatario/remitente/tipo nulos, todo en un solo intento)
 
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> SolicitudDomain.crear(null, null, "  ", null));
 
         // Assert
@@ -48,16 +49,32 @@ class SolicitudDomainTest {
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.MENSAJE)).isTrue();
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
         assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.REMITENTE)).isTrue();
-        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.TIPO_SOLICITUD)).isTrue();
+    }
+
+    @Test
+    void debeReportarElErrorDelTipoConSuPropioCampoYCodigo_cuandoElTipoEsNulo() {
+        // Act
+        var excepcion = assertThrows(DomainValidationException.class,
+                () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(), "mensaje", null));
+
+        // Assert
+        var resultado = excepcion.getValidationResult();
+        assertThat(resultado.getErrores()).hasSize(1);
+        assertThat(resultado.getErrores().get(0).campo())
+                .isEqualTo(SolicitudesFields.Solicitud.TIPO_SOLICITUD);
+        assertThat(resultado.getErrores().get(0).codigoError())
+                .isEqualTo(SolicitudesCodes.Solicitud.TIPO_REQUERIDO);
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isFalse();
     }
 
     @Test
     void debeAcumularErrorDeLongitud_cuandoElMensajeSuperaLosCienCaracteres() {
         // Arrange
-        String mensajeLargo = "a".repeat(101);
+        var mensajeLargo = "a".repeat(101);
 
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
                         mensajeLargo, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
 
@@ -67,19 +84,47 @@ class SolicitudDomainTest {
     }
 
     @Test
-    void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
+    void debeAceptarElMensaje_cuandoMideCienCaracteresTrasRecortarLosEspacios() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        Instant fecha = Instant.now();
+        var mensaje = "  " + "a".repeat(100) + "  ";
 
         // Act
-        SolicitudDomain solicitud = SolicitudDomain.reconstruir(
+        var solicitud = SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
+                mensaje, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
+
+        // Assert
+        assertThat(solicitud.getMensajeSolicitud()).isEqualTo("a".repeat(100));
+    }
+
+    @Test
+    void debeRechazarElMensaje_cuandoSuperaLosCienCaracteresTrasRecortarLosEspacios() {
+        // Arrange
+        var mensaje = "  " + "a".repeat(101) + "  ";
+
+        // Act
+        var excepcion = assertThrows(DomainValidationException.class,
+                () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
+                        mensaje, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
+
+        // Assert
+        assertThat(excepcion.getValidationResult()
+                .tieneErroresDeCampo(SolicitudesFields.Solicitud.MENSAJE)).isTrue();
+    }
+
+    @Test
+    void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var fecha = Instant.now();
+
+        // Act
+        var solicitud = SolicitudDomain.reconstruir(
                 id, null, null, fecha, null, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 
         // Assert
         assertThat(solicitud.getId()).isEqualTo(id);
         assertThat(solicitud.getFechaCreacion()).isEqualTo(fecha);
-        assertThat(solicitud.getDestinatario()).isNull();
+        assertThat(solicitud.getDestinatarioUsuario()).isNull();
         assertThat(solicitud.getMensajeSolicitud()).isNull();
     }
 

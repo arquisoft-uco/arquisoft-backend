@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.fi
 
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.ItemCuantitativoJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.entity.ItemCuantitativoJuradoEntity;
+import com.arquisoft.evaluaciones.domain.itemcuantitativojurado.ItemCuantitativoJuradoDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,9 +35,9 @@ class ItemCuantitativoJuradoPorIdFinderImplTest {
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).isPresent();
-        assertThat(resultado.get().getId()).isEqualTo(id);
-        assertThat(resultado.get().getValor()).isEqualTo(500);
+        assertThat(resultado.esVacio()).isFalse();
+        assertThat(resultado.getId()).isEqualTo(id);
+        assertThat(resultado.getValor()).isEqualTo(500);
     }
 
     @Test
@@ -46,6 +47,6 @@ class ItemCuantitativoJuradoPorIdFinderImplTest {
         when(outputPort.obtenerPorId(id)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThat(finder.obtener(id)).isEmpty();
+        assertThat(finder.obtener(id)).isSameAs(ItemCuantitativoJuradoDomain.VACIO);
     }
 }

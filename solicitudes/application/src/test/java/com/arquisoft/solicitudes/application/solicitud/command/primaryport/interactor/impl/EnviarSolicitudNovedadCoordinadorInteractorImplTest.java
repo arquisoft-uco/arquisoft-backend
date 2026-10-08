@@ -1,8 +1,8 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.impl;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudNovedadCoordinadorUseCase;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudUseCase;
+import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class EnviarSolicitudNovedadCoordinadorInteractorImplTest {
 
     @Mock
-    private EnviarSolicitudNovedadCoordinadorUseCase useCase;
+    private EnviarSolicitudUseCase useCase;
 
     @InjectMocks
     private EnviarSolicitudNovedadCoordinadorInteractorImpl interactor;
@@ -29,20 +29,20 @@ class EnviarSolicitudNovedadCoordinadorInteractorImplTest {
     @Test
     void debeMapearElComandoAObjetoDeAccionYDelegarEnElUseCase() {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
-        UUID esperado = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
+        var esperado = UUID.randomUUID();
         var command = EnviarSolicitudNovedadCoordinadorCommand.crear(
                 remitente, destinatario.toString(), "novedad");
-        when(useCase.ejecutar(any(EnvioSolicitudNovedadCoordinadorDomain.class))).thenReturn(esperado);
+        when(useCase.ejecutar(any(EnvioSolicitudDomain.class))).thenReturn(esperado);
 
         // Act
-        UUID resultado = interactor.ejecutar(command);
+        var resultado = interactor.ejecutar(command);
 
         // Assert
         assertThat(resultado).isEqualTo(esperado);
-        ArgumentCaptor<EnvioSolicitudNovedadCoordinadorDomain> captor =
-                ArgumentCaptor.forClass(EnvioSolicitudNovedadCoordinadorDomain.class);
+        var captor =
+                ArgumentCaptor.forClass(EnvioSolicitudDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getRemitenteUsuario()).isEqualTo(remitente);
         assertThat(captor.getValue().getDestinatarioUsuario()).isEqualTo(destinatario);

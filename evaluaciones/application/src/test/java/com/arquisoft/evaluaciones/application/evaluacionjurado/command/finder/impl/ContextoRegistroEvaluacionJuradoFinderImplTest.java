@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.i
 
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.ContextoRegistroEvaluacionJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.ContextoRegistroEvaluacionJuradoEntity;
+import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,31 +26,37 @@ class ContextoRegistroEvaluacionJuradoFinderImplTest {
     private ContextoRegistroEvaluacionJuradoFinderImpl finder;
 
     @Test
-    void debeDelegarEnPuerto_cuandoElContextoExiste() {
+    void debeRetornarDominio_cuandoElContextoExiste() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
+        var evaluacion = UUID.randomUUID();
+        var entregable = UUID.randomUUID();
         var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, UUID.randomUUID(), "PENDIENTE", UUID.randomUUID());
+                evaluacionJurado, evaluacion, "PENDIENTE", entregable);
         when(outputPort.obtenerContextoBloqueado(evaluacionJurado)).thenReturn(Optional.of(contexto));
 
         // Act
-        Optional<ContextoRegistroEvaluacionJuradoEntity> resultado = finder.obtener(evaluacionJurado);
+        var resultado = finder.obtener(evaluacionJurado);
 
         // Assert
-        assertThat(resultado).contains(contexto);
+        assertThat(resultado.esVacio()).isFalse();
+        assertThat(resultado.getId()).isEqualTo(evaluacionJurado);
+        assertThat(resultado.getEvaluacion()).isEqualTo(evaluacion);
+        assertThat(resultado.getEstado()).isEqualTo(EstadoEvaluacion.PENDIENTE);
+        assertThat(resultado.getEntregable()).isEqualTo(entregable);
         verify(outputPort).obtenerContextoBloqueado(evaluacionJurado);
     }
 
     @Test
     void debeRetornarVacio_cuandoElContextoNoExiste() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
         when(outputPort.obtenerContextoBloqueado(evaluacionJurado)).thenReturn(Optional.empty());
 
         // Act
-        Optional<ContextoRegistroEvaluacionJuradoEntity> resultado = finder.obtener(evaluacionJurado);
+        var resultado = finder.obtener(evaluacionJurado);
 
         // Assert
-        assertThat(resultado).isEmpty();
+        assertThat(resultado.esVacio()).isTrue();
     }
 }

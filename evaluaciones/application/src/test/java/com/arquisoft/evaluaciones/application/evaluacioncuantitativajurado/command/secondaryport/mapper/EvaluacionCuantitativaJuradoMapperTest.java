@@ -1,6 +1,7 @@
 package com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.mapper;
 
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.entity.EvaluacionCuantitativaJuradoEntity;
+import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.EvaluacionCuantitativaJuradoDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -23,5 +24,21 @@ class EvaluacionCuantitativaJuradoMapperTest {
         assertThat(domain.getEvaluacionJurado()).isEqualTo(entity.evaluacionJurado());
         assertThat(domain.getItem()).isEqualTo(entity.item());
         assertThat(domain.getPuntaje()).isEqualTo(entity.puntaje());
+    }
+
+    @Test
+    void debeMapearDomainAEntity() {
+        // Arrange
+        var domain = EvaluacionCuantitativaJuradoDomain
+                .reconstruir(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 410);
+
+        // Act
+        var entity = EvaluacionCuantitativaJuradoMapper.toEntity(domain);
+
+        // Assert
+        assertThat(entity.id()).isEqualTo(domain.getId());
+        assertThat(entity.evaluacionJurado()).isEqualTo(domain.getEvaluacionJurado());
+        assertThat(entity.item()).isEqualTo(domain.getItem());
+        assertThat(entity.puntaje()).isEqualTo(410);
     }
 }

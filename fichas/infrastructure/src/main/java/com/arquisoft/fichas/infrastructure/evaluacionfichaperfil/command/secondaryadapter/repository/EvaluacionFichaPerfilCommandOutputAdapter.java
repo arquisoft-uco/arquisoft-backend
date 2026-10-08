@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.ConteoEvaluacionesPorEstadoEntity;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.mapper.EvaluacionFichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
@@ -8,6 +9,7 @@ import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -40,5 +42,10 @@ public class EvaluacionFichaPerfilCommandOutputAdapter
     @Override
     public boolean esRepresentantePropietario(UUID evaluacionFichaPerfil, UUID representanteComite) {
         return repository.existsByIdAndRepresentanteComiteId(evaluacionFichaPerfil, representanteComite);
+    }
+
+    @Override
+    public List<ConteoEvaluacionesPorEstadoEntity> contarEvaluacionesDeFichaPorEstadoEvaluacionActual(UUID fichaPerfil) {
+        return repository.contarEvaluacionesDeFichaPorEstadoEvaluacionActual(fichaPerfil);
     }
 }

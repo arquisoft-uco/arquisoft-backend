@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.comm
 
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.EvaluacionCuantitativaJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.entity.EvaluacionCuantitativaJuradoEntity;
+import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.EvaluacionCuantitativaJuradoDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,11 +35,11 @@ class EvaluacionCuantitativaJuradoPorIdFinderImplTest {
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).isPresent();
-        assertThat(resultado.get().getId()).isEqualTo(id);
-        assertThat(resultado.get().getEvaluacionJurado()).isEqualTo(entity.evaluacionJurado());
-        assertThat(resultado.get().getItem()).isEqualTo(entity.item());
-        assertThat(resultado.get().getPuntaje()).isEqualTo(300);
+        assertThat(resultado.esVacio()).isFalse();
+        assertThat(resultado.getId()).isEqualTo(id);
+        assertThat(resultado.getEvaluacionJurado()).isEqualTo(entity.evaluacionJurado());
+        assertThat(resultado.getItem()).isEqualTo(entity.item());
+        assertThat(resultado.getPuntaje()).isEqualTo(300);
     }
 
     @Test
@@ -48,6 +49,6 @@ class EvaluacionCuantitativaJuradoPorIdFinderImplTest {
         when(outputPort.obtenerPorId(id)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThat(finder.obtener(id)).isEmpty();
+        assertThat(finder.obtener(id)).isSameAs(EvaluacionCuantitativaJuradoDomain.VACIO);
     }
 }

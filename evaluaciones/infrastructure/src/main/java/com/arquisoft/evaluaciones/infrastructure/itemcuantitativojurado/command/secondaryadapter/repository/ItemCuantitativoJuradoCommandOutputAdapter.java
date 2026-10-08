@@ -31,11 +31,6 @@ public class ItemCuantitativoJuradoCommandOutputAdapter
     }
 
     @Override
-    public boolean existeCategoriaPorId(UUID categoriaId) {
-        return repository.existsCategoriaById(categoriaId);
-    }
-
-    @Override
     public boolean existePorNombreYCategoriaIgnorandoMayusculas(
             String nombre, UUID categoriaId) {
         return repository.existsByNombreIgnoreCaseAndCategoriaId(nombre, categoriaId);

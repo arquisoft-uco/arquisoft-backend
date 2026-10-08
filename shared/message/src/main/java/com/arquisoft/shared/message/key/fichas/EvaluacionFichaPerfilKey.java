@@ -11,7 +11,9 @@ public enum EvaluacionFichaPerfilKey implements ClaveMensaje {
     LOG_REGISTRADA("fichas.aplicacion.evaluacionfichaperfil.log.registrada", 3),
     LOG_GUARDADA("fichas.infraestructura.evaluacionfichaperfil.log.guardada", 2),
     LOG_CONSULTANDO_REPRESENTANTE("fichas.aplicacion.evaluacionfichaperfil.log.consultando-representante", 1),
-    LOG_CONSULTA_REPRESENTANTE_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-representante-completada", 1);
+    LOG_CONSULTA_REPRESENTANTE_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-representante-completada", 1),
+    LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.evaluacionfichaperfil.log.consultando-estudiante", 1),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-estudiante-completada", 1);
 
     private final String clave;
     private final int parametros;

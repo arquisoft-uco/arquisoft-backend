@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.secondaryadapter.repository;
 
+import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.entity.EvaluacionCuantitativaJuradoEntity;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.secondaryadapter.entity.EvaluacionCuantitativaJuradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,24 +63,29 @@ class EvaluacionCuantitativaJuradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeActualizarYPersistirElPuntaje_cuandoCambiarPuntaje() {
+    void debeActualizarYPersistirElPuntaje_cuandoActualizar() {
         // Arrange
         UUID id = UUID.randomUUID();
+        UUID evaluacionJurado = UUID.randomUUID();
+        UUID item = UUID.randomUUID();
         entityManager.persist(EvaluacionCuantitativaJuradoJpaEntity.builder()
                 .id(id)
-                .evaluacionJuradoId(UUID.randomUUID())
-                .itemId(UUID.randomUUID())
+                .evaluacionJuradoId(evaluacionJurado)
+                .itemId(item)
                 .puntaje(200)
                 .build());
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        adapter.cambiarPuntaje(id, 450);
+        adapter.actualizar(new EvaluacionCuantitativaJuradoEntity(id, evaluacionJurado, item, 450));
+        entityManager.flush();
         entityManager.clear();
 
         // Assert
         var actualizada = entityManager.find(EvaluacionCuantitativaJuradoJpaEntity.class, id);
         assertThat(actualizada.getPuntaje()).isEqualTo(450);
+        assertThat(actualizada.getEvaluacionJuradoId()).isEqualTo(evaluacionJurado);
+        assertThat(actualizada.getItemId()).isEqualTo(item);
     }
 }

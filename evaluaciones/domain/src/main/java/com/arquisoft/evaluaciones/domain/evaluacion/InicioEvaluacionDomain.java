@@ -52,6 +52,10 @@ public final class InicioEvaluacionDomain {
         return estadoActual;
     }
 
+    public boolean requiereTransicion() {
+        return estadoActual == EstadoEvaluacion.PENDIENTE;
+    }
+
     public EstadoEvaluacion estadoDestino() {
         return EstadoEvaluacion.EN_PROGRESO;
     }
