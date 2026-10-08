@@ -31,8 +31,8 @@ class EliminarSolicitudValidatorImplTest {
     @Test
     void debePasar_cuandoLasCuatroReglasSeCumplenParaElCoordinador() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID solicitante = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
         var tipo = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR;
 
         // Act & Assert
@@ -44,8 +44,8 @@ class EliminarSolicitudValidatorImplTest {
     @Test
     void debePasar_cuandoLasCuatroReglasSeCumplenParaElAsesor() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID solicitante = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
         var tipo = TipoSolicitud.NOVEDAD_PARA_EL_ASESOR;
 
         // Act & Assert
@@ -57,7 +57,7 @@ class EliminarSolicitudValidatorImplTest {
     @Test
     void debeLanzarSolicitudNoEncontrada_cuandoElResumenEsVacio() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
@@ -70,7 +70,7 @@ class EliminarSolicitudValidatorImplTest {
     @Test
     void debeLanzarSolicitudNoPropia_cuandoElRemitenteNoEsElSolicitante() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         var tipo = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR;
 
         // Act & Assert
@@ -82,8 +82,8 @@ class EliminarSolicitudValidatorImplTest {
     @Test
     void debeLanzarElErrorDelCoordinador_cuandoSeEsperabaCoordinadorYLaSolicitudEsDeOtroTipo() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID solicitante = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
@@ -95,8 +95,8 @@ class EliminarSolicitudValidatorImplTest {
     @Test
     void debeLanzarElErrorDelAsesor_cuandoSeEsperabaAsesorYLaSolicitudEsDeOtroTipo() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID solicitante = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
@@ -108,8 +108,8 @@ class EliminarSolicitudValidatorImplTest {
     @Test
     void debeLanzarSolicitudConRespuestas_cuandoLaSolicitudTieneRespuestas() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID solicitante = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
         var tipo = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR;
 
         // Act & Assert

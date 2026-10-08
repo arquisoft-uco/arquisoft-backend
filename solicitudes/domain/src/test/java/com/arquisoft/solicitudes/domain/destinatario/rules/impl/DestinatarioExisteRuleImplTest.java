@@ -30,7 +30,7 @@ class DestinatarioExisteRuleImplTest {
     @Test
     void debeLanzarDestinatarioNoEncontrado_cuandoElDestinatarioNoExiste() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new ExistenciaDestinatario(usuario, UsuarioDomain.VACIO)))

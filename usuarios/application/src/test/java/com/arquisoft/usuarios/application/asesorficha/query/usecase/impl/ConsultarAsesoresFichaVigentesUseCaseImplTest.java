@@ -52,7 +52,6 @@ class ConsultarAsesoresFichaVigentesUseCaseImplTest {
         // Assert
         assertThat(resultado).isSameAs(esperado);
         verify(asesorFichaQueryOutputPort, times(1)).consultarVigentes(criteria);
-        verify(asesorFichaQueryOutputPort, never()).consultarTodos(any());
         verify(logger).debug(eq(ConsultarAsesoresFichaVigentesKey.LOG_CONSULTANDO),
                 eq(1), eq(5), eq(false), eq(false));
         verify(logger).debug(eq(ConsultarAsesoresFichaVigentesKey.LOG_CONSULTA_COMPLETADA),

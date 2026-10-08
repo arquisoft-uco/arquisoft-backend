@@ -1,8 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.coordinador.query.secondaryadapter.repository;
 
-import com.arquisoft.usuarios.application.coordinador.query.criteria.CoordinadorCriteria;
 import com.arquisoft.usuarios.application.coordinador.query.criteria.CoordinadorVigenteCriteria;
-import com.arquisoft.usuarios.application.coordinador.query.readmodel.CoordinadorReadModel;
 import com.arquisoft.usuarios.application.coordinador.query.readmodel.CoordinadorVigenteReadModel;
 import com.arquisoft.usuarios.infrastructure.coordinador.command.secondaryadapter.entity.CoordinadorJpaEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
@@ -30,9 +28,6 @@ class CoordinadorQueryOutputAdapterTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private CoordinadorQueryRepository coordinadorQueryRepository;
-
-    @Autowired
     private CoordinadorVigenteQueryRepository coordinadorVigenteQueryRepository;
 
     private CoordinadorQueryOutputAdapter adapter;
@@ -44,79 +39,13 @@ class CoordinadorQueryOutputAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new CoordinadorQueryOutputAdapter(
-                coordinadorQueryRepository,
                 coordinadorVigenteQueryRepository,
-                new CoordinadorJpaSpecification(),
                 new CoordinadorVigenteJpaSpecification());
 
         vigenteUno = persistirCoordinador("1001", "Ana Ramirez", "ana.ramirez@uco.edu.co", "ACTIVO", null);
         vigenteDos = persistirCoordinador("1002", "Bruno Diaz", "bruno.diaz@uco.edu.co", "ACTIVO", null);
         dadoDeBaja = persistirCoordinador("1003", "Carla Vidal", "carla.vidal@uco.edu.co", "INACTIVO", Instant.now());
         entityManager.flush();
-    }
-
-    @Test
-    void debeIncluirVigentesYDadosDeBaja_conVigenteCorrecto_cuandoConsultaTodos() {
-        // Act
-        var resultado = adapter.consultarTodos(
-                CoordinadorCriteria.builder().pagina(0).tamanio(10).build());
-
-        // Assert
-        assertThat(resultado.getContent()).hasSize(3);
-        assertThat(resultado.getContent())
-                .filteredOn(c -> c.id().equals(dadoDeBaja))
-                .extracting(CoordinadorReadModel::vigente)
-                .containsExactly(false);
-        assertThat(resultado.getContent())
-                .filteredOn(c -> c.id().equals(vigenteUno))
-                .extracting(CoordinadorReadModel::vigente)
-                .containsExactly(true);
-    }
-
-    @Test
-    void debeFiltrarSoloLosDadosDeBaja_cuandoConsultaTodosConVigenteFalse() {
-        // Arrange
-        var criteria = CoordinadorCriteria.builder().pagina(0).tamanio(10)
-                .raiz(NodoFiltro.predicado("vigente", FiltroOperador.ES, "false"))
-                .build();
-
-        // Act
-        var resultado = adapter.consultarTodos(criteria);
-
-        // Assert
-        assertThat(resultado.getContent()).hasSize(1);
-        assertThat(resultado.getContent().get(0).id()).isEqualTo(dadoDeBaja);
-    }
-
-    @Test
-    void debeFiltrarPorEstadoInactivo_cuandoConsultaTodos() {
-        // Arrange
-        var criteria = CoordinadorCriteria.builder().pagina(0).tamanio(10)
-                .raiz(NodoFiltro.predicado("estado", FiltroOperador.ES, "INACTIVO"))
-                .build();
-
-        // Act
-        var resultado = adapter.consultarTodos(criteria);
-
-        // Assert
-        assertThat(resultado.getContent()).hasSize(1);
-        assertThat(resultado.getContent().get(0).id()).isEqualTo(dadoDeBaja);
-    }
-
-    @Test
-    void debeOrdenarPorNombreDescendente_cuandoConsultaTodos() {
-        // Arrange
-        var criteria = CoordinadorCriteria.builder().pagina(0).tamanio(10)
-                .ordenamiento(List.of(SortOrder.of("nombre", SortDirection.DESC)))
-                .build();
-
-        // Act
-        var resultado = adapter.consultarTodos(criteria);
-
-        // Assert
-        assertThat(resultado.getContent())
-                .extracting(CoordinadorReadModel::nombre)
-                .containsExactly("Carla Vidal", "Bruno Diaz", "Ana Ramirez");
     }
 
     @Test

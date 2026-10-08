@@ -15,13 +15,13 @@ class RespuestaJpaMapperTest {
     @Test
     void debeConvertirLaEntityADjpaEntity_conLaReferenciaDelEstado() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID solicitud = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         var fecha = Instant.parse("2026-03-01T09:00:00Z");
         var entity = new RespuestaEntity(id, solicitud, fecha, "contenido", "EN_REVISION");
 
         // Act
-        RespuestaJpaEntity jpa = RespuestaJpaMapper.toJpaEntity(entity);
+        var jpa = RespuestaJpaMapper.toJpaEntity(entity);
 
         // Assert
         assertThat(jpa.getId()).isEqualTo(id);
@@ -34,10 +34,10 @@ class RespuestaJpaMapperTest {
     @Test
     void debeAplanarLaJpaEntity_cuandoConvierteDesdeElAgregadoJpa() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID solicitud = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         var fecha = Instant.parse("2026-03-01T09:00:00Z");
-        RespuestaJpaEntity jpa = RespuestaJpaEntity.builder()
+        var jpa = RespuestaJpaEntity.builder()
                 .id(id)
                 .solicitudId(solicitud)
                 .fechaRespuesta(fecha)
@@ -46,7 +46,7 @@ class RespuestaJpaMapperTest {
                 .build();
 
         // Act
-        RespuestaEntity entity = RespuestaJpaMapper.toEntity(jpa);
+        var entity = RespuestaJpaMapper.toEntity(jpa);
 
         // Assert
         assertThat(entity).isEqualTo(new RespuestaEntity(id, solicitud, fecha, "contenido", "APROBADA"));

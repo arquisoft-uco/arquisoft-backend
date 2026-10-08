@@ -376,6 +376,17 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_400 = "Identificador de evaluación o de asesor ficha inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 =
                 "Sin permiso para consultar observaciones de evaluaciones de las fichas que asesora";
+
+        public static final String CONSULTAR_REPRESENTANTE_SUMMARY =
+                "Consultar las observaciones de una evaluación que registró";
+        public static final String CONSULTAR_REPRESENTANTE_DESCRIPTION =
+                "Permite al representante del comité consultar las observaciones de una evaluación de ficha de perfil "
+                        + "que él registró. Si la evaluación no existe o la registró otro representante, la lista llega vacía.";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_200 =
+                "Observaciones de la evaluación (lista vacía si no existe o no la registró el solicitante)";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "Identificador de evaluación inválido";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
+                "Sin permiso para consultar observaciones de evaluaciones que registró";
     }
 
     public static final class EstudianteFichaPerfil {

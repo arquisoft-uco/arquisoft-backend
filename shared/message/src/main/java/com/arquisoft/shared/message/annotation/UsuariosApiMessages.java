@@ -106,12 +106,6 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
 
-        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
-                "Consultar información de los estudiantes (administrador)";
-        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de todos los estudiantes, incluidos los dados de baja. "
-                        + "Cada fila indica el estado del usuario y si el rol estudiante sigue vigente. "
-                        + "Exclusivo del rol administrador.";
         public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los estudiantes vigentes";
         public static final String CONSULTAR_VIGENTES_DESCRIPTION =
                 "Lista paginada, filtrable y ordenable de los estudiantes con el rol vigente. Expone y "
@@ -137,12 +131,6 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
 
-        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
-                "Consultar información de los asesores (administrador)";
-        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de todos los asesores, incluidos los dados de baja. "
-                        + "Cada fila indica el estado del usuario y si el rol asesor sigue vigente. "
-                        + "Exclusivo del rol administrador.";
         public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los asesores vigentes";
         public static final String CONSULTAR_VIGENTES_DESCRIPTION =
                 "Lista paginada, filtrable y ordenable de los asesores con el rol vigente. Expone y "
@@ -168,12 +156,6 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
 
-        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
-                "Consultar información de los asesores de ficha (administrador)";
-        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de todos los asesores de ficha, incluidos los dados de "
-                        + "baja. Cada fila indica el estado del usuario y si el rol asesor de ficha sigue vigente. "
-                        + "Exclusivo del rol administrador.";
         public static final String CONSULTAR_VIGENTES_SUMMARY =
                 "Consultar información de los asesores de ficha vigentes";
         public static final String CONSULTAR_VIGENTES_DESCRIPTION =
@@ -200,12 +182,6 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
 
-        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
-                "Consultar información de los coordinadores (administrador)";
-        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de todos los coordinadores, incluidos los dados de baja. "
-                        + "Cada fila indica el estado del usuario y si el rol coordinador sigue vigente. "
-                        + "Exclusivo del rol administrador.";
         public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los coordinadores vigentes";
         public static final String CONSULTAR_VIGENTES_DESCRIPTION =
                 "Lista paginada, filtrable y ordenable de los coordinadores con el rol vigente. Expone y "
@@ -230,15 +206,6 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_422 = "El usuario no tiene un rol bibliotecario vigente";
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
-
-        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
-                "Consultar información de los bibliotecarios (administrador)";
-        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de todos los bibliotecarios, incluidos los dados de baja. "
-                        + "Cada fila indica el estado del usuario y si el rol bibliotecario sigue vigente. "
-                        + "Exclusivo del rol administrador.";
-        public static final String CONSULTAR_RESP_200 = "Página de bibliotecarios";
-        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 
     public static final class RepresentanteComite {
@@ -257,12 +224,6 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
 
-        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
-                "Consultar información de los representantes del comité (administrador)";
-        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de todos los representantes del comité, incluidos los dados "
-                        + "de baja. Cada fila indica el estado del usuario y si el rol representante del comité sigue "
-                        + "vigente. Exclusivo del rol administrador.";
         public static final String CONSULTAR_VIGENTES_SUMMARY =
                 "Consultar información de los representantes del comité vigentes";
         public static final String CONSULTAR_VIGENTES_DESCRIPTION =
@@ -303,14 +264,5 @@ public final class UsuariosApiMessages {
                         + "administrador vigente";
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
-
-        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
-                "Consultar información de los administradores (administrador)";
-        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de todos los administradores, incluidos los dados de baja. "
-                        + "Cada fila indica el estado del usuario y si el rol administrador sigue vigente. "
-                        + "Exclusivo del rol administrador.";
-        public static final String CONSULTAR_RESP_200 = "Página de administradores";
-        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 }

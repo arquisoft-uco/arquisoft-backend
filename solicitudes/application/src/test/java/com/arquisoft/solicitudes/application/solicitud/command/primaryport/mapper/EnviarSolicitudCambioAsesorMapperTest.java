@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudCambioAsesorCommand;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +13,13 @@ class EnviarSolicitudCambioAsesorMapperTest {
     @Test
     void debeConstruirElBundle_cuandoElComandoEsValido() {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
         var command = EnviarSolicitudCambioAsesorCommand.crear(
                 remitente, destinatario.toString(), "  cambio de asesor  ");
 
         // Act
-        EnvioSolicitudDomain envio =
+        var envio =
                 EnviarSolicitudCambioAsesorMapper.toDomain(command);
 
         // Assert
@@ -39,7 +38,7 @@ class EnviarSolicitudCambioAsesorMapperTest {
                 UUID.randomUUID(), UUID.randomUUID().toString(), "mensaje");
 
         // Act
-        EnvioSolicitudDomain envio =
+        var envio =
                 EnviarSolicitudCambioAsesorMapper.toDomain(command);
 
         // Assert

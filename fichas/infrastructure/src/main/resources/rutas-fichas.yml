@@ -40,6 +40,7 @@ rutas:
       evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
       evaluacion-observaciones-estudiante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/estudiante
       evaluacion-observaciones-asesor: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/asesor
+      evaluacion-observaciones-representante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/representante
       observacion-evaluacion-por-id: /observaciones-evaluacion/{observacionEvaluacionId}
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha

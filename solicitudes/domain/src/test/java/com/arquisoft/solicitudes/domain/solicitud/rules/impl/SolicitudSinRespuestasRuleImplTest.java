@@ -23,7 +23,7 @@ class SolicitudSinRespuestasRuleImplTest {
     @Test
     void debeLanzarSolicitudConRespuestas_cuandoLaSolicitudTieneRespuestas() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new RespuestasSolicitud(solicitud, true)))

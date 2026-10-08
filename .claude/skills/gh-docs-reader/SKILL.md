@@ -5,382 +5,74 @@ description: Consulta archivos markdown del repositorio privado de documentacion
 
 # Skill: gh-docs-reader
 
-Consulta el repositorio privado `arquisoft-uco/arquisoft-docs` usando el GitHub CLI (`gh`).
-Usa este skill en la FASE 0 del agente planificador, antes de hacer cualquier pregunta al usuario.
-
----
+Consulta el repositorio privado `arquisoft-uco/arquisoft-docs` (rama `main`) con el GitHub CLI.
+Se usa en la FASE 0 del planificador, antes de preguntarle nada al usuario.
 
 ## Prerequisito
 
-Verificar autenticacion antes de cualquier consulta:
-
-```bash
-gh auth status
-```
-
-Si no esta autenticado o no tiene acceso a la organizacion, detente y notifica:
+`gh auth status`. Si no esta autenticado o no tiene acceso a la organizacion, detente y notifica:
 
 > "El GitHub CLI no esta autenticado con acceso a `arquisoft-uco`. Ejecuta `gh auth login`
 > y asegurate de otorgar acceso a la organizacion."
 
----
-
-## Variables Base
-
-```
-ORG=arquisoft-uco
-REPO=arquisoft-docs
-BRANCH=main
-```
-
----
-
-## Estructura Real del Repositorio (validada)
+## Estructura del repositorio (validada)
 
 ```
 arquisoft-docs/
-├── PENDIENTES.md                                    # Temas pendientes de decision
-├── CONTRIBUTING.md                                  # Guia de contribucion
-├── README.md
-│
+├── PENDIENTES.md                                   # Temas pendientes de decision
 ├── artefactos/
 │   ├── estrategicos/
-│   │   ├── event-storming/                          # Event Storming por contexto
-│   │   │   ├── {Contexto} - Event Storming.md       # Ej: "Ficha Perfil - Event Storming.md"
-│   │   │   └── excel/                               # Versiones Excel (no legibles)
+│   │   ├── event-storming/{Contexto} - Event Storming.md   # nombres con espacios
 │   │   ├── modelo-dominio/
-│   │   │   ├── anemico/
-│   │   │   │   ├── modelo_dominio_anemico.md        # Indice general anemico
-│   │   │   │   ├── documentacion/                   # Un .md por contexto (numerados)
-│   │   │   │   │   ├── 05_delimitar_contextos_usuarios.md
-│   │   │   │   │   ├── 06_delimitar_contextos_fichas_trabajos_grado.md
-│   │   │   │   │   ├── 07_delimitar_contextos_artefactos.md
-│   │   │   │   │   ├── 08_delimitar_contextos_repositorio_artefactos.md
-│   │   │   │   │   ├── 09_delimitar_contextos_mapas_ruta.md
-│   │   │   │   │   ├── 10_delimitar_contextos_proyectos_grado.md
-│   │   │   │   │   ├── 11_delimitar_contextos_entregables_proyectos_grado.md
-│   │   │   │   │   ├── 12_delimitar_contextos_evaluaciones_definitivas.md
-│   │   │   │   │   ├── 14_delimitar_contextos_biblioteca.md
-│   │   │   │   │   └── 15_delimitar_contextos_solicitudes.md
-│   │   │   │   └── diagramas/                       # Archivos .drawio.xml (no legibles)
-│   │   │   └── enriquecido/
-│   │   │       ├── modelo_dominio_enriquecido.md    # Indice general enriquecido
-│   │   │       ├── documentacion/                   # Un .md por contexto (numerados)
-│   │   │       │   ├── 05_usuarios_modelo_enriquecido.md
-│   │   │       │   ├── 06_fichas_trabajos_grado_modelo_enriquecido.md
-│   │   │       │   ├── 07_artefactos_modelo_enriquecido.md
-│   │   │       │   ├── 08_repositorio_artefactos_modelo_enriquecido.md
-│   │   │       │   ├── 09_mapas_ruta_modelo_enriquecido.md
-│   │   │       │   ├── 10_proyectos_grado_modelo_enriquecido.md
-│   │   │       │   ├── 11_entregables_proyectos_grado_modelo_enriquecido.md
-│   │   │       │   ├── 12_evaluaciones_definitivas_modelo_enriquecido.md
-│   │   │       │   ├── 14_biblioteca_modelo_enriquecido.md
-│   │   │       │   └── 15_solicitudes_modelo_enriquecido.md
-│   │   │       └── excel/                           # Versiones Excel (no legibles)
-│   │   ├── propuestas-hu/                            # REESTRUCTURADA 2026-09-08 — ver seccion propia
-│   │   │   ├── backlog/                              # Backlog por fases (DERIVADO del priorizado + BPD)
-│   │   │   │   ├── README.md                         #   Particion, metodo y riesgos del reparto
-│   │   │   │   ├── fase-1-mvp.md                     #   114 HU · Equipo 1 · flujos F01-F07 (bpd_mvp/)
-│   │   │   │   ├── fase-2-entrega-completa.md        #   163 HU · Equipo 2 · F08-F10 + completar F01/F02/F05/F07
-│   │   │   │   └── fase-3-consolidacion.md           #   3 HU NUEVAS (HU278-HU280) — solo existen aqui
-│   │   │   ├── priorizacion/
-│   │   │   │   ├── historias_usuario_priorizadas.md  # FICHA de cada HU (Actor, Objeto, Comando) — fuente de verdad
-│   │   │   │   └── Historias de Usuario Por Release.xlsx   # (no legible)
-│   │   │   └── fase-2/                               # Reparto de trabajo del Equipo 2 (organizativo, no de negocio)
-│   │   │       ├── luis.md · david.md · mateo.md
-│   │   │       ├── consolidado.md
-│   │   │       └── plan-desarrollo-david.md
-│   │   ├── mapa-impacto/
-│   │   │   ├── mapa_impacto.md                      # Version actual
-│   │   │   └── versiones/                           # Historial de versiones
-│   │   └── vision/
-│   │       ├── vision.md                            # Vision actual del proyecto
-│   │       └── versiones/                           # Historial de versiones
-│   └── tecnicos/
-│       └── diseno-arquitectonico/
-│           └── drivers-arquitectonicos/
-│               ├── funcionalidades-criticas/
-│               │   └── funcionalidades_criticas.md  # Funcionalidades criticas del sistema
-│               ├── atributos-calidad/
-│               │   ├── atributos_calidad.md         # Indice de atributos
-│               │   ├── listado_caracteristicas_escenarios.md
-│               │   ├── QA-2-flexibilidad-escalabilidad.md
-│               │   ├── QA-3-compatibilidad-interoperabilidad.md
-│               │   ├── QA-3-eficiencia-desempeno.md
-│               │   ├── QA-4-fiabilidad.md
-│               │   ├── QA-5-mantenibilidad.md
-│               │   ├── QA-5-seguridad.md
-│               │   ├── QA-5-usabilidad.md
-│               │   └── tacticas/                    # Tacticas por atributo
-│               │       ├── TAC-FLE-flexibilidad-escalabilidad.md
-│               │       ├── TAC-COM-compatibilidad-interoperabilidad.md
-│               │       ├── TAC-EFI-eficiencia-desempeno.md
-│               │       ├── TAC-FIA-fiabilidad.md
-│               │       ├── TAC-MAN-mantenibilidad.md
-│               │       ├── TAC-SEG-seguridad.md
-│               │       └── TAC-USA-usabilidad.md
-│               ├── restricciones-negocio/
-│               │   └── restricciones_negocio.md
-│               └── restricciones-tecnicas/
-│                   └── restricciones_tecnicas.md
-│
+│   │   │   ├── anemico/documentacion/{NN}_delimitar_contextos_{contexto}.md
+│   │   │   └── enriquecido/documentacion/{NN}_{contexto}_modelo_enriquecido.md
+│   │   ├── propuestas-hu/                          # ver seccion propia
+│   │   │   ├── priorizacion/historias_usuario_priorizadas.md   # FICHA de cada HU — fuente de verdad
+│   │   │   ├── backlog/                            # README, fase-1-mvp, fase-2-entrega-completa, fase-3-consolidacion
+│   │   │   └── fase-2/                             # reparto nominal del Equipo 2 (no es fuente de negocio)
+│   │   ├── mapa-impacto/mapa_impacto.md
+│   │   └── vision/vision.md
+│   └── tecnicos/diseno-arquitectonico/drivers-arquitectonicos/
+│       ├── funcionalidades-criticas/funcionalidades_criticas.md
+│       ├── atributos-calidad/                      # atributos_calidad.md, QA-*.md, tacticas/TAC-*.md
+│       ├── restricciones-negocio/restricciones_negocio.md
+│       └── restricciones-tecnicas/restricciones_tecnicas.md
 ├── docs/
-│   ├── stories/                                     # Historias TECNICAS (HT-XXX), NO historias de usuario
-│   │   ├── README.md
-│   │   ├── HT-001.despliegue-infraestructura-desarrollo.story.md
-│   │   ├── HT-002.configuracion-ambiente-produccion.story.md
-│   │   ├── HT-003.creacion-repositorios-git.story.md
-│   │   ├── HT-004.configuracion-cicd-github-actions.story.md
-│   │   ├── HT-005.scaffolding-spring-boot.story.md
-│   │   ├── HT-006.configuracion-postgresql-flyway.story.md
-│   │   ├── HT-007.integracion-keycloak-spring-security.story.md
-│   │   ├── HT-008.integracion-rabbitmq-eventos.story.md
-│   │   ├── HT-009.configuracion-logging-observabilidad.story.md
-│   │   ├── HT-010.scaffolding-react.story.md
-│   │   └── HT-011.configuracion-realm-keycloak.story.md
-│   ├── architecture/                                # Documentacion de arquitectura
-│   │   ├── index.md                                 # Indice de arquitectura
-│   │   ├── coding-standards.md                      # Estandares de codigo
-│   │   ├── cicd-pipelines.md                        # Pipelines CI/CD
-│   │   ├── dod-pivots.md                            # Definition of Done
-│   │   ├── flujo-autenticacion-sso-uco.md
-│   │   ├── flujo-ciclo-vida-ficha-perfil.md
-│   │   ├── flujo-creacion-proyecto-grado.md
-│   │   ├── flujo-evaluacion-asesor-jurado.md
-│   │   ├── flujo-gestion-artefactos-versionados.md
-│   │   ├── flujo-gestion-solicitudes.md
-│   │   ├── flujo-planificacion-mapa-ruta.md
-│   │   ├── flujo-publicacion-consulta-biblioteca.md
-│   │   ├── flujo-repositorio-artefactos-plantillas.md
-│   │   ├── flujo-subida-entregables.md
-│   │   ├── decisions/                               # ADRs (Architecture Decision Records)
-│   │   │   ├── ADR-001-arquitectura-monolito-modular-asincrono.md
-│   │   │   ├── ADR-002-base-datos-postgresql.md
-│   │   │   ├── ADR-003-autenticacion-keycloak.md
-│   │   │   ├── ADR-004-almacenamiento-minio.md
-│   │   │   ├── ADR-005-logging-monitoreo.md
-│   │   │   ├── ADR-006-seguridad-criptografica-keycloak.md
-│   │   │   ├── ADR-007-version-java-21.md
-│   │   │   ├── ADR-008-migracion-spring-boot-4.0.x.md      # Spring Boot 4.0.5, Gradle 9, Virtual Threads automaticos
-│   │   │   ├── ADR-009-migracion-postgresql-15-a-18.md     # PostgreSQL 18, EOL 2030, sin breaking changes en Flyway/JPA
-│   │   │   ├── ADR-010-migracion-rabbitmq-313-a-42.md      # RabbitMQ 4.2.5, AMQP 0-9-1 compatible, Khepri store
-│   │   │   ├── ADR-011-documentacion-api-springdoc-openapi.md  # springdoc-openapi 2.8.17, plugin 1.9.0, Swagger UI
-│   │   │   ├── ADR-INFRA-especificaciones-servidor.md
-│   │   │   └── guides/                                     # Guias tecnicas de referencia (10 .md, no son ADRs)
-│   │   └── risks/
-│   │       └── matriz_riesgos_tecnicos.md
-│   ├── spikes/                                      # Investigaciones tecnicas
-│   │   ├── SPIKE-001-orquestacion-infraestructura.md
-│   │   ├── SPIKE-002-versionamiento-minio.md
-│   │   ├── SPIKE-003-backup-restore.md
-│   │   ├── SPIKE-004-keycloak-azure-ad.md
-│   │   └── SPIKE-005-rendimiento-carga.md
-│   ├── actas/                                       # Actas de reunion
-│   ├── bpd_completo/                                # Diagramas de proceso completos (.mmd)
-│   ├── bpd_mvp/                                     # Diagramas de proceso MVP (.mmd)
-│   └── propuesta/04-arquitectura/                   # Propuesta arquitectonica
-│
-├── mer/                                             # Modelo Entidad-Relacion
-│   ├── modelo_entidad_relacion.md                   # Indice completo con todas las tablas por contexto
-│   ├── 01_base_datos_y_esquemas.sql                 # Creacion de esquemas y base de datos
-│   ├── 02_tablas_usuarios.sql                       # Tablas: Usuario, roles (Estudiante, Asesor, etc.)
-│   ├── 03_tablas_fichas_perfil.sql                  # Tablas: FichaPerfil, EstadoFicha, Item, Revision...
-│   ├── 04_tablas_artefactos.sql                     # Tablas: Artefacto, VersionArtefacto, RevisionAsesor...
-│   ├── 05_tablas_repositorio_artefactos.sql         # Tablas: RepositorioArtefacto, VersionRepositorio...
-│   ├── 06_tablas_mapas_ruta.sql                     # Tablas: MapaRuta, PlanEstimado, PlanReal, Tarea
-│   ├── 07_tablas_proyectos_grado.sql                # Tablas: ProyectoGrado, AsesorProyecto, Estudiante...
-│   ├── 08_tablas_entregables.sql                    # Tablas: EntregableProyectoGrado, ArtefactoEntregable
-│   ├── 09_tablas_evaluaciones.sql                   # Tablas: Evaluacion, EvaluacionAsesor, EvaluacionJurado...
-│   ├── 10_tablas_biblioteca.sql                     # Tablas: Documentacion, EstadoDocumentacion
-│   ├── 11_tablas_solicitudes.sql                    # Tablas: Solicitud, TipoSolicitud, EstadoRespuesta
-│   └── data/                                        # INSERTs de referencia — LOS VALORES de cada catalogo
-│       ├── 02_data_usuarios.sql                     #   Un archivo por contexto, numerado igual que su DDL.
-│       ├── 03_data_fichas_perfil.sql                #   Fuente de verdad de las constantes de cada enum
-│       └── ...                                      #   (no hay 05_: repositorio_artefactos no tiene catalogos)
-│
-└── templates/
-    └── ARQUITECTURA_Y_ESTRUCTURA.md
+│   ├── stories/HT-XXX.{slug}.story.md              # Historias TECNICAS, no HU
+│   ├── architecture/
+│   │   ├── flujo-*.md                              # flujos de proceso de negocio
+│   │   ├── coding-standards.md · dod-pivots.md · cicd-pipelines.md
+│   │   ├── decisions/ADR-*.md                      # ADRs (+ guides/, que no son ADRs)
+│   │   └── risks/matriz_riesgos_tecnicos.md
+│   ├── spikes/SPIKE-*.md
+│   ├── bpd_mvp/ · bpd_completo/                    # diagramas de proceso (.mmd)
+│   └── hus/planes/ · hus/validaciones/             # planes y reportes publicados por @4c-commit
+└── mer/
+    ├── modelo_entidad_relacion.md                  # indice: todas las tablas por contexto
+    ├── 01_base_datos_y_esquemas.sql                # esquemas y grafo de dependencias
+    ├── {NN}_tablas_{contexto}.sql                  # DDL exacto
+    └── data/{NN}_data_{contexto}.sql               # INSERTs: LOS VALORES de cada catalogo
 ```
 
----
+Los `.xlsx` y `.drawio.xml` no son legibles como texto: ignoralos, todo esta en el `.md` de al lado.
 
-## Comandos Disponibles
-
-### 1. Leer un archivo (metodo recomendado — sin decodificar base64)
-
-Usar el header `Accept: application/vnd.github.raw+json` para obtener el contenido directamente:
+## Comandos
 
 ```bash
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/{ruta/al/archivo.md}" \
-  -H "Accept: application/vnd.github.raw+json"
-```
+# Leer un archivo (contenido crudo; no dependas de base64 -d, que en Windows puede faltar)
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/{ruta}" -H "Accept: application/vnd.github.raw+json"
 
-IMPORTANTE: Este metodo funciona en Windows y Linux sin depender de `base64 -d`.
+# Listar una carpeta (filtra con jq: endswith(".md"), startswith("flujo-"), select(.type=="file")…)
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/{carpeta}" --jq '.[] | "\(.type)\t\(.name)"'
 
-Ejemplos con rutas reales:
-
-```bash
-# Historias de usuario priorizadas (fuente principal de las HU)
-# OJO: desde 2026-09-08 vive bajo priorizacion/ — la ruta plana anterior da 404
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu/priorizacion/historias_usuario_priorizadas.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Backlog de la fase a la que pertenece la HU (fase, prioridad de ejecucion, flujo, equipo)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu/backlog/fase-1-mvp.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# HU278-HU280: NO estan en el priorizado, solo aqui
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu/backlog/fase-3-consolidacion.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Funcionalidades criticas
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-arquitectonico/drivers-arquitectonicos/funcionalidades-criticas/funcionalidades_criticas.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Leer una historia TECNICA especifica (HT, no HU)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/docs/stories/HT-007.integracion-keycloak-spring-security.story.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Event storming de un contexto (NOTA: los nombres tienen espacios)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/event-storming/Ficha Perfil - Event Storming.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Modelo anemico de un contexto
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/modelo-dominio/anemico/documentacion/06_delimitar_contextos_fichas_trabajos_grado.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Modelo enriquecido de un contexto
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/modelo-dominio/enriquecido/documentacion/06_fichas_trabajos_grado_modelo_enriquecido.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Atributo de calidad especifico
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-arquitectonico/drivers-arquitectonicos/atributos-calidad/QA-5-seguridad.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Tactica de un atributo de calidad
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-arquitectonico/drivers-arquitectonicos/atributos-calidad/tacticas/TAC-SEG-seguridad.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Modelo entidad-relacion (indice completo, todas las tablas)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/modelo_entidad_relacion.md" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Schemas y dependencias entre contextos (LEER antes de planificar Flyway con FKs cruzadas)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/01_base_datos_y_esquemas.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# Data de referencia del contexto (OBLIGATORIO si la HU toca un enum de catalogo)
-# Sustituye {NN}_{contexto} por el mismo numero y nombre que su archivo de tablas.
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/data/03_data_fichas_perfil.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-
-# SQL del MER por contexto (DDL exacto para Flyway)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/02_tablas_usuarios.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/03_tablas_fichas_perfil.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/04_tablas_artefactos.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/05_tablas_repositorio_artefactos.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/06_tablas_mapas_ruta.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/07_tablas_proyectos_grado.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/08_tablas_entregables.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/09_tablas_evaluaciones.sql" \
-  -H "Accept: application/vnd.github.raw+json"
-```
-
-### 2. Listar archivos de una carpeta
-
-```bash
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/{carpeta}" --jq ".[].name"
-```
-
-Ejemplos:
-
-```bash
-# Listar la estructura de propuestas-hu (backlog/, priorizacion/, fase-2/)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu" \
-  --jq '.[] | "\(.type)\t\(.name)"'
-
-# Listar los backlogs por fase
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu/backlog" \
-  --jq ".[].name"
-
-# Listar todas las historias tecnicas (HT, no HU)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/docs/stories" --jq ".[].name"
-
-# Listar event stormings disponibles (solo .md)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/event-storming" \
-  --jq '.[] | select(.name | endswith(".md")) | .name'
-
-# Listar modelos anemicos
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/modelo-dominio/anemico/documentacion" \
-  --jq ".[].name"
-
-# Listar modelos enriquecidos
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/modelo-dominio/enriquecido/documentacion" \
-  --jq ".[].name"
-
-# Listar atributos de calidad
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-arquitectonico/drivers-arquitectonicos/atributos-calidad" \
-  --jq '.[] | select(.name | endswith(".md")) | .name'
-
-# Listar tacticas de calidad
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-arquitectonico/drivers-arquitectonicos/atributos-calidad/tacticas" \
-  --jq ".[].name"
-
-# Listar ADRs (001-011 + INFRA; ignorar carpeta guides/)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/docs/architecture/decisions" \
-  --jq '.[] | select(.type=="file" and (.name | endswith(".md"))) | .name'
-
-# Listar guias tecnicas de referencia (decisions/guides/)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/docs/architecture/decisions/guides" \
-  --jq '.[].name'
-
-# Listar flujos de arquitectura
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/docs/architecture" \
-  --jq '.[] | select(.name | startswith("flujo-")) | .name'
-```
-
-### 3. Buscar archivos por patron en todo el repo
-
-```bash
-gh api "repos/arquisoft-uco/arquisoft-docs/git/trees/main?recursive=1" \
-  --jq '.tree[] | select(.type=="blob" and (.path | contains("TERMINO"))) | .path'
-```
-
-Ejemplos:
-
-```bash
-# Buscar archivos relacionados con fichas
+# Buscar por patron en todo el repo
 gh api "repos/arquisoft-uco/arquisoft-docs/git/trees/main?recursive=1" \
   --jq '.tree[] | select(.type=="blob" and (.path | ascii_downcase | contains("ficha"))) | .path'
-
-# Buscar archivos relacionados con seguridad
-gh api "repos/arquisoft-uco/arquisoft-docs/git/trees/main?recursive=1" \
-  --jq '.tree[] | select(.type=="blob" and (.path | ascii_downcase | contains("seguridad"))) | .path'
-
-# Listar TODOS los .md del repo
-gh api "repos/arquisoft-uco/arquisoft-docs/git/trees/main?recursive=1" \
-  --jq '.tree[] | select(.type=="blob" and (.path | endswith(".md"))) | .path'
 ```
 
----
+Las rutas con espacios (Event Storming) funcionan dentro de las comillas dobles de la URL.
 
-## Mapeo: Contexto del Backend → Archivos en arquisoft-docs
-
-Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
+## Mapeo: contexto del backend → archivos en arquisoft-docs
 
 | Contexto Backend | Event Storming | Modelo Anemico | Modelo Enriquecido | SQL del MER | Data de referencia |
 |------------------|---------------|----------------|-------------------|-------------|--------------------|
@@ -395,82 +87,36 @@ Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 | `biblioteca` | `Biblioteca - Event Storming.md` | `14_delimitar_contextos_biblioteca.md` | `14_biblioteca_modelo_enriquecido.md` | `10_tablas_biblioteca.sql` | `data/10_data_biblioteca.sql` |
 | `solicitudes` | `Solicitudes - Event Storming.md` | `15_delimitar_contextos_solicitudes.md` | `15_solicitudes_modelo_enriquecido.md` | `11_tablas_solicitudes.sql` | `data/11_data_solicitudes.sql` |
 
-**`notificaciones` no tiene fila, y no es un olvido: es el caso inverso.** Es un bounded context real
-del backend (con su modulo Gradle, su base y sus migraciones) que **no existe en arquisoft-docs** —
-no tiene Event Storming, ni modelo anemico o enriquecido, ni tablas en el MER. Es infraestructura
-transversal que nacio del backend, no del modelado de negocio. Consecuencias al planificar:
+Rutas base: Event Storming en `artefactos/estrategicos/event-storming/`, modelos en
+`artefactos/estrategicos/modelo-dominio/{anemico|enriquecido}/documentacion/`, SQL y data en `mer/`.
 
-- Ninguna HU se planifica "sobre `notificaciones`". Lo que llega ahi llega **siempre** como
-  consecuencia de una transicion de estado de otro contexto, y ese otro contexto **si** tiene su fila
-  arriba: el Event Storming que se consulta es el del **productor**, no el del consumidor.
-- Sus enums (`TipoNotificacion`, `EstadoNotificacion`) **no salen de `mer/data/`** porque no hay
-  archivo: son columnas `VARCHAR` sin tabla de catalogo. Es la unica excepcion a "las constantes se
-  copian fila por fila del `data/`" — aqui las fija el backend, y una constante nueva se agrega en el
-  enum de dominio y en su espejo `TipoNotificacionEvento`, sin migracion.
-- Si te descubres buscando `13_delimitar_contextos_notificaciones.md` o `data/12_data_notificaciones.sql`,
-  para: no existen, y el `gh api` va a devolver 404. El dato que buscas esta en el contexto productor.
+\* `mapas_ruta` tiene documentacion y DDL, pero no es un bounded context del backend (los vigentes
+son los de `CLAUDE.md`). Modelarlo exige antes su modulo Gradle, su `{Contexto}DataSourceConfig` y su
+base en `init-db.sql`: no lo asumas planificando.
 
-*Contexto documentado en arquisoft-docs que aun no tiene bounded context en el backend. `mapas_ruta`
-tiene DDL y data propios en el MER, pero **eso no crea el contexto**: los bounded contexts del
-backend son los de `CLAUDE.md`, y el marcado no esta entre ellos.
-Modelarlos requiere antes su modulo Gradle, su `{Contexto}DataSourceConfig` y su base en
-`init-db.sql` — no lo asumas planificando.
+**`notificaciones` no tiene fila a proposito.** Es un contexto del backend que no existe en
+arquisoft-docs (sin Event Storming, modelos ni tablas en el MER): infraestructura transversal nacida
+del backend. Lo que llega ahi es siempre consecuencia de una transicion de otro contexto, asi que se
+consulta el Event Storming del **productor**. Sus enums (`TipoNotificacion`, `EstadoNotificacion`) no
+salen de `mer/data/` —son `VARCHAR` sin catalogo—: una constante nueva va en el enum de dominio y en
+su espejo `TipoNotificacionEvento`, sin migracion. Buscar `13_..._notificaciones.md` o
+`data/12_data_notificaciones.sql` da 404: no existen.
 
-**Rutas base para los archivos del mapeo:**
-- Event Storming: `artefactos/estrategicos/event-storming/{nombre archivo}`
-- Modelo Anemico: `artefactos/estrategicos/modelo-dominio/anemico/documentacion/{nombre archivo}`
-- Modelo Enriquecido: `artefactos/estrategicos/modelo-dominio/enriquecido/documentacion/{nombre archivo}`
-- SQL del MER: `mer/{nombre archivo}`
+## El MER
 
-**Para que usar cada fuente:**
-- `modelo_entidad_relacion.md` → vision completa de todas las tablas, tipos de dato, PKs, FKs, indices y restricciones
-- `01_base_datos_y_esquemas.sql` → orden de creacion de schemas y **grafo de dependencias entre contextos**. Leelo para saber de que otro contexto viene un dato y por tanto que evento AMQP hay que consumir — **no** para escribir una FK cruzada, que en el backend es imposible (ver abajo)
-- `{NN}_tablas_{contexto}.sql` → DDL exacto listo para Flyway; columnas, constraints y nombres de tabla tal como van a la BD
-- `data/{NN}_data_{contexto}.sql` → **los valores** de cada tabla de catalogo. Ver abajo
-- El agente planificador DEBE consultar el SQL del MER del contexto correspondiente para definir las migraciones Flyway en el plan
+- `modelo_entidad_relacion.md` → vision de todas las tablas: tipos, PKs, FKs, indices, restricciones.
+- `01_base_datos_y_esquemas.sql` → grafo de dependencias entre contextos: de donde viene un dato y,
+  por tanto, que evento AMQP hay que consumir.
+- `{NN}_tablas_{contexto}.sql` → DDL exacto para las migraciones Flyway del plan.
+- `data/{NN}_data_{contexto}.sql` → los valores de cada catalogo (abajo).
 
-### `mer/data/` — la fuente de verdad de los enums de catalogo
-
-Un archivo por contexto con los `INSERT` de sus tablas de estado/tipo. **Si la HU toca un enum de
-catalogo, este archivo es de lectura obligatoria** y manda sobre cualquier otra fuente: el Event
-Storming nombra estados en prosa, el modelo enriquecido a veces lista alguno de mas, y un plan viejo
-de `.workspace/` puede traer constantes que ya no existen. Ya paso: se implemento un `EN_REVISION`
-que el MER no tiene y hubo que quitarlo despues.
-
-Cada fila define las tres cosas que necesitas, y ninguna se inventa:
-
-| Columna | Es | En el codigo |
-|---|---|---|
-| `id` | `Enum.name()` en UPPER_SNAKE_CASE (ADR-012) | La constante del enum; lo que devuelve `getId()` y lo que se persiste |
-| `nombre` | Etiqueta legible ("Aprobada Con Observaciones") | `getNombre()` — se queda en Java, su fuente de verdad es esta fila, **no** el catalogo Redis |
-| `descripcion` | Texto explicativo | Solo documentacion; el backend no lo modela |
-
-El conjunto de filas **es** el conjunto de constantes: ni una de mas ni una de menos. La unica
-constante que existe en Java sin fila propia es el centinela `VACIO`, que es un artefacto del
-codigo (Notification Pattern) y nunca se persiste.
-
-### Ancho de las tablas de catalogo (ADR-012 v1.1, enmienda 2026-08-25)
-
-El estandar para una tabla de catalogo **nueva** es `id VARCHAR(60)`, `nombre VARCHAR(60)`,
-`descripcion VARCHAR(300)`, y las FK que la referencian llevan el mismo ancho — nunca `UUID`.
-
-**Las tres tablas de catalogo de `fichas` son excepciones documentadas y NO se migran:**
-
-| Tabla | id | nombre | descripcion |
-|---|---|---|---|
-| `estado_ficha` | `VARCHAR(50)` | `VARCHAR(30)` | `VARCHAR(200)` |
-| `tipo_item` | `VARCHAR(50)` | `VARCHAR(20)` | `VARCHAR(500)` |
-| `estado_evaluacion` | `VARCHAR(50)` | `VARCHAR(100)` | `VARCHAR(255)` |
-
-El MER recogio los anchos que el backend ya tenia y los declaro excepcion, no al reves. Leer "el
-estandar es 60" y planificar un `ALTER TABLE` para alinear `fichas` es un error: seria un
-breaking-change sobre un catalogo vivo, con FKs que lo referencian, a cambio de nada. Copia el ancho
-del archivo `{NN}_tablas_{contexto}.sql` de la tabla concreta; el estandar solo aplica a lo nuevo.
-
-**Dependencias entre schemas (extraidas de `01_base_datos_y_esquemas.sql`):**
+**Una dependencia entre contextos nunca es una FK.** El MER habla de schemas dentro de una base; el
+backend crea **una base por contexto** (`init-db.sql`), con su `DataSource` y su Flyway en
+`db/migration/{contexto}/`, asi que un `REFERENCES` cruzado es imposible. Se resuelve con una tabla
+replica local poblada por eventos, como `asesor_ficha` y `estudiante` en `fichas`.
 
 ```
-usuarios              → (ninguna — schema raiz)
+usuarios              → (raiz)
 fichas_perfil         → usuarios
 repositorio_artefactos→ usuarios
 proyectos_grado       → usuarios, fichas_perfil
@@ -482,142 +128,96 @@ biblioteca            → usuarios
 solicitudes           → usuarios
 ```
 
-**El backend NO crea esas FKs cruzadas.** El grafo de arriba es el modelo lógico del MER; en el
-código cada contexto tiene su propio `DataSource`, su propia base de datos y sus propias migraciones
-Flyway, así que una dependencia hacia otro contexto se resuelve con una **tabla réplica local
-poblada por eventos AMQP**, no con un `REFERENCES`. Es lo que hace `fichas` con `asesor_ficha` y
-`estudiante` (las dos primeras migraciones de `db/migration/fichas/`). Usa el grafo para entender de
-dónde viene el dato y qué evento debes consumir — nunca para escribir una FK entre contextos.
+### `mer/data/` — la fuente de verdad de los enums de catalogo
 
-Ojo con la diferencia de modelo: el MER habla de **schemas** dentro de una base, pero el backend
-crea **una base de datos por contexto** (`init-db.sql`), cada una con su propio
-`flyway_schema_history` y sus migraciones en `db/migration/{contexto}/`. Una FK entre contextos no
-es "desaconsejada", es imposible.
+Si la HU toca un estado o un tipo, este archivo es de lectura obligatoria y manda sobre el Event
+Storming (que nombra estados en prosa), el modelo enriquecido (que a veces lista de mas) y cualquier
+plan viejo. Ya paso: se implemento un `EN_REVISION` que el MER no tiene y hubo que quitarlo.
 
----
+| Columna | Es | En el codigo |
+|---|---|---|
+| `id` | `Enum.name()` en UPPER_SNAKE_CASE (ADR-012) | La constante; lo que devuelve `getId()` y se persiste |
+| `nombre` | Etiqueta legible | `getNombre()` — se queda en Java, no va al catalogo Redis |
+| `descripcion` | Texto explicativo | Solo documentacion |
+
+El conjunto de filas **es** el conjunto de constantes. La unica constante sin fila es el centinela
+`VACIO`, que nunca se persiste.
+
+### Ancho de las tablas de catalogo (ADR-012 v1.1, enmienda 2026-08-25)
+
+Una tabla de catalogo **nueva** lleva `id VARCHAR(60)`, `nombre VARCHAR(60)`,
+`descripcion VARCHAR(300)`, y sus FK el mismo ancho (nunca `UUID`). Las tres de `fichas` son
+excepciones documentadas y **no se migran**:
+
+| Tabla | id | nombre | descripcion |
+|---|---|---|---|
+| `estado_ficha` | `VARCHAR(50)` | `VARCHAR(30)` | `VARCHAR(200)` |
+| `tipo_item` | `VARCHAR(50)` | `VARCHAR(20)` | `VARCHAR(500)` |
+| `estado_evaluacion` | `VARCHAR(50)` | `VARCHAR(100)` | `VARCHAR(255)` |
+
+Un `ALTER TABLE` para "alinearlas" seria un breaking-change sobre un catalogo vivo con FKs, a cambio
+de nada. Copia el ancho del `{NN}_tablas_{contexto}.sql` de la tabla concreta.
 
 ## `propuestas-hu/` — reestructurada el 2026-09-08
 
-La carpeta dejo de ser plana. `historias_usuario_priorizadas.md` **ya no esta en la raiz de
-`propuestas-hu/`**: se movio a `priorizacion/`. Cualquier ruta memorizada de antes devuelve 404, y el
-404 no significa que la HU no exista — significa que la ruta es vieja.
-
-Tres subcarpetas con roles distintos, y no son intercambiables:
+`historias_usuario_priorizadas.md` se movio a `priorizacion/`: la ruta plana anterior da 404, y ese
+404 significa ruta vieja, no HU inexistente.
 
 | Subcarpeta | Que es | Cuando la lees |
 |---|---|---|
-| `priorizacion/` | La **ficha** de cada HU: Actor, Objeto de Dominio, Comando, Descripcion, MoSCoW, tallaje. Fuente de verdad de las 277 HU | **Siempre.** Es el paso 2 del protocolo y de aqui sale el bounded context |
-| `backlog/` | **Derivado**: reparte esas 277 en Fase 1 (114, Equipo 1) y Fase 2 (163, Equipo 2) — conjuntos disjuntos — y anade Fase 3 (HU278-HU280). Aporta fase, flujo (F01-F10), equipo y **prioridad de ejecucion** | Cuando necesites saber a que fase/flujo pertenece la HU, que la habilita, o si es HU278-HU280 |
-| `fase-2/` | Reparto nominal del trabajo del Equipo 2 (`luis.md`, `david.md`, `mateo.md`, `consolidado.md`, `plan-desarrollo-david.md`) | Solo si la pregunta es de asignacion de personas. **No es fuente de negocio** — no saques de aqui reglas ni campos |
+| `priorizacion/` | La **ficha** de cada una de las 277 HU: Actor, Objeto de Dominio, Comando, Descripcion, MoSCoW, tallaje | **Siempre.** De aqui sale el bounded context |
+| `backlog/` | **Derivado**: Fase 1 (114, Equipo 1) y Fase 2 (163, Equipo 2), disjuntas, mas Fase 3 (HU278-HU280). Aporta fase, flujo (F01-F10), equipo y **prioridad de ejecucion** | Para fase/flujo, que la habilita, o si es HU278-HU280 |
+| `fase-2/` | Reparto nominal del trabajo del Equipo 2 | Solo para asignacion de personas. No es fuente de negocio |
 
-Cuatro consecuencias al planificar:
-
-- **`backlog/` es derivado, `priorizacion/` manda.** Si difieren en el titulo o el actor de una HU,
-  gana la ficha del priorizado. La excepcion son las tres HU de Fase 3.
-- **HU278, HU279 y HU280 solo existen en `backlog/fase-3-consolidacion.md`.** Son posteriores al
-  cierre del listado priorizado; buscarlas en `priorizacion/` es buscar en vano. Cierran el ciclo de
-  vida de Revision Item / Observacion Item y dependen de HU033.
-- **La priorizacion por Release/Sprint quedo obsoleta.** Las columnas `R`, `S` y `Prio` originales y
-  la vista agrupada por release **no se conservan**; el orden vigente es la *Prioridad de ejecucion*
-  de `backlog/` (menor = primero, en pasos de 10). No cites "Release N" en un plan.
-  Las prioridades de Fase 3 (1043/1047/1051) conservan el rango del listado original y **no son
-  comparables** con las de Fase 1 y Fase 2.
-- **La regla de particion es mecanica:** una HU es de Fase 1 si y solo si algun `.mmd` de
-  `docs/bpd_mvp/` la referencia; el resto es Fase 2. Util para ubicar una HU sin abrir los tres
-  backlogs.
-
-El `.xlsx` de `priorizacion/` no es legible como texto — ignoralo, todo lo que necesitas esta en el
-`.md` de al lado.
-
----
+- Ante discrepancia gana `priorizacion/`, salvo HU278-HU280, que **solo existen** en
+  `backlog/fase-3-consolidacion.md` (cierran Revision Item / Observacion Item y dependen de HU033).
+- La priorizacion por Release/Sprint quedo obsoleta: el orden vigente es la *Prioridad de ejecucion*
+  de `backlog/` (menor = primero). No cites "Release N". Las prioridades de Fase 3 (1043/1047/1051) no
+  son comparables con las de Fase 1 y 2.
+- Una HU es de Fase 1 si y solo si algun `.mmd` de `docs/bpd_mvp/` la referencia; el resto es Fase 2.
 
 ## Protocolo de Consulta para el Planificador
 
-Sigue este orden en la FASE 0. Distingue entre **HU** (Historias de Usuario) y **HT** (Historias Tecnicas):
-
-- **HU** = funcionalidad de negocio → su ficha vive en
-  `artefactos/estrategicos/propuestas-hu/priorizacion/historias_usuario_priorizadas.md`
-  (HU278-HU280, en `propuestas-hu/backlog/fase-3-consolidacion.md`)
-- **HT** = infraestructura tecnica → viven en `docs/stories/HT-XXX.*.story.md`
+**HU** = negocio, ficha en `propuestas-hu/priorizacion/` (HU278-HU280 en `backlog/fase-3-consolidacion.md`).
+**HT** = infraestructura tecnica, en `docs/stories/HT-XXX.*.story.md`.
 
 ```
- 1. gh auth status                                     → Verificar acceso
- 2. Leer priorizacion/historias_usuario_priorizadas.md  → Buscar la HU por ID (ej. HU160)
-    Extraer: Actor, Objeto de Dominio, Comando, Descripcion, MoSCoW, tallaje.
-    Ruta completa (cambio 2026-09-08 — la ruta plana anterior da 404):
-      artefactos/estrategicos/propuestas-hu/priorizacion/historias_usuario_priorizadas.md
-    Si la HU es HU278, HU279 o HU280 no esta aqui: leer backlog/fase-3-consolidacion.md.
- 2b. Leer el backlog de su fase                        → Fase, flujo (F01-F10), equipo, prioridad
-    de ejecucion y que HU la habilitan. Es DERIVADO: ante discrepancia gana el paso 2.
-      backlog/fase-1-mvp.md | backlog/fase-2-entrega-completa.md | backlog/fase-3-consolidacion.md
-    Regla para saber cual abrir: la HU es de Fase 1 si y solo si un .mmd de docs/bpd_mvp/ la
-    referencia; el resto es Fase 2. No cites "Release N": esa priorizacion quedo obsoleta.
- 3. Con el Objeto de Dominio, identificar el bounded context (usar tabla de mapeo abajo)
- 4. Leer el Event Storming del contexto                → Buscar el Comando exacto de la HU
-    Extraer del comando: Actores, Descripcion, Informacion externa / Read Models,
-    Politicas (POL-XX), Sistemas externos, Eventos generados,
-    Aspectos por solucionar, Eventos previos, Comandos posteriores
- 5. Leer el Modelo Anemico del contexto                → Entidades y atributos
- 6. Leer el Modelo Enriquecido del contexto            → Comportamientos y reglas
- 7. Leer funcionalidades_criticas.md                   → Riesgos e impacto
- 8. Si el Event Storming revela Aspectos por solucionar → Registrarlos para preguntar en FASE 2
- 9. Si las Politicas mencionan atributos de calidad poco claros → Leer QA relevantes
-10. Leer el SQL del MER del contexto (OBLIGATORIO)     → Tablas, columnas exactas, tipos, PKs, FKs
-    a) Leer primero `01_base_datos_y_esquemas.sql` para identificar de que otros contextos
-       depende este. En el MER esas dependencias son FK cruzadas entre schemas; en el backend
-       NO se traducen a un `REFERENCES` — cada contexto tiene su propia base de datos y la FK
-       es imposible. Anotar cada dependencia como "tabla replica local + evento AMQP a consumir"
-       (como hace `fichas` con `asesor_ficha` y `estudiante`), no como prerrequisito de orden
-       entre migraciones.
-       Comando:
-         gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/01_base_datos_y_esquemas.sql" \
-           -H "Accept: application/vnd.github.raw+json"
-    b) Leer el SQL especifico del contexto usando la columna "SQL del MER" de la tabla de mapeo.
-       Comando:
-         gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/{NN}_tablas_{contexto}.sql" \
-           -H "Accept: application/vnd.github.raw+json"
-    Extraer: nombres de tabla, columnas, tipos de dato, constraints, indices unicos.
-    Usar estos datos para definir las migraciones Flyway en la seccion correspondiente del plan.
-    Copiar el ancho de cada catalogo TAL CUAL viene aqui: el estandar de ADR-012 v1.1 (60/60/300)
-    aplica a tablas nuevas, y las tres de `fichas` son excepciones que no se migran.
-    c) Si la HU toca un estado o un tipo, leer ademas la data de referencia (OBLIGATORIO).
-       Es el conjunto exacto de constantes del enum: ni una de mas ni una de menos.
-       Comando:
-         gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/data/{NN}_data_{contexto}.sql" \
-           -H "Accept: application/vnd.github.raw+json"
-       Extraer por fila: `id` (= `Enum.name()`), `nombre` (etiqueta de `getNombre()`), `descripcion`.
-       Listarlas en el plan. Si el Event Storming o el modelo enriquecido nombran un estado que
-       no tiene fila aqui, gana este archivo — y anotalo como discrepancia para preguntar.
-11. Si aplica: leer ADR relacionado                    → Decisiones arquitectonicas previas
-    ADRs clave del stack actual:
-    - ADR-008: Spring Boot 4.0.5 + Gradle 9 + Virtual Threads automaticos
-    - ADR-009: PostgreSQL 18 (EOL 2030, compatible con Flyway/JPA sin cambios)
-    - ADR-010: RabbitMQ 4.2.5 (AMQP 0-9-1 compatible, Khepri store)
-    - ADR-011: springdoc-openapi 2.8.17 + plugin 1.9.0 (Swagger UI, @Tag/@Operation obligatorios)
-    - ADR-012 (v1.1): PK semantica en tablas de catalogo — el `VARCHAR` es `Enum.name()`, nunca un
-      UUID ni la etiqueta en espaniol; renombrar una constante es breaking-change. La enmienda
-      2026-08-25 fija el ancho estandar 60/60/300 y documenta las excepciones de `fichas`
-12. Si aplica: leer flujo de arquitectura              → Flujo del proceso de negocio
-13. Si aplica: listar docs/stories/ y leer HTs relacionadas → Contexto tecnico complementario
-14. Registrar en Metadata del plan: archivos consultados
+ 1. gh auth status
+ 2. priorizacion/historias_usuario_priorizadas.md → la HU por ID: Actor, Objeto de Dominio,
+    Comando, Descripcion, MoSCoW, tallaje.
+ 2b. Backlog de su fase → fase, flujo, equipo, prioridad de ejecucion, HU que la habilitan.
+ 3. Con el Objeto de Dominio, el bounded context (tabla de mapeo).
+ 4. Event Storming del contexto → el Comando exacto: Actores, Descripcion, Read Models, Politicas
+    (POL-XX), Sistemas externos, Eventos generados, Aspectos por solucionar, Eventos previos,
+    Comandos posteriores.
+ 5. Modelo Anemico → entidades y atributos.
+ 6. Modelo Enriquecido → comportamientos y reglas.
+ 7. funcionalidades_criticas.md → riesgos e impacto.
+ 8. Aspectos por solucionar del Event Storming → registrarlos para preguntar en la FASE 2.
+ 9. Politicas con atributos de calidad poco claros → leer los QA relevantes.
+10. SQL del MER del contexto (OBLIGATORIO):
+    a) 01_base_datos_y_esquemas.sql → cada dependencia se anota como "replica local + evento AMQP
+       a consumir", nunca como FK ni como orden entre migraciones.
+    b) {NN}_tablas_{contexto}.sql → tablas, columnas, tipos, constraints, indices unicos para las
+       migraciones del plan; anchos de catalogo tal cual vienen.
+    c) Si la HU toca un estado o tipo: data/{NN}_data_{contexto}.sql (OBLIGATORIO) → listar en el
+       plan cada fila (id, nombre). Si otra fuente nombra un estado sin fila aqui, gana este archivo
+       y se anota como discrepancia para preguntar.
+11. Si aplica, el ADR relacionado. Los del stack: ADR-008 (Spring Boot 4.0.5 + Gradle 9 + Virtual
+    Threads), ADR-009 (PostgreSQL 18), ADR-010 (RabbitMQ 4.2.5), ADR-011 (springdoc, @Tag/@Operation
+    obligatorios), ADR-012 v1.1 (PK semantica de catalogo = Enum.name(); renombrar es breaking-change).
+12. Si aplica, el flujo de arquitectura (docs/architecture/flujo-*.md).
+13. Si aplica, las HT relacionadas de docs/stories/.
+14. Registrar en la Metadata del plan los archivos consultados.
 ```
 
----
+## Errores
 
-## Manejo de Errores
-
-| Error | Causa probable | Accion |
-|-------|---------------|--------|
-| `HTTP 401` | Token expirado o sin permisos | Ejecutar `gh auth refresh` o `gh auth login` |
-| `HTTP 404` | Archivo no existe en esa ruta | Listar carpeta padre con el comando de listar para encontrar la ruta real |
-| `HTTP 404` en `propuestas-hu/historias_usuario_priorizadas.md` | Ruta previa a la reestructuracion del 2026-09-08 | Reintentar con `propuestas-hu/priorizacion/historias_usuario_priorizadas.md`. **No** concluyas que la HU no existe |
-| `HTTP 403` | Sin acceso a la organizacion | Solicitar al admin de la org que otorgue acceso al token |
-| `could not find` + `404` | Ruta con caracteres especiales mal codificados | Listar la carpeta padre y usar el nombre exacto del archivo |
-| `gh: command not found` | CLI no instalado | Instalar desde https://cli.github.com/ |
-| Contenido vacio o basura | Se uso `--jq '.content'` sin decodificar | Usar `-H "Accept: application/vnd.github.raw+json"` en vez de decodificar base64 |
-
-### Notas importantes
-
-- **Archivos con espacios en el nombre**: Los archivos de Event Storming tienen espacios (ej: `Ficha Perfil - Event Storming.md`). Usar comillas dobles en la URL del `gh api` para que funcione correctamente.
-- **No usar `base64 -d`**: En Windows puede no estar disponible. Siempre usar el header `-H "Accept: application/vnd.github.raw+json"` que devuelve el contenido crudo directamente.
-- **Archivos `.xlsx` y `.drawio.xml`**: No son legibles como texto. Ignorarlos y usar solo los archivos `.md`.
+| Error | Accion |
+|-------|--------|
+| `HTTP 401` | `gh auth refresh` o `gh auth login` |
+| `HTTP 403` | Pedir al admin de la org acceso para el token |
+| `HTTP 404` | Listar la carpeta padre y usar el nombre exacto (espacios, tildes) |
+| `HTTP 404` en `propuestas-hu/historias_usuario_priorizadas.md` | Ruta previa al 2026-09-08: usar `propuestas-hu/priorizacion/...`. No concluyas que la HU no existe |
+| Contenido en base64 o vacio | Faltó `-H "Accept: application/vnd.github.raw+json"` |
+| `gh: command not found` | Instalar desde https://cli.github.com/ |

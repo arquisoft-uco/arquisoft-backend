@@ -233,7 +233,8 @@
               "fichas:evaluacion-ficha-perfil-representante:view",
               "fichas:observacion-evaluacion:create",
               "fichas:observacion-evaluacion:update",
-              "fichas:observacion-evaluacion:delete"
+              "fichas:observacion-evaluacion:delete",
+              "fichas:observacion-evaluacion-representante:view"
             ]
           }
         },
@@ -850,6 +851,15 @@
         {
           "id": "8d8b0792-0864-41e6-852f-18461c81aeda",
           "name": "fichas:observacion-evaluacion:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "e0658df6-fbdc-4237-8f45-4d21a64d0a22",
+          "name": "fichas:observacion-evaluacion-representante:view",
           "description": "",
           "composite": false,
           "clientRole": true,

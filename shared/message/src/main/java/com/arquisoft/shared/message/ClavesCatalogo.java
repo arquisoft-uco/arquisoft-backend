@@ -63,17 +63,10 @@ import com.arquisoft.shared.message.key.usuarios.AgregarRepresentanteComiteKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarBibliotecarioKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarAdministradoresAdministradorKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresAdministradorKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaVigentesKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresVigentesKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarBibliotecariosAdministradorKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresVigentesKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstadosUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuariosAdministradorKey;
@@ -194,19 +187,12 @@ public final class ClavesCatalogo {
             ProyectoGradoKey.class,
             EstudianteProyectoGradoKey.class,
             EstadoProyectoGradoKey.class,
-            ConsultarCoordinadoresAdministradorKey.class,
             ConsultarCoordinadoresVigentesKey.class,
-            ConsultarEstudiantesAdministradorKey.class,
             ConsultarEstudiantesVigentesKey.class,
-            ConsultarAsesoresAdministradorKey.class,
             ConsultarAsesoresVigentesKey.class,
-            ConsultarAsesoresFichaAdministradorKey.class,
             ConsultarAsesoresFichaVigentesKey.class,
-            ConsultarRepresentantesComiteAdministradorKey.class,
             ConsultarRepresentantesComiteVigentesKey.class,
             ConsultarUsuariosAdministradorKey.class,
-            ConsultarAdministradoresAdministradorKey.class,
-            ConsultarBibliotecariosAdministradorKey.class,
             ConsultarEstadosUsuarioKey.class
     );
 

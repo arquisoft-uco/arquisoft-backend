@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EliminarSolicitudNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +13,13 @@ class EliminarSolicitudNovedadCoordinadorMapperTest {
     @Test
     void debeCopiarSolicitudYRemitente_cuandoMapeaElComando() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID remitente = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
         var command = EliminarSolicitudNovedadCoordinadorCommand.crear(
                 solicitud.toString(), remitente);
 
         // Act
-        EliminacionSolicitudDomain dominio =
+        var dominio =
                 EliminarSolicitudNovedadCoordinadorMapper.toDomain(command);
 
         // Assert

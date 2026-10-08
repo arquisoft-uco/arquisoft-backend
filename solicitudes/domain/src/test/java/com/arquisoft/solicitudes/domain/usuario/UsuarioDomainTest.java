@@ -15,11 +15,11 @@ class UsuarioDomainTest {
     @Test
     void debeCrearLaReplica_cuandoLosCincoCamposSonValidos() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        Instant ocurridoEn = Instant.now();
+        var id = UUID.randomUUID();
+        var ocurridoEn = Instant.now();
 
         // Act
-        UsuarioDomain usuario = UsuarioDomain.crear(id, "EST-001", "Ana Estudiante", "ana@uco.edu.co", ocurridoEn);
+        var usuario = UsuarioDomain.crear(id, "EST-001", "Ana Estudiante", "ana@uco.edu.co", ocurridoEn);
 
         // Assert
         assertThat(usuario.getId()).isEqualTo(id);
@@ -32,7 +32,7 @@ class UsuarioDomainTest {
     @Test
     void debeAcumularTodosLosErrores_cuandoLosCincoCamposFaltan() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> UsuarioDomain.crear(null, "  ", "", null, null));
 
         // Assert
@@ -47,10 +47,10 @@ class UsuarioDomainTest {
     @Test
     void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
         // Arrange
-        UUID id = UUID.randomUUID();
+        var id = UUID.randomUUID();
 
         // Act
-        UsuarioDomain usuario = UsuarioDomain.reconstruir(id, null, null, null, null);
+        var usuario = UsuarioDomain.reconstruir(id, null, null, null, null);
 
         // Assert
         assertThat(usuario.getId()).isEqualTo(id);
@@ -91,7 +91,7 @@ class UsuarioDomainTest {
                 UUID.randomUUID(), "EST-001", "Ana Estudiante", "ana@uco.edu.co", Instant.now());
 
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> usuario.actualizar(" ", "Ana Estudiante", " ", Instant.now()));
 
         // Assert

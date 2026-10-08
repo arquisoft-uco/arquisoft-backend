@@ -183,13 +183,4 @@ class ConsultarAsesoresVigentesControllerTest {
         mockMvc.perform(post(RUTA))
                 .andExpect(status().isUnauthorized());
     }
-
-    @Test
-    void debe403_cuandoSoloTieneElClientRoleDeAdministrador() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.ASESOR_ADMINISTRADOR_VIEW))))
-                .andExpect(status().isForbidden());
-    }
 }

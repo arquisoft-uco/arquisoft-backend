@@ -26,8 +26,8 @@ class RemitenteDeUsuarioFinderImplTest {
     @Test
     void debeDelegarEnElPuerto_cuandoElUsuarioTieneFilaDeRemitente() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
-        UUID remitenteId = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
+        var remitenteId = UUID.randomUUID();
         when(remitenteOutputPort.buscarIdPorUsuario(usuario)).thenReturn(Optional.of(remitenteId));
 
         // Act & Assert
@@ -37,7 +37,7 @@ class RemitenteDeUsuarioFinderImplTest {
     @Test
     void debeRetornarVacio_cuandoElUsuarioNoTieneFilaDeRemitente() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
         when(remitenteOutputPort.buscarIdPorUsuario(usuario)).thenReturn(Optional.empty());
 
         // Act & Assert

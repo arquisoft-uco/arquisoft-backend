@@ -15,10 +15,10 @@ class RespuestaMapperTest {
     @Test
     void debeConvertirElDominioAEntity_persistiendoElIdDelEstado() {
         // Arrange
-        RespuestaDomain domain = RespuestaDomain.crear(UUID.randomUUID(), "contenido");
+        var domain = RespuestaDomain.crear(UUID.randomUUID(), "contenido");
 
         // Act
-        RespuestaEntity entity = RespuestaMapper.toEntity(domain);
+        var entity = RespuestaMapper.toEntity(domain);
 
         // Assert
         assertThat(entity.id()).isEqualTo(domain.getId());
@@ -30,13 +30,13 @@ class RespuestaMapperTest {
     @Test
     void debeReconstruirElDominio_resolviendoElEstadoDesdeElCatalogo() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID solicitud = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         var fecha = Instant.parse("2026-03-01T09:00:00Z");
         var entity = new RespuestaEntity(id, solicitud, fecha, "contenido", "APROBADA");
 
         // Act
-        RespuestaDomain domain = RespuestaMapper.toDomain(entity);
+        var domain = RespuestaMapper.toDomain(entity);
 
         // Assert
         assertThat(domain.getId()).isEqualTo(id);

@@ -21,7 +21,7 @@ class SolicitudRespondidaRuleImplTest {
 
     @Test
     void debeLanzar_cuandoLaSolicitudYaFueRespondida() {
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         assertThatThrownBy(() -> rule.validar(new RespuestaSolicitud(solicitud, true)))
                 .isInstanceOf(SolicitudYaRespondidaException.class)
                 .hasMessageContaining(solicitud.toString());
