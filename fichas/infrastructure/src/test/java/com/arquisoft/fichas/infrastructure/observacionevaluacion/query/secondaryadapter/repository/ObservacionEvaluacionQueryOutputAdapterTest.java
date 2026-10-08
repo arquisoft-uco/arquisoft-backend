@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.observacionevaluacion.query.secondar
 
 import com.arquisoft.fichas.application.observacionevaluacion.query.criteria.ObservacionEvaluacionAsesorCriteria;
 import com.arquisoft.fichas.application.observacionevaluacion.query.criteria.ObservacionEvaluacionEstudianteCriteria;
+import com.arquisoft.fichas.application.observacionevaluacion.query.criteria.ObservacionEvaluacionRepresentanteCriteria;
 import com.arquisoft.fichas.application.observacionevaluacion.query.readmodel.ObservacionEvaluacionReadModel;
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.entity.EstadoEvaluacionJpaEntity;
@@ -34,11 +35,15 @@ class ObservacionEvaluacionQueryOutputAdapterTest {
     @Autowired
     private ObservacionEvaluacionAsesorQueryRepository asesorRepository;
 
+    @Autowired
+    private ObservacionEvaluacionRepresentanteQueryRepository representanteRepository;
+
     private ObservacionEvaluacionQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new ObservacionEvaluacionQueryOutputAdapter(repository, asesorRepository);
+        adapter = new ObservacionEvaluacionQueryOutputAdapter(
+                repository, asesorRepository, representanteRepository);
     }
 
     @Test
@@ -281,6 +286,107 @@ class ObservacionEvaluacionQueryOutputAdapterTest {
 
         // Assert
         assertThat(resultado).extracting(ObservacionEvaluacionReadModel::id).containsExactly(observacion);
+    }
+
+    @Test
+    void debeDevolverObservacionesOrdenadas_cuandoElRepresentanteRegistroLaEvaluacion() {
+        // Arrange
+        var representante = UtilUUID.generarNuevoUUID();
+        var evaluacion = persistirEvaluacionDe(representante, UtilUUID.generarNuevoUUID());
+        var revisarMetodologia = persistirObservacion(evaluacion.getId(), "Revisar la metodología");
+        var marcoTeorico = persistirObservacion(evaluacion.getId(), "El marco teórico es insuficiente");
+        var alcance = persistirObservacion(evaluacion.getId(), "Falta delimitar el alcance");
+        sincronizar();
+
+        // Act
+        var resultado = adapter.consultarPorEvaluacionYRepresentanteComite(
+                new ObservacionEvaluacionRepresentanteCriteria(evaluacion.getId(), representante));
+
+        // Assert
+        assertThat(resultado)
+                .extracting(ObservacionEvaluacionReadModel::id)
+                .containsExactly(marcoTeorico, alcance, revisarMetodologia);
+        assertThat(resultado.getFirst()).isEqualTo(new ObservacionEvaluacionReadModel(
+                marcoTeorico, evaluacion.getId(), "El marco teórico es insuficiente"));
+    }
+
+    @Test
+    void debeDevolverListaVacia_cuandoLaEvaluacionLaRegistroOtroRepresentante() {
+        // Arrange
+        var dueno = UtilUUID.generarNuevoUUID();
+        var ajeno = UtilUUID.generarNuevoUUID();
+        var evaluacion = persistirEvaluacionDe(dueno, UtilUUID.generarNuevoUUID());
+        persistirObservacion(evaluacion.getId(), "El marco teórico es insuficiente");
+        sincronizar();
+
+        // Act
+        var resultado = adapter.consultarPorEvaluacionYRepresentanteComite(
+                new ObservacionEvaluacionRepresentanteCriteria(evaluacion.getId(), ajeno));
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeDevolverListaVacia_cuandoLaEvaluacionDelRepresentanteNoExiste() {
+        // Arrange
+        var representante = UtilUUID.generarNuevoUUID();
+        var evaluacion = persistirEvaluacionDe(representante, UtilUUID.generarNuevoUUID());
+        persistirObservacion(evaluacion.getId(), "El marco teórico es insuficiente");
+        sincronizar();
+
+        // Act
+        var resultado = adapter.consultarPorEvaluacionYRepresentanteComite(
+                new ObservacionEvaluacionRepresentanteCriteria(UtilUUID.generarNuevoUUID(), representante));
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeIgnorarObservacionesDeOtraEvaluacion_cuandoElRepresentanteTieneVarias() {
+        // Arrange
+        var representante = UtilUUID.generarNuevoUUID();
+        var ficha = UtilUUID.generarNuevoUUID();
+        var pedida = persistirEvaluacionDe(representante, ficha);
+        var otra = persistirEvaluacionDe(representante, ficha);
+        var buscada = persistirObservacion(pedida.getId(), "Falta delimitar el alcance");
+        persistirObservacion(otra.getId(), "Observación de otra evaluación");
+        sincronizar();
+
+        // Act
+        var resultado = adapter.consultarPorEvaluacionYRepresentanteComite(
+                new ObservacionEvaluacionRepresentanteCriteria(pedida.getId(), representante));
+
+        // Assert
+        assertThat(resultado).extracting(ObservacionEvaluacionReadModel::id).containsExactly(buscada);
+    }
+
+    @Test
+    void debeDevolverListaVacia_cuandoLaEvaluacionDelRepresentanteNoTieneObservaciones() {
+        // Arrange
+        var representante = UtilUUID.generarNuevoUUID();
+        var ficha = UtilUUID.generarNuevoUUID();
+        var sinObservaciones = persistirEvaluacionDe(representante, ficha);
+        var conObservaciones = persistirEvaluacionDe(representante, ficha);
+        persistirObservacion(conObservaciones.getId(), "El marco teórico es insuficiente");
+        sincronizar();
+
+        // Act
+        var resultado = adapter.consultarPorEvaluacionYRepresentanteComite(
+                new ObservacionEvaluacionRepresentanteCriteria(sinObservaciones.getId(), representante));
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    private EvaluacionFichaPerfilJpaEntity persistirEvaluacionDe(UUID representanteComiteId, UUID fichaPerfilId) {
+        return entityManager.persist(EvaluacionFichaPerfilJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .representanteComiteId(representanteComiteId)
+                .fichaPerfilId(fichaPerfilId)
+                .fechaCreacion(Instant.now())
+                .build());
     }
 
     private static ObservacionEvaluacionAsesorCriteria criteriaAsesor(UUID evaluacionFichaPerfil, UUID asesorFicha) {
