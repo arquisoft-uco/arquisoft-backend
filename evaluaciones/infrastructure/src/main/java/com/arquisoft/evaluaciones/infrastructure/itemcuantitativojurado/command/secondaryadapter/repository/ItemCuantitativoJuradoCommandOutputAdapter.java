@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -22,6 +23,11 @@ public class ItemCuantitativoJuradoCommandOutputAdapter
     public void registrar(ItemCuantitativoJuradoEntity item) {
         repository.save(ItemCuantitativoJuradoJpaMapper.toJpaEntity(item));
         logger.debug(ItemCuantitativoJuradoKey.LOG_GUARDADO, item.id());
+    }
+
+    @Override
+    public Optional<ItemCuantitativoJuradoEntity> obtenerPorId(UUID id) {
+        return repository.findById(id).map(ItemCuantitativoJuradoJpaMapper::toEntity);
     }
 
     @Override
