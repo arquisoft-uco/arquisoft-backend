@@ -26,11 +26,10 @@ public class ModificarObservacionItemUseCaseImpl implements ModificarObservacion
         logger.info(ObservacionItemKey.LOG_MODIFICANDO, entrada.getObservacionItem(), entrada.getAsesorFicha());
 
         var contexto = contextoObservacionItemFinder.obtener(entrada.getObservacionItem());
-        var observacionExiste = !contexto.esVacio();
         var observacionesIguales = otrasObservacionesIgualesEnRevisionFinder.obtener(entrada);
 
         logger.debug(ObservacionItemKey.LOG_VERIFICACION_MODIFICAR,
-                observacionExiste, contexto.estadoRevision().getId(), contexto.asesorFicha(), observacionesIguales);
+                !contexto.esVacio(), contexto.estadoRevision().getId(), contexto.asesorFicha(), observacionesIguales);
 
         modificarObservacionItemValidator.validar(entrada, contexto, observacionesIguales);
 
