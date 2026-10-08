@@ -24,10 +24,9 @@ public class RemoverObservacionItemUseCaseImpl implements RemoverObservacionItem
         logger.info(ObservacionItemKey.LOG_REMOVIENDO, entrada.getObservacionItem(), entrada.getAsesorFicha());
 
         var contexto = contextoObservacionItemFinder.obtener(entrada.getObservacionItem());
-        var observacionExiste = !contexto.esVacio();
 
         logger.debug(ObservacionItemKey.LOG_VERIFICACION_REMOVER,
-                observacionExiste, contexto.estadoRevision().getId(), contexto.asesorFicha());
+                !contexto.esVacio(), contexto.estadoRevision().getId(), contexto.asesorFicha());
 
         removerObservacionItemValidator.validar(entrada, contexto);
 
