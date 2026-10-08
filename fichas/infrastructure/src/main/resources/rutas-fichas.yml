@@ -28,6 +28,7 @@ rutas:
       revisiones-item-asesor: /revisiones-item/asesor
       observaciones-item-asesor: /observaciones-item/asesor
       observaciones-item-estudiante: /observaciones-item/estudiante
+      observacion-item-por-id: /observaciones-item/{observacionItemId}
       revisiones-item-estudiante: /revisiones-item/estudiante
       estudiantes: /{fichaPerfilId}/estudiantes
       estudiante-por-id: /{fichaPerfilId}/estudiantes/{estudianteId}

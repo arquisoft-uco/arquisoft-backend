@@ -282,6 +282,17 @@ public final class FichasApiMessages {
                 "Revisión no encontrada, revisión cerrada, ficha no asesorada por el usuario autenticado "
                         + "o texto de observación duplicado";
 
+        public static final String MODIFICAR_SUMMARY = "Modificar el contenido de una observación de ítem";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Permite al asesor asignado a la ficha modificar únicamente el texto de una observación "
+                        + "existente. No cambia su estado y no puede hacerse si la revisión está cerrada.";
+        public static final String MODIFICAR_RESP_204 = "Observación modificada exitosamente";
+        public static final String MODIFICAR_RESP_400 = "Observación inválida o ausente, o identificador mal formado";
+        public static final String MODIFICAR_RESP_403 = "Sin permiso para modificar observaciones";
+        public static final String MODIFICAR_RESP_422 =
+                "Observación no encontrada, revisión cerrada, ficha no asesorada por el usuario autenticado "
+                        + "o texto duplicado en la revisión";
+
         public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar observaciones de ítem elaboradas";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Permite al asesor de ficha consultar, de forma paginada y filtrable, las observaciones "
