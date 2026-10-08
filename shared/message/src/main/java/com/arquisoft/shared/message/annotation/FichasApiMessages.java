@@ -423,6 +423,18 @@ public final class FichasApiMessages {
                 "El identificador de ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-estudiante:view";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Consultar información de evaluación de las fichas de perfil las cuales asesora";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Devuelve, paginadas y filtrables, las evaluaciones con su estado actual, el título de la ficha y el "
+                        + "representante del comité que las realizó, de todas las fichas de perfil asesoradas por el "
+                        + "asesor autenticado. El asesor se toma del token.";
+        public static final String CONSULTAR_ASESOR_RESP_200 =
+                "Página de evaluaciones de las fichas del asesor (vacía si no aplica)";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "Filtro con campo, operador o valor inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 =
+                "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-asesor:view";
     }
 
     public static final class EstadoEvaluacionFicha {

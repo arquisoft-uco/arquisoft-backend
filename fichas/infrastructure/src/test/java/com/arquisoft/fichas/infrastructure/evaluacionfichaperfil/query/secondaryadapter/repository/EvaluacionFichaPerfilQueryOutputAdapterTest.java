@@ -32,11 +32,18 @@ class EvaluacionFichaPerfilQueryOutputAdapterTest {
     @Autowired
     private EvaluacionFichaPerfilEstudianteQueryRepository estudianteRepository;
 
+    @Autowired
+    private EvaluacionFichaPerfilAsesorQueryRepository asesorRepository;
+
     private EvaluacionFichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EvaluacionFichaPerfilQueryOutputAdapter(repository, estudianteRepository);
+        adapter = new EvaluacionFichaPerfilQueryOutputAdapter(
+                repository,
+                estudianteRepository,
+                asesorRepository,
+                new EvaluacionFichaPerfilAsesorJpaSpecification());
         persistirEstado("EN_EVALUACION", "En Evaluación");
         persistirEstado("APROBADA", "Aprobada");
     }

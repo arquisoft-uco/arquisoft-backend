@@ -167,6 +167,7 @@ public final class FichasCodes {
         public static final String REPRESENTANTE_REQUERIDO = "REPRESENTANTE_REQUERIDO";
         public static final String FICHA_REQUERIDA = "FICHA_REQUERIDA";
         public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_REQUERIDO";
+        public static final String ASESOR_FICHA_REQUERIDO = "EVALUACION_FICHA_PERFIL_ASESOR_FICHA_REQUERIDO";
     }
 
     public static final class RepresentanteComite {
