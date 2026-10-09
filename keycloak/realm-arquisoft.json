@@ -129,7 +129,8 @@
               "usuarios:representante-comite-curriculum:create",
               "evaluaciones:item-cualitativo-jurado:view",
               "evaluaciones:criterio-item-cualitativo-jurado:view",
-              "usuarios:bibliotecario:delete"
+              "usuarios:bibliotecario:delete",
+              "usuarios:usuario-identidad:view"
             ]
           }
         },
@@ -500,6 +501,15 @@
         {
           "id": "67bf86fe-d9e3-499e-9164-5376e646e070",
           "name": "usuarios:bibliotecario:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "542bbd5b-1d66-4c2d-b21a-9bfa7422804a",
+          "name": "usuarios:usuario-identidad:view",
           "description": "",
           "composite": false,
           "clientRole": true,
