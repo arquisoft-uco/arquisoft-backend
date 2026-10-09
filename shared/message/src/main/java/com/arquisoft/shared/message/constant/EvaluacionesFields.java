@@ -21,6 +21,14 @@ public final class EvaluacionesFields {
         public static final String DESCRIPCION = "descripcion";
     }
 
+    public static final class CategoriaItemCuantitativoJurado {
+
+        private CategoriaItemCuantitativoJurado() {}
+
+        public static final String NOMBRE = "nombre";
+        public static final String DESCRIPCION = "descripcion";
+    }
+
     public static final class EvaluacionCualitativaJurado {
 
         private EvaluacionCualitativaJurado() {}

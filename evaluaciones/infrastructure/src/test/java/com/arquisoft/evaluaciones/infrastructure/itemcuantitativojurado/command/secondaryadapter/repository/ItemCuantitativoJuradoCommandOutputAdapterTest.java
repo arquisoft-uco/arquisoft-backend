@@ -94,7 +94,6 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
 
         // Act & Assert
         assertThat(adapter.obtenerPorId(id)).isEmpty();
-
     }
 
     @Test
