@@ -445,6 +445,18 @@ public final class FichasApiMessages {
                 "El identificador de ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-estudiante:view";
+
+        public static final String CONSULTAR_COORDINADOR_SUMMARY =
+                "Consultar información de las evaluaciones de una Ficha Perfil a decidir";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Devuelve todas las evaluaciones de la ficha de perfil indicada, incluidas las que están en evaluación "
+                        + "o descartadas, con su estado actual y el representante del comité que las realizó.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 =
+                "Listado de evaluaciones de la ficha (vacío si la ficha no existe o no tiene evaluaciones)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 =
+                "El identificador de ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 =
+                "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-coordinador:view";
     }
 
     public static final class EstadoEvaluacionFicha {

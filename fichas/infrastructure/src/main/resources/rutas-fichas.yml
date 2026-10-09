@@ -36,6 +36,7 @@ rutas:
       evaluaciones: /{fichaId}/evaluaciones
       evaluaciones-representante: /{fichaPerfilId}/evaluaciones/representante
       evaluaciones-estudiante: /{fichaPerfilId}/evaluaciones/estudiante
+      evaluaciones-coordinador: /{fichaPerfilId}/evaluaciones/coordinador
       estudiante: /estudiante
       evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
       evaluacion-observaciones-estudiante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/estudiante
