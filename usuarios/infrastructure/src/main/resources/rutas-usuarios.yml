@@ -16,6 +16,7 @@ rutas:
       bibliotecario: /{usuarioId}/bibliotecario
       modificar: /{usuarioId}
       eliminar: /{usuarioId}
+      identidad: /{usuarioId}
       estado: /{usuarioId}/estado
       usuarios-administrador: /administrador
       coordinadores-vigentes: /coordinadores/vigentes
