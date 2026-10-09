@@ -20,19 +20,17 @@ import java.util.stream.Stream;
 public record ModificarUsuarioCommand(
         UUID usuario,
         String identificador,
-        String nombre,
         String email,
         String contacto,
         String nombres,
         String apellidos,
         List<String> roles
 ) {
-    public record DatosModificarUsuario(String identificador, String nombre, String email,
-                                        String contacto, String nombres, String apellidos) {}
+    public record DatosModificarUsuario(String identificador, String email, String contacto,
+                                        String nombres, String apellidos) {}
 
     public ModificarUsuarioCommand {
         identificador = recortarSiLlega(identificador);
-        nombre = recortarSiLlega(nombre);
         email = recortarSiLlega(email);
         contacto = recortarSiLlega(contacto);
         nombres = recortarSiLlega(nombres);
@@ -71,13 +69,13 @@ public record ModificarUsuarioCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new ModificarUsuarioCommand(
-                UtilUUID.generarUUIDDesdeTexto(usuario), datos.identificador(), datos.nombre(),
-                datos.email(), datos.contacto(), datos.nombres(), datos.apellidos(), rolesNormalizados);
+                UtilUUID.generarUUIDDesdeTexto(usuario), datos.identificador(), datos.email(),
+                datos.contacto(), datos.nombres(), datos.apellidos(), rolesNormalizados);
     }
 
     private static boolean sinDatos(DatosModificarUsuario datos) {
-        return Stream.of(datos.identificador(), datos.nombre(), datos.email(),
-                        datos.contacto(), datos.nombres(), datos.apellidos())
+        return Stream.of(datos.identificador(), datos.email(), datos.contacto(),
+                        datos.nombres(), datos.apellidos())
                 .allMatch(UtilObjeto::esNulo);
     }
 

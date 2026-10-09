@@ -42,7 +42,8 @@ public final class UsuariosApiMessages {
                 "Modifica los datos personales enviados de un usuario, cualquiera sea su estado, y sincroniza "
                         + "el email y el nombre en el proveedor de identidad (Keycloak). Los roles enviados se "
                         + "agregan o, si fueron eliminados lógicamente, se reactivan; un rol ausente de la lista "
-                        + "no se revoca. Solo cambian los campos presentes en el body; el estado del usuario no "
+                        + "no se revoca. Los nombres y los apellidos se envían juntos o ninguno de los dos; el "
+                        + "nombre completo se deriva de ambos. Solo cambian los campos presentes en el body; el estado del usuario no "
                         + "cambia. Un usuario eliminado no puede modificarse; primero debe activarse mediante el "
                         + "cambio de estado. Exclusivo del rol administrador.";
         public static final String MODIFICAR_RESP_204 = "Usuario modificado";
