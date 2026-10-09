@@ -12,7 +12,6 @@ public final class ModificarUsuarioRequestMapper {
                 usuarioId,
                 new ModificarUsuarioCommand.DatosModificarUsuario(
                         request.identificador(),
-                        request.nombre(),
                         request.email(),
                         request.contacto(),
                         request.nombres(),

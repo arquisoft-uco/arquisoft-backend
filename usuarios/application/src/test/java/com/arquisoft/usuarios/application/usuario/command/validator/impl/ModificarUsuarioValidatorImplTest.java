@@ -122,7 +122,7 @@ class ModificarUsuarioValidatorImplTest {
 
     private ModificacionUsuarioDomain modificacionConNombre(UUID usuarioId) {
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                null, "Nombre Nuevo", null, null, null, null);
+                null, null, null, "Nombre", "Nuevo");
         return ModificacionUsuarioDomain.crear(usuarioId, datos, List.of());
     }
 

@@ -61,7 +61,8 @@ class ModificarUsuarioControllerTest {
 
     private static final String BODY_VALIDO = """
             {
-              "nombre": "Nombre Actualizado"
+              "nombres": "Nombre",
+              "apellidos": "Actualizado"
             }
             """;
 
@@ -150,7 +151,8 @@ class ModificarUsuarioControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "nombre": "Ana Corregida"
+                                  "nombres": "Ana",
+                                  "apellidos": "Corregida"
                                 }
                                 """))
                 .andExpect(status().isUnprocessableEntity())

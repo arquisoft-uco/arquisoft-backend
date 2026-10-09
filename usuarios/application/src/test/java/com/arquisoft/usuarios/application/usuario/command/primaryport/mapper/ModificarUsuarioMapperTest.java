@@ -15,7 +15,7 @@ class ModificarUsuarioMapperTest {
         // Arrange
         var usuarioId = UUID.randomUUID();
         var datos = new ModificarUsuarioCommand.DatosModificarUsuario(
-                "usr001", "Nombre Nuevo", "correo@uco.edu.co", "3001112233", "Nombre", "Apellido");
+                "usr001", "correo@uco.edu.co", "3001112233", "Nombre", "Apellido");
         var command = ModificarUsuarioCommand.crear(usuarioId.toString(), datos, List.of("estudiante"));
 
         // Act
@@ -24,7 +24,7 @@ class ModificarUsuarioMapperTest {
         // Assert
         assertThat(modificacion.getUsuario()).isEqualTo(usuarioId);
         assertThat(modificacion.getIdentificador()).isEqualTo("usr001");
-        assertThat(modificacion.getNombre()).isEqualTo("Nombre Nuevo");
+        assertThat(modificacion.getNombre()).isEqualTo("Nombre Apellido");
         assertThat(modificacion.getEmail()).isEqualTo("correo@uco.edu.co");
         assertThat(modificacion.getContacto()).isEqualTo("3001112233");
         assertThat(modificacion.getNombres()).isEqualTo("Nombre");

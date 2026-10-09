@@ -15,7 +15,7 @@ class ModificarUsuarioCommandTest {
     void debeLanzar400_cuandoElUsuarioNoEsUnUuidValido() {
         // Arrange
         var datos = new ModificarUsuarioCommand.DatosModificarUsuario(
-                null, "Nombre Nuevo", null, null, null, null);
+                null, null, null, "Nombre", "Nuevo");
 
         // Act & Assert
         assertThatThrownBy(() -> ModificarUsuarioCommand.crear("no-es-un-uuid", datos, List.of()))
@@ -27,7 +27,7 @@ class ModificarUsuarioCommandTest {
         // Arrange
         var usuario = UUID.randomUUID().toString();
         var datos = new ModificarUsuarioCommand.DatosModificarUsuario(
-                null, null, null, null, null, null);
+                null, null, null, null, null);
 
         // Act & Assert
         assertThatThrownBy(() -> ModificarUsuarioCommand.crear(usuario, datos, List.of()))
@@ -39,7 +39,7 @@ class ModificarUsuarioCommandTest {
         // Arrange
         var usuario = UUID.randomUUID().toString();
         var datos = new ModificarUsuarioCommand.DatosModificarUsuario(
-                null, null, null, null, null, null);
+                null, null, null, null, null);
 
         // Act & Assert
         assertThatThrownBy(() -> ModificarUsuarioCommand.crear(usuario, datos, List.of("rol-inventado")))
@@ -51,7 +51,7 @@ class ModificarUsuarioCommandTest {
         // Arrange
         var usuario = UUID.randomUUID().toString();
         var datos = new ModificarUsuarioCommand.DatosModificarUsuario(
-                null, null, null, null, null, null);
+                null, null, null, null, null);
 
         // Act & Assert
         assertThatThrownBy(() -> ModificarUsuarioCommand.crear(usuario, datos, List.of("  ")))
@@ -63,14 +63,15 @@ class ModificarUsuarioCommandTest {
         // Arrange
         var usuarioId = UUID.randomUUID();
         var datos = new ModificarUsuarioCommand.DatosModificarUsuario(
-                null, " Nombre Nuevo ", null, null, null, null);
+                null, null, null, " Nombre ", " Nuevo ");
 
         // Act
         var command = ModificarUsuarioCommand.crear(usuarioId.toString(), datos, List.of());
 
         // Assert
         assertThat(command.usuario()).isEqualTo(usuarioId);
-        assertThat(command.nombre()).isEqualTo("Nombre Nuevo");
+        assertThat(command.nombres()).isEqualTo("Nombre");
+        assertThat(command.apellidos()).isEqualTo("Nuevo");
         assertThat(command.identificador()).isNull();
         assertThat(command.roles()).isEmpty();
     }
@@ -80,7 +81,7 @@ class ModificarUsuarioCommandTest {
         // Arrange
         var usuarioId = UUID.randomUUID();
         var datos = new ModificarUsuarioCommand.DatosModificarUsuario(
-                null, null, null, null, null, null);
+                null, null, null, null, null);
 
         // Act
         var command = ModificarUsuarioCommand.crear(usuarioId.toString(), datos, List.of("estudiante"));
