@@ -30,6 +30,8 @@ public final class SolicitudesAuthorities {
             "solicitudes:respuesta-novedad-asesor:delete";
     public static final String RESPUESTA_NOVEDAD_COORDINADOR_UPDATE =
             "solicitudes:respuesta-novedad-coordinador:update";
+    public static final String RESPUESTA_NOVEDAD_ASESOR_UPDATE =
+            "solicitudes:respuesta-novedad-asesor:update";
     public static final String RESPUESTA_NOVEDAD_COORDINADOR_RECIBIDA_VIEW =
             "solicitudes:respuesta-novedad-coordinador-recibida:view";
     public static final String RESPUESTA_NOVEDAD_COORDINADOR_ENVIADA_VIEW =
@@ -85,6 +87,9 @@ public final class SolicitudesAuthorities {
 
         public static final String HAS_RESPUESTA_NOVEDAD_COORDINADOR_UPDATE =
                 HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_COORDINADOR_UPDATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_RESPUESTA_NOVEDAD_ASESOR_UPDATE =
+                HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_ASESOR_UPDATE + HAS_AUTHORITY_FIN;
 
         public static final String HAS_RESPUESTA_NOVEDAD_COORDINADOR_RECIBIDA_VIEW =
                 HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_COORDINADOR_RECIBIDA_VIEW + HAS_AUTHORITY_FIN;
