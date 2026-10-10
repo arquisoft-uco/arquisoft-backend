@@ -45,4 +45,10 @@ public class ObservacionItemCommandOutputAdapter implements ObservacionItemOutpu
         repository.actualizarObservacion(observacionItem, observacion);
         logger.debug(ObservacionItemKey.LOG_GUARDADA, observacionItem);
     }
+
+    @Override
+    public void removerObservacion(UUID observacionItem) {
+        repository.removerPorId(observacionItem);
+        logger.debug(ObservacionItemKey.LOG_ELIMINADA, observacionItem);
+    }
 }
