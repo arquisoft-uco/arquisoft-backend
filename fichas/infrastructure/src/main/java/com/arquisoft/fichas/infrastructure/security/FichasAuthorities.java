@@ -38,6 +38,7 @@ public final class FichasAuthorities {
     public static final String ESTADO_FICHA_PERFIL_APROBACION_CREATE = "fichas:estado-ficha-perfil-aprobacion:create";
     public static final String ESTADO_FICHA_PERFIL_ASESOR_CREATE = "fichas:estado-ficha-perfil-asesor:create";
     public static final String ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW = "fichas:estado-ficha-perfil-representante:view";
+    public static final String ESTADO_FICHA_PERFIL_COORDINADOR_VIEW = "fichas:estado-ficha-perfil-coordinador:view";
 
     public static final String REVISION_ITEM_CREATE = "fichas:revision-item:create";
     public static final String REVISION_ITEM_ASESOR_VIEW = "fichas:revision-item-asesor:view";
@@ -127,6 +128,8 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + ESTADO_FICHA_PERFIL_ASESOR_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW =
                 HAS_AUTHORITY_INICIO + ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTADO_FICHA_PERFIL_COORDINADOR_VIEW =
+                HAS_AUTHORITY_INICIO + ESTADO_FICHA_PERFIL_COORDINADOR_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_TIPO_ITEM_VIEW =
                 HAS_AUTHORITY_INICIO + TIPO_ITEM_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_EVALUACION_VIEW =

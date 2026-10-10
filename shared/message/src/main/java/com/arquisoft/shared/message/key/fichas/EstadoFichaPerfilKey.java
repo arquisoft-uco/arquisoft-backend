@@ -31,7 +31,10 @@ public enum EstadoFichaPerfilKey implements ClaveMensaje {
     LOG_AGREGADO("fichas.aplicacion.estadofichaperfil.log.agregado", 3),
     LOG_CONSULTANDO_REPRESENTANTE("fichas.aplicacion.estadofichaperfil.log.consultando-representante", 1),
     LOG_CONSULTA_REPRESENTANTE_COMPLETADA(
-            "fichas.aplicacion.estadofichaperfil.log.consulta-representante-completada", 1);
+            "fichas.aplicacion.estadofichaperfil.log.consulta-representante-completada", 1),
+    LOG_CONSULTANDO_COORDINADOR("fichas.aplicacion.estadofichaperfil.log.consultando-coordinador", 1),
+    LOG_CONSULTA_COORDINADOR_COMPLETADA(
+            "fichas.aplicacion.estadofichaperfil.log.consulta-coordinador-completada", 1);
 
     private final String clave;
     private final int parametros;

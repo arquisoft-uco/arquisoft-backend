@@ -197,6 +197,13 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
                 "Sin el permiso para consultar los estados como representante del comité";
+        public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar los estados de una ficha de perfil como coordinador";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Devuelve la trazabilidad completa de estados de la ficha de perfil indicada, ordenada de la más antigua "
+                        + "a la más reciente, sin filtrar por actor.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 = "Lista de estados de la ficha de perfil (vacía si no tiene estados)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 = "Sin el permiso para consultar los estados como coordinador";
         public static final String AGREGAR_APROBACION_SUMMARY = "Registrar la decisión de aprobación de una ficha de perfil";
         public static final String AGREGAR_APROBACION_DESCRIPTION = "El coordinador acepta o no la ficha; el estado se deriva de las evaluaciones";
         public static final String AGREGAR_APROBACION_RESP_201 = "Estado de aprobación registrado; devuelve el id del nuevo estado";
