@@ -30,4 +30,10 @@ public class EstudianteProyectoGradoCommandOutputAdapter implements EstudiantePr
     public long contarPorProyectoGrado(UUID proyectoGrado) {
         return estudianteProyectoGradoRepository.countByProyectoGradoId(proyectoGrado);
     }
+
+    @Override
+    public List<UUID> obtenerVinculados(UUID proyectoGrado, List<UUID> estudiantes) {
+        return estudianteProyectoGradoRepository
+                .findEstudianteIdsByProyectoGradoIdAndEstudianteIdIn(proyectoGrado, estudiantes);
+    }
 }

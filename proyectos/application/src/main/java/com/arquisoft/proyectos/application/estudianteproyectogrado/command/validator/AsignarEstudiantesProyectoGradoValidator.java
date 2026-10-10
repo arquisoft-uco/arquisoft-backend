@@ -5,9 +5,10 @@ import com.arquisoft.proyectos.domain.estudianteproyectogrado.AgregacionEstudian
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface AsignarEstudiantesProyectoGradoValidator {
 
     void validar(AgregacionEstudiantesProyectoGradoDomain entrada, ProyectoGradoDomain proyecto,
-                 List<EstudianteDomain> estudiantesVigentes, long vinculadosActuales);
+                 List<EstudianteDomain> estudiantesVigentes, List<UUID> yaVinculados, long vinculadosActuales);
 }

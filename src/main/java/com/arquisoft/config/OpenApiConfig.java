@@ -60,6 +60,9 @@ public class OpenApiConfig {
     @Value("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
     private String fichasPerfilBasePath;
 
+    @Value("${rutas.proyectos.proyectos-grado.base:/proyectos-grado}")
+    private String proyectosGradoBasePath;
+
     @Value("${rutas.solicitudes.solicitud.base:/solicitudes}")
     private String solicitudesBasePath;
 
@@ -104,7 +107,7 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
             .group("04-proyectos")
             .displayName("Proyectos de Grado")
-            .pathsToMatch("/proyectos/**")
+            .pathsToMatch(proyectosGradoBasePath + "/**")
             .build();
     }
 

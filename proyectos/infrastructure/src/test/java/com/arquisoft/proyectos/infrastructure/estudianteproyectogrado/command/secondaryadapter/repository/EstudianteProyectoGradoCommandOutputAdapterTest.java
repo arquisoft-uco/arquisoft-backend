@@ -4,6 +4,7 @@ import com.arquisoft.proyectos.application.estudianteproyectogrado.command.secon
 import com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectoGradoKey;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -50,5 +51,39 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
         assertThat(guardado.getEstudianteId()).isEqualTo(vinculos.getFirst().estudiante());
         assertThat(guardado.getProyectoGradoId()).isEqualTo(proyectoGrado);
         verify(logger).debug(EstudianteProyectoGradoKey.LOG_GUARDADOS, proyectoGrado, 3);
+    }
+
+    @Test
+    void debeDevolverSoloLosVinculadosAlProyectoIgnorandoOtrosProyectos_cuandoSeConsultaPorVarios() {
+        // Arrange
+        var adapter = new EstudianteProyectoGradoCommandOutputAdapter(estudianteProyectoGradoCommandRepository, logger);
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var otroProyecto = UtilUUID.generarNuevoUUID();
+        var vinculadoAqui = vinculo(proyectoGrado);
+        var vinculadoEnOtro = vinculo(otroProyecto);
+        var noVinculado = UtilUUID.generarNuevoUUID();
+        var ajenoALaConsulta = vinculo(proyectoGrado);
+        adapter.vincular(List.of(vinculadoAqui, vinculadoEnOtro, ajenoALaConsulta));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerVinculados(proyectoGrado,
+                List.of(vinculadoAqui.estudiante(), vinculadoEnOtro.estudiante(), noVinculado));
+
+        // Assert
+        assertThat(resultado).containsExactly(vinculadoAqui.estudiante());
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoNingunoEstaVinculado() {
+        // Arrange
+        var adapter = new EstudianteProyectoGradoCommandOutputAdapter(estudianteProyectoGradoCommandRepository, logger);
+
+        // Act
+        var resultado = adapter.obtenerVinculados(UtilUUID.generarNuevoUUID(), List.of(UtilUUID.generarNuevoUUID()));
+
+        // Assert
+        assertThat(resultado).isEmpty();
     }
 }
