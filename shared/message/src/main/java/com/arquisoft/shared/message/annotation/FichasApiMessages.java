@@ -387,6 +387,18 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "Identificador de evaluación inválido";
         public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
                 "Sin permiso para consultar observaciones de evaluaciones que registró";
+
+        public static final String CONSULTAR_COORDINADOR_SUMMARY =
+                "Consultar observaciones de las evaluaciones de una Ficha Perfil a decidir";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Devuelve las observaciones de todas las evaluaciones de la ficha de perfil indicada, incluidas las de "
+                        + "evaluaciones en evaluación o descartadas.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 =
+                "Observaciones de las evaluaciones de la ficha (vacía si la ficha no existe o no tiene observaciones)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 =
+                "El identificador de ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 =
+                "El usuario no tiene el permiso fichas:observacion-evaluacion-coordinador:view";
     }
 
     public static final class EstudianteFichaPerfil {

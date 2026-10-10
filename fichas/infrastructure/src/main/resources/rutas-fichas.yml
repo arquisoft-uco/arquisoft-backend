@@ -43,6 +43,7 @@ rutas:
       evaluacion-observaciones-asesor: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/asesor
       evaluacion-observaciones-representante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/representante
       observacion-evaluacion-por-id: /observaciones-evaluacion/{observacionEvaluacionId}
+      observaciones-evaluacion-coordinador: /{fichaPerfilId}/observaciones-evaluacion/coordinador
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
     minio-guia:
