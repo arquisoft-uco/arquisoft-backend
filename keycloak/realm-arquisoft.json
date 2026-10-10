@@ -63,7 +63,8 @@
               "fichas:estudiante-ficha-perfil:delete",
               "fichas:estudiante-ficha-perfil-coordinador:view",
               "fichas:estado-ficha:view",
-              "solicitudes:solicitud-novedad-coordinador-recibida:view"
+              "solicitudes:solicitud-novedad-coordinador-recibida:view",
+              "fichas:evaluacion-ficha-perfil-coordinador:view"
             ]
           }
         },
@@ -906,6 +907,15 @@
         {
           "id": "b7ff7f58-cdcd-4641-a469-7566c4306030",
           "name": "fichas:evaluacion-ficha-perfil-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "35424c3c-f8f1-439e-a8fd-0b6f103c87eb",
+          "name": "fichas:evaluacion-ficha-perfil-coordinador:view",
           "description": "",
           "composite": false,
           "clientRole": true,
