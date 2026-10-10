@@ -47,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         AsignarEstudiantesProyectoGradoControllerTest.TestSecurityConfig.class})
 class AsignarEstudiantesProyectoGradoControllerTest {
 
-    private static final String RUTA = "/proyectos/proyectos-grado/{proyectoGradoId}/estudiantes";
+    private static final String RUTA = "/proyectos-grado/{proyectoGradoId}/estudiantes";
 
     @TestConfiguration
     @EnableWebSecurity

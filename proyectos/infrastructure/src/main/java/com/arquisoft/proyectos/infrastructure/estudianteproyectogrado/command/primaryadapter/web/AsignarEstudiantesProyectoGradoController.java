@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("${rutas.proyectos.proyectos-grado.base:/proyectos/proyectos-grado}")
+@RequestMapping("${rutas.proyectos.proyectos-grado.base:/proyectos-grado}")
 @RequiredArgsConstructor
 @Tag(name = ProyectosApiMessages.EstudianteProyectoGrado.TAG_NAME,
         description = ProyectosApiMessages.EstudianteProyectoGrado.TAG_DESCRIPTION)

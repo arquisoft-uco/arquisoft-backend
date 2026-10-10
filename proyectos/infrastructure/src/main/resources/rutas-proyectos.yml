@@ -6,5 +6,5 @@
 rutas:
   proyectos:
     proyectos-grado:
-      base: /proyectos/proyectos-grado
+      base: /proyectos-grado
       estudiantes: /{proyectoGradoId}/estudiantes
