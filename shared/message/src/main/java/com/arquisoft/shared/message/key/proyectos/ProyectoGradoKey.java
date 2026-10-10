@@ -13,7 +13,8 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     LOG_DUPLICADO("proyectos.infraestructura.proyectogrado.log.duplicado", 1),
     LOG_GUARDADO("proyectos.infraestructura.proyectogrado.log.guardado", 2),
     ERROR_COORDINADOR_NO_VIGENTE("proyectos.dominio.proyectogrado.error.coordinador-no-vigente", 1),
-    ERROR_NO_ENCONTRADO("proyectos.dominio.proyectogrado.error.no-encontrado", 1);
+    ERROR_NO_ENCONTRADO("proyectos.dominio.proyectogrado.error.no-encontrado", 1),
+    ERROR_FINALIZADO("proyectos.dominio.proyectogrado.error.finalizado", 1);
 
     private final String clave;
     private final int parametros;

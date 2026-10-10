@@ -67,7 +67,8 @@
               "fichas:evaluacion-ficha-perfil-coordinador:view",
               "fichas:observacion-evaluacion-coordinador:view",
               "fichas:item-ficha-perfil-coordinador:view",
-              "fichas:estado-ficha-perfil-coordinador:view"
+              "fichas:estado-ficha-perfil-coordinador:view",
+              "proyectos:estudiante-proyecto-grado:create"
             ]
           }
         },
@@ -937,6 +938,15 @@
         {
           "id": "7e2b4c1a-93d5-4f60-a8e7-5c1d0b9f3a42",
           "name": "fichas:estado-ficha-perfil-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c6eded96-8ed6-4b66-b08a-d1edee98428f",
+          "name": "proyectos:estudiante-proyecto-grado:create",
           "description": "",
           "composite": false,
           "clientRole": true,
