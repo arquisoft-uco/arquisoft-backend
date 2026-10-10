@@ -128,6 +128,15 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_REPRESENTANTE_RESP_200 = "Lista de ítems de la ficha de perfil (vacía si no aplica)";
         public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_REPRESENTANTE_RESP_403 = "Sin el permiso para consultar ítems como representante del comité";
+
+        public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar ítems de una ficha de perfil a decidir";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Permite al coordinador consultar los ítems de contenido (tipo y contenido) de cualquier ficha de "
+                        + "perfil para fundamentar su decisión de aprobarla. Si la ficha no existe o no tiene "
+                        + "ítems devuelve una lista vacía.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 = "Lista de ítems de la ficha de perfil (vacía si no aplica)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 = "Sin el permiso para consultar ítems como coordinador";
     }
 
     public static final class ConsultaEstudianteFichaPerfil {

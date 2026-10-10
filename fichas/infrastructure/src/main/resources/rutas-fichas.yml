@@ -20,6 +20,7 @@ rutas:
       items: /{fichaPerfilId}/items
       items-estudiante: /{fichaPerfilId}/items/estudiante
       items-representante: /{fichaPerfilId}/items/representante
+      items-coordinador: /{fichaPerfilId}/items/coordinador
       item-por-id: /items/{itemId}
       item-revisiones: /items/{itemId}/revisiones
       revision-observaciones: /revisiones/{revisionItemId}/observaciones
