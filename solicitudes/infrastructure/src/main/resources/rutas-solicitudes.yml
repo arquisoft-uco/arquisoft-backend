@@ -25,3 +25,4 @@ rutas:
       novedad-coordinador-estado: /novedad-coordinador/{solicitudId}/respuesta/estado
       novedad-coordinador-recibidas: /novedad-coordinador/respuestas/recibidas
       novedad-coordinador-enviadas: /novedad-coordinador/respuestas/enviadas
+      estados-respuesta: /estados-respuesta

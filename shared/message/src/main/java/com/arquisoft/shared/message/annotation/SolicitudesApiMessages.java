@@ -266,4 +266,18 @@ public final class SolicitudesApiMessages {
                 "Retorna todos los tipos de solicitud disponibles en el catálogo, sin filtros ni paginación.";
         public static final String CONSULTAR_RESP_200 = "Lista de tipos de solicitud retornada exitosamente";
     }
+
+    public static final class EstadoRespuesta {
+
+        private EstadoRespuesta() {}
+
+        public static final String TAG_NAME = "Estados de Respuesta";
+        public static final String TAG_DESCRIPTION =
+                "Catálogo de estados por los que puede pasar una respuesta de solicitud";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar todos los estados de una respuesta";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Retorna todos los estados disponibles para una respuesta de solicitud, sin filtros ni paginación.";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados de respuesta retornada exitosamente";
+    }
 }
