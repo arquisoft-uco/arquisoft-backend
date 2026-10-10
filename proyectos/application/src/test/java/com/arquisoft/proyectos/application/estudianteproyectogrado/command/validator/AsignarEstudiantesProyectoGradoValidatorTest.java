@@ -12,6 +12,7 @@ import com.arquisoft.proyectos.domain.estudianteproyectogrado.exception.Estudian
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoFinalizadoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
+import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoPerteneceCoordinadorException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
@@ -40,8 +41,12 @@ class AsignarEstudiantesProyectoGradoValidatorTest {
     }
 
     private AgregacionEstudiantesProyectoGradoDomain entrada(List<UUID> estudiantes) {
+        return entrada(estudiantes, proyecto.getCoordinador());
+    }
+
+    private AgregacionEstudiantesProyectoGradoDomain entrada(List<UUID> estudiantes, UUID coordinador) {
         return AgregacionEstudiantesProyectoGradoDomain.crear(
-                EstudianteProyectoGradoDomain.crear(proyecto.getId(), estudiantes));
+                EstudianteProyectoGradoDomain.crear(proyecto.getId(), estudiantes), coordinador);
     }
 
     @Test
@@ -73,6 +78,26 @@ class AsignarEstudiantesProyectoGradoValidatorTest {
         assertThatThrownBy(() -> validator.validar(entrada(List.of(UtilUUID.generarNuevoUUID())),
                 ProyectoGradoDomain.VACIO, List.of(), List.of(), 0))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarNoPerteneceCoordinador_cuandoElSolicitanteNoEsElCoordinadorDelProyecto() {
+        // Arrange
+        var a = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(entrada(List.of(a), UtilUUID.generarNuevoUUID()), proyecto,
+                List.of(estudiante(a)), List.of(), 0))
+                .isInstanceOf(ProyectoGradoNoPerteneceCoordinadorException.class);
+    }
+
+    @Test
+    void debeLanzarNoPerteneceCoordinador_antesQueNoVigentes_cuandoAmbosSeCumplen() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                entrada(List.of(UtilUUID.generarNuevoUUID()), UtilUUID.generarNuevoUUID()), proyecto,
+                List.of(), List.of(), 0))
+                .isInstanceOf(ProyectoGradoNoPerteneceCoordinadorException.class);
     }
 
     @Test

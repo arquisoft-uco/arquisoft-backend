@@ -29,8 +29,9 @@ class AsignarEstudiantesProyectoGradoInteractorImplTest {
     void debeMapearElCommandALaAgregacionYDelegar_cuandoSeEjecuta() {
         // Arrange
         var proyectoGrado = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
         var estudiantes = List.of(UUID.randomUUID(), UUID.randomUUID());
-        var command = new AsignarEstudiantesProyectoGradoCommand(proyectoGrado, estudiantes);
+        var command = new AsignarEstudiantesProyectoGradoCommand(proyectoGrado, coordinador, estudiantes);
 
         // Act
         interactor.ejecutar(command);
@@ -39,6 +40,7 @@ class AsignarEstudiantesProyectoGradoInteractorImplTest {
         var captor = ArgumentCaptor.forClass(AgregacionEstudiantesProyectoGradoDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getProyectoGrado()).isEqualTo(proyectoGrado);
+        assertThat(captor.getValue().getCoordinador()).isEqualTo(coordinador);
         assertThat(captor.getValue().getEstudiantes()).containsExactlyElementsOf(estudiantes);
     }
 }

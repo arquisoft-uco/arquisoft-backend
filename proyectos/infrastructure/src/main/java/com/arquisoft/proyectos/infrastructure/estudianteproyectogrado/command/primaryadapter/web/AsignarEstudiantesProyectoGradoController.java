@@ -7,6 +7,7 @@ import com.arquisoft.proyectos.infrastructure.security.ProyectosAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ProyectosApiMessages;
+import com.arquisoft.shared.util.UtilUUID;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,10 +56,13 @@ public class AsignarEstudiantesProyectoGradoController {
     })
     public ResponseEntity<Void> asignarEstudiantes(
             @PathVariable UUID proyectoGradoId,
-            @RequestBody AsignarEstudiantesProyectoGradoRequestDTO dto) {
+            @RequestBody AsignarEstudiantesProyectoGradoRequestDTO dto,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        var coordinador = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
 
         asignarEstudiantesProyectoGradoInteractor.ejecutar(
-                AsignarEstudiantesProyectoGradoRequestMapper.toCommand(dto, proyectoGradoId));
+                AsignarEstudiantesProyectoGradoRequestMapper.toCommand(dto, proyectoGradoId, coordinador));
 
         return ResponseEntity.noContent().build();
     }

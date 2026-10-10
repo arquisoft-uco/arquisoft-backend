@@ -52,6 +52,7 @@ public final class ProyectosCodes {
         public static final String COORDINADOR_NO_VIGENTE = "PROYECTO_GRADO_COORDINADOR_NO_VIGENTE";
         public static final String NO_ENCONTRADO = "PROYECTO_GRADO_NO_ENCONTRADO";
         public static final String FINALIZADO = "PROYECTO_GRADO_FINALIZADO";
+        public static final String NO_PERTENECE_COORDINADOR = "PROYECTO_GRADO_NO_PERTENECE_COORDINADOR";
     }
 
     public static final class EstudianteProyectoGrado {
@@ -59,6 +60,7 @@ public final class ProyectosCodes {
         private EstudianteProyectoGrado() {}
 
         public static final String PROYECTO_GRADO_ID_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
+        public static final String COORDINADOR_ID_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_COORDINADOR_ID_REQUERIDO";
         public static final String ESTUDIANTE_ID_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
         public static final String ESTUDIANTE_ID_INVALIDO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_ID_INVALIDO";
         public static final String ESTUDIANTES_REQUERIDOS = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTES_REQUERIDOS";
