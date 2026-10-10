@@ -65,7 +65,8 @@
               "fichas:estado-ficha:view",
               "solicitudes:solicitud-novedad-coordinador-recibida:view",
               "fichas:evaluacion-ficha-perfil-coordinador:view",
-              "fichas:observacion-evaluacion-coordinador:view"
+              "fichas:observacion-evaluacion-coordinador:view",
+              "fichas:item-ficha-perfil-coordinador:view"
             ]
           }
         },
@@ -926,6 +927,15 @@
         {
           "id": "b4173c47-3113-4c28-876e-501e5a41e7d8",
           "name": "fichas:observacion-evaluacion-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "36d62986-1bd6-4c8e-b8a8-0979c47a65eb",
+          "name": "fichas:item-ficha-perfil-coordinador:view",
           "description": "",
           "composite": false,
           "clientRole": true,

@@ -17,6 +17,7 @@ public final class FichasAuthorities {
     public static final String ITEM_FICHA_PERFIL_ASESOR_VIEW = "fichas:item-ficha-perfil-asesor:view";
     public static final String ITEM_FICHA_PERFIL_ESTUDIANTE_VIEW = "fichas:item-ficha-perfil-estudiante:view";
     public static final String ITEM_FICHA_PERFIL_REPRESENTANTE_VIEW = "fichas:item-ficha-perfil-representante:view";
+    public static final String ITEM_FICHA_PERFIL_COORDINADOR_VIEW = "fichas:item-ficha-perfil-coordinador:view";
 
     public static final String ESTUDIANTE_FICHA_PERFIL_CREATE = "fichas:estudiante-ficha-perfil:create";
     public static final String ESTUDIANTE_FICHA_PERFIL_DELETE = "fichas:estudiante-ficha-perfil:delete";
@@ -94,6 +95,8 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + ITEM_FICHA_PERFIL_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ITEM_FICHA_PERFIL_REPRESENTANTE_VIEW =
                 HAS_AUTHORITY_INICIO + ITEM_FICHA_PERFIL_REPRESENTANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ITEM_FICHA_PERFIL_COORDINADOR_VIEW =
+                HAS_AUTHORITY_INICIO + ITEM_FICHA_PERFIL_COORDINADOR_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTUDIANTE_FICHA_PERFIL_CREATE =
                 HAS_AUTHORITY_INICIO + ESTUDIANTE_FICHA_PERFIL_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTUDIANTE_FICHA_PERFIL_DELETE =
