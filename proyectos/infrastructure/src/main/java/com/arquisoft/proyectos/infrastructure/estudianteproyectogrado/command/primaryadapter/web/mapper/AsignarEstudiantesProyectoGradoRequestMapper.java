@@ -10,7 +10,7 @@ public final class AsignarEstudiantesProyectoGradoRequestMapper {
     private AsignarEstudiantesProyectoGradoRequestMapper() {}
 
     public static AsignarEstudiantesProyectoGradoCommand toCommand(
-            AsignarEstudiantesProyectoGradoRequestDTO dto, UUID proyectoGrado) {
-        return AsignarEstudiantesProyectoGradoCommand.crear(proyectoGrado, dto.estudiantes());
+            AsignarEstudiantesProyectoGradoRequestDTO dto, UUID proyectoGrado, UUID coordinador) {
+        return AsignarEstudiantesProyectoGradoCommand.crear(proyectoGrado, coordinador, dto.estudiantes());
     }
 }

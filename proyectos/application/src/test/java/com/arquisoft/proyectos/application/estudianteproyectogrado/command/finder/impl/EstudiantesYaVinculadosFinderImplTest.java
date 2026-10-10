@@ -30,7 +30,7 @@ class EstudiantesYaVinculadosFinderImplTest {
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var vinculado = UtilUUID.generarNuevoUUID();
         var entrada = AgregacionEstudiantesProyectoGradoDomain.crear(EstudianteProyectoGradoDomain.crear(
-                proyectoGrado, List.of(vinculado, UtilUUID.generarNuevoUUID())));
+                proyectoGrado, List.of(vinculado, UtilUUID.generarNuevoUUID())), UtilUUID.generarNuevoUUID());
         when(estudianteProyectoGradoOutputPort.obtenerVinculados(proyectoGrado, entrada.getEstudiantes()))
                 .thenReturn(List.of(vinculado));
 

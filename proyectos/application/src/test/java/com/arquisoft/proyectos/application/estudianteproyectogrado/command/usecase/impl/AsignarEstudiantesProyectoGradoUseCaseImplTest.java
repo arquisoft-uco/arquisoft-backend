@@ -83,7 +83,8 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
             estudiante("Eva Ruiz", "eva.ruiz@soyuco.edu.co"));
     private final AgregacionEstudiantesProyectoGradoDomain entrada = AgregacionEstudiantesProyectoGradoDomain.crear(
             EstudianteProyectoGradoDomain.crear(proyecto.getId(),
-                    vigentes.stream().map(EstudianteDomain::getId).toList()));
+                    vigentes.stream().map(EstudianteDomain::getId).toList()),
+            proyecto.getCoordinador());
 
     private static EstudianteDomain estudiante(String nombre, String email) {
         return EstudianteDomain.reconstruir(UUID.randomUUID(), "2020", nombre, email,

@@ -20,7 +20,8 @@ class RegistroProyectoGradoDomainTest {
         // Arrange
         var proyecto = ProyectoGradoDomain.crear(UUID.randomUUID(), "Titulo", UUID.randomUUID());
         var estudiantes = AgregacionEstudiantesProyectoGradoDomain.crear(
-                EstudianteProyectoGradoDomain.crear(proyecto.getId(), List.of(UUID.randomUUID())));
+                EstudianteProyectoGradoDomain.crear(proyecto.getId(), List.of(UUID.randomUUID())),
+                proyecto.getCoordinador());
 
         // Act
         var registro = RegistroProyectoGradoDomain.crear(proyecto, estudiantes);

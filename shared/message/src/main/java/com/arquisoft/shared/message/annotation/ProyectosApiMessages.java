@@ -20,13 +20,14 @@ public final class ProyectosApiMessages {
 
         public static final String ASIGNAR_SUMMARY = "Asignar estudiantes a un proyecto de grado existente";
         public static final String ASIGNAR_DESCRIPTION =
-                "Permite al coordinador vincular entre 1 y 3 estudiantes vigentes a un proyecto de grado "
-                        + "que no esté finalizado, respetando el máximo de 3 estudiantes por proyecto";
+                "Permite al coordinador asignado al proyecto de grado vincular entre 1 y 3 estudiantes vigentes, "
+                        + "si el proyecto no está finalizado, respetando el máximo de 3 estudiantes por proyecto";
         public static final String ASIGNAR_RESP_204 = "Estudiantes asignados exitosamente";
         public static final String ASIGNAR_RESP_400 =
                 "Identificador inválido, lista vacía o con más de 3 estudiantes";
         public static final String ASIGNAR_RESP_403 = "Sin permiso para asignar estudiantes a un proyecto de grado";
         public static final String ASIGNAR_RESP_422 =
-                "Proyecto no encontrado o finalizado, estudiante no vigente, repetido o ya vinculado, o cupo excedido";
+                "Proyecto no encontrado, finalizado o asignado a otro coordinador, estudiante no vigente, "
+                        + "repetido o ya vinculado, o cupo excedido";
     }
 }
