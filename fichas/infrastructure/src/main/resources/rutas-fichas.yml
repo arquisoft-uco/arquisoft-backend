@@ -14,6 +14,7 @@ rutas:
       estados-ficha: /estados-ficha
       estado-asesor: /{fichaPerfilId}/estados-ficha
       estados-ficha-representante: /{fichaPerfilId}/estados-ficha/representante
+      estados-ficha-coordinador: /{fichaPerfilId}/estados-ficha/coordinador
       tipos-item: /tipos-item
       estados-evaluacion: /estados-evaluacion
       estados-revision: /estados-revision
