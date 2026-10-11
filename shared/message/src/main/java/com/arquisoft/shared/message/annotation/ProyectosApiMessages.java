@@ -60,6 +60,26 @@ public final class ProyectosApiMessages {
                         + "asignado, o cupo de asesores excedido";
     }
 
+    public static final class ConsultaAsesorProyectoGrado {
+
+        private ConsultaAsesorProyectoGrado() {}
+
+        public static final String TAG_NAME = "Consulta de Asesores de Proyecto de Grado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de los asesores que ha tenido un proyecto de grado";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar los asesores de un proyecto de grado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Permite al coordinador asignado al proyecto de grado consultar todos los asesores que ha tenido, "
+                        + "vigentes y finalizados, ordenados por fecha de asignación de la más reciente a la más antigua";
+        public static final String CONSULTAR_RESP_200 = "Asesores del proyecto de grado";
+        public static final String CONSULTAR_RESP_400 = "Identificador de proyecto de grado inválido";
+        public static final String CONSULTAR_RESP_403 =
+                "Sin permiso para consultar los asesores de un proyecto de grado";
+        public static final String CONSULTAR_RESP_422 =
+                "Proyecto de grado no encontrado o asignado a otro coordinador";
+    }
+
     public static final class ConsultaEstudianteProyectoGrado {
 
         private ConsultaEstudianteProyectoGrado() {}
