@@ -48,8 +48,8 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debePasarValidarExistencia_cuandoSolicitudRemitenteYCoordinadorExisten() {
-        UUID remitente = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatCode(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, remitente, coordinador),
@@ -59,7 +59,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarSolicitudNoEncontrada_cuandoLaSolicitudNoExiste() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(false, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -69,7 +69,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarRemitenteNoEncontrado_cuandoElRemitenteNoTieneReplicaLocal() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -79,7 +79,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarDestinatarioNoEncontrado_cuandoElCoordinadorNoTieneReplicaLocal() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -89,7 +89,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeValidarSolicitudAntesQueRemitente_cuandoAmbasFallan() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(false, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -99,7 +99,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeValidarRemitenteAntesQueDestinatario_cuandoAmbosFallan() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -109,7 +109,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debePasarValidarReglasDeNegocio_cuandoLasTresReglasSeCumplen() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatCode(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -119,7 +119,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarTipoNoCoincide_cuandoLaSolicitudEsDeOtroTipo() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), REMITENTE, coordinador),
@@ -129,7 +129,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarNoEsDestinatario_cuandoElResponsableNoEsElDestinatario() {
-        UUID destinatario = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(UUID.randomUUID()),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, destinatario),
@@ -139,7 +139,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarYaRespondida_cuandoLaSolicitudTieneRespuesta() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -149,7 +149,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeValidarTipoAntesQueDestinatario_cuandoAmbosFallan() {
-        UUID destinatario = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(UUID.randomUUID()),
                 resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), REMITENTE, destinatario),
@@ -159,7 +159,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeValidarDestinatarioAntesQueUnicidad_cuandoAmbosFallan() {
-        UUID destinatario = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(UUID.randomUUID()),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, destinatario),
@@ -169,7 +169,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarElErrorDelAsesor_cuandoSeEsperabaNovedadParaElAsesorYLaSolicitudEsDeOtroTipo() {
-        UUID responsable = UUID.randomUUID();
+        var responsable = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entrada(responsable, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR),
                 resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), REMITENTE, responsable),
@@ -179,7 +179,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debePasar_cuandoSeEsperabaNovedadParaElAsesorYLaSolicitudEsDeEseTipo() {
-        UUID responsable = UUID.randomUUID();
+        var responsable = UUID.randomUUID();
 
         assertThatCode(() -> validator.validar(entrada(responsable, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR),
                 resumen(true, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId(), REMITENTE, responsable),

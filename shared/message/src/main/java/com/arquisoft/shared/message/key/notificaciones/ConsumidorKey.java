@@ -17,6 +17,8 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-estado-modificado-recibido",
             2),
+    LOG_SOLICITUD_NOVEDAD_ASESOR_ESTADO_MODIFICADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-estado-modificado-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_ASESOR_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-recibido", 2),
     LOG_SOLICITUD_CAMBIO_ASESOR_RECIBIDO(
@@ -32,6 +34,8 @@ public enum ConsumidorKey implements ClaveMensaje {
             "notificaciones.infraestructura.consumidor.log.proyecto-grado-registrado-recibido", 3),
     LOG_ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.estudiantes-proyecto-grado-asignados-recibido", 2),
+    LOG_ASESOR_PROYECTO_GRADO_ASIGNADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.asesor-proyecto-grado-asignado-recibido", 1),
     LOG_ESTADO_FICHA_PERFIL_AGREGADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.estado-ficha-perfil-agregado-recibido", 3),
     LOG_NOTIFICACION_ENVIADA("notificaciones.infraestructura.consumidor.log.notificacion-enviada", 2),

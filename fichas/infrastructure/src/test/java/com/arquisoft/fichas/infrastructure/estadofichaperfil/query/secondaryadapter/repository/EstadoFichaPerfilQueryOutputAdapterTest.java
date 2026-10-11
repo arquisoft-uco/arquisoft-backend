@@ -44,6 +44,9 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
     @Autowired
     private EstadoFichaPerfilRepresentanteQueryRepository representanteRepository;
 
+    @Autowired
+    private EstadoFichaPerfilCoordinadorQueryRepository coordinadorRepository;
+
     private EstadoFichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
@@ -52,7 +55,8 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
                 repository,
                 asesorRepository,
                 new EstadoFichaPerfilAsesorJpaSpecification(),
-                representanteRepository);
+                representanteRepository,
+                coordinadorRepository);
 
         persistirEstadoFicha("EN_CONSTRUCCION", "En Construccion");
         persistirEstadoFicha("DISPONIBLE_PARA_EVALUACION", "Disponible Para Evaluacion");

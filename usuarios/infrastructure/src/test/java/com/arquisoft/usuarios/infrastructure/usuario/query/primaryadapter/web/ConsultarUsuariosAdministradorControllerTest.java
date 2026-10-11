@@ -206,7 +206,7 @@ class ConsultarUsuariosAdministradorControllerTest {
         // Act
         var respuesta = mockMvc.perform(post(RUTA)
                 .with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.ESTUDIANTE_ADMINISTRADOR_VIEW))));
+                        .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.ESTUDIANTE_VIGENTE_VIEW))));
 
         // Assert
         respuesta.andExpect(status().isForbidden());

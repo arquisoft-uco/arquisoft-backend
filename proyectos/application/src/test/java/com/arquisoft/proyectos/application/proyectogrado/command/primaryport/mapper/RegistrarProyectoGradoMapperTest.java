@@ -29,6 +29,7 @@ class RegistrarProyectoGradoMapperTest {
         assertThat(proyecto.getCoordinador()).isEqualTo(coordinador);
         assertThat(proyecto.getEstadoProyectoGrado()).isEqualTo(EstadoProyectoGrado.EN_PROCESO);
         assertThat(registro.getEstudiantes().getProyectoGrado()).isEqualTo(proyecto.getId());
+        assertThat(registro.getEstudiantes().getCoordinador()).isEqualTo(coordinador);
         assertThat(registro.getEstudiantes().getEstudiantes()).containsExactlyElementsOf(estudiantes);
     }
 }

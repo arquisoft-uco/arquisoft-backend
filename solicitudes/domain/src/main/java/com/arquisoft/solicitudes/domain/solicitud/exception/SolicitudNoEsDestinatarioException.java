@@ -5,13 +5,11 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 
-import java.util.UUID;
-
 public final class SolicitudNoEsDestinatarioException extends DomainException {
 
-    public SolicitudNoEsDestinatarioException(UUID usuario) {
+    public SolicitudNoEsDestinatarioException() {
         super(
-                Mensajes.formatear(SolicitudKey.ERROR_SOLICITUD_NO_ES_DESTINATARIO, usuario),
+                Mensajes.formatear(SolicitudKey.ERROR_SOLICITUD_NO_ES_DESTINATARIO),
                 SolicitudesCodes.Solicitud.SOLICITUD_NO_ES_DESTINATARIO
         );
     }
