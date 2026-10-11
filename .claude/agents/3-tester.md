@@ -130,6 +130,9 @@ asserts — no tests nuevos):
 - Contra el N+1, siembra la colección con **al menos 3** elementos y verifica una sola llamada: con
   uno no se distingue 1 de N.
 - Una cascada condicional se prueba por su camino corto: `verify(segundoFinder, never())`.
+- En un comando, `inOrder(...)` con todos los `Finder`s antes de `validator.validar(...)`. Un
+  `Finder` que el código consulta después de validar es un bug de producción para `## Bugs`, no un
+  orden que el test copie (`arquisoft-estandares` → *Validator, Rule, Finder*).
 
 Si en Arrange stubeas un `Finder` para alimentar la entrada de otro, eso es un `Finder` dependiente.
 Si el plan no lo justifica con una cascada legítima de `arquisoft-estandares` → *El `Finder`

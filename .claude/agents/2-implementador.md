@@ -108,6 +108,9 @@ skill citada; lo que aquí importa es reconocer cuándo el plan te empuja contra
 - Un `Validator` con dependencias o con `if`, una `Rule` como bean, un `Validator` sin `Rule`s, o
   una consulta de idempotencia convertida en `Rule` (`arquisoft-estandares` → *Validator, Rule,
   Finder*).
+- **Un `Finder` consultado después de `validar(...)`**, o cuyo resultado lee la escritura o el
+  evento sin una `Rule` que rechace su `VACIO` (`arquisoft-estandares` → *Validator, Rule, Finder*).
+  Si el plan lo pide así, detente: falla en silencio y compila.
 - **Una cascada de `Finder`s que se podría colapsar** en un método del `OutputPort`
   (`arquisoft-estandares` → *El `Finder` dependiente*). Detente antes de escribirla: el método del
   `OutputPort` lo decide el plan.
