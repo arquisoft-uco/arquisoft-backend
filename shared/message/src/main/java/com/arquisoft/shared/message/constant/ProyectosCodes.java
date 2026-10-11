@@ -77,4 +77,25 @@ public final class ProyectosCodes {
 
         public static final String NO_ENCONTRADO = "ESTADO_PROYECTO_GRADO_NO_ENCONTRADO";
     }
+
+    public static final class AsesorProyectoGrado {
+
+        private AsesorProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO_ID_REQUERIDO = "ASESOR_PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
+        public static final String COORDINADOR_ID_REQUERIDO = "ASESOR_PROYECTO_GRADO_COORDINADOR_ID_REQUERIDO";
+        public static final String ASESOR_ID_REQUERIDO = "ASESOR_PROYECTO_GRADO_ASESOR_ID_REQUERIDO";
+        public static final String ASESOR_ID_INVALIDO = "ASESOR_PROYECTO_GRADO_ASESOR_ID_INVALIDO";
+        public static final String ESTADO_ASESOR_REQUERIDO = "ASESOR_PROYECTO_GRADO_ESTADO_ASESOR_REQUERIDO";
+        public static final String ASESOR_NO_VIGENTE = "ASESOR_PROYECTO_GRADO_ASESOR_NO_VIGENTE";
+        public static final String ASESOR_YA_ASIGNADO = "ASESOR_PROYECTO_GRADO_ASESOR_YA_ASIGNADO";
+        public static final String CUPO_ASESORES_EXCEDIDO = "ASESOR_PROYECTO_GRADO_CUPO_ASESORES_EXCEDIDO";
+    }
+
+    public static final class EstadoAsesor {
+
+        private EstadoAsesor() {}
+
+        public static final String NO_ENCONTRADO = "ESTADO_ASESOR_NO_ENCONTRADO";
+    }
 }

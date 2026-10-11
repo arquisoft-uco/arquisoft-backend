@@ -69,7 +69,8 @@
               "fichas:item-ficha-perfil-coordinador:view",
               "fichas:estado-ficha-perfil-coordinador:view",
               "proyectos:estudiante-proyecto-grado:create",
-              "proyectos:estudiante-proyecto-grado-coordinador:view"
+              "proyectos:estudiante-proyecto-grado-coordinador:view",
+              "proyectos:asesor-proyecto-grado:create"
             ]
           }
         },
@@ -957,6 +958,15 @@
         {
           "id": "a4d1e7b2-5c38-4f96-b0a3-8e2f6d9c1b57",
           "name": "proyectos:estudiante-proyecto-grado-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5b9e3a71-d2c4-4a68-9f10-7c4e8b2d6a35",
+          "name": "proyectos:asesor-proyecto-grado:create",
           "description": "",
           "composite": false,
           "clientRole": true,

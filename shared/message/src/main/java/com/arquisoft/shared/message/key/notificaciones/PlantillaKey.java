@@ -76,6 +76,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.estudiantes-proyecto-grado-asignados", 1),
     CUERPO_ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS(
             "notificaciones.aplicacion.plantilla.cuerpo.estudiantes-proyecto-grado-asignados", 2),
+    ASUNTO_ASESOR_PROYECTO_GRADO_ASIGNADO(
+            "notificaciones.aplicacion.plantilla.asunto.asesor-proyecto-grado-asignado", 1),
+    CUERPO_ASESOR_PROYECTO_GRADO_ASIGNADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.asesor-proyecto-grado-asignado", 2),
     ASUNTO_ESTADO_FICHA_PERFIL_AGREGADO(
             "notificaciones.aplicacion.plantilla.asunto.estado-ficha-perfil-agregado", 2),
     CUERPO_ESTADO_FICHA_PERFIL_AGREGADO(

@@ -34,6 +34,8 @@ public enum ConsumidorKey implements ClaveMensaje {
             "notificaciones.infraestructura.consumidor.log.proyecto-grado-registrado-recibido", 3),
     LOG_ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.estudiantes-proyecto-grado-asignados-recibido", 2),
+    LOG_ASESOR_PROYECTO_GRADO_ASIGNADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.asesor-proyecto-grado-asignado-recibido", 1),
     LOG_ESTADO_FICHA_PERFIL_AGREGADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.estado-ficha-perfil-agregado-recibido", 3),
     LOG_NOTIFICACION_ENVIADA("notificaciones.infraestructura.consumidor.log.notificacion-enviada", 2),
