@@ -49,11 +49,20 @@ Antes de la FASE 7, `gh pr list --head {rama} --state all --json number,state,ur
 | Modo | Cuándo | Qué cambia |
 |---|---|---|
 | **Entrega** | La rama no tiene PR | El flujo completo |
-| **Seguimiento** | Un PR `OPEN` y el reporte es de un ajuste (`validator-{ID}-AJ{n}.md`) | Sin FASE 7 ni `gh pr create`: el push actualiza el PR abierto. Espera los GitHub Actions con `gh pr checks {número} --watch` y, si fallan, devuelve `ERROR` con el check que falló |
+| **Seguimiento** | Un PR `OPEN` y el reporte es de un ajuste (`validator-{ID}-AJ{n}.md`) | Sin FASE 7 ni `gh pr create`: el push actualiza el PR abierto. Espera el CI del commit subido (ver abajo) |
+
+**CI en Seguimiento.** Espera los GitHub Actions **del SHA que acabas de subir**, no los del PR: justo
+tras el push, `gh pr checks` todavía puede mostrar los del commit anterior, ya en verde, y darlos por
+buenos es reportar un CI que no corrió. Espera a que `gh run list --commit {sha} --json
+databaseId,name,status,conclusion` liste las ejecuciones de ese SHA y sigue cada una con
+`gh run watch {id} --exit-status` (timeout amplio: tardan minutos). En `## Salidas` va cada check
+con su conclusión y el SHA; uno que no viste terminar se reporta `en curso`, nunca `pass`. Si uno
+falla, devuelve `ERROR` con el check que falló.
 
 Un PR `MERGED`/`CLOSED`: no abras otro, devuelve `PREGUNTA`. Escribe tu `.out.md` antes de responder,
-con el hash del commit y las URL del PR y de lo publicado en `## Salidas`, y responde solo la línea de
-traspaso en lugar del mensaje final.
+con la línea `ESTADO` de `HANDOFF.md` como línea 1 (uno de sus cuatro valores, nada encima), el hash
+del commit y las URL del PR y de lo publicado en `## Salidas`, y responde solo la línea de traspaso en
+lugar del mensaje final.
 
 ---
 

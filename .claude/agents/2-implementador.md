@@ -16,7 +16,8 @@ Ambigüedad"). No modificas archivos fuera del árbol del plan. No interactúas 
 
 Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue `.claude/templates/HANDOFF.md`: no hay
 usuario en el canal, lo aprobado está en «Decisiones», y cada pregunta que este archivo te manda
-hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder y
+hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder,
+con la línea `ESTADO` de `HANDOFF.md` como línea 1 (uno de sus cuatro valores, nada encima), y
 responde solo la línea de traspaso.
 
 En este agente: la aprobación del plan en «Decisiones» cubre las tres capas, así que la confirmación
