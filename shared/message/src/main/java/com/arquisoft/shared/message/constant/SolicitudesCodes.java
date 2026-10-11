@@ -27,6 +27,8 @@ public final class SolicitudesCodes {
         public static final String SOLICITUD_NO_PROPIA = "SOLICITUD_NO_PROPIA";
         public static final String SOLICITUD_TIPO_NO_COINCIDE = "SOLICITUD_TIPO_NO_COINCIDE";
         public static final String SOLICITUD_TIPO_NO_COINCIDE_ASESOR = "SOLICITUD_TIPO_NO_COINCIDE_ASESOR";
+        public static final String SOLICITUD_TIPO_NO_COINCIDE_CAMBIO_ASESOR =
+                "SOLICITUD_TIPO_NO_COINCIDE_CAMBIO_ASESOR";
         public static final String SOLICITUD_CON_RESPUESTAS = "SOLICITUD_CON_RESPUESTAS";
         public static final String SOLICITUD_NO_ES_DESTINATARIO = "SOLICITUD_NO_ES_DESTINATARIO";
     }
