@@ -83,6 +83,7 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_EVALUACION_CUANTITATIVA_JURADO_UPDATE =
                 HAS_AUTHORITY_INICIO + EVALUACION_CUANTITATIVA_JURADO_UPDATE + HAS_AUTHORITY_FIN;
+
         public static final String HAS_OBSERVACION_ITEM_JURADO_CREATE =
                 HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_JURADO_CREATE + HAS_AUTHORITY_FIN;
     }

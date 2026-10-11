@@ -46,9 +46,10 @@ public interface EvaluacionJuradoCommandRepository extends JpaRepository<Evaluac
 
     @NativeQuery("""
             SELECT (e.estado_evaluacion_id = 'FINALIZADA')
-            FROM evaluacion_jurado ej
+            FROM evaluacion_cuantitativa_jurado ecj
+            JOIN evaluacion_jurado ej ON ej.id = ecj.evaluacion_jurado_id
             JOIN evaluacion e ON e.id = ej.evaluacion_id
-            WHERE ej.id = :evaluacionJurado
+            WHERE ecj.id = :evaluacionCuantitativaJurado
             """)
-    Optional<Boolean> estaFinalizada(@Param("evaluacionJurado") UUID evaluacionJurado);
+    Optional<Boolean> estaFinalizada(@Param("evaluacionCuantitativaJurado") UUID evaluacionCuantitativaJurado);
 }

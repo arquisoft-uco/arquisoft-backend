@@ -7,5 +7,3 @@ CREATE TABLE observacion_item_jurado (
     CONSTRAINT fk_obs_ij_eval FOREIGN KEY (evaluacion_cuantitativa_jurado_id)
         REFERENCES evaluacion_cuantitativa_jurado (id)
 );
-
-CREATE INDEX idx_obs_ij_evaluacion ON observacion_item_jurado (evaluacion_cuantitativa_jurado_id);

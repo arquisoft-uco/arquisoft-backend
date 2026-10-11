@@ -68,7 +68,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
                 .thenReturn(evaluacion);
-        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionJurado)).thenReturn(false);
+        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionCuantitativaJurado)).thenReturn(false);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(new CriterioDescripcionObservacionItemJurado(
                 evaluacionCuantitativaJurado, observacion.getDescripcion())))
                 .thenReturn(false);
@@ -82,7 +82,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
                 descripcionObservacionItemJuradoExisteFinder, validator, outputPort);
         orden.verify(logger).info(ObservacionItemJuradoKey.LOG_REGISTRANDO, evaluacionCuantitativaJurado);
         orden.verify(evaluacionCuantitativaJuradoPorIdFinder).obtener(evaluacionCuantitativaJurado);
-        orden.verify(evaluacionJuradoFinalizadaFinder).obtener(evaluacionJurado);
+        orden.verify(evaluacionJuradoFinalizadaFinder).obtener(evaluacionCuantitativaJurado);
         orden.verify(descripcionObservacionItemJuradoExisteFinder).obtener(new CriterioDescripcionObservacionItemJurado(
                 evaluacionCuantitativaJurado, observacion.getDescripcion()));
         orden.verify(logger).debug(ObservacionItemJuradoKey.LOG_VERIFICACION_REGISTRAR, true, false, false);
@@ -100,7 +100,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
                 .thenReturn(EvaluacionCuantitativaJuradoDomain.VACIO);
-        when(evaluacionJuradoFinalizadaFinder.obtener(any())).thenReturn(false);
+        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionCuantitativaJurado)).thenReturn(false);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(false);
         doThrow(new EvaluacionCuantitativaJuradoNoEncontradaException(evaluacionCuantitativaJurado))
                 .when(validator).validar(eq(observacion), any(), eq(false), eq(false));
@@ -124,7 +124,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
                 .thenReturn(evaluacion);
-        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionJurado)).thenReturn(true);
+        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionCuantitativaJurado)).thenReturn(true);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(false);
         doThrow(new EvaluacionJuradoFinalizadaException(evaluacionCuantitativaJurado))
                 .when(validator).validar(eq(observacion), eq(evaluacion), eq(true), eq(false));
@@ -147,7 +147,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
                 .thenReturn(evaluacion);
-        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionJurado)).thenReturn(false);
+        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionCuantitativaJurado)).thenReturn(false);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(true);
         doThrow(new DescripcionObservacionItemJuradoDuplicadaException(evaluacionCuantitativaJurado))
                 .when(validator).validar(eq(observacion), eq(evaluacion), eq(false), eq(true));
