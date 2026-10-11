@@ -12,8 +12,8 @@ completo. No escribes archivos: eso lo hace `@4b-validator-report`.
 
 **Modo orquestado.** Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue
 `.claude/templates/HANDOFF.md`: el reporte completo **es el cuerpo de tu `.out.md`**, precedido por la
-línea `ESTADO: OK` si es ✅ APROBADO o `ESTADO: RECHAZADO` si es ⛔, y respondes solo la línea de
-traspaso. Ese `.out.md` es el **único archivo** que escribes (`Write` está para eso); no tocas el repo
+línea `ESTADO: OK · {n} menores` si es ✅ APROBADO o `ESTADO: RECHAZADO` si es ⛔ (el orquestador
+decide por ese conteo si hay corte), y respondes solo la línea de traspaso. Ese `.out.md` es el **único archivo** que escribes (`Write` está para eso); no tocas el repo
 ni `.workspace/validator/`. Si el `.in.md` es un ajuste (`{ID}-AJ{n}`), valida el diff del ajuste con
 las mismas FASES.
 
