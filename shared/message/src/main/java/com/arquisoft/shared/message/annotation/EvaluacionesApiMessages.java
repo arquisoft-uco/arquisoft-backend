@@ -62,6 +62,8 @@ public final class EvaluacionesApiMessages {
                 "Consulta las categorías de ítem cuantitativo del jurado, opcionalmente filtradas "
                         + "por nombre (coincidencia parcial, sin distinguir mayúsculas/minúsculas), "
                         + "ordenadas por nombre";
+        public static final String CONSULTAR_PARAM_NOMBRE =
+                "Texto a buscar dentro del nombre de la categoría (opcional, máximo 100 caracteres)";
         public static final String CONSULTAR_RESP_200 = "Listado de categorías de ítem cuantitativo del jurado";
         public static final String CONSULTAR_RESP_400 = "Filtro de nombre inválido";
     }
@@ -127,16 +129,16 @@ public final class EvaluacionesApiMessages {
         public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
         public static final String REGISTRAR_RESP_422 =
                 "La categoría no existe o el nombre ya está registrado en ella";
-        public static final String CONSULTAR_SUMMARY = "Consultar ítems cuantitativos";
-        public static final String CONSULTAR_DESCRIPTION =
-                "Consulta todos los ítems cuantitativos disponibles para que el jurado evalúe un "
-                        + "trabajo de grado, ordenados por categoría y luego por nombre";
-        public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del jurado";
         public static final String MODIFICAR_SUMMARY = "Modificar descripción del ítem cuantitativo";
         public static final String MODIFICAR_DESCRIPTION =
                 "Modifica la descripción de un ítem cuantitativo existente del jurado";
         public static final String MODIFICAR_RESP_204 = "Descripción actualizada";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "El ítem cuantitativo no existe";
+        public static final String CONSULTAR_SUMMARY = "Consultar ítems cuantitativos";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta todos los ítems cuantitativos disponibles para que el jurado evalúe un "
+                        + "trabajo de grado, ordenados por categoría y luego por nombre";
+        public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del jurado";
     }
 }

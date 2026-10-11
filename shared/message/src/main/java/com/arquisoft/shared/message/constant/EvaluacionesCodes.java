@@ -41,14 +41,6 @@ public final class EvaluacionesCodes {
 
         private CategoriaItemCuantitativoJurado() {}
 
-        public static final String NOMBRE_REQUERIDO =
-                "CATEGORIA_ITEM_CUANTITATIVO_JURADO_NOMBRE_REQUERIDO";
-        public static final String NOMBRE_DEMASIADO_LARGO =
-                "CATEGORIA_ITEM_CUANTITATIVO_JURADO_NOMBRE_DEMASIADO_LARGO";
-        public static final String DESCRIPCION_REQUERIDA =
-                "CATEGORIA_ITEM_CUANTITATIVO_JURADO_DESCRIPCION_REQUERIDA";
-        public static final String DESCRIPCION_DEMASIADO_LARGA =
-                "CATEGORIA_ITEM_CUANTITATIVO_JURADO_DESCRIPCION_DEMASIADO_LARGA";
         public static final String NOMBRE_FILTRO_DEMASIADO_LARGO =
                 "CATEGORIA_ITEM_CUANTITATIVO_JURADO_NOMBRE_FILTRO_DEMASIADO_LARGO";
     }

@@ -1,10 +1,12 @@
 package com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.usecase.impl;
 
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.criteria.CategoriaItemCuantitativoJuradoCriteria;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.readmodel.CategoriaItemCuantitativoJuradoReadModel;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.secondaryport.CategoriaItemCuantitativoJuradoQueryOutputPort;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.usecase.ConsultarCategoriasItemCuantitativoJuradoUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.CategoriaItemCuantitativoJuradoKey;
+import com.arquisoft.shared.util.UtilObjeto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +21,10 @@ public class ConsultarCategoriasItemCuantitativoJuradoUseCaseImpl
     private final AppLogger logger;
 
     @Override
-    public List<CategoriaItemCuantitativoJuradoReadModel> ejecutar(String nombre) {
-        logger.debug(CategoriaItemCuantitativoJuradoKey.LOG_CONSULTANDO, nombre != null);
+    public List<CategoriaItemCuantitativoJuradoReadModel> ejecutar(CategoriaItemCuantitativoJuradoCriteria criteria) {
+        logger.debug(CategoriaItemCuantitativoJuradoKey.LOG_CONSULTANDO, UtilObjeto.noEsNulo(criteria.nombre()));
 
-        var resultado = queryOutputPort.consultar(nombre);
+        var resultado = queryOutputPort.consultar(criteria);
 
         logger.debug(CategoriaItemCuantitativoJuradoKey.LOG_CONSULTA_COMPLETADA, resultado.size());
 
