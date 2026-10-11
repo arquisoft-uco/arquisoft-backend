@@ -23,6 +23,12 @@ asignar un valor inválido. Helpers por tipo: `ValidatorObjeto` (`noNulo`), `Val
 (`noVacia`, `tamanioMaximo`, `sinDuplicados`). Firma uniforme
 `(valor, …, campo, codigoError, ValidationResult) → boolean`. No existe `DomainValidator`.
 
+Lo que `crear(...)` fija sin recibirlo del llamador (el id, la fecha de alta, el estado inicial) nace
+en un setter privado **sin argumentos** que lo asigna directo: `setId()`, `setFechaAsignado()`,
+`setEstadoInicial()`. Pasarlo desde `crear` como argumento deja una validación de nulidad que nunca
+falla y un código de error que nunca sale, y esconde en la fábrica una decisión que es del agregado.
+Para el estado, el setter se llama `set{Atributo}Inicial()`. Ver `ProyectoGradoDomain.setEstadoInicial()`.
+
 **Recorta antes de validar, y valida el valor recortado** (`var recortado =
 UtilTexto.aplicarTrim(x);`, y `recortado` va a todos los `Validator*` y al campo; referencia
 `AutenticacionDomain.setCorreo`). `correoValido` no aplica trim y `longitudMaxima` mide los espacios,
