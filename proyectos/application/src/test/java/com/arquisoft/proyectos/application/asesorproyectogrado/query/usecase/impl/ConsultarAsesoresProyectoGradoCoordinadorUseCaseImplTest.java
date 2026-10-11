@@ -50,7 +50,7 @@ class ConsultarAsesoresProyectoGradoCoordinadorUseCaseImplTest {
     private AsesorProyectoGradoReadModel asesor(UUID proyectoGrado, String nombre, String estado) {
         return new AsesorProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), proyectoGrado,
                 UtilUUID.generarNuevoUUID(), "1001", nombre, nombre + "@soyuco.edu.co", estado, estado,
-                Instant.parse("2026-10-01T10:00:00Z"), true);
+                Instant.parse("2026-10-01T10:00:00Z"), true, true);
     }
 
     @Test

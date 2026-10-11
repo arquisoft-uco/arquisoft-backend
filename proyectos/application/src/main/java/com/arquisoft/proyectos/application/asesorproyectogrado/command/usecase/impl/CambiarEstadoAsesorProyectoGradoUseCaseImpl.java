@@ -1,11 +1,13 @@
 package com.arquisoft.proyectos.application.asesorproyectogrado.command.usecase.impl;
 
 import com.arquisoft.proyectos.application.asesor.command.finder.AsesorPorIdFinder;
-import com.arquisoft.proyectos.application.asesorproyectogrado.command.finder.AsesorProyectoGradoPorIdYProyectoFinder;
+import com.arquisoft.proyectos.application.asesorproyectogrado.command.finder.AsesorProyectoGradoVigenteFinder;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondaryport.AsesorProyectoGradoOutputPort;
+import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondaryport.mapper.AsesorProyectoGradoMapper;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.usecase.CambiarEstadoAsesorProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.validator.CambiarEstadoAsesorProyectoGradoValidator;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.proyectos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.CambioEstadoAsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.event.AsesorProyectoGradoFinalizadoEvent;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
@@ -21,8 +23,8 @@ public class CambiarEstadoAsesorProyectoGradoUseCaseImpl implements CambiarEstad
 
     private final AsesorProyectoGradoOutputPort asesorProyectoGradoOutputPort;
     private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
-    private final AsesorProyectoGradoPorIdYProyectoFinder asesorProyectoGradoPorIdYProyectoFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
+    private final AsesorProyectoGradoVigenteFinder asesorProyectoGradoVigenteFinder;
     private final CambiarEstadoAsesorProyectoGradoValidator validator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
@@ -30,25 +32,26 @@ public class CambiarEstadoAsesorProyectoGradoUseCaseImpl implements CambiarEstad
     @Override
     public void ejecutar(CambioEstadoAsesorProyectoGradoDomain entrada) {
         logger.info(AsesorProyectoGradoKey.LOG_CAMBIANDO_ESTADO,
-                entrada.getProyectoGrado(), entrada.getAsesorProyectoGrado(), entrada.getEstadoNuevo().getId());
+                entrada.getProyectoGrado(), entrada.getAsesor(), entrada.getEstadoNuevo().getId());
 
         var proyecto = proyectoGradoPorIdFinder.obtener(entrada.getProyectoGrado());
-        var vinculo = asesorProyectoGradoPorIdYProyectoFinder.obtener(entrada);
-
-        var asesor = asesorPorIdFinder.obtener(vinculo.getAsesor());
+        var asesor = asesorPorIdFinder.obtener(entrada.getAsesor());
+        var vigente = asesorProyectoGradoVigenteFinder.obtener(entrada);
 
         logger.debug(AsesorProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO,
-                !proyecto.esVacio(), !vinculo.esVacio(), !asesor.esVacio());
+                !proyecto.esVacio(), !asesor.esVacio(), !vigente.esVacio());
 
-        validator.validar(entrada, proyecto, vinculo, asesor);
+        validator.validar(entrada, proyecto, asesor, vigente);
 
-        asesorProyectoGradoOutputPort.actualizarEstado(vinculo.getId(), entrada.getEstadoNuevo().getId());
+        var nuevoEstado = AsesorProyectoGradoDomain.crearConEstado(
+                entrada.getAsesor(), entrada.getProyectoGrado(), entrada.getEstadoNuevo());
+        asesorProyectoGradoOutputPort.registrar(AsesorProyectoGradoMapper.toEntity(nuevoEstado));
 
         eventPublisher.publish(new AsesorProyectoGradoFinalizadoEvent(
                 proyecto.getId(), proyecto.getTituloProyecto(),
                 new ContactoAsesor(asesor.getNombre(), asesor.getEmail())));
 
         logger.info(AsesorProyectoGradoKey.LOG_ESTADO_CAMBIADO,
-                entrada.getProyectoGrado(), entrada.getAsesorProyectoGrado(), entrada.getEstadoNuevo().getId());
+                entrada.getProyectoGrado(), entrada.getAsesor(), entrada.getEstadoNuevo().getId());
     }
 }

@@ -4,6 +4,6 @@ import com.arquisoft.proyectos.domain.asesorproyectogrado.AsesorProyectoGradoDom
 import com.arquisoft.proyectos.domain.asesorproyectogrado.CambioEstadoAsesorProyectoGradoDomain;
 import com.arquisoft.shared.finder.Finder;
 
-public interface AsesorProyectoGradoPorIdYProyectoFinder
+public interface AsesorProyectoGradoVigenteFinder
         extends Finder<CambioEstadoAsesorProyectoGradoDomain, AsesorProyectoGradoDomain> {
 }

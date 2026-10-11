@@ -4,14 +4,13 @@ import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondary
 import com.arquisoft.proyectos.infrastructure.asesorproyectogrado.command.secondaryadapter.entity.AsesorProyectoGradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.AsesorProyectoGradoKey;
-import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
-import java.time.temporal.ChronoUnit;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +22,9 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
 
     private static final String ASIGNADO = "ASIGNADO";
     private static final String FINALIZADO = "FINALIZADO";
+    private static final Instant T1 = Instant.parse("2026-10-01T10:00:00Z");
+    private static final Instant T2 = Instant.parse("2026-10-02T10:00:00Z");
+    private static final Instant T3 = Instant.parse("2026-10-03T10:00:00Z");
 
     @Autowired
     private AsesorProyectoGradoCommandRepository asesorProyectoGradoCommandRepository;
@@ -32,9 +34,8 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
 
     private final AppLogger logger = mock(AppLogger.class);
 
-    private static AsesorProyectoGradoEntity vinculo(UUID asesor, UUID proyectoGrado, String estado) {
-        return new AsesorProyectoGradoEntity(UtilUUID.generarNuevoUUID(), asesor, proyectoGrado, estado,
-                UtilFecha.generarInstanteActual().truncatedTo(ChronoUnit.MILLIS));
+    private static AsesorProyectoGradoEntity fila(UUID asesor, UUID proyectoGrado, String estado, Instant fecha) {
+        return new AsesorProyectoGradoEntity(UtilUUID.generarNuevoUUID(), asesor, proyectoGrado, estado, fecha);
     }
 
     private AsesorProyectoGradoCommandOutputAdapter adapter() {
@@ -42,14 +43,14 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debePersistirElVinculoConTodosSusCampos_cuandoSeAsigna() {
+    void debePersistirLaFilaConTodosSusCampos_cuandoSeRegistra() {
         // Arrange
         var adapter = adapter();
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var vinculo = vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, ASIGNADO);
+        var vinculo = fila(UtilUUID.generarNuevoUUID(), proyectoGrado, ASIGNADO, T1);
 
         // Act
-        adapter.asignar(vinculo);
+        adapter.registrar(vinculo);
         entityManager.flush();
         entityManager.clear();
 
@@ -58,85 +59,70 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
         assertThat(guardado.getAsesorId()).isEqualTo(vinculo.asesor());
         assertThat(guardado.getProyectoGradoId()).isEqualTo(proyectoGrado);
         assertThat(guardado.getEstadoAsesorId()).isEqualTo(ASIGNADO);
-        assertThat(guardado.getFechaAsignado()).isEqualTo(vinculo.fechaAsignado());
+        assertThat(guardado.getFechaAsignado()).isEqualTo(T1);
         verify(logger).debug(AsesorProyectoGradoKey.LOG_GUARDADO, vinculo.id(), proyectoGrado);
     }
 
     @Test
-    void debeContarSoloLosAsignadosDelProyecto_cuandoHayFinalizadosYDeOtroProyecto() {
+    void debeRegistrarFilaNueva_sinModificarLaAnterior() {
         // Arrange
         var adapter = adapter();
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        adapter.asignar(vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, ASIGNADO));
-        adapter.asignar(vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, ASIGNADO));
-        adapter.asignar(vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, FINALIZADO));
-        adapter.asignar(vinculo(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), ASIGNADO));
+        var asesor = UtilUUID.generarNuevoUUID();
+        var asignado = fila(asesor, proyectoGrado, ASIGNADO, T1);
+        var finalizado = fila(asesor, proyectoGrado, FINALIZADO, T2);
+        adapter.registrar(asignado);
+        entityManager.flush();
+
+        // Act
+        adapter.registrar(finalizado);
         entityManager.flush();
         entityManager.clear();
 
-        // Act
-        var asignados = adapter.contarPorProyectoGradoYEstado(proyectoGrado, ASIGNADO);
-
         // Assert
-        assertThat(asignados).isEqualTo(2);
+        var anterior = entityManager.find(AsesorProyectoGradoJpaEntity.class, asignado.id());
+        assertThat(anterior.getEstadoAsesorId()).isEqualTo(ASIGNADO);
+        assertThat(anterior.getFechaAsignado()).isEqualTo(T1);
+        var nueva = entityManager.find(AsesorProyectoGradoJpaEntity.class, finalizado.id());
+        assertThat(nueva.getEstadoAsesorId()).isEqualTo(FINALIZADO);
+        assertThat(nueva.getFechaAsignado()).isEqualTo(T2);
     }
 
     @Test
-    void debeObtenerElVinculo_cuandoIdYProyectoCoinciden() {
+    void debeObtenerLaFilaMasReciente_cuandoHayHistorial() {
         // Arrange
         var adapter = adapter();
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var vinculo = vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, ASIGNADO);
-        adapter.asignar(vinculo);
+        var asesor = UtilUUID.generarNuevoUUID();
+        var reciente = fila(asesor, proyectoGrado, FINALIZADO, T2);
+        adapter.registrar(fila(asesor, proyectoGrado, ASIGNADO, T1));
+        adapter.registrar(reciente);
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        var obtenido = adapter.obtenerPorIdYProyectoGrado(vinculo.id(), proyectoGrado);
+        var obtenido = adapter.obtenerVigentePorAsesorYProyectoGrado(asesor, proyectoGrado);
 
         // Assert
-        assertThat(obtenido).contains(vinculo);
+        assertThat(obtenido).contains(reciente);
     }
 
     @Test
-    void debeRetornarVacio_cuandoElVinculoEsDeOtroProyecto() {
+    void debeRetornarVacio_cuandoElAsesorNoTieneFilaEnElProyecto() {
         // Arrange
         var adapter = adapter();
-        var vinculo = vinculo(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), ASIGNADO);
-        adapter.asignar(vinculo);
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        adapter.registrar(fila(asesor, UtilUUID.generarNuevoUUID(), ASIGNADO, T1));
+        adapter.registrar(fila(UtilUUID.generarNuevoUUID(), proyectoGrado, ASIGNADO, T1));
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        var obtenido = adapter.obtenerPorIdYProyectoGrado(vinculo.id(), UtilUUID.generarNuevoUUID());
+        var obtenido = adapter.obtenerVigentePorAsesorYProyectoGrado(asesor, proyectoGrado);
 
         // Assert
         assertThat(obtenido).isEmpty();
-    }
-
-    @Test
-    void debeActualizarSoloElEstadoDelVinculo_cuandoSeFinaliza() {
-        // Arrange
-        var adapter = adapter();
-        var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var objetivo = vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, ASIGNADO);
-        var otro = vinculo(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), ASIGNADO);
-        adapter.asignar(objetivo);
-        adapter.asignar(otro);
-        entityManager.flush();
-
-        // Act
-        adapter.actualizarEstado(objetivo.id(), FINALIZADO);
-
-        // Assert
-        var actualizado = entityManager.find(AsesorProyectoGradoJpaEntity.class, objetivo.id());
-        assertThat(actualizado.getEstadoAsesorId()).isEqualTo(FINALIZADO);
-        assertThat(actualizado.getAsesorId()).isEqualTo(objetivo.asesor());
-        assertThat(actualizado.getProyectoGradoId()).isEqualTo(proyectoGrado);
-        assertThat(actualizado.getFechaAsignado()).isEqualTo(objetivo.fechaAsignado());
-        assertThat(entityManager.find(AsesorProyectoGradoJpaEntity.class, otro.id()).getEstadoAsesorId())
-                .isEqualTo(ASIGNADO);
-        verify(logger).debug(AsesorProyectoGradoKey.LOG_ACTUALIZADO, objetivo.id(), FINALIZADO);
     }
 
     @Test
@@ -145,39 +131,55 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
         var adapter = adapter();
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
-        var vinculo = vinculo(asesor, proyectoGrado, ASIGNADO);
-        adapter.asignar(vinculo);
-        entityManager.flush();
-
-        // Act
-        adapter.actualizarEstado(vinculo.id(), FINALIZADO);
-
-        // Assert
-        assertThat(adapter.contarPorProyectoGradoYEstado(proyectoGrado, ASIGNADO)).isZero();
-        assertThat(adapter.existePorAsesorYProyectoGradoYEstado(asesor, proyectoGrado, ASIGNADO)).isFalse();
-        adapter.asignar(vinculo(asesor, proyectoGrado, ASIGNADO));
-        entityManager.flush();
-        assertThat(adapter.contarPorProyectoGradoYEstado(proyectoGrado, ASIGNADO)).isEqualTo(1);
-        assertThat(adapter.contarPorProyectoGradoYEstado(proyectoGrado, FINALIZADO)).isEqualTo(1);
-    }
-
-    @Test
-    void debeDetectarSoloElVinculoAsignado_cuandoElAsesorEstuvoFinalizadoOEstaEnOtroProyecto() {
-        // Arrange
-        var adapter = adapter();
-        var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var asignado = UtilUUID.generarNuevoUUID();
-        var finalizado = UtilUUID.generarNuevoUUID();
-        var enOtroProyecto = UtilUUID.generarNuevoUUID();
-        adapter.asignar(vinculo(asignado, proyectoGrado, ASIGNADO));
-        adapter.asignar(vinculo(finalizado, proyectoGrado, FINALIZADO));
-        adapter.asignar(vinculo(enOtroProyecto, UtilUUID.generarNuevoUUID(), ASIGNADO));
+        adapter.registrar(fila(asesor, proyectoGrado, ASIGNADO, T1));
+        adapter.registrar(fila(asesor, proyectoGrado, FINALIZADO, T2));
         entityManager.flush();
         entityManager.clear();
 
         // Act & Assert
-        assertThat(adapter.existePorAsesorYProyectoGradoYEstado(asignado, proyectoGrado, ASIGNADO)).isTrue();
-        assertThat(adapter.existePorAsesorYProyectoGradoYEstado(finalizado, proyectoGrado, ASIGNADO)).isFalse();
-        assertThat(adapter.existePorAsesorYProyectoGradoYEstado(enOtroProyecto, proyectoGrado, ASIGNADO)).isFalse();
+        assertThat(adapter.contarPorProyectoGradoConEstadoVigente(proyectoGrado, ASIGNADO)).isZero();
+        assertThat(adapter.existePorAsesorYProyectoGradoConEstadoVigente(asesor, proyectoGrado, ASIGNADO)).isFalse();
+        assertThat(adapter.contarPorProyectoGradoConEstadoVigente(proyectoGrado, FINALIZADO)).isEqualTo(1);
+        assertThat(adapter.existePorAsesorYProyectoGradoConEstadoVigente(asesor, proyectoGrado, FINALIZADO)).isTrue();
+    }
+
+    @Test
+    void debeVolverAContarAsignado_cuandoSeReasignaTrasFinalizar() {
+        // Arrange
+        var adapter = adapter();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        adapter.registrar(fila(asesor, proyectoGrado, ASIGNADO, T1));
+        adapter.registrar(fila(asesor, proyectoGrado, FINALIZADO, T2));
+        adapter.registrar(fila(asesor, proyectoGrado, ASIGNADO, T3));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act & Assert
+        assertThat(adapter.contarPorProyectoGradoConEstadoVigente(proyectoGrado, ASIGNADO)).isEqualTo(1);
+        assertThat(adapter.existePorAsesorYProyectoGradoConEstadoVigente(asesor, proyectoGrado, ASIGNADO)).isTrue();
+        assertThat(adapter.contarPorProyectoGradoConEstadoVigente(proyectoGrado, FINALIZADO)).isZero();
+    }
+
+    @Test
+    void debeContarCadaAsesorPorSuFilaMasReciente_cuandoHayVarios() {
+        // Arrange
+        var adapter = adapter();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var finalizado = UtilUUID.generarNuevoUUID();
+        var asignado = UtilUUID.generarNuevoUUID();
+        adapter.registrar(fila(finalizado, proyectoGrado, ASIGNADO, T1));
+        adapter.registrar(fila(finalizado, proyectoGrado, FINALIZADO, T2));
+        adapter.registrar(fila(asignado, proyectoGrado, ASIGNADO, T1));
+        adapter.registrar(fila(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), ASIGNADO, T1));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act & Assert
+        assertThat(adapter.contarPorProyectoGradoConEstadoVigente(proyectoGrado, ASIGNADO)).isEqualTo(1);
+        assertThat(adapter.contarPorProyectoGradoConEstadoVigente(proyectoGrado, FINALIZADO)).isEqualTo(1);
+        assertThat(adapter.existePorAsesorYProyectoGradoConEstadoVigente(asignado, proyectoGrado, ASIGNADO)).isTrue();
+        assertThat(adapter.existePorAsesorYProyectoGradoConEstadoVigente(finalizado, proyectoGrado, ASIGNADO))
+                .isFalse();
     }
 }

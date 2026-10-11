@@ -97,7 +97,7 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
         assertThat(id).isEqualTo(entrada.getAsesorProyectoGrado().getId());
 
         var vinculo = ArgumentCaptor.forClass(AsesorProyectoGradoEntity.class);
-        verify(asesorProyectoGradoOutputPort).asignar(vinculo.capture());
+        verify(asesorProyectoGradoOutputPort).registrar(vinculo.capture());
         assertThat(vinculo.getValue().id()).isEqualTo(id);
         assertThat(vinculo.getValue().asesor()).isEqualTo(asesor.getId());
         assertThat(vinculo.getValue().proyectoGrado()).isEqualTo(proyecto.getId());
@@ -119,7 +119,7 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
         orden.verify(asesorYaAsignadoFinder, times(1)).obtener(entrada);
         orden.verify(asesoresAsignadosContadorFinder, times(1)).obtener(proyecto.getId());
         orden.verify(validator).validar(entrada, proyecto, asesor, false, 0L);
-        orden.verify(asesorProyectoGradoOutputPort).asignar(any());
+        orden.verify(asesorProyectoGradoOutputPort).registrar(any());
         orden.verify(eventPublisher).publish(any());
         orden.verify(logger).info(eq(AsesorProyectoGradoKey.LOG_ASIGNADO), eq(proyecto.getId()), eq(asesor.getId()));
     }
@@ -133,7 +133,7 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada)).isInstanceOf(CupoAsesoresExcedidoException.class);
-        verify(asesorProyectoGradoOutputPort, never()).asignar(any());
+        verify(asesorProyectoGradoOutputPort, never()).registrar(any());
         verify(eventPublisher, never()).publish(any());
         verify(logger, never()).info(eq(AsesorProyectoGradoKey.LOG_ASIGNADO), eq(proyecto.getId()), eq(asesor.getId()));
     }

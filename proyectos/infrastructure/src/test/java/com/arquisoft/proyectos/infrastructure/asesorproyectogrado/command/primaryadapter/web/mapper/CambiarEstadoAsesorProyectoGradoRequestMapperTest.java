@@ -13,16 +13,16 @@ class CambiarEstadoAsesorProyectoGradoRequestMapperTest {
         // Arrange
         var dto = new CambiarEstadoAsesorProyectoGradoRequestDTO("FINALIZADO");
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var asesorProyectoGrado = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var coordinador = UtilUUID.generarNuevoUUID();
 
         // Act
         var command = CambiarEstadoAsesorProyectoGradoRequestMapper.toCommand(
-                dto, proyectoGrado, asesorProyectoGrado, coordinador);
+                dto, proyectoGrado, asesor, coordinador);
 
         // Assert
         assertThat(command.proyectoGrado()).isEqualTo(proyectoGrado);
-        assertThat(command.asesorProyectoGrado()).isEqualTo(asesorProyectoGrado);
+        assertThat(command.asesor()).isEqualTo(asesor);
         assertThat(command.coordinador()).isEqualTo(coordinador);
         assertThat(command.estadoAsesor()).isEqualTo("FINALIZADO");
     }

@@ -10,9 +10,9 @@ public final class CambiarEstadoAsesorProyectoGradoRequestMapper {
     private CambiarEstadoAsesorProyectoGradoRequestMapper() {}
 
     public static CambiarEstadoAsesorProyectoGradoCommand toCommand(
-            CambiarEstadoAsesorProyectoGradoRequestDTO dto, UUID proyectoGrado, UUID asesorProyectoGrado,
+            CambiarEstadoAsesorProyectoGradoRequestDTO dto, UUID proyectoGrado, UUID asesor,
             UUID coordinador) {
         return CambiarEstadoAsesorProyectoGradoCommand.crear(
-                proyectoGrado, asesorProyectoGrado, coordinador, dto.estadoAsesor());
+                proyectoGrado, asesor, coordinador, dto.estadoAsesor());
     }
 }

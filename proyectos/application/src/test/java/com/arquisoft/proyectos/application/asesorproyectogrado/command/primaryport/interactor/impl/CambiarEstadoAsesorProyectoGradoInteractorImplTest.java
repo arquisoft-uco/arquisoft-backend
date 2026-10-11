@@ -36,7 +36,7 @@ class CambiarEstadoAsesorProyectoGradoInteractorImplTest {
         var captor = ArgumentCaptor.forClass(CambioEstadoAsesorProyectoGradoDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getProyectoGrado()).isEqualTo(command.proyectoGrado());
-        assertThat(captor.getValue().getAsesorProyectoGrado()).isEqualTo(command.asesorProyectoGrado());
+        assertThat(captor.getValue().getAsesor()).isEqualTo(command.asesor());
         assertThat(captor.getValue().getCoordinador()).isEqualTo(command.coordinador());
     }
 }

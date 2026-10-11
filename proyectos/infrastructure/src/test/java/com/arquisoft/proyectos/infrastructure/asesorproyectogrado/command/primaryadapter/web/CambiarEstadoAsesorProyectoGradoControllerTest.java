@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         CambiarEstadoAsesorProyectoGradoControllerTest.TestSecurityConfig.class})
 class CambiarEstadoAsesorProyectoGradoControllerTest {
 
-    private static final String RUTA = "/proyectos-grado/{proyectoGradoId}/asesores/{asesorProyectoGradoId}/estado";
+    private static final String RUTA = "/proyectos-grado/{proyectoGradoId}/asesores/{asesorId}/estado";
     private static final UUID COORDINADOR = UtilUUID.generarNuevoUUID();
 
     @TestConfiguration
@@ -75,8 +75,8 @@ class CambiarEstadoAsesorProyectoGradoControllerTest {
         return "{\"estadoAsesor\": " + (estado == null ? "null" : "\"" + estado + "\"") + "}";
     }
 
-    private ResultActions enviar(UUID proyectoGradoId, UUID asesorProyectoGradoId, String body) throws Exception {
-        return mockMvc.perform(patch(RUTA, proyectoGradoId, asesorProyectoGradoId)
+    private ResultActions enviar(UUID proyectoGradoId, UUID asesorId, String body) throws Exception {
+        return mockMvc.perform(patch(RUTA, proyectoGradoId, asesorId)
                 .with(SecurityMockMvcRequestPostProcessors.jwt()
                         .jwt(jwt -> jwt.subject(COORDINADOR.toString()))
                         .authorities(new SimpleGrantedAuthority(
@@ -89,17 +89,17 @@ class CambiarEstadoAsesorProyectoGradoControllerTest {
     void debe204YPasarIdsYCoordinadorDelJwt_cuandoPeticionValida() throws Exception {
         // Arrange
         var proyectoGradoId = UtilUUID.generarNuevoUUID();
-        var asesorProyectoGradoId = UtilUUID.generarNuevoUUID();
+        var asesorId = UtilUUID.generarNuevoUUID();
 
         // Act
-        enviar(proyectoGradoId, asesorProyectoGradoId, cuerpo("FINALIZADO"))
+        enviar(proyectoGradoId, asesorId, cuerpo("FINALIZADO"))
                 .andExpect(status().isNoContent());
 
         // Assert
         var captor = ArgumentCaptor.forClass(CambiarEstadoAsesorProyectoGradoCommand.class);
         verify(cambiarEstadoAsesorProyectoGradoInteractor).ejecutar(captor.capture());
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyectoGradoId);
-        assertThat(captor.getValue().asesorProyectoGrado()).isEqualTo(asesorProyectoGradoId);
+        assertThat(captor.getValue().asesor()).isEqualTo(asesorId);
         assertThat(captor.getValue().coordinador()).isEqualTo(COORDINADOR);
         assertThat(captor.getValue().estadoAsesor()).isEqualTo("FINALIZADO");
     }

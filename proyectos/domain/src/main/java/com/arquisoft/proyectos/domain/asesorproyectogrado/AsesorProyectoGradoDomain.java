@@ -39,6 +39,21 @@ public final class AsesorProyectoGradoDomain {
         return vinculo;
     }
 
+    public static AsesorProyectoGradoDomain crearConEstado(UUID asesor, UUID proyectoGrado,
+                                                           EstadoAsesor estadoAsesor) {
+        var vinculo = new AsesorProyectoGradoDomain();
+        var result = new ValidationResult();
+
+        vinculo.setId();
+        vinculo.setAsesor(asesor, result);
+        vinculo.setProyectoGrado(proyectoGrado, result);
+        vinculo.setEstadoAsesor(estadoAsesor, result);
+        vinculo.setFechaAsignado();
+
+        result.lanzarSiTieneErrores();
+        return vinculo;
+    }
+
     public static AsesorProyectoGradoDomain reconstruir(UUID id, UUID asesor, UUID proyectoGrado,
                                                         EstadoAsesor estadoAsesor, Instant fechaAsignado) {
         var vinculo = new AsesorProyectoGradoDomain();
@@ -70,6 +85,15 @@ public final class AsesorProyectoGradoDomain {
             return;
         }
         this.proyectoGrado = proyectoGrado;
+    }
+
+    private void setEstadoAsesor(EstadoAsesor estadoAsesor, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(estadoAsesor,
+                ProyectosFields.AsesorProyectoGrado.ESTADO_ASESOR,
+                ProyectosCodes.AsesorProyectoGrado.ESTADO_ASESOR_REQUERIDO, result)) {
+            return;
+        }
+        this.estadoAsesor = estadoAsesor;
     }
 
     private void setEstadoAsesorInicial() {

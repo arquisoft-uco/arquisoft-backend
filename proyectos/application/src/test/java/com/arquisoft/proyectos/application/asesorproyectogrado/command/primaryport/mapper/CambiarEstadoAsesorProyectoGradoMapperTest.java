@@ -20,7 +20,7 @@ class CambiarEstadoAsesorProyectoGradoMapperTest {
 
         // Assert
         assertThat(cambio.getProyectoGrado()).isEqualTo(command.proyectoGrado());
-        assertThat(cambio.getAsesorProyectoGrado()).isEqualTo(command.asesorProyectoGrado());
+        assertThat(cambio.getAsesor()).isEqualTo(command.asesor());
         assertThat(cambio.getCoordinador()).isEqualTo(command.coordinador());
         assertThat(cambio.getEstadoNuevo()).isEqualTo(EstadoAsesor.FINALIZADO);
     }

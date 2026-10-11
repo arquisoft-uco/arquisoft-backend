@@ -7,13 +7,11 @@ import java.util.UUID;
 
 public interface AsesorProyectoGradoOutputPort {
 
-    void asignar(AsesorProyectoGradoEntity vinculo);
+    void registrar(AsesorProyectoGradoEntity vinculo);
 
-    boolean existePorAsesorYProyectoGradoYEstado(UUID asesor, UUID proyectoGrado, String estadoAsesor);
+    boolean existePorAsesorYProyectoGradoConEstadoVigente(UUID asesor, UUID proyectoGrado, String estadoAsesor);
 
-    long contarPorProyectoGradoYEstado(UUID proyectoGrado, String estadoAsesor);
+    long contarPorProyectoGradoConEstadoVigente(UUID proyectoGrado, String estadoAsesor);
 
-    Optional<AsesorProyectoGradoEntity> obtenerPorIdYProyectoGrado(UUID id, UUID proyectoGrado);
-
-    void actualizarEstado(UUID id, String estadoAsesor);
+    Optional<AsesorProyectoGradoEntity> obtenerVigentePorAsesorYProyectoGrado(UUID asesor, UUID proyectoGrado);
 }

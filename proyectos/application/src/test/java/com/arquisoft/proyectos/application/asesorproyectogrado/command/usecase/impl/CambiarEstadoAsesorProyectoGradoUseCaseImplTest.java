@@ -1,15 +1,16 @@
 package com.arquisoft.proyectos.application.asesorproyectogrado.command.usecase.impl;
 
 import com.arquisoft.proyectos.application.asesor.command.finder.AsesorPorIdFinder;
-import com.arquisoft.proyectos.application.asesorproyectogrado.command.finder.AsesorProyectoGradoPorIdYProyectoFinder;
+import com.arquisoft.proyectos.application.asesorproyectogrado.command.finder.AsesorProyectoGradoVigenteFinder;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondaryport.AsesorProyectoGradoOutputPort;
+import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondaryport.entity.AsesorProyectoGradoEntity;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.validator.CambiarEstadoAsesorProyectoGradoValidator;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.CambioEstadoAsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.event.AsesorProyectoGradoFinalizadoEvent;
-import com.arquisoft.proyectos.domain.asesor.exception.AsesorNoEncontradoException;
+import com.arquisoft.proyectos.domain.asesorproyectogrado.exception.TransicionEstadoAsesorInvalidaException;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.exception.AsesorProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
 import com.arquisoft.proyectos.domain.estadoasesor.EstadoAsesor;
@@ -50,7 +51,7 @@ class CambiarEstadoAsesorProyectoGradoUseCaseImplTest {
     private ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
 
     @Mock
-    private AsesorProyectoGradoPorIdYProyectoFinder asesorProyectoGradoPorIdYProyectoFinder;
+    private AsesorProyectoGradoVigenteFinder asesorProyectoGradoVigenteFinder;
 
     @Mock
     private AsesorPorIdFinder asesorPorIdFinder;
@@ -75,78 +76,85 @@ class CambiarEstadoAsesorProyectoGradoUseCaseImplTest {
             UtilUUID.generarNuevoUUID(), asesor.getId(), proyecto.getId(), EstadoAsesor.ASIGNADO,
             UtilFecha.generarInstanteActual());
     private final CambioEstadoAsesorProyectoGradoDomain entrada = CambioEstadoAsesorProyectoGradoDomain.crear(
-            proyecto.getId(), vinculo.getId(), proyecto.getCoordinador(), "FINALIZADO");
+            proyecto.getId(), asesor.getId(), proyecto.getCoordinador(), "FINALIZADO");
 
     private void stubFinders() {
         when(proyectoGradoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
-        when(asesorProyectoGradoPorIdYProyectoFinder.obtener(entrada)).thenReturn(vinculo);
+        when(asesorPorIdFinder.obtener(asesor.getId())).thenReturn(asesor);
+        when(asesorProyectoGradoVigenteFinder.obtener(entrada)).thenReturn(vinculo);
     }
 
     @Test
-    void debeCambiarYPublicarConElContactoDelAsesor_cuandoElCambioEsValido() {
+    void debeRegistrarFilaNuevaYPublicar_enOrden() {
         // Arrange
         stubFinders();
-        when(asesorPorIdFinder.obtener(asesor.getId())).thenReturn(asesor);
 
         // Act
         useCase.ejecutar(entrada);
 
         // Assert
+        var fila = ArgumentCaptor.forClass(AsesorProyectoGradoEntity.class);
         var evento = ArgumentCaptor.forClass(DomainEvent.class);
+        verify(asesorProyectoGradoOutputPort).registrar(fila.capture());
         verify(eventPublisher).publish(evento.capture());
+        assertThat(fila.getValue().estadoAsesor()).isEqualTo("FINALIZADO");
+        assertThat(fila.getValue().asesor()).isEqualTo(asesor.getId());
+        assertThat(fila.getValue().proyectoGrado()).isEqualTo(proyecto.getId());
+        assertThat(fila.getValue().id()).isNotEqualTo(vinculo.getId());
+        assertThat(fila.getValue().fechaAsignado()).isAfter(vinculo.getFechaAsignado().minusSeconds(1));
         assertThat(evento.getValue()).isInstanceOfSatisfying(AsesorProyectoGradoFinalizadoEvent.class, publicado -> {
             assertThat(publicado.getProyectoGradoId()).isEqualTo(proyecto.getId());
             assertThat(publicado.getTituloProyecto()).isEqualTo("Sistema de gestión");
             assertThat(publicado.getAsesor()).isEqualTo(new ContactoAsesor("Luis Diaz", "luis.diaz@soyuco.edu.co"));
         });
 
-        var orden = inOrder(proyectoGradoPorIdFinder, asesorProyectoGradoPorIdYProyectoFinder, asesorPorIdFinder,
+        var orden = inOrder(proyectoGradoPorIdFinder, asesorPorIdFinder, asesorProyectoGradoVigenteFinder,
                 validator, asesorProyectoGradoOutputPort, eventPublisher, logger);
         orden.verify(logger).info(eq(AsesorProyectoGradoKey.LOG_CAMBIANDO_ESTADO),
-                eq(proyecto.getId()), eq(vinculo.getId()), eq("FINALIZADO"));
+                eq(proyecto.getId()), eq(asesor.getId()), eq("FINALIZADO"));
         orden.verify(proyectoGradoPorIdFinder, times(1)).obtener(proyecto.getId());
-        orden.verify(asesorProyectoGradoPorIdYProyectoFinder, times(1)).obtener(entrada);
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesor.getId());
+        orden.verify(asesorProyectoGradoVigenteFinder, times(1)).obtener(entrada);
         orden.verify(logger).debug(eq(AsesorProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO),
                 eq(true), eq(true), eq(true));
-        orden.verify(validator).validar(entrada, proyecto, vinculo, asesor);
-        orden.verify(asesorProyectoGradoOutputPort).actualizarEstado(vinculo.getId(), "FINALIZADO");
+        orden.verify(validator).validar(entrada, proyecto, asesor, vinculo);
+        orden.verify(asesorProyectoGradoOutputPort).registrar(any());
         orden.verify(eventPublisher).publish(any());
         orden.verify(logger).info(eq(AsesorProyectoGradoKey.LOG_ESTADO_CAMBIADO),
-                eq(proyecto.getId()), eq(vinculo.getId()), eq("FINALIZADO"));
+                eq(proyecto.getId()), eq(asesor.getId()), eq("FINALIZADO"));
     }
 
     @Test
-    void debeNoPersistirNiPublicar_cuandoElValidatorRechaza() {
+    void debeNoRegistrarNiPublicar_cuandoElValidatorRechaza() {
         // Arrange
         stubFinders();
-        when(asesorPorIdFinder.obtener(asesor.getId())).thenReturn(AsesorDomain.VACIO);
-        doThrow(new AsesorNoEncontradoException(asesor.getId()))
-                .when(validator).validar(entrada, proyecto, vinculo, AsesorDomain.VACIO);
+        doThrow(new TransicionEstadoAsesorInvalidaException(EstadoAsesor.FINALIZADO, EstadoAsesor.FINALIZADO))
+                .when(validator).validar(entrada, proyecto, asesor, vinculo);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
-                .isInstanceOf(AsesorNoEncontradoException.class);
-        verify(asesorProyectoGradoOutputPort, never()).actualizarEstado(any(), any());
+                .isInstanceOf(TransicionEstadoAsesorInvalidaException.class);
+        verify(asesorProyectoGradoOutputPort, never()).registrar(any());
         verify(eventPublisher, never()).publish(any());
         verify(logger, never()).info(eq(AsesorProyectoGradoKey.LOG_ESTADO_CAMBIADO),
-                eq(proyecto.getId()), eq(vinculo.getId()), eq("FINALIZADO"));
+                eq(proyecto.getId()), eq(asesor.getId()), eq("FINALIZADO"));
     }
 
     @Test
-    void debeConsultarAsesorVacio_yRechazar_cuandoElVinculoEsVacio() {
+    void debeConsultarFindersYRechazar_cuandoElVinculoEsVacio() {
         // Arrange
         when(proyectoGradoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
-        when(asesorProyectoGradoPorIdYProyectoFinder.obtener(entrada)).thenReturn(AsesorProyectoGradoDomain.VACIO);
-        when(asesorPorIdFinder.obtener(UtilUUID.obtenerUUIDPorDefecto())).thenReturn(AsesorDomain.VACIO);
-        doThrow(new AsesorProyectoGradoNoEncontradoException(vinculo.getId(), proyecto.getId()))
-                .when(validator).validar(entrada, proyecto, AsesorProyectoGradoDomain.VACIO, AsesorDomain.VACIO);
+        when(asesorPorIdFinder.obtener(asesor.getId())).thenReturn(asesor);
+        when(asesorProyectoGradoVigenteFinder.obtener(entrada)).thenReturn(AsesorProyectoGradoDomain.VACIO);
+        doThrow(new AsesorProyectoGradoNoEncontradoException(asesor.getId(), proyecto.getId()))
+                .when(validator).validar(entrada, proyecto, asesor, AsesorProyectoGradoDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
                 .isInstanceOf(AsesorProyectoGradoNoEncontradoException.class);
-        verify(asesorPorIdFinder, times(1)).obtener(UtilUUID.obtenerUUIDPorDefecto());
-        verify(asesorProyectoGradoOutputPort, never()).actualizarEstado(any(), any());
+        verify(logger).debug(eq(AsesorProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO),
+                eq(true), eq(true), eq(false));
+        verify(asesorProyectoGradoOutputPort, never()).registrar(any());
         verify(eventPublisher, never()).publish(any());
     }
 }
