@@ -8,6 +8,8 @@ public enum EstudianteProyectoGradoKey implements ClaveMensaje {
     LOG_ASIGNANDO("proyectos.aplicacion.estudianteproyectogrado.log.asignando", 2),
     LOG_VERIFICACION_ASIGNAR("proyectos.aplicacion.estudianteproyectogrado.log.verificacion-asignar", 4),
     LOG_ASIGNADOS("proyectos.aplicacion.estudianteproyectogrado.log.asignados", 2),
+    LOG_CONSULTANDO("proyectos.aplicacion.estudianteproyectogrado.log.consultando", 2),
+    LOG_CONSULTA_COMPLETADA("proyectos.aplicacion.estudianteproyectogrado.log.consulta-completada", 1),
     LOG_GUARDADOS("proyectos.infraestructura.estudianteproyectogrado.log.guardados", 2),
     ERROR_ESTUDIANTES_NO_VIGENTES("proyectos.dominio.estudianteproyectogrado.error.estudiantes-no-vigentes", 1),
     ERROR_DUPLICADO("proyectos.dominio.estudianteproyectogrado.error.duplicado", 1),
