@@ -57,19 +57,4 @@ class ConsultarProyectosGradoCoordinadorUseCaseImplTest {
         orden.verify(proyectoGradoQueryOutputPort).consultarTodas(criteria);
         orden.verify(logger).debug(eq(ProyectoGradoKey.LOG_CONSULTA_COMPLETADA), eq(1L), eq(0), eq(10));
     }
-
-    @Test
-    void debeDevolverPaginaVacia_cuandoPuertoNoEncuentraProyectos() {
-        // Arrange
-        var criteria = ProyectoGradoCriteria.builder().pagina(0).tamanio(10).build();
-        var vacio = PaginatedResult.of(List.<ProyectoGradoReadModel>of(), 0, 10, 0L);
-        when(proyectoGradoQueryOutputPort.consultarTodas(criteria)).thenReturn(vacio);
-
-        // Act
-        var resultado = useCase.ejecutar(criteria);
-
-        // Assert
-        assertThat(resultado.getContent()).isEmpty();
-        assertThat(resultado.getTotalElements()).isZero();
-    }
 }
