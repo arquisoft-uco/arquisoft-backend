@@ -29,6 +29,16 @@ public final class ProyectosApiMessages {
         public static final String ASIGNAR_RESP_422 =
                 "Proyecto no encontrado, finalizado o asignado a otro coordinador, estudiante no vigente, "
                         + "repetido o ya vinculado, o cupo excedido";
+
+        public static final String DESTITUIR_SUMMARY = "Destituir a un estudiante de un proyecto de grado";
+        public static final String DESTITUIR_DESCRIPTION =
+                "Permite al coordinador asignado al proyecto de grado desvincular a uno de sus estudiantes, "
+                        + "si el proyecto no está finalizado; el proyecto puede quedar sin estudiantes";
+        public static final String DESTITUIR_RESP_204 = "Estudiante destituido exitosamente";
+        public static final String DESTITUIR_RESP_400 = "Identificador de proyecto de grado o de estudiante inválido";
+        public static final String DESTITUIR_RESP_403 = "Sin permiso para destituir estudiantes de un proyecto de grado";
+        public static final String DESTITUIR_RESP_422 =
+                "Proyecto no encontrado, finalizado o asignado a otro coordinador, o estudiante no vinculado";
     }
 
     public static final class ConsultaEstudianteProyectoGrado {

@@ -12,4 +12,8 @@ public interface EstudianteProyectoGradoOutputPort {
     long contarPorProyectoGrado(UUID proyectoGrado);
 
     List<UUID> obtenerVinculados(UUID proyectoGrado, List<UUID> estudiantes);
+
+    boolean existeVinculo(UUID proyectoGrado, UUID estudiante);
+
+    void desvincular(UUID proyectoGrado, UUID estudiante);
 }
