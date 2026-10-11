@@ -25,7 +25,6 @@ public final class EvaluacionesLimits {
         private CategoriaItemCuantitativoJurado() {}
 
         public static final int NOMBRE_MAX = 100;
-        public static final int DESCRIPCION_MAX = 300;
     }
 
     public static final class ItemCuantitativoJurado {

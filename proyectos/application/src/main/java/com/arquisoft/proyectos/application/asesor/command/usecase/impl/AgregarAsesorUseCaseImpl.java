@@ -25,15 +25,22 @@ public class AgregarAsesorUseCaseImpl implements AgregarAsesorUseCase {
         var vigente = asesorPorIdFinder.obtener(asesor.getId());
         logger.debug(AsesorKey.LOG_VERIFICACION_AGREGAR, asesor.getId(), !vigente.esVacio());
 
-        if (!vigente.esVacio()) {
-            if (!asesor.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
-                return AgregacionAsesorResultMapper.toResultDescartada(
-                        asesor, vigente.getOcurridoEn());
-            }
+        if (vigente.esVacio()) {
+            asesorOutputPort.guardar(AsesorMapper.toEntity(asesor));
+            return AgregacionAsesorResultMapper.toResultAgregada(asesor);
+        }
+
+        if (!asesor.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
+            return AgregacionAsesorResultMapper.toResultDescartada(asesor, vigente.getOcurridoEn());
+        }
+
+        if (!vigente.estaEliminado()) {
             return AgregacionAsesorResultMapper.toResultDuplicada(asesor);
         }
 
-        asesorOutputPort.guardar(AsesorMapper.toEntity(asesor));
-        return AgregacionAsesorResultMapper.toResultAgregada(asesor);
+        vigente.reactivar(asesor.getIdentificador(), asesor.getNombre(), asesor.getEmail(),
+                asesor.getOcurridoEn());
+        asesorOutputPort.reactivar(AsesorMapper.toEntity(vigente));
+        return AgregacionAsesorResultMapper.toResultReactivada(vigente);
     }
 }

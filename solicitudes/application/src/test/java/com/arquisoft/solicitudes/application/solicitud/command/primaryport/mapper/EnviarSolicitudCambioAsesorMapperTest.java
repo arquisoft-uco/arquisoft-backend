@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudCambioAsesorCommand;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudCambioAsesorDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +13,13 @@ class EnviarSolicitudCambioAsesorMapperTest {
     @Test
     void debeConstruirElBundle_cuandoElComandoEsValido() {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
         var command = EnviarSolicitudCambioAsesorCommand.crear(
                 remitente, destinatario.toString(), "  cambio de asesor  ");
 
         // Act
-        EnvioSolicitudCambioAsesorDomain envio =
+        var envio =
                 EnviarSolicitudCambioAsesorMapper.toDomain(command);
 
         // Assert
@@ -28,8 +27,8 @@ class EnviarSolicitudCambioAsesorMapperTest {
         assertThat(envio.getDestinatarioUsuario()).isEqualTo(destinatario);
         assertThat(envio.getSolicitud().getMensajeSolicitud()).isEqualTo("cambio de asesor");
         assertThat(envio.getSolicitud().getTipoSolicitud()).isEqualTo(TipoSolicitud.CAMBIO_DE_ASESOR);
-        assertThat(envio.getSolicitud().getRemitente()).isEqualTo(envio.getRemitente().getId());
-        assertThat(envio.getSolicitud().getDestinatario()).isEqualTo(envio.getDestinatario().getId());
+        assertThat(envio.getSolicitud().getRemitenteUsuario()).isEqualTo(envio.getRemitente().getUsuario());
+        assertThat(envio.getSolicitud().getDestinatarioUsuario()).isEqualTo(envio.getDestinatario().getUsuario());
     }
 
     @Test
@@ -39,7 +38,7 @@ class EnviarSolicitudCambioAsesorMapperTest {
                 UUID.randomUUID(), UUID.randomUUID().toString(), "mensaje");
 
         // Act
-        EnvioSolicitudCambioAsesorDomain envio =
+        var envio =
                 EnviarSolicitudCambioAsesorMapper.toDomain(command);
 
         // Assert

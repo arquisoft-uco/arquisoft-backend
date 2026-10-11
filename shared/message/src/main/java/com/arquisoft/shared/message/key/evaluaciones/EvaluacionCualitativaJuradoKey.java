@@ -12,8 +12,6 @@ public enum EvaluacionCualitativaJuradoKey implements ClaveMensaje {
             "evaluaciones.dominio.evaluacioncualitativajurado.error.criterios-no-encontrados", 1),
     ERROR_ITEMS_YA_REGISTRADOS(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.items-ya-registrados", 1),
-    ERROR_PADRES_DISTINTOS(
-            "evaluaciones.dominio.evaluacioncualitativajurado.error.padres-distintos", 0),
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consulta-completada", 1),
     LOG_REGISTRANDO_LOTE("evaluaciones.aplicacion.evaluacioncualitativajurado.log.registrando-lote", 2),

@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de TipoSolicitud (catálogo). */
 public enum TipoSolicitudKey implements ClaveMensaje {
 
-    ERROR_TIPO_NO_ENCONTRADO("solicitudes.dominio.tiposolicitud.error.no-encontrado", 1);
+    ERROR_TIPO_NO_ENCONTRADO("solicitudes.dominio.tiposolicitud.error.no-encontrado", 1),
+    LOG_CONSULTA_COMPLETADA("solicitudes.aplicacion.tiposolicitud.log.consulta-completada", 1);
 
     private final String clave;
     private final int parametros;

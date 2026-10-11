@@ -49,6 +49,8 @@ public class AsesorFichaAgregadoConsumer extends AbstractEventConsumer {
             switch (resultado) {
                 case AgregacionAsesorFichaResult.Agregada agregada ->
                         logger.info(AsesorFichaKey.LOG_AGREGADO, agregada.asesorFicha());
+                case AgregacionAsesorFichaResult.Reactivada reactivada ->
+                        logger.info(AsesorFichaKey.LOG_REACTIVADO, reactivada.asesorFicha());
                 case AgregacionAsesorFichaResult.Duplicada duplicada ->
                         logger.info(AsesorFichaKey.LOG_DUPLICADO, duplicada.asesorFicha());
                 case AgregacionAsesorFichaResult.Descartada descartada ->

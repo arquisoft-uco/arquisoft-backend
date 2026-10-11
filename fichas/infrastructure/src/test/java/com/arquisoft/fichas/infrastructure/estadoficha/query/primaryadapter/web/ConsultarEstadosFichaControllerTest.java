@@ -2,10 +2,13 @@ package com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.fichas.application.estadoficha.query.primaryport.interactor.ConsultarEstadosFichaInteractor;
+import com.arquisoft.fichas.application.estadoficha.query.primaryport.model.ConsultarEstadosFichaQuery;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.fichas.infrastructure.security.FichasRoles;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -21,8 +24,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Map;
 
-import static org.mockito.Mockito.times;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,6 +40,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarEstadosFichaControllerTest.TestSecurityConfig.class})
 class ConsultarEstadosFichaControllerTest {
+
+    private static final String RUTA = "/fichas-perfil/estados-ficha";
 
     @TestConfiguration
     @EnableWebSecurity
@@ -58,108 +66,68 @@ class ConsultarEstadosFichaControllerTest {
     private ConsultarEstadosFichaInteractor consultarEstadosFichaInteractor;
 
     @Test
-    void debe200_cuandoConsultaExitosa() throws Exception {
+    void debe200ConLosEstadosDelRol_cuandoElLlamanteEsAsesorFicha() throws Exception {
         // Arrange
-        List<EstadoFichaReadModel> estados = List.of(
-                new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo"),
-                new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada")
-        );
-        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(estados);
+        var estados = List.of(
+                new EstadoFichaReadModel("DISPONIBLE_PARA_EVALUACION", "Disponible Para Evaluacion", "Lista para evaluar"),
+                new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo"));
+        when(consultarEstadosFichaInteractor.ejecutar(any(ConsultarEstadosFichaQuery.class))).thenReturn(estados);
+        var queryCaptor = ArgumentCaptor.forClass(ConsultarEstadosFichaQuery.class);
 
-        // Act & Assert
-        mockMvc.perform(get("/fichas-perfil/estados-ficha")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
+        // Act
+        mockMvc.perform(get(RUTA).with(conRolesRealm(FichasRoles.Realm.ASESOR_FICHA)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value("EN_CONSTRUCCION"))
-                .andExpect(jsonPath("$[0].nombre").value("En Construccion"))
-                .andExpect(jsonPath("$[0].descripcion").value("Ficha en desarrollo"))
-                .andExpect(jsonPath("$[1].id").value("APROBADA"))
-                .andExpect(jsonPath("$[1].nombre").value("Aprobada"))
-                .andExpect(jsonPath("$[1].descripcion").value("Ficha aprobada"));
+                .andExpect(jsonPath("$[0].id").value("DISPONIBLE_PARA_EVALUACION"))
+                .andExpect(jsonPath("$[0].nombre").value("Disponible Para Evaluacion"))
+                .andExpect(jsonPath("$[0].descripcion").value("Lista para evaluar"))
+                .andExpect(jsonPath("$[1].id").value("EN_CONSTRUCCION"));
+
+        // Assert
+        verify(consultarEstadosFichaInteractor).ejecutar(queryCaptor.capture());
+        assertThat(queryCaptor.getValue().roles()).containsExactly(FichasRoles.Negocio.ASESOR_FICHA);
     }
 
     @Test
-    void debe200ConListaVacia_cuandoNoHayEstados() throws Exception {
+    void debe200ConListaVacia_cuandoElLlamanteNoTieneRolReconocido() throws Exception {
         // Arrange
-        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(List.of());
+        when(consultarEstadosFichaInteractor.ejecutar(any(ConsultarEstadosFichaQuery.class))).thenReturn(List.of());
+        var queryCaptor = ArgumentCaptor.forClass(ConsultarEstadosFichaQuery.class);
 
-        // Act & Assert
-        mockMvc.perform(get("/fichas-perfil/estados-ficha")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
+        // Act
+        mockMvc.perform(get(RUTA).with(conRolesRealm("estudiante")))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-    }
 
-    @Test
-    void debeRetornarJsonCorrecto_cuandoListaTieneElementos() throws Exception {
-        // Arrange
-        List<EstadoFichaReadModel> estados = List.of(
-                new EstadoFichaReadModel("NO_APROBADA", "No Aprobada", "Ficha rechazada"),
-                new EstadoFichaReadModel("DISPONIBLE_PARA_EVALUACION", "Disponible para Evaluacion", "Lista para evaluar"),
-                new EstadoFichaReadModel("APROBADA_CON_OBSERVACIONES", "Aprobada con Observaciones", "Aprobada condicionalmente")
-        );
-        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(estados);
-
-        // Act & Assert
-        mockMvc.perform(get("/fichas-perfil/estados-ficha")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(3))
-                .andExpect(jsonPath("$[0].id").value("NO_APROBADA"))
-                .andExpect(jsonPath("$[1].id").value("DISPONIBLE_PARA_EVALUACION"))
-                .andExpect(jsonPath("$[2].id").value("APROBADA_CON_OBSERVACIONES"));
+        // Assert
+        verify(consultarEstadosFichaInteractor).ejecutar(queryCaptor.capture());
+        assertThat(queryCaptor.getValue().roles()).isEmpty();
     }
 
     @Test
     void debe401_cuandoNoAutenticado() throws Exception {
         // Act & Assert
-        mockMvc.perform(get("/fichas-perfil/estados-ficha"))
+        mockMvc.perform(get(RUTA))
                 .andExpect(status().isUnauthorized());
+
+        verify(consultarEstadosFichaInteractor, never()).ejecutar(any());
     }
 
     @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
+    void debe403_cuandoNoTieneElClientRole() throws Exception {
         // Act & Assert
-        mockMvc.perform(get("/fichas-perfil/estados-ficha")
+        mockMvc.perform(get(RUTA)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .jwt(j -> j.claim("realm_access", Map.of("roles", List.of(FichasRoles.Realm.ASESOR_FICHA))))
                                 .authorities(new SimpleGrantedAuthority("otro-permiso-incorrecto"))))
                 .andExpect(status().isForbidden());
+
+        verify(consultarEstadosFichaInteractor, never()).ejecutar(any());
     }
 
-    @Test
-    void debeInvocarInteractor_cuandoEndpointEsLlamado() throws Exception {
-        // Arrange
-        List<EstadoFichaReadModel> estados = List.of(
-                new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo")
-        );
-        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(estados);
-
-        // Act
-        mockMvc.perform(get("/fichas-perfil/estados-ficha")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
-                .andExpect(status().isOk());
-
-        // Assert
-        verify(consultarEstadosFichaInteractor, times(1)).ejecutar();
-    }
-
-    @Test
-    void debeUsarPreAuthorizeConClientRole_cuandoEndpointRequiereAutorizacion() throws Exception {
-        // Arrange
-        List<EstadoFichaReadModel> estados = List.of(
-                new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada")
-        );
-        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(estados);
-
-        // Act & Assert
-        mockMvc.perform(get("/fichas-perfil/estados-ficha")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
-                .andExpect(status().isOk());
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor conRolesRealm(String... rolesRealm) {
+        return SecurityMockMvcRequestPostProcessors.jwt()
+                .jwt(j -> j.claim("realm_access", Map.of("roles", List.of(rolesRealm))))
+                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW));
     }
 }

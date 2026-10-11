@@ -1,21 +1,22 @@
 package com.arquisoft.evaluaciones.domain.evaluacionjurado;
 
+import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 
 class EvaluacionJuradoDomainTest {
 
     @Test
-    void debeCrearEvaluacionJurado_cuandoDatosValidos() {
+    void debeCrearEvaluacionJuradoConIdGenerado_cuandoDatosValidos() {
         // Arrange
-        var evaluacion = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var jurado = UtilUUID.generarNuevoUUID();
 
         // Act
         var evaluacionJurado = EvaluacionJuradoDomain.crear(evaluacion, jurado);
@@ -27,31 +28,16 @@ class EvaluacionJuradoDomainTest {
     }
 
     @Test
-    void debeAcumularAmbosFieldErrors_cuandoEvaluacionYJuradoSonNulos() {
+    void debeAcumularErrores_cuandoEvaluacionYJuradoSonNulos() {
         // Act & Assert
         assertThatThrownBy(() -> EvaluacionJuradoDomain.crear(null, null))
-                .isInstanceOf(DomainValidationException.class)
-                .satisfies(ex -> {
-                    var errores = ((DomainValidationException) ex).getValidationResult().getErrores();
-                    assertThat(errores)
-                            .extracting("campo")
-                            .containsExactlyInAnyOrder(
-                                    EvaluacionesFields.EvaluacionJurado.EVALUACION,
-                                    EvaluacionesFields.EvaluacionJurado.JURADO);
-                });
-    }
-
-    @Test
-    void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
-        // Arrange
-        var id = UUID.randomUUID();
-
-        // Act
-        var evaluacionJurado = EvaluacionJuradoDomain.reconstruir(id, null, null);
-
-        // Assert
-        assertThat(evaluacionJurado.getId()).isEqualTo(id);
-        assertThat(evaluacionJurado.getEvaluacion()).isNull();
-        assertThat(evaluacionJurado.getJurado()).isNull();
+                .isInstanceOfSatisfying(DomainValidationException.class, exception ->
+                        assertThat(exception.getValidationResult().getErrores())
+                                .extracting(error -> error.campo(), error -> error.codigoError())
+                                .containsExactlyInAnyOrder(
+                                        tuple(EvaluacionesFields.EvaluacionJurado.EVALUACION,
+                                                EvaluacionesCodes.EvaluacionJurado.EVALUACION_REQUERIDO),
+                                        tuple(EvaluacionesFields.EvaluacionJurado.JURADO,
+                                                EvaluacionesCodes.EvaluacionJurado.JURADO_REQUERIDO)));
     }
 }

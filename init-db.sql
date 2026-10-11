@@ -39,6 +39,7 @@ CREATE DATABASE entregables OWNER arquisoft_user;
 CREATE DATABASE evaluaciones OWNER arquisoft_user;
 CREATE DATABASE notificaciones OWNER arquisoft_user;
 CREATE DATABASE solicitudes OWNER arquisoft_user;
+CREATE DATABASE biblioteca OWNER arquisoft_user;
 
 -- ==================== BASE DE DATOS KEYCLOAK ====================
 
@@ -89,6 +90,10 @@ GRANT ALL ON SCHEMA public TO arquisoft_user;
 ALTER SCHEMA public OWNER TO arquisoft_user;
 
 \c solicitudes
+GRANT ALL ON SCHEMA public TO arquisoft_user;
+ALTER SCHEMA public OWNER TO arquisoft_user;
+
+\c biblioteca
 GRANT ALL ON SCHEMA public TO arquisoft_user;
 ALTER SCHEMA public OWNER TO arquisoft_user;
 

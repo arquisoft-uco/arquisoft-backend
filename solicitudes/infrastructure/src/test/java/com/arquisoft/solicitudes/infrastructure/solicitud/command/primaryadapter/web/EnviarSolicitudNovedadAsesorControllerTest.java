@@ -5,7 +5,7 @@ import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConf
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.EnviarSolicitudNovedadAsesorInteractor;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadAsesorCommand;
-import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontradoException;
+import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaException;
 import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import org.junit.jupiter.api.Test;
@@ -78,9 +78,9 @@ class EnviarSolicitudNovedadAsesorControllerTest {
     @Test
     void debe201YTomarElRemitenteDelJwt_cuandoLaPeticionEsValida() throws Exception {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
-        UUID solicitudId = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         when(interactor.ejecutar(any())).thenReturn(solicitudId);
 
         // Act & Assert
@@ -91,7 +91,7 @@ class EnviarSolicitudNovedadAsesorControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(solicitudId.toString()));
 
-        ArgumentCaptor<EnviarSolicitudNovedadAsesorCommand> captor =
+        var captor =
                 ArgumentCaptor.forClass(EnviarSolicitudNovedadAsesorCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().remitenteUsuario()).isEqualTo(remitente);
@@ -133,7 +133,7 @@ class EnviarSolicitudNovedadAsesorControllerTest {
     void debe422_cuandoElRemitenteNoExiste() throws Exception {
         // Arrange
         when(interactor.ejecutar(any()))
-                .thenThrow(new RemitenteNoEncontradoException(UUID.randomUUID()));
+                .thenThrow(new RemitenteNoEncontradoException());
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/novedad-asesor")

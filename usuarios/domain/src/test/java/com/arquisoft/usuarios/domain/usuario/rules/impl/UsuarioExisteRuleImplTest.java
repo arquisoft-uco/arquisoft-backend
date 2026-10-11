@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.domain.usuario.rules.impl;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioNoEncontradoException;
@@ -31,7 +32,7 @@ class UsuarioExisteRuleImplTest {
         // Arrange
         var usuarioId = UUID.randomUUID();
         var encontrado = UsuarioDomain.reconstruir(usuarioId, "usr001", "Nombre",
-                "correo@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO);
+                "correo@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO, UtilFecha.VACIO);
         var existencia = new ExistenciaUsuario(usuarioId, encontrado);
 
         // Act & Assert

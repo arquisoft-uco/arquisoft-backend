@@ -4,6 +4,9 @@ import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoo
 import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
+import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
+import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
+import com.arquisoft.usuarios.application.bibliotecario.command.usecase.AgregarBibliotecarioUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
@@ -13,6 +16,7 @@ import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioO
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.RegistroIdentidadEntity;
 import com.arquisoft.usuarios.application.usuario.command.validator.RegistrarUsuarioValidator;
 import com.arquisoft.usuarios.domain.usuario.RegistroUsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEmailDuplicadoException;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -64,6 +68,12 @@ class RegistrarUsuarioUseCaseImplTest {
     @Mock
     private AgregarAsesorUseCase agregarAsesorUseCase;
     @Mock
+    private AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
+    @Mock
+    private AgregarAdministradorUseCase agregarAdministradorUseCase;
+    @Mock
+    private AgregarBibliotecarioUseCase agregarBibliotecarioUseCase;
+    @Mock
     private AppLogger logger;
 
     private RegistrarUsuarioUseCaseImpl useCase;
@@ -74,7 +84,8 @@ class RegistrarUsuarioUseCaseImplTest {
                 usuarioOutputPort, proveedorIdentidadOutputPort, identificadorUsuarioExisteFinder,
                 emailUsuarioExisteFinder, emailIdentidadExisteFinder, contactoUsuarioExisteFinder,
                 registrarUsuarioValidator, agregarEstudianteUseCase, agregarCoordinadorUseCase,
-                agregarAsesorFichaUseCase, agregarAsesorUseCase, logger);
+                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase, logger);
         when(identificadorUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailIdentidadExisteFinder.obtener(any())).thenReturn(false);
@@ -336,6 +347,104 @@ class RegistrarUsuarioUseCaseImplTest {
 
         // Assert
         verify(agregarAsesorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarRepresentanteComiteConElUsuarioGuardado_cuandoRolesContieneRepresentanteComite() {
+        // Arrange
+        var registro = registro(List.of("representante-comite"));
+        var identidadId = UUID.randomUUID();
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(identidadId);
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(UsuarioDomain.class);
+        var orden = inOrder(usuarioOutputPort, agregarRepresentanteComiteUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarRepresentanteComiteUseCase, times(1)).ejecutar(captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo(identidadId);
+        verify(agregarEstudianteUseCase, never()).ejecutar(any());
+        verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarRepresentanteComite_cuandoRolesNoContieneRepresentanteComite() {
+        // Arrange
+        var registro = registro(List.of("estudiante", "coordinador", "asesor-ficha", "asesor"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarRepresentanteComiteUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarAdministrador_cuandoRolesIncluyenAdministrador() {
+        // Arrange
+        var registro = registro(List.of("administrador"));
+        var identidadId = UUID.randomUUID();
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(identidadId);
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(UsuarioDomain.class);
+        var orden = inOrder(usuarioOutputPort, agregarAdministradorUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarAdministradorUseCase, times(1)).ejecutar(captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo(identidadId);
+    }
+
+    @Test
+    void noDebeAgregarAdministrador_cuandoRolesNoLoIncluyen() {
+        // Arrange
+        var registro = registro(List.of("estudiante", "coordinador", "asesor-ficha", "asesor",
+                "representante-comite"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarAdministradorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarBibliotecario_cuandoRolesIncluyenBibliotecario() {
+        // Arrange
+        var registro = registro(List.of("bibliotecario"));
+        var identidadId = UUID.randomUUID();
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(identidadId);
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(UsuarioDomain.class);
+        var orden = inOrder(usuarioOutputPort, agregarBibliotecarioUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarBibliotecarioUseCase, times(1)).ejecutar(captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo(identidadId);
+        verify(agregarAdministradorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarBibliotecario_cuandoRolesNoLoIncluyen() {
+        // Arrange
+        var registro = registro(List.of("estudiante", "coordinador", "asesor-ficha", "asesor",
+                "representante-comite", "administrador"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarBibliotecarioUseCase, never()).ejecutar(any());
     }
 
     @Test

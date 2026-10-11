@@ -14,7 +14,13 @@ public enum CoordinadorKey implements ClaveMensaje {
     LOG_ACTUALIZADO("proyectos.infraestructura.coordinador.log.actualizado", 1),
     LOG_VERIFICACION_ACTUALIZAR("proyectos.aplicacion.coordinador.log.verificacion-actualizar", 2),
     LOG_ACTUALIZACION_DESCARTADA("proyectos.infraestructura.coordinador.log.actualizacion-descartada", 3),
-    LOG_ACTUALIZACION_NO_REPLICADO("proyectos.infraestructura.coordinador.log.actualizacion-no-replicado", 1);
+    LOG_ACTUALIZACION_NO_REPLICADO("proyectos.infraestructura.coordinador.log.actualizacion-no-replicado", 1),
+    LOG_REMOVIDO_RECIBIDO("proyectos.infraestructura.coordinador.log.removido-recibido", 2),
+    LOG_VERIFICACION_REMOVER("proyectos.aplicacion.coordinador.log.verificacion-remover", 2),
+    LOG_REMOVIDO("proyectos.aplicacion.coordinador.log.removido", 1),
+    LOG_LAPIDA("proyectos.aplicacion.coordinador.log.lapida", 1),
+    LOG_REMOCION_DESCARTADA("proyectos.aplicacion.coordinador.log.remocion-descartada", 2),
+    LOG_REACTIVADO("proyectos.aplicacion.coordinador.log.reactivado", 1);
 
     private final String clave;
     private final int parametros;

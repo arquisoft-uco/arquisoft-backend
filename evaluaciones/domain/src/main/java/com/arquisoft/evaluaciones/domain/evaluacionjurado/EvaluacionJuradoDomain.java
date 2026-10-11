@@ -16,12 +16,6 @@ public final class EvaluacionJuradoDomain {
 
     private EvaluacionJuradoDomain() {}
 
-    private EvaluacionJuradoDomain(UUID id, UUID evaluacion, UUID jurado) {
-        this.id = id;
-        this.evaluacion = evaluacion;
-        this.jurado = jurado;
-    }
-
     public static EvaluacionJuradoDomain crear(UUID evaluacion, UUID jurado) {
         var evaluacionJurado = new EvaluacionJuradoDomain();
         var result = new ValidationResult();
@@ -32,10 +26,6 @@ public final class EvaluacionJuradoDomain {
 
         result.lanzarSiTieneErrores();
         return evaluacionJurado;
-    }
-
-    public static EvaluacionJuradoDomain reconstruir(UUID id, UUID evaluacion, UUID jurado) {
-        return new EvaluacionJuradoDomain(id, evaluacion, jurado);
     }
 
     private void setId() {

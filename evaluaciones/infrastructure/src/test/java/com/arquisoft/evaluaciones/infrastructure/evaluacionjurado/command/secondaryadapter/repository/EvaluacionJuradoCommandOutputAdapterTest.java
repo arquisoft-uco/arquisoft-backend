@@ -2,6 +2,9 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secon
 
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.secondaryadapter.entity.EvaluacionCuantitativaJuradoJpaEntity;
 import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.command.secondaryadapter.entity.ObservacionItemJuradoJpaEntity;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EvaluacionJuradoEntity;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,12 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 // Las tablas evaluacion/estado_evaluacion no tienen @Entity en el lado de comando (esta HU solo lee
-// dos flags booleanos, no gestiona EvaluacionJurado/Evaluacion como recursos propios), asi que
+// el jurado y el estado, no gestiona EvaluacionJurado/Evaluacion como recursos propios), asi que
 // Hibernate no las genera con ddl-auto. Se crean aqui con el mismo DDL de la migracion
 // V20260906143120 para poder ejercitar el @Query nativo real con JOIN, tal como exige la skill de
 // testing (nada de mockear el repository en una consulta nativa).
@@ -32,9 +39,12 @@ class EvaluacionJuradoCommandOutputAdapterTest {
 
     private EvaluacionJuradoCommandOutputAdapter adapter;
 
+    private AppLogger logger;
+
     @BeforeEach
     void setUp() {
-        adapter = new EvaluacionJuradoCommandOutputAdapter(repository);
+        logger = mock(AppLogger.class);
+        adapter = new EvaluacionJuradoCommandOutputAdapter(repository, logger);
         crearEsquemaDeSoporte();
     }
 
@@ -95,46 +105,39 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         return observacion;
     }
 
+    // H2 entrega las columnas uuid de una consulta nativa como byte[] (PostgreSQL las entrega como
+    // UUID), asi que aqui se ejercita la consulta real por su columna de texto y el mapeo de los
+    // identificadores se cubre en EstadoEvaluacionJuradoJpaMapperTest.
     @Test
-    void debeRetornarPerteneceTrueYFinalizadaFalse_cuandoJuradoCorrectoYEvaluacionPendiente() {
+    void debeLeerElEstadoDeLaEvaluacion_cuandoLaEvaluacionJuradoExiste() {
         // Arrange
-        UUID jurado = UUID.randomUUID();
-        UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, "PENDIENTE");
+        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "PENDIENTE");
 
         // Act
-        var estado = adapter.obtenerEstado(evaluacionJurado, jurado);
+        var estado = repository.buscarEstadoBloqueado(evaluacionJurado);
 
         // Assert
-        assertThat(estado.pertenece()).isTrue();
-        assertThat(estado.finalizada()).isFalse();
+        assertThat(estado).hasValueSatisfying(encontrado ->
+                assertThat(encontrado.getEstado()).isEqualTo("PENDIENTE"));
     }
 
     @Test
-    void debeRetornarFinalizadaTrue_cuandoLaEvaluacionEstaFinalizada() {
+    void debeLeerEstadoFinalizada_cuandoLaEvaluacionEstaFinalizada() {
         // Arrange
-        UUID jurado = UUID.randomUUID();
-        UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, "FINALIZADA");
+        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "FINALIZADA");
 
         // Act
-        var estado = adapter.obtenerEstado(evaluacionJurado, jurado);
+        var estado = repository.buscarEstadoBloqueado(evaluacionJurado);
 
         // Assert
-        assertThat(estado.pertenece()).isTrue();
-        assertThat(estado.finalizada()).isTrue();
+        assertThat(estado).hasValueSatisfying(encontrado ->
+                assertThat(encontrado.getEstado()).isEqualTo("FINALIZADA"));
     }
 
     @Test
-    void debeRetornarPerteneceFalse_cuandoElJuradoEsDistinto() {
-        // Arrange
-        UUID jurado = UUID.randomUUID();
-        UUID otroJurado = UUID.randomUUID();
-        UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, "PENDIENTE");
-
-        // Act
-        var estado = adapter.obtenerEstado(evaluacionJurado, otroJurado);
-
-        // Assert
-        assertThat(estado.pertenece()).isFalse();
+    void debeRetornarVacio_cuandoLaEvaluacionJuradoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerEstadoBloqueado(UUID.randomUUID())).isEmpty();
     }
 
     @Test
@@ -162,13 +165,46 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarPerteneceFalseYFinalizadaFalse_cuandoLaEvaluacionJuradoNoExiste() {
+    void debePersistirElLoteCompletoYLoguear_cuandoSeRegistranTodas() {
+        // Arrange
+        var evaluacion = UUID.randomUUID();
+        var entidades = List.of(
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()));
+
         // Act
-        var estado = adapter.obtenerEstado(UUID.randomUUID(), UUID.randomUUID());
+        adapter.registrarTodas(entidades);
+        entityManager.flush();
+        entityManager.clear();
 
         // Assert
-        assertThat(estado.pertenece()).isFalse();
-        assertThat(estado.finalizada()).isFalse();
+        assertThat(repository.findAllById(entidades.stream().map(EvaluacionJuradoEntity::id).toList()))
+                .extracting(fila -> fila.getJurado())
+                .containsExactlyInAnyOrderElementsOf(
+                        entidades.stream().map(EvaluacionJuradoEntity::jurado).toList());
+        verify(logger).debug(EvaluacionJuradoKey.LOG_LOTE_GUARDADO, 3);
+    }
+
+    @Test
+    void debeDevolverSoloLosJuradosYaVinculadosALaEvaluacion_cuandoSeConsultan() {
+        // Arrange
+        var evaluacion = UUID.randomUUID();
+        var otraEvaluacion = UUID.randomUUID();
+        var asignado = UUID.randomUUID();
+        var asignadoEnOtra = UUID.randomUUID();
+        var libre = UUID.randomUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, asignado),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), otraEvaluacion, asignadoEnOtra)));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var asignados = adapter.consultarJuradosAsignados(evaluacion, Set.of(asignado, asignadoEnOtra, libre));
+
+        // Assert
+        assertThat(asignados).containsExactly(asignado);
     }
 
     @Test

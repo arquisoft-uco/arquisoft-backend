@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaVigenteFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
@@ -24,7 +24,7 @@ import java.util.UUID;
 public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseCase {
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
-    private final AsesorFichaFinder asesorFichaFinder;
+    private final AsesorFichaVigenteFinder asesorFichaVigenteFinder;
     private final TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
     private final RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
     private final AsignarEstadoInicialFichaPerfilUseCase asignarEstadoInicialFichaPerfilUseCase;
@@ -39,7 +39,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
         logger.info(FichaPerfilKey.LOG_REGISTRANDO,
                 ficha.getTituloProyecto(), ficha.getAsesorFicha());
 
-        var asesorFicha = asesorFichaFinder.obtener(ficha.getAsesorFicha());
+        var asesorFicha = asesorFichaVigenteFinder.obtener(ficha.getAsesorFicha());
         boolean tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
 
         logger.debug(FichaPerfilKey.LOG_VERIFICACION_PREVIA,
