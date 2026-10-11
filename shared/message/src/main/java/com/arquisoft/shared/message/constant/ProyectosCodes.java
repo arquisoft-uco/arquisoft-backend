@@ -27,6 +27,7 @@ public final class ProyectosCodes {
         public static final String NOMBRE_REQUERIDO = "ASESOR_NOMBRE_REQUERIDO";
         public static final String EMAIL_REQUERIDO = "ASESOR_EMAIL_REQUERIDO";
         public static final String OCURRIDO_EN_REQUERIDO = "ASESOR_OCURRIDO_EN_REQUERIDO";
+        public static final String NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
     }
 
     public static final class Estudiante {

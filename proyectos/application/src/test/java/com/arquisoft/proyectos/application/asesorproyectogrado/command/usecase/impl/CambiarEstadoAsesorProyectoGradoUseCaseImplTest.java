@@ -9,7 +9,8 @@ import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.CambioEstadoAsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.event.AsesorProyectoGradoFinalizadoEvent;
-import com.arquisoft.proyectos.domain.asesorproyectogrado.exception.TransicionEstadoAsesorInvalidaException;
+import com.arquisoft.proyectos.domain.asesor.exception.AsesorNoEncontradoException;
+import com.arquisoft.proyectos.domain.asesorproyectogrado.exception.AsesorProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
 import com.arquisoft.proyectos.domain.estadoasesor.EstadoAsesor;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
@@ -105,9 +106,10 @@ class CambiarEstadoAsesorProyectoGradoUseCaseImplTest {
                 eq(proyecto.getId()), eq(vinculo.getId()), eq("FINALIZADO"));
         orden.verify(proyectoGradoPorIdFinder, times(1)).obtener(proyecto.getId());
         orden.verify(asesorProyectoGradoPorIdYProyectoFinder, times(1)).obtener(entrada);
-        orden.verify(logger).debug(eq(AsesorProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO), eq(true), eq(true));
-        orden.verify(validator).validar(entrada, proyecto, vinculo);
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesor.getId());
+        orden.verify(logger).debug(eq(AsesorProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO),
+                eq(true), eq(true), eq(true));
+        orden.verify(validator).validar(entrada, proyecto, vinculo, asesor);
         orden.verify(asesorProyectoGradoOutputPort).actualizarEstado(vinculo.getId(), "FINALIZADO");
         orden.verify(eventPublisher).publish(any());
         orden.verify(logger).info(eq(AsesorProyectoGradoKey.LOG_ESTADO_CAMBIADO),
@@ -118,16 +120,33 @@ class CambiarEstadoAsesorProyectoGradoUseCaseImplTest {
     void debeNoPersistirNiPublicar_cuandoElValidatorRechaza() {
         // Arrange
         stubFinders();
-        doThrow(new TransicionEstadoAsesorInvalidaException(EstadoAsesor.FINALIZADO, EstadoAsesor.FINALIZADO))
-                .when(validator).validar(entrada, proyecto, vinculo);
+        when(asesorPorIdFinder.obtener(asesor.getId())).thenReturn(AsesorDomain.VACIO);
+        doThrow(new AsesorNoEncontradoException(asesor.getId()))
+                .when(validator).validar(entrada, proyecto, vinculo, AsesorDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
-                .isInstanceOf(TransicionEstadoAsesorInvalidaException.class);
-        verify(asesorPorIdFinder, never()).obtener(any());
+                .isInstanceOf(AsesorNoEncontradoException.class);
         verify(asesorProyectoGradoOutputPort, never()).actualizarEstado(any(), any());
         verify(eventPublisher, never()).publish(any());
         verify(logger, never()).info(eq(AsesorProyectoGradoKey.LOG_ESTADO_CAMBIADO),
                 eq(proyecto.getId()), eq(vinculo.getId()), eq("FINALIZADO"));
+    }
+
+    @Test
+    void debeConsultarAsesorVacio_yRechazar_cuandoElVinculoEsVacio() {
+        // Arrange
+        when(proyectoGradoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
+        when(asesorProyectoGradoPorIdYProyectoFinder.obtener(entrada)).thenReturn(AsesorProyectoGradoDomain.VACIO);
+        when(asesorPorIdFinder.obtener(UtilUUID.obtenerUUIDPorDefecto())).thenReturn(AsesorDomain.VACIO);
+        doThrow(new AsesorProyectoGradoNoEncontradoException(vinculo.getId(), proyecto.getId()))
+                .when(validator).validar(entrada, proyecto, AsesorProyectoGradoDomain.VACIO, AsesorDomain.VACIO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(entrada))
+                .isInstanceOf(AsesorProyectoGradoNoEncontradoException.class);
+        verify(asesorPorIdFinder, times(1)).obtener(UtilUUID.obtenerUUIDPorDefecto());
+        verify(asesorProyectoGradoOutputPort, never()).actualizarEstado(any(), any());
+        verify(eventPublisher, never()).publish(any());
     }
 }

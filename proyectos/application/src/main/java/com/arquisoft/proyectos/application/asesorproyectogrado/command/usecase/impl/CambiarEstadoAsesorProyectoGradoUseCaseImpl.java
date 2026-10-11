@@ -35,11 +35,12 @@ public class CambiarEstadoAsesorProyectoGradoUseCaseImpl implements CambiarEstad
         var proyecto = proyectoGradoPorIdFinder.obtener(entrada.getProyectoGrado());
         var vinculo = asesorProyectoGradoPorIdYProyectoFinder.obtener(entrada);
 
-        logger.debug(AsesorProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO, !proyecto.esVacio(), !vinculo.esVacio());
-
-        validator.validar(entrada, proyecto, vinculo);
-
         var asesor = asesorPorIdFinder.obtener(vinculo.getAsesor());
+
+        logger.debug(AsesorProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO,
+                !proyecto.esVacio(), !vinculo.esVacio(), !asesor.esVacio());
+
+        validator.validar(entrada, proyecto, vinculo, asesor);
 
         asesorProyectoGradoOutputPort.actualizarEstado(vinculo.getId(), entrada.getEstadoNuevo().getId());
 

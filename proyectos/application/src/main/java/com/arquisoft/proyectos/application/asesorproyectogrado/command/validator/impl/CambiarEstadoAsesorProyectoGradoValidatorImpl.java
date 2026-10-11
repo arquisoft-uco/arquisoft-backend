@@ -1,6 +1,10 @@
 package com.arquisoft.proyectos.application.asesorproyectogrado.command.validator.impl;
 
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.validator.CambiarEstadoAsesorProyectoGradoValidator;
+import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
+import com.arquisoft.proyectos.domain.asesor.model.ExistenciaAsesor;
+import com.arquisoft.proyectos.domain.asesor.rules.AsesorExisteRule;
+import com.arquisoft.proyectos.domain.asesor.rules.impl.AsesorExisteRuleImpl;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.CambioEstadoAsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ExistenciaAsesorProyectoGrado;
@@ -28,6 +32,7 @@ public class CambiarEstadoAsesorProyectoGradoValidatorImpl implements CambiarEst
     private final CoordinadorProyectoGradoPropietarioRule coordinadorPropietarioRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
     private final AsesorProyectoGradoExisteRule asesorProyectoGradoExisteRule;
+    private final AsesorExisteRule asesorExisteRule;
     private final TransicionEstadoAsesorPermitidaRule transicionPermitidaRule;
 
     public CambiarEstadoAsesorProyectoGradoValidatorImpl() {
@@ -35,12 +40,13 @@ public class CambiarEstadoAsesorProyectoGradoValidatorImpl implements CambiarEst
         this.coordinadorPropietarioRule = new CoordinadorProyectoGradoPropietarioRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
         this.asesorProyectoGradoExisteRule = new AsesorProyectoGradoExisteRuleImpl();
+        this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.transicionPermitidaRule = new TransicionEstadoAsesorPermitidaRuleImpl();
     }
 
     @Override
     public void validar(CambioEstadoAsesorProyectoGradoDomain entrada, ProyectoGradoDomain proyecto,
-                        AsesorProyectoGradoDomain vinculo) {
+                        AsesorProyectoGradoDomain vinculo, AsesorDomain asesor) {
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(entrada.getProyectoGrado(), !proyecto.esVacio()));
         coordinadorPropietarioRule.validar(new PropiedadCoordinadorProyectoGrado(
                 entrada.getProyectoGrado(), proyecto.getCoordinador(), entrada.getCoordinador()));
@@ -48,6 +54,7 @@ public class CambiarEstadoAsesorProyectoGradoValidatorImpl implements CambiarEst
                 new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getEstadoProyectoGrado()));
         asesorProyectoGradoExisteRule.validar(new ExistenciaAsesorProyectoGrado(
                 entrada.getAsesorProyectoGrado(), entrada.getProyectoGrado(), !vinculo.esVacio()));
+        asesorExisteRule.validar(new ExistenciaAsesor(vinculo.getAsesor(), !asesor.esVacio()));
         transicionPermitidaRule.validar(new TransicionEstadoAsesor(
                 entrada.getAsesorProyectoGrado(), vinculo.getEstadoAsesor(), entrada.getEstadoNuevo()));
     }
