@@ -135,7 +135,7 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
     void debe422_cuandoElRemitenteNoExiste() throws Exception {
         // Arrange
         when(interactor.ejecutar(any()))
-                .thenThrow(new RemitenteNoEncontradoException(UUID.randomUUID()));
+                .thenThrow(new RemitenteNoEncontradoException());
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/ampliacion-plazo")
@@ -149,7 +149,7 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
     void debe422_cuandoElDestinatarioNoExiste() throws Exception {
         // Arrange
         when(interactor.ejecutar(any()))
-                .thenThrow(new DestinatarioNoEncontradoException(UUID.randomUUID()));
+                .thenThrow(new DestinatarioNoEncontradoException());
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/ampliacion-plazo")

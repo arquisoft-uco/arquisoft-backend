@@ -111,4 +111,17 @@ class ObservacionItemCommandOutputAdapterTest {
         verify(repository, times(1)).actualizarObservacion(observacionItem, "Texto nuevo");
         verify(logger).debug(eq(ObservacionItemKey.LOG_GUARDADA), eq(observacionItem));
     }
+
+    @Test
+    void debeRemoverYRegistrarDebug_cuandoRemueveLaObservacion() {
+        // Arrange
+        var observacionItem = UtilUUID.generarNuevoUUID();
+
+        // Act
+        adapter.removerObservacion(observacionItem);
+
+        // Assert
+        verify(repository, times(1)).removerPorId(observacionItem);
+        verify(logger).debug(eq(ObservacionItemKey.LOG_ELIMINADA), eq(observacionItem));
+    }
 }

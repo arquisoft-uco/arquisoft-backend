@@ -17,4 +17,6 @@ public interface ObservacionItemOutputPort {
     long contarOtrasIgualesEnRevision(UUID observacionItem, String observacion);
 
     void actualizarObservacion(UUID observacionItem, String observacion);
+
+    void removerObservacion(UUID observacionItem);
 }

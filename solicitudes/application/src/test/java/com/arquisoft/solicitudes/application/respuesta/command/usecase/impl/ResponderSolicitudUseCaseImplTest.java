@@ -146,7 +146,7 @@ class ResponderSolicitudUseCaseImplTest {
     void debeAbortarSinRegistrarNiPublicar_cuandoElValidatorLanza() {
         // Arrange
         stubFlujoValido();
-        doThrow(new SolicitudYaRespondidaException(solicitud))
+        doThrow(new SolicitudYaRespondidaException())
                 .when(validator).validar(any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert
@@ -163,7 +163,7 @@ class ResponderSolicitudUseCaseImplTest {
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
         when(datosUsuarioFinder.obtener(any())).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new SolicitudYaRespondidaException(solicitud))
+        doThrow(new SolicitudYaRespondidaException())
                 .when(validator).validar(any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert

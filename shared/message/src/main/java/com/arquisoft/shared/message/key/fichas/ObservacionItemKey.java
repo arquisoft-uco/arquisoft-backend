@@ -14,11 +14,15 @@ public enum ObservacionItemKey implements ClaveMensaje {
     LOG_MODIFICANDO("fichas.aplicacion.observacionitem.log.modificando", 2),
     LOG_VERIFICACION_MODIFICAR("fichas.aplicacion.observacionitem.log.verificacion-modificar", 4),
     LOG_MODIFICADA("fichas.aplicacion.observacionitem.log.modificada", 1),
+    LOG_REMOVIENDO("fichas.aplicacion.observacionitem.log.removiendo", 2),
+    LOG_VERIFICACION_REMOVER("fichas.aplicacion.observacionitem.log.verificacion-remover", 3),
+    LOG_REMOVIDA("fichas.aplicacion.observacionitem.log.removida", 1),
     LOG_CONSULTANDO_ELABORADAS("fichas.aplicacion.observacionitem.log.consultando-elaboradas", 2),
     LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.observacionitem.log.consulta-elaboradas-completada", 1),
     LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.observacionitem.log.consultando-estudiante", 2),
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.observacionitem.log.consulta-estudiante-completada", 1),
-    LOG_GUARDADA("fichas.infraestructura.observacionitem.log.guardada", 1);
+    LOG_GUARDADA("fichas.infraestructura.observacionitem.log.guardada", 1),
+    LOG_ELIMINADA("fichas.infraestructura.observacionitem.log.eliminada", 1);
 
     private final String clave;
     private final int parametros;

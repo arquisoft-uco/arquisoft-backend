@@ -32,7 +32,6 @@ class SolicitudEsNovedadCoordinadorRuleImplTest {
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new TipoSolicitudConcordante(
                 solicitud, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), ESPERADO)))
-                .isInstanceOf(SolicitudTipoNoCoincideException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(SolicitudTipoNoCoincideException.class);
     }
 }

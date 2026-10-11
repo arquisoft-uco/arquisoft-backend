@@ -123,7 +123,7 @@ class EnviarSolicitudNovedadCoordinadorControllerTest {
     void debe422_cuandoElRemitenteNoExiste() throws Exception {
         // Arrange
         when(interactor.ejecutar(any()))
-                .thenThrow(new RemitenteNoEncontradoException(UUID.randomUUID()));
+                .thenThrow(new RemitenteNoEncontradoException());
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/novedad-coordinador")
