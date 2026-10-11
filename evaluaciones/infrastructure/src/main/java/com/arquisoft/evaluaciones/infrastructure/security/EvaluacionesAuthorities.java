@@ -36,12 +36,18 @@ public final class EvaluacionesAuthorities {
     public static final String EVALUACION_CUALITATIVA_JURADO_CREATE =
             "evaluaciones:evaluacion-cualitativa-jurado:create";
 
+    public static final String EVALUACION_JURADO_CREATE =
+            "evaluaciones:evaluacion-jurado:create";
+
     public static final class Expresiones {
 
         private Expresiones() {}
 
         private static final String HAS_AUTHORITY_INICIO = "hasAuthority('";
         private static final String HAS_AUTHORITY_FIN = "')";
+
+        public static final String HAS_EVALUACION_JURADO_CREATE =
+                HAS_AUTHORITY_INICIO + EVALUACION_JURADO_CREATE + HAS_AUTHORITY_FIN;
 
         public static final String HAS_ITEM_CUALITATIVO_JURADO_CREATE =
                 HAS_AUTHORITY_INICIO + ITEM_CUALITATIVO_JURADO_CREATE + HAS_AUTHORITY_FIN;

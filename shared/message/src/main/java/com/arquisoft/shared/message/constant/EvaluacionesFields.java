@@ -63,6 +63,21 @@ public final class EvaluacionesFields {
         public static final String ESTADO = "estado";
     }
 
+    public static final class EvaluacionJurado {
+
+        private EvaluacionJurado() {}
+
+        public static final String EVALUACION = "evaluacion";
+        public static final String JURADO = "jurado";
+    }
+
+    public static final class AsignacionJuradosEvaluacion {
+
+        private AsignacionJuradosEvaluacion() {}
+
+        public static final String JURADOS = "jurados";
+    }
+
     public static final class ItemCuantitativoJurado {
 
         private ItemCuantitativoJurado() {}

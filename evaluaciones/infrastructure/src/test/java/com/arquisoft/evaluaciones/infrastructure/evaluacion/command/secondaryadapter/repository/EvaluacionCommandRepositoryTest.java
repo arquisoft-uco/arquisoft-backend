@@ -41,4 +41,28 @@ class EvaluacionCommandRepositoryTest {
             assertThat(evaluacion.getEntregable()).isEqualTo(entregable);
         });
     }
+
+    @Test
+    void debeLeerEvaluacionYEstado_cuandoLaEvaluacionExisteParaAsignar() {
+        // Arrange
+        var id = UUID.randomUUID();
+        repository.saveAndFlush(EvaluacionJpaEntity.builder()
+                .id(id)
+                .entregable(UUID.randomUUID())
+                .estadoEvaluacion("PENDIENTE")
+                .build());
+
+        // Act
+        var contexto = repository.buscarContextoAsignacionBloqueado(id);
+
+        // Assert
+        assertThat(contexto).hasValueSatisfying(encontrado ->
+                assertThat(encontrado.getEstado()).isEqualTo("PENDIENTE"));
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoLaEvaluacionNoExisteParaAsignar() {
+        // Act & Assert
+        assertThat(repository.buscarContextoAsignacionBloqueado(UUID.randomUUID())).isEmpty();
+    }
 }
