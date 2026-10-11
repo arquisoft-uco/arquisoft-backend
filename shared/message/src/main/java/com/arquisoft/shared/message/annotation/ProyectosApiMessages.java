@@ -30,4 +30,24 @@ public final class ProyectosApiMessages {
                 "Proyecto no encontrado, finalizado o asignado a otro coordinador, estudiante no vigente, "
                         + "repetido o ya vinculado, o cupo excedido";
     }
+
+    public static final class ConsultaEstudianteProyectoGrado {
+
+        private ConsultaEstudianteProyectoGrado() {}
+
+        public static final String TAG_NAME = "Consulta de Estudiantes de Proyecto de Grado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de los estudiantes vinculados a un proyecto de grado";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar los estudiantes de un proyecto de grado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Permite al coordinador asignado al proyecto de grado consultar sus estudiantes vinculados, "
+                        + "ordenados por nombre, incluidos los dados de baja marcados como no vigentes";
+        public static final String CONSULTAR_RESP_200 = "Estudiantes del proyecto de grado";
+        public static final String CONSULTAR_RESP_400 = "Identificador de proyecto de grado inválido";
+        public static final String CONSULTAR_RESP_403 =
+                "Sin permiso para consultar los estudiantes de un proyecto de grado";
+        public static final String CONSULTAR_RESP_422 =
+                "Proyecto de grado no encontrado o asignado a otro coordinador";
+    }
 }
