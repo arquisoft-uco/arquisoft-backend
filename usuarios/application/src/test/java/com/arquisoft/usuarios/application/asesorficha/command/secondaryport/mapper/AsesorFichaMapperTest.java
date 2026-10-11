@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.asesorficha.command.secondaryport.mapper;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ class AsesorFichaMapperTest {
     void debeMapearEntityADomain_cuandoSeLee() {
         // Arrange
         var usuario = UUID.randomUUID();
-        var entity = new AsesorFichaEntity(usuario);
+        var entity = new AsesorFichaEntity(usuario, UtilFecha.VACIO);
 
         // Act
         var domain = AsesorFichaMapper.toDomain(entity);

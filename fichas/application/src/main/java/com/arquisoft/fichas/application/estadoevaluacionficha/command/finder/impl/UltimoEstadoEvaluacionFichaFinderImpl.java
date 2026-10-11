@@ -7,7 +7,6 @@ import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDo
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -17,8 +16,9 @@ public class UltimoEstadoEvaluacionFichaFinderImpl implements UltimoEstadoEvalua
     private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
 
     @Override
-    public Optional<EstadoEvaluacionFichaDomain> obtener(UUID evaluacionFichaPerfil) {
+    public EstadoEvaluacionFichaDomain obtener(UUID evaluacionFichaPerfil) {
         return estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionFichaPerfil)
-                .map(EstadoEvaluacionFichaMapper::toDomain);
+                .map(EstadoEvaluacionFichaMapper::toDomain)
+                .orElse(EstadoEvaluacionFichaDomain.VACIO);
     }
 }

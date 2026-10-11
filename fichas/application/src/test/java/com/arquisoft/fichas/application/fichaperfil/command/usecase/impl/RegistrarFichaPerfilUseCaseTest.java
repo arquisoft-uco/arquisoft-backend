@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaVigenteFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
@@ -29,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +51,7 @@ class RegistrarFichaPerfilUseCaseTest {
     private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Mock
-    private AsesorFichaFinder asesorFichaFinder;
+    private AsesorFichaVigenteFinder asesorFichaVigenteFinder;
 
     @Mock
     private TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
@@ -102,9 +101,9 @@ class RegistrarFichaPerfilUseCaseTest {
         registrarFichaPerfilUseCase.ejecutar(registro);
 
         // Assert
-        InOrder inOrder = inOrder(asesorFichaFinder, tituloFichaPerfilExisteFinder,
+        InOrder inOrder = inOrder(asesorFichaVigenteFinder, tituloFichaPerfilExisteFinder,
                 registrarFichaPerfilValidator, fichaPerfilOutputPort);
-        inOrder.verify(asesorFichaFinder).obtener(ficha.getAsesorFicha());
+        inOrder.verify(asesorFichaVigenteFinder).obtener(ficha.getAsesorFicha());
         inOrder.verify(tituloFichaPerfilExisteFinder).obtener(ficha.getTituloProyecto());
         inOrder.verify(registrarFichaPerfilValidator).validar(ficha, true, false);
         inOrder.verify(fichaPerfilOutputPort).registrarFicha(entidadDe(ficha));
@@ -222,18 +221,14 @@ class RegistrarFichaPerfilUseCaseTest {
 
     private void stubConsultas(
             FichaPerfilDomain ficha, AsesorFichaDomain asesorFicha, boolean tituloYaExiste) {
-        when(asesorFichaFinder.obtener(ficha.getAsesorFicha())).thenReturn(presencia(asesorFicha));
+        when(asesorFichaVigenteFinder.obtener(ficha.getAsesorFicha())).thenReturn(asesorFicha);
         when(tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto()))
                 .thenReturn(tituloYaExiste);
     }
 
-    private static Optional<AsesorFichaDomain> presencia(AsesorFichaDomain asesorFicha) {
-        return asesorFicha.esVacio() ? Optional.empty() : Optional.of(asesorFicha);
-    }
-
     private static AsesorFichaDomain asesor() {
         return AsesorFichaDomain.reconstruir(
-                UUID.randomUUID(), "1088", "Carlos Ruiz", "carlos.ruiz@soyuco.edu.co", java.time.Instant.now());
+                UUID.randomUUID(), "1088", "Carlos Ruiz", "carlos.ruiz@soyuco.edu.co", java.time.Instant.now(), null);
     }
 
     private static RegistroFichaPerfilDomain registroValido() {

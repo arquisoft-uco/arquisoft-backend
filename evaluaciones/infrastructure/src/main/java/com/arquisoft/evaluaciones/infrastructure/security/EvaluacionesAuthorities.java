@@ -17,14 +17,15 @@ public final class EvaluacionesAuthorities {
 
     public static final String CATEGORIA_ITEM_CUANTITATIVO_JURADO_VIEW =
             "evaluaciones:categoria-item-cuantitativo-jurado:view";
+
     public static final String EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW =
             "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view";
     public static final String ITEM_CUANTITATIVO_JURADO_CREATE =
             "evaluaciones:item-cuantitativo-jurado:create";
-    public static final String ITEM_CUANTITATIVO_JURADO_VIEW =
-            "evaluaciones:item-cuantitativo-jurado:view";
     public static final String ITEM_CUANTITATIVO_JURADO_UPDATE =
             "evaluaciones:item-cuantitativo-jurado:update";
+    public static final String ITEM_CUANTITATIVO_JURADO_VIEW =
+            "evaluaciones:item-cuantitativo-jurado:view";
 
     public static final String EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_VIEW =
             "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view";
@@ -38,12 +39,18 @@ public final class EvaluacionesAuthorities {
     public static final String OBSERVACION_ITEM_JURADO_CREATE =
             "evaluaciones:observacion-item-jurado:create";
 
+    public static final String EVALUACION_JURADO_CREATE =
+            "evaluaciones:evaluacion-jurado:create";
+
     public static final class Expresiones {
 
         private Expresiones() {}
 
         private static final String HAS_AUTHORITY_INICIO = "hasAuthority('";
         private static final String HAS_AUTHORITY_FIN = "')";
+
+        public static final String HAS_EVALUACION_JURADO_CREATE =
+                HAS_AUTHORITY_INICIO + EVALUACION_JURADO_CREATE + HAS_AUTHORITY_FIN;
 
         public static final String HAS_ITEM_CUALITATIVO_JURADO_CREATE =
                 HAS_AUTHORITY_INICIO + ITEM_CUALITATIVO_JURADO_CREATE + HAS_AUTHORITY_FIN;
@@ -58,24 +65,24 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_CATEGORIA_ITEM_CUANTITATIVO_JURADO_VIEW =
                 HAS_AUTHORITY_INICIO + CATEGORIA_ITEM_CUANTITATIVO_JURADO_VIEW + HAS_AUTHORITY_FIN;
+
         public static final String HAS_EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW =
                 HAS_AUTHORITY_INICIO + EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ITEM_CUANTITATIVO_JURADO_CREATE =
                 HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_CREATE + HAS_AUTHORITY_FIN;
-        public static final String HAS_ITEM_CUANTITATIVO_JURADO_VIEW =
-                HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ITEM_CUANTITATIVO_JURADO_UPDATE =
                 HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_UPDATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_EVALUACION_CUALITATIVA_JURADO_CREATE =
+                HAS_AUTHORITY_INICIO + EVALUACION_CUALITATIVA_JURADO_CREATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_ITEM_CUANTITATIVO_JURADO_VIEW =
+                HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_VIEW + HAS_AUTHORITY_FIN;
 
         public static final String HAS_EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_VIEW =
                 HAS_AUTHORITY_INICIO + EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
 
         public static final String HAS_EVALUACION_CUANTITATIVA_JURADO_UPDATE =
                 HAS_AUTHORITY_INICIO + EVALUACION_CUANTITATIVA_JURADO_UPDATE + HAS_AUTHORITY_FIN;
-
-        public static final String HAS_EVALUACION_CUALITATIVA_JURADO_CREATE =
-                HAS_AUTHORITY_INICIO + EVALUACION_CUALITATIVA_JURADO_CREATE + HAS_AUTHORITY_FIN;
-
         public static final String HAS_OBSERVACION_ITEM_JURADO_CREATE =
                 HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_JURADO_CREATE + HAS_AUTHORITY_FIN;
     }

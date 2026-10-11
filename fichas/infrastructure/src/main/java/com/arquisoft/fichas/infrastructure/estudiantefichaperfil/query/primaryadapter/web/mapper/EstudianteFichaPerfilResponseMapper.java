@@ -13,6 +13,7 @@ public final class EstudianteFichaPerfilResponseMapper {
                 readModel.fichaPerfilId(),
                 readModel.estudianteId(),
                 readModel.nombre(),
-                readModel.email());
+                readModel.email(),
+                readModel.vigente());
     }
 }

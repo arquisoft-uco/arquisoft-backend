@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -77,6 +78,26 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isPresent();
         assertThat(resultado.get().estadoFicha()).isEqualTo("EN_CONSTRUCCION");
+    }
+
+    @Test
+    void debeQuedarComoEstadoActual_cuandoSeAgregaUnEstadoPosteriorAlInicial() {
+        // Arrange
+        var fichaPerfilId = UUID.randomUUID();
+        var inicio = Instant.parse("2026-09-01T10:00:00Z");
+        adapter.registrarEstadoInicial(
+                new EstadoFichaPerfilEntity(UUID.randomUUID(), fichaPerfilId, "EN_CONSTRUCCION", inicio));
+        var aprobacion = new EstadoFichaPerfilEntity(UUID.randomUUID(), fichaPerfilId, "APROBADA",
+                inicio.plusSeconds(60));
+
+        // Act
+        adapter.agregarEstado(aprobacion);
+
+        // Assert
+        var resultado = adapter.obtenerEstadoActual(fichaPerfilId);
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().id()).isEqualTo(aprobacion.id());
+        assertThat(resultado.get().estadoFicha()).isEqualTo("APROBADA");
     }
 
     @Test

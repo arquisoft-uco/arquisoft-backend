@@ -37,7 +37,7 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     @Override
     public boolean existePorEvaluacionYEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId) {
         return estadoEvaluacionFichaCommandRepository
-                .existsByEvaluacionFichaPerfilAndEstadoEvaluacion(
+                .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(
                         evaluacionFichaPerfilId,
                         estadoEvaluacionId);
     }
@@ -45,7 +45,7 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     @Override
     public long contarEstadosPorEvaluacion(UUID evaluacionFichaPerfilId) {
         return estadoEvaluacionFichaCommandRepository
-                .countByEvaluacionFichaPerfil(evaluacionFichaPerfilId);
+                .countByEvaluacionFichaPerfilId(evaluacionFichaPerfilId);
     }
 
     @Override

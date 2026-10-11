@@ -3,6 +3,7 @@ package com.arquisoft.proyectos.infrastructure.coordinador.command.primaryadapte
 import com.arquisoft.proyectos.application.coordinador.command.primaryport.interactor.AgregarCoordinadorInteractor;
 import com.arquisoft.proyectos.application.coordinador.command.result.AgregacionCoordinadorResult;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
 import com.rabbitmq.client.Channel;
@@ -126,5 +127,20 @@ class CoordinadorAgregadoConsumerTest {
 
         // Assert
         verify(channel).basicAck(4L, false);
+    }
+
+    @Test
+    void debeRegistrarReactivadoYConfirmar_cuandoElResultadoEsReactivada() throws Exception {
+        // Arrange
+        var coordinador = UUID.randomUUID();
+        when(agregarCoordinadorInteractor.ejecutar(any()))
+                .thenReturn(new AgregacionCoordinadorResult.Reactivada(coordinador));
+
+        // Act
+        adapter.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 5L), channel);
+
+        // Assert
+        verify(logger).info(CoordinadorKey.LOG_REACTIVADO, coordinador);
+        verify(channel).basicAck(5L, false);
     }
 }

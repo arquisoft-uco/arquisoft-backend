@@ -1,9 +1,11 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+
 import java.util.UUID;
 
 public interface RemoverItemFichaPerfilValidator {
 
     void validar(UUID item, UUID estudiante, UUID fichaDelItem, boolean itemExiste,
-                 boolean esPropietario, long totalRevisiones);
+                 boolean esPropietario, EstadoFichaPerfilDomain estadoActual, long totalRevisiones);
 }

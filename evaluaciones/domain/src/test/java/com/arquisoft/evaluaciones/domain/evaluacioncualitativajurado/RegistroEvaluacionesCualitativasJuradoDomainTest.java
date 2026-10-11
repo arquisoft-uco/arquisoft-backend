@@ -17,23 +17,39 @@ class RegistroEvaluacionesCualitativasJuradoDomainTest {
     @Test
     void debeCrearRegistro_cuandoDatosValidos() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
         var evaluaciones = List.of(
                 EvaluacionCualitativaJuradoDomain.crear(evaluacionJurado, UUID.randomUUID(), UUID.randomUUID()),
                 EvaluacionCualitativaJuradoDomain.crear(evaluacionJurado, UUID.randomUUID(), UUID.randomUUID()));
 
         // Act
-        RegistroEvaluacionesCualitativasJuradoDomain registro =
-                RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluaciones);
+        var registro = RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluacionJurado, evaluaciones);
 
         // Assert
+        assertThat(registro.getEvaluacionJurado()).isEqualTo(evaluacionJurado);
         assertThat(registro.getEvaluaciones()).hasSize(2);
+    }
+
+    @Test
+    void debeRechazarEvaluacionJurado_cuandoEsNula() {
+        // Arrange
+        var evaluaciones = List.of(
+                EvaluacionCualitativaJuradoDomain.crear(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
+
+        // Act & Assert
+        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(null, evaluaciones))
+                .isInstanceOfSatisfying(DomainValidationException.class, exception ->
+                        assertThat(exception.getValidationResult().getErrores())
+                                .extracting(error -> error.campo(), error -> error.codigoError())
+                                .containsExactly(
+                                        tuple(EvaluacionesFields.EvaluacionCualitativaJurado.EVALUACION_JURADO,
+                                                EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO)));
     }
 
     @Test
     void debeRechazarLoteVacio_cuandoListaEvaluacionesEsNula() {
         // Act & Assert
-        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(null))
+        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(UUID.randomUUID(), null))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -45,7 +61,7 @@ class RegistroEvaluacionesCualitativasJuradoDomainTest {
     @Test
     void debeRechazarLoteVacio_cuandoListaEvaluacionesEstaVacia() {
         // Act & Assert
-        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(List.of()))
+        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(UUID.randomUUID(), List.of()))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
@@ -55,32 +71,17 @@ class RegistroEvaluacionesCualitativasJuradoDomainTest {
     @Test
     void debeRechazarItemsRepetidos_cuandoDosParesComparteElMismoItemConDistintoCriterio() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
-        UUID itemRepetido = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
+        var itemRepetido = UUID.randomUUID();
         var evaluaciones = List.of(
                 EvaluacionCualitativaJuradoDomain.crear(evaluacionJurado, itemRepetido, UUID.randomUUID()),
                 EvaluacionCualitativaJuradoDomain.crear(evaluacionJurado, itemRepetido, UUID.randomUUID()));
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluaciones))
+        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluacionJurado, evaluaciones))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
                                 .containsExactly(EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.ITEMS_REPETIDOS));
-    }
-
-    @Test
-    void debeRechazarPadresDistintos_cuandoLasEvaluacionesNoComparteLaMismaEvaluacionDeJurado() {
-        // Arrange
-        var evaluaciones = List.of(
-                EvaluacionCualitativaJuradoDomain.crear(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()),
-                EvaluacionCualitativaJuradoDomain.crear(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
-
-        // Act & Assert
-        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluaciones))
-                .isInstanceOfSatisfying(DomainValidationException.class, exception ->
-                        assertThat(exception.getValidationResult().getErrores())
-                                .extracting(error -> error.codigoError())
-                                .containsExactly(EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.PADRES_DISTINTOS));
     }
 }

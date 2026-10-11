@@ -1,12 +1,14 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.keycloak;
 
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.ProveedorIdentidadOutputPort;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.ModificacionIdentidadEntity;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.RegistroIdentidadEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.keycloak.mapper.KeycloakUsuarioRepresentationMapper;
 import com.arquisoft.usuarios.infrastructure.config.http.UsuariosRestTemplateConfig;
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.usuarios.ProveedorIdentidadKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
@@ -53,6 +55,10 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
     private static final String ACCION_UPDATE_PASSWORD = "UPDATE_PASSWORD";
     private static final String DETALLE_CLIENTE_HTTP = "cliente-http";
     private static final String CONSULTA_EMAIL_EXACTO = "/users?exact=true&email=";
+    private static final String CAMPO_ID = "id";
+    private static final String CAMPO_EMAIL = "email";
+    private static final String CAMPO_FIRST_NAME = "firstName";
+    private static final String CAMPO_LAST_NAME = "lastName";
     private static final int MAX_DETALLE_ERROR = 300;
 
     private final AppLogger logger;
@@ -97,6 +103,108 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
     }
 
     @Override
+    public boolean existeEmailEnOtraIdentidad(String email, UUID usuario) {
+        try {
+            var respuesta = restTemplate.exchange(
+                    urlAdmin(CONSULTA_EMAIL_EXACTO + UriUtils.encodeQueryParam(email, StandardCharsets.UTF_8)),
+                    HttpMethod.GET, new HttpEntity<>(cabecerasConToken(obtenerTokenServicio())), LISTA_JSON);
+            var cuerpo = respuesta.getBody();
+            return UtilObjeto.noEsNulo(cuerpo) && cuerpo.stream()
+                    .anyMatch(identidad -> !usuario.toString().equals(texto(identidad.get(CAMPO_ID))));
+        } catch (RestClientResponseException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, e.getStatusCode(), detalleDe(e));
+            throw noDisponible();
+        } catch (RestClientException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, DETALLE_CLIENTE_HTTP, e.getMessage());
+            throw noDisponible();
+        }
+    }
+
+    @Override
+    public void actualizar(ModificacionIdentidadEntity modificacion) {
+        try {
+            var token = obtenerTokenServicio();
+            var previa = obtenerIdentidadPrevia(token, modificacion.usuario());
+            restTemplate.exchange(urlUsuario(modificacion.usuario()), HttpMethod.PUT,
+                    new HttpEntity<>(KeycloakUsuarioRepresentationMapper.toUserRepresentationParcial(
+                            modificacion.email(), modificacion.nombres(), modificacion.apellidos()),
+                            cabecerasConToken(token)), Void.class);
+            logger.debug(ProveedorIdentidadKey.LOG_IDENTIDAD_ACTUALIZADA, modificacion.usuario());
+            registrarCompensacionIdentidad(modificacion.usuario(), previa);
+        } catch (RestClientResponseException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, e.getStatusCode(), detalleDe(e));
+            throw noDisponible();
+        } catch (RestClientException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, DETALLE_CLIENTE_HTTP, e.getMessage());
+            throw noDisponible();
+        }
+    }
+
+    @Override
+    public void asignarRealmRoles(UUID usuario, List<String> realmRoles) {
+        if (realmRoles.isEmpty()) {
+            return;
+        }
+        try {
+            asignarRealmRoles(obtenerTokenServicio(), usuario.toString(), realmRoles);
+        } catch (RestClientResponseException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, e.getStatusCode(), detalleDe(e));
+            throw noDisponible();
+        } catch (RestClientException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, DETALLE_CLIENTE_HTTP, e.getMessage());
+            throw noDisponible();
+        }
+    }
+
+    private IdentidadPrevia obtenerIdentidadPrevia(String token, UUID usuario) {
+        var respuesta = restTemplate.exchange(urlUsuario(usuario), HttpMethod.GET,
+                new HttpEntity<>(cabecerasConToken(token)), MAPA_JSON);
+        var cuerpo = respuesta.getBody();
+        if (UtilObjeto.esNulo(cuerpo)) {
+            throw noDisponible();
+        }
+        return new IdentidadPrevia(texto(cuerpo.get(CAMPO_EMAIL)), texto(cuerpo.get(CAMPO_FIRST_NAME)),
+                texto(cuerpo.get(CAMPO_LAST_NAME)));
+    }
+
+    // Mismo motivo que registrarCompensacionRol: Keycloak no participa en la transaccion, y si el
+    // commit local falla tras el PUT solo el adaptador puede devolver los valores anteriores.
+    private void registrarCompensacionIdentidad(UUID usuario, IdentidadPrevia previa) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == STATUS_ROLLED_BACK) {
+                    restaurarIdentidad(usuario, previa);
+                }
+            }
+        });
+    }
+
+    private void restaurarIdentidad(UUID usuario, IdentidadPrevia previa) {
+        try {
+            restTemplate.exchange(urlUsuario(usuario), HttpMethod.PUT,
+                    new HttpEntity<>(KeycloakUsuarioRepresentationMapper.toUserRepresentationParcial(
+                            previa.email(), previa.nombres(), previa.apellidos()),
+                            cabecerasConToken(obtenerTokenServicio())), Void.class);
+        } catch (RuntimeException fallo) {
+            logger.error(ProveedorIdentidadKey.LOG_COMPENSACION_IDENTIDAD_FALLIDA, usuario);
+        }
+    }
+
+    private String urlUsuario(UUID usuario) {
+        return urlAdmin("/users/" + usuario);
+    }
+
+    private static String texto(Object valor) {
+        return UtilObjeto.esNulo(valor) ? null : String.valueOf(valor);
+    }
+
+    private record IdentidadPrevia(String email, String nombres, String apellidos) {}
+
+    @Override
     public UUID registrar(RegistroIdentidadEntity registro) {
         logger.debug(RegistrarUsuarioKey.LOG_IDP_REGISTRANDO, registro.email());
         try {
@@ -117,6 +225,98 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
     @Override
     public void eliminar(UUID usuarioId) {
         eliminarIdentidad(usuarioId.toString());
+    }
+
+    @Override
+    public void revocarRealmRole(UUID usuario, String realmRole) {
+        try {
+            var token = obtenerTokenServicio();
+            var representacion = obtenerRealmRole(token, realmRole);
+            restTemplate.exchange(urlRoleMappingsRealm(usuario), HttpMethod.DELETE,
+                    new HttpEntity<>(List.of(representacion), cabecerasConToken(token)), Void.class);
+            logger.debug(ProveedorIdentidadKey.LOG_ROL_REVOCADO, usuario, realmRole);
+            registrarCompensacionRol(usuario, realmRole);
+        } catch (RestClientResponseException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, e.getStatusCode(), detalleDe(e));
+            throw noDisponible();
+        } catch (RestClientException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, DETALLE_CLIENTE_HTTP, e.getMessage());
+            throw noDisponible();
+        }
+    }
+
+    // Keycloak no participa en la transaccion: si el commit local falla despues de revocar, solo el
+    // adaptador puede devolver el rol. Una compensacion fallida no lanza; queda en el log para conciliar.
+    private void registrarCompensacionRol(UUID usuario, String realmRole) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == STATUS_ROLLED_BACK) {
+                    reasignarRealmRole(usuario, realmRole);
+                }
+            }
+        });
+    }
+
+    private void reasignarRealmRole(UUID usuario, String realmRole) {
+        try {
+            var token = obtenerTokenServicio();
+            var representacion = obtenerRealmRole(token, realmRole);
+            restTemplate.exchange(urlRoleMappingsRealm(usuario), HttpMethod.POST,
+                    new HttpEntity<>(List.of(representacion), cabecerasConToken(token)), Void.class);
+        } catch (RuntimeException fallo) {
+            logger.error(ProveedorIdentidadKey.LOG_COMPENSACION_ROL_FALLIDA, usuario, realmRole);
+        }
+    }
+
+    @Override
+    public void cambiarHabilitacion(UUID usuario, boolean habilitado) {
+        try {
+            enviarHabilitacion(obtenerTokenServicio(), usuario, habilitado);
+            logger.debug(ProveedorIdentidadKey.LOG_HABILITACION_CAMBIADA, usuario, habilitado);
+            registrarCompensacionHabilitacion(usuario, !habilitado);
+        } catch (RestClientResponseException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, e.getStatusCode(), detalleDe(e));
+            throw noDisponible();
+        } catch (RestClientException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, DETALLE_CLIENTE_HTTP, e.getMessage());
+            throw noDisponible();
+        }
+    }
+
+    private void enviarHabilitacion(String token, UUID usuario, boolean habilitado) {
+        restTemplate.exchange(urlUsuario(usuario), HttpMethod.PUT,
+                new HttpEntity<>(KeycloakUsuarioRepresentationMapper.toUserRepresentationHabilitacion(habilitado),
+                        cabecerasConToken(token)), Void.class);
+    }
+
+    private void registrarCompensacionHabilitacion(UUID usuario, boolean valorPrevio) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == STATUS_ROLLED_BACK) {
+                    restaurarHabilitacion(usuario, valorPrevio);
+                }
+            }
+        });
+    }
+
+    private void restaurarHabilitacion(UUID usuario, boolean valorPrevio) {
+        try {
+            enviarHabilitacion(obtenerTokenServicio(), usuario, valorPrevio);
+        } catch (RuntimeException fallo) {
+            logger.error(ProveedorIdentidadKey.LOG_COMPENSACION_HABILITACION_FALLIDA, usuario, valorPrevio);
+        }
+    }
+
+    private String urlRoleMappingsRealm(UUID usuario) {
+        return urlAdmin("/users/" + usuario + "/role-mappings/realm");
     }
 
     private void eliminarIdentidad(String identidadId) {
@@ -245,6 +445,6 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
 
     private ProveedorIdentidadUsuarioNoDisponibleException noDisponible() {
         return new ProveedorIdentidadUsuarioNoDisponibleException(
-                Mensajes.obtener(RegistrarUsuarioKey.ERROR_IDP_NO_DISPONIBLE));
+                Mensajes.obtener(ProveedorIdentidadKey.ERROR_NO_DISPONIBLE));
     }
 }

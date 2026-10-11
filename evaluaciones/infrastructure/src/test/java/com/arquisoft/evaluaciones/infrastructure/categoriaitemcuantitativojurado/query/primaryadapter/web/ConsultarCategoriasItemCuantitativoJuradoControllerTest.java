@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativojurad
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.primaryport.interactor.ConsultarCategoriasItemCuantitativoJuradoInteractor;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.readmodel.CategoriaItemCuantitativoJuradoReadModel;
 import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
+import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ConsultarCategoriasItemCuantitativoJuradoController.class)
 @Import({
-        com.arquisoft.shared.logger.AppLoggerConfig.class,
+        AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         ConsultarCategoriasItemCuantitativoJuradoControllerTest.TestSecurityConfig.class
 })
@@ -77,7 +78,7 @@ class ConsultarCategoriasItemCuantitativoJuradoControllerTest {
         // Arrange
         var idPuntualidad = UUID.randomUUID();
         var idRigor = UUID.randomUUID();
-        List<CategoriaItemCuantitativoJuradoReadModel> categorias = List.of(
+        var categorias = List.of(
                 new CategoriaItemCuantitativoJuradoReadModel(idPuntualidad, "Puntualidad", "Evalúa la puntualidad"),
                 new CategoriaItemCuantitativoJuradoReadModel(idRigor, "Rigor", "Evalúa el rigor")
         );

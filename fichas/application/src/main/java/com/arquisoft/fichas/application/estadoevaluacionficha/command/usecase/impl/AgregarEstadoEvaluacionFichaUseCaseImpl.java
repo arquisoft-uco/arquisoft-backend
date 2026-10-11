@@ -9,7 +9,6 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.Ult
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AgregarEstadoEvaluacionFichaUseCase;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.mapper.EstadoEvaluacionFichaMapper;
 import com.arquisoft.shared.logger.AppLogger;
@@ -39,8 +38,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
         boolean evaluacionExiste = evaluacionFichaExisteFinder.obtener(entrada.getEvaluacionFichaPerfil());
         boolean esPropietario = representantePropietarioEvaluacionFinder.obtener(entrada);
         boolean estadoYaExiste = estadoEnEvaluacionExisteFinder.obtener(entrada);
-        var ultimoEstado = ultimoEstadoEvaluacionFichaFinder.obtener(entrada.getEvaluacionFichaPerfil())
-                .orElse(EstadoEvaluacionFichaDomain.VACIO);
+        var ultimoEstado = ultimoEstadoEvaluacionFichaFinder.obtener(entrada.getEvaluacionFichaPerfil());
 
         logger.debug(EstadoEvaluacionFichaKey.LOG_VERIFICACION_AGREGAR,
                 evaluacionExiste, esPropietario, estadoYaExiste);

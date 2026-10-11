@@ -15,6 +15,6 @@ public class EstudiantesVinculadosContadorFinderImpl implements EstudiantesVincu
 
     @Override
     public Long obtener(UUID fichaPerfil) {
-        return estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfil);
+        return estudianteFichaPerfilOutputPort.contarVigentesPorFichaPerfilId(fichaPerfil);
     }
 }

@@ -5,6 +5,9 @@
 # extrae a microservicio, se lleve su propia configuracion de rutas consigo.
 rutas:
   evaluaciones:
+    evaluacion:
+      base: /evaluaciones
+      jurados: /{evaluacionId}/jurados
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
       por-id: /{itemId}

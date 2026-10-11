@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.estudiante.command.secondaryadapter.mapper;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +14,7 @@ class EstudianteJpaMapperTest {
     void debeMapearJpaEntityYEntity_enAmbosSentidos() {
         // Arrange
         var usuarioId = UUID.randomUUID();
-        var entity = new EstudianteEntity(usuarioId);
+        var entity = new EstudianteEntity(usuarioId, UtilFecha.VACIO);
 
         // Act
         var jpaEntity = EstudianteJpaMapper.toJpaEntity(entity);

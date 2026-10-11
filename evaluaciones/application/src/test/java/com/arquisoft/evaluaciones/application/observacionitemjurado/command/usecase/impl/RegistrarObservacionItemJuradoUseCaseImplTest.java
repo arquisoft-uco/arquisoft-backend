@@ -20,7 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,7 +67,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
                 evaluacionCuantitativaJurado, evaluacionJurado, UUID.randomUUID(), 300);
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
-                .thenReturn(Optional.of(evaluacion));
+                .thenReturn(evaluacion);
         when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionJurado)).thenReturn(false);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(new CriterioDescripcionObservacionItemJurado(
                 evaluacionCuantitativaJurado, observacion.getDescripcion())))
@@ -100,7 +99,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
                 evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado");
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
-                .thenReturn(Optional.empty());
+                .thenReturn(EvaluacionCuantitativaJuradoDomain.VACIO);
         when(evaluacionJuradoFinalizadaFinder.obtener(any())).thenReturn(false);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(false);
         doThrow(new EvaluacionCuantitativaJuradoNoEncontradaException(evaluacionCuantitativaJurado))
@@ -124,7 +123,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
                 evaluacionCuantitativaJurado, evaluacionJurado, UUID.randomUUID(), 300);
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
-                .thenReturn(Optional.of(evaluacion));
+                .thenReturn(evaluacion);
         when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionJurado)).thenReturn(true);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(false);
         doThrow(new EvaluacionJuradoFinalizadaException(evaluacionCuantitativaJurado))
@@ -147,7 +146,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
                 evaluacionCuantitativaJurado, evaluacionJurado, UUID.randomUUID(), 300);
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
-                .thenReturn(Optional.of(evaluacion));
+                .thenReturn(evaluacion);
         when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionJurado)).thenReturn(false);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(true);
         doThrow(new DescripcionObservacionItemJuradoDuplicadaException(evaluacionCuantitativaJurado))

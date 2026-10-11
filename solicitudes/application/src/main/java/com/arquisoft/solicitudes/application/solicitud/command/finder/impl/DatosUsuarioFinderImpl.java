@@ -7,7 +7,6 @@ import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -17,7 +16,8 @@ public class DatosUsuarioFinderImpl implements DatosUsuarioFinder {
     private final UsuarioOutputPort usuarioOutputPort;
 
     @Override
-    public Optional<UsuarioDomain> obtener(UUID usuario) {
-        return usuarioOutputPort.buscarPorId(usuario).map(UsuarioMapper::toDomain);
+    public UsuarioDomain obtener(UUID usuario) {
+        return usuarioOutputPort.buscarPorId(usuario).map(UsuarioMapper::toDomain)
+                .orElse(UsuarioDomain.VACIO);
     }
 }

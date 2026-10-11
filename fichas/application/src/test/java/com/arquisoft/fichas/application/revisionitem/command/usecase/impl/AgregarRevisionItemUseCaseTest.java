@@ -29,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,7 +82,7 @@ class AgregarRevisionItemUseCaseTest {
     void debeAgregarLaRevision_cuandoDatosValidos() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 0L);
+        stubConsultas(entrada, true, fichaPerfilId, asesorFicha, 0L);
         stubContactosDeFicha(fichaPerfilId);
 
         // Act
@@ -98,7 +97,7 @@ class AgregarRevisionItemUseCaseTest {
     void debeConsultarYValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 0L);
+        stubConsultas(entrada, true, fichaPerfilId, asesorFicha, 0L);
         stubContactosDeFicha(fichaPerfilId);
 
         // Act
@@ -120,7 +119,7 @@ class AgregarRevisionItemUseCaseTest {
     void debePublicarElEventoConLosDatosDeLaRevision_cuandoSeAgregaLaRevision() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 0L);
+        stubConsultas(entrada, true, fichaPerfilId, asesorFicha, 0L);
         stubContactosDeFicha(fichaPerfilId);
         var revisionItem = entrada.getRevisionItem();
 
@@ -150,7 +149,7 @@ class AgregarRevisionItemUseCaseTest {
         // el validator real rechazaría la operación. El mock lo replica para no seguir de largo
         // hacia el enriquecimiento de notificación (que no aplica a este caso).
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.empty(), otroAsesor, 0L);
+        stubConsultas(entrada, true, UtilUUID.obtenerUUIDPorDefecto(), otroAsesor, 0L);
         doThrow(new FichaNoPerteneceAsesorException(UtilUUID.obtenerUUIDPorDefecto(), asesorFicha))
                 .when(agregarRevisionItemValidator)
                 .validar(entrada, true, UtilUUID.obtenerUUIDPorDefecto(), otroAsesor, 0L);
@@ -166,7 +165,7 @@ class AgregarRevisionItemUseCaseTest {
     void debeLanzarExcepcion_cuandoElItemNoExiste() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, false, Optional.of(fichaPerfilId), asesorFicha, 0L);
+        stubConsultas(entrada, false, fichaPerfilId, asesorFicha, 0L);
         doThrow(new ItemFichaPerfilNoEncontradoException(entrada.getItem()))
                 .when(agregarRevisionItemValidator).validar(entrada, false, fichaPerfilId, asesorFicha, 0L);
 
@@ -182,7 +181,7 @@ class AgregarRevisionItemUseCaseTest {
     void debeLanzarExcepcion_cuandoElAsesorNoEsPropietario() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), otroAsesor, 0L);
+        stubConsultas(entrada, true, fichaPerfilId, otroAsesor, 0L);
         doThrow(new FichaNoPerteneceAsesorException(fichaPerfilId, asesorFicha))
                 .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, otroAsesor, 0L);
 
@@ -198,7 +197,7 @@ class AgregarRevisionItemUseCaseTest {
     void debeLanzarExcepcion_cuandoLaRevisionYaExiste() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 1L);
+        stubConsultas(entrada, true, fichaPerfilId, asesorFicha, 1L);
         doThrow(new RevisionItemYaExisteException(entrada.getItem()))
                 .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, asesorFicha, 1L);
 
@@ -214,7 +213,7 @@ class AgregarRevisionItemUseCaseTest {
     void debeLanzarExcepcion_cuandoElRepositorioFalla() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 0L);
+        stubConsultas(entrada, true, fichaPerfilId, asesorFicha, 0L);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
                 .when(revisionItemOutputPort).registrarRevision(entidadDe(entrada.getRevisionItem()));
 
@@ -226,12 +225,11 @@ class AgregarRevisionItemUseCaseTest {
     }
 
     private void stubConsultas(AgregacionRevisionItemDomain entrada, boolean itemExiste,
-                                Optional<UUID> fichaPerfilDelItem, UUID asesorDeLaFicha, long revisiones) {
+                                UUID fichaPerfilDelItem, UUID asesorDeLaFicha, long revisiones) {
         when(itemFichaPerfilExisteFinder.obtener(entrada.getItem())).thenReturn(itemExiste);
         when(fichaPerfilDelItemFinder.obtener(entrada.getItem())).thenReturn(fichaPerfilDelItem);
-        UUID fichaResuelta = fichaPerfilDelItem.orElse(UtilUUID.obtenerUUIDPorDefecto());
         var ficha = FichaPerfilDomain.crear("Sistema de gestión", asesorDeLaFicha);
-        when(fichaPerfilFinder.obtener(fichaResuelta)).thenReturn(Optional.of(ficha));
+        when(fichaPerfilFinder.obtener(fichaPerfilDelItem)).thenReturn(ficha);
         when(revisionesDelItemFinder.obtener(entrada.getItem())).thenReturn(revisiones);
     }
 

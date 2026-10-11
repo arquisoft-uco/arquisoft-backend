@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaVigenteFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
@@ -23,7 +23,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,7 +46,7 @@ class CambiarAsesorFichaUseCaseTest {
     private FichaPerfilFinder fichaPerfilFinder;
 
     @Mock
-    private AsesorFichaFinder asesorFichaFinder;
+    private AsesorFichaVigenteFinder asesorFichaVigenteFinder;
 
     @Mock
     private EstadoActualFichaPerfilFinder estadoActualFichaPerfilFinder;
@@ -68,7 +67,7 @@ class CambiarAsesorFichaUseCaseTest {
     private final FichaPerfilDomain ficha = FichaPerfilDomain.crear("Título de prueba", asesorActual);
     private final AsesorFichaDomain contacto =
             AsesorFichaDomain.reconstruir(UUID.randomUUID(), "A001", "Ana Asesora", "ana@arquisoft.com",
-                    java.time.Instant.now());
+                    java.time.Instant.now(), null);
     private final EstadoFichaPerfilDomain estadoEnConstruccion =
             EstadoFichaPerfilDomain.crear(ficha.getId());
 
@@ -95,10 +94,10 @@ class CambiarAsesorFichaUseCaseTest {
         cambiarAsesorFichaUseCase.ejecutar(cambio);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilFinder, asesorFichaFinder, estadoActualFichaPerfilFinder,
+        InOrder inOrder = inOrder(fichaPerfilFinder, asesorFichaVigenteFinder, estadoActualFichaPerfilFinder,
                 cambiarAsesorFichaValidator, fichaPerfilOutputPort);
         inOrder.verify(fichaPerfilFinder).obtener(ficha.getId());
-        inOrder.verify(asesorFichaFinder).obtener(nuevoAsesor);
+        inOrder.verify(asesorFichaVigenteFinder).obtener(nuevoAsesor);
         inOrder.verify(estadoActualFichaPerfilFinder).obtener(ficha.getId());
         inOrder.verify(cambiarAsesorFichaValidator).validar(
                 cambio, ficha, contacto, estadoEnConstruccion);
@@ -125,9 +124,9 @@ class CambiarAsesorFichaUseCaseTest {
     void debePropagarLaExcepcion_cuandoLaFichaNoExiste() {
         // Arrange
         var cambio = CambioAsesorFichaDomain.crear(ficha.getId(), nuevoAsesor);
-        when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.empty());
-        when(asesorFichaFinder.obtener(nuevoAsesor)).thenReturn(Optional.of(contacto));
-        when(estadoActualFichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.empty());
+        when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(FichaPerfilDomain.VACIO);
+        when(asesorFichaVigenteFinder.obtener(nuevoAsesor)).thenReturn(contacto);
+        when(estadoActualFichaPerfilFinder.obtener(ficha.getId())).thenReturn(EstadoFichaPerfilDomain.VACIO);
         doThrow(new FichaPerfilNoEncontradaException(ficha.getId()))
                 .when(cambiarAsesorFichaValidator)
                 .validar(cambio, FichaPerfilDomain.VACIO, contacto, EstadoFichaPerfilDomain.VACIO);
@@ -144,10 +143,10 @@ class CambiarAsesorFichaUseCaseTest {
     void debePropagarLaExcepcion_cuandoElAsesorEsElMismo() {
         // Arrange
         var cambio = CambioAsesorFichaDomain.crear(ficha.getId(), asesorActual);
-        when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.of(ficha));
-        when(asesorFichaFinder.obtener(asesorActual)).thenReturn(Optional.of(contacto));
+        when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(ficha);
+        when(asesorFichaVigenteFinder.obtener(asesorActual)).thenReturn(contacto);
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId()))
-                .thenReturn(Optional.of(estadoEnConstruccion));
+                .thenReturn(estadoEnConstruccion);
         doThrow(new MismoAsesorFichaException(asesorActual))
                 .when(cambiarAsesorFichaValidator).validar(
                         cambio, ficha, contacto, estadoEnConstruccion);
@@ -175,9 +174,9 @@ class CambiarAsesorFichaUseCaseTest {
     }
 
     private void stubConsultas() {
-        when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.of(ficha));
-        when(asesorFichaFinder.obtener(nuevoAsesor)).thenReturn(Optional.of(contacto));
+        when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(ficha);
+        when(asesorFichaVigenteFinder.obtener(nuevoAsesor)).thenReturn(contacto);
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId()))
-                .thenReturn(Optional.of(estadoEnConstruccion));
+                .thenReturn(estadoEnConstruccion);
     }
 }

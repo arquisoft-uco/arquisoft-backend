@@ -1,0 +1,38 @@
+package com.arquisoft.evaluaciones.infrastructure.jurado.command.secondaryadapter.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Entity
+@Table(name = "jurado")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class JuradoJpaEntity {
+
+    @Id
+    @Column(name = "id", columnDefinition = "uuid")
+    private UUID id;
+
+    @Column(name = "identificador", nullable = false, length = 30)
+    private String identificador;
+
+    @Column(name = "nombre", nullable = false, length = 50)
+    private String nombre;
+
+    @Column(name = "email", nullable = false, length = 50)
+    private String email;
+
+    @Column(name = "eliminado_en")
+    private Instant eliminadoEn;
+}
