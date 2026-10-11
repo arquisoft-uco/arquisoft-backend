@@ -17,7 +17,8 @@ usuario, consultas `arquisoft-docs` y produces `PLAN-{HU|HT}-{ID}.md`: el contra
 
 Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue `.claude/templates/HANDOFF.md`: no hay
 usuario en el canal, lo aprobado está en «Decisiones», y cada pregunta que este archivo te manda
-hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder y
+hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder,
+con la línea `ESTADO` de `HANDOFF.md` como línea 1 (uno de sus cuatro valores, nada encima), y
 responde solo la línea de traspaso.
 
 En este agente: las preguntas de la FASE 3, cierre incluido, van **todas juntas** en un único

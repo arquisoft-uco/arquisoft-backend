@@ -95,6 +95,22 @@ public final class ProyectosApiMessages {
                 "Proyecto de grado no encontrado o asignado a otro coordinador";
     }
 
+    public static final class ConsultaProyectoGrado {
+
+        private ConsultaProyectoGrado() {}
+
+        public static final String TAG_NAME = "Consulta de Proyectos de Grado";
+        public static final String TAG_DESCRIPTION = "Consulta de los proyectos de grado de un coordinador";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar los proyectos de grado del coordinador";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Permite al coordinador consultar, con paginación, filtros y orden por título, "
+                        + "los proyectos de grado de los que es el coordinador asignado";
+        public static final String CONSULTAR_RESP_200 = "Página de proyectos de grado del coordinador";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
+        public static final String CONSULTAR_RESP_403 = "Sin permiso para consultar los proyectos de grado";
+    }
+
     public static final class ConsultaEstudianteProyectoGrado {
 
         private ConsultaEstudianteProyectoGrado() {}
