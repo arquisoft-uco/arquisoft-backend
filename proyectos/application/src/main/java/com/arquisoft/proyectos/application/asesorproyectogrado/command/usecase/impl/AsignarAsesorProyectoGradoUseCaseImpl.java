@@ -47,7 +47,7 @@ public class AsignarAsesorProyectoGradoUseCaseImpl implements AsignarAsesorProye
         validator.validar(entrada, proyecto, asesor, yaAsignado, asignadosActuales);
 
         var vinculo = entrada.getAsesorProyectoGrado();
-        asesorProyectoGradoOutputPort.asignar(AsesorProyectoGradoMapper.toEntity(vinculo));
+        asesorProyectoGradoOutputPort.registrar(AsesorProyectoGradoMapper.toEntity(vinculo));
 
         eventPublisher.publish(new AsesorProyectoGradoAsignadoEvent(
                 proyecto.getId(), proyecto.getTituloProyecto(),

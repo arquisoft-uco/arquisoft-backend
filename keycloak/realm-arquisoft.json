@@ -72,7 +72,8 @@
               "proyectos:estudiante-proyecto-grado:delete",
               "proyectos:estudiante-proyecto-grado-coordinador:view",
               "proyectos:asesor-proyecto-grado:create",
-              "proyectos:asesor-proyecto-grado-coordinador:view"
+              "proyectos:asesor-proyecto-grado-coordinador:view",
+              "proyectos:asesor-proyecto-grado:update-estado"
             ]
           }
         },
@@ -987,6 +988,15 @@
         {
           "id": "c7a2e9d4-3f18-4b65-8d0a-6e1b9f4c2a87",
           "name": "proyectos:asesor-proyecto-grado-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8e3b1f62-4a7d-4c59-b2e0-9d6a5c1f7b34",
+          "name": "proyectos:asesor-proyecto-grado:update-estado",
           "description": "",
           "composite": false,
           "clientRole": true,

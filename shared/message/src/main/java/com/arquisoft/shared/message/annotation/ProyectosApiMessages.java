@@ -58,6 +58,20 @@ public final class ProyectosApiMessages {
         public static final String ASIGNAR_RESP_422 =
                 "Proyecto no encontrado, finalizado o asignado a otro coordinador, asesor no vigente o ya "
                         + "asignado, o cupo de asesores excedido";
+
+        public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un asesor de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_DESCRIPTION =
+                "Permite al coordinador asignado al proyecto de grado registrar en el historial el estado finalizado "
+                        + "de uno de sus asesores asignados, si el proyecto no está finalizado. El estado finalizado es "
+                        + "terminal y el asesor recibe un correo de notificación";
+        public static final String CAMBIAR_ESTADO_RESP_204 = "Nuevo estado del asesor registrado exitosamente";
+        public static final String CAMBIAR_ESTADO_RESP_400 = "Estado del asesor ausente";
+        public static final String CAMBIAR_ESTADO_RESP_403 =
+                "Sin permiso para cambiar el estado de un asesor de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_RESP_422 =
+                "Estado fuera del catálogo, proyecto de grado no encontrado, finalizado o asignado a otro "
+                        + "coordinador, asesor no encontrado o sin vínculo con el proyecto o transición de estado no "
+                        + "permitida";
     }
 
     public static final class ConsultaAsesorProyectoGrado {
@@ -71,7 +85,8 @@ public final class ProyectosApiMessages {
         public static final String CONSULTAR_SUMMARY = "Consultar los asesores de un proyecto de grado";
         public static final String CONSULTAR_DESCRIPTION =
                 "Permite al coordinador asignado al proyecto de grado consultar todos los asesores que ha tenido, "
-                        + "vigentes y finalizados, ordenados por fecha de asignación de la más reciente a la más antigua";
+                        + "vigentes y finalizados, como historial de estados ordenado por fecha de asignación de la más reciente "
+                        + "a la más antigua; el campo actual marca el estado más reciente de cada asesor";
         public static final String CONSULTAR_RESP_200 = "Asesores del proyecto de grado";
         public static final String CONSULTAR_RESP_400 = "Identificador de proyecto de grado inválido";
         public static final String CONSULTAR_RESP_403 =

@@ -22,8 +22,9 @@ cita una sección de skill (*en cursiva*), el porqué y la forma correcta están
 
 ## FASE 0 — Cargar contexto
 
-Invoca `arquisoft-arquitectura` y `arquisoft-estandares`. Si el plan las contradice, repórtalo como
-observación.
+Invoca `arquisoft-arquitectura` y `arquisoft-estandares`. Si el plan las contradice, el check
+afectado conserva su severidad y el hallazgo nombra al plan como causa: un plan aprobado no convierte
+un ❌ en ⚠️. Solo cede donde la propia fila del check lo deja en manos del plan ("salvo que el plan…").
 
 **Si el plan tiene la sección 10 (Eventos RabbitMQ), lee también
 `arquisoft-arquitectura/references/eventos.md` y `arquisoft-estandares/references/eventos.md`
@@ -135,9 +136,8 @@ aunque el plan lo declare (se descarta en el exchange); repórtalo como decisió
 dominio — una sola forma*): el `UseCase` inyecta la **interfaz** `EventPublisher` y publica tras
 persistir; el domain es plano (sin acumular ni drenar eventos); el evento vive en
 `domain/{feature}/event/`, extiende `DomainEvent`, pasa `EVENT_TOPIC` (`{contexto}.{entidad}.{accion}`)
-a `super(...)` y carga lo que el consumidor necesita. Un `Finder` que alimenta el evento consultado
-después de persistir, o cuyo `VACIO` ninguna `Rule` rechaza, es ❌: el evento sale vacío con la
-escritura confirmada.
+a `super(...)` y carga lo que el consumidor necesita, con cada dato de un `Finder` sujeto a la fila
+*`Finder` después del `Validator`* del Nivel 2.6.
 
 **Si el plan dice "Eventos: ninguno", el exceso también es ❌**: archivo bajo `event/`,
 `EventPublisher` inyectado o clave nueva de evento. Cita la sección 4.
@@ -227,6 +227,7 @@ entrada*.
 | `Finder` que lanza por "no encontrado", devuelve `Optional` o `Entity`, no extiende `Finder<T, R>`/`SupplierFinder<R>` o su método no es `obtener` (`Finder<Void, R>` o un parámetro ignorado es hallazgo) | ❌ |
 | `UseCase` que hace `isPresent()`/`get()`/`orElse`/`map` sobre un `Finder` en vez de `esVacio()`/`UtilUUID.esPorDefecto(...)` | ❌ |
 | `FinderImpl` que encadena otro `Finder`, compara/deriva o hace varios lookups | ❌ |
+| **`Finder` después del `Validator`:** en un comando, `Finder` consultado tras `validar(...)`, o resultado que la escritura o el evento leen sin una `Rule` que rechace su `VACIO`. Ni una FK ni la razón del plan lo rebajan — *Validator, Rule, Finder* | ❌ |
 | `UseCase` que calcula un veredicto y se lo pasa al `Validator` en vez del dato crudo | ❌ |
 | **`Finder` dependiente** colapsable en un método del `OutputPort` — *El `Finder` dependiente*. No es hallazgo si el plan justifica la cascada ni por tener varios `Finder`s independientes | ⚠️ |
 | `{Entidad}OutputPort` con un método sobre otro domain, o comando que lee otra feature importando su `domain/`/adaptador en vez de su `Finder` + `OutputPort` de `command/` | ❌ |

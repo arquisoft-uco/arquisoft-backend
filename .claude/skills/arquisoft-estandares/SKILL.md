@@ -53,6 +53,15 @@ lanza en su violación, así que una regla dependiente **confía en que la anter
 guardarla con un `if` es código muerto. Si la ausencia cambia la conclusión, esa decisión va dentro
 de la `Rule`.
 
+**Todos los `Finder`s de un comando corren antes del `Validator`, y lo que la escritura o el evento
+leen de un `Finder` lo decidió antes una `Rule`.** Un `Finder` consultado después de `validar(...)`
+devuelve su `VACIO` sin lanzar y ya nada lo detiene: se persiste o se publica con campos vacíos, y
+compila y pasa los tests. Una FK o "la réplica no se borra" no reemplazan esa `Rule`: garantizan la
+fila, no lo que devuelve el `Finder` (un id equivocado, un filtro de vigencia, un adaptador que
+cambia). Si un lookup depende de otro, se encadena igual antes del `Validator`: el `VACIO` del primero
+entrega el id por defecto, el segundo devuelve su `VACIO`, y la `Rule` del primero, ordenada antes,
+es la que lanza. Referencia del orden: `AsignarAsesorProyectoGradoUseCaseImpl`.
+
 - **Un `Finder` = una sola llamada a un `OutputPort`.** No encadena `Finder`s, no compara ni deriva
   (`a.equals(b)`, `count > 0`). Combinar fuentes es del `UseCase`; decidir es de una `Rule`.
 - **El `UseCase` pasa al `Validator` el dato crudo del `Finder`** (agregado, `UUID`, conteo,
@@ -171,7 +180,9 @@ La variante N+1 (una lista de `UUID` y un `Finder` por elemento) se colapsa igua
 con `JOIN` dentro del adaptador. **El límite es a las cascadas, no a la cantidad**: varios `Finder`s
 independientes están bien. Cascadas legítimas:
 
-- El segundo lookup es **condicional** y ahorra viajes en el camino corto.
+- El segundo lookup es **condicional** y ahorra viajes en el camino corto. Solo en una lectura o
+  un corte de idempotencia: en un comando nunca se condiciona a la validación (ver *Validator, Rule,
+  Finder*).
 - Los dos `OutputPort` son de **features o contextos distintos** (entre contextos no hay `JOIN`).
 - El identificador intermedio **es un dato que la `Rule` necesita**, no un peldaño.
 

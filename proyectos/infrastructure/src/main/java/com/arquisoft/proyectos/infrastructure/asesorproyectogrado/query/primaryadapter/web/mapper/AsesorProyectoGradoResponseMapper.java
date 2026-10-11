@@ -18,6 +18,7 @@ public final class AsesorProyectoGradoResponseMapper {
                 readModel.estadoAsesor(),
                 readModel.estadoAsesorNombre(),
                 readModel.fechaAsignado(),
-                readModel.vigente());
+                readModel.vigente(),
+                readModel.actual());
     }
 }

@@ -25,7 +25,7 @@ class AsesoresAsignadosContadorFinderImplTest {
     void debePasarElEstadoAsignadoAlPuerto_cuandoSeCuentanLosAsesoresDelProyecto() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        when(asesorProyectoGradoOutputPort.contarPorProyectoGradoYEstado(
+        when(asesorProyectoGradoOutputPort.contarPorProyectoGradoConEstadoVigente(
                 proyectoGrado, EstadoAsesor.ASIGNADO.getId())).thenReturn(2L);
 
         // Act

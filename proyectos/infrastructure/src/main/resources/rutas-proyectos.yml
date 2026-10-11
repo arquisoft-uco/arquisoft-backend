@@ -10,3 +10,4 @@ rutas:
       estudiantes: /{proyectoGradoId}/estudiantes
       asesores: /{proyectoGradoId}/asesores
       estudiante: /{proyectoGradoId}/estudiantes/{estudianteId}
+      asesor-estado: /{proyectoGradoId}/asesores/{asesorId}/estado

@@ -89,10 +89,10 @@ class ConsultarAsesoresProyectoGradoCoordinadorControllerTest {
         var asesor = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(any())).thenReturn(List.of(
                 new AsesorProyectoGradoReadModel(vinculo, proyectoGrado, asesor, "1001", "Ana",
-                        "ana@soyuco.edu.co", "ASIGNADO", "Asignado", Instant.parse("2026-10-05T10:00:00Z"), true),
+                        "ana@soyuco.edu.co", "ASIGNADO", "Asignado", Instant.parse("2026-10-05T10:00:00Z"), true, true),
                 new AsesorProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), proyectoGrado,
                         UtilUUID.generarNuevoUUID(), "1002", "Beto", "beto@soyuco.edu.co", "FINALIZADO",
-                        "Finalizado", Instant.parse("2026-09-10T10:00:00Z"), false)));
+                        "Finalizado", Instant.parse("2026-09-10T10:00:00Z"), false, false)));
 
         // Act & Assert
         consultar(proyectoGrado.toString())
@@ -107,8 +107,10 @@ class ConsultarAsesoresProyectoGradoCoordinadorControllerTest {
                 .andExpect(jsonPath("$[0].estadoAsesor").value("ASIGNADO"))
                 .andExpect(jsonPath("$[0].estadoAsesorNombre").value("Asignado"))
                 .andExpect(jsonPath("$[0].vigente").value(true))
+                .andExpect(jsonPath("$[0].actual").value(true))
                 .andExpect(jsonPath("$[1].estadoAsesor").value("FINALIZADO"))
-                .andExpect(jsonPath("$[1].vigente").value(false));
+                .andExpect(jsonPath("$[1].vigente").value(false))
+                .andExpect(jsonPath("$[1].actual").value(false));
         var captor = ArgumentCaptor.forClass(ConsultarAsesoresProyectoGradoCoordinadorQuery.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyectoGrado);

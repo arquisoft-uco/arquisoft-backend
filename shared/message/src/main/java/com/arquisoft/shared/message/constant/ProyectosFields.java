@@ -67,5 +67,6 @@ public final class ProyectosFields {
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String COORDINADOR = "coordinador";
         public static final String ASESOR = "asesor";
+        public static final String ESTADO_ASESOR = "estadoAsesor";
     }
 }
