@@ -69,6 +69,7 @@ public final class ProyectosCodes {
         public static final String ESTUDIANTE_DUPLICADO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_DUPLICADO";
         public static final String CUPO_EXCEDIDO = "ESTUDIANTE_PROYECTO_GRADO_CUPO_EXCEDIDO";
         public static final String ESTUDIANTE_YA_VINCULADO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_YA_VINCULADO";
+        public static final String ESTUDIANTE_NO_VINCULADO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_NO_VINCULADO";
     }
 
     public static final class EstadoProyectoGrado {
