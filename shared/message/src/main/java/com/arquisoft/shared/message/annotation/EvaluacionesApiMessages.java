@@ -50,6 +50,24 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado de criterios cualitativos del jurado";
     }
 
+    public static final class CategoriaItemCuantitativoJurado {
+
+        private CategoriaItemCuantitativoJurado() {}
+
+        public static final String TAG_NAME = "Categorías de ítem cuantitativo del jurado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta del catálogo de categorías usadas por los ítems cuantitativos del jurado";
+        public static final String CONSULTAR_SUMMARY = "Consultar categorías de ítem cuantitativo";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta las categorías de ítem cuantitativo del jurado, opcionalmente filtradas "
+                        + "por nombre (coincidencia parcial, sin distinguir mayúsculas/minúsculas), "
+                        + "ordenadas por nombre";
+        public static final String CONSULTAR_PARAM_NOMBRE =
+                "Texto a buscar dentro del nombre de la categoría (opcional, máximo 100 caracteres)";
+        public static final String CONSULTAR_RESP_200 = "Listado de categorías de ítem cuantitativo del jurado";
+        public static final String CONSULTAR_RESP_400 = "Filtro de nombre inválido";
+    }
+
     public static final class EvaluacionCualitativaJurado {
 
         private EvaluacionCualitativaJurado() {}
