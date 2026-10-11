@@ -89,7 +89,7 @@ class RegistrarDestinatarioUseCaseImplTest {
         // Arrange
         var destinatario = DestinatarioDomain.crear(UUID.randomUUID());
         when(usuarioPorIdFinder.obtener(destinatario.getUsuario())).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new DestinatarioNoEncontradoException(destinatario.getUsuario()))
+        doThrow(new DestinatarioNoEncontradoException())
                 .when(validator).validar(destinatario, UsuarioDomain.VACIO);
 
         // Act & Assert

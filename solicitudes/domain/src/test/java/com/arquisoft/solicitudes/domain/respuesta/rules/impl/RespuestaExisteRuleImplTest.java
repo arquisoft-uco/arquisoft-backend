@@ -30,7 +30,6 @@ class RespuestaExisteRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(existencia))
-                .isInstanceOf(RespuestaNoEncontradaException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(RespuestaNoEncontradaException.class);
     }
 }
