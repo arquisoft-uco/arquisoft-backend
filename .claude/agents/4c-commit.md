@@ -51,9 +51,8 @@ Antes de la FASE 7, `gh pr list --head {rama} --state all --json number,state,ur
 | **Entrega** | La rama no tiene PR | El flujo completo |
 | **Seguimiento** | Un PR `OPEN` y el reporte es de un ajuste (`validator-{ID}-AJ{n}.md`) | Sin FASE 7 ni `gh pr create`: el push actualiza el PR abierto. Espera los GitHub Actions con `gh pr checks {número} --watch` y, si fallan, devuelve `ERROR` con el check que falló |
 
-Un PR `MERGED`/`CLOSED`: no abras otro, devuelve `PREGUNTA`. Escribe tu `.out.md` antes de responder,
-con el hash del commit y las URL del PR y de lo publicado en `## Salidas`, y responde solo la línea de
-traspaso en lugar del mensaje final.
+Un PR `MERGED`/`CLOSED`: no abras otro, devuelve `PREGUNTA`. El cierre orquestado sustituye al mensaje
+final: ver *Cierre en modo orquestado* en la FASE 10.
 
 ---
 
@@ -260,6 +259,26 @@ Siguiente paso: 1 aprobación requerida antes de mergear (CONTRIBUTING.md)
 ```
 
 No ejecutes nada después de este mensaje.
+
+**Cierre en modo orquestado.** En lugar del mensaje final escribes tu `.out.md` y respondes solo su
+primera línea. Esa línea es uno de los cuatro estados de `.claude/templates/HANDOFF.md`, literal:
+`OK`, `PREGUNTA`, `RECHAZADO` o `ERROR`. El orquestador lee únicamente esa línea y trata cualquier otra
+palabra (`LISTO`, `ENTREGADO`, un encabezado) como `ERROR`, aunque la entrega haya salido bien.
+
+```
+ESTADO: OK · {HU|HT}-{ID} entregada: commit {hash corto}, PR #{número}
+
+## Resumen
+{rama, modo Entrega/Seguimiento, archivos commiteados, resultado de los GitHub Actions}
+
+## Salidas
+- Commit: {hash completo}
+- PR: {url}
+- Docs: {rutas publicadas en arquisoft-docs}
+```
+
+En Seguimiento, el estado sale después de `gh pr checks {número} --watch`: `OK` si todos pasan,
+`ERROR` con el check que falló.
 
 ## Reglas invariantes
 
