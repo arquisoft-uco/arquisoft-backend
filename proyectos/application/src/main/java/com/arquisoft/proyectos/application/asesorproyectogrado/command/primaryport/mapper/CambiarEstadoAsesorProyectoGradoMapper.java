@@ -8,7 +8,7 @@ public final class CambiarEstadoAsesorProyectoGradoMapper {
     private CambiarEstadoAsesorProyectoGradoMapper() {}
 
     public static CambioEstadoAsesorProyectoGradoDomain toDomain(CambiarEstadoAsesorProyectoGradoCommand command) {
-        return CambioEstadoAsesorProyectoGradoDomain.crear(command.proyectoGrado(), command.asesorProyectoGrado(),
+        return CambioEstadoAsesorProyectoGradoDomain.crear(command.proyectoGrado(), command.asesor(),
                 command.coordinador(), command.estadoAsesor());
     }
 }

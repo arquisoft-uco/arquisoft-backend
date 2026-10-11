@@ -26,7 +26,11 @@ import java.util.UUID;
                apg.estado_asesor_id           AS estado_asesor,
                ea.nombre                      AS estado_asesor_nombre,
                apg.fecha_asignado             AS fecha_asignado,
-               (a.eliminado_en IS NULL)       AS vigente
+               (a.eliminado_en IS NULL)       AS vigente,
+               NOT EXISTS (SELECT 1 FROM asesor_proyecto_grado s
+                           WHERE s.asesor_id = apg.asesor_id
+                             AND s.proyecto_grado_id = apg.proyecto_grado_id
+                             AND s.fecha_asignado > apg.fecha_asignado) AS es_actual
         FROM asesor_proyecto_grado apg
         JOIN asesor a ON a.id = apg.asesor_id
         JOIN estado_asesor ea ON ea.id = apg.estado_asesor_id
@@ -68,4 +72,7 @@ public class AsesorProyectoGradoJpaQueryEntity {
 
     @Column(name = "vigente")
     private boolean vigente;
+
+    @Column(name = "es_actual")
+    private boolean actual;
 }

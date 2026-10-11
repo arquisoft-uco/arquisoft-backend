@@ -19,31 +19,28 @@ public class AsesorProyectoGradoCommandOutputAdapter implements AsesorProyectoGr
     private final AppLogger logger;
 
     @Override
-    public void asignar(AsesorProyectoGradoEntity vinculo) {
+    public void registrar(AsesorProyectoGradoEntity vinculo) {
         asesorProyectoGradoRepository.save(AsesorProyectoGradoJpaMapper.toJpaEntity(vinculo));
         logger.debug(AsesorProyectoGradoKey.LOG_GUARDADO, vinculo.id(), vinculo.proyectoGrado());
     }
 
     @Override
-    public boolean existePorAsesorYProyectoGradoYEstado(UUID asesor, UUID proyectoGrado, String estadoAsesor) {
+    public boolean existePorAsesorYProyectoGradoConEstadoVigente(UUID asesor, UUID proyectoGrado,
+                                                                 String estadoAsesor) {
         return asesorProyectoGradoRepository
-                .existsByAsesorIdAndProyectoGradoIdAndEstadoAsesorId(asesor, proyectoGrado, estadoAsesor);
+                .existsByAsesorAndProyectoGradoWithEstadoVigente(asesor, proyectoGrado, estadoAsesor);
     }
 
     @Override
-    public long contarPorProyectoGradoYEstado(UUID proyectoGrado, String estadoAsesor) {
-        return asesorProyectoGradoRepository.countByProyectoGradoIdAndEstadoAsesorId(proyectoGrado, estadoAsesor);
+    public long contarPorProyectoGradoConEstadoVigente(UUID proyectoGrado, String estadoAsesor) {
+        return asesorProyectoGradoRepository.countByProyectoGradoWithEstadoVigente(proyectoGrado, estadoAsesor);
     }
 
     @Override
-    public Optional<AsesorProyectoGradoEntity> obtenerPorIdYProyectoGrado(UUID id, UUID proyectoGrado) {
-        return asesorProyectoGradoRepository.findByIdAndProyectoGradoId(id, proyectoGrado)
+    public Optional<AsesorProyectoGradoEntity> obtenerVigentePorAsesorYProyectoGrado(UUID asesor,
+                                                                                    UUID proyectoGrado) {
+        return asesorProyectoGradoRepository
+                .findFirstByAsesorIdAndProyectoGradoIdOrderByFechaAsignadoDesc(asesor, proyectoGrado)
                 .map(AsesorProyectoGradoJpaMapper::toEntity);
-    }
-
-    @Override
-    public void actualizarEstado(UUID id, String estadoAsesor) {
-        asesorProyectoGradoRepository.actualizarEstadoAsesor(id, estadoAsesor);
-        logger.debug(AsesorProyectoGradoKey.LOG_ACTUALIZADO, id, estadoAsesor);
     }
 }

@@ -13,5 +13,6 @@ public record AsesorProyectoGradoReadModel(
         String estadoAsesor,
         String estadoAsesorNombre,
         Instant fechaAsignado,
-        boolean vigente
+        boolean vigente,
+        boolean actual
 ) {}

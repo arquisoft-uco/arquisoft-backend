@@ -18,6 +18,7 @@ public final class AsesorProyectoGradoQueryMapper {
                 entity.getEstadoAsesor(),
                 entity.getEstadoAsesorNombre(),
                 entity.getFechaAsignado(),
-                entity.isVigente());
+                entity.isVigente(),
+                entity.isActual());
     }
 }

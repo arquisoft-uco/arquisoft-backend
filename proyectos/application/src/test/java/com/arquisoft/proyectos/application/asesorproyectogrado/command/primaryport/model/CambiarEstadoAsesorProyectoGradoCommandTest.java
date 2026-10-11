@@ -14,16 +14,16 @@ class CambiarEstadoAsesorProyectoGradoCommandTest {
     void debeCrearCommand_cuandoDatosValidos() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var asesorProyectoGrado = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var coordinador = UtilUUID.generarNuevoUUID();
 
         // Act
         var command = CambiarEstadoAsesorProyectoGradoCommand.crear(
-                proyectoGrado, asesorProyectoGrado, coordinador, "FINALIZADO");
+                proyectoGrado, asesor, coordinador, "FINALIZADO");
 
         // Assert
         assertThat(command.proyectoGrado()).isEqualTo(proyectoGrado);
-        assertThat(command.asesorProyectoGrado()).isEqualTo(asesorProyectoGrado);
+        assertThat(command.asesor()).isEqualTo(asesor);
         assertThat(command.coordinador()).isEqualTo(coordinador);
         assertThat(command.estadoAsesor()).isEqualTo("FINALIZADO");
     }
@@ -37,7 +37,7 @@ class CambiarEstadoAsesorProyectoGradoCommandTest {
                         .extracting(error -> error.codigoError())
                         .containsExactlyInAnyOrder(
                                 ProyectosCodes.AsesorProyectoGrado.PROYECTO_GRADO_ID_REQUERIDO,
-                                ProyectosCodes.AsesorProyectoGrado.ASESOR_PROYECTO_GRADO_ID_REQUERIDO,
+                                ProyectosCodes.AsesorProyectoGrado.ASESOR_ID_REQUERIDO,
                                 ProyectosCodes.AsesorProyectoGrado.COORDINADOR_ID_REQUERIDO,
                                 ProyectosCodes.AsesorProyectoGrado.ESTADO_ASESOR_REQUERIDO));
     }

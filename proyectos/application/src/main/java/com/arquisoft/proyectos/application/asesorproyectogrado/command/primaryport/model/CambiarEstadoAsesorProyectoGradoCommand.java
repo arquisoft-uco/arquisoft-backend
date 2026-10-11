@@ -10,12 +10,12 @@ import java.util.UUID;
 
 public record CambiarEstadoAsesorProyectoGradoCommand(
         UUID proyectoGrado,
-        UUID asesorProyectoGrado,
+        UUID asesor,
         UUID coordinador,
         String estadoAsesor
 ) {
 
-    public static CambiarEstadoAsesorProyectoGradoCommand crear(UUID proyectoGrado, UUID asesorProyectoGrado,
+    public static CambiarEstadoAsesorProyectoGradoCommand crear(UUID proyectoGrado, UUID asesor,
                                                                 UUID coordinador, String estadoAsesor) {
         var result = new ValidationResult();
 
@@ -23,9 +23,9 @@ public record CambiarEstadoAsesorProyectoGradoCommand(
                 ProyectosFields.AsesorProyectoGrado.PROYECTO_GRADO,
                 ProyectosCodes.AsesorProyectoGrado.PROYECTO_GRADO_ID_REQUERIDO, result);
 
-        ValidatorObjeto.noNulo(asesorProyectoGrado,
-                ProyectosFields.AsesorProyectoGrado.ASESOR_PROYECTO_GRADO,
-                ProyectosCodes.AsesorProyectoGrado.ASESOR_PROYECTO_GRADO_ID_REQUERIDO, result);
+        ValidatorObjeto.noNulo(asesor,
+                ProyectosFields.AsesorProyectoGrado.ASESOR,
+                ProyectosCodes.AsesorProyectoGrado.ASESOR_ID_REQUERIDO, result);
 
         ValidatorObjeto.noNulo(coordinador,
                 ProyectosFields.AsesorProyectoGrado.COORDINADOR,
@@ -37,6 +37,6 @@ public record CambiarEstadoAsesorProyectoGradoCommand(
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new CambiarEstadoAsesorProyectoGradoCommand(proyectoGrado, asesorProyectoGrado, coordinador, estadoAsesor);
+        return new CambiarEstadoAsesorProyectoGradoCommand(proyectoGrado, asesor, coordinador, estadoAsesor);
     }
 }

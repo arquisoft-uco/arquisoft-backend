@@ -36,7 +36,7 @@ class ConsultarAsesoresProyectoGradoCoordinadorInteractorImplTest {
         var criteria = new AsesorProyectoGradoCoordinadorCriteria(proyectoGrado, coordinador);
         var esperado = List.of(new AsesorProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), proyectoGrado,
                 UtilUUID.generarNuevoUUID(), "1001", "Ana", "ana@soyuco.edu.co", "ASIGNADO", "Asignado",
-                Instant.parse("2026-10-01T10:00:00Z"), true));
+                Instant.parse("2026-10-01T10:00:00Z"), true, true));
         when(useCase.ejecutar(criteria)).thenReturn(esperado);
 
         // Act

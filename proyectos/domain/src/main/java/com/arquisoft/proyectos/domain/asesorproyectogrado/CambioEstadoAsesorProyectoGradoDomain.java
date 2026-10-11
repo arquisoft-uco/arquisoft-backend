@@ -14,19 +14,19 @@ import java.util.UUID;
 public final class CambioEstadoAsesorProyectoGradoDomain {
 
     private UUID proyectoGrado;
-    private UUID asesorProyectoGrado;
+    private UUID asesor;
     private UUID coordinador;
     private EstadoAsesor estadoNuevo;
 
     private CambioEstadoAsesorProyectoGradoDomain() {}
 
-    public static CambioEstadoAsesorProyectoGradoDomain crear(UUID proyectoGrado, UUID asesorProyectoGrado,
+    public static CambioEstadoAsesorProyectoGradoDomain crear(UUID proyectoGrado, UUID asesor,
                                                               UUID coordinador, String estadoAsesor) {
         var cambio = new CambioEstadoAsesorProyectoGradoDomain();
         var result = new ValidationResult();
 
         cambio.setProyectoGrado(proyectoGrado, result);
-        cambio.setAsesorProyectoGrado(asesorProyectoGrado, result);
+        cambio.setAsesor(asesor, result);
         cambio.setCoordinador(coordinador, result);
         cambio.setEstadoNuevo(estadoAsesor, result);
 
@@ -43,13 +43,13 @@ public final class CambioEstadoAsesorProyectoGradoDomain {
         this.proyectoGrado = proyectoGrado;
     }
 
-    private void setAsesorProyectoGrado(UUID asesorProyectoGrado, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(asesorProyectoGrado,
-                ProyectosFields.AsesorProyectoGrado.ASESOR_PROYECTO_GRADO,
-                ProyectosCodes.AsesorProyectoGrado.ASESOR_PROYECTO_GRADO_ID_REQUERIDO, result)) {
+    private void setAsesor(UUID asesor, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(asesor,
+                ProyectosFields.AsesorProyectoGrado.ASESOR,
+                ProyectosCodes.AsesorProyectoGrado.ASESOR_ID_REQUERIDO, result)) {
             return;
         }
-        this.asesorProyectoGrado = asesorProyectoGrado;
+        this.asesor = asesor;
     }
 
     private void setCoordinador(UUID coordinador, ValidationResult result) {
@@ -81,8 +81,8 @@ public final class CambioEstadoAsesorProyectoGradoDomain {
         return proyectoGrado;
     }
 
-    public UUID getAsesorProyectoGrado() {
-        return asesorProyectoGrado;
+    public UUID getAsesor() {
+        return asesor;
     }
 
     public UUID getCoordinador() {

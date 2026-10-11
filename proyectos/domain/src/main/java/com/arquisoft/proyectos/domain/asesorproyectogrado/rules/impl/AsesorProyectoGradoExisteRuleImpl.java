@@ -10,7 +10,7 @@ public class AsesorProyectoGradoExisteRuleImpl implements AsesorProyectoGradoExi
     public void validar(ExistenciaAsesorProyectoGrado existencia) {
         if (!existencia.existe()) {
             throw new AsesorProyectoGradoNoEncontradoException(
-                    existencia.asesorProyectoGrado(), existencia.proyectoGrado());
+                    existencia.asesor(), existencia.proyectoGrado());
         }
     }
 }

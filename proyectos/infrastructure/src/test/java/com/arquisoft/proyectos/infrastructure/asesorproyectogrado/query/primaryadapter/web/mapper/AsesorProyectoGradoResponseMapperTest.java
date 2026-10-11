@@ -15,7 +15,7 @@ class AsesorProyectoGradoResponseMapperTest {
         // Arrange
         var readModel = new AsesorProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), "1001", "Ana", "ana@soyuco.edu.co", "FINALIZADO", "Finalizado",
-                Instant.parse("2026-10-05T10:00:00Z"), false);
+                Instant.parse("2026-10-05T10:00:00Z"), false, true);
 
         // Act
         var dto = AsesorProyectoGradoResponseMapper.toResponse(readModel);
@@ -31,5 +31,6 @@ class AsesorProyectoGradoResponseMapperTest {
         assertThat(dto.estadoAsesorNombre()).isEqualTo("Finalizado");
         assertThat(dto.fechaAsignado()).isEqualTo(Instant.parse("2026-10-05T10:00:00Z"));
         assertThat(dto.vigente()).isFalse();
+        assertThat(dto.actual()).isTrue();
     }
 }

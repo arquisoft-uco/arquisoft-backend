@@ -38,7 +38,7 @@ public class CambiarEstadoAsesorProyectoGradoController {
 
     private final CambiarEstadoAsesorProyectoGradoInteractor cambiarEstadoAsesorProyectoGradoInteractor;
 
-    @PatchMapping("${rutas.proyectos.proyectos-grado.asesor-estado:/{proyectoGradoId}/asesores/{asesorProyectoGradoId}/estado}")
+    @PatchMapping("${rutas.proyectos.proyectos-grado.asesor-estado:/{proyectoGradoId}/asesores/{asesorId}/estado}")
     @PreAuthorize(ProyectosAuthorities.Expresiones.HAS_ASESOR_PROYECTO_GRADO_UPDATE_ESTADO)
     @Operation(
             summary = ProyectosApiMessages.AsesorProyectoGrado.CAMBIAR_ESTADO_SUMMARY,
@@ -61,7 +61,7 @@ public class CambiarEstadoAsesorProyectoGradoController {
     })
     public ResponseEntity<Void> cambiarEstadoAsesor(
             @PathVariable UUID proyectoGradoId,
-            @PathVariable UUID asesorProyectoGradoId,
+            @PathVariable UUID asesorId,
             @RequestBody CambiarEstadoAsesorProyectoGradoRequestDTO dto,
             @AuthenticationPrincipal Jwt jwt) {
 
@@ -69,7 +69,7 @@ public class CambiarEstadoAsesorProyectoGradoController {
 
         cambiarEstadoAsesorProyectoGradoInteractor.ejecutar(
                 CambiarEstadoAsesorProyectoGradoRequestMapper.toCommand(
-                        dto, proyectoGradoId, asesorProyectoGradoId, coordinador));
+                        dto, proyectoGradoId, asesorId, coordinador));
 
         return ResponseEntity.noContent().build();
     }

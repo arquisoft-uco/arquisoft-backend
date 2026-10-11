@@ -8,5 +8,5 @@ import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 public interface CambiarEstadoAsesorProyectoGradoValidator {
 
     void validar(CambioEstadoAsesorProyectoGradoDomain entrada, ProyectoGradoDomain proyecto,
-                 AsesorProyectoGradoDomain vinculo, AsesorDomain asesor);
+                 AsesorDomain asesor, AsesorProyectoGradoDomain vigente);
 }

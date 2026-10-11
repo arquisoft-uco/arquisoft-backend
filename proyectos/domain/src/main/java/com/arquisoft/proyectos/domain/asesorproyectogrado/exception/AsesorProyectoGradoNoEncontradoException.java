@@ -9,9 +9,9 @@ import java.util.UUID;
 
 public final class AsesorProyectoGradoNoEncontradoException extends DomainException {
 
-    public AsesorProyectoGradoNoEncontradoException(UUID asesorProyectoGrado, UUID proyectoGrado) {
+    public AsesorProyectoGradoNoEncontradoException(UUID asesor, UUID proyectoGrado) {
         super(
-                Mensajes.formatear(AsesorProyectoGradoKey.ERROR_NO_ENCONTRADO, asesorProyectoGrado, proyectoGrado),
+                Mensajes.formatear(AsesorProyectoGradoKey.ERROR_NO_ENCONTRADO, asesor, proyectoGrado),
                 ProyectosCodes.AsesorProyectoGrado.ASESOR_PROYECTO_GRADO_NO_ENCONTRADO
         );
     }

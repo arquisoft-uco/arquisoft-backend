@@ -19,49 +19,49 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AsesorProyectoGradoPorIdYProyectoFinderImplTest {
+class AsesorProyectoGradoVigenteFinderImplTest {
 
     @Mock
     private AsesorProyectoGradoOutputPort asesorProyectoGradoOutputPort;
 
     @InjectMocks
-    private AsesorProyectoGradoPorIdYProyectoFinderImpl finder;
+    private AsesorProyectoGradoVigenteFinderImpl finder;
 
     private final CambioEstadoAsesorProyectoGradoDomain entrada = CambioEstadoAsesorProyectoGradoDomain.crear(
             UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "FINALIZADO");
 
     @Test
-    void debeDevolverDomain_cuandoElVinculoExiste() {
+    void debeDevolverDomain_cuandoExisteFila() {
         // Arrange
-        var asesor = UtilUUID.generarNuevoUUID();
+        var id = UtilUUID.generarNuevoUUID();
         var fecha = UtilFecha.generarInstanteActual();
-        when(asesorProyectoGradoOutputPort.obtenerPorIdYProyectoGrado(
-                entrada.getAsesorProyectoGrado(), entrada.getProyectoGrado()))
+        when(asesorProyectoGradoOutputPort.obtenerVigentePorAsesorYProyectoGrado(
+                entrada.getAsesor(), entrada.getProyectoGrado()))
                 .thenReturn(Optional.of(new AsesorProyectoGradoEntity(
-                        entrada.getAsesorProyectoGrado(), asesor, entrada.getProyectoGrado(), "ASIGNADO", fecha)));
+                        id, entrada.getAsesor(), entrada.getProyectoGrado(), "ASIGNADO", fecha)));
 
         // Act
-        var vinculo = finder.obtener(entrada);
+        var vigente = finder.obtener(entrada);
 
         // Assert
-        assertThat(vinculo.esVacio()).isFalse();
-        assertThat(vinculo.getId()).isEqualTo(entrada.getAsesorProyectoGrado());
-        assertThat(vinculo.getAsesor()).isEqualTo(asesor);
-        assertThat(vinculo.getEstadoAsesor()).isEqualTo(EstadoAsesor.ASIGNADO);
-        assertThat(vinculo.getFechaAsignado()).isEqualTo(fecha);
+        assertThat(vigente.esVacio()).isFalse();
+        assertThat(vigente.getId()).isEqualTo(id);
+        assertThat(vigente.getAsesor()).isEqualTo(entrada.getAsesor());
+        assertThat(vigente.getEstadoAsesor()).isEqualTo(EstadoAsesor.ASIGNADO);
+        assertThat(vigente.getFechaAsignado()).isEqualTo(fecha);
     }
 
     @Test
-    void debeDevolverVacio_cuandoElVinculoNoExiste() {
+    void debeDevolverVACIO_cuandoNoHayFilas() {
         // Arrange
-        when(asesorProyectoGradoOutputPort.obtenerPorIdYProyectoGrado(
-                entrada.getAsesorProyectoGrado(), entrada.getProyectoGrado()))
+        when(asesorProyectoGradoOutputPort.obtenerVigentePorAsesorYProyectoGrado(
+                entrada.getAsesor(), entrada.getProyectoGrado()))
                 .thenReturn(Optional.empty());
 
         // Act
-        var vinculo = finder.obtener(entrada);
+        var vigente = finder.obtener(entrada);
 
         // Assert
-        assertThat(vinculo).isSameAs(AsesorProyectoGradoDomain.VACIO);
+        assertThat(vigente).isSameAs(AsesorProyectoGradoDomain.VACIO);
     }
 }

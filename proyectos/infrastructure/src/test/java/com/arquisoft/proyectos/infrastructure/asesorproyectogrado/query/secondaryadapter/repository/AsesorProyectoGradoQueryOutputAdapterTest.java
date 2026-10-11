@@ -77,6 +77,7 @@ class AsesorProyectoGradoQueryOutputAdapterTest {
         assertThat(primero.estadoAsesorNombre()).isEqualTo("Asignado");
         assertThat(primero.fechaAsignado()).isEqualTo(Instant.parse("2026-10-05T10:00:00Z"));
         assertThat(primero.vigente()).isTrue();
+        assertThat(primero.actual()).isTrue();
         var ultimo = resultado.getLast();
         assertThat(ultimo.estadoAsesor()).isEqualTo(FINALIZADO);
         assertThat(ultimo.estadoAsesorNombre()).isEqualTo("Finalizado");
@@ -150,5 +151,45 @@ class AsesorProyectoGradoQueryOutputAdapterTest {
 
         // Assert
         assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeMarcarActualSoloLaFilaMasReciente_cuandoHayHistorial() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var asesor = asesor("Ana", "1001", null);
+        var primera = vincular(proyectoGrado, asesor, ASIGNADO, Instant.parse("2026-09-10T10:00:00Z"));
+        var segunda = vincular(proyectoGrado, asesor, FINALIZADO, Instant.parse("2026-09-20T10:00:00Z"));
+        var tercera = vincular(proyectoGrado, asesor, ASIGNADO, Instant.parse("2026-10-05T10:00:00Z"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorProyecto(proyectoGrado);
+
+        // Assert
+        assertThat(resultado).extracting(r -> r.id()).containsExactly(tercera, segunda, primera);
+        assertThat(resultado).extracting(r -> r.actual()).containsExactly(true, false, false);
+    }
+
+    @Test
+    void debeMarcarActualEnCadaAsesor_cuandoHayVarios() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var ana = asesor("Ana", "1001", null);
+        var beto = asesor("Beto", "1002", null);
+        var anaAsignada = vincular(proyectoGrado, ana, ASIGNADO, Instant.parse("2026-09-10T10:00:00Z"));
+        var anaFinalizada = vincular(proyectoGrado, ana, FINALIZADO, Instant.parse("2026-10-01T10:00:00Z"));
+        var betoAsignado = vincular(proyectoGrado, beto, ASIGNADO, Instant.parse("2026-09-15T10:00:00Z"));
+        vincular(UtilUUID.generarNuevoUUID(), ana, ASIGNADO, Instant.parse("2026-10-10T10:00:00Z"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorProyecto(proyectoGrado);
+
+        // Assert
+        assertThat(resultado).extracting(r -> r.id()).containsExactly(anaFinalizada, betoAsignado, anaAsignada);
+        assertThat(resultado).extracting(r -> r.actual()).containsExactly(true, true, false);
     }
 }

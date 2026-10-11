@@ -46,16 +46,16 @@ public class CambiarEstadoAsesorProyectoGradoValidatorImpl implements CambiarEst
 
     @Override
     public void validar(CambioEstadoAsesorProyectoGradoDomain entrada, ProyectoGradoDomain proyecto,
-                        AsesorProyectoGradoDomain vinculo, AsesorDomain asesor) {
+                        AsesorDomain asesor, AsesorProyectoGradoDomain vigente) {
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(entrada.getProyectoGrado(), !proyecto.esVacio()));
         coordinadorPropietarioRule.validar(new PropiedadCoordinadorProyectoGrado(
                 entrada.getProyectoGrado(), proyecto.getCoordinador(), entrada.getCoordinador()));
         proyectoGradoNoFinalizadoRule.validar(
                 new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getEstadoProyectoGrado()));
+        asesorExisteRule.validar(new ExistenciaAsesor(entrada.getAsesor(), !asesor.esVacio()));
         asesorProyectoGradoExisteRule.validar(new ExistenciaAsesorProyectoGrado(
-                entrada.getAsesorProyectoGrado(), entrada.getProyectoGrado(), !vinculo.esVacio()));
-        asesorExisteRule.validar(new ExistenciaAsesor(vinculo.getAsesor(), !asesor.esVacio()));
+                entrada.getAsesor(), entrada.getProyectoGrado(), !vigente.esVacio()));
         transicionPermitidaRule.validar(new TransicionEstadoAsesor(
-                entrada.getAsesorProyectoGrado(), vinculo.getEstadoAsesor(), entrada.getEstadoNuevo()));
+                entrada.getAsesor(), vigente.getEstadoAsesor(), entrada.getEstadoNuevo()));
     }
 }

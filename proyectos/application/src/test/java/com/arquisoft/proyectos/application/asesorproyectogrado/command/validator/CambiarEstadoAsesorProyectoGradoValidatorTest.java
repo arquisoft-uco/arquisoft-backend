@@ -51,7 +51,7 @@ class CambiarEstadoAsesorProyectoGradoValidatorTest {
 
     private CambioEstadoAsesorProyectoGradoDomain entrada(UUID coordinador, String estado) {
         return CambioEstadoAsesorProyectoGradoDomain.crear(
-                proyecto.getId(), vinculoAsignado.getId(), coordinador, estado);
+                proyecto.getId(), asesor.getId(), coordinador, estado);
     }
 
     private CambioEstadoAsesorProyectoGradoDomain entrada() {
@@ -61,7 +61,7 @@ class CambiarEstadoAsesorProyectoGradoValidatorTest {
     @Test
     void debePasar_cuandoTodoEsValido() {
         // Act & Assert
-        assertThatCode(() -> validator.validar(entrada(), proyecto, vinculoAsignado, asesor))
+        assertThatCode(() -> validator.validar(entrada(), proyecto, asesor, vinculoAsignado))
                 .doesNotThrowAnyException();
     }
 
@@ -71,7 +71,7 @@ class CambiarEstadoAsesorProyectoGradoValidatorTest {
         var asesorDeBaja = asesor(Instant.parse("2026-10-01T10:00:00Z"));
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(entrada(), proyecto, vinculoAsignado, asesorDeBaja))
+        assertThatCode(() -> validator.validar(entrada(), proyecto, asesorDeBaja, vinculoAsignado))
                 .doesNotThrowAnyException();
     }
 
@@ -79,8 +79,7 @@ class CambiarEstadoAsesorProyectoGradoValidatorTest {
     void debeLanzarProyectoNoEncontrado_antesQueCoordinadorAjeno_cuandoAmbosSeCumplen() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada(UtilUUID.generarNuevoUUID(), "FINALIZADO"), ProyectoGradoDomain.VACIO, vinculoAsignado,
-                asesor))
+                entrada(UtilUUID.generarNuevoUUID(), "FINALIZADO"), ProyectoGradoDomain.VACIO, asesor, vinculoAsignado))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
 
@@ -88,7 +87,7 @@ class CambiarEstadoAsesorProyectoGradoValidatorTest {
     void debeLanzarNoPerteneceCoordinador_antesQueProyectoFinalizado_cuandoAmbosSeCumplen() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada(UtilUUID.generarNuevoUUID(), "FINALIZADO"), proyectoFinalizado, vinculoAsignado, asesor))
+                entrada(UtilUUID.generarNuevoUUID(), "FINALIZADO"), proyectoFinalizado, asesor, vinculoAsignado))
                 .isInstanceOf(ProyectoGradoNoPerteneceCoordinadorException.class);
     }
 
@@ -96,22 +95,22 @@ class CambiarEstadoAsesorProyectoGradoValidatorTest {
     void debeLanzarProyectoFinalizado_antesQueVinculoInexistente_cuandoAmbosSeCumplen() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada(), proyectoFinalizado, AsesorProyectoGradoDomain.VACIO, AsesorDomain.VACIO))
+                entrada(), proyectoFinalizado, AsesorDomain.VACIO, AsesorProyectoGradoDomain.VACIO))
                 .isInstanceOf(ProyectoGradoFinalizadoException.class);
     }
 
     @Test
-    void debeLanzarVinculoNoEncontrado_antesQueAsesorNoEncontrado_cuandoAmbosSonVacios() {
+    void debeLanzarAsesorNoEncontrado_antesQueVinculoNoEncontrado_cuandoAmbosSonVacios() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada(), proyecto, AsesorProyectoGradoDomain.VACIO, AsesorDomain.VACIO))
-                .isInstanceOf(AsesorProyectoGradoNoEncontradoException.class);
+                entrada(), proyecto, AsesorDomain.VACIO, AsesorProyectoGradoDomain.VACIO))
+                .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
     @Test
     void debeLanzarAsesorNoEncontrado_cuandoElAsesorEsVacio() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada(), proyecto, vinculoAsignado, AsesorDomain.VACIO))
+        assertThatThrownBy(() -> validator.validar(entrada(), proyecto, AsesorDomain.VACIO, vinculoAsignado))
                 .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
@@ -119,14 +118,14 @@ class CambiarEstadoAsesorProyectoGradoValidatorTest {
     void debeLanzarAsesorNoEncontrado_antesQueTransicionInvalida_cuandoAmbosSeCumplen() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada(), proyecto, vinculo(EstadoAsesor.FINALIZADO), AsesorDomain.VACIO))
+                entrada(), proyecto, AsesorDomain.VACIO, vinculo(EstadoAsesor.FINALIZADO)))
                 .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
     @Test
     void debeLanzarTransicionInvalida_cuandoElVinculoYaEstaFinalizado() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada(), proyecto, vinculo(EstadoAsesor.FINALIZADO), asesor))
+        assertThatThrownBy(() -> validator.validar(entrada(), proyecto, asesor, vinculo(EstadoAsesor.FINALIZADO)))
                 .isInstanceOf(TransicionEstadoAsesorInvalidaException.class);
     }
 
@@ -134,7 +133,15 @@ class CambiarEstadoAsesorProyectoGradoValidatorTest {
     void debeLanzarTransicionInvalida_cuandoElEstadoPedidoEsAsignado() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada(proyecto.getCoordinador(), "ASIGNADO"), proyecto, vinculoAsignado, asesor))
+                entrada(proyecto.getCoordinador(), "ASIGNADO"), proyecto, asesor, vinculoAsignado))
                 .isInstanceOf(TransicionEstadoAsesorInvalidaException.class);
+    }
+
+    @Test
+    void debeLanzarVinculoNoEncontrado_antesQueTransicionInvalida_cuandoElVigenteEsVacio() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                entrada(), proyecto, asesor, AsesorProyectoGradoDomain.VACIO))
+                .isInstanceOf(AsesorProyectoGradoNoEncontradoException.class);
     }
 }
