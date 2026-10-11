@@ -41,6 +41,25 @@ public final class ProyectosApiMessages {
                 "Proyecto no encontrado, finalizado o asignado a otro coordinador, o estudiante no vinculado";
     }
 
+    public static final class AsesorProyectoGrado {
+
+        private AsesorProyectoGrado() {}
+
+        public static final String TAG_NAME = "Asesores de Proyecto de Grado";
+        public static final String TAG_DESCRIPTION = "Gestión de la asignación de asesores a proyectos de grado";
+
+        public static final String ASIGNAR_SUMMARY = "Asignar un nuevo asesor a un proyecto de grado existente";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Permite al coordinador asignado al proyecto de grado asignar un asesor vigente, si el proyecto "
+                        + "no está finalizado, respetando el máximo de 2 asesores asignados por proyecto";
+        public static final String ASIGNAR_RESP_201 = "Asesor asignado exitosamente";
+        public static final String ASIGNAR_RESP_400 = "Identificador de asesor ausente o inválido";
+        public static final String ASIGNAR_RESP_403 = "Sin permiso para asignar asesores a un proyecto de grado";
+        public static final String ASIGNAR_RESP_422 =
+                "Proyecto no encontrado, finalizado o asignado a otro coordinador, asesor no vigente o ya "
+                        + "asignado, o cupo de asesores excedido";
+    }
+
     public static final class ConsultaEstudianteProyectoGrado {
 
         private ConsultaEstudianteProyectoGrado() {}

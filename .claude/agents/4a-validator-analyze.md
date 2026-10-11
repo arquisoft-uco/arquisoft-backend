@@ -298,8 +298,8 @@ ubicación del enum es decisión abierta: verifica solo consistencia con lo que 
 
 | Check | Sev |
 |---|:---:|
-| Setter privado nombrado distinto al atributo | ❌ |
-| Valor autogenerado (`UUID`/`Instant`) generado en `crear(...)` en vez de en el setter | ❌ |
+| Setter privado nombrado distinto al atributo (salvo `set{Atributo}Inicial()` del estado inicial) | ❌ |
+| Valor que `crear(...)` fija sin recibirlo (id, fecha, estado inicial) pasado como argumento al setter en vez de nacer en un setter sin argumentos (`arquisoft-estandares` → *Notification Pattern y orden de validación*) | ❌ |
 | `UUID.randomUUID()`/`Instant.now()`/`LocalDate.now()`/`.trim()` en cualquier capa en vez de `UtilUUID`/`UtilFecha`/`UtilTexto` | ❌ |
 
 ### Nivel 2.12 — Catálogo de mensajes y logs

@@ -8,4 +8,5 @@ rutas:
     proyectos-grado:
       base: /proyectos-grado
       estudiantes: /{proyectoGradoId}/estudiantes
+      asesores: /{proyectoGradoId}/asesores
       estudiante: /{proyectoGradoId}/estudiantes/{estudianteId}
