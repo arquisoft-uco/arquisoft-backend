@@ -43,6 +43,17 @@ class AsesorProyectoGradoDomainTest {
     }
 
     @Test
+    void debeSerVacio_cuandoEsElCentinela() {
+        // Arrange
+        var vinculo = AsesorProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+
+        // Act & Assert
+        assertThat(AsesorProyectoGradoDomain.VACIO.esVacio()).isTrue();
+        assertThat(AsesorProyectoGradoDomain.VACIO.getEstadoAsesor()).isEqualTo(EstadoAsesor.VACIO);
+        assertThat(vinculo.esVacio()).isFalse();
+    }
+
+    @Test
     void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();

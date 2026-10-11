@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.proyectos.AsesorProyectoGradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -32,5 +33,17 @@ public class AsesorProyectoGradoCommandOutputAdapter implements AsesorProyectoGr
     @Override
     public long contarPorProyectoGradoYEstado(UUID proyectoGrado, String estadoAsesor) {
         return asesorProyectoGradoRepository.countByProyectoGradoIdAndEstadoAsesorId(proyectoGrado, estadoAsesor);
+    }
+
+    @Override
+    public Optional<AsesorProyectoGradoEntity> obtenerPorIdYProyectoGrado(UUID id, UUID proyectoGrado) {
+        return asesorProyectoGradoRepository.findByIdAndProyectoGradoId(id, proyectoGrado)
+                .map(AsesorProyectoGradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public void actualizarEstado(UUID id, String estadoAsesor) {
+        asesorProyectoGradoRepository.actualizarEstadoAsesor(id, estadoAsesor);
+        logger.debug(AsesorProyectoGradoKey.LOG_ACTUALIZADO, id, estadoAsesor);
     }
 }

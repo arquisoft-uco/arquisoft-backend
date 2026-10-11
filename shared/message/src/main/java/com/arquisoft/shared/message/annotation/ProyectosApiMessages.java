@@ -58,6 +58,19 @@ public final class ProyectosApiMessages {
         public static final String ASIGNAR_RESP_422 =
                 "Proyecto no encontrado, finalizado o asignado a otro coordinador, asesor no vigente o ya "
                         + "asignado, o cupo de asesores excedido";
+
+        public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un asesor de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_DESCRIPTION =
+                "Permite al coordinador asignado al proyecto de grado marcar como finalizado a uno de sus asesores "
+                        + "asignados, si el proyecto no está finalizado. El estado finalizado es terminal y el asesor "
+                        + "recibe un correo de notificación";
+        public static final String CAMBIAR_ESTADO_RESP_204 = "Estado del asesor actualizado exitosamente";
+        public static final String CAMBIAR_ESTADO_RESP_400 = "Estado del asesor ausente";
+        public static final String CAMBIAR_ESTADO_RESP_403 =
+                "Sin permiso para cambiar el estado de un asesor de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_RESP_422 =
+                "Estado fuera del catálogo, proyecto de grado no encontrado, finalizado o asignado a otro "
+                        + "coordinador, asesor no encontrado en el proyecto o transición de estado no permitida";
     }
 
     public static final class ConsultaAsesorProyectoGrado {

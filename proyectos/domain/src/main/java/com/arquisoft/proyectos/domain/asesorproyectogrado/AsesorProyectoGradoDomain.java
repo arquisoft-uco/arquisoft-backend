@@ -13,6 +13,10 @@ import java.util.UUID;
 
 public final class AsesorProyectoGradoDomain {
 
+    public static final AsesorProyectoGradoDomain VACIO = reconstruir(
+            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
+            EstadoAsesor.VACIO, UtilFecha.VACIO);
+
     private UUID id;
     private UUID asesor;
     private UUID proyectoGrado;
@@ -94,5 +98,9 @@ public final class AsesorProyectoGradoDomain {
 
     public Instant getFechaAsignado() {
         return fechaAsignado;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

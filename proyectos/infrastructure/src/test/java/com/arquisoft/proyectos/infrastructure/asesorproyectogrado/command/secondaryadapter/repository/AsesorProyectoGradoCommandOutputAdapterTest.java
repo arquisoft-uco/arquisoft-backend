@@ -82,6 +82,86 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerElVinculo_cuandoIdYProyectoCoinciden() {
+        // Arrange
+        var adapter = adapter();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var vinculo = vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, ASIGNADO);
+        adapter.asignar(vinculo);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var obtenido = adapter.obtenerPorIdYProyectoGrado(vinculo.id(), proyectoGrado);
+
+        // Assert
+        assertThat(obtenido).contains(vinculo);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElVinculoEsDeOtroProyecto() {
+        // Arrange
+        var adapter = adapter();
+        var vinculo = vinculo(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), ASIGNADO);
+        adapter.asignar(vinculo);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var obtenido = adapter.obtenerPorIdYProyectoGrado(vinculo.id(), UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(obtenido).isEmpty();
+    }
+
+    @Test
+    void debeActualizarSoloElEstadoDelVinculo_cuandoSeFinaliza() {
+        // Arrange
+        var adapter = adapter();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var objetivo = vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, ASIGNADO);
+        var otro = vinculo(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), ASIGNADO);
+        adapter.asignar(objetivo);
+        adapter.asignar(otro);
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(objetivo.id(), FINALIZADO);
+
+        // Assert
+        var actualizado = entityManager.find(AsesorProyectoGradoJpaEntity.class, objetivo.id());
+        assertThat(actualizado.getEstadoAsesorId()).isEqualTo(FINALIZADO);
+        assertThat(actualizado.getAsesorId()).isEqualTo(objetivo.asesor());
+        assertThat(actualizado.getProyectoGradoId()).isEqualTo(proyectoGrado);
+        assertThat(actualizado.getFechaAsignado()).isEqualTo(objetivo.fechaAsignado());
+        assertThat(entityManager.find(AsesorProyectoGradoJpaEntity.class, otro.id()).getEstadoAsesorId())
+                .isEqualTo(ASIGNADO);
+        verify(logger).debug(AsesorProyectoGradoKey.LOG_ACTUALIZADO, objetivo.id(), FINALIZADO);
+    }
+
+    @Test
+    void debeLiberarCupoYPermitirReasignar_trasFinalizar() {
+        // Arrange
+        var adapter = adapter();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var vinculo = vinculo(asesor, proyectoGrado, ASIGNADO);
+        adapter.asignar(vinculo);
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(vinculo.id(), FINALIZADO);
+
+        // Assert
+        assertThat(adapter.contarPorProyectoGradoYEstado(proyectoGrado, ASIGNADO)).isZero();
+        assertThat(adapter.existePorAsesorYProyectoGradoYEstado(asesor, proyectoGrado, ASIGNADO)).isFalse();
+        adapter.asignar(vinculo(asesor, proyectoGrado, ASIGNADO));
+        entityManager.flush();
+        assertThat(adapter.contarPorProyectoGradoYEstado(proyectoGrado, ASIGNADO)).isEqualTo(1);
+        assertThat(adapter.contarPorProyectoGradoYEstado(proyectoGrado, FINALIZADO)).isEqualTo(1);
+    }
+
+    @Test
     void debeDetectarSoloElVinculoAsignado_cuandoElAsesorEstuvoFinalizadoOEstaEnOtroProyecto() {
         // Arrange
         var adapter = adapter();
