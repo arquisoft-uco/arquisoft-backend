@@ -9,7 +9,7 @@ public class RespuestaExisteRuleImpl implements RespuestaExisteRule {
     @Override
     public void validar(ExistenciaRespuesta existencia) {
         if (!existencia.existe()) {
-            throw new RespuestaNoEncontradaException(existencia.solicitud());
+            throw new RespuestaNoEncontradaException();
         }
     }
 }

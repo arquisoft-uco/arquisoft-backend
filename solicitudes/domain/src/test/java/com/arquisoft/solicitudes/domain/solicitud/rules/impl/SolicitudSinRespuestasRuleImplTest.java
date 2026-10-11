@@ -27,7 +27,6 @@ class SolicitudSinRespuestasRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new RespuestasSolicitud(solicitud, true)))
-                .isInstanceOf(SolicitudConRespuestasException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(SolicitudConRespuestasException.class);
     }
 }

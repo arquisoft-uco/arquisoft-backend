@@ -160,7 +160,7 @@ class ModificarEstadoRespuestaUseCaseImplTest {
         when(datosRespuestaFinder.obtener(solicitud)).thenReturn(ResumenRespuesta.VACIO);
         when(datosUsuarioFinder.obtener(ResumenSolicitud.VACIO.remitenteUsuario()))
                 .thenReturn(UsuarioDomain.VACIO);
-        doThrow(new SolicitudNoEncontradaException(solicitud)).when(validator).validar(
+        doThrow(new SolicitudNoEncontradaException()).when(validator).validar(
                 entrada, ResumenSolicitud.VACIO, ResumenRespuesta.VACIO,
                 UsuarioDomain.VACIO, UsuarioDomain.VACIO);
 
@@ -176,13 +176,13 @@ class ModificarEstadoRespuestaUseCaseImplTest {
 
     static Stream<RuntimeException> excepcionesDelValidator() {
         return Stream.of(
-                new RemitenteNoEncontradoException(UUID.randomUUID()),
-                new DestinatarioNoEncontradoException(UUID.randomUUID()),
-                new SolicitudTipoNoCoincideException(UUID.randomUUID()),
-                new SolicitudNoEsDestinatarioException(UUID.randomUUID()),
-                new RespuestaNoEncontradaException(UUID.randomUUID()),
-                new RespuestaNoEnRevisionException(UUID.randomUUID()),
-                new EstadoRespuestaNoResolutivoException(UUID.randomUUID(), "EN_REVISION"));
+                new RemitenteNoEncontradoException(),
+                new DestinatarioNoEncontradoException(),
+                new SolicitudTipoNoCoincideException(),
+                new SolicitudNoEsDestinatarioException(),
+                new RespuestaNoEncontradaException(),
+                new RespuestaNoEnRevisionException(),
+                new EstadoRespuestaNoResolutivoException("EN_REVISION"));
     }
 
     @ParameterizedTest

@@ -27,7 +27,6 @@ class SolicitudExisteRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new ExistenciaSolicitud(solicitud, false)))
-                .isInstanceOf(SolicitudNoEncontradaException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(SolicitudNoEncontradaException.class);
     }
 }
