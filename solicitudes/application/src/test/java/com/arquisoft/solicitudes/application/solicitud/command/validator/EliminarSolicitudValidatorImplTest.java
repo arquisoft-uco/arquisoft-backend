@@ -63,8 +63,7 @@ class EliminarSolicitudValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(
                 entrada(solicitud, UUID.randomUUID(), TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR),
                 ResumenSolicitud.VACIO, false))
-                .isInstanceOf(SolicitudNoEncontradaException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(SolicitudNoEncontradaException.class);
     }
 
     @Test

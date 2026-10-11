@@ -10,4 +10,6 @@ public interface EstudianteProyectoGradoOutputPort {
     void vincular(List<EstudianteProyectoGradoEntity> vinculos);
 
     long contarPorProyectoGrado(UUID proyectoGrado);
+
+    List<UUID> obtenerVinculados(UUID proyectoGrado, List<UUID> estudiantes);
 }

@@ -38,12 +38,15 @@ class ObservacionEvaluacionQueryOutputAdapterTest {
     @Autowired
     private ObservacionEvaluacionRepresentanteQueryRepository representanteRepository;
 
+    @Autowired
+    private ObservacionEvaluacionCoordinadorQueryRepository coordinadorRepository;
+
     private ObservacionEvaluacionQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
         adapter = new ObservacionEvaluacionQueryOutputAdapter(
-                repository, asesorRepository, representanteRepository);
+                repository, asesorRepository, representanteRepository, coordinadorRepository);
     }
 
     @Test

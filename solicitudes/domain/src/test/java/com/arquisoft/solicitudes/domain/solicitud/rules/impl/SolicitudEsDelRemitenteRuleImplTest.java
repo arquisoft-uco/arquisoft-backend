@@ -32,7 +32,6 @@ class SolicitudEsDelRemitenteRuleImplTest {
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(
                 new PropiedadSolicitud(solicitud, UUID.randomUUID(), UUID.randomUUID())))
-                .isInstanceOf(SolicitudNoPropiaException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(SolicitudNoPropiaException.class);
     }
 }

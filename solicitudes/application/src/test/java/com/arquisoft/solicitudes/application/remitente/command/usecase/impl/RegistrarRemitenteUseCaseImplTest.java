@@ -89,7 +89,7 @@ class RegistrarRemitenteUseCaseImplTest {
         // Arrange
         var remitente = RemitenteDomain.crear(UUID.randomUUID());
         when(usuarioPorIdFinder.obtener(remitente.getUsuario())).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new RemitenteNoEncontradoException(remitente.getUsuario()))
+        doThrow(new RemitenteNoEncontradoException())
                 .when(validator).validar(remitente, UsuarioDomain.VACIO);
 
         // Act & Assert

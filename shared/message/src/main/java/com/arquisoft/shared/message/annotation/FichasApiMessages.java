@@ -128,6 +128,15 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_REPRESENTANTE_RESP_200 = "Lista de ítems de la ficha de perfil (vacía si no aplica)";
         public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_REPRESENTANTE_RESP_403 = "Sin el permiso para consultar ítems como representante del comité";
+
+        public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar ítems de una ficha de perfil a decidir";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Permite al coordinador consultar los ítems de contenido (tipo y contenido) de cualquier ficha de "
+                        + "perfil para fundamentar su decisión de aprobarla. Si la ficha no existe o no tiene "
+                        + "ítems devuelve una lista vacía.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 = "Lista de ítems de la ficha de perfil (vacía si no aplica)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 = "Sin el permiso para consultar ítems como coordinador";
     }
 
     public static final class ConsultaEstudianteFichaPerfil {
@@ -188,6 +197,13 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
                 "Sin el permiso para consultar los estados como representante del comité";
+        public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar los estados de una ficha de perfil como coordinador";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Devuelve la trazabilidad completa de estados de la ficha de perfil indicada, ordenada de la más antigua "
+                        + "a la más reciente, sin filtrar por actor.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 = "Lista de estados de la ficha de perfil (vacía si no tiene estados)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 = "Sin el permiso para consultar los estados como coordinador";
         public static final String AGREGAR_APROBACION_SUMMARY = "Registrar la decisión de aprobación de una ficha de perfil";
         public static final String AGREGAR_APROBACION_DESCRIPTION = "El coordinador acepta o no la ficha; el estado se deriva de las evaluaciones";
         public static final String AGREGAR_APROBACION_RESP_201 = "Estado de aprobación registrado; devuelve el id del nuevo estado";
@@ -397,6 +413,18 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "Identificador de evaluación inválido";
         public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
                 "Sin permiso para consultar observaciones de evaluaciones que registró";
+
+        public static final String CONSULTAR_COORDINADOR_SUMMARY =
+                "Consultar observaciones de las evaluaciones de una Ficha Perfil a decidir";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Devuelve las observaciones de todas las evaluaciones de la ficha de perfil indicada, incluidas las de "
+                        + "evaluaciones en evaluación o descartadas.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 =
+                "Observaciones de las evaluaciones de la ficha (vacía si la ficha no existe o no tiene observaciones)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 =
+                "El identificador de ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 =
+                "El usuario no tiene el permiso fichas:observacion-evaluacion-coordinador:view";
     }
 
     public static final class EstudianteFichaPerfil {
@@ -455,6 +483,18 @@ public final class FichasApiMessages {
                 "El identificador de ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-estudiante:view";
+
+        public static final String CONSULTAR_COORDINADOR_SUMMARY =
+                "Consultar información de las evaluaciones de una Ficha Perfil a decidir";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Devuelve todas las evaluaciones de la ficha de perfil indicada, incluidas las que están en evaluación "
+                        + "o descartadas, con su estado actual y el representante del comité que las realizó.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 =
+                "Listado de evaluaciones de la ficha (vacío si la ficha no existe o no tiene evaluaciones)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 =
+                "El identificador de ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 =
+                "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-coordinador:view";
     }
 
     public static final class EstadoEvaluacionFicha {

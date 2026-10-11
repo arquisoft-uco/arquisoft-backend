@@ -22,6 +22,8 @@ public enum ObservacionEvaluacionKey implements ClaveMensaje {
     LOG_CONSULTA_ASESOR_COMPLETADA("fichas.aplicacion.observacionevaluacion.log.consulta-asesor-completada", 1),
     LOG_CONSULTANDO_REPRESENTANTE("fichas.aplicacion.observacionevaluacion.log.consultando-representante", 2),
     LOG_CONSULTA_REPRESENTANTE_COMPLETADA("fichas.aplicacion.observacionevaluacion.log.consulta-representante-completada", 1),
+    LOG_CONSULTANDO_COORDINADOR("fichas.aplicacion.observacionevaluacion.log.consultando-coordinador", 1),
+    LOG_CONSULTA_COORDINADOR_COMPLETADA("fichas.aplicacion.observacionevaluacion.log.consulta-coordinador-completada", 1),
     LOG_GUARDADA("fichas.infraestructura.observacionevaluacion.log.guardada", 1),
     LOG_ACTUALIZADA("fichas.infraestructura.observacionevaluacion.log.actualizada", 1),
     LOG_ELIMINADA("fichas.infraestructura.observacionevaluacion.log.eliminada", 1);

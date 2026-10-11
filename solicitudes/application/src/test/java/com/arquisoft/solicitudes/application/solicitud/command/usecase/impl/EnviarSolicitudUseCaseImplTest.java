@@ -164,7 +164,7 @@ class EnviarSolicitudUseCaseImplTest {
     @Test
     void debeLanzarYNoSeguir_cuandoElRemitenteNoExiste() {
         // Arrange
-        doThrow(new RemitenteNoEncontradoException(envio.getRemitenteUsuario()))
+        doThrow(new RemitenteNoEncontradoException())
                 .when(registrarRemitenteUseCase).ejecutar(envio.getRemitente());
 
         // Act & Assert
@@ -178,7 +178,7 @@ class EnviarSolicitudUseCaseImplTest {
     @Test
     void debeLanzarYNoPersistir_cuandoElDestinatarioNoExiste() {
         // Arrange
-        doThrow(new DestinatarioNoEncontradoException(envio.getDestinatarioUsuario()))
+        doThrow(new DestinatarioNoEncontradoException())
                 .when(registrarDestinatarioUseCase).ejecutar(envio.getDestinatario());
 
         // Act & Assert

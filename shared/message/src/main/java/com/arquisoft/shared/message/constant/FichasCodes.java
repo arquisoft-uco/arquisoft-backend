@@ -90,6 +90,7 @@ public final class FichasCodes {
         public static final String OBSERVACION_EVALUACION_NO_ENCONTRADA = "OBSERVACION_EVALUACION_NO_ENCONTRADA";
         public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_EVALUACION_ESTUDIANTE_REQUERIDO";
         public static final String ASESOR_FICHA_REQUERIDO = "OBSERVACION_EVALUACION_ASESOR_FICHA_REQUERIDO";
+        public static final String FICHA_PERFIL_REQUERIDA = "OBSERVACION_EVALUACION_FICHA_PERFIL_REQUERIDA";
     }
 
     public static final class Estudiante {

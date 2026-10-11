@@ -106,7 +106,7 @@ class EliminarRespuestaUseCaseImplTest {
                 solicitud, responsableUsuario, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(datosRespuestaFinder.obtener(solicitud)).thenReturn(ResumenRespuesta.VACIO);
-        doThrow(new SolicitudNoEncontradaException(solicitud))
+        doThrow(new SolicitudNoEncontradaException())
                 .when(validator).validar(entrada, ResumenSolicitud.VACIO, ResumenRespuesta.VACIO);
 
         // Act & Assert
@@ -119,11 +119,11 @@ class EliminarRespuestaUseCaseImplTest {
 
     static Stream<RuntimeException> excepcionesDelValidator() {
         return Stream.of(
-                new SolicitudTipoNoCoincideAsesorException(UUID.randomUUID()),
-                new SolicitudTipoNoCoincideException(UUID.randomUUID()),
-                new SolicitudNoEsDestinatarioException(UUID.randomUUID()),
-                new RespuestaNoEncontradaException(UUID.randomUUID()),
-                new RespuestaNoEnRevisionException(UUID.randomUUID()));
+                new SolicitudTipoNoCoincideAsesorException(),
+                new SolicitudTipoNoCoincideException(),
+                new SolicitudNoEsDestinatarioException(),
+                new RespuestaNoEncontradaException(),
+                new RespuestaNoEnRevisionException());
     }
 
     @ParameterizedTest

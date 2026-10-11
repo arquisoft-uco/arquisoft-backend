@@ -71,7 +71,8 @@ class RegistrarProyectoGradoUseCaseImplTest {
     private final ProyectoGradoDomain proyecto = ProyectoGradoDomain.crear(
             UUID.randomUUID(), "Sistema de gestión", coordinadorId);
     private final AgregacionEstudiantesProyectoGradoDomain estudiantes = AgregacionEstudiantesProyectoGradoDomain.crear(
-            EstudianteProyectoGradoDomain.crear(proyecto.getId(), List.of(UUID.randomUUID(), UUID.randomUUID())));
+            EstudianteProyectoGradoDomain.crear(proyecto.getId(), List.of(UUID.randomUUID(), UUID.randomUUID())),
+            coordinadorId);
     private final RegistroProyectoGradoDomain registro = RegistroProyectoGradoDomain.crear(proyecto, estudiantes);
     private final CoordinadorDomain coordinador = CoordinadorDomain.reconstruir(coordinadorId, "1020",
             "Laura Mesa", "laura.mesa@uco.edu.co", Instant.parse("2026-09-01T10:00:00Z"), null);

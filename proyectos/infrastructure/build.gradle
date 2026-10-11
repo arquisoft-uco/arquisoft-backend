@@ -25,12 +25,19 @@ dependencies {
     implementation "org.flywaydb:flyway-database-postgresql"
     runtimeOnly "org.postgresql:postgresql"
 
-    // Sin endpoint en esta HU: no se agregan starters de seguridad web ni springdoc-openapi.
+    // Spring Security (para @PreAuthorize y @EnableMethodSecurity)
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+
+    // OpenAPI / Swagger (ADR-011)
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
 
     // Testing
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.boot:spring-boot-test-autoconfigure"
     testImplementation "org.springframework.boot:spring-boot-data-jpa-test"
+    testImplementation "org.springframework.boot:spring-boot-webmvc-test"
+    testImplementation "org.springframework.security:spring-security-test"
     testImplementation "com.h2database:h2"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

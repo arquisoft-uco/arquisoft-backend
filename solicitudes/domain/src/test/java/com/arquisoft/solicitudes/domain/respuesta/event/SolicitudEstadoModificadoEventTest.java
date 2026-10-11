@@ -55,6 +55,27 @@ class SolicitudEstadoModificadoEventTest {
     }
 
     @Test
+    void debeExponerElTemaYElTipoDeEventoDelAsesor_cuandoElTipoEsNovedadParaElAsesor() {
+        // Arrange
+        var solicitud = UUID.randomUUID();
+
+        // Act
+        var evento = new SolicitudEstadoModificadoEvent(
+                TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, solicitud,
+                EstadoRespuesta.NO_APROBADA, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_ASESOR_ESTADO_MODIFICADO);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.novedad_asesor_estado_modificado");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudNovedadAsesorEstadoModificadoEvent");
+        assertThat(evento.getSolicitudId()).isEqualTo(solicitud);
+        assertThat(evento.getNuevoEstado()).isEqualTo(EstadoRespuesta.NO_APROBADA.getId());
+        assertThat(evento.getNuevoEstadoNombre()).isEqualTo(EstadoRespuesta.NO_APROBADA.getNombre());
+        assertThat(evento.getRemitenteEmail()).isEqualTo("ana@uco.edu.co");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+    }
+
+    @Test
     void debeLanzarTipoNoEncontrado_cuandoElTipoNoTieneEventoDeEstadoModificado() {
         // Act & Assert
         assertThatThrownBy(() -> new SolicitudEstadoModificadoEvent(
