@@ -34,7 +34,6 @@ class DestinatarioExisteRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new ExistenciaDestinatario(usuario, UsuarioDomain.VACIO)))
-                .isInstanceOf(DestinatarioNoEncontradoException.class)
-                .hasMessageContaining(usuario.toString());
+                .isInstanceOf(DestinatarioNoEncontradoException.class);
     }
 }

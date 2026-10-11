@@ -9,7 +9,7 @@ public class SolicitudSinRespuestasRuleImpl implements SolicitudSinRespuestasRul
     @Override
     public void validar(RespuestasSolicitud respuestas) {
         if (respuestas.tieneRespuestas()) {
-            throw new SolicitudConRespuestasException(respuestas.solicitud());
+            throw new SolicitudConRespuestasException();
         }
     }
 }
