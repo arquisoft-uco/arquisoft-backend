@@ -55,6 +55,7 @@ public final class ProyectosFields {
         private EstudianteProyectoGrado() {}
 
         public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String COORDINADOR = "coordinador";
         public static final String ESTUDIANTE = "estudiante";
         public static final String ESTUDIANTES = "estudiantes";
     }

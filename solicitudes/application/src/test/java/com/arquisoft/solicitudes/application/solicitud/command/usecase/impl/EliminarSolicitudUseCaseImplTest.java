@@ -113,7 +113,7 @@ class EliminarSolicitudUseCaseImplTest {
     void debeAbortarSinEliminar_cuandoElValidatorLanza() {
         // Arrange
         stubSolicitudPropiaSinRespuestas();
-        doThrow(new SolicitudConRespuestasException(solicitud))
+        doThrow(new SolicitudConRespuestasException())
                 .when(validator).validar(any(), any(), anyBoolean());
 
         // Act & Assert

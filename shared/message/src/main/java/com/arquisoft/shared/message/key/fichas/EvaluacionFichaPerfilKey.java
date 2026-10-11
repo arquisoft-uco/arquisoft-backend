@@ -14,6 +14,8 @@ public enum EvaluacionFichaPerfilKey implements ClaveMensaje {
     LOG_CONSULTA_REPRESENTANTE_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-representante-completada", 1),
     LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.evaluacionfichaperfil.log.consultando-estudiante", 1),
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-estudiante-completada", 1),
+    LOG_CONSULTANDO_COORDINADOR("fichas.aplicacion.evaluacionfichaperfil.log.consultando-coordinador", 1),
+    LOG_CONSULTA_COORDINADOR_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-coordinador-completada", 1),
     LOG_CONSULTANDO_ASESOR("fichas.aplicacion.evaluacionfichaperfil.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-asesor-completada", 3);
 

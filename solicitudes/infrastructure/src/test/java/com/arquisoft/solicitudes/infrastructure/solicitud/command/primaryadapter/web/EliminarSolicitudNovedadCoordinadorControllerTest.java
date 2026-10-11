@@ -113,7 +113,7 @@ class EliminarSolicitudNovedadCoordinadorControllerTest {
     @Test
     void debe422_cuandoElInteractorRechazaPorReglaDeNegocio() throws Exception {
         // Arrange
-        doThrow(new SolicitudConRespuestasException(UUID.randomUUID()))
+        doThrow(new SolicitudConRespuestasException())
                 .when(interactor).ejecutar(any());
 
         // Act & Assert

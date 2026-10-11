@@ -33,7 +33,6 @@ class RemitenteExisteRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new ExistenciaRemitente(usuario, UsuarioDomain.VACIO)))
-                .isInstanceOf(RemitenteNoEncontradoException.class)
-                .hasMessageContaining(usuario.toString());
+                .isInstanceOf(RemitenteNoEncontradoException.class);
     }
 }

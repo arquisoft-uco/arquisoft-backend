@@ -120,11 +120,11 @@ class EliminarRespuestaNovedadAsesorControllerTest {
 
     static Stream<DomainException> excepcionesDeDominio() {
         return Stream.of(
-                new SolicitudNoEncontradaException(UUID.randomUUID()),
-                new SolicitudTipoNoCoincideAsesorException(UUID.randomUUID()),
-                new SolicitudNoEsDestinatarioException(UUID.randomUUID()),
-                new RespuestaNoEncontradaException(UUID.randomUUID()),
-                new RespuestaNoEnRevisionException(UUID.randomUUID()));
+                new SolicitudNoEncontradaException(),
+                new SolicitudTipoNoCoincideAsesorException(),
+                new SolicitudNoEsDestinatarioException(),
+                new RespuestaNoEncontradaException(),
+                new RespuestaNoEnRevisionException());
     }
 
     @ParameterizedTest

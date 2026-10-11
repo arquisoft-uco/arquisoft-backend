@@ -58,8 +58,7 @@ class EliminarRespuestaValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(entrada,
                 ResumenSolicitud.VACIO, new ResumenRespuesta(solicitud, ESTADO_OK)))
-                .isInstanceOf(SolicitudNoEncontradaException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(SolicitudNoEncontradaException.class);
     }
 
     @Test
@@ -119,8 +118,7 @@ class EliminarRespuestaValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(entrada,
                 resumenSolicitud(solicitud, responsable, tipo.getId()), ResumenRespuesta.VACIO))
-                .isInstanceOf(RespuestaNoEncontradaException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(RespuestaNoEncontradaException.class);
     }
 
     @ParameterizedTest
@@ -136,8 +134,7 @@ class EliminarRespuestaValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(entrada,
                 resumenSolicitud(solicitud, responsable, tipo.getId()),
                 new ResumenRespuesta(solicitud, estado)))
-                .isInstanceOf(RespuestaNoEnRevisionException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(RespuestaNoEnRevisionException.class);
     }
 
     @Test

@@ -42,7 +42,8 @@ public final class UsuariosApiMessages {
                 "Modifica los datos personales enviados de un usuario, cualquiera sea su estado, y sincroniza "
                         + "el email y el nombre en el proveedor de identidad (Keycloak). Los roles enviados se "
                         + "agregan o, si fueron eliminados lógicamente, se reactivan; un rol ausente de la lista "
-                        + "no se revoca. Solo cambian los campos presentes en el body; el estado del usuario no "
+                        + "no se revoca. Los nombres y los apellidos se envían juntos o ninguno de los dos; el "
+                        + "nombre completo se deriva de ambos. Solo cambian los campos presentes en el body; el estado del usuario no "
                         + "cambia. Un usuario eliminado no puede modificarse; primero debe activarse mediante el "
                         + "cambio de estado. Exclusivo del rol administrador.";
         public static final String MODIFICAR_RESP_204 = "Usuario modificado";
@@ -88,6 +89,17 @@ public final class UsuariosApiMessages {
                         + "se combinan con OR/AND en el filtro. Exclusivo del rol administrador.";
         public static final String CONSULTAR_RESP_200 = "Página de usuarios";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
+
+        public static final String CONSULTAR_IDENTIDAD_SUMMARY = "Consultar la identidad de un usuario";
+        public static final String CONSULTAR_IDENTIDAD_DESCRIPTION =
+                "Devuelve los nombres y apellidos vigentes que el proveedor de identidad tiene del usuario, "
+                        + "para precargar el formulario de modificación. Falla si el usuario no existe o está "
+                        + "eliminado. Exclusivo del rol administrador.";
+        public static final String CONSULTAR_IDENTIDAD_RESP_200 = "Nombres y apellidos del usuario";
+        public static final String CONSULTAR_IDENTIDAD_RESP_400 = "Identificador de usuario inválido";
+        public static final String CONSULTAR_IDENTIDAD_RESP_422 = "Usuario inexistente o eliminado";
+        public static final String CONSULTAR_IDENTIDAD_RESP_503 =
+                "No fue posible leer la identidad en el proveedor; el servicio no está disponible temporalmente";
     }
 
     public static final class Estudiante {

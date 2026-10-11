@@ -42,6 +42,9 @@ class EvaluacionFichaPerfilAsesorQueryOutputAdapterTest {
     private EvaluacionFichaPerfilEstudianteQueryRepository estudianteRepository;
 
     @Autowired
+    private EvaluacionFichaPerfilCoordinadorQueryRepository coordinadorRepository;
+
+    @Autowired
     private EvaluacionFichaPerfilAsesorQueryRepository asesorRepository;
 
     private EvaluacionFichaPerfilQueryOutputAdapter adapter;
@@ -51,6 +54,7 @@ class EvaluacionFichaPerfilAsesorQueryOutputAdapterTest {
         adapter = new EvaluacionFichaPerfilQueryOutputAdapter(
                 repository,
                 estudianteRepository,
+                coordinadorRepository,
                 asesorRepository,
                 new EvaluacionFichaPerfilAsesorJpaSpecification());
         persistirEstado("EN_EVALUACION", "En Evaluación");
