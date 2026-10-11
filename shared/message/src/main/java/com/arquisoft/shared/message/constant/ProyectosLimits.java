@@ -22,6 +22,6 @@ public final class ProyectosLimits {
 
         private AsesorProyectoGrado() {}
 
-        public static final int MAX_ASESORES_ASIGNADOS = 2;
+        public static final int MAX_ASESORES_ASIGNADOS = 1;
     }
 }

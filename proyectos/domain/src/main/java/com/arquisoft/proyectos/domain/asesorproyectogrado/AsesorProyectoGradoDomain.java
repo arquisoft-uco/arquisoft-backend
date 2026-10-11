@@ -28,7 +28,7 @@ public final class AsesorProyectoGradoDomain {
         vinculo.setId();
         vinculo.setAsesor(asesor, result);
         vinculo.setProyectoGrado(proyectoGrado, result);
-        vinculo.setEstadoAsesor(EstadoAsesor.ASIGNADO, result);
+        vinculo.setEstadoAsesorInicial();
         vinculo.setFechaAsignado();
 
         result.lanzarSiTieneErrores();
@@ -68,13 +68,8 @@ public final class AsesorProyectoGradoDomain {
         this.proyectoGrado = proyectoGrado;
     }
 
-    private void setEstadoAsesor(EstadoAsesor estadoAsesor, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(estadoAsesor,
-                ProyectosFields.AsesorProyectoGrado.ESTADO_ASESOR,
-                ProyectosCodes.AsesorProyectoGrado.ESTADO_ASESOR_REQUERIDO, result)) {
-            return;
-        }
-        this.estadoAsesor = estadoAsesor;
+    private void setEstadoAsesorInicial() {
+        this.estadoAsesor = EstadoAsesor.ASIGNADO;
     }
 
     private void setFechaAsignado() {

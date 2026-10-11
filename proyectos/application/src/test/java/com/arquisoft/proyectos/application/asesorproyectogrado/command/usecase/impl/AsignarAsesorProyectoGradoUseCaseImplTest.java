@@ -82,7 +82,7 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
         when(proyectoGradoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
         when(asesorPorIdFinder.obtener(asesor.getId())).thenReturn(asesor);
         when(asesorYaAsignadoFinder.obtener(entrada)).thenReturn(false);
-        when(asesoresAsignadosContadorFinder.obtener(proyecto.getId())).thenReturn(1L);
+        when(asesoresAsignadosContadorFinder.obtener(proyecto.getId())).thenReturn(0L);
     }
 
     @Test
@@ -118,7 +118,7 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesor.getId());
         orden.verify(asesorYaAsignadoFinder, times(1)).obtener(entrada);
         orden.verify(asesoresAsignadosContadorFinder, times(1)).obtener(proyecto.getId());
-        orden.verify(validator).validar(entrada, proyecto, asesor, false, 1L);
+        orden.verify(validator).validar(entrada, proyecto, asesor, false, 0L);
         orden.verify(asesorProyectoGradoOutputPort).asignar(any());
         orden.verify(eventPublisher).publish(any());
         orden.verify(logger).info(eq(AsesorProyectoGradoKey.LOG_ASIGNADO), eq(proyecto.getId()), eq(asesor.getId()));
@@ -128,7 +128,7 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
     void debeNoAsignarNiPublicar_cuandoElValidatorRechaza() {
         // Arrange
         stubFinders();
-        doThrow(new CupoAsesoresExcedidoException(2))
+        doThrow(new CupoAsesoresExcedidoException(1))
                 .when(validator).validar(eq(entrada), any(), any(), eq(false), anyLong());
 
         // Act & Assert

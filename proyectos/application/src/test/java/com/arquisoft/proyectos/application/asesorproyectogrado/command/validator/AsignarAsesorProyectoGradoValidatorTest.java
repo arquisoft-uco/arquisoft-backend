@@ -53,7 +53,7 @@ class AsignarAsesorProyectoGradoValidatorTest {
     @Test
     void debePasar_cuandoTodoEsValido() {
         // Act & Assert
-        assertThatCode(() -> validator.validar(entrada(), proyecto, asesor, false, 1))
+        assertThatCode(() -> validator.validar(entrada(), proyecto, asesor, false, 0))
                 .doesNotThrowAnyException();
     }
 
@@ -119,14 +119,14 @@ class AsignarAsesorProyectoGradoValidatorTest {
     @Test
     void debeLanzarYaAsignado_antesQueCupo_cuandoAmbosSeCumplen() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada(), proyecto, asesor, true, 2))
+        assertThatThrownBy(() -> validator.validar(entrada(), proyecto, asesor, true, 1))
                 .isInstanceOf(AsesorYaAsignadoException.class);
     }
 
     @Test
-    void debeLanzarCupoExcedido_cuandoYaHayDosAsesoresAsignados() {
+    void debeLanzarCupoExcedido_cuandoElProyectoYaTieneUnAsesorAsignado() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada(), proyecto, asesor, false, 2))
+        assertThatThrownBy(() -> validator.validar(entrada(), proyecto, asesor, false, 1))
                 .isInstanceOf(CupoAsesoresExcedidoException.class);
     }
 }
