@@ -85,6 +85,26 @@ public final class EvaluacionesCodes {
         public static final String ESTADO_REQUERIDO = "EVALUACION_ESTADO_REQUERIDO";
         public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
+        public static final String NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
+    }
+
+    public static final class EvaluacionJurado {
+
+        private EvaluacionJurado() {}
+
+        public static final String EVALUACION_REQUERIDO = "EVALUACION_JURADO_EVALUACION_REQUERIDO";
+        public static final String JURADO_REQUERIDO = "EVALUACION_JURADO_JURADO_REQUERIDO";
+        public static final String JURADO_INVALIDO = "EVALUACION_JURADO_JURADO_INVALIDO";
+        public static final String JURADOS_NO_ENCONTRADOS = "EVALUACION_JURADO_JURADOS_NO_ENCONTRADOS";
+        public static final String JURADOS_YA_ASIGNADOS = "EVALUACION_JURADO_JURADOS_YA_ASIGNADOS";
+    }
+
+    public static final class AsignacionJuradosEvaluacion {
+
+        private AsignacionJuradosEvaluacion() {}
+
+        public static final String LOTE_VACIO = "ASIGNACION_JURADOS_EVALUACION_LOTE_VACIO";
+        public static final String JURADOS_REPETIDOS = "ASIGNACION_JURADOS_EVALUACION_JURADOS_REPETIDOS";
     }
 
     public static final class EvaluacionCuantitativaJurado {

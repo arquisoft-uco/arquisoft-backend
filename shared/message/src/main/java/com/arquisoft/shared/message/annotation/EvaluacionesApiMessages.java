@@ -141,4 +141,20 @@ public final class EvaluacionesApiMessages {
                         + "trabajo de grado, ordenados por categoría y luego por nombre";
         public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del jurado";
     }
+
+    public static final class EvaluacionJurado {
+
+        private EvaluacionJurado() {}
+
+        public static final String TAG_NAME = "Jurados de la evaluación";
+        public static final String TAG_DESCRIPTION = "Asignación de jurados a una evaluación";
+        public static final String ASIGNAR_SUMMARY = "Asignar jurados a una evaluación";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Asigna un conjunto de jurados a una evaluación y devuelve los identificadores generados";
+        public static final String ASIGNAR_RESP_201 = "Jurados asignados";
+        public static final String ASIGNAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String ASIGNAR_RESP_422 =
+                "La evaluación no existe o está finalizada, algún jurado no existe o ya está asignado, "
+                        + "o hay jurados repetidos";
+    }
 }
