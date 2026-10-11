@@ -238,6 +238,21 @@ public final class SolicitudesApiMessages {
                 "Sin permisos para consultar respuestas de solicitudes de novedad para el coordinador "
                         + "recibidas";
 
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_SUMMARY =
+                "Consultar respuestas de solicitudes de novedad para el asesor recibidas";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_DESCRIPTION =
+                "Permite a un estudiante consultar de forma paginada y filtrable las respuestas que ha "
+                        + "recibido a sus solicitudes de novedad para el asesor. El alcance se "
+                        + "limita a las respuestas de solicitudes cuyo remitente es el estudiante "
+                        + "autenticado.";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_RESP_200 =
+                "Página de respuestas de solicitudes de novedad para el asesor recibidas";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar respuestas de solicitudes de novedad para el asesor "
+                        + "recibidas";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_SUMMARY =
                 "Consultar respuestas de solicitudes de novedad para el coordinador enviadas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_DESCRIPTION =
