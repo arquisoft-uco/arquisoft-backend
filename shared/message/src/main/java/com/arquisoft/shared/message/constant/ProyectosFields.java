@@ -60,6 +60,14 @@ public final class ProyectosFields {
         public static final String ESTUDIANTES = "estudiantes";
     }
 
+    public static final class EstadoProyectoGrado {
+
+        private EstadoProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String ESTADO_INICIAL = "estadoInicial";
+    }
+
     public static final class AsesorProyectoGrado {
 
         private AsesorProyectoGrado() {}

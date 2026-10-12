@@ -5,6 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de EstadoProyectoGrado. */
 public enum EstadoProyectoGradoKey implements ClaveMensaje {
 
+    LOG_CREADO("proyectos.aplicacion.estadoproyectogrado.log.creado", 3),
+    LOG_GUARDADO("proyectos.infraestructura.estadoproyectogrado.log.guardado", 2),
     ERROR_NO_ENCONTRADO("proyectos.dominio.estadoproyectogrado.error.no-encontrado", 1);
 
     private final String clave;

@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.application.proyectogrado.query.usecase.impl;
 
-import com.arquisoft.proyectos.application.estadoproyectogrado.query.readmodel.EstadoProyectoGradoReadModel;
+import com.arquisoft.proyectos.application.estadoproyecto.query.readmodel.EstadoProyectoReadModel;
 import com.arquisoft.proyectos.application.proyectogrado.query.criteria.ProyectoGradoCriteria;
 import com.arquisoft.proyectos.application.proyectogrado.query.readmodel.ProyectoGradoReadModel;
 import com.arquisoft.proyectos.application.proyectogrado.query.secondaryport.ProyectoGradoQueryOutputPort;
@@ -40,7 +40,7 @@ class ConsultarProyectosGradoCoordinadorUseCaseImplTest {
         // Arrange
         var criteria = ProyectoGradoCriteria.builder().pagina(0).tamanio(10).build();
         var proyecto = new ProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                "Sistema de gestion", new EstadoProyectoGradoReadModel("EN_PROCESO", "En proceso"));
+                "Sistema de gestion", new EstadoProyectoReadModel("EN_PROCESO", "En proceso"));
         var esperado = PaginatedResult.of(List.of(proyecto), 0, 10, 1L);
         when(proyectoGradoQueryOutputPort.consultarTodas(criteria)).thenReturn(esperado);
 

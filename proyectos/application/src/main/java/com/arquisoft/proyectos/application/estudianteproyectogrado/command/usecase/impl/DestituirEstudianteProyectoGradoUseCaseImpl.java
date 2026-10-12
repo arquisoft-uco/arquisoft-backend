@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.application.estudianteproyectogrado.command.usecase.impl;
 
+import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.finder.EstudianteVinculadoFinder;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.secondaryport.EstudianteProyectoGradoOutputPort;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.usecase.DestituirEstudianteProyectoGradoUseCase;
@@ -17,6 +18,7 @@ public class DestituirEstudianteProyectoGradoUseCaseImpl implements DestituirEst
 
     private final EstudianteProyectoGradoOutputPort estudianteProyectoGradoOutputPort;
     private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private final EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
     private final EstudianteVinculadoFinder estudianteVinculadoFinder;
     private final DestituirEstudianteProyectoGradoValidator validator;
     private final AppLogger logger;
@@ -26,11 +28,13 @@ public class DestituirEstudianteProyectoGradoUseCaseImpl implements DestituirEst
         logger.info(EstudianteProyectoGradoKey.LOG_DESTITUYENDO, entrada.getProyectoGrado(), entrada.getEstudiante());
 
         var proyecto = proyectoGradoPorIdFinder.obtener(entrada.getProyectoGrado());
+        var estadoActual = estadoActualProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         var vinculado = estudianteVinculadoFinder.obtener(entrada);
 
-        logger.debug(EstudianteProyectoGradoKey.LOG_VERIFICACION_DESTITUIR, !proyecto.esVacio(), vinculado);
+        logger.debug(EstudianteProyectoGradoKey.LOG_VERIFICACION_DESTITUIR,
+                !proyecto.esVacio(), !estadoActual.esVacio(), vinculado);
 
-        validator.validar(entrada, proyecto, vinculado);
+        validator.validar(entrada, proyecto, estadoActual, vinculado);
 
         estudianteProyectoGradoOutputPort.desvincular(entrada.getProyectoGrado(), entrada.getEstudiante());
 

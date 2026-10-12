@@ -16,16 +16,20 @@ import java.util.UUID;
 @Entity
 @Immutable
 @Subselect("""
-        SELECT pg.id                       AS id,
-               pg.ficha_perfil_id          AS ficha_perfil_id,
-               pg.titulo_proyecto          AS titulo_proyecto,
-               pg.coordinador_id           AS coordinador_id,
-               pg.estado_proyecto_grado_id AS estado_id,
-               e.nombre                    AS estado_nombre
+        SELECT pg.id                  AS id,
+               pg.ficha_perfil_id     AS ficha_perfil_id,
+               pg.titulo_proyecto     AS titulo_proyecto,
+               pg.coordinador_id      AS coordinador_id,
+               epg.estado_proyecto_id AS estado_id,
+               e.nombre               AS estado_nombre
         FROM proyecto_grado pg
-        JOIN estado_proyecto_grado e ON e.id = pg.estado_proyecto_grado_id
+        JOIN estado_proyecto_grado epg ON epg.proyecto_grado_id = pg.id
+             AND NOT EXISTS (SELECT 1 FROM estado_proyecto_grado s
+                             WHERE s.proyecto_grado_id = epg.proyecto_grado_id
+                               AND s.fecha_actualizacion > epg.fecha_actualizacion)
+        JOIN estado_proyecto e ON e.id = epg.estado_proyecto_id
         """)
-@Synchronize({"proyecto_grado", "estado_proyecto_grado"})
+@Synchronize({"proyecto_grado", "estado_proyecto_grado", "estado_proyecto"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.domain.proyectogrado.rules.impl;
 
-import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGrado;
+import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoFinalizadoException;
 import com.arquisoft.proyectos.domain.proyectogrado.model.EstadoActualProyectoGrado;
 import com.arquisoft.shared.message.constant.ProyectosCodes;
@@ -19,8 +19,8 @@ class ProyectoGradoNoFinalizadoRuleImplTest {
     @Test
     void debePasar_cuandoEstaEnCualquierEstadoDistintoDeFinalizado() {
         // Arrange
-        var estados = List.of(EstadoProyectoGrado.EN_PROCESO, EstadoProyectoGrado.LISTO_PARA_REVISION,
-                EstadoProyectoGrado.ATRASADO);
+        var estados = List.of(EstadoProyecto.EN_PROCESO, EstadoProyecto.LISTO_PARA_REVISION,
+                EstadoProyecto.ATRASADO, EstadoProyecto.VACIO);
 
         // Act & Assert
         for (var estado : estados) {
@@ -32,7 +32,7 @@ class ProyectoGradoNoFinalizadoRuleImplTest {
     @Test
     void debeLanzarFinalizado_cuandoEstaFinalizado() {
         // Arrange
-        var actual = new EstadoActualProyectoGrado(UtilUUID.generarNuevoUUID(), EstadoProyectoGrado.FINALIZADO);
+        var actual = new EstadoActualProyectoGrado(UtilUUID.generarNuevoUUID(), EstadoProyecto.FINALIZADO);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(actual))

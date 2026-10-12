@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.infrastructure.proyectogrado.query.primaryadapter.web.mapper;
 
-import com.arquisoft.proyectos.application.estadoproyectogrado.query.readmodel.EstadoProyectoGradoReadModel;
+import com.arquisoft.proyectos.application.estadoproyecto.query.readmodel.EstadoProyectoReadModel;
 import com.arquisoft.proyectos.application.proyectogrado.query.readmodel.ProyectoGradoReadModel;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ class ProyectoGradoResponseMapperTest {
         var id = UtilUUID.generarNuevoUUID();
         var ficha = UtilUUID.generarNuevoUUID();
         var readModel = new ProyectoGradoReadModel(id, ficha, "Sistema de gestion",
-                new EstadoProyectoGradoReadModel("EN_PROCESO", "En proceso"));
+                new EstadoProyectoReadModel("EN_PROCESO", "En proceso"));
 
         // Act
         var dto = ProyectoGradoResponseMapper.toResponse(readModel);
