@@ -2,6 +2,10 @@ package com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.seconda
 
 import com.arquisoft.shared.jpa.repository.QueryRepository;
 
-public interface EstadoEvaluacionEvaluacionesQueryRepository
+import java.util.List;
+
+public interface EstadoEvaluacionQueryRepository
         extends QueryRepository<EstadoEvaluacionJpaQueryEntity, String> {
+
+    List<EstadoEvaluacionJpaQueryEntity> findAllByOrderByOrdenAsc();
 }

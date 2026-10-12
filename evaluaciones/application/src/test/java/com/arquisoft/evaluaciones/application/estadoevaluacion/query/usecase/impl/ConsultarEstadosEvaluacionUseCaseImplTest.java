@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarEstadosEvaluacionEvaluacionesUseCaseImplTest {
+class ConsultarEstadosEvaluacionUseCaseImplTest {
 
     @Mock
     private EstadoEvaluacionQueryOutputPort queryOutputPort;
@@ -27,12 +27,12 @@ class ConsultarEstadosEvaluacionEvaluacionesUseCaseImplTest {
     private AppLogger logger;
 
     @InjectMocks
-    private ConsultarEstadosEvaluacionEvaluacionesUseCaseImpl useCase;
+    private ConsultarEstadosEvaluacionUseCaseImpl useCase;
 
     @Test
     void debeRetornarTodosLosEstados_cuandoElPuertoDevuelveResultados() {
         // Arrange
-        List<EstadoEvaluacionReadModel> esperados = List.of(
+        var esperados = List.of(
                 new EstadoEvaluacionReadModel("PENDIENTE", "Pendiente", "Indica que una evaluación está pendiente por realizar"),
                 new EstadoEvaluacionReadModel("EN_PROGRESO", "En progreso", "Indica que una evaluación está en curso"),
                 new EstadoEvaluacionReadModel("FINALIZADA", "Finalizada", "Indica que una evaluación ha sido finalizada")
@@ -40,7 +40,7 @@ class ConsultarEstadosEvaluacionEvaluacionesUseCaseImplTest {
         when(queryOutputPort.consultarTodos()).thenReturn(esperados);
 
         // Act
-        List<EstadoEvaluacionReadModel> resultado = useCase.ejecutar();
+        var resultado = useCase.ejecutar();
 
         // Assert
         assertThat(resultado).containsExactlyElementsOf(esperados);
@@ -52,7 +52,7 @@ class ConsultarEstadosEvaluacionEvaluacionesUseCaseImplTest {
         when(queryOutputPort.consultarTodos()).thenReturn(List.of());
 
         // Act
-        List<EstadoEvaluacionReadModel> resultado = useCase.ejecutar();
+        var resultado = useCase.ejecutar();
 
         // Assert
         assertThat(resultado).isEmpty();

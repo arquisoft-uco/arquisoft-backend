@@ -10,13 +10,13 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class EstadoEvaluacionEvaluacionesQueryOutputAdapter implements EstadoEvaluacionQueryOutputPort {
+public class EstadoEvaluacionQueryOutputAdapter implements EstadoEvaluacionQueryOutputPort {
 
-    private final EstadoEvaluacionEvaluacionesQueryRepository repository;
+    private final EstadoEvaluacionQueryRepository repository;
 
     @Override
     public List<EstadoEvaluacionReadModel> consultarTodos() {
-        return repository.findAll()
+        return repository.findAllByOrderByOrdenAsc()
                 .stream()
                 .map(EstadoEvaluacionQueryMapper::toReadModel)
                 .toList();

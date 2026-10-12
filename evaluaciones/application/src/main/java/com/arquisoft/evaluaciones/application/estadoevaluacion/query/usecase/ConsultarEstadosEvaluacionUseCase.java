@@ -5,5 +5,5 @@ import com.arquisoft.shared.usecase.SupplierUseCase;
 
 import java.util.List;
 
-public interface ConsultarEstadosEvaluacionEvaluacionesUseCase extends SupplierUseCase<List<EstadoEvaluacionReadModel>> {
+public interface ConsultarEstadosEvaluacionUseCase extends SupplierUseCase<List<EstadoEvaluacionReadModel>> {
 }

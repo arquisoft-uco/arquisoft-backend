@@ -1,7 +1,6 @@
 package com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.primaryadapter.web;
 
-import com.arquisoft.evaluaciones.application.estadoevaluacion.query.primaryport.interactor.ConsultarEstadosEvaluacionEvaluacionesInteractor;
-import com.arquisoft.evaluaciones.application.estadoevaluacion.query.readmodel.EstadoEvaluacionReadModel;
+import com.arquisoft.evaluaciones.application.estadoevaluacion.query.primaryport.interactor.ConsultarEstadosEvaluacionInteractor;
 import com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.primaryadapter.web.dto.EstadoEvaluacionResponseDTO;
 import com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.primaryadapter.web.mapper.EstadoEvaluacionResponseMapper;
 import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
@@ -31,9 +30,9 @@ import java.util.List;
 @Tag(
         name = EvaluacionesApiMessages.EstadoEvaluacion.TAG_NAME,
         description = EvaluacionesApiMessages.EstadoEvaluacion.TAG_DESCRIPTION)
-public class ConsultarEstadosEvaluacionEvaluacionesController {
+public class ConsultarEstadosEvaluacionController {
 
-    private final ConsultarEstadosEvaluacionEvaluacionesInteractor interactor;
+    private final ConsultarEstadosEvaluacionInteractor interactor;
 
     @GetMapping
     @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_ESTADO_EVALUACION_VIEW)
@@ -56,7 +55,7 @@ public class ConsultarEstadosEvaluacionEvaluacionesController {
                     description = EvaluacionesApiMessages.Comun.RESP_403)
     })
     public ResponseEntity<List<EstadoEvaluacionResponseDTO>> consultarEstadosEvaluacion() {
-        List<EstadoEvaluacionReadModel> estados = interactor.ejecutar();
+        var estados = interactor.ejecutar();
 
         return ResponseEntity.ok(estados.stream()
                 .map(EstadoEvaluacionResponseMapper::toResponse)

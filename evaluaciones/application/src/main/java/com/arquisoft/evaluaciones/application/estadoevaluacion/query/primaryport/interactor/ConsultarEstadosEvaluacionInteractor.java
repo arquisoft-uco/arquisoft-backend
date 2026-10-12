@@ -5,5 +5,5 @@ import com.arquisoft.shared.interactor.SupplierInteractor;
 
 import java.util.List;
 
-public interface ConsultarEstadosEvaluacionEvaluacionesInteractor extends SupplierInteractor<List<EstadoEvaluacionReadModel>> {
+public interface ConsultarEstadosEvaluacionInteractor extends SupplierInteractor<List<EstadoEvaluacionReadModel>> {
 }

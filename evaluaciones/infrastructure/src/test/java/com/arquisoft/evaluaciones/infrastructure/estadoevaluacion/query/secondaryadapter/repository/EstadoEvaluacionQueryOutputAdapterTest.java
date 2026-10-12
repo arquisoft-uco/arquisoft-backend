@@ -7,44 +7,43 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// La tabla estado_evaluacion no tiene @Entity de escritura en evaluaciones (esta HU es solo
-// lectura y el plan prohíbe crear un lado command/ para esta feature), así que se crea aquí con
-// el mismo DDL de la migración V20260906143120 para poder ejercitar el @Subselect real, tal como
-// exige la skill de testing.
 @DataJpaTest
-class EstadoEvaluacionEvaluacionesQueryOutputAdapterTest {
+class EstadoEvaluacionQueryOutputAdapterTest {
 
     @Autowired
     private EntityManager entityManager;
 
     @Autowired
-    private EstadoEvaluacionEvaluacionesQueryRepository repository;
+    private EstadoEvaluacionQueryRepository repository;
 
-    private EstadoEvaluacionEvaluacionesQueryOutputAdapter adapter;
+    private EstadoEvaluacionQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EstadoEvaluacionEvaluacionesQueryOutputAdapter(repository);
+        adapter = new EstadoEvaluacionQueryOutputAdapter(repository);
         entityManager.createNativeQuery("""
                 CREATE TABLE IF NOT EXISTS estado_evaluacion (
                     id VARCHAR(60) NOT NULL,
                     nombre VARCHAR(60) NOT NULL,
                     descripcion VARCHAR(300) NOT NULL,
+                    orden INTEGER,
                     PRIMARY KEY (id))
                 """).executeUpdate();
+        entityManager.createNativeQuery(
+                "ALTER TABLE estado_evaluacion ADD COLUMN IF NOT EXISTS orden INTEGER").executeUpdate();
         entityManager.flush();
     }
 
-    private void sembrarEstado(String id, String nombre, String descripcion) {
+    private void sembrarEstado(String id, String nombre, String descripcion, int orden) {
         entityManager.createNativeQuery(
-                        "INSERT INTO estado_evaluacion (id, nombre, descripcion) VALUES (?, ?, ?)")
+                        "INSERT INTO estado_evaluacion (id, nombre, descripcion, orden) VALUES (?, ?, ?, ?)")
                 .setParameter(1, id)
                 .setParameter(2, nombre)
                 .setParameter(3, descripcion)
+                .setParameter(4, orden)
                 .executeUpdate();
     }
 
@@ -58,16 +57,16 @@ class EstadoEvaluacionEvaluacionesQueryOutputAdapterTest {
     // Verificado empiricamente: con H2 (MVStore) un SELECT sin ORDER BY sobre esta tabla preserva
     // el orden de insercion, igual que se espera de Postgres en produccion.
     @Test
-    void debeRetornarLos3EstadosEnElOrdenDeInsercion_cuandoLaTablaEstaPoblada() {
+    void debeRetornarLosEstadosOrdenadosPorOrden_cuandoSeInsertanDesordenados() {
         // Arrange
-        sembrarEstado("PENDIENTE", "Pendiente", "Indica que una evaluación está pendiente por realizar");
-        sembrarEstado("EN_PROGRESO", "En progreso", "Indica que una evaluación está en curso");
-        sembrarEstado("FINALIZADA", "Finalizada", "Indica que una evaluación ha sido finalizada");
+        sembrarEstado("FINALIZADA", "Finalizada", "Indica que una evaluación ha sido finalizada", 3);
+        sembrarEstado("PENDIENTE", "Pendiente", "Indica que una evaluación está pendiente por realizar", 1);
+        sembrarEstado("EN_PROGRESO", "En progreso", "Indica que una evaluación está en curso", 2);
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        List<EstadoEvaluacionReadModel> resultado = adapter.consultarTodos();
+        var resultado = adapter.consultarTodos();
 
         // Assert
         assertThat(resultado)
@@ -81,22 +80,18 @@ class EstadoEvaluacionEvaluacionesQueryOutputAdapterTest {
         assertThat(adapter.consultarTodos()).isEmpty();
     }
 
-    // Criterio de aceptación #4 del plan: "el catálogo cambia en el futuro (nueva fila) -> el
-    // endpoint la refleja sin cambios de código". El adapter no debe filtrar por los 3 ids
-    // conocidos del enum de dominio (esta es una consulta de solo lectura sin lado command/): una
-    // cuarta fila arbitraria debe aparecer igual que las 3 del catálogo actual.
     @Test
     void debeReflejarUnaFilaNueva_cuandoElCatalogoCrece() {
         // Arrange
-        sembrarEstado("PENDIENTE", "Pendiente", "Indica que una evaluación está pendiente por realizar");
-        sembrarEstado("EN_PROGRESO", "En progreso", "Indica que una evaluación está en curso");
-        sembrarEstado("FINALIZADA", "Finalizada", "Indica que una evaluación ha sido finalizada");
-        sembrarEstado("SUSPENDIDA", "Suspendida", "Estado hipotético agregado al catálogo en el futuro");
+        sembrarEstado("PENDIENTE", "Pendiente", "Indica que una evaluación está pendiente por realizar", 1);
+        sembrarEstado("EN_PROGRESO", "En progreso", "Indica que una evaluación está en curso", 2);
+        sembrarEstado("FINALIZADA", "Finalizada", "Indica que una evaluación ha sido finalizada", 3);
+        sembrarEstado("SUSPENDIDA", "Suspendida", "Estado hipotético agregado al catálogo en el futuro", 4);
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        List<EstadoEvaluacionReadModel> resultado = adapter.consultarTodos();
+        var resultado = adapter.consultarTodos();
 
         // Assert
         assertThat(resultado)
@@ -107,12 +102,12 @@ class EstadoEvaluacionEvaluacionesQueryOutputAdapterTest {
     @Test
     void debeMapearCorrectamenteCadaCampo_delEntityAlReadModel() {
         // Arrange
-        sembrarEstado("PENDIENTE", "Pendiente", "Indica que una evaluación está pendiente por realizar");
+        sembrarEstado("PENDIENTE", "Pendiente", "Indica que una evaluación está pendiente por realizar", 1);
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        List<EstadoEvaluacionReadModel> resultado = adapter.consultarTodos();
+        var resultado = adapter.consultarTodos();
 
         // Assert
         assertThat(resultado).singleElement().satisfies(estado -> {

@@ -1,7 +1,7 @@
 package com.arquisoft.evaluaciones.application.estadoevaluacion.query.primaryport.interactor.impl;
 
 import com.arquisoft.evaluaciones.application.estadoevaluacion.query.readmodel.EstadoEvaluacionReadModel;
-import com.arquisoft.evaluaciones.application.estadoevaluacion.query.usecase.ConsultarEstadosEvaluacionEvaluacionesUseCase;
+import com.arquisoft.evaluaciones.application.estadoevaluacion.query.usecase.ConsultarEstadosEvaluacionUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,24 +15,24 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarEstadosEvaluacionEvaluacionesInteractorImplTest {
+class ConsultarEstadosEvaluacionInteractorImplTest {
 
     @Mock
-    private ConsultarEstadosEvaluacionEvaluacionesUseCase useCase;
+    private ConsultarEstadosEvaluacionUseCase useCase;
 
     @InjectMocks
-    private ConsultarEstadosEvaluacionEvaluacionesInteractorImpl interactor;
+    private ConsultarEstadosEvaluacionInteractorImpl interactor;
 
     @Test
     void debeDelegarEnElUseCase_cuandoSeEjecuta() {
         // Arrange
-        List<EstadoEvaluacionReadModel> esperados = List.of(
+        var esperados = List.of(
                 new EstadoEvaluacionReadModel("PENDIENTE", "Pendiente", "Indica que una evaluación está pendiente por realizar")
         );
         when(useCase.ejecutar()).thenReturn(esperados);
 
         // Act
-        List<EstadoEvaluacionReadModel> resultado = interactor.ejecutar();
+        var resultado = interactor.ejecutar();
 
         // Assert
         assertThat(resultado).containsExactlyElementsOf(esperados);
@@ -45,7 +45,7 @@ class ConsultarEstadosEvaluacionEvaluacionesInteractorImplTest {
         when(useCase.ejecutar()).thenReturn(List.of());
 
         // Act
-        List<EstadoEvaluacionReadModel> resultado = interactor.ejecutar();
+        var resultado = interactor.ejecutar();
 
         // Assert
         assertThat(resultado).isEmpty();

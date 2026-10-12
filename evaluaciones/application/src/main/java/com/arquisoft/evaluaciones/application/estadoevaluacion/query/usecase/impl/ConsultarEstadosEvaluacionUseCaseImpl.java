@@ -2,7 +2,7 @@ package com.arquisoft.evaluaciones.application.estadoevaluacion.query.usecase.im
 
 import com.arquisoft.evaluaciones.application.estadoevaluacion.query.readmodel.EstadoEvaluacionReadModel;
 import com.arquisoft.evaluaciones.application.estadoevaluacion.query.secondaryport.EstadoEvaluacionQueryOutputPort;
-import com.arquisoft.evaluaciones.application.estadoevaluacion.query.usecase.ConsultarEstadosEvaluacionEvaluacionesUseCase;
+import com.arquisoft.evaluaciones.application.estadoevaluacion.query.usecase.ConsultarEstadosEvaluacionUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EstadoEvaluacionKey;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ConsultarEstadosEvaluacionEvaluacionesUseCaseImpl implements ConsultarEstadosEvaluacionEvaluacionesUseCase {
+public class ConsultarEstadosEvaluacionUseCaseImpl implements ConsultarEstadosEvaluacionUseCase {
 
     private final EstadoEvaluacionQueryOutputPort queryOutputPort;
     private final AppLogger logger;

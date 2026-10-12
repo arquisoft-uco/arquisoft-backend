@@ -1,6 +1,6 @@
 package com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.primaryadapter.web;
 
-import com.arquisoft.evaluaciones.application.estadoevaluacion.query.primaryport.interactor.ConsultarEstadosEvaluacionEvaluacionesInteractor;
+import com.arquisoft.evaluaciones.application.estadoevaluacion.query.primaryport.interactor.ConsultarEstadosEvaluacionInteractor;
 import com.arquisoft.evaluaciones.application.estadoevaluacion.query.readmodel.EstadoEvaluacionReadModel;
 import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -30,13 +30,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ConsultarEstadosEvaluacionEvaluacionesController.class)
+@WebMvcTest(ConsultarEstadosEvaluacionController.class)
 @Import({
         com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
-        ConsultarEstadosEvaluacionEvaluacionesControllerTest.TestSecurityConfig.class
+        ConsultarEstadosEvaluacionControllerTest.TestSecurityConfig.class
 })
-class ConsultarEstadosEvaluacionEvaluacionesControllerTest {
+class ConsultarEstadosEvaluacionControllerTest {
 
     private static final String RUTA = "/evaluaciones/estados-evaluacion";
 
@@ -63,18 +63,11 @@ class ConsultarEstadosEvaluacionEvaluacionesControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ConsultarEstadosEvaluacionEvaluacionesInteractor interactor;
+    private ConsultarEstadosEvaluacionInteractor interactor;
 
     @MockitoBean
     private GestorTraza gestorTraza;
 
-    // Los 4 roles autorizados por el plan (estudiante, coordinador, asesor, jurado) se mapean en
-    // Keycloak al MISMO client role `evaluaciones:estado-evaluacion:view`: Spring Security solo ve
-    // esa autoridad, nunca el rol de realm. Un test por "rol" con el mismo JWT simulado (misma
-    // autoridad) era el mismo Act y el mismo Assert repetido 3 veces (anti-patrón de duplicación) y
-    // no hubiera detectado una regresión distinta a esta; se consolida en un solo test que además
-    // verifica el orden de la lista a través del controller, y se agrega abajo el caso negativo real
-    // que sí distingue algo — un rol autenticado pero DISTINTO al requerido.
     @Test
     void debeRetornar200ConLaListaEnOrden_cuandoElUsuarioTieneElClientRoleRequerido() throws Exception {
         // Arrange
