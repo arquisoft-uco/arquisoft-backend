@@ -438,3 +438,12 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
 - **Un client role por endpoint, propio y distinto**, para concederlo o revocarlo por separado en
   Keycloak. Dos endpoints sobre el mismo recurso se diferencian con un calificador:
   `fichas:ficha-perfil-coordinador:view` vs `fichas:ficha-perfil-asesor:view`.
+- **Todo client role nuevo se registra en `keycloak/realm-arquisoft.json`**, en dos sitios: su
+  definición en `roles.client.arquisoft-api` (`id` UUID nuevo, `clientRole: true`,
+  `composite: false`, el `containerId` de sus hermanos) y su nombre en
+  `composites.client.arquisoft-api` de cada rol realm que usa el endpoint (si ese rol realm era
+  `composite: false`, pasa a `true` y gana el bloque `composites`). Sin esto todo compila y los tests
+  pasan —`jwt().authorities(...)` inyecta el rol a mano—, pero en un Keycloak importado de cero ningún
+  usuario lo recibe y el endpoint responde 403 a todos. Referencia: el rol realm `asesor`, que compone
+  `proyectos:proyecto-grado-asesor-detalle:view`. Un JSON roto aborta el `--import-realm` entero, y
+  un Keycloak que ya tiene el realm ignora el archivo (`keycloak/README.md`).
