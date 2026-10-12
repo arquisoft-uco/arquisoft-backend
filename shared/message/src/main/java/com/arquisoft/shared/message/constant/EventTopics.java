@@ -89,6 +89,9 @@ public final class EventTopics {
                 "usuarios.bibliotecario.agregado";
         public static final String BIBLIOTECARIO_REMOVIDO =
                 "usuarios.bibliotecario.removido";
+
+        public static final String JURADO_AGREGADO =
+                "usuarios.jurado.agregado";
     }
 
     public static final class Evaluaciones {

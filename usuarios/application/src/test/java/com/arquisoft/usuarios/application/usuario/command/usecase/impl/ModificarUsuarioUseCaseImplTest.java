@@ -12,6 +12,7 @@ import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstu
 import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
 import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
 import com.arquisoft.usuarios.application.bibliotecario.command.usecase.AgregarBibliotecarioUseCase;
+import com.arquisoft.usuarios.application.jurado.command.usecase.AgregarJuradoUseCase;
 import com.arquisoft.usuarios.domain.bibliotecario.exception.BibliotecarioUsuarioDuplicadoException;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoOtroUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtraIdentidadExisteFinder;
@@ -84,6 +85,8 @@ class ModificarUsuarioUseCaseImplTest {
     @Mock
     private AgregarBibliotecarioUseCase agregarBibliotecarioUseCase;
     @Mock
+    private AgregarJuradoUseCase agregarJuradoUseCase;
+    @Mock
     private EventPublisher eventPublisher;
     @Mock
     private AppLogger logger;
@@ -100,7 +103,7 @@ class ModificarUsuarioUseCaseImplTest {
                 emailOtraIdentidadExisteFinder, contactoOtroUsuarioExisteFinder, modificarUsuarioValidator,
                 agregarEstudianteUseCase, agregarCoordinadorUseCase, agregarAsesorFichaUseCase,
                 agregarAsesorUseCase, agregarRepresentanteComiteUseCase, agregarAdministradorUseCase,
-                agregarBibliotecarioUseCase, eventPublisher, logger);
+                agregarBibliotecarioUseCase, agregarJuradoUseCase, eventPublisher, logger);
         usuarioId = UUID.randomUUID();
         usuarioActivo = UsuarioDomain.reconstruir(usuarioId, "usr001", "Nombre Original",
                 "original@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO, UtilFecha.VACIO);
@@ -125,7 +128,7 @@ class ModificarUsuarioUseCaseImplTest {
         assertThat(identidadCaptor.getValue().apellidos()).isEqualTo("Nuevo");
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
                 agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
-                agregarAdministradorUseCase, agregarBibliotecarioUseCase);
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase, agregarJuradoUseCase);
         // presupuesto de I/O: un solo viaje por finder de unicidad tocado
         verify(usuarioPorIdFinder, times(1)).obtener(usuarioId);
         verify(identificadorOtroUsuarioExisteFinder, never()).obtener(any());
@@ -298,6 +301,36 @@ class ModificarUsuarioUseCaseImplTest {
     }
 
     @Test
+    void debeAgregarRolJuradoAntesDeKeycloak_cuandoLaModificacionIncluyeJurado() {
+        // Arrange
+        var modificacion = modificacionConRol("jurado");
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+
+        // Act
+        useCase.ejecutar(modificacion);
+
+        // Assert
+        var orden = inOrder(usuarioOutputPort, agregarJuradoUseCase, proveedorIdentidadOutputPort);
+        orden.verify(usuarioOutputPort).actualizar(any());
+        orden.verify(agregarJuradoUseCase, times(1)).ejecutar(usuarioActivo);
+        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(usuarioId, List.of("jurado"));
+        verify(agregarBibliotecarioUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarJurado_cuandoLaModificacionNoIncluyeJurado() {
+        // Arrange
+        var modificacion = modificacionConRol("bibliotecario");
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+
+        // Act
+        useCase.ejecutar(modificacion);
+
+        // Assert
+        verify(agregarJuradoUseCase, never()).ejecutar(any());
+    }
+
+    @Test
     void noDebeTocarKeycloak_cuandoAgregarBibliotecarioLanzaDuplicado() {
         // Arrange
         var modificacion = modificacionConRol("bibliotecario");
@@ -356,7 +389,7 @@ class ModificarUsuarioUseCaseImplTest {
         verifyNoInteractions(proveedorIdentidadOutputPort);
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
                 agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
-                agregarAdministradorUseCase, agregarBibliotecarioUseCase);
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase, agregarJuradoUseCase);
     }
 
     @Test
@@ -376,7 +409,7 @@ class ModificarUsuarioUseCaseImplTest {
         verifyNoInteractions(eventPublisher, proveedorIdentidadOutputPort);
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
                 agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
-                agregarAdministradorUseCase, agregarBibliotecarioUseCase);
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase, agregarJuradoUseCase);
     }
 
     @Test
