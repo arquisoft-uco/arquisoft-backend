@@ -68,6 +68,15 @@ public final class JuradoDomain {
         this.eliminadoEn = UtilFecha.VACIO;
     }
 
+    public void remover(Instant ocurridoEn) {
+        var result = new ValidationResult();
+
+        setOcurridoEn(ocurridoEn, result);
+
+        result.lanzarSiTieneErrores();
+        this.eliminadoEn = ocurridoEn;
+    }
+
     public boolean estaEliminado() {
         return !UtilFecha.VACIO.equals(eliminadoEn);
     }

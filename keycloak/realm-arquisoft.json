@@ -141,6 +141,7 @@
               "evaluaciones:item-cualitativo-jurado:view",
               "evaluaciones:criterio-item-cualitativo-jurado:view",
               "usuarios:bibliotecario:delete",
+              "usuarios:jurado:delete",
               "usuarios:usuario-identidad:view"
             ]
           }
@@ -513,6 +514,15 @@
         {
           "id": "67bf86fe-d9e3-499e-9164-5376e646e070",
           "name": "usuarios:bibliotecario:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "73c008e3-ced4-4613-91f1-c85a7e111a56",
+          "name": "usuarios:jurado:delete",
           "description": "",
           "composite": false,
           "clientRole": true,
