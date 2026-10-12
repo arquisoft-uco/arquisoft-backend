@@ -43,4 +43,13 @@ public interface EvaluacionJuradoCommandRepository extends JpaRepository<Evaluac
             """)
     Optional<EstadoEvaluacionJuradoProjection> buscarEstadoBloqueado(
             @Param("evaluacionJurado") UUID evaluacionJurado);
+
+    @NativeQuery("""
+            SELECT (e.estado_evaluacion_id = 'FINALIZADA')
+            FROM evaluacion_cuantitativa_jurado ecj
+            JOIN evaluacion_jurado ej ON ej.id = ecj.evaluacion_jurado_id
+            JOIN evaluacion e ON e.id = ej.evaluacion_id
+            WHERE ecj.id = :evaluacionCuantitativaJurado
+            """)
+    Optional<Boolean> estaFinalizada(@Param("evaluacionCuantitativaJurado") UUID evaluacionCuantitativaJurado);
 }
