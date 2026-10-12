@@ -7,6 +7,7 @@ import com.arquisoft.proyectos.application.proyectogrado.query.readmodel.Proyect
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ProyectoGradoQueryOutputPort {
 
@@ -15,4 +16,6 @@ public interface ProyectoGradoQueryOutputPort {
     List<ProyectoGradoReadModel> consultarPorEstudiante(ProyectoGradoEstudianteCriteria criteria);
 
     PaginatedResult<ProyectoGradoReadModel> consultarPorAsesor(ProyectoGradoAsesorCriteria criteria);
+
+    ProyectoGradoReadModel consultarPorId(UUID proyectoGrado);
 }

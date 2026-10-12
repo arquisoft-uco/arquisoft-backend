@@ -208,7 +208,8 @@
         "composites": {
           "client": {
             "arquisoft-api": [
-              "proyectos:proyecto-grado-asesor:view"
+              "proyectos:proyecto-grado-asesor:view",
+              "proyectos:proyecto-grado-asesor-detalle:view"
             ]
           }
         },
@@ -1034,6 +1035,15 @@
         {
           "id": "5c2f9a17-3d84-4e60-b1a9-7e0d4c8f2b53",
           "name": "proyectos:proyecto-grado-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "edd23427-996c-4466-9fec-2c91e6fe341d",
+          "name": "proyectos:proyecto-grado-asesor-detalle:view",
           "description": "",
           "composite": false,
           "clientRole": true,

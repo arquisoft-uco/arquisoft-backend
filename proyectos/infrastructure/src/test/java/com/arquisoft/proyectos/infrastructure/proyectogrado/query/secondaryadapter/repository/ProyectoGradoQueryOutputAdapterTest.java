@@ -20,9 +20,11 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 class ProyectoGradoQueryOutputAdapterTest {
@@ -360,5 +362,35 @@ class ProyectoGradoQueryOutputAdapterTest {
         // Assert
         assertThat(resultado.getContent()).isEmpty();
         assertThat(resultado.getTotalElements()).isZero();
+    }
+
+    @Test
+    void debeRetornarProyectoConEstadoMasReciente_cuandoConsultaPorId() {
+        // Arrange
+        var id = proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "Detalle");
+        cambiarEstado(id, FINALIZADO, "2026-10-05T10:00:00Z");
+        proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "Otro");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorId(id);
+
+        // Assert
+        assertThat(resultado.id()).isEqualTo(id);
+        assertThat(resultado.tituloProyecto()).isEqualTo("Detalle");
+        assertThat(resultado.fichaPerfil()).isNotNull();
+        assertThat(resultado.estado().id()).isEqualTo(FINALIZADO);
+        assertThat(resultado.estado().nombre()).isEqualTo("Finalizado");
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoConsultaPorIdDeProyectoInexistente() {
+        // Arrange
+        var inexistente = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> adapter.consultarPorId(inexistente))
+                .isInstanceOf(NoSuchElementException.class);
     }
 }
