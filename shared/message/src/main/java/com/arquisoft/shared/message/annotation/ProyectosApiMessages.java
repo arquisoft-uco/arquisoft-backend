@@ -93,6 +93,19 @@ public final class ProyectosApiMessages {
                 "Sin permiso para consultar los asesores de un proyecto de grado";
         public static final String CONSULTAR_RESP_422 =
                 "Proyecto de grado no encontrado o asignado a otro coordinador";
+
+        public static final String CONSULTAR_ASIGNADOS_SUMMARY =
+                "Consultar los asesores asignados al proyecto de grado";
+        public static final String CONSULTAR_ASIGNADOS_DESCRIPTION =
+                "Permite al estudiante vinculado a un proyecto de grado consultar todos los asesores que ha tenido, "
+                        + "vigentes y finalizados, como historial de estados ordenado por fecha de asignación de la más reciente "
+                        + "a la más antigua; el campo actual marca el estado más reciente de cada asesor";
+        public static final String CONSULTAR_ASIGNADOS_RESP_200 = "Asesores asignados al proyecto de grado";
+        public static final String CONSULTAR_ASIGNADOS_RESP_400 = "Identificador de proyecto de grado inválido";
+        public static final String CONSULTAR_ASIGNADOS_RESP_403 =
+                "Sin permiso para consultar los asesores asignados a un proyecto de grado";
+        public static final String CONSULTAR_ASIGNADOS_RESP_422 =
+                "Proyecto de grado no encontrado o estudiante no vinculado a él";
     }
 
     public static final class ConsultaProyectoGrado {
