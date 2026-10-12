@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.infrastructure.proyectogrado.query.secondaryadapter.repository;
 
+import com.arquisoft.proyectos.application.proyectogrado.query.criteria.ProyectoGradoAsesorCriteria;
 import com.arquisoft.proyectos.application.proyectogrado.query.criteria.ProyectoGradoCriteria;
 import com.arquisoft.proyectos.application.proyectogrado.query.criteria.ProyectoGradoEstudianteCriteria;
 import com.arquisoft.proyectos.application.proyectogrado.query.readmodel.ProyectoGradoReadModel;
@@ -20,6 +21,8 @@ public class ProyectoGradoQueryOutputAdapter implements ProyectoGradoQueryOutput
     private final ProyectoGradoQueryRepository proyectoGradoQueryRepository;
     private final ProyectoGradoJpaSpecification specification;
     private final ProyectoGradoEstudianteQueryRepository proyectoGradoEstudianteQueryRepository;
+    private final ProyectoGradoAsesorQueryRepository proyectoGradoAsesorQueryRepository;
+    private final ProyectoGradoAsesorJpaSpecification asesorSpecification;
 
     @Override
     public PaginatedResult<ProyectoGradoReadModel> consultarTodas(ProyectoGradoCriteria criteria) {
@@ -38,5 +41,15 @@ public class ProyectoGradoQueryOutputAdapter implements ProyectoGradoQueryOutput
                 .stream()
                 .map(ProyectoGradoQueryMapper::toReadModel)
                 .toList();
+    }
+
+    @Override
+    public PaginatedResult<ProyectoGradoReadModel> consultarPorAsesor(ProyectoGradoAsesorCriteria criteria) {
+        var pageable = PageableMapper.toPageable(criteria, ProyectoGradoAsesorSortMapper::traducir);
+        var spec = asesorSpecification.desdeCriteria(criteria);
+
+        return PaginationMapper.toResult(
+                proyectoGradoAsesorQueryRepository.findAll(spec, pageable)
+                        .map(ProyectoGradoQueryMapper::toReadModel));
     }
 }
