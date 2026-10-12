@@ -75,6 +75,7 @@ import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaVigentesK
 import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarJuradosVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstadosUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarIdentidadUsuarioKey;
@@ -180,6 +181,7 @@ public final class ClavesCatalogo {
             AsesorProyectoGradoKey.class,
             EstadoAsesorKey.class,
             ConsultarCoordinadoresVigentesKey.class,
+            ConsultarJuradosVigentesKey.class,
             ConsultarEstudiantesVigentesKey.class,
             ConsultarAsesoresVigentesKey.class,
             ConsultarAsesoresFichaVigentesKey.class,
