@@ -80,6 +80,20 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         return evaluacionJurado;
     }
 
+    private UUID sembrarEvaluacionCuantitativaJurado(String estadoEvaluacion) {
+        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), estadoEvaluacion);
+        UUID evaluacionCuantitativaJurado = UUID.randomUUID();
+        entityManager.createNativeQuery(
+                "INSERT INTO evaluacion_cuantitativa_jurado (id, evaluacion_jurado_id, item_id, puntaje) "
+                        + "VALUES (?, ?, ?, ?)")
+                .setParameter(1, evaluacionCuantitativaJurado).setParameter(2, evaluacionJurado)
+                .setParameter(3, UUID.randomUUID()).setParameter(4, 300)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+        return evaluacionCuantitativaJurado;
+    }
+
     // H2 entrega las columnas uuid de una consulta nativa como byte[] (PostgreSQL las entrega como
     // UUID), asi que aqui se ejercita la consulta real por su columna de texto y el mapeo de los
     // identificadores se cubre en EstadoEvaluacionJuradoJpaMapperTest.
@@ -113,6 +127,30 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     void debeRetornarVacio_cuandoLaEvaluacionJuradoNoExiste() {
         // Act & Assert
         assertThat(adapter.obtenerEstadoBloqueado(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaTrue_cuandoLaEvaluacionEstaFinalizada() {
+        // Arrange
+        UUID evaluacionCuantitativaJurado = sembrarEvaluacionCuantitativaJurado("FINALIZADA");
+
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(evaluacionCuantitativaJurado)).isTrue();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaFalse_cuandoLaEvaluacionNoEstaFinalizada() {
+        // Arrange
+        UUID evaluacionCuantitativaJurado = sembrarEvaluacionCuantitativaJurado("PENDIENTE");
+
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(evaluacionCuantitativaJurado)).isFalse();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaFalse_cuandoLaEvaluacionCuantitativaJuradoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(UUID.randomUUID())).isFalse();
     }
 
     @Test

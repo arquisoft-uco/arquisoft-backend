@@ -15,4 +15,6 @@ public interface EvaluacionJuradoOutputPort {
     void registrarTodas(List<EvaluacionJuradoEntity> entidades);
 
     Set<UUID> consultarJuradosAsignados(UUID evaluacion, Set<UUID> jurados);
+
+    boolean estaFinalizada(UUID evaluacionCuantitativaJurado);
 }
