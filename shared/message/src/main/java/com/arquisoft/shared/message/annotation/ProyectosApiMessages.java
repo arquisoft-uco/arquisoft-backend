@@ -129,5 +129,17 @@ public final class ProyectosApiMessages {
                 "Sin permiso para consultar los estudiantes de un proyecto de grado";
         public static final String CONSULTAR_RESP_422 =
                 "Proyecto de grado no encontrado o asignado a otro coordinador";
+
+        public static final String CONSULTAR_COMPANEROS_SUMMARY =
+                "Consultar los compañeros de un proyecto de grado";
+        public static final String CONSULTAR_COMPANEROS_DESCRIPTION =
+                "Permite al estudiante vinculado a un proyecto de grado consultar el identificador, nombre y "
+                        + "correo de los estudiantes vigentes de su proyecto, él incluido, ordenados por nombre";
+        public static final String CONSULTAR_COMPANEROS_RESP_200 = "Estudiantes vigentes del proyecto de grado";
+        public static final String CONSULTAR_COMPANEROS_RESP_400 = "Identificador de proyecto de grado inválido";
+        public static final String CONSULTAR_COMPANEROS_RESP_403 =
+                "Sin permiso para consultar los compañeros de un proyecto de grado";
+        public static final String CONSULTAR_COMPANEROS_RESP_422 =
+                "Proyecto de grado no encontrado o estudiante no vinculado a él";
     }
 }

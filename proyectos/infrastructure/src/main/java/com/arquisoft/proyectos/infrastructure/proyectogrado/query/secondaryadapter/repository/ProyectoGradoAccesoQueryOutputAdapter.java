@@ -17,4 +17,9 @@ public class ProyectoGradoAccesoQueryOutputAdapter implements ProyectoGradoAcces
     public Optional<UUID> obtenerCoordinadorPorId(UUID proyectoGrado) {
         return repository.obtenerCoordinadorPorId(proyectoGrado);
     }
+
+    @Override
+    public boolean existePorId(UUID proyectoGrado) {
+        return repository.existsById(proyectoGrado);
+    }
 }
