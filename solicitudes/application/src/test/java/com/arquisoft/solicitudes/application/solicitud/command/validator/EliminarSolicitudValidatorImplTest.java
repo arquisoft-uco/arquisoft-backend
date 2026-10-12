@@ -6,6 +6,7 @@ import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudConRespuest
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoPropiaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -115,5 +116,31 @@ class EliminarSolicitudValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(
                 entrada(solicitud, solicitante, tipo), resumen(solicitud, solicitante, tipo), true))
                 .isInstanceOf(SolicitudConRespuestasException.class);
+    }
+
+    @Test
+    void debePasar_cuandoLasCuatroReglasSeCumplenParaCambioAsesor() {
+        // Arrange
+        var solicitud = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
+        var tipo = TipoSolicitud.CAMBIO_DE_ASESOR;
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(
+                entrada(solicitud, solicitante, tipo), resumen(solicitud, solicitante, tipo), false))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarElErrorDeCambioAsesor_cuandoSeEsperabaCambioAsesorYLaSolicitudEsDeOtroTipo() {
+        // Arrange
+        var solicitud = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                entrada(solicitud, solicitante, TipoSolicitud.CAMBIO_DE_ASESOR),
+                resumen(solicitud, solicitante, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR), false))
+                .isInstanceOf(SolicitudTipoNoCoincideCambioAsesorException.class);
     }
 }
