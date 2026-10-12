@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.query.secondaryadapt
 
 import com.arquisoft.fichas.application.itemfichaperfil.query.readmodel.ItemFichaPerfilReadModel;
 import com.arquisoft.fichas.application.itemfichaperfil.query.secondaryport.ItemFichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.infrastructure.itemfichaperfil.query.secondaryadapter.repository.mapper.ItemFichaPerfilCoordinadorQueryMapper;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.query.secondaryadapter.repository.mapper.ItemFichaPerfilEstudianteQueryMapper;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.query.secondaryadapter.repository.mapper.ItemFichaPerfilQueryMapper;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.query.secondaryadapter.repository.mapper.ItemFichaPerfilRepresentanteQueryMapper;
@@ -18,6 +19,7 @@ public class ItemFichaPerfilQueryOutputAdapter implements ItemFichaPerfilQueryOu
     private final ItemFichaPerfilQueryRepository itemFichaPerfilQueryRepository;
     private final ItemFichaPerfilEstudianteQueryRepository itemFichaPerfilEstudianteQueryRepository;
     private final ItemFichaPerfilRepresentanteQueryRepository itemFichaPerfilRepresentanteQueryRepository;
+    private final ItemFichaPerfilCoordinadorQueryRepository itemFichaPerfilCoordinadorQueryRepository;
 
     @Override
     public List<ItemFichaPerfilReadModel> consultarPorFichaYAsesor(UUID fichaPerfil, UUID asesorFicha) {
@@ -43,6 +45,15 @@ public class ItemFichaPerfilQueryOutputAdapter implements ItemFichaPerfilQueryOu
                 .findByFichaPerfilIdAndRepresentanteComiteIdOrderByTipoItemNombreAsc(fichaPerfil, representanteComite)
                 .stream()
                 .map(ItemFichaPerfilRepresentanteQueryMapper::toReadModel)
+                .toList();
+    }
+
+    @Override
+    public List<ItemFichaPerfilReadModel> consultarPorFicha(UUID fichaPerfil) {
+        return itemFichaPerfilCoordinadorQueryRepository
+                .findByFichaPerfilIdOrderByTipoItemNombreAsc(fichaPerfil)
+                .stream()
+                .map(ItemFichaPerfilCoordinadorQueryMapper::toReadModel)
                 .toList();
     }
 }

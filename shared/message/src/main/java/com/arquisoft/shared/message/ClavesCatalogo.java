@@ -10,12 +10,15 @@ import com.arquisoft.shared.message.key.app.HttpKey;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.message.key.app.PaginacionKey;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
+import com.arquisoft.shared.message.key.evaluaciones.CategoriaItemCuantitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.CriterioItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.ObservacionItemJuradoKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
@@ -39,6 +42,8 @@ import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.message.key.proyectos.AsesorKey;
 import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
+import com.arquisoft.shared.message.key.proyectos.AsesorProyectoGradoKey;
+import com.arquisoft.shared.message.key.proyectos.EstadoAsesorKey;
 import com.arquisoft.shared.message.key.proyectos.EstadoProyectoGradoKey;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectoGradoKey;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectosKey;
@@ -63,19 +68,13 @@ import com.arquisoft.shared.message.key.usuarios.AgregarRepresentanteComiteKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarBibliotecarioKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarAdministradoresAdministradorKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresAdministradorKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaVigentesKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresVigentesKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarBibliotecariosAdministradorKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresVigentesKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstadosUsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarIdentidadUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuariosAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.CambiarEstadoUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.EliminarUsuarioKey;
@@ -139,9 +138,12 @@ public final class ClavesCatalogo {
             ItemCualitativoJuradoKey.class,
             ItemCuantitativoJuradoKey.class,
             CriterioItemCualitativoJuradoKey.class,
+            CategoriaItemCuantitativoJuradoKey.class,
             EvaluacionCualitativaJuradoKey.class,
+            EvaluacionJuradoKey.class,
             EvaluacionCuantitativaJuradoKey.class,
             EvaluacionKey.class,
+            ObservacionItemJuradoKey.class,
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
             MinioGuiaKey.class,
@@ -194,20 +196,16 @@ public final class ClavesCatalogo {
             ProyectoGradoKey.class,
             EstudianteProyectoGradoKey.class,
             EstadoProyectoGradoKey.class,
-            ConsultarCoordinadoresAdministradorKey.class,
+            AsesorProyectoGradoKey.class,
+            EstadoAsesorKey.class,
             ConsultarCoordinadoresVigentesKey.class,
-            ConsultarEstudiantesAdministradorKey.class,
             ConsultarEstudiantesVigentesKey.class,
-            ConsultarAsesoresAdministradorKey.class,
             ConsultarAsesoresVigentesKey.class,
-            ConsultarAsesoresFichaAdministradorKey.class,
             ConsultarAsesoresFichaVigentesKey.class,
-            ConsultarRepresentantesComiteAdministradorKey.class,
             ConsultarRepresentantesComiteVigentesKey.class,
             ConsultarUsuariosAdministradorKey.class,
-            ConsultarAdministradoresAdministradorKey.class,
-            ConsultarBibliotecariosAdministradorKey.class,
-            ConsultarEstadosUsuarioKey.class
+            ConsultarEstadosUsuarioKey.class,
+            ConsultarIdentidadUsuarioKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

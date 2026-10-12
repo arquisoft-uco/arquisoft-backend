@@ -2,6 +2,7 @@ package com.arquisoft.proyectos.application.estudianteproyectogrado.command.usec
 
 import com.arquisoft.proyectos.application.estudiante.command.finder.EstudiantesVigentesPorIdsFinder;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.finder.EstudiantesVinculadosContadorFinder;
+import com.arquisoft.proyectos.application.estudianteproyectogrado.command.finder.EstudiantesYaVinculadosFinder;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.secondaryport.EstudianteProyectoGradoOutputPort;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.secondaryport.entity.EstudianteProyectoGradoEntity;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.validator.AsignarEstudiantesProyectoGradoValidator;
@@ -57,6 +58,9 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
     private EstudiantesVinculadosContadorFinder estudiantesVinculadosContadorFinder;
 
     @Mock
+    private EstudiantesYaVinculadosFinder estudiantesYaVinculadosFinder;
+
+    @Mock
     private AsignarEstudiantesProyectoGradoValidator validator;
 
     @Mock
@@ -79,7 +83,8 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
             estudiante("Eva Ruiz", "eva.ruiz@soyuco.edu.co"));
     private final AgregacionEstudiantesProyectoGradoDomain entrada = AgregacionEstudiantesProyectoGradoDomain.crear(
             EstudianteProyectoGradoDomain.crear(proyecto.getId(),
-                    vigentes.stream().map(EstudianteDomain::getId).toList()));
+                    vigentes.stream().map(EstudianteDomain::getId).toList()),
+            proyecto.getCoordinador());
 
     private static EstudianteDomain estudiante(String nombre, String email) {
         return EstudianteDomain.reconstruir(UUID.randomUUID(), "2020", nombre, email,
@@ -89,6 +94,7 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
     private void stubFinders() {
         when(proyectoGradoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
         when(estudiantesVigentesPorIdsFinder.obtener(entrada.getEstudiantes())).thenReturn(vigentes);
+        when(estudiantesYaVinculadosFinder.obtener(entrada)).thenReturn(List.of());
         when(estudiantesVinculadosContadorFinder.obtener(proyecto.getId())).thenReturn(0L);
     }
 
@@ -116,12 +122,13 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
                     new ContactoEstudiante("Eva Ruiz", "eva.ruiz@soyuco.edu.co"));
         });
 
-        var orden = inOrder(proyectoGradoPorIdFinder, estudiantesVigentesPorIdsFinder,
+        var orden = inOrder(proyectoGradoPorIdFinder, estudiantesVigentesPorIdsFinder, estudiantesYaVinculadosFinder,
                 estudiantesVinculadosContadorFinder, validator, estudianteProyectoGradoOutputPort, eventPublisher);
         orden.verify(proyectoGradoPorIdFinder, times(1)).obtener(proyecto.getId());
         orden.verify(estudiantesVigentesPorIdsFinder, times(1)).obtener(entrada.getEstudiantes());
+        orden.verify(estudiantesYaVinculadosFinder, times(1)).obtener(entrada);
         orden.verify(estudiantesVinculadosContadorFinder, times(1)).obtener(proyecto.getId());
-        orden.verify(validator).validar(entrada, proyecto, vigentes, 0L);
+        orden.verify(validator).validar(entrada, proyecto, vigentes, List.of(), 0L);
         orden.verify(estudianteProyectoGradoOutputPort).vincular(anyList());
         orden.verify(eventPublisher).publish(any());
     }
@@ -131,7 +138,7 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
         // Arrange
         stubFinders();
         doThrow(new EstudiantesNoVigentesException(List.of(UUID.randomUUID())))
-                .when(validator).validar(eq(entrada), any(), anyList(), anyLong());
+                .when(validator).validar(eq(entrada), any(), anyList(), anyList(), anyLong());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada)).isInstanceOf(EstudiantesNoVigentesException.class);

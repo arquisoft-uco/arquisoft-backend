@@ -9,7 +9,7 @@ public class SolicitudEsDelDestinatarioRuleImpl implements SolicitudEsDelDestina
     @Override
     public void validar(PropiedadDestinatarioSolicitud propiedad) {
         if (!propiedad.destinatarioUsuario().equals(propiedad.solicitante())) {
-            throw new SolicitudNoEsDestinatarioException(propiedad.solicitante());
+            throw new SolicitudNoEsDestinatarioException();
         }
     }
 }

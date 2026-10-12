@@ -17,11 +17,11 @@ class SolicitudDomainTest {
     @Test
     void debeCrearLaSolicitud_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID destinatario = UUID.randomUUID();
-        UUID remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
 
         // Act
-        SolicitudDomain solicitud = SolicitudDomain.crear(
+        var solicitud = SolicitudDomain.crear(
                 destinatario, remitente, "  Necesito reportar una novedad  ",
                 TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 
@@ -41,7 +41,7 @@ class SolicitudDomainTest {
         // (mensaje en blanco + destinatario/remitente/tipo nulos, todo en un solo intento)
 
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> SolicitudDomain.crear(null, null, "  ", null));
 
         // Assert
@@ -55,7 +55,7 @@ class SolicitudDomainTest {
     @Test
     void debeReportarElErrorDelTipoConSuPropioCampoYCodigo_cuandoElTipoEsNulo() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(), "mensaje", null));
 
         // Assert
@@ -71,10 +71,10 @@ class SolicitudDomainTest {
     @Test
     void debeAcumularErrorDeLongitud_cuandoElMensajeSuperaLosCienCaracteres() {
         // Arrange
-        String mensajeLargo = "a".repeat(101);
+        var mensajeLargo = "a".repeat(101);
 
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
                         mensajeLargo, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
 
@@ -86,10 +86,10 @@ class SolicitudDomainTest {
     @Test
     void debeAceptarElMensaje_cuandoMideCienCaracteresTrasRecortarLosEspacios() {
         // Arrange
-        String mensaje = "  " + "a".repeat(100) + "  ";
+        var mensaje = "  " + "a".repeat(100) + "  ";
 
         // Act
-        SolicitudDomain solicitud = SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
+        var solicitud = SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
                 mensaje, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 
         // Assert
@@ -99,10 +99,10 @@ class SolicitudDomainTest {
     @Test
     void debeRechazarElMensaje_cuandoSuperaLosCienCaracteresTrasRecortarLosEspacios() {
         // Arrange
-        String mensaje = "  " + "a".repeat(101) + "  ";
+        var mensaje = "  " + "a".repeat(101) + "  ";
 
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> SolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(),
                         mensaje, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
 
@@ -114,11 +114,11 @@ class SolicitudDomainTest {
     @Test
     void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        Instant fecha = Instant.now();
+        var id = UUID.randomUUID();
+        var fecha = Instant.now();
 
         // Act
-        SolicitudDomain solicitud = SolicitudDomain.reconstruir(
+        var solicitud = SolicitudDomain.reconstruir(
                 id, null, null, fecha, null, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 
         // Assert

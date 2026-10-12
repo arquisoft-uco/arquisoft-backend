@@ -12,7 +12,8 @@ public final class RegistrarProyectoGradoMapper {
     public static RegistroProyectoGradoDomain toDomain(RegistrarProyectoGradoCommand command) {
         var proyecto = ProyectoGradoDomain.crear(
                 command.fichaPerfil(), command.tituloProyecto(), command.coordinador());
-        var estudiantes = AsignarEstudiantesProyectoGradoMapper.toDomain(proyecto.getId(), command.estudiantes());
+        var estudiantes = AsignarEstudiantesProyectoGradoMapper.toDomain(
+                proyecto.getId(), proyecto.getCoordinador(), command.estudiantes());
         return RegistroProyectoGradoDomain.crear(proyecto, estudiantes);
     }
 }

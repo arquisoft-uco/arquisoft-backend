@@ -5,11 +5,16 @@
 # extrae a microservicio, se lleve su propia configuracion de rutas consigo.
 rutas:
   evaluaciones:
+    evaluacion:
+      base: /evaluaciones
+      jurados: /{evaluacionId}/jurados
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
       por-id: /{itemId}
     criterios-item-cualitativo-jurado:
       base: /evaluaciones/criterios-item-cualitativo-jurado
+    categorias-item-cuantitativo-jurado:
+      base: /evaluaciones/categorias-item-cuantitativo-jurado
     evaluaciones-jurado:
       base: /evaluaciones/evaluaciones-jurado
       cualitativas: /{evaluacionJuradoId}/cualitativas
@@ -17,3 +22,7 @@ rutas:
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
       por-id: /{itemId}
+    evaluaciones-cuantitativas-jurado:
+      base: /evaluaciones/evaluaciones-cuantitativas-jurado
+      puntaje: /{id}/puntaje
+      observaciones: /{id}/observaciones

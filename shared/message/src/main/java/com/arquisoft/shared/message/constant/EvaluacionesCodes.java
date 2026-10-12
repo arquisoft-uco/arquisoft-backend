@@ -37,6 +37,14 @@ public final class EvaluacionesCodes {
                 "CRITERIO_ITEM_CUALITATIVO_JURADO_DESCRIPCION_DEMASIADO_LARGA";
     }
 
+    public static final class CategoriaItemCuantitativoJurado {
+
+        private CategoriaItemCuantitativoJurado() {}
+
+        public static final String NOMBRE_FILTRO_DEMASIADO_LARGO =
+                "CATEGORIA_ITEM_CUANTITATIVO_JURADO_NOMBRE_FILTRO_DEMASIADO_LARGO";
+    }
+
     public static final class EvaluacionCualitativaJurado {
 
         private EvaluacionCualitativaJurado() {}
@@ -77,20 +85,54 @@ public final class EvaluacionesCodes {
         public static final String ESTADO_REQUERIDO = "EVALUACION_ESTADO_REQUERIDO";
         public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
+        public static final String NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
+    }
+
+    public static final class EvaluacionJurado {
+
+        private EvaluacionJurado() {}
+
+        public static final String EVALUACION_REQUERIDO = "EVALUACION_JURADO_EVALUACION_REQUERIDO";
+        public static final String JURADO_REQUERIDO = "EVALUACION_JURADO_JURADO_REQUERIDO";
+        public static final String JURADO_INVALIDO = "EVALUACION_JURADO_JURADO_INVALIDO";
+        public static final String JURADOS_NO_ENCONTRADOS = "EVALUACION_JURADO_JURADOS_NO_ENCONTRADOS";
+        public static final String JURADOS_YA_ASIGNADOS = "EVALUACION_JURADO_JURADOS_YA_ASIGNADOS";
+    }
+
+    public static final class AsignacionJuradosEvaluacion {
+
+        private AsignacionJuradosEvaluacion() {}
+
+        public static final String LOTE_VACIO = "ASIGNACION_JURADOS_EVALUACION_LOTE_VACIO";
+        public static final String JURADOS_REPETIDOS = "ASIGNACION_JURADOS_EVALUACION_JURADOS_REPETIDOS";
     }
 
     public static final class EvaluacionCuantitativaJurado {
 
         private EvaluacionCuantitativaJurado() {}
 
+        public static final String ID_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_ID_REQUERIDO";
         public static final String EVALUACION_JURADO_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
+        public static final String JURADO_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_JURADO_REQUERIDO";
         public static final String ITEM_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_ITEM_REQUERIDO";
         public static final String PUNTAJE_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_REQUERIDO";
         public static final String PUNTAJE_FUERA_DE_RANGO =
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_FUERA_DE_RANGO";
+        public static final String PUNTAJE_NO_ENTERO =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_NO_ENTERO";
+        public static final String NO_ENCONTRADA =
+                "EVALUACION_CUANTITATIVA_JURADO_NO_ENCONTRADA";
+        public static final String NO_PERTENECE_JURADO =
+                "EVALUACION_CUANTITATIVA_JURADO_NO_PERTENECE_JURADO";
+        public static final String EVALUACION_FINALIZADA =
+                "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_FINALIZADA";
+        public static final String PUNTAJE_EXCEDE_VALOR_ITEM =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_EXCEDE_VALOR_ITEM";
     }
 
     public static final class ItemCuantitativoJurado {
@@ -119,5 +161,23 @@ public final class EvaluacionesCodes {
                 "ITEM_CUANTITATIVO_JURADO_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO =
                 "ITEM_CUANTITATIVO_JURADO_NO_ENCONTRADO";
+    }
+
+    public static final class ObservacionItemJurado {
+
+        private ObservacionItemJurado() {}
+
+        public static final String EVALUACION_CUANTITATIVA_JURADO_REQUERIDA =
+                "OBSERVACION_ITEM_JURADO_EVALUACION_CUANTITATIVA_JURADO_REQUERIDA";
+        public static final String DESCRIPCION_REQUERIDA =
+                "OBSERVACION_ITEM_JURADO_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_DEMASIADO_LARGA =
+                "OBSERVACION_ITEM_JURADO_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String EVALUACION_NO_ENCONTRADA =
+                "OBSERVACION_ITEM_JURADO_EVALUACION_NO_ENCONTRADA";
+        public static final String EVALUACION_JURADO_FINALIZADA =
+                "OBSERVACION_ITEM_JURADO_EVALUACION_JURADO_FINALIZADA";
+        public static final String DESCRIPCION_DUPLICADA =
+                "OBSERVACION_ITEM_JURADO_DESCRIPCION_DUPLICADA";
     }
 }

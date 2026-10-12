@@ -43,6 +43,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador-estado-modificado", 0),
     CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-novedad-coordinador-estado-modificado", 3),
+    ASUNTO_SOLICITUD_NOVEDAD_ASESOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-asesor-estado-modificado", 0),
+    CUERPO_SOLICITUD_NOVEDAD_ASESOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-novedad-asesor-estado-modificado", 3),
     ASUNTO_REVISION_ITEM_AGREGADA(
             "notificaciones.aplicacion.plantilla.asunto.revision-item-agregada", 1),
     CUERPO_REVISION_ITEM_AGREGADA(
@@ -72,6 +76,14 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.estudiantes-proyecto-grado-asignados", 1),
     CUERPO_ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS(
             "notificaciones.aplicacion.plantilla.cuerpo.estudiantes-proyecto-grado-asignados", 2),
+    ASUNTO_ASESOR_PROYECTO_GRADO_ASIGNADO(
+            "notificaciones.aplicacion.plantilla.asunto.asesor-proyecto-grado-asignado", 1),
+    CUERPO_ASESOR_PROYECTO_GRADO_ASIGNADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.asesor-proyecto-grado-asignado", 2),
+    ASUNTO_ASESOR_PROYECTO_GRADO_FINALIZADO(
+            "notificaciones.aplicacion.plantilla.asunto.asesor-proyecto-grado-finalizado", 1),
+    CUERPO_ASESOR_PROYECTO_GRADO_FINALIZADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.asesor-proyecto-grado-finalizado", 2),
     ASUNTO_ESTADO_FICHA_PERFIL_AGREGADO(
             "notificaciones.aplicacion.plantilla.asunto.estado-ficha-perfil-agregado", 2),
     CUERPO_ESTADO_FICHA_PERFIL_AGREGADO(

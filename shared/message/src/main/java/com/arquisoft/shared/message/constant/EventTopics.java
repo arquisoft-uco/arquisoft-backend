@@ -39,6 +39,12 @@ public final class EventTopics {
 
         public static final String ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS =
                 "proyectos.estudiante_proyecto_grado.asignados";
+
+        public static final String ASESOR_PROYECTO_GRADO_ASIGNADO =
+                "proyectos.asesor_proyecto_grado.asignado";
+
+        public static final String ASESOR_PROYECTO_GRADO_FINALIZADO =
+                "proyectos.asesor_proyecto_grado.finalizado";
     }
 
     public static final class Usuarios {
@@ -117,5 +123,8 @@ public final class EventTopics {
 
         public static final String NOVEDAD_COORDINADOR_ESTADO_MODIFICADO =
                 "solicitudes.respuesta.novedad_coordinador_estado_modificado";
+
+        public static final String NOVEDAD_ASESOR_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.novedad_asesor_estado_modificado";
     }
 }
