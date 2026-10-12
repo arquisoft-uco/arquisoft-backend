@@ -79,6 +79,7 @@ public final class ProyectosCodes {
 
         public static final String NO_ENCONTRADO = "ESTADO_PROYECTO_GRADO_NO_ENCONTRADO";
         public static final String PROYECTO_GRADO_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
+        public static final String ESTUDIANTE_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
         public static final String ESTADO_INICIAL_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTADO_INICIAL_REQUERIDO";
     }
 

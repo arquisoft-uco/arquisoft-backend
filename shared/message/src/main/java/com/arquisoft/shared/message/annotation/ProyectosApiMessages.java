@@ -108,6 +108,26 @@ public final class ProyectosApiMessages {
                 "Proyecto de grado no encontrado o estudiante no vinculado a él";
     }
 
+    public static final class ConsultaEstadoProyectoGrado {
+
+        private ConsultaEstadoProyectoGrado() {}
+
+        public static final String TAG_NAME = "Consulta de Estados de Proyecto de Grado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta del historial de estados de un proyecto de grado";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar los estados del proyecto de grado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Permite al estudiante vinculado a un proyecto de grado consultar el historial de estados por los "
+                        + "que ha pasado, ordenado por fecha de actualización de la más reciente a la más antigua";
+        public static final String CONSULTAR_RESP_200 = "Historial de estados del proyecto de grado";
+        public static final String CONSULTAR_RESP_400 = "Identificador de proyecto de grado inválido";
+        public static final String CONSULTAR_RESP_403 =
+                "Sin permiso para consultar los estados de un proyecto de grado";
+        public static final String CONSULTAR_RESP_422 =
+                "Proyecto de grado no encontrado o estudiante no vinculado a él";
+    }
+
     public static final class ConsultaProyectoGrado {
 
         private ConsultaProyectoGrado() {}

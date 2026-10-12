@@ -12,5 +12,6 @@ rutas:
       companeros: /{proyectoGradoId}/companeros
       asesores: /{proyectoGradoId}/asesores
       asesores-asignados: /{proyectoGradoId}/asesores-asignados
+      estados: /{proyectoGradoId}/estados
       estudiante: /{proyectoGradoId}/estudiantes/{estudianteId}
       asesor-estado: /{proyectoGradoId}/asesores/{asesorId}/estado
