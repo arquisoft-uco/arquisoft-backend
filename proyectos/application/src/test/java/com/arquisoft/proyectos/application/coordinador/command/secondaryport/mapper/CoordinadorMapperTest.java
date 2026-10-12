@@ -34,10 +34,11 @@ class CoordinadorMapperTest {
         // Arrange
         var id = UUID.randomUUID();
         var ocurridoEn = Instant.now();
-        var entity = new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn);
+        var entity = new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn, ocurridoEn);
 
         // Act
         var domain = CoordinadorMapper.toDomain(entity);
+        var deVuelta = CoordinadorMapper.toEntity(domain);
 
         // Assert
         assertThat(domain.getId()).isEqualTo(id);
@@ -45,5 +46,8 @@ class CoordinadorMapperTest {
         assertThat(domain.getNombre()).isEqualTo("Ana Perez");
         assertThat(domain.getEmail()).isEqualTo("ana@uco.edu.co");
         assertThat(domain.getOcurridoEn()).isEqualTo(ocurridoEn);
+        assertThat(domain.getEliminadoEn()).isEqualTo(ocurridoEn);
+        assertThat(domain.estaEliminado()).isTrue();
+        assertThat(deVuelta.eliminadoEn()).isEqualTo(ocurridoEn);
     }
 }

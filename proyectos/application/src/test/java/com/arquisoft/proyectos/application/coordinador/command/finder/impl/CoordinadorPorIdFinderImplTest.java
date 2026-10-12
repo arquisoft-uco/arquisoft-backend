@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.application.coordinador.command.finder.impl;
 
+import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.CoordinadorOutputPort;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.entity.CoordinadorEntity;
 import org.junit.jupiter.api.Test;
@@ -28,14 +29,14 @@ class CoordinadorPorIdFinderImplTest {
     void debeDelegarEnElOutputPort_enCoordinadorPorIdFinder() {
         // Arrange
         var id = UUID.randomUUID();
-        var entity = new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+        var entity = new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
         when(coordinadorOutputPort.obtenerPorId(id)).thenReturn(Optional.of(entity));
 
         // Act
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).contains(entity);
+        assertThat(resultado.getId()).isEqualTo(id);
     }
 
     @Test
@@ -48,6 +49,6 @@ class CoordinadorPorIdFinderImplTest {
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).isEmpty();
+        assertThat(resultado).isEqualTo(CoordinadorDomain.VACIO);
     }
 }

@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.primaryport.interactor.impl;
 
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.criteria.CategoriaItemCuantitativoJuradoCriteria;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.primaryport.model.ConsultarCategoriasItemCuantitativoJuradoQuery;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.readmodel.CategoriaItemCuantitativoJuradoReadModel;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.usecase.ConsultarCategoriasItemCuantitativoJuradoUseCase;
@@ -26,32 +27,34 @@ class ConsultarCategoriasItemCuantitativoJuradoInteractorImplTest {
     private ConsultarCategoriasItemCuantitativoJuradoInteractorImpl interactor;
 
     @Test
-    void debeDelegarEnElUseCase_conElNombreDelQuery() {
+    void debeDelegarEnElUseCase_conElCriteriaDerivadoDelQuery() {
         // Arrange
         var query = ConsultarCategoriasItemCuantitativoJuradoQuery.crear("Puntualidad");
+        var criteria = new CategoriaItemCuantitativoJuradoCriteria(query.nombre());
         var esperados = List.of(
                 new CategoriaItemCuantitativoJuradoReadModel(UUID.randomUUID(), "Puntualidad", "Evalúa la puntualidad"));
-        when(useCase.ejecutar(query.nombre())).thenReturn(esperados);
+        when(useCase.ejecutar(criteria)).thenReturn(esperados);
 
         // Act
         var resultado = interactor.ejecutar(query);
 
         // Assert
         assertThat(resultado).containsExactlyElementsOf(esperados);
-        verify(useCase).ejecutar(query.nombre());
+        verify(useCase).ejecutar(criteria);
     }
 
     @Test
     void debePropagarListaVacia_cuandoElUseCaseNoEncuentraRegistros() {
         // Arrange
         var query = ConsultarCategoriasItemCuantitativoJuradoQuery.crear(null);
-        when(useCase.ejecutar(query.nombre())).thenReturn(List.of());
+        var criteria = new CategoriaItemCuantitativoJuradoCriteria(query.nombre());
+        when(useCase.ejecutar(criteria)).thenReturn(List.of());
 
         // Act
         var resultado = interactor.ejecutar(query);
 
         // Assert
         assertThat(resultado).isEmpty();
-        verify(useCase).ejecutar(query.nombre());
+        verify(useCase).ejecutar(criteria);
     }
 }

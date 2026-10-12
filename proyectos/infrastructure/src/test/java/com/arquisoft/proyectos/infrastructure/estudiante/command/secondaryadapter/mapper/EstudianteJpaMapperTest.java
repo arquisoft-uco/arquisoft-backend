@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.infrastructure.estudiante.command.secondaryadapter.mapper;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.proyectos.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ class EstudianteJpaMapperTest {
         // Arrange
         var id = UUID.randomUUID();
         var ocurridoEn = Instant.now();
-        var entity = new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn);
+        var entity = new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn, UtilFecha.VACIO);
 
         // Act
         var jpaEntity = EstudianteJpaMapper.toJpaEntity(entity);

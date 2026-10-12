@@ -1,4 +1,6 @@
 package com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity;
 
-public record EstadoEvaluacionJuradoEntity(boolean pertenece, boolean finalizada) {
+import java.util.UUID;
+
+public record EstadoEvaluacionJuradoEntity(UUID id, UUID jurado, String estado) {
 }

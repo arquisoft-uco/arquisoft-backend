@@ -49,6 +49,8 @@ public class EstudianteAgregadoConsumer extends AbstractEventConsumer {
             switch (resultado) {
                 case AgregacionEstudianteResult.Agregada agregada ->
                         logger.info(EstudianteKey.LOG_AGREGADO, agregada.estudiante());
+                case AgregacionEstudianteResult.Reactivada reactivada ->
+                        logger.info(EstudianteKey.LOG_REACTIVADO, reactivada.estudiante());
                 case AgregacionEstudianteResult.Duplicada duplicada ->
                         logger.info(EstudianteKey.LOG_DUPLICADO, duplicada.estudiante());
                 case AgregacionEstudianteResult.Descartada descartada ->

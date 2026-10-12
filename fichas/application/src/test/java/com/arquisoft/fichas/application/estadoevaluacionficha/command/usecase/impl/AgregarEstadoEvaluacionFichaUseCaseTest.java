@@ -21,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,7 +68,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var entrada = entrada();
         stubConsultas(entrada, true, true, false);
         when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion))
-                .thenReturn(Optional.of(EstadoEvaluacionFichaDomain.crear(evaluacion)));
+                .thenReturn(EstadoEvaluacionFichaDomain.crear(evaluacion));
 
         // Act
         UUID resultado = agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada);
@@ -85,7 +84,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var entrada = entrada();
         var ultimoEstado = EstadoEvaluacionFichaDomain.crear(evaluacion);
         stubConsultas(entrada, true, true, false);
-        when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(Optional.of(ultimoEstado));
+        when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(ultimoEstado);
 
         // Act
         agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada);
@@ -108,7 +107,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         // Arrange
         var entrada = entrada();
         stubConsultas(entrada, false, false, false);
-        when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(Optional.empty());
+        when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(EstadoEvaluacionFichaDomain.VACIO);
         doThrow(new EvaluacionFichaPerfilNoEncontradaException(evaluacion))
                 .when(agregarEstadoEvaluacionFichaValidator).validar(entrada, false, false, false, EstadoEvaluacionFichaDomain.VACIO);
 
@@ -124,7 +123,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         // Arrange
         var entrada = entrada();
         stubConsultas(entrada, true, false, false);
-        when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(Optional.empty());
+        when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(EstadoEvaluacionFichaDomain.VACIO);
         doThrow(new EvaluacionFichaNoPropiaException(evaluacion))
                 .when(agregarEstadoEvaluacionFichaValidator).validar(entrada, true, false, false, EstadoEvaluacionFichaDomain.VACIO);
 
@@ -140,7 +139,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         // Arrange
         var entrada = entrada();
         stubConsultas(entrada, true, true, true);
-        when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(Optional.empty());
+        when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(EstadoEvaluacionFichaDomain.VACIO);
         doThrow(new EstadoEvaluacionDuplicadoException(evaluacion, EstadoEvaluacion.APROBADA.getId()))
                 .when(agregarEstadoEvaluacionFichaValidator).validar(entrada, true, true, true, EstadoEvaluacionFichaDomain.VACIO);
 
@@ -157,7 +156,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var entrada = entrada();
         stubConsultas(entrada, true, true, false);
         when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion))
-                .thenReturn(Optional.of(EstadoEvaluacionFichaDomain.crear(evaluacion)));
+                .thenReturn(EstadoEvaluacionFichaDomain.crear(evaluacion));
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
                 .when(estadoEvaluacionFichaOutputPort).agregarEstado(any());
 

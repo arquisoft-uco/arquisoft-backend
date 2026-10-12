@@ -1,7 +1,4 @@
 dependencies {
-    // La direccion domain <- application <- infrastructure la verifica :verificarCapasHexagonales
-    // del build raiz. Solo los tests ven el dominio (arrange de agregados en slices).
-    testImplementation project(':seguridad:domain')
     implementation project(':seguridad:application')
     implementation project(':shared:domain')
     implementation project(':shared:application')
@@ -11,8 +8,6 @@ dependencies {
     // shared:tracing — IdentidadTrazaFilter enriquece la traza con el sub del JWT y
     // SeguridadRestTemplateConfig propaga la correlacion en las llamadas salientes a Keycloak.
     implementation project(':shared:tracing')
-
-    implementation project(':shared:redis')
 
     // Spring Security & OAuth2 Resource Server
     // Nota arquitectonica: NO se usa keycloak-admin-client ni keycloak-spring-boot-starter.
@@ -24,7 +19,6 @@ dependencies {
 
     // Spring Data Redis — necesario para StringRedisTemplate, LettuceConnectionFactory y
     // io.lettuce.core.* (Lettuce viene transitivo desde spring-boot-starter-data-redis).
-    // shared:redis usa 'implementation' (no 'api') por lo que no lo expone como API transitivo.
     implementation "org.springframework.boot:spring-boot-starter-data-redis"
 
     // JWT: validación y parseo gestionados íntegramente por spring-boot-starter-oauth2-resource-server

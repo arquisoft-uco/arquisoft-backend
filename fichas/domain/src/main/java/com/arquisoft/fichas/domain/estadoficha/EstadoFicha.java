@@ -12,6 +12,7 @@ public enum EstadoFicha {
     APROBADA("Aprobada"),
     APROBADA_CON_OBSERVACIONES("Aprobada Con Observaciones"),
     NO_APROBADA("No Aprobada"),
+    DESCARTADA("Descartada"),
 
     VACIO("");
 
@@ -35,8 +36,25 @@ public enum EstadoFicha {
         return this == APROBADA || this == APROBADA_CON_OBSERVACIONES || this == NO_APROBADA;
     }
 
+    public boolean esAprobatorio() {
+        return this == APROBADA || this == APROBADA_CON_OBSERVACIONES;
+    }
+
     public boolean permiteModificacion() {
         return !esTerminal();
+    }
+
+    public boolean esAsignablePorAsesor() {
+        return this == EN_CONSTRUCCION || this == DISPONIBLE_PARA_EVALUACION || this == DESCARTADA;
+    }
+
+    public boolean permiteTransicionPorAsesorA(EstadoFicha destino) {
+        return switch (this) {
+            case EN_CONSTRUCCION -> destino == DISPONIBLE_PARA_EVALUACION || destino == DESCARTADA;
+            case DISPONIBLE_PARA_EVALUACION -> destino == EN_CONSTRUCCION || destino == DESCARTADA;
+            case DESCARTADA -> destino == EN_CONSTRUCCION;
+            case APROBADA, APROBADA_CON_OBSERVACIONES, NO_APROBADA, VACIO -> false;
+        };
     }
 
     public static EstadoFicha desde(String id) {

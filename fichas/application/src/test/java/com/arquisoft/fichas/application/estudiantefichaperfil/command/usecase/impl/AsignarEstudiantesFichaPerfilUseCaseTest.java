@@ -1,13 +1,17 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.util.UtilFecha;
 import java.time.Instant;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
+import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesVigentesFinder;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesYaVinculadosFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
@@ -31,7 +35,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,7 +63,10 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     private FichaPerfilFinder fichaPerfilFinder;
 
     @Mock
-    private EstudiantesExistentesFinder estudiantesExistentesFinder;
+    private EstadoActualFichaPerfilFinder estadoActualFichaPerfilFinder;
+
+    @Mock
+    private EstudiantesVigentesFinder estudiantesVigentesFinder;
 
     @Mock
     private EstudiantesFinder estudiantesFinder;
@@ -86,6 +92,8 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     private final UUID estudiante = UUID.randomUUID();
     private final FichaPerfilDomain ficha = FichaPerfilDomain.crear(TITULO, UUID.randomUUID());
     private final UUID fichaPerfil = ficha.getId();
+    private final EstadoFichaPerfilDomain enConstruccion = EstadoFichaPerfilDomain.reconstruir(
+            UUID.randomUUID(), fichaPerfil, EstadoFicha.EN_CONSTRUCCION, Instant.now());
 
     @Test
     void debeVincularCadaEstudiante_cuandoDatosValidos() {
@@ -111,15 +119,16 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilFinder, estudiantesExistentesFinder,
+        var inOrder = inOrder(fichaPerfilFinder, estadoActualFichaPerfilFinder, estudiantesVigentesFinder,
                 estudiantesYaVinculadosFinder, estudiantesVinculadosContadorFinder,
                 asignarEstudiantesFichaPerfilValidator, estudianteFichaPerfilOutputPort);
         inOrder.verify(fichaPerfilFinder).obtener(fichaPerfil);
-        inOrder.verify(estudiantesExistentesFinder).obtener(List.of(estudiante));
+        inOrder.verify(estadoActualFichaPerfilFinder).obtener(fichaPerfil);
+        inOrder.verify(estudiantesVigentesFinder).obtener(List.of(estudiante));
         inOrder.verify(estudiantesYaVinculadosFinder).obtener(relaciones.getRelaciones());
         inOrder.verify(estudiantesVinculadosContadorFinder).obtener(fichaPerfil);
         inOrder.verify(asignarEstudiantesFichaPerfilValidator)
-                .validar(relaciones, ficha, List.of(estudiante), List.of(), 0L);
+                .validar(relaciones, ficha, enConstruccion, List.of(estudiante), List.of(), 0L);
         inOrder.verify(estudianteFichaPerfilOutputPort)
                 .vincularEstudiante(entidadDe(relaciones.getRelaciones().getFirst()));
     }
@@ -166,7 +175,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         stubConsultas(FichaPerfilDomain.VACIO, List.of(estudiante), List.of(), 0L);
         doThrow(new FichaPerfilNoEncontradaException(fichaPerfil))
                 .when(asignarEstudiantesFichaPerfilValidator)
-                .validar(relaciones, FichaPerfilDomain.VACIO, List.of(estudiante), List.of(), 0L);
+                .validar(relaciones, FichaPerfilDomain.VACIO, enConstruccion, List.of(estudiante), List.of(), 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
@@ -183,7 +192,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         stubConsultas(ficha, List.of(), List.of(), 0L);
         doThrow(new EstudianteNoEncontradoException(estudiante))
                 .when(asignarEstudiantesFichaPerfilValidator)
-                .validar(relaciones, ficha, List.of(), List.of(), 0L);
+                .validar(relaciones, ficha, enConstruccion, List.of(), List.of(), 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
@@ -200,7 +209,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         stubConsultas(ficha, List.of(estudiante), List.of(), 5L);
         doThrow(new CupoEstudiantesExcedidoException(3))
                 .when(asignarEstudiantesFichaPerfilValidator)
-                .validar(relaciones, ficha, List.of(estudiante), List.of(), 5L);
+                .validar(relaciones, ficha, enConstruccion, List.of(estudiante), List.of(), 5L);
 
         // Act & Assert
         assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
@@ -228,16 +237,13 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
 
     private void stubConsultas(FichaPerfilDomain fichaPerfilDomain, List<UUID> estudiantesExistentes,
                                List<UUID> yaVinculados, long vinculadosActuales) {
-        when(fichaPerfilFinder.obtener(fichaPerfil)).thenReturn(presencia(fichaPerfilDomain));
-        when(estudiantesExistentesFinder.obtener(List.of(estudiante))).thenReturn(estudiantesExistentes);
+        when(fichaPerfilFinder.obtener(fichaPerfil)).thenReturn(fichaPerfilDomain);
+        when(estadoActualFichaPerfilFinder.obtener(fichaPerfil)).thenReturn(enConstruccion);
+        when(estudiantesVigentesFinder.obtener(List.of(estudiante))).thenReturn(estudiantesExistentes);
         when(estudiantesYaVinculadosFinder.obtener(any())).thenReturn(yaVinculados);
         when(estudiantesVinculadosContadorFinder.obtener(fichaPerfil)).thenReturn(vinculadosActuales);
         lenient().when(estudiantesFinder.obtener(List.of(estudiante))).thenReturn(
-                List.of(EstudianteDomain.reconstruir(estudiante, "1001", NOMBRE, EMAIL, Instant.now())));
-    }
-
-    private static Optional<FichaPerfilDomain> presencia(FichaPerfilDomain fichaPerfilDomain) {
-        return fichaPerfilDomain.esVacio() ? Optional.empty() : Optional.of(fichaPerfilDomain);
+                List.of(EstudianteDomain.reconstruir(estudiante, "1001", NOMBRE, EMAIL, Instant.now(), UtilFecha.VACIO)));
     }
 
     private AgregacionEstudiantesFichaPerfilDomain relaciones() {

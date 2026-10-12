@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.application.estudiante.command.finder.impl;
 
+import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import org.junit.jupiter.api.Test;
@@ -28,14 +30,14 @@ class EstudiantePorIdFinderImplTest {
     void debeDelegarEnElOutputPort_cuandoElEstudianteExiste() {
         // Arrange
         var id = UUID.randomUUID();
-        var entity = new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+        var entity = new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), UtilFecha.VACIO);
         when(estudianteOutputPort.obtenerPorId(id)).thenReturn(Optional.of(entity));
 
         // Act
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).contains(entity);
+        assertThat(resultado.getId()).isEqualTo(id);
     }
 
     @Test
@@ -48,6 +50,6 @@ class EstudiantePorIdFinderImplTest {
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).isEmpty();
+        assertThat(resultado).isEqualTo(EstudianteDomain.VACIO);
     }
 }

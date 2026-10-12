@@ -9,13 +9,11 @@ import com.arquisoft.fichas.application.revisionitem.command.secondaryport.Revis
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.mapper.RevisionItemMapper;
 import com.arquisoft.fichas.application.revisionitem.command.usecase.AgregarRevisionItemUseCase;
 import com.arquisoft.fichas.application.revisionitem.command.validator.AgregarRevisionItemValidator;
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.revisionitem.AgregacionRevisionItemDomain;
 import com.arquisoft.fichas.domain.revisionitem.event.RevisionItemAgregadoEvent;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.publisher.EventPublisher;
-import com.arquisoft.shared.util.UtilUUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -42,10 +40,9 @@ public class AgregarRevisionItemUseCaseImpl implements AgregarRevisionItemUseCas
 
         boolean itemExiste = itemFichaPerfilExisteFinder.obtener(entrada.getItem());
 
-        UUID fichaPerfil = fichaPerfilDelItemFinder.obtener(entrada.getItem())
-                .orElse(UtilUUID.obtenerUUIDPorDefecto());
+        var fichaPerfil = fichaPerfilDelItemFinder.obtener(entrada.getItem());
 
-        var ficha = fichaPerfilFinder.obtener(fichaPerfil).orElse(FichaPerfilDomain.VACIO);
+        var ficha = fichaPerfilFinder.obtener(fichaPerfil);
 
         long cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());
 

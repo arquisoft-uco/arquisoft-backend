@@ -25,24 +25,24 @@ class EvaluacionJuradoFinalizadaFinderImplTest {
     @Test
     void debeRetornarTrue_cuandoElPuertoIndicaQueLaEvaluacionEstaFinalizada() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
-        when(outputPort.estaFinalizada(evaluacionJurado)).thenReturn(true);
+        UUID evaluacionCuantitativaJurado = UUID.randomUUID();
+        when(outputPort.estaFinalizada(evaluacionCuantitativaJurado)).thenReturn(true);
 
         // Act
-        Boolean resultado = finder.obtener(evaluacionJurado);
+        Boolean resultado = finder.obtener(evaluacionCuantitativaJurado);
 
         // Assert
         assertThat(resultado).isTrue();
-        verify(outputPort).estaFinalizada(evaluacionJurado);
+        verify(outputPort).estaFinalizada(evaluacionCuantitativaJurado);
     }
 
     @Test
     void debeRetornarFalse_cuandoElPuertoIndicaQueLaEvaluacionNoEstaFinalizada() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
-        when(outputPort.estaFinalizada(evaluacionJurado)).thenReturn(false);
+        UUID evaluacionCuantitativaJurado = UUID.randomUUID();
+        when(outputPort.estaFinalizada(evaluacionCuantitativaJurado)).thenReturn(false);
 
         // Act & Assert
-        assertThat(finder.obtener(evaluacionJurado)).isFalse();
+        assertThat(finder.obtener(evaluacionCuantitativaJurado)).isFalse();
     }
 }

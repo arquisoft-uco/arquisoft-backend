@@ -127,4 +127,17 @@ class EstudianteAgregadoConsumerTest {
         // Assert
         verify(channel).basicAck(4L, false);
     }
+
+    @Test
+    void debeConfirmarElMensaje_cuandoElResultadoEsReactivada() throws Exception {
+        // Arrange
+        when(agregarEstudianteInteractor.ejecutar(any()))
+                .thenReturn(new AgregacionEstudianteResult.Reactivada(UUID.randomUUID()));
+
+        // Act
+        adapter.onEstudianteAgregado(mensajeCon(UUID.randomUUID().toString(), 5L), channel);
+
+        // Assert
+        verify(channel).basicAck(5L, false);
+    }
 }

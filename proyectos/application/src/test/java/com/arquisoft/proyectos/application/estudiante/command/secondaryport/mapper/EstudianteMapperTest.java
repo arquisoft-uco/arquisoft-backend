@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.application.estudiante.command.secondaryport.mapper;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.proyectos.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import com.arquisoft.proyectos.domain.estudiante.EstudianteDomain;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class EstudianteMapperTest {
         // Arrange
         var id = UUID.randomUUID();
         var ocurridoEn = Instant.now();
-        var entity = new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn);
+        var entity = new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn, UtilFecha.VACIO);
 
         // Act
         var domain = EstudianteMapper.toDomain(entity);

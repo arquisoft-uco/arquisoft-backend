@@ -1,12 +1,11 @@
 package com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.primaryport.model;
 
-import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.primaryport.model.RegistrarEvaluacionesCualitativasJuradoCommand.ParEntrada;
+import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.primaryport.model.RegistrarEvaluacionesCualitativasJuradoCommand.Par;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.validation.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,13 +18,13 @@ class RegistrarEvaluacionesCualitativasJuradoCommandTest {
     @Test
     void debeCrearCommand_cuandoDatosValidos() {
         // Arrange
-        String evaluacionJurado = UUID.randomUUID().toString();
-        String item = UUID.randomUUID().toString();
-        String criterio = UUID.randomUUID().toString();
+        var evaluacionJurado = UUID.randomUUID().toString();
+        var item = UUID.randomUUID().toString();
+        var criterio = UUID.randomUUID().toString();
 
         // Act
-        RegistrarEvaluacionesCualitativasJuradoCommand command = RegistrarEvaluacionesCualitativasJuradoCommand.crear(
-                evaluacionJurado, List.of(new ParEntrada(item, criterio)));
+        var command = RegistrarEvaluacionesCualitativasJuradoCommand.crear(
+                evaluacionJurado, List.of(new Par<>(item, criterio)));
 
         // Assert
         assertThat(command.evaluacionJurado()).isEqualTo(UUID.fromString(evaluacionJurado));
@@ -38,24 +37,13 @@ class RegistrarEvaluacionesCualitativasJuradoCommandTest {
     void debeAcumularError_cuandoEvaluacionJuradoEstaEnBlanco() {
         // Act & Assert
         assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasJuradoCommand.crear(
-                " ", List.of(new ParEntrada(UUID.randomUUID().toString(), UUID.randomUUID().toString()))))
+                " ", List.of(new Par<>(UUID.randomUUID().toString(), UUID.randomUUID().toString()))))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
                                 .contains(
                                         tuple(EvaluacionesFields.EvaluacionCualitativaJurado.EVALUACION_JURADO,
                                                 EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO)));
-    }
-
-    @Test
-    void debeAcumularErrorLoteRequerido_cuandoLaListaDeParesEsNula() {
-        // Act & Assert
-        assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasJuradoCommand.crear(
-                UUID.randomUUID().toString(), null))
-                .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
-                        assertThat(exception.getValidationResult().getErrores())
-                                .extracting(error -> error.codigoError())
-                                .containsExactly(EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.LOTE_REQUERIDO));
     }
 
     @Test
@@ -70,11 +58,11 @@ class RegistrarEvaluacionesCualitativasJuradoCommandTest {
     }
 
     @Test
-    void debeAcumularErroresIndexados_cuandoHayElementoNuloYParIncompletoOInvalido() {
+    void debeAcumularErroresIndexados_cuandoHayParVacioYParIncompletoOInvalido() {
         // Arrange
-        List<ParEntrada> pares = Arrays.asList(
-                null,
-                new ParEntrada(null, "no-es-un-uuid"));
+        var pares = List.of(
+                new Par<>("", ""),
+                new Par<>(" ", "no-es-un-uuid"));
 
         // Act & Assert
         assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasJuradoCommand.crear(
@@ -83,8 +71,10 @@ class RegistrarEvaluacionesCualitativasJuradoCommandTest {
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
                                 .containsExactlyInAnyOrder(
-                                        tuple("evaluaciones[0]",
-                                                EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.PAR_REQUERIDO),
+                                        tuple("evaluaciones[0].item",
+                                                EvaluacionesCodes.EvaluacionCualitativaJurado.ITEM_REQUERIDO),
+                                        tuple("evaluaciones[0].criterio",
+                                                EvaluacionesCodes.EvaluacionCualitativaJurado.CRITERIO_REQUERIDO),
                                         tuple("evaluaciones[1].item",
                                                 EvaluacionesCodes.EvaluacionCualitativaJurado.ITEM_REQUERIDO),
                                         tuple("evaluaciones[1].criterio",

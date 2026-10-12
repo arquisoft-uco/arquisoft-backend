@@ -32,14 +32,14 @@ public class ReintentarNotificacionesFallidasUseCaseImpl
 
     @Override
     public ReintentoNotificacionesResult ejecutar(ReintentoNotificacionesDomain reintento) {
-        List<NotificacionDomain> pendientes = notificacionesReintentablesFinder.obtener(
+        var pendientes = notificacionesReintentablesFinder.obtener(
                 new CriterioReintento(reintento.getMaxIntentos(), reintento.getLimite()));
 
         logger.info(NotificacionKey.LOG_REINTENTO_INICIADO, pendientes.size());
 
-        int reenviadas = 0;
-        int fallidas = 0;
-        for (NotificacionDomain notificacion : pendientes) {
+        var reenviadas = 0;
+        var fallidas = 0;
+        for (var notificacion : pendientes) {
             if (reenviar(notificacion)) {
                 reenviadas++;
             } else {
@@ -47,7 +47,7 @@ public class ReintentarNotificacionesFallidasUseCaseImpl
             }
         }
 
-        int agotadas = contarAgotadas(pendientes, reintento.getMaxIntentos());
+        var agotadas = contarAgotadas(pendientes, reintento.getMaxIntentos());
         logger.info(NotificacionKey.LOG_REINTENTO_RESULTADO,
                 reenviadas, fallidas, agotadas);
 
@@ -60,7 +60,7 @@ public class ReintentarNotificacionesFallidasUseCaseImpl
         var entrega = envioNotificacionOutputPort.enviar(
                 MensajeNotificacionMapper.toMensaje(notificacion));
 
-        boolean entregada = switch (entrega) {
+        var entregada = switch (entrega) {
             case ResultadoEntrega.Entregada ignorada -> {
                 notificacion.marcarEnviada();
                 yield true;

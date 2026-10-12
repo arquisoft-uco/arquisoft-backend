@@ -40,4 +40,18 @@ public final class FichasLimits {
 
         public static final int ESTADO_MAX = 50;
     }
+
+    public static final class ObservacionItem {
+
+        private ObservacionItem() {}
+
+        public static final int OBSERVACION_MAX = 200;
+    }
+
+    public static final class ObservacionEvaluacion {
+
+        private ObservacionEvaluacion() {}
+
+        public static final int OBSERVACION_MAX = 200;
+    }
 }
