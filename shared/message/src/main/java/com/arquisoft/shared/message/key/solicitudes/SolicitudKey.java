@@ -27,6 +27,8 @@ public enum SolicitudKey implements ClaveMensaje {
     LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.solicitud.log.eliminada", 1),
     ERROR_SOLICITUD_TIPO_NO_COINCIDE_ASESOR(
             "solicitudes.dominio.solicitud.error.tipo-no-coincide-asesor", 0),
+    ERROR_SOLICITUD_TIPO_NO_COINCIDE_CAMBIO_ASESOR(
+            "solicitudes.dominio.solicitud.error.tipo-no-coincide-cambio-asesor", 0),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
             "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-recibidas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_RECIBIDAS_COMPLETADA(

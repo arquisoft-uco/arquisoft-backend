@@ -7,4 +7,14 @@ rutas:
   proyectos:
     proyectos-grado:
       base: /proyectos-grado
+      coordinador: /coordinador
       estudiantes: /{proyectoGradoId}/estudiantes
+      companeros: /{proyectoGradoId}/companeros
+      estudiantes-asesorados: /{proyectoGradoId}/estudiantes-asesorados
+      asesores: /{proyectoGradoId}/asesores
+      asesores-asignados: /{proyectoGradoId}/asesores-asignados
+      estados: /{proyectoGradoId}/estados
+      estudiante: /{proyectoGradoId}/estudiantes/{estudianteId}
+      proyectos-estudiante: /estudiante
+      proyectos-asesor: /asesor
+      asesor-estado: /{proyectoGradoId}/asesores/{asesorId}/estado

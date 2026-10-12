@@ -17,7 +17,8 @@ usuario, consultas `arquisoft-docs` y produces `PLAN-{HU|HT}-{ID}.md`: el contra
 
 Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue `.claude/templates/HANDOFF.md`: no hay
 usuario en el canal, lo aprobado está en «Decisiones», y cada pregunta que este archivo te manda
-hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder y
+hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder,
+con la línea `ESTADO` de `HANDOFF.md` como línea 1 (uno de sus cuatro valores, nada encima), y
 responde solo la línea de traspaso.
 
 En este agente: las preguntas de la FASE 3, cierre incluido, van **todas juntas** en un único
@@ -96,8 +97,8 @@ es plano (`arquisoft-arquitectura/references/eventos.md` → *Eventos de dominio
 *Transición de estado ⇒ notificación*), todas en la sección 6. Se olvidan: el consumidor va en
 `amqp/{productor}/{entidad}/`; el texto usa `plantilla(clave, args)`, nunca `Mensajes.formatear`;
 son tres textos (asunto, cuerpo, pie compartido `PlantillaKey.PIE_GENERICO`). El evento carga todo
-lo que el correo necesita, y cada dato de un `Finder` se valida con una `Rule` **antes** de
-persistir: si se consulta después, su `VACIO` viaja y el correo muere en silencio.
+lo que el correo necesita, y cada dato de un `Finder` lo rechaza una `Rule` si viene `VACIO` (ver
+8c).
 
 **6. ¿Persistencia nueva o existente?** · **7. ¿Casos de error explícitos?** · **8. Entidad nueva
 con eventos: ¿`temaEvento`?** (`{contexto}.{entidad}.{accion}`)
@@ -110,7 +111,10 @@ feature, con su propio `Finder` que el use case inyecta; nunca un `query/` para 
 entrada es la salida de otro es una cascada y se colapsa en un método que navegue la relación con
 `JOIN` en el adaptador; un `List<UUID>` + llamada por elemento es N+1 → una proyección. Una cascada
 legítima (`arquisoft-estandares` → *El `Finder` dependiente*) lleva su razón en una línea, o el
-implementador la tomará por error.
+implementador la tomará por error. En un comando, **todos** los `Finder`s van antes del `Validator`,
+y cada resultado que la escritura o el evento leen tiene su `Rule` en la lista del `Validator`
+(`arquisoft-estandares` → *Validator, Rule, Finder*). Un `Finder` "después de validar" o "sin `Rule`
+porque la FK lo garantiza" es un plan que deja pasar un `VACIO` en silencio.
 
 **9. ¿Sistema externo** (Keycloak, SMTP, MinIO, HTTP)? Puerto en `command/secondaryport/`, adaptador
 en `command/secondaryadapter/{tecnologia}/`, sin lógica de negocio.
