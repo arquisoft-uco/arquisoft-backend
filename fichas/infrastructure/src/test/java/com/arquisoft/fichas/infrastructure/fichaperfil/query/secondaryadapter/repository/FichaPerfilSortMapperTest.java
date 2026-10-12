@@ -69,6 +69,18 @@ class FichaPerfilSortMapperTest {
     }
 
     @Test
+    void debeRetornarNull_cuandoSeTraduceEstadoFicha() {
+        // Arrange
+        String clave = "estadoFicha";
+
+        // Act
+        String ruta = FichaPerfilSortMapper.traducir(clave);
+
+        // Assert
+        assertThat(ruta).isNull();
+    }
+
+    @Test
     void debeResolverUnaRutaJpa_paraTodoCampoQueElCriteriaDeclaraOrdenable() {
         for (FichaPerfilCriteria.Campo campo : FichaPerfilCriteria.Campo.values()) {
             // Act

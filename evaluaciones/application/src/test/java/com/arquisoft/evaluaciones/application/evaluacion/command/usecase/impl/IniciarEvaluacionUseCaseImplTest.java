@@ -5,6 +5,8 @@ import com.arquisoft.evaluaciones.application.evaluacion.command.validator.Inici
 import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
 import com.arquisoft.evaluaciones.domain.evaluacion.exception.EvaluacionFinalizadaException;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionKey;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +21,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class IniciarEvaluacionUseCaseImplTest {
@@ -29,13 +32,16 @@ class IniciarEvaluacionUseCaseImplTest {
     @Mock
     private IniciarEvaluacionValidator iniciarEvaluacionValidator;
 
+    @Mock
+    private AppLogger logger;
+
     @InjectMocks
     private IniciarEvaluacionUseCaseImpl useCase;
 
     @Test
     void debeActualizarAEnProgreso_cuandoEstadoEsPendiente() {
         // Arrange
-        UUID evaluacion = UUID.randomUUID();
+        var evaluacion = UUID.randomUUID();
         var inicio = InicioEvaluacionDomain.crear(evaluacion, EstadoEvaluacion.PENDIENTE);
 
         // Act
@@ -44,12 +50,14 @@ class IniciarEvaluacionUseCaseImplTest {
         // Assert
         verify(iniciarEvaluacionValidator).validar(EstadoEvaluacion.PENDIENTE);
         verify(evaluacionOutputPort).actualizarEstado(evaluacion, EstadoEvaluacion.EN_PROGRESO.getId());
+        verify(logger).debug(EvaluacionKey.LOG_INICIADA,
+                evaluacion, EstadoEvaluacion.PENDIENTE.getId(), EstadoEvaluacion.EN_PROGRESO.getId());
     }
 
     @Test
     void debeConservarEstadoSinEscribir_cuandoEstadoYaEsEnProgreso() {
         // Arrange
-        UUID evaluacion = UUID.randomUUID();
+        var evaluacion = UUID.randomUUID();
         var inicio = InicioEvaluacionDomain.crear(evaluacion, EstadoEvaluacion.EN_PROGRESO);
 
         // Act
@@ -58,12 +66,13 @@ class IniciarEvaluacionUseCaseImplTest {
         // Assert
         verify(iniciarEvaluacionValidator).validar(EstadoEvaluacion.EN_PROGRESO);
         verify(evaluacionOutputPort, never()).actualizarEstado(any(), anyString());
+        verifyNoInteractions(logger);
     }
 
     @Test
     void debeRechazarSinEscribir_cuandoEstadoEsFinalizada() {
         // Arrange
-        UUID evaluacion = UUID.randomUUID();
+        var evaluacion = UUID.randomUUID();
         var inicio = InicioEvaluacionDomain.crear(evaluacion, EstadoEvaluacion.FINALIZADA);
         doThrow(new EvaluacionFinalizadaException()).when(iniciarEvaluacionValidator).validar(EstadoEvaluacion.FINALIZADA);
 

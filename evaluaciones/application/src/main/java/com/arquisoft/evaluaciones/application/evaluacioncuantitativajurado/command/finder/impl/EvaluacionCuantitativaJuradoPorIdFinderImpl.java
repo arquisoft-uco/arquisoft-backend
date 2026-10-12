@@ -7,7 +7,6 @@ import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.Evaluacion
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -17,7 +16,9 @@ public class EvaluacionCuantitativaJuradoPorIdFinderImpl implements EvaluacionCu
     private final EvaluacionCuantitativaJuradoOutputPort outputPort;
 
     @Override
-    public Optional<EvaluacionCuantitativaJuradoDomain> obtener(UUID id) {
-        return outputPort.obtenerPorId(id).map(EvaluacionCuantitativaJuradoMapper::toDomain);
+    public EvaluacionCuantitativaJuradoDomain obtener(UUID id) {
+        return outputPort.obtenerPorId(id)
+                .map(EvaluacionCuantitativaJuradoMapper::toDomain)
+                .orElse(EvaluacionCuantitativaJuradoDomain.VACIO);
     }
 }

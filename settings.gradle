@@ -78,3 +78,9 @@ include 'solicitudes'
 include 'solicitudes:domain'
 include 'solicitudes:application'
 include 'solicitudes:infrastructure'
+
+// Contexto 11: Biblioteca (publicación y consulta de documentación de proyectos finalizados)
+include 'biblioteca'
+include 'biblioteca:domain'
+include 'biblioteca:application'
+include 'biblioteca:infrastructure'

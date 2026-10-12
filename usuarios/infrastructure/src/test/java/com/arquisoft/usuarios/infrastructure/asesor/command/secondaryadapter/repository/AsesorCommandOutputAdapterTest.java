@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.asesor.command.secondaryadapter.repository;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.asesor.command.secondaryport.entity.AsesorEntity;
 import com.arquisoft.usuarios.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,7 +49,7 @@ class AsesorCommandOutputAdapterTest {
         var usuarioId = sembrarUsuario();
 
         // Act
-        adapter.guardar(new AsesorEntity(usuarioId));
+        adapter.guardar(new AsesorEntity(usuarioId, UtilFecha.VACIO));
 
         // Assert
         assertThat(asesorCommandRepository.existsById(usuarioId)).isTrue();
@@ -55,28 +57,63 @@ class AsesorCommandOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarTrue_cuandoElUsuarioYaEsAsesor() {
+    void debeRetornarAsesor_cuandoElUsuarioYaEsAsesor() {
         // Arrange
         var adapter = new AsesorCommandOutputAdapter(asesorCommandRepository, logger);
         var usuarioId = sembrarUsuario();
         entityManager.persistAndFlush(AsesorJpaEntity.builder().usuarioId(usuarioId).build());
 
         // Act
-        var existe = adapter.existePorUsuario(usuarioId);
+        var asesor = adapter.obtenerPorUsuario(usuarioId);
 
         // Assert
-        assertThat(existe).isTrue();
+        assertThat(asesor).isPresent();
+        assertThat(asesor.get().usuario()).isEqualTo(usuarioId);
+        assertThat(asesor.get().eliminadoEn()).isEqualTo(UtilFecha.VACIO);
     }
 
     @Test
-    void debeRetornarFalse_cuandoElUsuarioNoEsAsesor() {
+    void debeRetornarVacio_cuandoElUsuarioNoEsAsesor() {
         // Arrange
         var adapter = new AsesorCommandOutputAdapter(asesorCommandRepository, logger);
 
         // Act
-        var existe = adapter.existePorUsuario(UUID.randomUUID());
+        var asesor = adapter.obtenerPorUsuario(UUID.randomUUID());
 
         // Assert
-        assertThat(existe).isFalse();
+        assertThat(asesor).isEmpty();
+    }
+
+    @Test
+    void debePersistirEliminadoEn_cuandoSeEliminaLogicamente() {
+        // Arrange
+        var adapter = new AsesorCommandOutputAdapter(asesorCommandRepository, logger);
+        var usuarioId = sembrarUsuario();
+        entityManager.persistAndFlush(AsesorJpaEntity.builder().usuarioId(usuarioId).build());
+        var eliminadoEn = Instant.parse("2026-09-23T10:00:00Z");
+
+        // Act
+        adapter.eliminarLogica(usuarioId, eliminadoEn);
+
+        // Assert
+        assertThat(entityManager.find(AsesorJpaEntity.class, usuarioId).getEliminadoEn()).isEqualTo(eliminadoEn);
+        assertThat(adapter.obtenerPorUsuario(usuarioId)).map(AsesorEntity::eliminadoEn).contains(eliminadoEn);
+        verify(logger).debug(AgregarAsesorKey.LOG_ACTUALIZADO, usuarioId);
+    }
+
+    @Test
+    void debeDejarEliminadoEnNulo_cuandoSeReactiva() {
+        // Arrange
+        var adapter = new AsesorCommandOutputAdapter(asesorCommandRepository, logger);
+        var usuarioId = sembrarUsuario();
+        entityManager.persistAndFlush(AsesorJpaEntity.builder()
+                .usuarioId(usuarioId).eliminadoEn(Instant.parse("2026-09-23T10:00:00Z")).build());
+
+        // Act
+        adapter.reactivar(usuarioId);
+
+        // Assert
+        assertThat(entityManager.find(AsesorJpaEntity.class, usuarioId).getEliminadoEn()).isNull();
+        verify(logger).debug(AgregarAsesorKey.LOG_ACTUALIZADO, usuarioId);
     }
 }

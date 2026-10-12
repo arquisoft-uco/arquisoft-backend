@@ -5,7 +5,10 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum EvaluacionKey implements ClaveMensaje {
 
     ERROR_FINALIZADA("evaluaciones.dominio.evaluacion.error.finalizada", 0),
-    ERROR_ESTADO_NO_ENCONTRADO("evaluaciones.dominio.evaluacion.error.estado-no-encontrado", 1);
+    ERROR_ESTADO_NO_ENCONTRADO("evaluaciones.dominio.evaluacion.error.estado-no-encontrado", 1),
+    ERROR_NO_ENCONTRADA("evaluaciones.dominio.evaluacion.error.no-encontrada", 1),
+    LOG_INICIADA("evaluaciones.aplicacion.evaluacion.log.iniciada", 3),
+    LOG_ESTADO_ACTUALIZADO("evaluaciones.infraestructura.evaluacion.log.estado-actualizado", 2);
 
     private final String clave;
     private final int parametros;

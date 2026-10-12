@@ -24,8 +24,8 @@ public class EvaluacionCuantitativaJuradoCommandOutputAdapter implements Evaluac
     }
 
     @Override
-    public void cambiarPuntaje(UUID id, Integer nuevoPuntaje) {
-        repository.actualizarPuntaje(id, nuevoPuntaje);
-        logger.debug(EvaluacionCuantitativaJuradoKey.LOG_GUARDADO, id);
+    public void actualizar(EvaluacionCuantitativaJuradoEntity evaluacionCuantitativaJurado) {
+        repository.save(EvaluacionCuantitativaJuradoJpaMapper.toJpaEntity(evaluacionCuantitativaJurado));
+        logger.debug(EvaluacionCuantitativaJuradoKey.LOG_GUARDADO, evaluacionCuantitativaJurado.id());
     }
 }

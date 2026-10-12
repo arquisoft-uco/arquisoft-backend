@@ -7,6 +7,7 @@ public record EstudianteFichaPerfilReadModel(
         UUID fichaPerfilId,
         UUID estudianteId,
         String nombre,
-        String email
+        String email,
+        boolean vigente
 ) {
 }

@@ -30,7 +30,7 @@ class FichaPerfilEstudianteQueryMapperTest {
                 .estadoFechaActualizacion(fechaEstado)
                 .build();
         var estudiantes = List.of(new EstudianteFichaPerfilReadModel(
-                UUID.randomUUID(), fichaId, UUID.randomUUID(), "Estudiante Uno", "e1@uco.edu.co"));
+                UUID.randomUUID(), fichaId, UUID.randomUUID(), "Estudiante Uno", "e1@uco.edu.co", true));
 
         // Act
         var readModel = FichaPerfilEstudianteQueryMapper.toReadModel(entity, estudiantes);

@@ -17,10 +17,10 @@ class InicioEvaluacionDomainTest {
     @Test
     void debeCrearAccion_cuandoDatosValidos() {
         // Arrange
-        UUID evaluacion = UUID.randomUUID();
+        var evaluacion = UUID.randomUUID();
 
         // Act
-        InicioEvaluacionDomain accion = InicioEvaluacionDomain.crear(evaluacion, EstadoEvaluacion.PENDIENTE);
+        var accion = InicioEvaluacionDomain.crear(evaluacion, EstadoEvaluacion.PENDIENTE);
 
         // Assert
         assertThat(accion.getEvaluacion()).isEqualTo(evaluacion);
@@ -44,11 +44,35 @@ class InicioEvaluacionDomainTest {
     @Test
     void debeDecidirEnProgreso_cuandoElEstadoActualEsPendienteOEnProgreso() {
         // Arrange
-        InicioEvaluacionDomain pendiente = InicioEvaluacionDomain.crear(UUID.randomUUID(), EstadoEvaluacion.PENDIENTE);
-        InicioEvaluacionDomain enProgreso = InicioEvaluacionDomain.crear(UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO);
+        var pendiente = InicioEvaluacionDomain.crear(UUID.randomUUID(), EstadoEvaluacion.PENDIENTE);
+        var enProgreso = InicioEvaluacionDomain.crear(UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO);
 
         // Act & Assert
         assertThat(pendiente.estadoDestino()).isEqualTo(EstadoEvaluacion.EN_PROGRESO);
         assertThat(enProgreso.estadoDestino()).isEqualTo(EstadoEvaluacion.EN_PROGRESO);
+    }
+
+    @Test
+    void debeRequerirTransicion_cuandoEstadoEsPendiente() {
+        // Arrange
+        var accion = InicioEvaluacionDomain.crear(UUID.randomUUID(), EstadoEvaluacion.PENDIENTE);
+
+        // Act
+        var requiere = accion.requiereTransicion();
+
+        // Assert
+        assertThat(requiere).isTrue();
+    }
+
+    @Test
+    void debeNoRequerirTransicion_cuandoEstadoYaEsEnProgreso() {
+        // Arrange
+        var accion = InicioEvaluacionDomain.crear(UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO);
+
+        // Act
+        var requiere = accion.requiereTransicion();
+
+        // Assert
+        assertThat(requiere).isFalse();
     }
 }

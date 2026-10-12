@@ -13,7 +13,8 @@ public final class CoordinadorMapper {
                 entity.identificador(),
                 entity.nombre(),
                 entity.email(),
-                entity.ocurridoEn());
+                entity.ocurridoEn(),
+                entity.eliminadoEn());
     }
 
     public static CoordinadorEntity toEntity(CoordinadorDomain coordinador) {
@@ -22,6 +23,7 @@ public final class CoordinadorMapper {
                 coordinador.getIdentificador(),
                 coordinador.getNombre(),
                 coordinador.getEmail(),
-                coordinador.getOcurridoEn());
+                coordinador.getOcurridoEn(),
+                coordinador.getEliminadoEn());
     }
 }

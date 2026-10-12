@@ -35,7 +35,7 @@ class ConsultarFichasPerfilCoordinadorUseCaseTest {
         FichaPerfilCriteria criteria = FichaPerfilCriteria.builder().pagina(0).tamanio(10).build();
 
         FichaPerfilReadModel ficha = new FichaPerfilReadModel(
-                UUID.randomUUID(), "Arquisoft Backend", null);
+                UUID.randomUUID(), "Arquisoft Backend", null, null);
 
         PaginatedResult<FichaPerfilReadModel> resultadoEsperado =
                 PaginatedResult.of(List.of(ficha), 0, 10, 1L);

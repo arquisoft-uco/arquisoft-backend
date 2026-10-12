@@ -9,5 +9,5 @@ public interface EvaluacionCuantitativaJuradoOutputPort {
 
     Optional<EvaluacionCuantitativaJuradoEntity> obtenerPorId(UUID id);
 
-    void cambiarPuntaje(UUID id, Integer nuevoPuntaje);
+    void actualizar(EvaluacionCuantitativaJuradoEntity evaluacionCuantitativaJurado);
 }
