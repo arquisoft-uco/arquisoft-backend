@@ -191,7 +191,8 @@
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create",
               "fichas:evaluacion-ficha-perfil-estudiante:view",
-              "proyectos:estudiante-proyecto-grado-estudiante:view"
+              "proyectos:estudiante-proyecto-grado-estudiante:view",
+              "proyectos:proyecto-grado-estudiante:view"
             ]
           }
         },
@@ -1008,6 +1009,15 @@
         {
           "id": "2f6d8a14-9c3e-4b70-a5d1-e8b4c7f90362",
           "name": "proyectos:proyecto-grado-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a4d7c1e9-6b32-4f85-9e0a-3c8f2b5d1a76",
+          "name": "proyectos:proyecto-grado-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
