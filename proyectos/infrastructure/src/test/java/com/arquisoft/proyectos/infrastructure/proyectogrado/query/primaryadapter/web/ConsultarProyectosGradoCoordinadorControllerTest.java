@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.infrastructure.proyectogrado.query.primaryadapter.web;
 
-import com.arquisoft.proyectos.application.estadoproyectogrado.query.readmodel.EstadoProyectoGradoReadModel;
+import com.arquisoft.proyectos.application.estadoproyecto.query.readmodel.EstadoProyectoReadModel;
 import com.arquisoft.proyectos.application.proyectogrado.query.primaryport.interactor.ConsultarProyectosGradoCoordinadorInteractor;
 import com.arquisoft.proyectos.application.proyectogrado.query.primaryport.model.ConsultarProyectosGradoCoordinadorQuery;
 import com.arquisoft.proyectos.application.proyectogrado.query.readmodel.ProyectoGradoReadModel;
@@ -90,7 +90,7 @@ class ConsultarProyectosGradoCoordinadorControllerTest {
         var ficha = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(List.of(
                 new ProyectoGradoReadModel(id, ficha, "Sistema de gestion",
-                        new EstadoProyectoGradoReadModel("EN_PROCESO", "En proceso"))), 0, 10, 1L));
+                        new EstadoProyectoReadModel("EN_PROCESO", "En proceso"))), 0, 10, 1L));
 
         // Act & Assert
         consultar(null)

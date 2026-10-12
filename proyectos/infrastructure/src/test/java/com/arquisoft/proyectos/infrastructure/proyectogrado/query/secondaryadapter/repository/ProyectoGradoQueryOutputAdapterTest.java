@@ -1,6 +1,7 @@
 package com.arquisoft.proyectos.infrastructure.proyectogrado.query.secondaryadapter.repository;
 
 import com.arquisoft.proyectos.application.proyectogrado.query.criteria.ProyectoGradoCriteria;
+import com.arquisoft.proyectos.infrastructure.estadoproyectogrado.command.secondaryadapter.entity.EstadoProyectoGradoJpaEntity;
 import com.arquisoft.proyectos.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
 import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.FiltroOperador;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,14 +38,21 @@ class ProyectoGradoQueryOutputAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new ProyectoGradoQueryOutputAdapter(repository, new ProyectoGradoJpaSpecification());
-        entityManager.persist(new EstadoProyectoGradoFixtureJpaEntity(EN_PROCESO, "En proceso", "En desarrollo"));
-        entityManager.persist(new EstadoProyectoGradoFixtureJpaEntity(FINALIZADO, "Finalizado", "Concluido"));
+        entityManager.persist(new EstadoProyectoFixtureJpaEntity(EN_PROCESO, "En proceso", "En desarrollo"));
+        entityManager.persist(new EstadoProyectoFixtureJpaEntity(FINALIZADO, "Finalizado", "Concluido"));
     }
 
     private UUID proyecto(UUID coordinador, String estado, String titulo) {
         var id = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(id, estado, coordinador, UtilUUID.generarNuevoUUID(), titulo));
+        entityManager.persist(new ProyectoGradoJpaEntity(id, coordinador, UtilUUID.generarNuevoUUID(), titulo));
+        entityManager.persist(new EstadoProyectoGradoJpaEntity(
+                UtilUUID.generarNuevoUUID(), id, estado, Instant.parse("2026-10-01T10:00:00Z")));
         return id;
+    }
+
+    private void cambiarEstado(UUID proyectoGrado, String estado, String fecha) {
+        entityManager.persist(new EstadoProyectoGradoJpaEntity(
+                UtilUUID.generarNuevoUUID(), proyectoGrado, estado, Instant.parse(fecha)));
     }
 
     private ProyectoGradoCriteria criteria(UUID coordinador, NodoFiltro filtroCliente, int pagina, int tamanio,
@@ -93,6 +102,44 @@ class ProyectoGradoQueryOutputAdapterTest {
 
         // Assert
         assertThat(resultado.getContent()).extracting(p -> p.id()).containsExactly(finalizado);
+    }
+
+    @Test
+    void debeExponerElEstadoMasRecienteSinDuplicar_cuandoElProyectoTieneVariosEstados() {
+        // Arrange
+        var coordinador = UtilUUID.generarNuevoUUID();
+        var id = proyecto(coordinador, EN_PROCESO, "Uno");
+        cambiarEstado(id, FINALIZADO, "2026-10-05T10:00:00Z");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(coordinador, null, 0, 10, List.of()));
+
+        // Assert
+        assertThat(resultado.getTotalElements()).isEqualTo(1);
+        var proyectoLeido = resultado.getContent().getFirst();
+        assertThat(proyectoLeido.id()).isEqualTo(id);
+        assertThat(proyectoLeido.estado().id()).isEqualTo(FINALIZADO);
+        assertThat(proyectoLeido.estado().nombre()).isEqualTo("Finalizado");
+    }
+
+    @Test
+    void debeFiltrarPorEstadoVigente_cuandoUnEstadoAnteriorCoincideConElFiltro() {
+        // Arrange
+        var coordinador = UtilUUID.generarNuevoUUID();
+        var yaFinalizado = proyecto(coordinador, EN_PROCESO, "Uno");
+        cambiarEstado(yaFinalizado, FINALIZADO, "2026-10-05T10:00:00Z");
+        var enProceso = proyecto(coordinador, EN_PROCESO, "Dos");
+        entityManager.flush();
+        entityManager.clear();
+        var filtro = NodoFiltro.predicado("estadoProyectoGrado", FiltroOperador.ES, EN_PROCESO);
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(coordinador, filtro, 0, 10, List.of()));
+
+        // Assert
+        assertThat(resultado.getContent()).extracting(p -> p.id()).containsExactly(enProceso);
     }
 
     @Test

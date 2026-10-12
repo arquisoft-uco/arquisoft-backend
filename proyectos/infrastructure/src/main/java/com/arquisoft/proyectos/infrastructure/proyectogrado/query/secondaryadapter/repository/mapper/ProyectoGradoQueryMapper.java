@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.infrastructure.proyectogrado.query.secondaryadapter.repository.mapper;
 
-import com.arquisoft.proyectos.application.estadoproyectogrado.query.readmodel.EstadoProyectoGradoReadModel;
+import com.arquisoft.proyectos.application.estadoproyecto.query.readmodel.EstadoProyectoReadModel;
 import com.arquisoft.proyectos.application.proyectogrado.query.readmodel.ProyectoGradoReadModel;
 import com.arquisoft.proyectos.infrastructure.proyectogrado.query.secondaryadapter.repository.ProyectoGradoListadoJpaQueryEntity;
 
@@ -13,7 +13,7 @@ public final class ProyectoGradoQueryMapper {
                 entity.getId(),
                 entity.getFichaPerfilId(),
                 entity.getTituloProyecto(),
-                new EstadoProyectoGradoReadModel(
+                new EstadoProyectoReadModel(
                         entity.getEstadoId(),
                         entity.getEstadoNombre()));
     }

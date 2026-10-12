@@ -7,6 +7,7 @@ import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondary
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondaryport.mapper.AsesorProyectoGradoMapper;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.usecase.AsignarAsesorProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.validator.AsignarAsesorProyectoGradoValidator;
+import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsignacionAsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.event.AsesorProyectoGradoAsignadoEvent;
@@ -25,6 +26,7 @@ public class AsignarAsesorProyectoGradoUseCaseImpl implements AsignarAsesorProye
 
     private final AsesorProyectoGradoOutputPort asesorProyectoGradoOutputPort;
     private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private final EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
     private final AsesorYaAsignadoFinder asesorYaAsignadoFinder;
     private final AsesoresAsignadosContadorFinder asesoresAsignadosContadorFinder;
@@ -37,14 +39,16 @@ public class AsignarAsesorProyectoGradoUseCaseImpl implements AsignarAsesorProye
         logger.info(AsesorProyectoGradoKey.LOG_ASIGNANDO, entrada.getProyectoGrado(), entrada.getAsesor());
 
         var proyecto = proyectoGradoPorIdFinder.obtener(entrada.getProyectoGrado());
+        var estadoActual = estadoActualProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         var asesor = asesorPorIdFinder.obtener(entrada.getAsesor());
         var yaAsignado = asesorYaAsignadoFinder.obtener(entrada);
         var asignadosActuales = asesoresAsignadosContadorFinder.obtener(entrada.getProyectoGrado());
 
         logger.debug(AsesorProyectoGradoKey.LOG_VERIFICACION_ASIGNAR,
-                !proyecto.esVacio(), !asesor.esVacio() && !asesor.estaEliminado(), yaAsignado, asignadosActuales);
+                !proyecto.esVacio(), !estadoActual.esVacio(), !asesor.esVacio() && !asesor.estaEliminado(),
+                yaAsignado, asignadosActuales);
 
-        validator.validar(entrada, proyecto, asesor, yaAsignado, asignadosActuales);
+        validator.validar(entrada, proyecto, estadoActual, asesor, yaAsignado, asignadosActuales);
 
         var vinculo = entrada.getAsesorProyectoGrado();
         asesorProyectoGradoOutputPort.registrar(AsesorProyectoGradoMapper.toEntity(vinculo));

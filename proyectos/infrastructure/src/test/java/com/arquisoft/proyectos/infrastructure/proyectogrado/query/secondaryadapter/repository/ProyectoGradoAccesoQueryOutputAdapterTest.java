@@ -31,7 +31,7 @@ class ProyectoGradoAccesoQueryOutputAdapterTest {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var coordinador = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyectoGrado, "EN_PROCESO", coordinador,
+        entityManager.persist(new ProyectoGradoJpaEntity(proyectoGrado, coordinador,
                 UtilUUID.generarNuevoUUID(), "Sistema de gestion"));
         entityManager.flush();
         entityManager.clear();
@@ -47,7 +47,7 @@ class ProyectoGradoAccesoQueryOutputAdapterTest {
     void debeRetornarTrueSoloParaProyectoExistente_cuandoConsultaExistencia() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyectoGrado, "EN_PROCESO", UtilUUID.generarNuevoUUID(),
+        entityManager.persist(new ProyectoGradoJpaEntity(proyectoGrado, UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), "Sistema de gestion"));
         entityManager.flush();
         entityManager.clear();

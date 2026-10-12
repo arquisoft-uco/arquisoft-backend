@@ -1,7 +1,7 @@
 package com.arquisoft.proyectos.infrastructure.proyectogrado.query.primaryadapter.web.mapper;
 
 import com.arquisoft.proyectos.application.proyectogrado.query.readmodel.ProyectoGradoReadModel;
-import com.arquisoft.proyectos.infrastructure.estadoproyectogrado.query.primaryadapter.web.dto.EstadoProyectoGradoResponseDTO;
+import com.arquisoft.proyectos.infrastructure.estadoproyecto.query.primaryadapter.web.dto.EstadoProyectoResponseDTO;
 import com.arquisoft.proyectos.infrastructure.proyectogrado.query.primaryadapter.web.dto.ProyectoGradoResponseDTO;
 
 public final class ProyectoGradoResponseMapper {
@@ -13,7 +13,7 @@ public final class ProyectoGradoResponseMapper {
                 readModel.id(),
                 readModel.fichaPerfil(),
                 readModel.tituloProyecto(),
-                new EstadoProyectoGradoResponseDTO(
+                new EstadoProyectoResponseDTO(
                         readModel.estado().id(),
                         readModel.estado().nombre()));
     }

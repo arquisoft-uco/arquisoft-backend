@@ -46,6 +46,7 @@ import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
 import com.arquisoft.shared.message.key.proyectos.AsesorProyectoGradoKey;
 import com.arquisoft.shared.message.key.proyectos.EstadoAsesorKey;
 import com.arquisoft.shared.message.key.proyectos.EstadoProyectoGradoKey;
+import com.arquisoft.shared.message.key.proyectos.EstadoProyectoKey;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectoGradoKey;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectosKey;
 import com.arquisoft.shared.message.key.proyectos.ProyectoGradoKey;
@@ -92,36 +93,10 @@ import com.arquisoft.shared.message.key.usuarios.RemoverEstudianteKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverRepresentanteComiteKey;
 
 
-/**
- * Registro explícito de los enums que componen el catálogo.
- *
- * <p>El arranque fail-fast necesita enumerar en producción todas las claves declaradas, para
- * pedírselas a Redis y abortar si falta alguna. Un escaneo de classpath en tiempo de ejecución es
- * frágil dentro de un {@code jar} y caro en el arranque, así que la lista es explícita: una línea
- * por enum.
- *
- * <p>El agujero de toda lista manual — alguien añade un enum y olvida registrarlo — lo cierra
- * {@code CatalogoCargaTest}, que escanea el paquete {@code key} sobre las clases compiladas y falla
- * el build si el registro no coincide con lo escaneado. La lista vive en producción; la garantía de
- * que está completa vive en el test.
- */
 public final class ClavesCatalogo {
 
     private ClavesCatalogo() {}
 
-    /**
-     * Los enums registrados, uno por feature.
-     *
-     * <p>Es un {@code Set.of} y no un {@code List.of} a propósito: rechaza duplicados al inicializar
-     * la clase, así que una línea repetida revienta en el arranque en vez de dejar un enum registrado
-     * dos veces y otro sin registrar, en silencio.
-     *
-     * <p>Ese fallo ya ocurrió una vez, cuando cuatro nombres colisionaban por pares y había que
-     * cualificarlos aquí: bastaba con que el "optimizar imports" del IDE colapsara un par para que dos
-     * enums desaparecieran del registro. La defensa de verdad no era el {@code Set} sino renombrarlos
-     * —{@code EnvioNotificacionKey}—, porque un nombre único no se puede colapsar. Lo que queda aquí
-     * es la red por si alguien duplica una línea a mano.
-     */
     public static final Set<Class<? extends ClaveMensaje>> ENUMS = Set.of(
             AlmacenamientoKey.class,
             ConsultaKey.class,
@@ -200,6 +175,7 @@ public final class ClavesCatalogo {
             ProyectoGradoKey.class,
             EstudianteProyectoGradoKey.class,
             EstadoProyectoGradoKey.class,
+            EstadoProyectoKey.class,
             AsesorProyectoGradoKey.class,
             EstadoAsesorKey.class,
             ConsultarCoordinadoresVigentesKey.class,

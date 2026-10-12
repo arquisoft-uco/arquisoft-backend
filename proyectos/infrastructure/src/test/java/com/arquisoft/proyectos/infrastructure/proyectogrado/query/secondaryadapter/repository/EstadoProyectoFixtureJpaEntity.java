@@ -6,8 +6,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "estado_proyecto_grado")
-public class EstadoProyectoGradoFixtureJpaEntity {
+@Table(name = "estado_proyecto")
+public class EstadoProyectoFixtureJpaEntity {
 
     @Id
     @Column(name = "id", length = 60)
@@ -19,10 +19,10 @@ public class EstadoProyectoGradoFixtureJpaEntity {
     @Column(name = "descripcion", length = 300)
     private String descripcion;
 
-    protected EstadoProyectoGradoFixtureJpaEntity() {
+    protected EstadoProyectoFixtureJpaEntity() {
     }
 
-    public EstadoProyectoGradoFixtureJpaEntity(String id, String nombre, String descripcion) {
+    public EstadoProyectoFixtureJpaEntity(String id, String nombre, String descripcion) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;

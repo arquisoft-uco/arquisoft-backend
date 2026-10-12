@@ -1,11 +1,11 @@
-package com.arquisoft.proyectos.domain.estadoproyectogrado;
+package com.arquisoft.proyectos.domain.estadoproyecto;
 
-import com.arquisoft.proyectos.domain.estadoproyectogrado.exception.EstadoProyectoGradoNoEncontradoException;
+import com.arquisoft.proyectos.domain.estadoproyecto.exception.EstadoProyectoNoEncontradoException;
 import com.arquisoft.shared.util.UtilEnum;
 
 import java.util.Optional;
 
-public enum EstadoProyectoGrado {
+public enum EstadoProyecto {
 
     EN_PROCESO("En proceso"),
     LISTO_PARA_REVISION("Listo Para Revisión"),
@@ -17,7 +17,7 @@ public enum EstadoProyectoGrado {
     private final String id;
     private final String nombre;
 
-    EstadoProyectoGrado(String nombre) {
+    EstadoProyecto(String nombre) {
         this.id = this.name();
         this.nombre = nombre;
     }
@@ -30,15 +30,15 @@ public enum EstadoProyectoGrado {
         return nombre;
     }
 
-    public static EstadoProyectoGrado desde(String id) {
-        return delCatalogo(id).orElseThrow(() -> new EstadoProyectoGradoNoEncontradoException(id));
+    public static EstadoProyecto desde(String id) {
+        return delCatalogo(id).orElseThrow(() -> new EstadoProyectoNoEncontradoException(id));
     }
 
     public static boolean esValido(String id) {
         return delCatalogo(id).isPresent();
     }
 
-    private static Optional<EstadoProyectoGrado> delCatalogo(String id) {
-        return UtilEnum.desde(EstadoProyectoGrado.class, id).filter(estado -> estado != VACIO);
+    private static Optional<EstadoProyecto> delCatalogo(String id) {
+        return UtilEnum.desde(EstadoProyecto.class, id).filter(estado -> estado != VACIO);
     }
 }

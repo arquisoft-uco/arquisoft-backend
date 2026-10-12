@@ -6,6 +6,7 @@ import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondary
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondaryport.mapper.AsesorProyectoGradoMapper;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.usecase.CambiarEstadoAsesorProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.validator.CambiarEstadoAsesorProyectoGradoValidator;
+import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.CambioEstadoAsesorProyectoGradoDomain;
@@ -23,6 +24,7 @@ public class CambiarEstadoAsesorProyectoGradoUseCaseImpl implements CambiarEstad
 
     private final AsesorProyectoGradoOutputPort asesorProyectoGradoOutputPort;
     private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private final EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
     private final AsesorProyectoGradoVigenteFinder asesorProyectoGradoVigenteFinder;
     private final CambiarEstadoAsesorProyectoGradoValidator validator;
@@ -35,13 +37,14 @@ public class CambiarEstadoAsesorProyectoGradoUseCaseImpl implements CambiarEstad
                 entrada.getProyectoGrado(), entrada.getAsesor(), entrada.getEstadoNuevo().getId());
 
         var proyecto = proyectoGradoPorIdFinder.obtener(entrada.getProyectoGrado());
+        var estadoActual = estadoActualProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         var asesor = asesorPorIdFinder.obtener(entrada.getAsesor());
         var vigente = asesorProyectoGradoVigenteFinder.obtener(entrada);
 
         logger.debug(AsesorProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO,
-                !proyecto.esVacio(), !asesor.esVacio(), !vigente.esVacio());
+                !proyecto.esVacio(), !estadoActual.esVacio(), !asesor.esVacio(), !vigente.esVacio());
 
-        validator.validar(entrada, proyecto, asesor, vigente);
+        validator.validar(entrada, proyecto, estadoActual, asesor, vigente);
 
         var nuevoEstado = AsesorProyectoGradoDomain.crearConEstado(
                 entrada.getAsesor(), entrada.getProyectoGrado(), entrada.getEstadoNuevo());
