@@ -24,11 +24,11 @@ class JpaMappersConversionTest {
     @Test
     void debeAplanarLaSolicitud_cuandoConvierteDesdeJpaEntity() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID destinatarioId = UUID.randomUUID();
-        UUID remitenteId = UUID.randomUUID();
-        Instant fecha = Instant.now();
-        SolicitudJpaEntity jpa = SolicitudJpaEntity.builder()
+        var id = UUID.randomUUID();
+        var destinatarioId = UUID.randomUUID();
+        var remitenteId = UUID.randomUUID();
+        var fecha = Instant.now();
+        var jpa = SolicitudJpaEntity.builder()
                 .id(id)
                 .destinatario(DestinatarioJpaEntity.builder().id(destinatarioId).build())
                 .remitente(RemitenteJpaEntity.builder().id(remitenteId).build())
@@ -38,7 +38,7 @@ class JpaMappersConversionTest {
                 .build();
 
         // Act
-        SolicitudEntity entity = SolicitudJpaMapper.toEntity(jpa);
+        var entity = SolicitudJpaMapper.toEntity(jpa);
 
         // Assert
         assertThat(entity).isEqualTo(new SolicitudEntity(
@@ -48,8 +48,8 @@ class JpaMappersConversionTest {
     @Test
     void debeConvertirRemitenteYDestinatario_cuandoConvierteDesdeJpaEntity() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID usuario = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
 
         // Act & Assert
         assertThat(RemitenteJpaMapper.toEntity(
@@ -63,9 +63,9 @@ class JpaMappersConversionTest {
     @Test
     void debeConvertirElUsuario_cuandoConvierteDesdeJpaEntity() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        Instant ocurridoEn = Instant.now();
-        UsuarioJpaEntity jpa = UsuarioJpaEntity.builder()
+        var id = UUID.randomUUID();
+        var ocurridoEn = Instant.now();
+        var jpa = UsuarioJpaEntity.builder()
                 .id(id).identificador("EST-1").nombre("Ana").email("ana@uco.edu.co").ocurridoEn(ocurridoEn).build();
 
         // Act & Assert

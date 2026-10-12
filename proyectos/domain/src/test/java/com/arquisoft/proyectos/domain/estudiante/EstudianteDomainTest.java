@@ -135,4 +135,39 @@ class EstudianteDomainTest {
                                 ProyectosFields.Estudiante.EMAIL, ProyectosFields.Estudiante.OCURRIDO_EN));
         assertThat(estudiante.estaEliminado()).isTrue();
     }
+
+    @Test
+    void debeActualizarDatos_cuandoEstudianteVigente() {
+        // Arrange
+        var estudiante = EstudianteDomain.crear(UUID.randomUUID(), "20161020123", "Ana Perez",
+                "ana@uco.edu.co", Instant.parse("2026-09-01T10:00:00Z"));
+        var ocurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        estudiante.actualizar("20161020999", "Ana Actualizada", "actualizada@uco.edu.co", ocurridoEn);
+
+        // Assert
+        assertThat(estudiante.getIdentificador()).isEqualTo("20161020999");
+        assertThat(estudiante.getNombre()).isEqualTo("Ana Actualizada");
+        assertThat(estudiante.getEmail()).isEqualTo("actualizada@uco.edu.co");
+        assertThat(estudiante.getOcurridoEn()).isEqualTo(ocurridoEn);
+        assertThat(estudiante.estaEliminado()).isFalse();
+    }
+
+    @Test
+    void debeConservarEliminadoEn_cuandoSeActualizaUnEstudianteEliminado() {
+        // Arrange
+        var eliminadoEn = Instant.parse("2026-09-10T10:00:00Z");
+        var estudiante = EstudianteDomain.reconstruir(UUID.randomUUID(), "20161020123", "Ana Perez",
+                "ana@uco.edu.co", eliminadoEn, eliminadoEn);
+        var ocurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        estudiante.actualizar("20161020999", "Ana Actualizada", "actualizada@uco.edu.co", ocurridoEn);
+
+        // Assert — actualizar no toca eliminadoEn, a diferencia de reactivar
+        assertThat(estudiante.estaEliminado()).isTrue();
+        assertThat(estudiante.getEliminadoEn()).isEqualTo(eliminadoEn);
+        assertThat(estudiante.getOcurridoEn()).isEqualTo(ocurridoEn);
+    }
 }

@@ -40,7 +40,7 @@ class ConsultarEstudiantesFichaPerfilUseCaseImplTest {
         var fichaPerfil = UUID.randomUUID();
         var criteria = new EstudianteFichaPerfilCriteria(fichaPerfil);
         var esperado = List.of(new EstudianteFichaPerfilReadModel(
-                UUID.randomUUID(), fichaPerfil, UUID.randomUUID(), "Ana Ruiz", "ana.ruiz@uco.edu.co"));
+                UUID.randomUUID(), fichaPerfil, UUID.randomUUID(), "Ana Ruiz", "ana.ruiz@uco.edu.co", true));
         when(estudianteFichaPerfilQueryOutputPort.consultarPorFicha(fichaPerfil)).thenReturn(esperado);
 
         // Act

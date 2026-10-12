@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.second
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.ContactoEstudianteEntity;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.IntegranteFichaEntity;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.mapper.EstudianteFichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,13 +89,28 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
 
-        when(repository.countByFichaPerfilId(fichaId)).thenReturn(2L);
+        when(repository.countVigentesByFichaPerfilId(fichaId)).thenReturn(2L);
 
         // Act
-        long resultado = adapter.contarPorFichaPerfilId(fichaId);
+        long resultado = adapter.contarVigentesPorFichaPerfilId(fichaId);
 
         // Assert
         assertThat(resultado).isEqualTo(2L);
+    }
+
+    @Test
+    void debeDevolverLosIntegrantesDelRepositorio_cuandoObtenerIntegrantesVigentesDeFicha() {
+        // Arrange
+        var fichaId = UUID.randomUUID();
+        var integrantes = List.of(
+                new IntegranteFichaEntity(UUID.randomUUID(), "Ana Gomez", "ana.gomez@soyuco.edu.co"));
+        when(repository.findIntegrantesVigentesByFichaPerfilId(fichaId)).thenReturn(integrantes);
+
+        // Act
+        var resultado = adapter.obtenerIntegrantesVigentesDeFicha(fichaId);
+
+        // Assert
+        assertThat(resultado).isSameAs(integrantes);
     }
 
     @Test

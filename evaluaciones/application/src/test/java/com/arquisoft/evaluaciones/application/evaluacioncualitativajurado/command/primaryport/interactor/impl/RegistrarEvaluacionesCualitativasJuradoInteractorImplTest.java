@@ -1,6 +1,5 @@
 package com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.primaryport.interactor.impl;
 
-import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.primaryport.model.ParEvaluacionCualitativaJuradoCommand;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.primaryport.model.RegistrarEvaluacionesCualitativasJuradoCommand;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.usecase.RegistrarEvaluacionesCualitativasJuradoUseCase;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.RegistroEvaluacionesCualitativasJuradoDomain;
@@ -29,11 +28,11 @@ class RegistrarEvaluacionesCualitativasJuradoInteractorImplTest {
     @Test
     void debeMapearYDelegarAlUseCase_cuandoEjecutaCommand() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
-        UUID item = UUID.randomUUID();
-        UUID criterio = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
+        var item = UUID.randomUUID();
+        var criterio = UUID.randomUUID();
         var command = new RegistrarEvaluacionesCualitativasJuradoCommand(
-                evaluacionJurado, List.of(new ParEvaluacionCualitativaJuradoCommand(item, criterio)));
+                evaluacionJurado, List.of(new RegistrarEvaluacionesCualitativasJuradoCommand.Par<>(item, criterio)));
 
         // Act
         interactor.ejecutar(command);
@@ -42,7 +41,8 @@ class RegistrarEvaluacionesCualitativasJuradoInteractorImplTest {
         ArgumentCaptor<RegistroEvaluacionesCualitativasJuradoDomain> captor =
                 ArgumentCaptor.forClass(RegistroEvaluacionesCualitativasJuradoDomain.class);
         verify(useCase).ejecutar(captor.capture());
-        RegistroEvaluacionesCualitativasJuradoDomain registro = captor.getValue();
+        var registro = captor.getValue();
+        assertThat(registro.getEvaluacionJurado()).isEqualTo(evaluacionJurado);
         assertThat(registro.getEvaluaciones()).hasSize(1);
         assertThat(registro.getEvaluaciones().get(0).getEvaluacionJurado()).isEqualTo(evaluacionJurado);
         assertThat(registro.getEvaluaciones().get(0).getItem()).isEqualTo(item);

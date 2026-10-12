@@ -11,6 +11,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -133,5 +134,59 @@ class EstudianteCommandOutputAdapterTest {
         assertThat(guardado.getEmail()).isEqualTo("ana.gomez@uco.edu.co");
         assertThat(guardado.getOcurridoEn()).isEqualTo(ocurridoEn);
         verify(logger).debug(EstudianteProyectosKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debeActualizarLosDatosPersistidos_cuandoSeInvocaActualizar() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var id = sembrar(Instant.parse("2026-09-01T10:00:00Z"), null);
+        var nuevoOcurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        adapter.actualizar(new EstudianteEntity(
+                id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn, UtilFecha.VACIO));
+
+        // Assert
+        var guardado = entityManager.find(EstudianteJpaEntity.class, id);
+        assertThat(guardado.getIdentificador()).isEqualTo("20161020999");
+        assertThat(guardado.getNombre()).isEqualTo("Ana Actualizada");
+        assertThat(guardado.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+        verify(logger).debug(EstudianteProyectosKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debeConservarEliminadoEn_cuandoActualizaUnEstudianteDadoDeBaja() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var baja = Instant.parse("2026-09-10T10:00:00Z");
+        var id = sembrar(baja, baja);
+        var nuevoOcurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act — el use case pasa el eliminadoEn vigente porque actualizar() del domain no lo toca
+        adapter.actualizar(new EstudianteEntity(
+                id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn, baja));
+
+        // Assert
+        var guardado = entityManager.find(EstudianteJpaEntity.class, id);
+        assertThat(guardado.getEliminadoEn()).isEqualTo(baja);
+    }
+
+    @Test
+    void debeDevolverSoloLosVigentesPedidos_cuandoEntreLosIdsHayBajasYDesconocidos() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var instante = Instant.parse("2026-09-01T10:00:00Z");
+        var vigente1 = sembrar(instante, null);
+        var vigente2 = sembrar(instante, null);
+        var dadoDeBaja = sembrar(instante, instante);
+        sembrar(instante, null);
+
+        // Act
+        var resultado = adapter.obtenerVigentesPorIds(
+                List.of(vigente1, vigente2, dadoDeBaja, UUID.randomUUID()));
+
+        // Assert
+        assertThat(resultado).extracting(EstudianteEntity::id).containsExactlyInAnyOrder(vigente1, vigente2);
     }
 }

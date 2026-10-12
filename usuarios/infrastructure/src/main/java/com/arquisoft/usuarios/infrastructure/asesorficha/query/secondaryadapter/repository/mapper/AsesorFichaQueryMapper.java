@@ -1,0 +1,19 @@
+package com.arquisoft.usuarios.infrastructure.asesorficha.query.secondaryadapter.repository.mapper;
+
+import com.arquisoft.usuarios.application.asesorficha.query.readmodel.AsesorFichaVigenteReadModel;
+import com.arquisoft.usuarios.infrastructure.asesorficha.query.secondaryadapter.repository.AsesorFichaVigenteJpaQueryEntity;
+
+public final class AsesorFichaQueryMapper {
+
+    private AsesorFichaQueryMapper() {}
+
+    public static AsesorFichaVigenteReadModel toReadModel(AsesorFichaVigenteJpaQueryEntity entity) {
+        return new AsesorFichaVigenteReadModel(
+                entity.getId(),
+                entity.getIdentificador(),
+                entity.getNombre(),
+                entity.getEmail(),
+                entity.getContacto(),
+                entity.getEstado());
+    }
+}

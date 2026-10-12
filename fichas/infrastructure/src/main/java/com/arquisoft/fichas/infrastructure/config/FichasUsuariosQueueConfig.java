@@ -55,4 +55,60 @@ public class FichasUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ASESOR_FICHA_REMOVIDO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.ASESOR_FICHA_REMOVIDO;
+
+    @Bean
+    public Declarables fichasAsesorFichaRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_FICHA_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ASESOR_FICHA_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String REPRESENTANTE_COMITE_AGREGADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.REPRESENTANTE_COMITE_AGREGADO;
+
+    @Bean
+    public Declarables fichasRepresentanteComiteAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REPRESENTANTE_COMITE_AGREGADO_QUEUE,
+                EventTopics.Usuarios.REPRESENTANTE_COMITE_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String REPRESENTANTE_COMITE_REMOVIDO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.REPRESENTANTE_COMITE_REMOVIDO;
+
+    @Bean
+    public Declarables fichasRepresentanteComiteRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REPRESENTANTE_COMITE_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.REPRESENTANTE_COMITE_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String USUARIO_MODIFICADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.USUARIO_MODIFICADO;
+
+    @Bean
+    public Declarables fichasUsuarioModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                USUARIO_MODIFICADO_QUEUE,
+                EventTopics.Usuarios.USUARIO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

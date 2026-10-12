@@ -9,23 +9,22 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.usecase.RegistrarEvaluacionesCualitativasJuradoUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.validator.RegistrarEvaluacionesCualitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.ContextoRegistroEvaluacionJuradoEntity;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.finder.ItemsCualitativosJuradoExistentesFinder;
-import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
+import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.EvaluacionCualitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.RegistroEvaluacionesCualitativasJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.event.EvaluacionesCualitativasJuradoRegistradasEvent;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.DisponibilidadEvaluacionesCualitativasJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaCriteriosCualitativosJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaItemsCualitativosJurado;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.ContextoRegistroEvaluacionJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -46,17 +45,17 @@ public class RegistrarEvaluacionesCualitativasJuradoUseCaseImpl
 
     @Override
     public void ejecutar(RegistroEvaluacionesCualitativasJuradoDomain registro) {
-        UUID evaluacionJurado = registro.getEvaluaciones().getFirst().getEvaluacionJurado();
+        var evaluacionJurado = registro.getEvaluacionJurado();
 
         logger.info(EvaluacionCualitativaJuradoKey.LOG_REGISTRANDO_LOTE,
                 evaluacionJurado, registro.getEvaluaciones().size());
 
-        ContextoRegistroEvaluacionJuradoEntity contexto = validarExistenciaYObtenerContexto(evaluacionJurado);
+        var contexto = validarExistenciaYObtenerContexto(evaluacionJurado);
 
         validarContenidoDelLote(registro, evaluacionJurado);
 
         iniciarEvaluacionUseCase.ejecutar(InicioEvaluacionDomain.crear(
-                contexto.evaluacion(), EstadoEvaluacion.desde(contexto.estado())));
+                contexto.getEvaluacion(), contexto.getEstado()));
 
         var entidades = registro.getEvaluaciones().stream()
                 .map(EvaluacionCualitativaJuradoMapper::toEntity)
@@ -69,25 +68,25 @@ public class RegistrarEvaluacionesCualitativasJuradoUseCaseImpl
                 evaluacionJurado, entidades.size(), evento.getIdEvento());
     }
 
-    private ContextoRegistroEvaluacionJuradoEntity validarExistenciaYObtenerContexto(UUID evaluacionJurado) {
-        var contextoOpt = contextoRegistroEvaluacionJuradoFinder.obtener(evaluacionJurado);
+    private ContextoRegistroEvaluacionJuradoDomain validarExistenciaYObtenerContexto(UUID evaluacionJurado) {
+        var contexto = contextoRegistroEvaluacionJuradoFinder.obtener(evaluacionJurado);
 
-        validator.validarExistencia(new ExistenciaEvaluacionJurado(evaluacionJurado, contextoOpt.isPresent()));
+        validator.validarExistencia(new ExistenciaEvaluacionJurado(evaluacionJurado, !contexto.esVacio()));
 
-        return contextoOpt.orElseThrow();
+        return contexto;
     }
 
     private void validarContenidoDelLote(RegistroEvaluacionesCualitativasJuradoDomain registro, UUID evaluacionJurado) {
-        Set<UUID> itemsSolicitados = registro.getEvaluaciones().stream()
-                .map(evaluacion -> evaluacion.getItem())
+        var itemsSolicitados = registro.getEvaluaciones().stream()
+                .map(EvaluacionCualitativaJuradoDomain::getItem)
                 .collect(Collectors.toUnmodifiableSet());
-        Set<UUID> criteriosSolicitados = registro.getEvaluaciones().stream()
-                .map(evaluacion -> evaluacion.getCriterio())
+        var criteriosSolicitados = registro.getEvaluaciones().stream()
+                .map(EvaluacionCualitativaJuradoDomain::getCriterio)
                 .collect(Collectors.toUnmodifiableSet());
 
-        Set<UUID> itemsExistentes = itemsCualitativosJuradoExistentesFinder.obtener(itemsSolicitados);
-        Set<UUID> criteriosExistentes = criteriosCualitativosJuradoExistentesFinder.obtener(criteriosSolicitados);
-        Set<UUID> itemsRegistrados = itemsEvaluacionCualitativaJuradoRegistradosFinder.obtener(
+        var itemsExistentes = itemsCualitativosJuradoExistentesFinder.obtener(itemsSolicitados);
+        var criteriosExistentes = criteriosCualitativosJuradoExistentesFinder.obtener(criteriosSolicitados);
+        var itemsRegistrados = itemsEvaluacionCualitativaJuradoRegistradosFinder.obtener(
                 new CriterioItemsEvaluacion(evaluacionJurado, itemsSolicitados));
 
         logger.debug(EvaluacionCualitativaJuradoKey.LOG_VERIFICACION_LOTE,
@@ -100,8 +99,8 @@ public class RegistrarEvaluacionesCualitativasJuradoUseCaseImpl
     }
 
     private EvaluacionesCualitativasJuradoRegistradasEvent publicarEvento(
-            ContextoRegistroEvaluacionJuradoEntity contexto) {
-        var evento = new EvaluacionesCualitativasJuradoRegistradasEvent(contexto.entregable());
+            ContextoRegistroEvaluacionJuradoDomain contexto) {
+        var evento = new EvaluacionesCualitativasJuradoRegistradasEvent(contexto.getEntregable());
         eventPublisher.publish(evento);
         return evento;
     }

@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.constant.EvaluacionesLimits;
+import com.arquisoft.shared.util.UtilNumero;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorNumero;
@@ -16,7 +17,7 @@ public final class EvaluacionCuantitativaJuradoDomain {
             UtilUUID.obtenerUUIDPorDefecto(),
             UtilUUID.obtenerUUIDPorDefecto(),
             UtilUUID.obtenerUUIDPorDefecto(),
-            0);
+            UtilNumero.CERO);
 
     private UUID id;
     private UUID evaluacionJurado;

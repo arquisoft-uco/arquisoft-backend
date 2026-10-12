@@ -16,7 +16,8 @@ import org.hibernate.annotations.Synchronize;
 @Subselect("""
         SELECT e.id          AS id,
                e.nombre      AS nombre,
-               e.descripcion AS descripcion
+               e.descripcion AS descripcion,
+               e.orden       AS orden
         FROM estado_evaluacion e
         """)
 @Synchronize("estado_evaluacion")
@@ -35,4 +36,7 @@ public class EstadoEvaluacionJpaQueryEntity {
 
     @Column(name = "descripcion")
     private String descripcion;
+
+    @Column(name = "orden")
+    private Integer orden;
 }

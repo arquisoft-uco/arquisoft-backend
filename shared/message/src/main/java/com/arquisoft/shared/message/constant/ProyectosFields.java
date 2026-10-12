@@ -39,4 +39,42 @@ public final class ProyectosFields {
         public static final String EMAIL = "email";
         public static final String OCURRIDO_EN = "ocurridoEn";
     }
+
+    public static final class ProyectoGrado {
+
+        private ProyectoGrado() {}
+
+        public static final String FICHA_PERFIL = "fichaPerfil";
+        public static final String TITULO_PROYECTO = "tituloProyecto";
+        public static final String COORDINADOR = "coordinador";
+        public static final String PROYECTO = "proyecto";
+    }
+
+    public static final class EstudianteProyectoGrado {
+
+        private EstudianteProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String COORDINADOR = "coordinador";
+        public static final String ESTUDIANTE = "estudiante";
+        public static final String ESTUDIANTES = "estudiantes";
+    }
+
+    public static final class EstadoProyectoGrado {
+
+        private EstadoProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String ESTADO_INICIAL = "estadoInicial";
+    }
+
+    public static final class AsesorProyectoGrado {
+
+        private AsesorProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String COORDINADOR = "coordinador";
+        public static final String ASESOR = "asesor";
+        public static final String ESTADO_ASESOR = "estadoAsesor";
+    }
 }

@@ -1,7 +1,10 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web;
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
+import com.arquisoft.fichas.application.asesorficha.query.readmodel.AsesorFichaReadModel;
+import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.EstadoFichaPerfilReadModel;
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilCoordinadorInteractor;
+import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.exception.FiltroException;
@@ -23,7 +26,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -153,6 +158,45 @@ class ConsultarFichasPerfilCoordinadorControllerTest {
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void debeResponder200ConEstado_cuandoLaConsultaEsExitosa() throws Exception {
+        // Arrange
+        var idFicha = UUID.randomUUID();
+        var fechaActualizacion = Instant.parse("2026-09-30T10:15:30Z");
+        var ficha = new FichaPerfilReadModel(
+                idFicha,
+                "Arquisoft Backend",
+                new AsesorFichaReadModel(UUID.randomUUID(), "DOC-001", "Juan Salazar", "juan@uco.edu.co"),
+                new EstadoFichaPerfilReadModel("APROBADA", "Aprobada", fechaActualizacion));
+        when(consultarFichasPerfilCoordinadorInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
+                .thenReturn(PaginatedResult.of(List.of(ficha), 0, 10, 1L));
+
+        var body = """
+                {
+                  "pagina": 0,
+                  "tamanio": 10,
+                  "filtros": {
+                    "tipo": "PREDICADO",
+                    "campo": "estadoFicha",
+                    "operador": "ES",
+                    "valor": "APROBADA"
+                  }
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil/coordinador")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(idFicha.toString()))
+                .andExpect(jsonPath("$.content[0].estado.id").value("APROBADA"))
+                .andExpect(jsonPath("$.content[0].estado.nombre").value("Aprobada"))
+                .andExpect(jsonPath("$.content[0].estado.fechaActualizacion").exists());
     }
 
     @Test
