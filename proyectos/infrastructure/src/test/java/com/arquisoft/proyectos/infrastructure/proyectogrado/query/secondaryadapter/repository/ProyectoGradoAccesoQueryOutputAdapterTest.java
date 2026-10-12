@@ -44,6 +44,24 @@ class ProyectoGradoAccesoQueryOutputAdapterTest {
     }
 
     @Test
+    void debeRetornarTrueSoloParaProyectoExistente_cuandoConsultaExistencia() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ProyectoGradoJpaEntity(proyectoGrado, "EN_PROCESO", UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), "Sistema de gestion"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var existente = adapter.existePorId(proyectoGrado);
+        var inexistente = adapter.existePorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(existente).isTrue();
+        assertThat(inexistente).isFalse();
+    }
+
+    @Test
     void debeRetornarVacio_cuandoProyectoNoExiste() {
         // Act
         var resultado = adapter.obtenerCoordinadorPorId(UtilUUID.generarNuevoUUID());

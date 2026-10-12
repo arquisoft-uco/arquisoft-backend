@@ -6,4 +6,6 @@ import java.util.UUID;
 public interface ProyectoGradoAccesoQueryOutputPort {
 
     Optional<UUID> obtenerCoordinadorPorId(UUID proyectoGrado);
+
+    boolean existePorId(UUID proyectoGrado);
 }
