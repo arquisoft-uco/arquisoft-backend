@@ -23,12 +23,12 @@ lo contrario es viejo.
 - `reconstruir(...)` nunca publica, y el `CommandOutputAdapter` lee siempre con `reconstruir(...)`.
 - **El evento carga todo lo que su consumidor necesita** (`AsesorFichaCambiadoEvent` lleva nombre y
   email del asesor), para que el consumidor no consulte de vuelta al productor.
-- **Lo que el evento carga desde un `Finder` se consulta y valida antes de escribir**, en la fase de
-  existencia, con una `Rule` que rechaza su `VACIO`. Consultado después de `registrar(...)`, el `Finder`
-  devuelve el centinela sin lanzar: el evento sale con nombre y correo vacíos, `notificaciones` lo
-  rechaza y la escritura ya quedó confirmada — compila y pasa los tests. Referencia:
-  `EnviarSolicitudUseCaseImpl`. Quedan fuera lo que genera la propia escritura (id, fecha) y una
-  ausencia que la HU declare aceptable, que el plan explica.
+- **Lo que el evento carga desde un `Finder` se consulta antes del `Validator`**, en la fase de
+  existencia, con una `Rule` que rechaza su `VACIO` (`arquisoft-estandares` → *Validator, Rule,
+  Finder*). Consultado después, el `Finder` devuelve el centinela sin lanzar: el evento sale con nombre
+  y correo vacíos, `notificaciones` lo rechaza y la escritura ya quedó confirmada — compila y pasa los
+  tests. Referencia: `EnviarSolicitudUseCaseImpl`. Solo queda fuera lo que genera la propia escritura
+  (id, fecha); una FK no vuelve opcional un dato que el consumidor necesita.
 - **Nunca un `{Entidad}EventPublisher` local.** `shared:amqp` tiene dos implementaciones:
   `SpringModulithEventPublisher` (`@Component @Primary`, pasa por el outbox `event_publication` en la
   transacción del `Interactor`) y `RabbitMQEventPublisher` (directo al broker, respaldo con

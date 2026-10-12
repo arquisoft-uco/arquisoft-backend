@@ -12,8 +12,8 @@ completo. No escribes archivos: eso lo hace `@4b-validator-report`.
 
 **Modo orquestado.** Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue
 `.claude/templates/HANDOFF.md`: el reporte completo **es el cuerpo de tu `.out.md`**, precedido por la
-línea `ESTADO: OK` si es ✅ APROBADO o `ESTADO: RECHAZADO` si es ⛔, y respondes solo la línea de
-traspaso. Ese `.out.md` es el **único archivo** que escribes (`Write` está para eso); no tocas el repo
+línea `ESTADO: OK · {n} menores` si es ✅ APROBADO o `ESTADO: RECHAZADO` si es ⛔ (el orquestador
+decide por ese conteo si hay corte), y respondes solo la línea de traspaso. Ese `.out.md` es el **único archivo** que escribes (`Write` está para eso); no tocas el repo
 ni `.workspace/validator/`. Si el `.in.md` es un ajuste (`{ID}-AJ{n}`), valida el diff del ajuste con
 las mismas FASES.
 
@@ -22,8 +22,9 @@ cita una sección de skill (*en cursiva*), el porqué y la forma correcta están
 
 ## FASE 0 — Cargar contexto
 
-Invoca `arquisoft-arquitectura` y `arquisoft-estandares`. Si el plan las contradice, repórtalo como
-observación.
+Invoca `arquisoft-arquitectura` y `arquisoft-estandares`. Si el plan las contradice, el check
+afectado conserva su severidad y el hallazgo nombra al plan como causa: un plan aprobado no convierte
+un ❌ en ⚠️. Solo cede donde la propia fila del check lo deja en manos del plan ("salvo que el plan…").
 
 **Si el plan tiene la sección 10 (Eventos RabbitMQ), lee también
 `arquisoft-arquitectura/references/eventos.md` y `arquisoft-estandares/references/eventos.md`
@@ -135,9 +136,8 @@ aunque el plan lo declare (se descarta en el exchange); repórtalo como decisió
 dominio — una sola forma*): el `UseCase` inyecta la **interfaz** `EventPublisher` y publica tras
 persistir; el domain es plano (sin acumular ni drenar eventos); el evento vive en
 `domain/{feature}/event/`, extiende `DomainEvent`, pasa `EVENT_TOPIC` (`{contexto}.{entidad}.{accion}`)
-a `super(...)` y carga lo que el consumidor necesita. Un `Finder` que alimenta el evento consultado
-después de persistir, o cuyo `VACIO` ninguna `Rule` rechaza, es ❌: el evento sale vacío con la
-escritura confirmada.
+a `super(...)` y carga lo que el consumidor necesita, con cada dato de un `Finder` sujeto a la fila
+*`Finder` después del `Validator`* del Nivel 2.6.
 
 **Si el plan dice "Eventos: ninguno", el exceso también es ❌**: archivo bajo `event/`,
 `EventPublisher` inyectado o clave nueva de evento. Cita la sección 4.
@@ -227,6 +227,7 @@ entrada*.
 | `Finder` que lanza por "no encontrado", devuelve `Optional` o `Entity`, no extiende `Finder<T, R>`/`SupplierFinder<R>` o su método no es `obtener` (`Finder<Void, R>` o un parámetro ignorado es hallazgo) | ❌ |
 | `UseCase` que hace `isPresent()`/`get()`/`orElse`/`map` sobre un `Finder` en vez de `esVacio()`/`UtilUUID.esPorDefecto(...)` | ❌ |
 | `FinderImpl` que encadena otro `Finder`, compara/deriva o hace varios lookups | ❌ |
+| **`Finder` después del `Validator`:** en un comando, `Finder` consultado tras `validar(...)`, o resultado que la escritura o el evento leen sin una `Rule` que rechace su `VACIO`. Ni una FK ni la razón del plan lo rebajan — *Validator, Rule, Finder* | ❌ |
 | `UseCase` que calcula un veredicto y se lo pasa al `Validator` en vez del dato crudo | ❌ |
 | **`Finder` dependiente** colapsable en un método del `OutputPort` — *El `Finder` dependiente*. No es hallazgo si el plan justifica la cascada ni por tener varios `Finder`s independientes | ⚠️ |
 | `{Entidad}OutputPort` con un método sobre otro domain, o comando que lee otra feature importando su `domain/`/adaptador en vez de su `Finder` + `OutputPort` de `command/` | ❌ |
@@ -298,8 +299,8 @@ ubicación del enum es decisión abierta: verifica solo consistencia con lo que 
 
 | Check | Sev |
 |---|:---:|
-| Setter privado nombrado distinto al atributo | ❌ |
-| Valor autogenerado (`UUID`/`Instant`) generado en `crear(...)` en vez de en el setter | ❌ |
+| Setter privado nombrado distinto al atributo (salvo `set{Atributo}Inicial()` del estado inicial) | ❌ |
+| Valor que `crear(...)` fija sin recibirlo (id, fecha, estado inicial) pasado como argumento al setter en vez de nacer en un setter sin argumentos (`arquisoft-estandares` → *Notification Pattern y orden de validación*) | ❌ |
 | `UUID.randomUUID()`/`Instant.now()`/`LocalDate.now()`/`.trim()` en cualquier capa en vez de `UtilUUID`/`UtilFecha`/`UtilTexto` | ❌ |
 
 ### Nivel 2.12 — Catálogo de mensajes y logs

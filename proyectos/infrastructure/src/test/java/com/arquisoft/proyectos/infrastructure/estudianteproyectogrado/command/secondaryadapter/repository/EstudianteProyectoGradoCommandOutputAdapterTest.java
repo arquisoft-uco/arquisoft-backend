@@ -76,6 +76,53 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeEliminarSoloElVinculo_cuandoExiste() {
+        // Arrange
+        var adapter = new EstudianteProyectoGradoCommandOutputAdapter(estudianteProyectoGradoCommandRepository, logger);
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var objetivo = vinculo(proyectoGrado);
+        var otroDelProyecto = vinculo(proyectoGrado);
+        var mismoEstudianteEnOtroProyecto = new EstudianteProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), objetivo.estudiante(), UtilUUID.generarNuevoUUID());
+        adapter.vincular(List.of(objetivo, otroDelProyecto, mismoEstudianteEnOtroProyecto));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.desvincular(proyectoGrado, objetivo.estudiante());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(EstudianteProyectoGradoJpaEntity.class, objetivo.id())).isNull();
+        assertThat(entityManager.find(EstudianteProyectoGradoJpaEntity.class, otroDelProyecto.id())).isNotNull();
+        assertThat(entityManager.find(EstudianteProyectoGradoJpaEntity.class, mismoEstudianteEnOtroProyecto.id()))
+                .isNotNull();
+        verify(logger).debug(EstudianteProyectoGradoKey.LOG_ELIMINADO, proyectoGrado, objetivo.estudiante());
+    }
+
+    @Test
+    void debeRetornarTrueSoloParaElParExacto_cuandoExisteElVinculo() {
+        // Arrange
+        var adapter = new EstudianteProyectoGradoCommandOutputAdapter(estudianteProyectoGradoCommandRepository, logger);
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var vinculado = vinculo(proyectoGrado);
+        adapter.vincular(List.of(vinculado));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var existe = adapter.existeVinculo(proyectoGrado, vinculado.estudiante());
+        var enOtroProyecto = adapter.existeVinculo(UtilUUID.generarNuevoUUID(), vinculado.estudiante());
+        var otroEstudiante = adapter.existeVinculo(proyectoGrado, UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(existe).isTrue();
+        assertThat(enOtroProyecto).isFalse();
+        assertThat(otroEstudiante).isFalse();
+    }
+
+    @Test
     void debeDevolverVacio_cuandoNingunoEstaVinculado() {
         // Arrange
         var adapter = new EstudianteProyectoGradoCommandOutputAdapter(estudianteProyectoGradoCommandRepository, logger);

@@ -69,7 +69,12 @@
               "fichas:item-ficha-perfil-coordinador:view",
               "fichas:estado-ficha-perfil-coordinador:view",
               "proyectos:estudiante-proyecto-grado:create",
-              "proyectos:estudiante-proyecto-grado-coordinador:view"
+              "proyectos:estudiante-proyecto-grado:delete",
+              "proyectos:estudiante-proyecto-grado-coordinador:view",
+              "proyectos:asesor-proyecto-grado:create",
+              "proyectos:asesor-proyecto-grado-coordinador:view",
+              "proyectos:asesor-proyecto-grado:update-estado",
+              "proyectos:proyecto-grado-coordinador:view"
             ]
           }
         },
@@ -185,7 +190,8 @@
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create",
-              "fichas:evaluacion-ficha-perfil-estudiante:view"
+              "fichas:evaluacion-ficha-perfil-estudiante:view",
+              "proyectos:estudiante-proyecto-grado-estudiante:view"
             ]
           }
         },
@@ -955,8 +961,62 @@
           "attributes": {}
         },
         {
+          "id": "d3f8a6c1-7b24-4e59-9a0d-1c5e8b7f2a63",
+          "name": "proyectos:estudiante-proyecto-grado:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "a4d1e7b2-5c38-4f96-b0a3-8e2f6d9c1b57",
           "name": "proyectos:estudiante-proyecto-grado-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "e8b3c5a2-4d71-4f09-a6c8-2b9d7e1f3a54",
+          "name": "proyectos:estudiante-proyecto-grado-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5b9e3a71-d2c4-4a68-9f10-7c4e8b2d6a35",
+          "name": "proyectos:asesor-proyecto-grado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c7a2e9d4-3f18-4b65-8d0a-6e1b9f4c2a87",
+          "name": "proyectos:asesor-proyecto-grado-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "2f6d8a14-9c3e-4b70-a5d1-e8b4c7f90362",
+          "name": "proyectos:proyecto-grado-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8e3b1f62-4a7d-4c59-b2e0-9d6a5c1f7b34",
+          "name": "proyectos:asesor-proyecto-grado:update-estado",
           "description": "",
           "composite": false,
           "clientRole": true,

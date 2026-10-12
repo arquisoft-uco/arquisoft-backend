@@ -271,4 +271,34 @@ class ObservacionItemCommandRepositoryTest {
         assertThat(persistida.getEstadoObservacionRevision().getId()).isEqualTo("EN_PROGRESO");
         assertThat(intacta.getObservacion()).isEqualTo("Texto de la hermana");
     }
+
+    @Test
+    void debeEliminarSoloLaObservacionIndicada_cuandoRemuevePorId() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "EN_PROGRESO");
+        var observacion = sembrarObservacionDeLaRevision(revision, "Texto a remover", "EN_PROGRESO");
+        var hermana = sembrarObservacionDeLaRevision(revision, "Texto de la hermana", "PENDIENTE");
+        testEntityManager.clear();
+
+        // Act
+        var filas = repository.removerPorId(observacion);
+
+        // Assert — la hermana y la revisión (con su estado) sobreviven
+        assertThat(filas).isEqualTo(1);
+        assertThat(testEntityManager.find(ObservacionItemJpaEntity.class, observacion)).isNull();
+        assertThat(testEntityManager.find(ObservacionItemJpaEntity.class, hermana)).isNotNull();
+        var revisionPersistida = testEntityManager.find(RevisionItemJpaEntity.class, revision);
+        assertThat(revisionPersistida).isNotNull();
+        assertThat(revisionPersistida.getEstadoRevision().getId()).isEqualTo("EN_PROGRESO");
+    }
+
+    @Test
+    void debeRetornarCeroFilas_cuandoLaObservacionNoExiste() {
+        // Act
+        var filas = repository.removerPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(filas).isZero();
+    }
 }

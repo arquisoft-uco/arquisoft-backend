@@ -50,6 +50,24 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado de criterios cualitativos del jurado";
     }
 
+    public static final class CategoriaItemCuantitativoJurado {
+
+        private CategoriaItemCuantitativoJurado() {}
+
+        public static final String TAG_NAME = "Categorías de ítem cuantitativo del jurado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta del catálogo de categorías usadas por los ítems cuantitativos del jurado";
+        public static final String CONSULTAR_SUMMARY = "Consultar categorías de ítem cuantitativo";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta las categorías de ítem cuantitativo del jurado, opcionalmente filtradas "
+                        + "por nombre (coincidencia parcial, sin distinguir mayúsculas/minúsculas), "
+                        + "ordenadas por nombre";
+        public static final String CONSULTAR_PARAM_NOMBRE =
+                "Texto a buscar dentro del nombre de la categoría (opcional, máximo 100 caracteres)";
+        public static final String CONSULTAR_RESP_200 = "Listado de categorías de ítem cuantitativo del jurado";
+        public static final String CONSULTAR_RESP_400 = "Filtro de nombre inválido";
+    }
+
     public static final class EvaluacionCualitativaJurado {
 
         private EvaluacionCualitativaJurado() {}
@@ -97,6 +115,31 @@ public final class EvaluacionesApiMessages {
                         + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
     }
 
+    public static final class ObservacionItemJurado {
+
+        private ObservacionItemJurado() {}
+
+        public static final String TAG_NAME = "Observaciones de ítems cuantitativos del jurado";
+        public static final String TAG_DESCRIPTION =
+                "Registro y consulta de observaciones textuales sobre evaluaciones cuantitativas del jurado";
+        public static final String REGISTRAR_SUMMARY = "Registrar observación";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra una nueva observación textual sobre una evaluación cuantitativa del jurado";
+        public static final String REGISTRAR_RESP_201 = "Observación registrada";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación cuantitativa no existe, su evaluación de "
+                        + "jurado ya está finalizada, o ya existe una observación con esa descripción";
+        public static final String CONSULTAR_SUMMARY = "Consultar observaciones";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta de forma paginada las observaciones registradas sobre una evaluación cuantitativa "
+                        + "del jurado, con filtro y orden por descripción (por defecto, ascendente)";
+        public static final String CONSULTAR_RESP_200 = "Página de observaciones de la evaluación cuantitativa";
+        public static final String CONSULTAR_RESP_400 =
+                "El identificador no es válido o el filtro/orden solicitado no es aceptado";
+        public static final String CONSULTAR_RESP_422 = "La evaluación cuantitativa del jurado no existe";
+    }
+
     public static final class ItemCuantitativoJurado {
 
         private ItemCuantitativoJurado() {}
@@ -122,5 +165,35 @@ public final class EvaluacionesApiMessages {
                 "Consulta todos los ítems cuantitativos disponibles para que el jurado evalúe un "
                         + "trabajo de grado, ordenados por categoría y luego por nombre";
         public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del jurado";
+    }
+
+    public static final class EvaluacionJurado {
+
+        private EvaluacionJurado() {}
+
+        public static final String TAG_NAME = "Jurados de la evaluación";
+        public static final String TAG_DESCRIPTION = "Asignación de jurados a una evaluación";
+        public static final String ASIGNAR_SUMMARY = "Asignar jurados a una evaluación";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Asigna un conjunto de jurados a una evaluación y devuelve los identificadores generados";
+        public static final String ASIGNAR_RESP_201 = "Jurados asignados";
+        public static final String ASIGNAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String ASIGNAR_RESP_422 =
+                "La evaluación no existe o está finalizada, algún jurado no existe o ya está asignado, "
+                        + "o hay jurados repetidos";
+    }
+
+    public static final class EstadoEvaluacion {
+
+        private EstadoEvaluacion() {}
+
+        public static final String TAG_NAME = "Estados de evaluación";
+        public static final String TAG_DESCRIPTION =
+                "Catálogo de estados disponibles para las evaluaciones de entregables";
+        public static final String CONSULTAR_SUMMARY = "Consultar estados de evaluación";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta todos los estados del catálogo por los que puede pasar una evaluación, "
+                        + "sin filtros ni paginación";
+        public static final String CONSULTAR_RESP_200 = "Listado de estados de evaluación";
     }
 }

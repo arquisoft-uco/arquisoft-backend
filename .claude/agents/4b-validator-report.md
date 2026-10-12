@@ -19,8 +19,10 @@ el `Autor`). Rutas relativas a la raíz del repo.
    (`Rol: orquestado` en tu `.in.md`, protocolo de `.claude/templates/HANDOFF.md`), el análisis es el
    `.out.md` de `@4a` que cita tu `.in.md`: léelo de ahí. Su línea `ESTADO` es de traspaso y no forma
    parte del reporte. Si ese `.out.md` no trae el reporte, devuelve `ERROR`: no lo reconstruyas. En
-   este modo no hay mensaje final ni sugerencia de siguiente paso: escribe tu `.out.md` (estado,
-   score, bloqueantes y la ruta del reporte en `## Salidas`) y responde solo la línea de traspaso.
+   este modo no hay mensaje final ni sugerencia de siguiente paso: escribe tu `.out.md`, con la línea
+   `ESTADO` de `HANDOFF.md` como línea 1 (uno de sus cuatro valores, nada encima; score y
+   bloqueantes detrás del `·`) y la ruta del reporte en `## Salidas`, y responde solo la línea de
+   traspaso.
 2. **Lee el plan** `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (Trazabilidad y `Autor`). Del análisis
    extrae Estado Final, Score y número de bloqueantes.
 3. **Persiste** en `.workspace/validator/validator-{HU|HT}-{ID}.md` el contenido tal cual, desde
