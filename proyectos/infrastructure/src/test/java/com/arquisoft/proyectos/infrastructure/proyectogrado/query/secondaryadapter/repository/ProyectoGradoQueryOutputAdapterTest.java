@@ -37,6 +37,9 @@ class ProyectoGradoQueryOutputAdapterTest {
     private ProyectoGradoEstudianteQueryRepository estudianteRepository;
 
     @Autowired
+    private ProyectoGradoAsesorQueryRepository asesorRepository;
+
+    @Autowired
     private TestEntityManager entityManager;
 
     private ProyectoGradoQueryOutputAdapter adapter;
@@ -44,7 +47,8 @@ class ProyectoGradoQueryOutputAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new ProyectoGradoQueryOutputAdapter(
-                repository, new ProyectoGradoJpaSpecification(), estudianteRepository);
+                repository, new ProyectoGradoJpaSpecification(), estudianteRepository,
+                asesorRepository, new ProyectoGradoAsesorJpaSpecification());
         entityManager.persist(new EstadoProyectoFixtureJpaEntity(EN_PROCESO, "En proceso", "En desarrollo"));
         entityManager.persist(new EstadoProyectoFixtureJpaEntity(FINALIZADO, "Finalizado", "Concluido"));
     }
