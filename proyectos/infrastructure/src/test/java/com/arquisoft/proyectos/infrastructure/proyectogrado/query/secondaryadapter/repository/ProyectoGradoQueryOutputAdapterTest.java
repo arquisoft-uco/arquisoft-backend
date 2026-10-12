@@ -1,7 +1,10 @@
 package com.arquisoft.proyectos.infrastructure.proyectogrado.query.secondaryadapter.repository;
 
 import com.arquisoft.proyectos.application.proyectogrado.query.criteria.ProyectoGradoCriteria;
+import com.arquisoft.proyectos.application.proyectogrado.query.criteria.ProyectoGradoEstudianteCriteria;
 import com.arquisoft.proyectos.infrastructure.estadoproyectogrado.command.secondaryadapter.entity.EstadoProyectoGradoJpaEntity;
+import com.arquisoft.proyectos.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
+import com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
 import com.arquisoft.proyectos.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
 import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.FiltroOperador;
@@ -31,13 +34,17 @@ class ProyectoGradoQueryOutputAdapterTest {
     private ProyectoGradoQueryRepository repository;
 
     @Autowired
+    private ProyectoGradoEstudianteQueryRepository estudianteRepository;
+
+    @Autowired
     private TestEntityManager entityManager;
 
     private ProyectoGradoQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new ProyectoGradoQueryOutputAdapter(repository, new ProyectoGradoJpaSpecification());
+        adapter = new ProyectoGradoQueryOutputAdapter(
+                repository, new ProyectoGradoJpaSpecification(), estudianteRepository);
         entityManager.persist(new EstadoProyectoFixtureJpaEntity(EN_PROCESO, "En proceso", "En desarrollo"));
         entityManager.persist(new EstadoProyectoFixtureJpaEntity(FINALIZADO, "Finalizado", "Concluido"));
     }
@@ -215,6 +222,125 @@ class ProyectoGradoQueryOutputAdapterTest {
         assertThat(resultado.getTotalElements()).isEqualTo(3);
         assertThat(resultado.getTotalPages()).isEqualTo(2);
         assertThat(resultado.getContent()).extracting(p -> p.tituloProyecto()).containsExactly("C");
+    }
+
+    private UUID estudiante(Instant eliminadoEn) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EstudianteJpaEntity(id, id.toString().substring(0, 20), "Nombre",
+                "e@uco.edu.co", Instant.parse("2026-10-01T10:00:00Z"), eliminadoEn));
+        return id;
+    }
+
+    private void vincular(UUID estudiante, UUID proyectoGrado) {
+        entityManager.persist(new EstudianteProyectoGradoJpaEntity(
+                UtilUUID.generarNuevoUUID(), estudiante, proyectoGrado));
+    }
+
+    @Test
+    void debeRetornarProyectosDelEstudiante_cuandoTieneVinculos() {
+        // Arrange
+        var estudiante = estudiante(null);
+        var id = proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "Propio");
+        vincular(estudiante, id);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorEstudiante(new ProyectoGradoEstudianteCriteria(estudiante));
+
+        // Assert
+        assertThat(resultado).hasSize(1);
+        var leido = resultado.getFirst();
+        assertThat(leido.id()).isEqualTo(id);
+        assertThat(leido.fichaPerfil()).isNotNull();
+        assertThat(leido.tituloProyecto()).isEqualTo("Propio");
+        assertThat(leido.estado().id()).isEqualTo(EN_PROCESO);
+        assertThat(leido.estado().nombre()).isEqualTo("En proceso");
+    }
+
+    @Test
+    void debeRetornarEstadoMasReciente_cuandoHayVariasFilasDeEstado() {
+        // Arrange
+        var estudiante = estudiante(null);
+        var id = proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "Uno");
+        cambiarEstado(id, FINALIZADO, "2026-10-05T10:00:00Z");
+        vincular(estudiante, id);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorEstudiante(new ProyectoGradoEstudianteCriteria(estudiante));
+
+        // Assert
+        assertThat(resultado).hasSize(1);
+        assertThat(resultado.getFirst().estado().id()).isEqualTo(FINALIZADO);
+        assertThat(resultado.getFirst().estado().nombre()).isEqualTo("Finalizado");
+    }
+
+    @Test
+    void debeExcluirProyectosAjenos_cuandoOtroEstudianteEstaVinculado() {
+        // Arrange
+        var estudiante = estudiante(null);
+        var otro = estudiante(null);
+        var propio = proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "Propio");
+        var ajeno = proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "Ajeno");
+        vincular(estudiante, propio);
+        vincular(otro, ajeno);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorEstudiante(new ProyectoGradoEstudianteCriteria(estudiante));
+
+        // Assert
+        assertThat(resultado).extracting(p -> p.id()).containsExactly(propio);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoEstudianteDadoDeBaja() {
+        // Arrange
+        var estudiante = estudiante(Instant.parse("2026-10-02T10:00:00Z"));
+        vincular(estudiante, proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "Uno"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorEstudiante(new ProyectoGradoEstudianteCriteria(estudiante));
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoNoTieneVinculos() {
+        // Arrange
+        var estudiante = estudiante(null);
+        proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "Sin vinculo");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorEstudiante(new ProyectoGradoEstudianteCriteria(estudiante));
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeOrdenarPorTitulo_cuandoTieneVariosProyectos() {
+        // Arrange
+        var estudiante = estudiante(null);
+        vincular(estudiante, proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "B"));
+        vincular(estudiante, proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "A"));
+        vincular(estudiante, proyecto(UtilUUID.generarNuevoUUID(), EN_PROCESO, "C"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorEstudiante(new ProyectoGradoEstudianteCriteria(estudiante));
+
+        // Assert
+        assertThat(resultado).extracting(p -> p.tituloProyecto()).containsExactly("A", "B", "C");
     }
 
     @Test

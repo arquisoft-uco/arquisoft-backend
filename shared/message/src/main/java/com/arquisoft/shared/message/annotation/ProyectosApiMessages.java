@@ -133,7 +133,7 @@ public final class ProyectosApiMessages {
         private ConsultaProyectoGrado() {}
 
         public static final String TAG_NAME = "Consulta de Proyectos de Grado";
-        public static final String TAG_DESCRIPTION = "Consulta de los proyectos de grado de un coordinador";
+        public static final String TAG_DESCRIPTION = "Consulta de los proyectos de grado de un coordinador o de un estudiante";
 
         public static final String CONSULTAR_SUMMARY = "Consultar los proyectos de grado del coordinador";
         public static final String CONSULTAR_DESCRIPTION =
@@ -142,6 +142,15 @@ public final class ProyectosApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de proyectos de grado del coordinador";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
         public static final String CONSULTAR_RESP_403 = "Sin permiso para consultar los proyectos de grado";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar los proyectos de grado del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Permite al estudiante consultar los proyectos de grado a los que está vinculado, "
+                        + "con su ficha de perfil, título y estado actual; lista vacía si no pertenece a ninguno";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Lista de proyectos de grado del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador del estudiante inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
+                "Sin permiso para consultar los proyectos de grado del estudiante";
     }
 
     public static final class ConsultaEstudianteProyectoGrado {
