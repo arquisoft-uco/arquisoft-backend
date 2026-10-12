@@ -203,7 +203,14 @@
         "id": "9d0e3f83-6c4a-4e0a-81f5-5e167b69eedc",
         "name": "asesor",
         "description": "",
-        "composite": false,
+        "composite": true,
+        "composites": {
+          "client": {
+            "arquisoft-api": [
+              "artefactos:estado-revision-asesor:view"
+            ]
+          }
+        },
         "clientRole": false,
         "containerId": "053aee0b-1eeb-4991-926a-dca686ac045b",
         "attributes": {}
@@ -684,6 +691,15 @@
         {
           "id": "14d00284-32ed-4cd8-8fa9-cefe71afc83b",
           "name": "fichas:estado-revision:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "031f0856-1ba9-432b-862c-c54732205b01",
+          "name": "artefactos:estado-revision-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
