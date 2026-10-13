@@ -14,6 +14,8 @@ public enum ConsumidorKey implements ClaveMensaje {
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-respondida-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_ASESOR_RESPONDIDA_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-respondida-recibido", 2),
+    LOG_SOLICITUD_CAMBIO_ASESOR_RESPONDIDA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-cambio-asesor-respondida-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-estado-modificado-recibido",
             2),

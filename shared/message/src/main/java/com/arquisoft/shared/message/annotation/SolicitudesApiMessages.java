@@ -192,6 +192,19 @@ public final class SolicitudesApiMessages {
         public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_422 =
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
 
+        public static final String RESPONDER_CAMBIO_ASESOR_SUMMARY =
+                "Responder solicitud para cambio de asesor";
+        public static final String RESPONDER_CAMBIO_ASESOR_DESCRIPTION =
+                "Permite a un coordinador responder una solicitud para cambio de asesor que le fue "
+                        + "dirigida, registrando el contenido de la respuesta.";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_201 =
+                "Respuesta registrada — retorna el UUID asignado";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_400 = "Datos inválidos";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_403 =
+                "Sin permisos para responder solicitudes para cambio de asesor";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
+
         public static final String RESPONDER_NOVEDAD_ASESOR_SUMMARY =
                 "Responder solicitud de novedad para el asesor";
         public static final String RESPONDER_NOVEDAD_ASESOR_DESCRIPTION =
