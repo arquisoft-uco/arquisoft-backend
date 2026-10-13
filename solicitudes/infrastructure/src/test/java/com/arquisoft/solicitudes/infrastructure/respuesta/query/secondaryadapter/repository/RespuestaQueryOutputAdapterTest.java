@@ -439,6 +439,39 @@ class RespuestaQueryOutputAdapterTest {
     }
 
     @Test
+    void debeRetornarSoloLasRespuestasDelEstudianteRemitenteDeCambioDeAsesor_cuandoElCriteriaFuerzaTipoYRemitente() {
+        // Arrange
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var beto = sembrarRemitente("Beto", "EST-2", "beto@uco.edu.co");
+        var asesor = sembrarDestinatario("Asesor", "ASES-1", "asesor@uco.edu.co");
+        var fecha = LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC);
+        var fechaRespuesta = LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC);
+        var cambioAna = sembrarSolicitud(ana, asesor, TIPO_CAMBIO, fecha, "cambio de Ana");
+        var novedadAna = sembrarSolicitud(ana, asesor, TIPO_NOVEDAD_ASESOR, fecha, "novedad de Ana");
+        var cambioBeto = sembrarSolicitud(beto, asesor, TIPO_CAMBIO, fecha, "cambio de Beto");
+        sembrarRespuesta(cambioAna, ESTADO_EN_REVISION, fechaRespuesta, "sobre cambio de Ana");
+        sembrarRespuesta(novedadAna, ESTADO_EN_REVISION, fechaRespuesta, "sobre novedad de Ana");
+        sembrarRespuesta(cambioBeto, ESTADO_EN_REVISION, fechaRespuesta, "sobre cambio de Beto");
+        sincronizar();
+
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
+                                ana.getUsuarioId().toString()),
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_CAMBIO))))
+                .build();
+
+        // Act
+        var resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(RespuestaReadModel::contenido)
+                .containsExactly("sobre cambio de Ana");
+        assertThat(resultado.getContent().get(0).solicitud().tipoSolicitudId()).isEqualTo(TIPO_CAMBIO);
+    }
+
+    @Test
     void debeRetornarVacio_cuandoNoHayRespuestasParaElEstudiante() {
         // Act
         var resultado = adapter.consultar(porRemitente(UUID.randomUUID()));
