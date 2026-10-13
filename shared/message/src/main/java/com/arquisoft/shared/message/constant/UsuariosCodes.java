@@ -126,5 +126,6 @@ public final class UsuariosCodes {
 
         public static final String USUARIO_REQUERIDO = "JURADO_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "JURADO_USUARIO_DUPLICADO";
+        public static final String JURADO_NO_ENCONTRADO = "JURADO_NO_ENCONTRADO";
     }
 }

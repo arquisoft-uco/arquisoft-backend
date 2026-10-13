@@ -7,6 +7,7 @@ import com.arquisoft.usuarios.domain.administrador.AdministradorDomain;
 import com.arquisoft.usuarios.domain.asesor.AsesorDomain;
 import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.usuarios.domain.bibliotecario.BibliotecarioDomain;
+import com.arquisoft.usuarios.domain.jurado.JuradoDomain;
 import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
@@ -37,12 +38,12 @@ class EliminarUsuarioValidatorImplTest {
                                       AsesorFichaDomain asesorFicha, CoordinadorDomain coordinador,
                                       RepresentanteComiteDomain representanteComite) {
         return new RolesUsuario(id, estudiante, asesor, asesorFicha, coordinador, representanteComite,
-                AdministradorDomain.VACIO, BibliotecarioDomain.VACIO);
+                AdministradorDomain.VACIO, BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
     }
 
     private static RolesUsuario rolesConAdministrador(UUID id, AdministradorDomain administrador) {
         return new RolesUsuario(id, EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO,
-                CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, administrador, BibliotecarioDomain.VACIO);
+                CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, administrador, BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
     }
 
     @Test
@@ -126,6 +127,20 @@ class EliminarUsuarioValidatorImplTest {
                 rolesConAdministrador(id, AdministradorDomain.crear(id))))
                 .isInstanceOf(UsuarioRolesVigentesException.class)
                 .hasMessageContaining(UsuariosRealmRoles.ADMINISTRADOR);
+    }
+
+    @Test
+    void debeLanzarRolesVigentes_cuandoElJuradoSigueVigente() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var roles = new RolesUsuario(id, EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO,
+                CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO,
+                BibliotecarioDomain.VACIO, JuradoDomain.crear(id));
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(id, usuario(id, UtilFecha.VACIO), roles))
+                .isInstanceOf(UsuarioRolesVigentesException.class)
+                .hasMessageContaining(UsuariosRealmRoles.JURADO);
     }
 
     @Test

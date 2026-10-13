@@ -14,6 +14,7 @@ rutas:
       representante-comite: /{usuarioId}/representante-comite
       administrador: /{usuarioId}/administrador
       bibliotecario: /{usuarioId}/bibliotecario
+      jurado: /{usuarioId}/jurado
       modificar: /{usuarioId}
       eliminar: /{usuarioId}
       identidad: /{usuarioId}

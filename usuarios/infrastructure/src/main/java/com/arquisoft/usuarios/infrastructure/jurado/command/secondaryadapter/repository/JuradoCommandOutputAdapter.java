@@ -8,6 +8,7 @@ import com.arquisoft.usuarios.infrastructure.jurado.command.secondaryadapter.map
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,12 @@ public class JuradoCommandOutputAdapter implements JuradoOutputPort {
     public void guardar(JuradoEntity jurado) {
         juradoCommandRepository.save(JuradoJpaMapper.toJpaEntity(jurado));
         logger.debug(AgregarJuradoKey.LOG_GUARDADO, jurado.usuario());
+    }
+
+    @Override
+    public void eliminarLogica(UUID usuario, Instant eliminadoEn) {
+        juradoCommandRepository.eliminarLogica(usuario, JuradoJpaMapper.aColumna(eliminadoEn));
+        logger.debug(AgregarJuradoKey.LOG_ACTUALIZADO, usuario);
     }
 
     @Override
