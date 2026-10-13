@@ -56,6 +56,7 @@ public final class ProyectosCodes {
         public static final String NO_PERTENECE_COORDINADOR = "PROYECTO_GRADO_NO_PERTENECE_COORDINADOR";
         public static final String ESTUDIANTE_ID_REQUERIDO = "PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
         public static final String ASESOR_ID_REQUERIDO = "PROYECTO_GRADO_ASESOR_ID_REQUERIDO";
+        public static final String PROYECTO_GRADO_ID_REQUERIDO = "PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
     }
 
     public static final class EstudianteProyectoGrado {
