@@ -78,13 +78,12 @@ public final class UsuariosApiMessages {
         public static final String CAMBIAR_ESTADO_RESP_503 =
                 "No fue posible actualizar la identidad en el proveedor; el servicio no está disponible temporalmente";
 
-        // TODO HU252: agregar jurado a la lista de roles de CONSULTAR_ADMINISTRADOR_DESCRIPTION.
         public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
                 "Consultar información de los usuarios (administrador)";
         public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
                 "Lista paginada, filtrable y ordenable de todos los usuarios, incluidos los "
                         + "eliminados (vigente = false). Indica con un booleano por rol si el usuario tiene hoy el rol vigente "
-                        + "de estudiante, asesor, asesor de ficha, coordinador, representante del comité, administrador o bibliotecario; "
+                        + "de estudiante, asesor, asesor de ficha, coordinador, representante del comité, administrador, bibliotecario o jurado; "
                         + "esos booleanos "
                         + "se combinan con OR/AND en el filtro. Exclusivo del rol administrador.";
         public static final String CONSULTAR_RESP_200 = "Página de usuarios";
@@ -200,6 +199,19 @@ public final class UsuariosApiMessages {
                         + "permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
                         + "asesores, estudiantes y coordinadores.";
         public static final String CONSULTAR_RESP_200 = "Página de coordinadores";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
+    }
+
+    public static final class Jurado {
+
+        private Jurado() {}
+
+        public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los jurados vigentes";
+        public static final String CONSULTAR_VIGENTES_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de los jurados con el rol vigente. Expone y "
+                        + "permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
+                        + "jurados y coordinadores.";
+        public static final String CONSULTAR_RESP_200 = "Página de jurados";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 

@@ -10,8 +10,12 @@ rutas:
       coordinador: /coordinador
       estudiantes: /{proyectoGradoId}/estudiantes
       companeros: /{proyectoGradoId}/companeros
+      estudiantes-asesorados: /{proyectoGradoId}/estudiantes-asesorados
       asesores: /{proyectoGradoId}/asesores
       asesores-asignados: /{proyectoGradoId}/asesores-asignados
       estados: /{proyectoGradoId}/estados
       estudiante: /{proyectoGradoId}/estudiantes/{estudianteId}
+      proyectos-estudiante: /estudiante
+      proyectos-asesor: /asesor
+      proyecto-asesor: /{proyectoGradoId}/asesor
       asesor-estado: /{proyectoGradoId}/asesores/{asesorId}/estado

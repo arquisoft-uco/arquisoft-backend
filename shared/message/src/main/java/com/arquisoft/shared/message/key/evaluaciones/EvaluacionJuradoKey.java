@@ -9,7 +9,9 @@ public enum EvaluacionJuradoKey implements ClaveMensaje {
     LOG_ASIGNANDO("evaluaciones.aplicacion.evaluacionjurado.log.asignando", 2),
     LOG_VERIFICACION_ASIGNAR("evaluaciones.aplicacion.evaluacionjurado.log.verificacion-asignar", 4),
     LOG_ASIGNADOS("evaluaciones.aplicacion.evaluacionjurado.log.asignados", 2),
-    LOG_LOTE_GUARDADO("evaluaciones.infraestructura.evaluacionjurado.log.lote-guardado", 1);
+    LOG_LOTE_GUARDADO("evaluaciones.infraestructura.evaluacionjurado.log.lote-guardado", 1),
+    LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacionjurado.log.consultando", 5),
+    LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacionjurado.log.consulta-completada", 3);
 
     private final String clave;
     private final int parametros;

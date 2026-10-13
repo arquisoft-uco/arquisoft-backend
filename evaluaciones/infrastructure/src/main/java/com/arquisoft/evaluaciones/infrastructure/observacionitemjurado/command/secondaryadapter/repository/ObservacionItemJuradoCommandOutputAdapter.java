@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.evaluaciones.ObservacionItemJuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -26,5 +27,21 @@ public class ObservacionItemJuradoCommandOutputAdapter implements ObservacionIte
     @Override
     public boolean existePorEvaluacionYDescripcion(UUID evaluacionCuantitativaJurado, String descripcion) {
         return repository.existsByEvaluacionCuantitativaJuradoIdAndDescripcion(evaluacionCuantitativaJurado, descripcion);
+    }
+
+    @Override
+    public Optional<ObservacionItemJuradoEntity> obtenerPorId(UUID id) {
+        return repository.findById(id).map(ObservacionItemJuradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public boolean existeOtraConDescripcion(UUID observacion, String descripcion) {
+        return repository.existeOtraConDescripcion(observacion, descripcion);
+    }
+
+    @Override
+    public void actualizarDescripcion(UUID id, String descripcion) {
+        repository.actualizarDescripcion(id, descripcion);
+        logger.debug(ObservacionItemJuradoKey.LOG_GUARDADA, id);
     }
 }
