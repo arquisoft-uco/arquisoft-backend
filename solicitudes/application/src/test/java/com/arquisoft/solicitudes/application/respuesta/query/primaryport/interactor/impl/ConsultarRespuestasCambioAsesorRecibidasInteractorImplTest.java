@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.respuesta.query.primaryport.interactor.impl;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.respuesta.query.criteria.RespuestaCriteria;
 import com.arquisoft.solicitudes.application.respuesta.query.primaryport.model.ConsultarRespuestasCambioAsesorRecibidasQuery;
 import com.arquisoft.solicitudes.application.respuesta.query.readmodel.RespuestaReadModel;
@@ -19,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,9 +39,9 @@ class ConsultarRespuestasCambioAsesorRecibidasInteractorImplTest {
     private ConsultarRespuestasCambioAsesorRecibidasInteractorImpl interactor;
 
     @Test
-    void debeDelegarEnElUseCaseConElCriteriaDelMapper_yRetornarSuResultado() {
+    void debeDelegarEnElUseCaseYRetornarSuResultado_cuandoElMapperConstruyeElCriteria() {
         // Arrange
-        var estudiante = UUID.randomUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
         var query = ConsultarRespuestasCambioAsesorRecibidasQuery.crear(estudiante, criterio);
 

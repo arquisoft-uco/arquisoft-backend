@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.infrastructure.respuesta.query.secondaryadapter.repository;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.respuesta.query.criteria.RespuestaCriteria;
 import com.arquisoft.solicitudes.application.respuesta.query.readmodel.RespuestaReadModel;
 import com.arquisoft.solicitudes.infrastructure.destinatario.command.secondaryadapter.entity.DestinatarioJpaEntity;
@@ -64,22 +65,22 @@ class RespuestaQueryOutputAdapterTest {
 
     private RemitenteJpaEntity sembrarRemitente(String nombre, String identificador, String email) {
         var usuario = UsuarioJpaEntity.builder()
-                .id(UUID.randomUUID()).nombre(nombre).identificador(identificador).email(email)
+                .id(UtilUUID.generarNuevoUUID()).nombre(nombre).identificador(identificador).email(email)
                 .ocurridoEn(Instant.now()).build();
         entityManager.persist(usuario);
         var remitente = RemitenteJpaEntity.builder()
-                .id(UUID.randomUUID()).usuarioId(usuario.getId()).build();
+                .id(UtilUUID.generarNuevoUUID()).usuarioId(usuario.getId()).build();
         entityManager.persist(remitente);
         return remitente;
     }
 
     private DestinatarioJpaEntity sembrarDestinatario(String nombre, String identificador, String email) {
         var usuario = UsuarioJpaEntity.builder()
-                .id(UUID.randomUUID()).nombre(nombre).identificador(identificador).email(email)
+                .id(UtilUUID.generarNuevoUUID()).nombre(nombre).identificador(identificador).email(email)
                 .ocurridoEn(Instant.now()).build();
         entityManager.persist(usuario);
         var destinatario = DestinatarioJpaEntity.builder()
-                .id(UUID.randomUUID()).usuarioId(usuario.getId()).build();
+                .id(UtilUUID.generarNuevoUUID()).usuarioId(usuario.getId()).build();
         entityManager.persist(destinatario);
         return destinatario;
     }
@@ -87,7 +88,7 @@ class RespuestaQueryOutputAdapterTest {
     private SolicitudJpaEntity sembrarSolicitud(RemitenteJpaEntity remitente,
             DestinatarioJpaEntity destinatario, String tipo, Instant fecha, String mensaje) {
         var solicitud = SolicitudJpaEntity.builder()
-                .id(UUID.randomUUID())
+                .id(UtilUUID.generarNuevoUUID())
                 .remitente(remitente)
                 .destinatario(destinatario)
                 .tipoSolicitud(entityManager.find(TipoSolicitudJpaEntity.class, tipo))
@@ -101,7 +102,7 @@ class RespuestaQueryOutputAdapterTest {
     private void sembrarRespuesta(SolicitudJpaEntity solicitud, String estadoId,
             Instant fechaRespuesta, String contenido) {
         entityManager.persist(RespuestaJpaEntity.builder()
-                .id(UUID.randomUUID())
+                .id(UtilUUID.generarNuevoUUID())
                 .solicitudId(solicitud.getId())
                 .fechaRespuesta(fechaRespuesta)
                 .contenido(contenido)
@@ -122,7 +123,7 @@ class RespuestaQueryOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarSoloLasRespuestasDelEstudianteRemitente_yProyectarSolicitudCompleta() {
+    void debeRetornarSoloSusRespuestasConSolicitudCompleta_cuandoElEstudianteEsRemitente() {
         // Arrange
         var ana = sembrarRemitente("Ana Estudiante", "EST-1", "ana@uco.edu.co");
         var beto = sembrarRemitente("Beto Estudiante", "EST-2", "beto@uco.edu.co");
@@ -474,7 +475,7 @@ class RespuestaQueryOutputAdapterTest {
     @Test
     void debeRetornarVacio_cuandoNoHayRespuestasParaElEstudiante() {
         // Act
-        var resultado = adapter.consultar(porRemitente(UUID.randomUUID()));
+        var resultado = adapter.consultar(porRemitente(UtilUUID.generarNuevoUUID()));
 
         // Assert
         assertThat(resultado.getContent()).isEmpty();

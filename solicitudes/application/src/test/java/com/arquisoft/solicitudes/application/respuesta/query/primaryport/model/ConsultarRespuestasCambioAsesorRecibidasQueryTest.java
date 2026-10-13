@@ -1,11 +1,11 @@
 package com.arquisoft.solicitudes.application.respuesta.query.primaryport.model;
 
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -15,7 +15,7 @@ class ConsultarRespuestasCambioAsesorRecibidasQueryTest {
     @Test
     void debeCrearQuery_cuandoEstudianteUsuarioValido() {
         // Arrange
-        var estudianteUsuario = UUID.randomUUID();
+        var estudianteUsuario = UtilUUID.generarNuevoUUID();
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act

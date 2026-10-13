@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.respuesta.query.primaryport.mapper;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.respuesta.query.criteria.RespuestaCriteria;
 import com.arquisoft.solicitudes.application.respuesta.query.primaryport.model.ConsultarRespuestasCambioAsesorRecibidasQuery;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -32,7 +33,7 @@ class ConsultarRespuestasCambioAsesorRecibidasMapperTest {
     @Test
     void debeForzarLosPredicadosDeRemitenteYTipo_cuandoElCriterioNoTraeFiltros() {
         // Arrange
-        var estudiante = UUID.randomUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
@@ -51,7 +52,7 @@ class ConsultarRespuestasCambioAsesorRecibidasMapperTest {
     @Test
     void debeCombinarConAndLosForzadosConElRaizDelCliente_cuandoElCriterioTraeUnFiltro() {
         // Arrange
-        var estudiante = UUID.randomUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
         var raizCliente = NodoFiltro.predicado("destinatarioNombre", FiltroOperador.CONTIENE, "Ana");
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente);
 
@@ -69,9 +70,9 @@ class ConsultarRespuestasCambioAsesorRecibidasMapperTest {
     }
 
     @Test
-    void debePropagarPaginaTamanioYOrdenamiento_sinModificarlos() {
+    void debePropagarPaginaTamanioYOrdenamiento_cuandoElQueryLosTrae() {
         // Arrange
-        var estudiante = UUID.randomUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
         var ordenamiento = List.of(SortOrder.of("destinatarioNombre", SortDirection.ASC));
         var criterio = ConsultaCriteriaQuery.crear(2, 25, ordenamiento, null);
 
@@ -90,7 +91,7 @@ class ConsultarRespuestasCambioAsesorRecibidasMapperTest {
     @Test
     void debeAplicarOrdenPorFechaRespuestaDescendente_cuandoElCriterioNoTraeOrden() {
         // Arrange
-        var estudiante = UUID.randomUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
@@ -106,8 +107,8 @@ class ConsultarRespuestasCambioAsesorRecibidasMapperTest {
     @Test
     void debeLanzarFiltroException_cuandoElClienteFiltraPorUnCampoFueraDeLaWhitelist() {
         // Arrange
-        var estudiante = UUID.randomUUID();
-        var raizCliente = NodoFiltro.predicado("solicitudId", FiltroOperador.ES, UUID.randomUUID().toString());
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var raizCliente = NodoFiltro.predicado("solicitudId", FiltroOperador.ES, UtilUUID.generarNuevoUUID().toString());
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente);
 
         // Act & Assert
@@ -119,7 +120,7 @@ class ConsultarRespuestasCambioAsesorRecibidasMapperTest {
     @Test
     void debeLanzarFiltroException_cuandoElClienteOrdenaPorUnCampoNoOrdenable() {
         // Arrange
-        var estudiante = UUID.randomUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
         var ordenamiento = List.of(SortOrder.of("destinatarioEmail", SortDirection.ASC));
         var criterio = ConsultaCriteriaQuery.crear(0, 10, ordenamiento, null);
 

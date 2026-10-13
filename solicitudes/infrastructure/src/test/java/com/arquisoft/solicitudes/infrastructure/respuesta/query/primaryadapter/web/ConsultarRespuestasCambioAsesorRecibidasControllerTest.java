@@ -4,6 +4,7 @@ import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.solicitudes.application.destinatario.query.readmodel.DestinatarioReadModel;
 import com.arquisoft.solicitudes.application.remitente.query.readmodel.RemitenteReadModel;
@@ -86,7 +87,7 @@ class ConsultarRespuestasCambioAsesorRecibidasControllerTest {
         // Act & Assert
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .with(jwtDe(UUID.randomUUID(),
+                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
                                 SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_RECIBIDA_VIEW)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -94,17 +95,17 @@ class ConsultarRespuestasCambioAsesorRecibidasControllerTest {
     }
 
     @Test
-    void debeSerializarRespuestaResponseDTOConSolicitudEmbebida_yTomarElEstudianteDelJwt() throws Exception {
+    void debeSerializarRespuestaConSolicitudEmbebida_cuandoElEstudianteVieneDelJwt() throws Exception {
         // Arrange
-        var estudiante = UUID.randomUUID();
-        var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana Estudiante",
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var remitente = new RemitenteReadModel(UtilUUID.generarNuevoUUID(), "EST-1", "Ana Estudiante",
                 "ana@uco.edu.co");
-        var destinatario = new DestinatarioReadModel(UUID.randomUUID(), "COORD-1", "Asesora Uno",
+        var destinatario = new DestinatarioReadModel(UtilUUID.generarNuevoUUID(), "COORD-1", "Asesora Uno",
                 "coord1@uco.edu.co");
-        var solicitud = new SolicitudReadModel(UUID.randomUUID(), "un cambio de asesor",
+        var solicitud = new SolicitudReadModel(UtilUUID.generarNuevoUUID(), "un cambio de asesor",
                 Instant.parse("2026-03-01T10:00:00Z"), "CAMBIO_DE_ASESOR",
                 "Cambio de Asesor", remitente, destinatario);
-        var respuesta = new RespuestaReadModel(UUID.randomUUID(), "contenido de la respuesta",
+        var respuesta = new RespuestaReadModel(UtilUUID.generarNuevoUUID(), "contenido de la respuesta",
                 Instant.parse("2026-03-05T09:00:00Z"), "EN_REVISION", "En revisión", solicitud);
         when(interactor.ejecutar(any(ConsultarRespuestasCambioAsesorRecibidasQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(respuesta), 0, 10, 1L));
@@ -155,7 +156,7 @@ class ConsultarRespuestasCambioAsesorRecibidasControllerTest {
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
-                        .with(jwtDe(UUID.randomUUID(),
+                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
                                 SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_RECIBIDA_VIEW)))
                 .andExpect(status().isBadRequest());
     }
@@ -172,7 +173,7 @@ class ConsultarRespuestasCambioAsesorRecibidasControllerTest {
         // Act & Assert
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .with(jwtDe(UUID.randomUUID(),
+                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
                                 SolicitudesAuthorities.RESPUESTA_NOVEDAD_COORDINADOR_RECIBIDA_VIEW)))
                 .andExpect(status().isForbidden());
     }

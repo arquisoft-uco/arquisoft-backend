@@ -2,10 +2,10 @@ package com.arquisoft.solicitudes.infrastructure.respuesta.query.primaryadapter.
 
 import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
 import com.arquisoft.shared.query.pagination.SortDirection;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,7 +14,7 @@ class ConsultarRespuestasCambioAsesorRecibidasRequestMapperTest {
     @Test
     void debeMapearDtoYEstudianteAQuery_cuandoDtoTienePaginacionYOrden() {
         // Arrange
-        var estudiante = UUID.randomUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
         var dto = new QueryCriteriaRequestDTO();
         dto.setPagina(1);
         dto.setTamanio(20);
@@ -35,7 +35,7 @@ class ConsultarRespuestasCambioAsesorRecibidasRequestMapperTest {
     @Test
     void debeAplicarValoresPorDefecto_cuandoDtoEsNulo() {
         // Arrange
-        var estudiante = UUID.randomUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
 
         // Act
         var query = ConsultarRespuestasCambioAsesorRecibidasRequestMapper.toQuery(null, estudiante);

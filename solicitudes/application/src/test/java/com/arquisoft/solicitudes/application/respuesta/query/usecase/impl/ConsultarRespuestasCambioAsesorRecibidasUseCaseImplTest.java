@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.respuesta.query.usecase.impl;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.destinatario.query.readmodel.DestinatarioReadModel;
 import com.arquisoft.solicitudes.application.remitente.query.readmodel.RemitenteReadModel;
 import com.arquisoft.solicitudes.application.respuesta.query.criteria.RespuestaCriteria;
@@ -17,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,13 +42,13 @@ class ConsultarRespuestasCambioAsesorRecibidasUseCaseImplTest {
     }
 
     private static RespuestaReadModel respuesta() {
-        var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana", "ana@uco.edu.co");
+        var remitente = new RemitenteReadModel(UtilUUID.generarNuevoUUID(), "EST-1", "Ana", "ana@uco.edu.co");
         var destinatario = new DestinatarioReadModel(
-                UUID.randomUUID(), "COORD-1", "Asesora", "coord@uco.edu.co");
-        var solicitud = new SolicitudReadModel(UUID.randomUUID(), "un cambio de asesor",
+                UtilUUID.generarNuevoUUID(), "COORD-1", "Asesora", "coord@uco.edu.co");
+        var solicitud = new SolicitudReadModel(UtilUUID.generarNuevoUUID(), "un cambio de asesor",
                 Instant.now(), "CAMBIO_DE_ASESOR", "Cambio de Asesor",
                 remitente, destinatario);
-        return new RespuestaReadModel(UUID.randomUUID(), "contenido de la respuesta",
+        return new RespuestaReadModel(UtilUUID.generarNuevoUUID(), "contenido de la respuesta",
                 Instant.now(), "EN_REVISION", "En revisión", solicitud);
     }
 
@@ -84,7 +84,7 @@ class ConsultarRespuestasCambioAsesorRecibidasUseCaseImplTest {
     }
 
     @Test
-    void debeLoguearEntradaYCierre_conRespuestaKey() {
+    void debeLoguearEntradaYCierre_cuandoSeConsultaConRespuestaKey() {
         // Arrange
         var criteria = criteria();
         var vacio = PaginatedResult.of(List.<RespuestaReadModel>of(), 0, 10, 0L);
