@@ -115,6 +115,31 @@ public final class EvaluacionesApiMessages {
                         + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
     }
 
+    public static final class EvaluacionJurado {
+
+        private EvaluacionJurado() {}
+
+        public static final String TAG_NAME = "Evaluaciones de jurado";
+        public static final String TAG_DESCRIPTION =
+                "Asignación y consulta de las evaluaciones de jurado de una evaluación";
+        public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones de jurado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta de forma paginada las evaluaciones de jurado de una evaluación, con filtro "
+                        + "por nombre o identificador del jurado y orden por nombre (por defecto, ascendente)";
+        public static final String CONSULTAR_RESP_200 = "Página de evaluaciones de jurado de la evaluación";
+        public static final String CONSULTAR_RESP_400 =
+                "El identificador no es válido o el filtro/orden solicitado no es aceptado";
+        public static final String CONSULTAR_RESP_422 = "La evaluación no existe";
+        public static final String ASIGNAR_SUMMARY = "Asignar jurados a una evaluación";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Asigna un conjunto de jurados a una evaluación y devuelve los identificadores generados";
+        public static final String ASIGNAR_RESP_201 = "Jurados asignados";
+        public static final String ASIGNAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String ASIGNAR_RESP_422 =
+                "La evaluación no existe o está finalizada, algún jurado no existe o ya está asignado, "
+                        + "o hay jurados repetidos";
+    }
+
     public static final class ObservacionItemJurado {
 
         private ObservacionItemJurado() {}
@@ -175,22 +200,6 @@ public final class EvaluacionesApiMessages {
                 "Consulta todos los ítems cuantitativos disponibles para que el jurado evalúe un "
                         + "trabajo de grado, ordenados por categoría y luego por nombre";
         public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del jurado";
-    }
-
-    public static final class EvaluacionJurado {
-
-        private EvaluacionJurado() {}
-
-        public static final String TAG_NAME = "Jurados de la evaluación";
-        public static final String TAG_DESCRIPTION = "Asignación de jurados a una evaluación";
-        public static final String ASIGNAR_SUMMARY = "Asignar jurados a una evaluación";
-        public static final String ASIGNAR_DESCRIPTION =
-                "Asigna un conjunto de jurados a una evaluación y devuelve los identificadores generados";
-        public static final String ASIGNAR_RESP_201 = "Jurados asignados";
-        public static final String ASIGNAR_RESP_400 = "Datos de entrada inválidos";
-        public static final String ASIGNAR_RESP_422 =
-                "La evaluación no existe o está finalizada, algún jurado no existe o ya está asignado, "
-                        + "o hay jurados repetidos";
     }
 
     public static final class EstadoEvaluacion {
