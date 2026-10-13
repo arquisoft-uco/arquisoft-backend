@@ -188,6 +188,7 @@
               "usuarios:usuario-administrador:view",
               "evaluaciones:item-cuantitativo-jurado:view",
               "evaluaciones:item-cualitativo-jurado:create",
+              "repositorio-artefactos:repositorio-artefacto:create",
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
@@ -689,6 +690,15 @@
         {
           "id": "f4c38876-6741-458b-9ede-69466180199a",
           "name": "evaluaciones:item-cualitativo-jurado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "46f8feef-8c02-485e-8e69-5901da234b1b",
+          "name": "repositorio-artefactos:repositorio-artefacto:create",
           "description": "",
           "composite": false,
           "clientRole": true,

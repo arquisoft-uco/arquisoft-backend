@@ -23,6 +23,7 @@ contexto completo y el patrón a copiar—. Ábrelo con `Read` cuando necesites 
 | `proyectos` | Lado **réplica**: consume `*Agregado`/`*Removido` de `usuarios` (`primaryadapter/amqp/usuarios/{entidad}/`) para sus espejos de `asesor`, `coordinador` y `estudiante`. Cada caso de uso devuelve una sellada (`AgregacionAsesorResult` → `Agregada`/`Duplicada`/`Descartada`; `Descartada` = evento más viejo que el `ocurridoEn` guardado) | Sin controllers, `query/` ni eventos propios |
 | `solicitudes` | **Un flujo con variantes por tipo** y camino completo a `notificaciones`. Un `Interactor` por tipo (`EnviarSolicitud{Tipo}`, `EliminarSolicitud{Tipo}`, `ResponderSolicitud{Tipo}`, `ModificarEstadoRespuesta{Tipo}`) converge en un use case por acción; el mapper del interactor fija el tipo esperado en el objeto de acción y `SolicitudEsDelTipoRule` despacha a la regla del tipo, así los códigos de error por tipo no cambian. `EnviarSolicitudUseCase` orquesta `RegistrarRemitente`/`RegistrarDestinatario` (`void`, cada uno con su `Validator` de existencia) y un solo `EnviarSolicitudValidator.validar(...)`. Sus eventos (`SolicitudEnviadaEvent`, `SolicitudRespondidaEvent`, `SolicitudEstadoModificadoEvent`, con `responsableNombre` genérico) derivan tema y tipo de `TipoSolicitud`, y `notificaciones` los consume con un consumidor por tipo (`amqp/solicitudes/{solicitud,respuesta}/`). Réplica de `usuario` + lado `query/` cuyo mapper fuerza el filtro por JWT y tipo | `UsuarioSolicitudesCommandOutputAdapter`/`…CommandRepository` llevan el contexto en el nombre (convención retirada) |
 | `biblioteca` | **Contexto nuevo que nace como réplica** (HU-240): andamiaje completo (módulos Gradle, base, `BibliotecaDataSourceConfig`, Flyway, colas, catálogo) + réplica de `bibliotecario`, calcada de `proyectos/coordinador` | Solo *Agregar*: sin `bibliotecario.removido`, `usuario.modificado`, lápida, controllers ni `query/` |
+| `repositorio_artefactos` | **Réplica de `administrador` completa** (HU-273): `agregado`, `removido` con lápida y `usuario.modificado`, calcada de `proyectos/coordinador`, más el comando `GenerarRepositorioArtefacto` (escritura con client role propio y `Finder` de vigencia del administrador antes del `Validator`) | Sin `query/`, sin eventos propios y sin `event_publication` (no publica): la migración llega con la primera HU que publique |
 
 ## Los planes y reportes de `.workspace/` NO son referencia de convención
 
@@ -433,6 +434,12 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
 
 - `@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")` — placeholder con default; **no
   existe `{Contexto}Routes`**. Nunca el prefijo `/api`: ya es el `context-path`.
+- La base del `@RequestMapping` es **el recurso, en un solo segmento kebab-case, sin el nombre del
+  contexto delante**: `/fichas-perfil`, `/proyectos-grado`, `/solicitudes`, `/usuarios`. El contexto
+  es una frontera del código, no del contrato HTTP. Anteponerlo alarga cada ruta y, cuando el recurso
+  se llama como el contexto, repite el nombre (`/repositorio-artefactos/repositorios-artefactos`).
+  Lo anidado (`/{id}/estudiantes`, `/coordinador`) cuelga de esa base. `evaluaciones`
+  (`/evaluaciones/{recurso}`) no sigue esta forma: no la tomes como molde de rutas.
 - `@PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_CREATE)`, nunca el literal
   `"hasAuthority('...')"`. `FichasAuthorities` declara el client role crudo (para tests) y su SpEL.
 - **Un client role por endpoint, propio y distinto**, para concederlo o revocarlo por separado en
