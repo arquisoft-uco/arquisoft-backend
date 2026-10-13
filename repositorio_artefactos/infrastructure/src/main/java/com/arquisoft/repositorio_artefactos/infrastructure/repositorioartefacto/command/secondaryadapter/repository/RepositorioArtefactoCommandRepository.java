@@ -7,6 +7,5 @@ import java.util.UUID;
 
 public interface RepositorioArtefactoCommandRepository extends JpaRepository<RepositorioArtefactoJpaEntity, UUID> {
 
-    boolean existsByNombreRepositorioAndDescripcionAndAdministrador(
-            String nombreRepositorio, String descripcion, UUID administrador);
+    boolean existsByNombreRepositorio(String nombreRepositorio);
 }

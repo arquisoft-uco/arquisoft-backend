@@ -57,23 +57,19 @@ class RepositorioArtefactoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeDistinguirLaCombinacion_cuandoCambiaAdministradorODescripcion() {
+    void debeIndicarSiElNombreExiste_cuandoSeConsulta() {
         // Arrange
         var adapter = new RepositorioArtefactoCommandOutputAdapter(repositorioArtefactoCommandRepository, logger);
-        var administrador = sembrarAdministrador();
-        var otroAdministrador = sembrarAdministrador();
         adapter.registrar(new RepositorioArtefactoEntity(
-                UtilUUID.generarNuevoUUID(), "Repo", "Descripcion", administrador));
+                UtilUUID.generarNuevoUUID(), "Repo", "Descripcion", sembrarAdministrador()));
         entityManager.flush();
 
         // Act
-        var mismaCombinacion = adapter.existePorNombreDescripcionYAdministrador("Repo", "Descripcion", administrador);
-        var otroAdmin = adapter.existePorNombreDescripcionYAdministrador("Repo", "Descripcion", otroAdministrador);
-        var otraDescripcion = adapter.existePorNombreDescripcionYAdministrador("Repo", "Otra", administrador);
+        var mismoNombre = adapter.existePorNombreRepositorio("Repo");
+        var otroNombre = adapter.existePorNombreRepositorio("Otro");
 
         // Assert
-        assertThat(mismaCombinacion).isTrue();
-        assertThat(otroAdmin).isFalse();
-        assertThat(otraDescripcion).isFalse();
+        assertThat(mismoNombre).isTrue();
+        assertThat(otroNombre).isFalse();
     }
 }

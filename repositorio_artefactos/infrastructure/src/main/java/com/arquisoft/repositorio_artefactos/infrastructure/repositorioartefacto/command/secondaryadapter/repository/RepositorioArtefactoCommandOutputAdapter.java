@@ -8,8 +8,6 @@ import com.arquisoft.shared.message.key.repositorio_artefactos.RepositorioArtefa
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class RepositorioArtefactoCommandOutputAdapter implements RepositorioArtefactoOutputPort {
@@ -24,9 +22,7 @@ public class RepositorioArtefactoCommandOutputAdapter implements RepositorioArte
     }
 
     @Override
-    public boolean existePorNombreDescripcionYAdministrador(
-            String nombreRepositorio, String descripcion, UUID administrador) {
-        return repositorioArtefactoCommandRepository.existsByNombreRepositorioAndDescripcionAndAdministrador(
-                nombreRepositorio, descripcion, administrador);
+    public boolean existePorNombreRepositorio(String nombreRepositorio) {
+        return repositorioArtefactoCommandRepository.existsByNombreRepositorio(nombreRepositorio);
     }
 }

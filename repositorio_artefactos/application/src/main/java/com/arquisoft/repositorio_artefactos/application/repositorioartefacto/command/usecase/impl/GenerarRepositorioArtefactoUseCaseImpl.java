@@ -1,7 +1,7 @@
 package com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.usecase.impl;
 
 import com.arquisoft.repositorio_artefactos.application.administrador.command.finder.AdministradorPorIdFinder;
-import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.RepositorioArtefactoExisteFinder;
+import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.NombreRepositorioArtefactoExisteFinder;
 import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.secondaryport.RepositorioArtefactoOutputPort;
 import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.secondaryport.mapper.RepositorioArtefactoMapper;
 import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.usecase.GenerarRepositorioArtefactoUseCase;
@@ -19,7 +19,7 @@ import java.util.UUID;
 public class GenerarRepositorioArtefactoUseCaseImpl implements GenerarRepositorioArtefactoUseCase {
 
     private final AdministradorPorIdFinder administradorPorIdFinder;
-    private final RepositorioArtefactoExisteFinder repositorioArtefactoExisteFinder;
+    private final NombreRepositorioArtefactoExisteFinder nombreRepositorioArtefactoExisteFinder;
     private final GenerarRepositorioArtefactoValidator generarRepositorioArtefactoValidator;
     private final RepositorioArtefactoOutputPort repositorioArtefactoOutputPort;
     private final AppLogger logger;
@@ -29,7 +29,7 @@ public class GenerarRepositorioArtefactoUseCaseImpl implements GenerarRepositori
         logger.info(RepositorioArtefactoKey.LOG_GENERANDO, repositorio.getAdministrador());
 
         var administrador = administradorPorIdFinder.obtener(repositorio.getAdministrador());
-        var yaExiste = repositorioArtefactoExisteFinder.obtener(repositorio);
+        var yaExiste = nombreRepositorioArtefactoExisteFinder.obtener(repositorio.getNombreRepositorio());
         logger.debug(RepositorioArtefactoKey.LOG_VERIFICACION_GENERAR, !administrador.esVacio(), yaExiste);
 
         generarRepositorioArtefactoValidator.validar(repositorio, administrador, yaExiste);

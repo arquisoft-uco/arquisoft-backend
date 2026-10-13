@@ -3,7 +3,6 @@ package com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.rules.i
 import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.exception.RepositorioArtefactoDuplicadoException;
 import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.model.DisponibilidadRepositorioArtefacto;
 import com.arquisoft.shared.message.constant.RepositorioArtefactosCodes;
-import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -14,20 +13,18 @@ class RepositorioArtefactoUnicoRuleImplTest {
     private final RepositorioArtefactoUnicoRuleImpl regla = new RepositorioArtefactoUnicoRuleImpl();
 
     @Test
-    void debePasar_cuandoLaCombinacionNoExiste() {
+    void debePasar_cuandoElNombreNoExiste() {
         // Arrange
-        var disponibilidad = new DisponibilidadRepositorioArtefacto(
-                "Repo", "Descripcion", UtilUUID.generarNuevoUUID(), false);
+        var disponibilidad = new DisponibilidadRepositorioArtefacto("Repo", false);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(disponibilidad)).doesNotThrowAnyException();
     }
 
     @Test
-    void debeLanzarDuplicado_cuandoLaCombinacionYaExiste() {
+    void debeLanzarDuplicado_cuandoElNombreYaExiste() {
         // Arrange
-        var disponibilidad = new DisponibilidadRepositorioArtefacto(
-                "Repo", "Descripcion", UtilUUID.generarNuevoUUID(), true);
+        var disponibilidad = new DisponibilidadRepositorioArtefacto("Repo", true);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(disponibilidad))

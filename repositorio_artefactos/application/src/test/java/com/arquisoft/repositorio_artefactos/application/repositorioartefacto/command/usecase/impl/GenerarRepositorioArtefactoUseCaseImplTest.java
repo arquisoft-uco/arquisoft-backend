@@ -1,7 +1,7 @@
 package com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.usecase.impl;
 
 import com.arquisoft.repositorio_artefactos.application.administrador.command.finder.AdministradorPorIdFinder;
-import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.RepositorioArtefactoExisteFinder;
+import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.NombreRepositorioArtefactoExisteFinder;
 import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.secondaryport.RepositorioArtefactoOutputPort;
 import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.secondaryport.entity.RepositorioArtefactoEntity;
 import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.validator.GenerarRepositorioArtefactoValidator;
@@ -37,7 +37,7 @@ class GenerarRepositorioArtefactoUseCaseImplTest {
     @Mock
     private AdministradorPorIdFinder administradorPorIdFinder;
     @Mock
-    private RepositorioArtefactoExisteFinder repositorioArtefactoExisteFinder;
+    private NombreRepositorioArtefactoExisteFinder nombreRepositorioArtefactoExisteFinder;
     @Mock
     private GenerarRepositorioArtefactoValidator validator;
     @Mock
@@ -50,7 +50,7 @@ class GenerarRepositorioArtefactoUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new GenerarRepositorioArtefactoUseCaseImpl(
-                administradorPorIdFinder, repositorioArtefactoExisteFinder, validator, outputPort, logger);
+                administradorPorIdFinder, nombreRepositorioArtefactoExisteFinder, validator, outputPort, logger);
     }
 
     @Test
@@ -61,16 +61,16 @@ class GenerarRepositorioArtefactoUseCaseImplTest {
         var administrador = AdministradorDomain.crear(
                 administradorId, "123", "Ana Perez", "ana@uco.edu.co", Instant.now());
         when(administradorPorIdFinder.obtener(administradorId)).thenReturn(administrador);
-        when(repositorioArtefactoExisteFinder.obtener(repositorio)).thenReturn(false);
+        when(nombreRepositorioArtefactoExisteFinder.obtener(repositorio.getNombreRepositorio())).thenReturn(false);
 
         // Act
         var id = useCase.ejecutar(repositorio);
 
         // Assert
         assertThat(id).isEqualTo(repositorio.getId());
-        var orden = inOrder(administradorPorIdFinder, repositorioArtefactoExisteFinder, validator, outputPort);
+        var orden = inOrder(administradorPorIdFinder, nombreRepositorioArtefactoExisteFinder, validator, outputPort);
         orden.verify(administradorPorIdFinder, times(1)).obtener(administradorId);
-        orden.verify(repositorioArtefactoExisteFinder, times(1)).obtener(repositorio);
+        orden.verify(nombreRepositorioArtefactoExisteFinder, times(1)).obtener(repositorio.getNombreRepositorio());
         orden.verify(validator).validar(repositorio, administrador, false);
         orden.verify(outputPort).registrar(any(RepositorioArtefactoEntity.class));
         var captor = ArgumentCaptor.forClass(RepositorioArtefactoEntity.class);
@@ -88,7 +88,7 @@ class GenerarRepositorioArtefactoUseCaseImplTest {
         var administradorId = UtilUUID.generarNuevoUUID();
         var repositorio = RepositorioArtefactoDomain.crear("Repo", "Descripcion", administradorId);
         when(administradorPorIdFinder.obtener(administradorId)).thenReturn(AdministradorDomain.VACIO);
-        when(repositorioArtefactoExisteFinder.obtener(repositorio)).thenReturn(false);
+        when(nombreRepositorioArtefactoExisteFinder.obtener(repositorio.getNombreRepositorio())).thenReturn(false);
         doThrow(new AdministradorNoVigenteException(administradorId))
                 .when(validator).validar(repositorio, AdministradorDomain.VACIO, false);
 

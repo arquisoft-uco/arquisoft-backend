@@ -26,9 +26,6 @@ public class GenerarRepositorioArtefactoValidatorImpl implements GenerarReposito
     public void validar(RepositorioArtefactoDomain repositorio, AdministradorDomain administrador, boolean yaExiste) {
         administradorVigenteRule.validar(new VigenciaAdministrador(repositorio.getAdministrador(), administrador));
         repositorioArtefactoUnicoRule.validar(new DisponibilidadRepositorioArtefacto(
-                repositorio.getNombreRepositorio(),
-                repositorio.getDescripcion(),
-                repositorio.getAdministrador(),
-                yaExiste));
+                repositorio.getNombreRepositorio(), yaExiste));
     }
 }

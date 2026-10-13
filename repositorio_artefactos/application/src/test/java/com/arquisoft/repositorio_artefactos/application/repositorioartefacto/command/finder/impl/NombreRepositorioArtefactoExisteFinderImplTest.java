@@ -1,8 +1,6 @@
 package com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.impl;
 
 import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.secondaryport.RepositorioArtefactoOutputPort;
-import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.RepositorioArtefactoDomain;
-import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,27 +12,24 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RepositorioArtefactoExisteFinderImplTest {
+class NombreRepositorioArtefactoExisteFinderImplTest {
 
     @Mock
     private RepositorioArtefactoOutputPort outputPort;
 
     @InjectMocks
-    private RepositorioArtefactoExisteFinderImpl finder;
+    private NombreRepositorioArtefactoExisteFinderImpl finder;
 
     @Test
-    void debeDelegarEnPuertoConLaCombinacionDelDomain() {
+    void debeDelegarEnPuertoConElNombre_cuandoSeConsulta() {
         // Arrange
-        var administrador = UtilUUID.generarNuevoUUID();
-        var repositorio = RepositorioArtefactoDomain.crear("Repo", "Descripcion", administrador);
-        when(outputPort.existePorNombreDescripcionYAdministrador("Repo", "Descripcion", administrador))
-                .thenReturn(true);
+        when(outputPort.existePorNombreRepositorio("Repo")).thenReturn(true);
 
         // Act
-        var existe = finder.obtener(repositorio);
+        var existe = finder.obtener("Repo");
 
         // Assert
         assertThat(existe).isTrue();
-        verify(outputPort).existePorNombreDescripcionYAdministrador("Repo", "Descripcion", administrador);
+        verify(outputPort).existePorNombreRepositorio("Repo");
     }
 }
