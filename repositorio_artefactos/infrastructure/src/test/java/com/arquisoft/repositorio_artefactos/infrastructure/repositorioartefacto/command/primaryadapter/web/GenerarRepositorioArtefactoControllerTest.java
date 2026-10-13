@@ -44,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 class GenerarRepositorioArtefactoControllerTest {
 
-    private static final String RUTA = "/repositorio-artefactos/repositorios-artefactos";
+    private static final String RUTA = "/repositorio-artefactos";
     private static final String BODY_VALIDO = """
             { "nombreRepositorio": "Repo", "descripcion": "Descripcion" }
             """;
