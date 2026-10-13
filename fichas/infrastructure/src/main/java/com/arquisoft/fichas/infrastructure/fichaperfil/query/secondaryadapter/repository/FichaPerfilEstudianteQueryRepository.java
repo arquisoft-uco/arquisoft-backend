@@ -2,8 +2,12 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.r
 
 import com.arquisoft.shared.jpa.repository.QueryRepository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public interface FichaPerfilEstudianteQueryRepository
         extends QueryRepository<FichaPerfilEstudianteJpaQueryEntity, UUID> {
+
+    List<FichaPerfilEstudianteJpaQueryEntity> findByIdInOrderByTituloProyectoAsc(Collection<UUID> ids);
 }

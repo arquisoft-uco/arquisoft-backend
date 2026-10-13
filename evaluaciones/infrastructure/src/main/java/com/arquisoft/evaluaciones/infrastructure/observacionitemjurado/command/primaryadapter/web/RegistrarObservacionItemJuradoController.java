@@ -68,7 +68,7 @@ public class RegistrarObservacionItemJuradoController {
     public ResponseEntity<RegistrarObservacionItemJuradoResponseDTO> registrar(
             @PathVariable UUID id,
             @RequestBody RegistrarObservacionItemJuradoRequestDTO request) {
-        UUID observacionId = interactor.ejecutar(
+        var observacionId = interactor.ejecutar(
                 RegistrarObservacionItemJuradoRequestMapper.toCommand(request, id));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new RegistrarObservacionItemJuradoResponseDTO(observacionId));

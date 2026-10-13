@@ -53,6 +53,21 @@ class ModificacionItemCuantitativoJuradoDomainTest {
     }
 
     @Test
+    void debeValidarLongitudSobreValorRecortado_cuandoDescripcionTieneEspaciosExternos() {
+        // Arrange
+        var itemCuantitativoJurado = UUID.randomUUID();
+        var descripcionRecortada = "d".repeat(300);
+        var descripcion = "   " + descripcionRecortada + "   ";
+
+        // Act
+        var modificacion = ModificacionItemCuantitativoJuradoDomain.crear(
+                itemCuantitativoJurado, descripcion);
+
+        // Assert
+        assertThat(modificacion.getDescripcion()).isEqualTo(descripcionRecortada);
+    }
+
+    @Test
     void debeRechazarDescripcion_cuandoSuperaLongitudMaxima() {
         // Arrange
         var itemCuantitativoJurado = UUID.randomUUID();

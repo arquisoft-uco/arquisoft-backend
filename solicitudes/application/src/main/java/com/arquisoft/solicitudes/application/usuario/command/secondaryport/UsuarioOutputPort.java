@@ -10,4 +10,6 @@ public interface UsuarioOutputPort {
     Optional<UsuarioEntity> buscarPorId(UUID id);
 
     void guardar(UsuarioEntity usuario);
+
+    void actualizar(UsuarioEntity usuario);
 }

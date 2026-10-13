@@ -22,6 +22,7 @@ class FichaPerfilJpaSpecification extends QueryJpaSpecification<FichaPerfilJpaQu
                 case ASESOR_NOMBRE   -> CampoSpec.texto(root -> root.get("asesorNombre"));
                 case ASESOR_EMAIL    -> CampoSpec.texto(root -> root.get("asesorEmail"));
                 case ASESOR_ID       -> CampoSpec.uuid(root -> root.get("asesorId"));
+                case ESTADO_FICHA    -> CampoSpec.texto(root -> root.get("estadoId"));
             };
             m.put(campo.getClave(), spec);
         }

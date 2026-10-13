@@ -1,6 +1,10 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.RemoverEstudianteFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnTerminalRuleImpl;
 import com.arquisoft.fichas.domain.estudiante.model.ExistenciaEstudiantes;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
 import com.arquisoft.fichas.domain.estudiante.rules.impl.EstudiantesExistenRuleImpl;
@@ -22,16 +26,19 @@ public class RemoverEstudianteFichaPerfilValidatorImpl implements RemoverEstudia
     private final FichaPerfilExisteRule fichaPerfilExisteRule;
     private final EstudiantesExistenRule estudiantesExistenRule;
     private final VinculoEstudianteFichaExisteRule vinculoEstudianteFichaExisteRule;
+    private final EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
 
     public RemoverEstudianteFichaPerfilValidatorImpl() {
         this.fichaPerfilExisteRule = new FichaPerfilExisteRuleImpl();
         this.estudiantesExistenRule = new EstudiantesExistenRuleImpl();
         this.vinculoEstudianteFichaExisteRule = new VinculoEstudianteFichaExisteRuleImpl();
+        this.estadoFichaPerfilEnTerminalRule = new EstadoFichaPerfilEnTerminalRuleImpl();
     }
 
     @Override
     public void validar(RemocionEstudianteFichaPerfilDomain entrada, boolean fichaExiste,
-                        List<UUID> estudiantesExistentes, boolean vinculoExiste) {
+                        EstadoFichaPerfilDomain estadoActual, List<UUID> estudiantesExistentes,
+                        boolean vinculoExiste) {
 
         fichaPerfilExisteRule.validar(new ExistenciaFichaPerfil(entrada.getFichaPerfil(), fichaExiste));
 
@@ -40,5 +47,8 @@ public class RemoverEstudianteFichaPerfilValidatorImpl implements RemoverEstudia
 
         vinculoEstudianteFichaExisteRule.validar(new ExistenciaVinculoEstudianteFicha(
                 entrada.getFichaPerfil(), entrada.getEstudiante(), vinculoExiste));
+
+        estadoFichaPerfilEnTerminalRule.validar(
+                new EstadoActualFicha(entrada.getFichaPerfil(), estadoActual.getEstadoFicha()));
     }
 }

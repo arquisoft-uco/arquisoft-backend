@@ -13,6 +13,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -147,5 +148,30 @@ class FichaPerfilEstudianteQueryRepositoryTest {
 
         // Assert
         assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    @Disabled("H2 no soporta JOIN LATERAL usado por @Subselect en FichaPerfilEstudianteJpaQueryEntity "
+            + "(intencional en Postgres para top-1-por-particion via index scan). Validar manualmente contra Postgres.")
+    void debeRetornarCabecerasOrdenadasPorTitulo_cuandoSeConsultanVariosIds() {
+        // Arrange
+        var fichaB = sembrarFicha("Beta");
+        var fichaA = sembrarFicha("Alfa");
+        var fichaAjena = sembrarFicha("Ajena");
+        var ahora = Instant.now();
+        sembrarEstado(fichaA.getId(), estadoFicha, ahora);
+        sembrarEstado(fichaB.getId(), estadoFicha, ahora);
+        sembrarEstado(fichaAjena.getId(), estadoFicha, ahora);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = fichaPerfilEstudianteQueryRepository
+                .findByIdInOrderByTituloProyectoAsc(List.of(fichaB.getId(), fichaA.getId()));
+
+        // Assert
+        assertThat(resultado)
+                .extracting(FichaPerfilEstudianteJpaQueryEntity::getTituloProyecto)
+                .containsExactly("Alfa", "Beta");
     }
 }

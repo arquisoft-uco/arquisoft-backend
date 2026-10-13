@@ -1,13 +1,16 @@
 package com.arquisoft.proyectos.application.asesor.command.usecase.impl;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.proyectos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.proyectos.application.asesor.command.result.AgregacionAsesorResult;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.AsesorOutputPort;
+import com.arquisoft.proyectos.application.asesor.command.secondaryport.entity.AsesorEntity;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -68,7 +71,7 @@ class AgregarAsesorUseCaseImplTest {
         var vigente = Instant.now().minus(1, ChronoUnit.HOURS);
         var asesor = asesor(id, Instant.now());
         when(asesorPorIdFinder.obtener(id))
-                .thenReturn(AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
+                .thenReturn(AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente, UtilFecha.VACIO));
 
         // Act
         var resultado = useCase.ejecutar(asesor);
@@ -87,7 +90,7 @@ class AgregarAsesorUseCaseImplTest {
         var vigente = Instant.now();
         var asesor = asesor(id, vigente.minus(1, ChronoUnit.HOURS));
         when(asesorPorIdFinder.obtener(id))
-                .thenReturn(AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
+                .thenReturn(AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente, UtilFecha.VACIO));
 
         // Act
         var resultado = useCase.ejecutar(asesor);
@@ -108,13 +111,57 @@ class AgregarAsesorUseCaseImplTest {
         var vigente = Instant.now();
         var asesor = asesor(id, vigente);
         when(asesorPorIdFinder.obtener(id))
-                .thenReturn(AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
+                .thenReturn(AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente, UtilFecha.VACIO));
 
         // Act
         var resultado = useCase.ejecutar(asesor);
 
         // Assert
         assertThat(resultado).isInstanceOf(AgregacionAsesorResult.Descartada.class);
+        verify(asesorOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeReactivarSinGuardar_cuandoElEventoEsPosteriorALaBaja() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var baja = Instant.now().minus(1, ChronoUnit.HOURS);
+        var ocurridoEn = Instant.now();
+        when(asesorPorIdFinder.obtener(id)).thenReturn(
+                AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", baja, baja));
+        var asesor = AsesorDomain.crear(id, "20161020999", "Ana Gomez", "ana.gomez@uco.edu.co", ocurridoEn);
+
+        // Act
+        var resultado = useCase.ejecutar(asesor);
+
+        // Assert
+        assertThat(resultado).isInstanceOfSatisfying(AgregacionAsesorResult.Reactivada.class,
+                reactivada -> assertThat(reactivada.asesor()).isEqualTo(id));
+        var captor = ArgumentCaptor.forClass(AsesorEntity.class);
+        verify(asesorOutputPort, times(1)).reactivar(captor.capture());
+        assertThat(captor.getValue().identificador()).isEqualTo("20161020999");
+        assertThat(captor.getValue().nombre()).isEqualTo("Ana Gomez");
+        assertThat(captor.getValue().email()).isEqualTo("ana.gomez@uco.edu.co");
+        assertThat(captor.getValue().ocurridoEn()).isEqualTo(ocurridoEn);
+        assertThat(captor.getValue().eliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        verify(asesorOutputPort, never()).guardar(any());
+        verify(asesorPorIdFinder, times(1)).obtener(id);
+    }
+
+    @Test
+    void debeDescartarSinReactivar_cuandoElAgregadoEsAnteriorALaLapida() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var baja = Instant.now();
+        when(asesorPorIdFinder.obtener(id)).thenReturn(
+                AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", baja, baja));
+
+        // Act
+        var resultado = useCase.ejecutar(asesor(id, baja.minus(1, ChronoUnit.HOURS)));
+
+        // Assert
+        assertThat(resultado).isInstanceOf(AgregacionAsesorResult.Descartada.class);
+        verify(asesorOutputPort, never()).reactivar(any());
         verify(asesorOutputPort, never()).guardar(any());
     }
 }

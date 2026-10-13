@@ -29,7 +29,7 @@ class CoordinadorPorIdFinderImplTest {
     void debeDelegarEnElOutputPort_enCoordinadorPorIdFinder() {
         // Arrange
         var id = UUID.randomUUID();
-        var entity = new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+        var entity = new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
         when(coordinadorOutputPort.obtenerPorId(id)).thenReturn(Optional.of(entity));
 
         // Act

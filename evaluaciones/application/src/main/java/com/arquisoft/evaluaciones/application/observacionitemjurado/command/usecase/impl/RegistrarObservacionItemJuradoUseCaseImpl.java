@@ -8,7 +8,6 @@ import com.arquisoft.evaluaciones.application.observacionitemjurado.command.seco
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.secondaryport.mapper.ObservacionItemJuradoMapper;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.usecase.RegistrarObservacionItemJuradoUseCase;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.validator.RegistrarObservacionItemJuradoValidator;
-import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.EvaluacionCuantitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.ObservacionItemJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.ObservacionItemJuradoKey;
@@ -33,9 +32,8 @@ public class RegistrarObservacionItemJuradoUseCaseImpl implements RegistrarObser
         logger.info(ObservacionItemJuradoKey.LOG_REGISTRANDO, observacion.getEvaluacionCuantitativaJurado());
 
         var evaluacion = evaluacionCuantitativaJuradoPorIdFinder
-                .obtener(observacion.getEvaluacionCuantitativaJurado())
-                .orElse(EvaluacionCuantitativaJuradoDomain.VACIO);
-        var finalizada = evaluacionJuradoFinalizadaFinder.obtener(evaluacion.getEvaluacionJurado());
+                .obtener(observacion.getEvaluacionCuantitativaJurado());
+        var finalizada = evaluacionJuradoFinalizadaFinder.obtener(observacion.getEvaluacionCuantitativaJurado());
         var descripcionYaExiste = descripcionObservacionItemJuradoExisteFinder.obtener(
                 new CriterioDescripcionObservacionItemJurado(
                         observacion.getEvaluacionCuantitativaJurado(), observacion.getDescripcion()));

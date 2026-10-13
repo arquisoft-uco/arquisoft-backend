@@ -16,7 +16,6 @@ public enum RegistrarUsuarioKey implements ClaveMensaje {
     LOG_REGISTRANDO("usuarios.aplicacion.usuario.log.registrando", 0),
     LOG_VERIFICACION_REGISTRAR("usuarios.aplicacion.usuario.log.verificacion-registrar", 3),
     LOG_REGISTRADO("usuarios.aplicacion.usuario.log.registrado", 2),
-    ERROR_IDP_NO_DISPONIBLE("usuarios.infraestructura.usuario.error.idp-no-disponible", 0),
     LOG_USUARIO_GUARDADO("usuarios.infraestructura.usuario.log.guardado", 1),
     LOG_IDP_REGISTRANDO("usuarios.infraestructura.usuario.log.idp-registrando", 1),
     LOG_IDP_ROLES_ASIGNADOS("usuarios.infraestructura.usuario.log.idp-roles-asignados", 2),

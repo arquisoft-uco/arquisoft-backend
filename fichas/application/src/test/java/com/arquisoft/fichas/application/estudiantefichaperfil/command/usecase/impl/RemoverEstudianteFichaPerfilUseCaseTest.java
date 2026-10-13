@@ -1,9 +1,12 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.RemoverEstudianteFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.RemocionEstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
@@ -13,11 +16,11 @@ import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +43,9 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
     private FichaPerfilExisteFinder fichaPerfilExisteFinder;
 
     @Mock
+    private EstadoActualFichaPerfilFinder estadoActualFichaPerfilFinder;
+
+    @Mock
     private EstudiantesExistentesFinder estudiantesExistentesFinder;
 
     @Mock
@@ -55,6 +61,8 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
 
     private final UUID fichaPerfil = UUID.randomUUID();
     private final UUID estudiante = UUID.randomUUID();
+    private final EstadoFichaPerfilDomain enConstruccion = EstadoFichaPerfilDomain.reconstruir(
+            UUID.randomUUID(), fichaPerfil, EstadoFicha.EN_CONSTRUCCION, Instant.now());
 
     @Test
     void debeDesvincularAlEstudiante_cuandoDatosValidos() {
@@ -79,15 +87,16 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         removerEstudianteFichaPerfilUseCase.ejecutar(entrada);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilExisteFinder, estudiantesExistentesFinder,
+        var inOrder = inOrder(fichaPerfilExisteFinder, estadoActualFichaPerfilFinder, estudiantesExistentesFinder,
                 vinculoEstudianteFichaExisteFinder, removerEstudianteFichaPerfilValidator,
                 estudianteFichaPerfilOutputPort);
         inOrder.verify(fichaPerfilExisteFinder).obtener(fichaPerfil);
+        inOrder.verify(estadoActualFichaPerfilFinder).obtener(fichaPerfil);
         inOrder.verify(estudiantesExistentesFinder).obtener(List.of(estudiante));
         inOrder.verify(vinculoEstudianteFichaExisteFinder)
                 .obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante));
         inOrder.verify(removerEstudianteFichaPerfilValidator)
-                .validar(entrada, true, List.of(estudiante), true);
+                .validar(entrada, true, enConstruccion, List.of(estudiante), true);
         inOrder.verify(estudianteFichaPerfilOutputPort).desvincularEstudiante(fichaPerfil, estudiante);
     }
 
@@ -98,7 +107,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         stubConsultas(false, List.of(estudiante), false);
         doThrow(new FichaPerfilNoEncontradaException(fichaPerfil))
                 .when(removerEstudianteFichaPerfilValidator)
-                .validar(entrada, false, List.of(estudiante), false);
+                .validar(entrada, false, enConstruccion, List.of(estudiante), false);
 
         // Act & Assert
         assertThatThrownBy(() -> removerEstudianteFichaPerfilUseCase.ejecutar(entrada))
@@ -114,7 +123,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         stubConsultas(true, List.of(estudiante), false);
         doThrow(new EstudianteFichaPerfilNoEncontradoException(estudiante, fichaPerfil))
                 .when(removerEstudianteFichaPerfilValidator)
-                .validar(entrada, true, List.of(estudiante), false);
+                .validar(entrada, true, enConstruccion, List.of(estudiante), false);
 
         // Act & Assert
         assertThatThrownBy(() -> removerEstudianteFichaPerfilUseCase.ejecutar(entrada))
@@ -138,6 +147,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
 
     private void stubConsultas(boolean fichaExiste, List<UUID> estudiantesExistentes, boolean vinculoExiste) {
         when(fichaPerfilExisteFinder.obtener(fichaPerfil)).thenReturn(fichaExiste);
+        when(estadoActualFichaPerfilFinder.obtener(fichaPerfil)).thenReturn(enConstruccion);
         when(estudiantesExistentesFinder.obtener(List.of(estudiante))).thenReturn(estudiantesExistentes);
         when(vinculoEstudianteFichaExisteFinder.obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante)))
                 .thenReturn(vinculoExiste);

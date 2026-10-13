@@ -68,4 +68,22 @@ class ConsultarFichasPerfilCoordinadorMapperTest {
         assertThatThrownBy(() -> ConsultarFichasPerfilCoordinadorMapper.toCriteria(query))
                 .isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debePropagarFiltroEstadoFichaYRechazarSuOrden_cuandoLaConsultaLoUsa() {
+        // Arrange
+        var raiz = NodoFiltro.predicadoMultivalor("estadoFicha", FiltroOperador.IN,
+                List.of("EN_CONSTRUCCION", "DISPONIBLE_PARA_EVALUACION"));
+        var conFiltro = ConsultaCriteriaQuery.crear(0, 10, List.of(), raiz);
+        var conOrden = ConsultaCriteriaQuery.crear(
+                0, 10, List.of(SortOrder.of("estadoFicha", SortDirection.ASC)), null);
+
+        // Act
+        var criteria = ConsultarFichasPerfilCoordinadorMapper.toCriteria(conFiltro);
+
+        // Assert
+        assertThat(criteria.getRaiz()).isEqualTo(raiz);
+        assertThatThrownBy(() -> ConsultarFichasPerfilCoordinadorMapper.toCriteria(conOrden))
+                .isInstanceOf(FiltroException.class);
+    }
 }

@@ -42,22 +42,23 @@ public final class ModificacionItemCuantitativoJuradoDomain {
     }
 
     private void setDescripcion(String descripcion, ValidationResult resultado) {
+        var recortado = UtilTexto.aplicarTrim(descripcion);
         if (!ValidatorTexto.noEnBlanco(
-                descripcion,
+                recortado,
                 EvaluacionesFields.ItemCuantitativoJurado.DESCRIPCION,
                 EvaluacionesCodes.ItemCuantitativoJurado.DESCRIPCION_REQUERIDA,
                 resultado)) {
             return;
         }
         if (!ValidatorLongitud.longitudMaxima(
-                descripcion,
+                recortado,
                 EvaluacionesLimits.ItemCuantitativoJurado.DESCRIPCION_MAX,
                 EvaluacionesFields.ItemCuantitativoJurado.DESCRIPCION,
                 EvaluacionesCodes.ItemCuantitativoJurado.DESCRIPCION_DEMASIADO_LARGA,
                 resultado)) {
             return;
         }
-        this.descripcion = UtilTexto.aplicarTrim(descripcion);
+        this.descripcion = recortado;
     }
 
     public UUID getItemCuantitativoJurado() {

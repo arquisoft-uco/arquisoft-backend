@@ -14,7 +14,7 @@ public class EvaluacionJuradoFinalizadaFinderImpl implements EvaluacionJuradoFin
     private final EvaluacionJuradoOutputPort outputPort;
 
     @Override
-    public Boolean obtener(UUID evaluacionJurado) {
-        return outputPort.estaFinalizada(evaluacionJurado);
+    public Boolean obtener(UUID evaluacionCuantitativaJurado) {
+        return outputPort.estaFinalizada(evaluacionCuantitativaJurado);
     }
 }

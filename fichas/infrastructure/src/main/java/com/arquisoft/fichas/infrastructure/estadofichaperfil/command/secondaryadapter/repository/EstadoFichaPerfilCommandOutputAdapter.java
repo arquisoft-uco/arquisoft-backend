@@ -26,6 +26,13 @@ public class EstadoFichaPerfilCommandOutputAdapter implements EstadoFichaPerfilO
     }
 
     @Override
+    public void agregarEstado(EstadoFichaPerfilEntity estado) {
+        repository.save(EstadoFichaPerfilJpaMapper.toJpaEntity(estado));
+        logger.debug(EstadoFichaPerfilKey.LOG_GUARDADO,
+                estado.id(), estado.fichaPerfilId());
+    }
+
+    @Override
     public Optional<EstadoFichaPerfilEntity> obtenerEstadoActual(UUID fichaPerfilId) {
         return repository.findFirstByFichaPerfilIdOrderByFechaActualizacionDesc(fichaPerfilId)
                 .map(EstadoFichaPerfilJpaMapper::toEntity);
