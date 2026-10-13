@@ -90,6 +90,9 @@ public final class EventTopics {
         public static final String BIBLIOTECARIO_REMOVIDO =
                 "usuarios.bibliotecario.removido";
 
+        public static final String JURADO_REMOVIDO =
+                "usuarios.jurado.removido";
+
         public static final String JURADO_AGREGADO =
                 "usuarios.jurado.agregado";
     }
@@ -123,6 +126,9 @@ public final class EventTopics {
 
         public static final String NOVEDAD_ASESOR_RESPONDIDA =
                 "solicitudes.respuesta.novedad_asesor_respondida";
+
+        public static final String CAMBIO_ASESOR_RESPONDIDA =
+                "solicitudes.respuesta.cambio_asesor_respondida";
 
         public static final String NOVEDAD_COORDINADOR_ESTADO_MODIFICADO =
                 "solicitudes.respuesta.novedad_coordinador_estado_modificado";

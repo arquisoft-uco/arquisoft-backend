@@ -6,8 +6,10 @@ comentario NO se copia al plan.
 Las secciones 4 a 14 son condicionales y su forma la decide @1-planificador (FASE 4).
 
 Guía para llenar la sección 3 (no se copia):
-- Invariante LOCAL (formato, longitud, obligatoriedad) → dentro del {Entidad}Domain, acumulado en
-  ValidationResult → 422 con fieldErrors[], sin excepción propia. "Dónde" = Domain, sin Finder.
+- Invariante LOCAL (formato, longitud, obligatoriedad) → en el Command.crear / Query.crear (400) Y
+  dentro del {Entidad}Domain (422), acumulado en ValidationResult, sin excepción propia. "Dónde" =
+  Command + Domain, sin Finder. Una fila por dato que llega del cliente: si la fila dice solo
+  Domain, el implementador deja el Command sin esa validación.
 - Restricción de CONJUNTO (unicidad, existencia, propiedad) → {Concepto}Rule con su record de
   entrada, orquestada por el {Accion}{Entidad}Validator sobre lo que trajeron los Finders → 422 con
   su DomainException. Nunca if/throw en el use case; no hay 403 para "no eres el dueño".
@@ -47,5 +49,5 @@ Destino: .workspace/h-plan/PLAN-{HU|HT}-{ID}.md
 
 ## 3. Reglas de Negocio
 
-| # | Regla | Dónde (Domain / Rule) | Finder | Excepción → HTTP |
+| # | Regla | Dónde (Command + Domain / Rule) | Finder | Excepción → HTTP |
 |---|---|---|---|---|

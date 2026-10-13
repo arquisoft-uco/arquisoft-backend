@@ -188,6 +188,7 @@
               "usuarios:usuario-administrador:view",
               "evaluaciones:item-cuantitativo-jurado:view",
               "evaluaciones:item-cualitativo-jurado:create",
+              "repositorio-artefactos:repositorio-artefacto:create",
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
@@ -241,6 +242,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "solicitudes:respuesta-cambio-asesor-recibida:view",
               "solicitudes:solicitud-novedad-asesor:delete",
               "solicitudes:respuesta-novedad-coordinador-recibida:view",
               "fichas:ficha-perfil-estudiante:view",
@@ -689,6 +691,15 @@
         {
           "id": "f4c38876-6741-458b-9ede-69466180199a",
           "name": "evaluaciones:item-cualitativo-jurado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "46f8feef-8c02-485e-8e69-5901da234b1b",
+          "name": "repositorio-artefactos:repositorio-artefacto:create",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1184,6 +1195,15 @@
         {
           "id": "18a972fe-3aed-4ec0-bfc9-dae26f24b2a4",
           "name": "solicitudes:respuesta-novedad-asesor-recibida:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "83648f30-e3a7-4935-a3a1-4592e13827f6",
+          "name": "solicitudes:respuesta-cambio-asesor-recibida:view",
           "description": "",
           "composite": false,
           "clientRole": true,
