@@ -5,5 +5,5 @@ import com.arquisoft.shared.jpa.repository.QueryRepository;
 import java.util.UUID;
 
 public interface EvaluacionAccesoQueryRepository
-        extends QueryRepository<EvaluacionJpaQueryEntity, UUID> {
+        extends QueryRepository<EvaluacionAccesoJpaQueryEntity, UUID> {
 }
