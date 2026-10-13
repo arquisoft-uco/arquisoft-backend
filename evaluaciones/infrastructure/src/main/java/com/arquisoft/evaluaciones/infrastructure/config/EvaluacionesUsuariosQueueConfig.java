@@ -14,6 +14,8 @@ public class EvaluacionesUsuariosQueueConfig {
 
     public static final String JURADO_AGREGADO_QUEUE =
             EvaluacionesQueues.PREFIJO + EventTopics.Usuarios.JURADO_AGREGADO;
+    public static final String JURADO_REMOVIDO_QUEUE =
+            EvaluacionesQueues.PREFIJO + EventTopics.Usuarios.JURADO_REMOVIDO;
 
     @Bean
     public Declarables evaluacionesJuradoAgregadoDeclarables(
@@ -22,6 +24,17 @@ public class EvaluacionesUsuariosQueueConfig {
         return ColaEvento.declarar(
                 JURADO_AGREGADO_QUEUE,
                 EventTopics.Usuarios.JURADO_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables evaluacionesJuradoRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                JURADO_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.JURADO_REMOVIDO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

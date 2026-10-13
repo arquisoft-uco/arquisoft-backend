@@ -78,6 +78,25 @@ class JuradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeMarcarEliminadoEnSoloDeEseUsuario_cuandoSeEliminaLogica() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        var eliminadoEn = Instant.parse("2026-10-12T10:00:00Z");
+        entityManager.persistAndFlush(JuradoJpaEntity.builder().usuarioId(usuario).build());
+        entityManager.persistAndFlush(JuradoJpaEntity.builder().usuarioId(otro).build());
+
+        // Act
+        adapter.eliminarLogica(usuario, eliminadoEn);
+
+        // Assert
+        assertThat(entityManager.find(JuradoJpaEntity.class, usuario).getEliminadoEn()).isEqualTo(eliminadoEn);
+        assertThat(entityManager.find(JuradoJpaEntity.class, otro).getEliminadoEn()).isNull();
+        assertThat(adapter.obtenerPorUsuario(usuario)).map(JuradoEntity::eliminadoEn).contains(eliminadoEn);
+        verify(logger).debug(AgregarJuradoKey.LOG_ACTUALIZADO, usuario);
+    }
+
+    @Test
     void debeRetornarVacio_cuandoElUsuarioNoEsJurado() {
         // Act
         var jurado = adapter.obtenerPorUsuario(UtilUUID.generarNuevoUUID());

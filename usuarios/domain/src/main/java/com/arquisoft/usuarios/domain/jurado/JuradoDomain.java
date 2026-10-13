@@ -39,6 +39,10 @@ public final class JuradoDomain {
         return jurado;
     }
 
+    public void remover(Instant instante) {
+        this.eliminadoEn = instante;
+    }
+
     public void reactivar() {
         this.eliminadoEn = UtilFecha.VACIO;
     }
