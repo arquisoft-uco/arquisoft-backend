@@ -202,19 +202,6 @@ public final class UsuariosApiMessages {
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 
-    public static final class Jurado {
-
-        private Jurado() {}
-
-        public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los jurados vigentes";
-        public static final String CONSULTAR_VIGENTES_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de los jurados con el rol vigente. Expone y "
-                        + "permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
-                        + "jurados y coordinadores.";
-        public static final String CONSULTAR_RESP_200 = "Página de jurados";
-        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
-    }
-
     public static final class Bibliotecario {
 
         private Bibliotecario() {}
@@ -235,6 +222,14 @@ public final class UsuariosApiMessages {
     public static final class Jurado {
 
         private Jurado() {}
+
+        public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los jurados vigentes";
+        public static final String CONSULTAR_VIGENTES_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de los jurados con el rol vigente. Expone y "
+                        + "permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
+                        + "jurados y coordinadores.";
+        public static final String CONSULTAR_RESP_200 = "Página de jurados";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
 
         public static final String REMOVER_SUMMARY = "Remover información de un jurado";
         public static final String REMOVER_DESCRIPTION =
