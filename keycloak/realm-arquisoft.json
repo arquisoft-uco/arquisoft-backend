@@ -262,6 +262,7 @@
               "solicitudes:tipo-solicitud:view",
               "evaluaciones:evaluacion-jurado-estudiante:view",
               "solicitudes:solicitud-cambio-asesor-enviada:view",
+              "solicitudes:solicitud-ampliacion-plazo-enviada:view",
               "proyectos:estado-proyecto-grado-estudiante:view",
               "fichas:ficha-perfil:update",
               "solicitudes:estado-respuesta:view",
@@ -1051,6 +1052,15 @@
         {
           "id": "dd369568-90b7-434f-8794-81f9febf85e3",
           "name": "solicitudes:solicitud-cambio-asesor-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "446b3b4d-716e-490b-9bc3-8a1110034eca",
+          "name": "solicitudes:solicitud-ampliacion-plazo-enviada:view",
           "description": "",
           "composite": false,
           "clientRole": true,

@@ -20,6 +20,7 @@ rutas:
       cambio-asesor-enviadas: /cambio-asesor/enviadas
       cambio-asesor-por-id: /cambio-asesor/{solicitudId}
       ampliacion-plazo: /ampliacion-plazo
+      ampliacion-plazo-enviadas: /ampliacion-plazo/enviadas
       tipos-solicitud: /tipos-solicitud
     respuesta:
       base: /solicitudes
