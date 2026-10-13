@@ -57,6 +57,7 @@
           "client": {
             "arquisoft-api": [
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
+              "solicitudes:respuesta-cambio-asesor-enviada:view",
               "mapas-ruta:mapa-ruta-coordinador:view",
               "fichas:ficha-perfil:create",
               "fichas:estudiante-ficha-perfil:create",
@@ -1193,6 +1194,15 @@
         {
           "id": "c3ec803c-262e-4b96-ac34-aab70ce4f43d",
           "name": "solicitudes:respuesta-novedad-coordinador-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "e62a0fed-76b2-4ce1-8e38-ab732cc2b161",
+          "name": "solicitudes:respuesta-cambio-asesor-enviada:view",
           "description": "",
           "composite": false,
           "clientRole": true,
