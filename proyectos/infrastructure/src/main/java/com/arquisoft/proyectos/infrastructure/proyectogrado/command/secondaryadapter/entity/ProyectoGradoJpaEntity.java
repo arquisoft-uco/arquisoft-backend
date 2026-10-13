@@ -23,9 +23,6 @@ public class ProyectoGradoJpaEntity {
     @Column(name = "id", columnDefinition = "UUID")
     private UUID id;
 
-    @Column(name = "estado_proyecto_grado_id", nullable = false, length = 60)
-    private String estadoProyectoGradoId;
-
     @Column(name = "coordinador_id", nullable = false, columnDefinition = "UUID")
     private UUID coordinadorId;
 

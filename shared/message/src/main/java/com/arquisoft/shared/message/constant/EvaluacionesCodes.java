@@ -135,6 +135,17 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_EXCEDE_VALOR_ITEM";
     }
 
+    public static final class Jurado {
+
+        private Jurado() {}
+
+        public static final String ID_REQUERIDO = "JURADO_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "JURADO_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "JURADO_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "JURADO_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "JURADO_OCURRIDO_EN_REQUERIDO";
+    }
+
     public static final class ItemCuantitativoJurado {
 
         private ItemCuantitativoJurado() {}
@@ -161,5 +172,27 @@ public final class EvaluacionesCodes {
                 "ITEM_CUANTITATIVO_JURADO_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO =
                 "ITEM_CUANTITATIVO_JURADO_NO_ENCONTRADO";
+    }
+
+    public static final class ObservacionItemJurado {
+
+        private ObservacionItemJurado() {}
+
+        public static final String EVALUACION_CUANTITATIVA_JURADO_REQUERIDA =
+                "OBSERVACION_ITEM_JURADO_EVALUACION_CUANTITATIVA_JURADO_REQUERIDA";
+        public static final String DESCRIPCION_REQUERIDA =
+                "OBSERVACION_ITEM_JURADO_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_DEMASIADO_LARGA =
+                "OBSERVACION_ITEM_JURADO_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String EVALUACION_NO_ENCONTRADA =
+                "OBSERVACION_ITEM_JURADO_EVALUACION_NO_ENCONTRADA";
+        public static final String EVALUACION_JURADO_FINALIZADA =
+                "OBSERVACION_ITEM_JURADO_EVALUACION_JURADO_FINALIZADA";
+        public static final String DESCRIPCION_DUPLICADA =
+                "OBSERVACION_ITEM_JURADO_DESCRIPCION_DUPLICADA";
+        public static final String ID_REQUERIDO =
+                "OBSERVACION_ITEM_JURADO_ID_REQUERIDO";
+        public static final String NO_ENCONTRADA =
+                "OBSERVACION_ITEM_JURADO_NO_ENCONTRADA";
     }
 }

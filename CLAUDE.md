@@ -74,7 +74,7 @@ de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 ### Bounded Contexts
 
 Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`,
-`solicitudes`, `biblioteca` y `mapas_ruta`. Los otros tres (`artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje:
+`solicitudes`, `biblioteca`, `mapas_ruta` y `repositorio_artefactos`. Los otros dos (`artefactos`, `entregables`) son andamiaje:
 solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
 `RegistrarUsuario` lo da de alta en Keycloak y publica los eventos con los que `fichas` y `proyectos`
 mantienen sus réplicas.

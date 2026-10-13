@@ -15,7 +15,7 @@ public class AsesorYaAsignadoFinderImpl implements AsesorYaAsignadoFinder {
 
     @Override
     public Boolean obtener(AsignacionAsesorProyectoGradoDomain entrada) {
-        return asesorProyectoGradoOutputPort.existePorAsesorYProyectoGradoYEstado(
+        return asesorProyectoGradoOutputPort.existePorAsesorYProyectoGradoConEstadoVigente(
                 entrada.getAsesor(), entrada.getProyectoGrado(), EstadoAsesor.ASIGNADO.getId());
     }
 }

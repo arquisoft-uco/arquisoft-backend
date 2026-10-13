@@ -16,7 +16,7 @@ public class AsesoresAsignadosContadorFinderImpl implements AsesoresAsignadosCon
 
     @Override
     public Long obtener(UUID proyectoGrado) {
-        return asesorProyectoGradoOutputPort.contarPorProyectoGradoYEstado(
+        return asesorProyectoGradoOutputPort.contarPorProyectoGradoConEstadoVigente(
                 proyectoGrado, EstadoAsesor.ASIGNADO.getId());
     }
 }

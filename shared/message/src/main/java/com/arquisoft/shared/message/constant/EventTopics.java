@@ -42,6 +42,9 @@ public final class EventTopics {
 
         public static final String ASESOR_PROYECTO_GRADO_ASIGNADO =
                 "proyectos.asesor_proyecto_grado.asignado";
+
+        public static final String ASESOR_PROYECTO_GRADO_FINALIZADO =
+                "proyectos.asesor_proyecto_grado.finalizado";
     }
 
     public static final class Usuarios {
@@ -86,6 +89,9 @@ public final class EventTopics {
                 "usuarios.bibliotecario.agregado";
         public static final String BIBLIOTECARIO_REMOVIDO =
                 "usuarios.bibliotecario.removido";
+
+        public static final String JURADO_AGREGADO =
+                "usuarios.jurado.agregado";
     }
 
     public static final class Evaluaciones {

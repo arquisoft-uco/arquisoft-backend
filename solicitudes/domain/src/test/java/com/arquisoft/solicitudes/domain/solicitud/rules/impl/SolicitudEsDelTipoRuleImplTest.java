@@ -1,6 +1,7 @@
 package com.arquisoft.solicitudes.domain.solicitud.rules.impl;
 
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
 import com.arquisoft.solicitudes.domain.solicitud.model.TipoSolicitudConcordante;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -58,5 +59,21 @@ class SolicitudEsDelTipoRuleImplTest {
         assertThatThrownBy(() -> regla.validar(concordancia(
                 TipoSolicitud.CAMBIO_DE_ASESOR, TipoSolicitud.AMPLIACION_DE_PLAZO)))
                 .isInstanceOf(TipoSolicitudNoEncontradoException.class);
+    }
+
+    @Test
+    void noDebeLanzar_cuandoElTipoCoincideConCambioDeAsesor() {
+        // Act & Assert
+        assertThatCode(() -> regla.validar(concordancia(
+                TipoSolicitud.CAMBIO_DE_ASESOR, TipoSolicitud.CAMBIO_DE_ASESOR)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarElErrorDeCambioAsesor_cuandoSeEsperabaCambioDeAsesor() {
+        // Act & Assert
+        assertThatThrownBy(() -> regla.validar(concordancia(
+                TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, TipoSolicitud.CAMBIO_DE_ASESOR)))
+                .isInstanceOf(SolicitudTipoNoCoincideCambioAsesorException.class);
     }
 }

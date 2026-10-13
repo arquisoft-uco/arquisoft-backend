@@ -24,7 +24,7 @@ No se saltan etapas. Los **cortes** son los únicos momentos en que hablas con e
 | 1 | `1-planificador` | ID de la HU/HT | `.workspace/h-plan/PLAN-{ID}.md` | Sus preguntas de clarificación (`PREGUNTA`), luego **¿apruebas el plan?** — la ruta, sin resumirlo |
 | 2 | `2-implementador` | ruta del plan + la aprobación en «Decisiones» | archivos tocados y fila `Desarrollo` del plan | Ninguno. La aprobación del plan cubre las tres capas; ambigüedad o compilación que no cede → `PREGUNTA` |
 | 3 | `3-tester` | plan + `out` de 2 | tests en `src/test/**` y fila `Tests` del plan | Ninguno. La estimación, sí, si supera 80 tests |
-| 4a | `4a-validator-analyze` | plan + `out` de 2 y 3 | reporte completo en su `.out.md` | Ninguno |
+| 4a | `4a-validator-analyze` | plan + `out` de 2 y 3 | reporte completo en su `.out.md` | Solo si `OK` trae menores: **¿cuáles corriges?** |
 | 4b | `4b-validator-report` | `out` de 4a | `.workspace/validator/validator-{ID}.md` | Ninguno |
 | 4c | `4c-commit` | plan + reporte | rama, commit, PR, publicación en `arquisoft-docs` | Ninguno. Entrega directa, ver abajo |
 
@@ -32,8 +32,13 @@ No se saltan etapas. Los **cortes** son los únicos momentos en que hablas con e
 que solo apunta al `.out.md` de 3 (los `## Bugs` viven ahí), y luego reanuda a 3, que vuelve a
 correr sus tests. El tester nunca corrige producción: es de 2.
 
-**Paso 4a.** `OK` = ✅ APROBADO → 4b. `RECHAZADO` = ⛔ → vuelve a **2** con un `.in.md` que solo
-apunta al `.out.md` de 4a (los bloqueantes viven ahí), luego 3 y 4a otra vez.
+**Paso 4a.** `RECHAZADO` = ⛔ → vuelve a **2** con un `.in.md` que solo apunta al `.out.md` de 4a
+(los bloqueantes viven ahí), luego 3 y 4a otra vez. `OK` con `0 menores` → 4b. Si trae menores, lee
+`## Errores Menores` de ese `.out.md` (como `## Preguntas`) y pregunta al usuario cuáles corregir: un
+menor aceptado en silencio vuelve como pedido de cambio al revisar el PR, y ahí cuesta un ajuste con
+push de seguimiento en vez de una vuelta antes del commit. Los aceptados van a «Decisiones» del
+`.in.md` de 4a. Los elegidos siguen la vuelta del rechazo sin pasar por 1: a **2** si el hallazgo
+está en `src/main`, a **3** si solo está en `src/test`; luego 4a, que solo pregunta por menores nuevos.
 
 Tras 2 rechazos seguidos (de 3, de 4a o mezclados), para y pregunta al usuario: el mismo bug que
 vuelve indica un plan mal planteado, no un error de tecleo.
@@ -57,8 +62,8 @@ tomado de la rama.
 
 | Paso | Qué cambia frente a una HU nueva |
 |---|---|
-| 1 | Plan **acotado** (`PLAN-{ID}-AJ{n}.md`): lo que pidió el desarrollador, los archivos que toca y las reglas de arquitectura en juego. El pedido del desarrollador es la aprobación; solo hay `PREGUNTA` ante una ambigüedad |
-| 2-3 | `2-implementador` toca solo lo del plan; `3-tester` solo si cambia el comportamiento |
+| 1 | Plan **acotado** (`PLAN-{ID}-AJ{n}.md`): lo que pidió el desarrollador, los archivos que toca y las reglas de arquitectura en juego. El pedido del desarrollador es la aprobación; solo hay `PREGUNTA` ante una ambigüedad. Si el ajuste corrige hallazgos de un reporte de 4a, no hay plan: el hallazgo con su archivo ya es la especificación |
+| 2-3 | `2-implementador` toca solo lo del plan o del hallazgo; `3-tester` solo si cambia el comportamiento. Un ajuste que solo toca `src/test` va directo a 3 |
 | 4a | **Mantiene el cambio alineado con la arquitectura:** valida el diff del ajuste con su FASE 3 (`compileTestJava`, Checkstyle, `verificarCapasHexagonales`, y cobertura si hubo tests) y los checks de las skills. Un bloqueante lo devuelve a 2 |
 | 4b | Persiste `validator-{ID}-AJ{n}.md` |
 | 4c | Modo **Seguimiento**: commit y push a la rama del PR abierto, sin PR nuevo; los GitHub Actions deben volver a pasar |

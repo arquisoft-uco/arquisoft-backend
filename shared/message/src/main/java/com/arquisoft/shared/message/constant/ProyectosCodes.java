@@ -27,6 +27,7 @@ public final class ProyectosCodes {
         public static final String NOMBRE_REQUERIDO = "ASESOR_NOMBRE_REQUERIDO";
         public static final String EMAIL_REQUERIDO = "ASESOR_EMAIL_REQUERIDO";
         public static final String OCURRIDO_EN_REQUERIDO = "ASESOR_OCURRIDO_EN_REQUERIDO";
+        public static final String NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
     }
 
     public static final class Estudiante {
@@ -53,6 +54,9 @@ public final class ProyectosCodes {
         public static final String NO_ENCONTRADO = "PROYECTO_GRADO_NO_ENCONTRADO";
         public static final String FINALIZADO = "PROYECTO_GRADO_FINALIZADO";
         public static final String NO_PERTENECE_COORDINADOR = "PROYECTO_GRADO_NO_PERTENECE_COORDINADOR";
+        public static final String ESTUDIANTE_ID_REQUERIDO = "PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
+        public static final String ASESOR_ID_REQUERIDO = "PROYECTO_GRADO_ASESOR_ID_REQUERIDO";
+        public static final String PROYECTO_GRADO_ID_REQUERIDO = "PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
     }
 
     public static final class EstudianteProyectoGrado {
@@ -61,6 +65,7 @@ public final class ProyectosCodes {
 
         public static final String PROYECTO_GRADO_ID_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
         public static final String COORDINADOR_ID_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_COORDINADOR_ID_REQUERIDO";
+        public static final String ASESOR_ID_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_ASESOR_ID_REQUERIDO";
         public static final String ESTUDIANTE_ID_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
         public static final String ESTUDIANTE_ID_INVALIDO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_ID_INVALIDO";
         public static final String ESTUDIANTES_REQUERIDOS = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTES_REQUERIDOS";
@@ -77,6 +82,16 @@ public final class ProyectosCodes {
         private EstadoProyectoGrado() {}
 
         public static final String NO_ENCONTRADO = "ESTADO_PROYECTO_GRADO_NO_ENCONTRADO";
+        public static final String PROYECTO_GRADO_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
+        public static final String ESTUDIANTE_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
+        public static final String ESTADO_INICIAL_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTADO_INICIAL_REQUERIDO";
+    }
+
+    public static final class EstadoProyecto {
+
+        private EstadoProyecto() {}
+
+        public static final String NO_ENCONTRADO = "ESTADO_PROYECTO_NO_ENCONTRADO";
     }
 
     public static final class AsesorProyectoGrado {
@@ -85,11 +100,17 @@ public final class ProyectosCodes {
 
         public static final String PROYECTO_GRADO_ID_REQUERIDO = "ASESOR_PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
         public static final String COORDINADOR_ID_REQUERIDO = "ASESOR_PROYECTO_GRADO_COORDINADOR_ID_REQUERIDO";
+        public static final String ESTUDIANTE_ID_REQUERIDO = "ASESOR_PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
         public static final String ASESOR_ID_REQUERIDO = "ASESOR_PROYECTO_GRADO_ASESOR_ID_REQUERIDO";
         public static final String ASESOR_ID_INVALIDO = "ASESOR_PROYECTO_GRADO_ASESOR_ID_INVALIDO";
         public static final String ASESOR_NO_VIGENTE = "ASESOR_PROYECTO_GRADO_ASESOR_NO_VIGENTE";
         public static final String ASESOR_YA_ASIGNADO = "ASESOR_PROYECTO_GRADO_ASESOR_YA_ASIGNADO";
         public static final String CUPO_ASESORES_EXCEDIDO = "ASESOR_PROYECTO_GRADO_CUPO_ASESORES_EXCEDIDO";
+        public static final String ESTADO_ASESOR_REQUERIDO = "ASESOR_PROYECTO_GRADO_ESTADO_ASESOR_REQUERIDO";
+        public static final String ESTADO_ASESOR_INVALIDO = "ASESOR_PROYECTO_GRADO_ESTADO_ASESOR_INVALIDO";
+        public static final String ASESOR_PROYECTO_GRADO_NO_ENCONTRADO = "ASESOR_PROYECTO_GRADO_NO_ENCONTRADO";
+        public static final String TRANSICION_ESTADO_ASESOR_INVALIDA =
+                "ASESOR_PROYECTO_GRADO_TRANSICION_ESTADO_ASESOR_INVALIDA";
     }
 
     public static final class EstadoAsesor {

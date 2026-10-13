@@ -1,6 +1,10 @@
 package com.arquisoft.proyectos.application.estudianteproyectogrado.command.validator.impl;
 
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.validator.DestituirEstudianteProyectoGradoValidator;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.model.ExistenciaEstadoProyectoGrado;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.rules.EstadoProyectoGradoExisteRule;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.rules.impl.EstadoProyectoGradoExisteRuleImpl;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.DestitucionEstudianteProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.model.ExistenciaVinculoEstudianteProyectoGrado;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.rules.EstudianteVinculadoProyectoGradoRule;
@@ -21,12 +25,14 @@ import org.springframework.stereotype.Component;
 public class DestituirEstudianteProyectoGradoValidatorImpl implements DestituirEstudianteProyectoGradoValidator {
 
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
+    private final EstadoProyectoGradoExisteRule estadoProyectoGradoExisteRule;
     private final CoordinadorProyectoGradoPropietarioRule coordinadorPropietarioRule;
     private final EstudianteVinculadoProyectoGradoRule estudianteVinculadoRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
 
     public DestituirEstudianteProyectoGradoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
+        this.estadoProyectoGradoExisteRule = new EstadoProyectoGradoExisteRuleImpl();
         this.coordinadorPropietarioRule = new CoordinadorProyectoGradoPropietarioRuleImpl();
         this.estudianteVinculadoRule = new EstudianteVinculadoProyectoGradoRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
@@ -34,13 +40,15 @@ public class DestituirEstudianteProyectoGradoValidatorImpl implements DestituirE
 
     @Override
     public void validar(DestitucionEstudianteProyectoGradoDomain entrada, ProyectoGradoDomain proyecto,
-                        boolean vinculado) {
+                        EstadoProyectoGradoDomain estadoActual, boolean vinculado) {
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(entrada.getProyectoGrado(), !proyecto.esVacio()));
+        estadoProyectoGradoExisteRule.validar(
+                new ExistenciaEstadoProyectoGrado(entrada.getProyectoGrado(), !estadoActual.esVacio()));
         coordinadorPropietarioRule.validar(new PropiedadCoordinadorProyectoGrado(
                 entrada.getProyectoGrado(), proyecto.getCoordinador(), entrada.getCoordinador()));
         estudianteVinculadoRule.validar(new ExistenciaVinculoEstudianteProyectoGrado(
                 entrada.getProyectoGrado(), entrada.getEstudiante(), vinculado));
         proyectoGradoNoFinalizadoRule.validar(
-                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getEstadoProyectoGrado()));
+                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), estadoActual.getEstadoProyecto()));
     }
 }

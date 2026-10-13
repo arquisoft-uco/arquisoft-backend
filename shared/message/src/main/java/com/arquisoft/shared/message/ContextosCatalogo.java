@@ -44,8 +44,11 @@ public final class ContextosCatalogo {
     /** Contexto mapas de ruta. */
     public static final String MAPAS_RUTA = "mapas_ruta";
 
+    /** Contexto repositorio_artefactos. */
+    public static final String REPOSITORIO_ARTEFACTOS = "repositorio_artefactos";
+
     /** Todos los contextos, en el orden en que se cargan. */
     public static final List<String> TODOS = List.of(
             APP, FICHAS, SEGURIDAD, USUARIOS, NOTIFICACIONES, EVALUACIONES, PROYECTOS, SOLICITUDES,
-            BIBLIOTECA, MAPAS_RUTA);
+            BIBLIOTECA, MAPAS_RUTA, REPOSITORIO_ARTEFACTOS);
 }

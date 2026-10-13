@@ -12,6 +12,10 @@ import com.arquisoft.proyectos.domain.asesorproyectogrado.rules.AsesorVigentePro
 import com.arquisoft.proyectos.domain.asesorproyectogrado.rules.impl.AsesorNoAsignadoProyectoGradoRuleImpl;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.rules.impl.AsesorProyectoGradoCupoDisponibleRuleImpl;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.rules.impl.AsesorVigenteProyectoGradoRuleImpl;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.model.ExistenciaEstadoProyectoGrado;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.rules.EstadoProyectoGradoExisteRule;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.rules.impl.EstadoProyectoGradoExisteRuleImpl;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.model.EstadoActualProyectoGrado;
 import com.arquisoft.proyectos.domain.proyectogrado.model.ExistenciaProyectoGrado;
@@ -28,6 +32,7 @@ import org.springframework.stereotype.Component;
 public class AsignarAsesorProyectoGradoValidatorImpl implements AsignarAsesorProyectoGradoValidator {
 
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
+    private final EstadoProyectoGradoExisteRule estadoProyectoGradoExisteRule;
     private final CoordinadorProyectoGradoPropietarioRule coordinadorPropietarioRule;
     private final AsesorVigenteProyectoGradoRule asesorVigenteRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
@@ -36,6 +41,7 @@ public class AsignarAsesorProyectoGradoValidatorImpl implements AsignarAsesorPro
 
     public AsignarAsesorProyectoGradoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
+        this.estadoProyectoGradoExisteRule = new EstadoProyectoGradoExisteRuleImpl();
         this.coordinadorPropietarioRule = new CoordinadorProyectoGradoPropietarioRuleImpl();
         this.asesorVigenteRule = new AsesorVigenteProyectoGradoRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
@@ -44,15 +50,18 @@ public class AsignarAsesorProyectoGradoValidatorImpl implements AsignarAsesorPro
     }
 
     @Override
-    public void validar(AsignacionAsesorProyectoGradoDomain entrada, ProyectoGradoDomain proyecto, AsesorDomain asesor,
-                        boolean yaAsignado, long asignadosActuales) {
+    public void validar(AsignacionAsesorProyectoGradoDomain entrada, ProyectoGradoDomain proyecto,
+                        EstadoProyectoGradoDomain estadoActual, AsesorDomain asesor, boolean yaAsignado,
+                        long asignadosActuales) {
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(entrada.getProyectoGrado(), !proyecto.esVacio()));
+        estadoProyectoGradoExisteRule.validar(
+                new ExistenciaEstadoProyectoGrado(entrada.getProyectoGrado(), !estadoActual.esVacio()));
         coordinadorPropietarioRule.validar(new PropiedadCoordinadorProyectoGrado(
                 entrada.getProyectoGrado(), proyecto.getCoordinador(), entrada.getCoordinador()));
         asesorVigenteRule.validar(new VigenciaAsesorProyectoGrado(
                 entrada.getAsesor(), !asesor.esVacio(), asesor.estaEliminado()));
         proyectoGradoNoFinalizadoRule.validar(
-                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getEstadoProyectoGrado()));
+                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), estadoActual.getEstadoProyecto()));
         asesorNoAsignadoRule.validar(
                 new AsignacionVigenteAsesor(entrada.getAsesor(), entrada.getProyectoGrado(), yaAsignado));
         cupoDisponibleRule.validar(new CupoAsesoresProyectoGrado(asignadosActuales));

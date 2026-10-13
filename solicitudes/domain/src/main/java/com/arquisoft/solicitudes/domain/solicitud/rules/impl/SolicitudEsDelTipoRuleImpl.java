@@ -13,7 +13,8 @@ public class SolicitudEsDelTipoRuleImpl implements SolicitudEsDelTipoRule {
 
     private final Map<String, DomainRule<TipoSolicitudConcordante>> reglasPorTipo = Map.of(
             TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId(), new SolicitudEsNovedadAsesorRuleImpl(),
-            TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), new SolicitudEsNovedadCoordinadorRuleImpl());
+            TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), new SolicitudEsNovedadCoordinadorRuleImpl(),
+            TipoSolicitud.CAMBIO_DE_ASESOR.getId(), new SolicitudEsCambioAsesorRuleImpl());
 
     @Override
     public void validar(TipoSolicitudConcordante concordancia) {
