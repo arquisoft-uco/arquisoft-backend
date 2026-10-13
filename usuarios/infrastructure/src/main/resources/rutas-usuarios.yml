@@ -20,6 +20,7 @@ rutas:
       estado: /{usuarioId}/estado
       usuarios-administrador: /administrador
       coordinadores-vigentes: /coordinadores/vigentes
+      jurados-vigentes: /jurados/vigentes
       estudiantes-vigentes: /estudiantes/vigentes
       asesores-vigentes: /asesores/vigentes
       asesores-ficha-vigentes: /asesores-ficha/vigentes
