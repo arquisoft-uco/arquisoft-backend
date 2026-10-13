@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.query.seconda
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.criteria.EvaluacionJuradoCriteria;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.readmodel.EvaluacionJuradoReadModel;
 import com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.entity.EvaluacionJuradoJpaEntity;
+import com.arquisoft.evaluaciones.infrastructure.jurado.command.secondaryadapter.entity.JuradoJpaEntity;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
@@ -14,27 +15,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
-import org.springframework.test.annotation.DirtiesContext;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-// La tabla jurado no tiene @Entity en el lado de comando de esta HU, asi que se crea a mano con el
-// mismo DDL de soporte que ya usa EvaluacionCualitativaJuradoQueryOutputAdapterTest — el CREATE
-// TABLE IF NOT EXISTS es compartido entre clases via el mismo H2 de la sesion de test, asi que el
-// esquema (incluida la columna identificador, NOT NULL) debe coincidir para que cualquiera de las
-// dos clases pueda crearla primero sin dejar a la otra sin una columna que necesita.
-// evaluacion_jurado si tiene @Entity de comando (EvaluacionJuradoJpaEntity) y Hibernate la genera
-// con ddl-auto, asi que se siembra con TestEntityManager.persist como cualquier otra entidad JPA
-// real.
-// @DirtiesContext: el CREATE TABLE nativo hace commit implicito en H2 y rompe el rollback
-// transaccional de @DataJpaTest entre clases que comparten el mismo contexto cacheado — sin esto,
-// las filas sembradas aqui sobreviven y contaminan la clase que arranque despues en el mismo H2.
 @DataJpaTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class EvaluacionJuradoQueryOutputAdapterTest {
 
     @Autowired
@@ -51,26 +40,17 @@ class EvaluacionJuradoQueryOutputAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new EvaluacionJuradoQueryOutputAdapter(repository, new EvaluacionJuradoJpaSpecification());
-        entityManager.createNativeQuery("""
-                CREATE TABLE IF NOT EXISTS jurado (
-                    id UUID NOT NULL,
-                    identificador VARCHAR(30) NOT NULL,
-                    nombre VARCHAR(50) NOT NULL,
-                    email VARCHAR(50) NOT NULL,
-                    PRIMARY KEY (id))
-                """).executeUpdate();
-        entityManager.flush();
     }
 
     private UUID sembrarJurado(String nombre, String email) {
         var jurado = UUID.randomUUID();
-        entityManager.createNativeQuery(
-                "INSERT INTO jurado (id, identificador, nombre, email) VALUES (?, ?, ?, ?)")
-                .setParameter(1, jurado)
-                .setParameter(2, UUID.randomUUID().toString().substring(0, 30))
-                .setParameter(3, nombre)
-                .setParameter(4, email)
-                .executeUpdate();
+        testEntityManager.persist(JuradoJpaEntity.builder()
+                .id(jurado)
+                .identificador(jurado.toString().substring(0, 30))
+                .nombre(nombre)
+                .email(email)
+                .ocurridoEn(Instant.now())
+                .build());
         return jurado;
     }
 
@@ -78,8 +58,8 @@ class EvaluacionJuradoQueryOutputAdapterTest {
         var id = UUID.randomUUID();
         testEntityManager.persist(EvaluacionJuradoJpaEntity.builder()
                 .id(id)
-                .evaluacionId(evaluacion)
-                .juradoId(jurado)
+                .evaluacion(evaluacion)
+                .jurado(jurado)
                 .build());
         return id;
     }

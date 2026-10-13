@@ -50,16 +50,6 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
         assertThat(captor.getValue().getValor()).isEqualTo(item.valor());
     }
 
-    @Test
-    void debeDelegarConsultaDeCategoria() {
-        // Arrange
-        UUID categoria = UUID.randomUUID();
-        when(repository.existsCategoriaById(categoria)).thenReturn(true);
-
-        // Act & Assert
-        assertThat(adapter.existeCategoriaPorId(categoria)).isTrue();
-        verify(repository).existsCategoriaById(categoria);
-    }
 
     @Test
     void debeDelegarConsultaDeNombreYCategoria() {
@@ -104,6 +94,7 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
 
         // Act & Assert
         assertThat(adapter.obtenerPorId(id)).isEmpty();
+
     }
 
     @Test

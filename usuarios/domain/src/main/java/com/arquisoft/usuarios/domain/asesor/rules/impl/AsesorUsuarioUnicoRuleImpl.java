@@ -8,7 +8,8 @@ public class AsesorUsuarioUnicoRuleImpl implements AsesorUsuarioUnicoRule {
 
     @Override
     public void validar(DisponibilidadAsesorUsuario disponibilidad) {
-        if (disponibilidad.yaEsAsesor()) {
+        var asesor = disponibilidad.asesor();
+        if (!asesor.esVacio() && !asesor.estaEliminado()) {
             throw new AsesorUsuarioDuplicadoException(disponibilidad.usuario());
         }
     }

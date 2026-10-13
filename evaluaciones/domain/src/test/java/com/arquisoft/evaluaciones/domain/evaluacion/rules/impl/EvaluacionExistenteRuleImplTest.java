@@ -2,34 +2,35 @@ package com.arquisoft.evaluaciones.domain.evaluacion.rules.impl;
 
 import com.arquisoft.evaluaciones.domain.evaluacion.exception.EvaluacionNoEncontradaException;
 import com.arquisoft.evaluaciones.domain.evaluacion.model.ExistenciaEvaluacion;
+import com.arquisoft.shared.message.constant.EvaluacionesCodes;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EvaluacionExistenteRuleImplTest {
 
-    private final EvaluacionExistenteRuleImpl rule = new EvaluacionExistenteRuleImpl();
+    private final EvaluacionExistenteRuleImpl regla = new EvaluacionExistenteRuleImpl();
 
     @Test
-    void noDebeLanzar_cuandoLaEvaluacionExiste() {
-        // Arrange
-        var existencia = new ExistenciaEvaluacion(UUID.randomUUID(), true);
-
+    void debePermitirFlujo_cuandoLaEvaluacionExiste() {
         // Act & Assert
-        assertThatCode(() -> rule.validar(existencia)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(new ExistenciaEvaluacion(UtilUUID.generarNuevoUUID(), true)))
+                .doesNotThrowAnyException();
     }
 
     @Test
-    void debeLanzarEvaluacionNoEncontradaException_cuandoLaEvaluacionNoExiste() {
+    void debeLanzarExcepcion_cuandoLaEvaluacionNoExiste() {
         // Arrange
-        var evaluacion = UUID.randomUUID();
-        var existencia = new ExistenciaEvaluacion(evaluacion, false);
+        var evaluacion = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> rule.validar(existencia))
-                .isInstanceOf(EvaluacionNoEncontradaException.class);
+        assertThatThrownBy(() -> regla.validar(new ExistenciaEvaluacion(evaluacion, false)))
+                .isInstanceOfSatisfying(EvaluacionNoEncontradaException.class, exception -> {
+                    assertThat(exception.getCodigoError()).isEqualTo(EvaluacionesCodes.Evaluacion.NO_ENCONTRADA);
+                    assertThat(exception.getMessage()).contains(evaluacion.toString());
+                });
     }
 }

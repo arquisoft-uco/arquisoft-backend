@@ -73,6 +73,17 @@ public final class EstudianteDomain {
         this.eliminadoEn = UtilFecha.VACIO;
     }
 
+    public void actualizar(String identificador, String nombre, String email, Instant ocurridoEn) {
+        var result = new ValidationResult();
+
+        setIdentificador(identificador, result);
+        setNombre(nombre, result);
+        setEmail(email, result);
+        setOcurridoEn(ocurridoEn, result);
+
+        result.lanzarSiTieneErrores();
+    }
+
     public boolean estaEliminado() {
         return !UtilFecha.VACIO.equals(eliminadoEn);
     }

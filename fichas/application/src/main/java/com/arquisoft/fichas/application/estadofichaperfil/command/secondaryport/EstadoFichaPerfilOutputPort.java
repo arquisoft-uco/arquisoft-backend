@@ -9,5 +9,7 @@ public interface EstadoFichaPerfilOutputPort {
 
     void registrarEstadoInicial(EstadoFichaPerfilEntity estado);
 
+    void agregarEstado(EstadoFichaPerfilEntity estado);
+
     Optional<EstadoFichaPerfilEntity> obtenerEstadoActual(UUID fichaPerfilId);
 }

@@ -49,6 +49,27 @@ class TipoSolicitudTest {
     }
 
     @Test
+    void debeReconocerCambioDeAsesor_delCatalogo() {
+        assertThat(TipoSolicitud.desde("CAMBIO_DE_ASESOR"))
+                .isEqualTo(TipoSolicitud.CAMBIO_DE_ASESOR);
+        assertThat(TipoSolicitud.CAMBIO_DE_ASESOR.getId()).isEqualTo("CAMBIO_DE_ASESOR");
+        assertThat(TipoSolicitud.CAMBIO_DE_ASESOR.getId())
+                .isEqualTo(TipoSolicitud.CAMBIO_DE_ASESOR.name());
+        assertThat(TipoSolicitud.esValido("CAMBIO_DE_ASESOR")).isTrue();
+    }
+
+    @Test
+    void debeReconocerAmpliacionDePlazo_delCatalogo() {
+        assertThat(TipoSolicitud.desde("AMPLIACION_DE_PLAZO"))
+                .isEqualTo(TipoSolicitud.AMPLIACION_DE_PLAZO);
+        assertThat(TipoSolicitud.AMPLIACION_DE_PLAZO.getId()).isEqualTo("AMPLIACION_DE_PLAZO");
+        assertThat(TipoSolicitud.AMPLIACION_DE_PLAZO.getId())
+                .isEqualTo(TipoSolicitud.AMPLIACION_DE_PLAZO.name());
+        assertThat(TipoSolicitud.AMPLIACION_DE_PLAZO.getNombre()).isEqualTo("Ampliación de Plazo");
+        assertThat(TipoSolicitud.esValido("AMPLIACION_DE_PLAZO")).isTrue();
+    }
+
+    @Test
     void debeExponerElNombreLegibleDelCatalogo() {
         assertThat(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getNombre())
                 .isEqualTo("Novedad para el Coordinador");

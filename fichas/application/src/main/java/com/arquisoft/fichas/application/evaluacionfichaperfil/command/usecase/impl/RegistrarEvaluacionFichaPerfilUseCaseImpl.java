@@ -7,7 +7,7 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.command.finder.Eva
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.RegistrarEvaluacionFichaPerfilUseCase;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
-import com.arquisoft.fichas.application.representantecomite.command.finder.RepresentanteComiteExisteFinder;
+import com.arquisoft.fichas.application.representantecomite.command.finder.RepresentanteComiteVigenteFinder;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.mapper.EvaluacionFichaPerfilMapper;
@@ -23,7 +23,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
 
     private final EvaluacionFichaPerfilOutputPort evaluacionFichaPerfilOutputPort;
     private final FichaPerfilExisteFinder fichaPerfilExisteFinder;
-    private final RepresentanteComiteExisteFinder representanteComiteExisteFinder;
+    private final RepresentanteComiteVigenteFinder representanteComiteVigenteFinder;
     private final EvaluacionDeRepresentanteExisteFinder evaluacionDeRepresentanteExisteFinder;
     private final RegistrarEvaluacionFichaPerfilValidator registrarEvaluacionFichaPerfilValidator;
     private final AsignarEstadoInicialEvaluacionUseCase asignarEstadoInicialEvaluacionUseCase;
@@ -35,7 +35,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
                 evaluacion.getFichaPerfilId(), evaluacion.getRepresentanteComiteId());
 
         boolean fichaExiste = fichaPerfilExisteFinder.obtener(evaluacion.getFichaPerfilId());
-        boolean representanteExiste = representanteComiteExisteFinder.obtener(
+        var representanteExiste = representanteComiteVigenteFinder.obtener(
                 evaluacion.getRepresentanteComiteId());
         boolean evaluacionYaExiste = evaluacionDeRepresentanteExisteFinder.obtener(evaluacion);
 

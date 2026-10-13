@@ -7,7 +7,11 @@ public final class CoordinadorMapper {
 
     private CoordinadorMapper() {}
 
+    public static CoordinadorDomain toDomain(CoordinadorEntity entity) {
+        return CoordinadorDomain.reconstruir(entity.usuario(), entity.eliminadoEn());
+    }
+
     public static CoordinadorEntity toEntity(CoordinadorDomain coordinador) {
-        return new CoordinadorEntity(coordinador.getUsuario());
+        return new CoordinadorEntity(coordinador.getUsuario(), coordinador.getEliminadoEn());
     }
 }

@@ -2,11 +2,11 @@ package com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.i
 
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.ContextoRegistroEvaluacionJuradoOutputPort;
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.ContextoRegistroEvaluacionJuradoEntity;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.mapper.ContextoRegistroEvaluacionJuradoMapper;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.ContextoRegistroEvaluacionJuradoDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -16,7 +16,9 @@ public class ContextoRegistroEvaluacionJuradoFinderImpl implements ContextoRegis
     private final ContextoRegistroEvaluacionJuradoOutputPort evaluacionJuradoOutputPort;
 
     @Override
-    public Optional<ContextoRegistroEvaluacionJuradoEntity> obtener(UUID evaluacionJurado) {
-        return evaluacionJuradoOutputPort.obtenerContextoBloqueado(evaluacionJurado);
+    public ContextoRegistroEvaluacionJuradoDomain obtener(UUID evaluacionJurado) {
+        return evaluacionJuradoOutputPort.obtenerContextoBloqueado(evaluacionJurado)
+                .map(ContextoRegistroEvaluacionJuradoMapper::toDomain)
+                .orElse(ContextoRegistroEvaluacionJuradoDomain.VACIO);
     }
 }

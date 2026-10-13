@@ -2,6 +2,7 @@ package com.arquisoft.proyectos.domain.coordinador;
 
 import com.arquisoft.shared.message.constant.ProyectosCodes;
 import com.arquisoft.shared.message.constant.ProyectosFields;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +68,7 @@ class CoordinadorDomainTest {
     @Test
     void debeReconstruir_sinValidar() {
         // Act
-        var coordinador = CoordinadorDomain.reconstruir(null, null, null, null, null);
+        var coordinador = CoordinadorDomain.reconstruir(null, null, null, null, null, null);
 
         // Assert
         assertThat(coordinador.getId()).isNull();
@@ -78,5 +79,106 @@ class CoordinadorDomainTest {
     void debeExponerElCentinelaVacio() {
         // Assert
         assertThat(CoordinadorDomain.VACIO.esVacio()).isTrue();
+    }
+
+    @Test
+    void debeActualizarDatosYOcurridoEn_cuandoActualizarEsInvocado() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var coordinador = CoordinadorDomain.crear(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+        var nuevoOcurridoEn = Instant.now().plusSeconds(60);
+
+        // Act
+        coordinador.actualizar("20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn);
+
+        // Assert
+        assertThat(coordinador.getIdentificador()).isEqualTo("20161020999");
+        assertThat(coordinador.getNombre()).isEqualTo("Ana Actualizada");
+        assertThat(coordinador.getEmail()).isEqualTo("actualizada@uco.edu.co");
+        assertThat(coordinador.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+        assertThat(coordinador.getId()).isEqualTo(id);
+    }
+
+    @Test
+    void debeAcumularErrores_cuandoActualizarRecibeDatosInvalidos() {
+        // Arrange
+        var coordinador = CoordinadorDomain.crear(
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> coordinador.actualizar(" ", "Ana Perez", " ", Instant.now()))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(e -> e.campo())
+                        .contains(ProyectosFields.Coordinador.IDENTIFICADOR, ProyectosFields.Coordinador.EMAIL));
+    }
+
+    @Test
+    void debeNacerVigenteYReconstruirSinBaja_cuandoEliminadoEnEsNulo() {
+        // Act
+        var creado = CoordinadorDomain.crear(
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+        var reconstruido = CoordinadorDomain.reconstruir(
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
+
+        // Assert
+        assertThat(creado.getEliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(creado.estaEliminado()).isFalse();
+        assertThat(reconstruido.getEliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(reconstruido.estaEliminado()).isFalse();
+    }
+
+    @Test
+    void debeFijarEliminadoEnYOcurridoEn_cuandoSeRemueve() {
+        // Arrange
+        var coordinador = CoordinadorDomain.crear(
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co",
+                Instant.parse("2026-09-24T10:00:00Z"));
+        var instante = Instant.parse("2026-09-24T11:00:00Z");
+
+        // Act
+        coordinador.remover(instante);
+
+        // Assert
+        assertThat(coordinador.getEliminadoEn()).isEqualTo(instante);
+        assertThat(coordinador.getOcurridoEn()).isEqualTo(instante);
+        assertThat(coordinador.estaEliminado()).isTrue();
+    }
+
+    @Test
+    void debeActualizarDatosYLimpiarLaBaja_cuandoSeReactiva() {
+        // Arrange
+        var eliminadoEn = Instant.parse("2026-09-24T10:00:00Z");
+        var coordinador = CoordinadorDomain.reconstruir(
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", eliminadoEn, eliminadoEn);
+        var nuevoOcurridoEn = Instant.parse("2026-09-24T12:00:00Z");
+
+        // Act
+        coordinador.reactivar("20161020999", "Ana Reactivada", "reactivada@uco.edu.co", nuevoOcurridoEn);
+
+        // Assert
+        assertThat(coordinador.getIdentificador()).isEqualTo("20161020999");
+        assertThat(coordinador.getNombre()).isEqualTo("Ana Reactivada");
+        assertThat(coordinador.getEmail()).isEqualTo("reactivada@uco.edu.co");
+        assertThat(coordinador.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+        assertThat(coordinador.getEliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(coordinador.estaEliminado()).isFalse();
+    }
+
+    @Test
+    void debeAcumularErroresYConservarLaBaja_cuandoReactivarRecibeDatosInvalidos() {
+        // Arrange
+        var eliminadoEn = Instant.parse("2026-09-24T10:00:00Z");
+        var coordinador = CoordinadorDomain.reconstruir(
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", eliminadoEn, eliminadoEn);
+
+        // Act & Assert
+        assertThatThrownBy(() -> coordinador.reactivar(" ", " ", "ana@uco.edu.co", null))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(e -> e.campo())
+                        .contains(ProyectosFields.Coordinador.IDENTIFICADOR, ProyectosFields.Coordinador.NOMBRE,
+                                ProyectosFields.Coordinador.OCURRIDO_EN));
+        assertThat(coordinador.estaEliminado()).isTrue();
     }
 }

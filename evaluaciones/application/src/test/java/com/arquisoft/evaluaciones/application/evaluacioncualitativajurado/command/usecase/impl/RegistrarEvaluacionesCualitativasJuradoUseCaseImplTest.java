@@ -8,27 +8,26 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.secondaryport.entity.EvaluacionCualitativaJuradoEntity;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.validator.RegistrarEvaluacionesCualitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.ContextoRegistroEvaluacionJuradoEntity;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.finder.ItemsCualitativosJuradoExistentesFinder;
+import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.EvaluacionCualitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.RegistroEvaluacionesCualitativasJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.event.EvaluacionesCualitativasJuradoRegistradasEvent;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.ItemsCualitativosJuradoNoEncontradosException;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.ContextoRegistroEvaluacionJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.publisher.EventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -79,15 +78,16 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     @Test
     void debeRegistrarIniciarEvaluacionYPublicarEvento_cuandoEstadoEsPendiente() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
-        UUID evaluacion = UUID.randomUUID();
-        UUID entregable = UUID.randomUUID();
-        UUID item = UUID.randomUUID();
-        UUID criterio = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
+        var evaluacion = UUID.randomUUID();
+        var entregable = UUID.randomUUID();
+        var item = UUID.randomUUID();
+        var criterio = UUID.randomUUID();
         var registro = registroValido(evaluacionJurado, item, criterio);
-        var contexto = new ContextoRegistroEvaluacionJuradoEntity(evaluacionJurado, evaluacion, "PENDIENTE", entregable);
+        var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
+                evaluacionJurado, evaluacion, EstadoEvaluacion.PENDIENTE, entregable);
 
-        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.of(contexto));
+        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
         when(itemsRegistradosFinder.obtener(any(CriterioItemsEvaluacion.class))).thenReturn(Set.of());
@@ -96,7 +96,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         useCase.ejecutar(registro);
 
         // Assert
-        InOrder orden = inOrder(contextoFinder, validator, iniciarEvaluacionUseCase, outputPort, eventPublisher);
+        var orden = inOrder(contextoFinder, validator, iniciarEvaluacionUseCase, outputPort, eventPublisher);
         orden.verify(contextoFinder).obtener(evaluacionJurado);
         orden.verify(validator).validarExistencia(any());
         orden.verify(validator).validarContenido(any(), any(), any());
@@ -114,10 +114,10 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         assertThat(entidadesCaptor.getValue().get(0).item()).isEqualTo(item);
         assertThat(entidadesCaptor.getValue().get(0).criterio()).isEqualTo(criterio);
 
-        ArgumentCaptor<EvaluacionesCualitativasJuradoRegistradasEvent> eventoCaptor =
+        var eventoCaptor =
                 ArgumentCaptor.forClass(EvaluacionesCualitativasJuradoRegistradasEvent.class);
         verify(eventPublisher).publish(eventoCaptor.capture());
-        EvaluacionesCualitativasJuradoRegistradasEvent evento = eventoCaptor.getValue();
+        var evento = eventoCaptor.getValue();
         assertThat(evento.getEntregableId()).isEqualTo(entregable);
 
         verify(logger).info(any(ClaveMensaje.class), eq(evaluacionJurado), eq(1));
@@ -128,14 +128,14 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     @Test
     void debeRegistrarYPublicarEvento_cuandoLaEvaluacionYaEstaEnProgreso() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
-        UUID item = UUID.randomUUID();
-        UUID criterio = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
+        var item = UUID.randomUUID();
+        var criterio = UUID.randomUUID();
         var registro = registroValido(evaluacionJurado, item, criterio);
-        var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, UUID.randomUUID(), "EN_PROGRESO", UUID.randomUUID());
+        var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO, UUID.randomUUID());
 
-        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.of(contexto));
+        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
         when(itemsRegistradosFinder.obtener(any(CriterioItemsEvaluacion.class))).thenReturn(Set.of());
@@ -144,7 +144,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         useCase.ejecutar(registro);
 
         // Assert
-        ArgumentCaptor<InicioEvaluacionDomain> inicioCaptor = ArgumentCaptor.forClass(InicioEvaluacionDomain.class);
+        var inicioCaptor = ArgumentCaptor.forClass(InicioEvaluacionDomain.class);
         verify(iniciarEvaluacionUseCase).ejecutar(inicioCaptor.capture());
         assertThat(inicioCaptor.getValue().getEstadoActual().getId()).isEqualTo("EN_PROGRESO");
         verify(outputPort).registrarTodas(any());
@@ -154,9 +154,9 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     @Test
     void debeAbortarSinConsultarContenido_cuandoLaEvaluacionDeJuradoNoExiste() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
         var registro = registroValido(evaluacionJurado, UUID.randomUUID(), UUID.randomUUID());
-        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.empty());
+        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(ContextoRegistroEvaluacionJuradoDomain.VACIO);
         doThrow(new EvaluacionJuradoNoEncontradaException(evaluacionJurado)).when(validator).validarExistencia(any());
 
         // Act & Assert
@@ -171,13 +171,13 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     @Test
     void debeAbortarSinIniciarEvaluacion_cuandoValidarContenidoRechaza() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
-        UUID item = UUID.randomUUID();
-        UUID criterio = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
+        var item = UUID.randomUUID();
+        var criterio = UUID.randomUUID();
         var registro = registroValido(evaluacionJurado, item, criterio);
-        var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, UUID.randomUUID(), "PENDIENTE", UUID.randomUUID());
-        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.of(contexto));
+        var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID());
+        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of());
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
         when(itemsRegistradosFinder.obtener(any(CriterioItemsEvaluacion.class))).thenReturn(Set.of());
@@ -195,14 +195,14 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     @Test
     void debeAbortarPublicacion_cuandoLaPersistenciaDelLoteFalla() {
         // Arrange
-        UUID evaluacionJurado = UUID.randomUUID();
-        UUID item = UUID.randomUUID();
-        UUID criterio = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
+        var item = UUID.randomUUID();
+        var criterio = UUID.randomUUID();
         var registro = registroValido(evaluacionJurado, item, criterio);
-        var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, UUID.randomUUID(), "PENDIENTE", UUID.randomUUID());
-        RuntimeException fallo = new RuntimeException("fallo de persistencia");
-        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.of(contexto));
+        var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID());
+        var fallo = new RuntimeException("fallo de persistencia");
+        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
         when(itemsRegistradosFinder.obtener(any(CriterioItemsEvaluacion.class))).thenReturn(Set.of());
@@ -216,6 +216,6 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     private static RegistroEvaluacionesCualitativasJuradoDomain registroValido(
             UUID evaluacionJurado, UUID item, UUID criterio) {
         var evaluacion = EvaluacionCualitativaJuradoDomain.crear(evaluacionJurado, item, criterio);
-        return RegistroEvaluacionesCualitativasJuradoDomain.crear(List.of(evaluacion));
+        return RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluacionJurado, List.of(evaluacion));
     }
 }

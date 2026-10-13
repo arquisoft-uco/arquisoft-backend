@@ -7,6 +7,11 @@ spring:
   jpa:
     show-sql: true
 
+# El access token de un usuario con todos los roles (devuser) lleva la union de los client roles
+# y supera los 8KB por defecto de Tomcat: responde 400 sin cabeceras CORS antes de llegar a Spring.
+server:
+  max-http-request-header-size: ${MAX_HTTP_REQUEST_HEADER_SIZE:32KB}
+
 # ==================== NOTIFICACIONES (DEV) ====================
 # Por defecto en dev NO se entrega nada: la estrategia 'log' solo registra el envío.
 # Para probar la entrega real contra Mailpit (docker-compose up mailpit):

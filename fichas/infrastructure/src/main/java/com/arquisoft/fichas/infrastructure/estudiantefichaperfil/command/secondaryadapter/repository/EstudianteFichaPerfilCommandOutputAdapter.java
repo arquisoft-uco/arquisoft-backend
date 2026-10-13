@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.second
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.ContactoEstudianteEntity;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.IntegranteFichaEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.mapper.EstudianteFichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
@@ -32,8 +33,8 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     }
 
     @Override
-    public long contarPorFichaPerfilId(UUID fichaPerfilId) {
-        return repository.countByFichaPerfilId(fichaPerfilId);
+    public long contarVigentesPorFichaPerfilId(UUID fichaPerfilId) {
+        return repository.countVigentesByFichaPerfilId(fichaPerfilId);
     }
 
     @Override
@@ -46,5 +47,10 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     @Override
     public List<ContactoEstudianteEntity> obtenerContactosDeFicha(UUID fichaPerfilId) {
         return repository.findContactosByFichaPerfilId(fichaPerfilId);
+    }
+
+    @Override
+    public List<IntegranteFichaEntity> obtenerIntegrantesVigentesDeFicha(UUID fichaPerfil) {
+        return repository.findIntegrantesVigentesByFichaPerfilId(fichaPerfil);
     }
 }

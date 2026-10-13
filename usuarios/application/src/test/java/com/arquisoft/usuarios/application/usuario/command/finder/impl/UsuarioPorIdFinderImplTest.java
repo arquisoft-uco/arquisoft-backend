@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.usuario.command.finder.impl;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
@@ -10,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,7 +32,7 @@ class UsuarioPorIdFinderImplTest {
         // Arrange
         var id = UUID.randomUUID();
         var entity = new UsuarioEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", "573001112233",
-                EstadoUsuario.ACTIVO.getId());
+                EstadoUsuario.ACTIVO.getId(), UtilFecha.VACIO);
         when(usuarioOutputPort.obtenerPorId(id)).thenReturn(Optional.of(entity));
 
         // Act
@@ -56,5 +58,23 @@ class UsuarioPorIdFinderImplTest {
 
         // Assert
         assertThat(resultado).isEqualTo(UsuarioDomain.VACIO);
+    }
+
+    @Test
+    void debeReconstruirEliminado_cuandoLaEntidadTraeEliminadoEn() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var eliminadoEn = Instant.parse("2026-09-25T10:15:30Z");
+        var entity = new UsuarioEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", "573001112233",
+                EstadoUsuario.INACTIVO.getId(), eliminadoEn);
+        when(usuarioOutputPort.obtenerPorId(id)).thenReturn(Optional.of(entity));
+
+        // Act
+        var resultado = finder.obtener(id);
+
+        // Assert
+        assertThat(resultado.estaEliminado()).isTrue();
+        assertThat(resultado.getEliminadoEn()).isEqualTo(eliminadoEn);
+        assertThat(resultado.estaActivo()).isFalse();
     }
 }
