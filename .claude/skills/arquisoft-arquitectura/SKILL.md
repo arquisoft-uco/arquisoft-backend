@@ -434,6 +434,12 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
 
 - `@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")` — placeholder con default; **no
   existe `{Contexto}Routes`**. Nunca el prefijo `/api`: ya es el `context-path`.
+- La base del `@RequestMapping` es **el recurso, en un solo segmento kebab-case, sin el nombre del
+  contexto delante**: `/fichas-perfil`, `/proyectos-grado`, `/solicitudes`, `/usuarios`. El contexto
+  es una frontera del código, no del contrato HTTP. Anteponerlo alarga cada ruta y, cuando el recurso
+  se llama como el contexto, repite el nombre (`/repositorio-artefactos/repositorios-artefactos`).
+  Lo anidado (`/{id}/estudiantes`, `/coordinador`) cuelga de esa base. `evaluaciones`
+  (`/evaluaciones/{recurso}`) no sigue esta forma: no la tomes como molde de rutas.
 - `@PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_CREATE)`, nunca el literal
   `"hasAuthority('...')"`. `FichasAuthorities` declara el client role crudo (para tests) y su SpEL.
 - **Un client role por endpoint, propio y distinto**, para concederlo o revocarlo por separado en

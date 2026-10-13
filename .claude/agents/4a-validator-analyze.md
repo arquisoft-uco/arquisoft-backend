@@ -249,6 +249,7 @@ Fuente: `arquisoft-arquitectura` → *Rutas y autorización viven en constantes,
 | `hasRole(...)` o roles realm directos | ❌ |
 | Client role nuevo sin definición en `roles.client.arquisoft-api` de `keycloak/realm-arquisoft.json`, ausente de los `composites` de un rol realm que la sección 9 le asigna (o compuesto en uno que no le asigna), o el archivo deja de ser JSON válido | ❌ |
 | Ruta literal en vez de placeholder (`"${rutas.{contexto}.{recurso}.base:/{recurso}}"`), o clase `{Contexto}Routes` | ❌ |
+| Base de la ruta con el nombre del contexto delante del recurso (`/{contexto}/{recurso}`) en vez del recurso solo, aunque el plan la pida así | ❌ |
 
 ### Nivel 2.8 — Paginación y filtros (si la HU de lectura lo requiere)
 
