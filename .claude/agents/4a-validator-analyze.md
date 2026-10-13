@@ -193,6 +193,7 @@ Fuente: `arquisoft-estandares` → *Identificadores y DTOs*; `arquisoft-arquitec
 |---|:---:|
 | `Command` `record` en `command/primaryport/model/`; `ReadModel` `record` en `query/readmodel/`; ninguno con Lombok/Jackson | ❌ |
 | Campos en español iguales al domain y con nombre objetual (`asesorFicha`, no `asesorFichaId`) | ❌ |
+| `Command.crear(...)` o `{Consulta}{Entidad}Query.crear(...)` con un parámetro del cliente que no pasa por ningún `Validator*` (obligatoriedad, longitud de `{Contexto}Limits`, formato), aunque el dominio lo valide después. Recorre los parámetros uno por uno | ❌ |
 | Identificador del body tipado `UUID`, o validado con Jakarta en vez de `ValidatorUUID.uuidValido(...)` en `Command.crear(...)` | ❌ |
 | `RequestDTO` con cualquier anotación o lógica (única excepción: `toString()` que enmascara un secreto, `IniciarSesionRequestDTO`), o sin `{Accion}{Entidad}RequestMapper` (`final`, constructor privado, `static toCommand`) | ❌ |
 | `Command` construido con `new` en vez de `crear(...)` | ❌ |

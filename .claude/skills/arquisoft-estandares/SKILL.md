@@ -188,10 +188,18 @@ independientes están bien. Cascadas legítimas:
 
 ## Identificadores y DTOs
 
-Los IDs del body HTTP llegan como `String` y se validan en `Command.crear(...)` con
-`ValidatorUUID.uuidValido(...)`, convirtiendo con `UtilUUID.generarUUIDDesdeTexto` — **nunca con una
-anotación Jakarta**. El `Command` y los `@PathVariable` sí van tipados `UUID`. Ver
-`RegistrarFichaPerfilCommand.java`.
+`Command.crear(...)` y `{Consulta}{Entidad}Query.crear(...)` validan la integridad de **cada dato que
+llega del cliente** —obligatoriedad, longitud contra `{Contexto}Limits` y formato— y acumulan en un
+`ValidationResult` que cierra con `lanzarSiTieneErroresDeEntrada()` (400). El dominio repite esas
+invariantes (422), pero no las reemplaza. Si solo valida el dominio, un payload malformado sale con
+422 en vez de 400 y con un `fieldErrors[]` distinto, y en una consulta, que no construye dominio,
+llega sin validar al repositorio. Compila y pasa los tests igual. La señal es mecánica: cada
+parámetro de `crear` pasa por algún `Validator*` (un opcional, solo si llega). Ver
+`RegistrarFichaPerfilCommand.java` y `ConsultarCategoriasItemCuantitativoJuradoQuery.java`.
+
+Los IDs del body HTTP llegan como `String` y se validan ahí con `ValidatorUUID.uuidValido(...)`,
+convirtiendo con `UtilUUID.generarUUIDDesdeTexto` — **nunca con una anotación Jakarta**. El `Command`
+y los `@PathVariable` sí van tipados `UUID`.
 
 El `RequestDTO` es un `record` **sin ninguna anotación**, y un `{Accion}{Entidad}RequestMapper`
 (`final`, constructor privado, `static toCommand`) llama a `Command.crear(...)`
