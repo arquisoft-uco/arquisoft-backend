@@ -15,4 +15,13 @@ public final class MapasRutaFields {
         public static final String COORDINADOR = "coordinador";
         public static final String ESTUDIANTE = "estudiante";
     }
+
+    public static final class Tarea {
+
+        private Tarea() {}
+
+        public static final String MAPA_RUTA = "mapaRuta";
+        public static final String DESCRIPCION = "descripcion";
+        public static final String ASESOR = "asesor";
+    }
 }

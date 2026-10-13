@@ -10,3 +10,4 @@ rutas:
       estudiante: /estudiante
       coordinador: /coordinador
       fecha-fin: /{id}/fecha-fin
+      tareas: /{mapaRutaId}/tareas

@@ -8,6 +8,7 @@ public final class MapasRutaAuthorities {
     public static final String MAPA_RUTA_UPDATE_FECHA_FIN = "mapas-ruta:mapa-ruta:update-fecha-fin";
     public static final String MAPA_RUTA_ESTUDIANTE_VIEW = "mapas-ruta:mapa-ruta-estudiante:view";
     public static final String MAPA_RUTA_COORDINADOR_VIEW = "mapas-ruta:mapa-ruta-coordinador:view";
+    public static final String TAREA_CREATE = "mapas-ruta:tarea:create";
 
     public static final class Expresiones {
 
@@ -24,5 +25,7 @@ public final class MapasRutaAuthorities {
                 HAS_AUTHORITY_INICIO + MAPA_RUTA_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_MAPA_RUTA_COORDINADOR_VIEW =
                 HAS_AUTHORITY_INICIO + MAPA_RUTA_COORDINADOR_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_TAREA_CREATE =
+                HAS_AUTHORITY_INICIO + TAREA_CREATE + HAS_AUTHORITY_FIN;
     }
 }
