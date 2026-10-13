@@ -5,7 +5,7 @@ CREATE TABLE repositorio_artefacto (
     administrador_id   UUID         NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT fk_repo_administrador FOREIGN KEY (administrador_id) REFERENCES administrador (id),
-    CONSTRAINT uk_repo_nombre_desc_admin UNIQUE (nombre_repositorio, descripcion, administrador_id)
+    CONSTRAINT uk_repo_nombre UNIQUE (nombre_repositorio)
 );
 
 CREATE INDEX idx_repo_administrador ON repositorio_artefacto (administrador_id);
