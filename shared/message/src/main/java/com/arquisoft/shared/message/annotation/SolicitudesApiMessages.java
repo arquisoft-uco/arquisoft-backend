@@ -134,6 +134,19 @@ public final class SolicitudesApiMessages {
         public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de cambio de asesor recibidas";
 
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_SUMMARY =
+                "Consultar solicitudes de ampliación de plazo recibidas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_DESCRIPTION =
+                "Permite a un coordinador consultar de forma paginada y filtrable las solicitudes de "
+                        + "ampliación de plazo que ha recibido. El alcance se limita a las "
+                        + "solicitudes dirigidas al coordinador autenticado.";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_200 =
+                "Página de solicitudes de ampliación de plazo recibidas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de ampliación de plazo recibidas";
+
         public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_SUMMARY =
                 "Consultar solicitudes de novedad para el asesor recibidas";
         public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_DESCRIPTION =

@@ -37,6 +37,10 @@ public enum SolicitudKey implements ClaveMensaje {
             "solicitudes.aplicacion.solicitud.log.consultando-cambio-asesor-recibidas", 4),
     LOG_CONSULTA_CAMBIO_ASESOR_RECIBIDAS_COMPLETADA(
             "solicitudes.aplicacion.solicitud.log.consulta-cambio-asesor-recibidas-completada", 3),
+    LOG_CONSULTANDO_AMPLIACION_PLAZO_RECIBIDAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-ampliacion-plazo-recibidas", 4),
+    LOG_CONSULTA_AMPLIACION_PLAZO_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-ampliacion-plazo-recibidas-completada", 3),
     LOG_CONSULTANDO_NOVEDAD_ASESOR_RECIBIDAS(
             "solicitudes.aplicacion.solicitud.log.consultando-novedad-asesor-recibidas", 4),
     LOG_CONSULTA_NOVEDAD_ASESOR_RECIBIDAS_COMPLETADA(
