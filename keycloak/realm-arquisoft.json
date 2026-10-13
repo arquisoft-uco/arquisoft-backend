@@ -56,6 +56,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "solicitudes:respuesta-cambio-asesor:delete",
               "fichas:ficha-perfil:update-asesor",
               "fichas:ficha-perfil:create",
               "fichas:ficha-perfil-coordinador:view",
@@ -1070,6 +1071,15 @@
         {
           "id": "40b33b29-21ea-406b-88f9-1b971c26ef97",
           "name": "solicitudes:solicitud-cambio-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "ad76f5c8-3562-4832-8b0c-693f6c89a8e9",
+          "name": "solicitudes:respuesta-cambio-asesor:delete",
           "description": "",
           "composite": false,
           "clientRole": true,
