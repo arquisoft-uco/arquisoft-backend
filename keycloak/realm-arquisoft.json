@@ -257,6 +257,7 @@
               "solicitudes:solicitud-ampliacion-plazo:create",
               "solicitudes:solicitud-novedad-coordinador:delete",
               "solicitudes:solicitud-cambio-asesor:delete",
+              "solicitudes:solicitud-ampliacion-plazo:delete",
               "proyectos:estudiante-proyecto-grado-estudiante:view",
               "proyectos:asesor-proyecto-grado-estudiante:view",
               "solicitudes:tipo-solicitud:view",
@@ -718,6 +719,15 @@
         {
           "id": "fd6692f3-0587-4c14-aa3d-11f3a5fa9d7b",
           "name": "solicitudes:solicitud-novedad-coordinador:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a6a1b7c0-6caf-4dfc-83f5-8c972af91ec1",
+          "name": "solicitudes:solicitud-ampliacion-plazo:delete",
           "description": "",
           "composite": false,
           "clientRole": true,
