@@ -62,6 +62,20 @@ class JuradoDomainTest {
     }
 
     @Test
+    void debeAsignarEliminadoEn_cuandoSeRemueve() {
+        // Arrange
+        var jurado = JuradoDomain.crear(UtilUUID.generarNuevoUUID());
+        var instante = Instant.parse("2026-10-12T10:00:00Z");
+
+        // Act
+        jurado.remover(instante);
+
+        // Assert
+        assertThat(jurado.getEliminadoEn()).isEqualTo(instante);
+        assertThat(jurado.estaEliminado()).isTrue();
+    }
+
+    @Test
     void debeQuedarVigente_cuandoSeReactivaUnEliminado() {
         // Arrange
         var jurado = JuradoDomain.reconstruir(

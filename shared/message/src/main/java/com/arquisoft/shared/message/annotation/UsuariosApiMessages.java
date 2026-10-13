@@ -78,13 +78,12 @@ public final class UsuariosApiMessages {
         public static final String CAMBIAR_ESTADO_RESP_503 =
                 "No fue posible actualizar la identidad en el proveedor; el servicio no está disponible temporalmente";
 
-        // TODO HU252: agregar jurado a la lista de roles de CONSULTAR_ADMINISTRADOR_DESCRIPTION.
         public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
                 "Consultar información de los usuarios (administrador)";
         public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
                 "Lista paginada, filtrable y ordenable de todos los usuarios, incluidos los "
                         + "eliminados (vigente = false). Indica con un booleano por rol si el usuario tiene hoy el rol vigente "
-                        + "de estudiante, asesor, asesor de ficha, coordinador, representante del comité, administrador o bibliotecario; "
+                        + "de estudiante, asesor, asesor de ficha, coordinador, representante del comité, administrador, bibliotecario o jurado; "
                         + "esos booleanos "
                         + "se combinan con OR/AND en el filtro. Exclusivo del rol administrador.";
         public static final String CONSULTAR_RESP_200 = "Página de usuarios";
@@ -216,6 +215,31 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_204 = "Bibliotecario removido";
         public static final String REMOVER_RESP_400 = "Identificador de usuario inválido";
         public static final String REMOVER_RESP_422 = "El usuario no tiene un rol bibliotecario vigente";
+        public static final String REMOVER_RESP_503 =
+                "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+    }
+
+    public static final class Jurado {
+
+        private Jurado() {}
+
+        public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los jurados vigentes";
+        public static final String CONSULTAR_VIGENTES_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de los jurados con el rol vigente. Expone y "
+                        + "permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
+                        + "jurados y coordinadores.";
+        public static final String CONSULTAR_RESP_200 = "Página de jurados";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
+
+        public static final String REMOVER_SUMMARY = "Remover información de un jurado";
+        public static final String REMOVER_DESCRIPTION =
+                "Da de baja lógica el rol jurado de un usuario: marca la fecha de eliminación sin borrar "
+                        + "la fila, revoca el realm role jurado en Keycloak y notifica a los contextos "
+                        + "que replican al jurado. El usuario y sus demás roles no cambian. "
+                        + "Exclusivo del rol administrador.";
+        public static final String REMOVER_RESP_204 = "Jurado removido";
+        public static final String REMOVER_RESP_400 = "Identificador de usuario inválido";
+        public static final String REMOVER_RESP_422 = "El usuario no tiene un rol jurado vigente";
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
     }

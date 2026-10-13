@@ -162,6 +162,19 @@ public final class ProyectosApiMessages {
                 "Identificador del asesor, filtro, orden o paginación inválidos";
         public static final String CONSULTAR_ASESOR_RESP_403 =
                 "Sin permiso para consultar los proyectos de grado que asesora";
+
+        public static final String CONSULTAR_DETALLE_ASESOR_SUMMARY =
+                "Consultar la información de un proyecto de grado que asesora";
+        public static final String CONSULTAR_DETALLE_ASESOR_DESCRIPTION =
+                "Permite al asesor consultar la ficha de perfil, el título y el estado actual de un proyecto "
+                        + "de grado en el que tiene una asignación vigente";
+        public static final String CONSULTAR_DETALLE_ASESOR_RESP_200 = "Información del proyecto de grado";
+        public static final String CONSULTAR_DETALLE_ASESOR_RESP_400 =
+                "Identificador del proyecto de grado o del asesor inválido";
+        public static final String CONSULTAR_DETALLE_ASESOR_RESP_403 =
+                "Sin permiso para consultar la información del proyecto de grado que asesora";
+        public static final String CONSULTAR_DETALLE_ASESOR_RESP_422 =
+                "El proyecto de grado no existe o el asesor no lo tiene asignado";
     }
 
     public static final class ConsultaEstudianteProyectoGrado {

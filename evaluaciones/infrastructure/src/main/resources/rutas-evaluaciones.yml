@@ -8,6 +8,7 @@ rutas:
     evaluacion:
       base: /evaluaciones
       jurados: /{evaluacionId}/jurados
+      evaluaciones-jurado: /{evaluacionId}/evaluaciones-jurado
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
       por-id: /{itemId}
@@ -27,5 +28,8 @@ rutas:
       puntaje: /{id}/puntaje
       observaciones: /{id}/observaciones
       observaciones-jurado: /{id}/observaciones/jurado
+    observaciones-item-jurado:
+      base: /evaluaciones/observaciones-item-jurado
+      por-id: /{observacionId}
     estados-evaluacion:
       base: /evaluaciones/estados-evaluacion

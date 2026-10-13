@@ -136,7 +136,7 @@ class ResponderSolicitudCambioAsesorControllerTest {
         mockMvc.perform(post(RUTA.formatted(UtilUUID.generarNuevoUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"contenido\":\"valido\"}")
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(), "solicitudes:solicitud:read")))
+                        .with(jwtDe(UtilUUID.generarNuevoUUID(), SolicitudesAuthorities.SOLICITUD_CAMBIO_ASESOR_CREATE)))
                 .andExpect(status().isForbidden());
     }
 

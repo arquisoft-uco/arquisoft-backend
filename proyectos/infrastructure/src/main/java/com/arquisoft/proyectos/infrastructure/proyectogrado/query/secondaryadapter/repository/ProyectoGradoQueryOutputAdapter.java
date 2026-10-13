@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -41,6 +42,13 @@ public class ProyectoGradoQueryOutputAdapter implements ProyectoGradoQueryOutput
                 .stream()
                 .map(ProyectoGradoQueryMapper::toReadModel)
                 .toList();
+    }
+
+    @Override
+    public ProyectoGradoReadModel consultarPorId(UUID proyectoGrado) {
+        return proyectoGradoQueryRepository.findById(proyectoGrado)
+                .map(ProyectoGradoQueryMapper::toReadModel)
+                .orElseThrow();
     }
 
     @Override

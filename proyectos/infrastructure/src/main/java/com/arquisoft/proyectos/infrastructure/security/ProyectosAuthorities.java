@@ -23,6 +23,7 @@ public final class ProyectosAuthorities {
     public static final String PROYECTO_GRADO_COORDINADOR_VIEW = "proyectos:proyecto-grado-coordinador:view";
     public static final String PROYECTO_GRADO_ESTUDIANTE_VIEW = "proyectos:proyecto-grado-estudiante:view";
     public static final String PROYECTO_GRADO_ASESOR_VIEW = "proyectos:proyecto-grado-asesor:view";
+    public static final String PROYECTO_GRADO_ASESOR_DETALLE_VIEW = "proyectos:proyecto-grado-asesor-detalle:view";
 
     public static final class Expresiones {
 
@@ -57,5 +58,7 @@ public final class ProyectosAuthorities {
                 HAS_AUTHORITY_INICIO + PROYECTO_GRADO_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_PROYECTO_GRADO_ASESOR_VIEW =
                 HAS_AUTHORITY_INICIO + PROYECTO_GRADO_ASESOR_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_PROYECTO_GRADO_ASESOR_DETALLE_VIEW =
+                HAS_AUTHORITY_INICIO + PROYECTO_GRADO_ASESOR_DETALLE_VIEW + HAS_AUTHORITY_FIN;
     }
 }

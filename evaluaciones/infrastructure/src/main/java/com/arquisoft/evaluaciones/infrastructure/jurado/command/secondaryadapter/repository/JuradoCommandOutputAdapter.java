@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.evaluaciones.JuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -35,6 +36,12 @@ public class JuradoCommandOutputAdapter implements JuradoOutputPort {
         repository.reactivar(jurado.id(), jurado.identificador(), jurado.nombre(), jurado.email(),
                 jurado.ocurridoEn());
         logger.debug(JuradoKey.LOG_ACTUALIZADO, jurado.id());
+    }
+
+    @Override
+    public void eliminarLogica(UUID id, Instant ocurridoEn) {
+        repository.eliminarLogica(id, ocurridoEn);
+        logger.debug(JuradoKey.LOG_ACTUALIZADO, id);
     }
 
     @Override

@@ -94,6 +94,26 @@ class JuradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeFijarEliminadoEnYOcurridoEnSoloDeEseJurado_cuandoSeEliminaLogica() {
+        // Arrange
+        var id = sembrarJurado(null);
+        var otro = sembrarJurado(null);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarLogica(id, OCURRIDO_EN);
+
+        // Assert
+        var removido = entityManager.find(JuradoJpaEntity.class, id);
+        assertThat(removido.getEliminadoEn()).isEqualTo(OCURRIDO_EN);
+        assertThat(removido.getOcurridoEn()).isEqualTo(OCURRIDO_EN);
+        assertThat(entityManager.find(JuradoJpaEntity.class, otro).getEliminadoEn()).isNull();
+        assertThat(adapter.consultarVigentesPorIds(Set.of(id, otro))).containsExactly(otro);
+        verify(logger).debug(JuradoKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
     void debeRetornarVacio_cuandoNoExiste() {
         // Act
         var jurado = adapter.obtenerPorId(UUID.randomUUID());

@@ -22,6 +22,8 @@ public final class SolicitudesAuthorities {
             "solicitudes:solicitud-novedad-asesor-recibida:view";
     public static final String SOLICITUD_NOVEDAD_ASESOR_ENVIADA_VIEW =
             "solicitudes:solicitud-novedad-asesor-enviada:view";
+    public static final String SOLICITUD_CAMBIO_ASESOR_ENVIADA_VIEW =
+            "solicitudes:solicitud-cambio-asesor-enviada:view";
     public static final String SOLICITUD_NOVEDAD_COORDINADOR_ENVIADA_VIEW =
             "solicitudes:solicitud-novedad-coordinador-enviada:view";
     public static final String RESPUESTA_NOVEDAD_COORDINADOR_CREATE =
@@ -44,6 +46,8 @@ public final class SolicitudesAuthorities {
             "solicitudes:respuesta-novedad-coordinador-recibida:view";
     public static final String RESPUESTA_NOVEDAD_ASESOR_RECIBIDA_VIEW =
             "solicitudes:respuesta-novedad-asesor-recibida:view";
+    public static final String RESPUESTA_CAMBIO_ASESOR_RECIBIDA_VIEW =
+            "solicitudes:respuesta-cambio-asesor-recibida:view";
     public static final String RESPUESTA_NOVEDAD_COORDINADOR_ENVIADA_VIEW =
             "solicitudes:respuesta-novedad-coordinador-enviada:view";
     public static final String RESPUESTA_NOVEDAD_ASESOR_ENVIADA_VIEW =
@@ -89,6 +93,8 @@ public final class SolicitudesAuthorities {
                 HAS_AUTHORITY_INICIO + SOLICITUD_NOVEDAD_ASESOR_RECIBIDA_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_SOLICITUD_NOVEDAD_ASESOR_ENVIADA_VIEW =
                 HAS_AUTHORITY_INICIO + SOLICITUD_NOVEDAD_ASESOR_ENVIADA_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_SOLICITUD_CAMBIO_ASESOR_ENVIADA_VIEW =
+                HAS_AUTHORITY_INICIO + SOLICITUD_CAMBIO_ASESOR_ENVIADA_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_SOLICITUD_NOVEDAD_COORDINADOR_ENVIADA_VIEW =
                 HAS_AUTHORITY_INICIO + SOLICITUD_NOVEDAD_COORDINADOR_ENVIADA_VIEW + HAS_AUTHORITY_FIN;
 
@@ -121,6 +127,9 @@ public final class SolicitudesAuthorities {
 
         public static final String HAS_RESPUESTA_NOVEDAD_ASESOR_RECIBIDA_VIEW =
                 HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_ASESOR_RECIBIDA_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_RESPUESTA_CAMBIO_ASESOR_RECIBIDA_VIEW =
+                HAS_AUTHORITY_INICIO + RESPUESTA_CAMBIO_ASESOR_RECIBIDA_VIEW + HAS_AUTHORITY_FIN;
 
         public static final String HAS_RESPUESTA_NOVEDAD_COORDINADOR_ENVIADA_VIEW =
                 HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_COORDINADOR_ENVIADA_VIEW + HAS_AUTHORITY_FIN;

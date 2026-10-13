@@ -14,12 +14,14 @@ rutas:
       representante-comite: /{usuarioId}/representante-comite
       administrador: /{usuarioId}/administrador
       bibliotecario: /{usuarioId}/bibliotecario
+      jurado: /{usuarioId}/jurado
       modificar: /{usuarioId}
       eliminar: /{usuarioId}
       identidad: /{usuarioId}
       estado: /{usuarioId}/estado
       usuarios-administrador: /administrador
       coordinadores-vigentes: /coordinadores/vigentes
+      jurados-vigentes: /jurados/vigentes
       estudiantes-vigentes: /estudiantes/vigentes
       asesores-vigentes: /asesores/vigentes
       asesores-ficha-vigentes: /asesores-ficha/vigentes

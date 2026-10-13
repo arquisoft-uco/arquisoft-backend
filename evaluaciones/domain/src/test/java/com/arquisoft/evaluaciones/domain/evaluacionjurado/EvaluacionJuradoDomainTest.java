@@ -40,4 +40,18 @@ class EvaluacionJuradoDomainTest {
                                         tuple(EvaluacionesFields.EvaluacionJurado.JURADO,
                                                 EvaluacionesCodes.EvaluacionJurado.JURADO_REQUERIDO)));
     }
+
+    @Test
+    void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var evaluacionJurado = EvaluacionJuradoDomain.reconstruir(id, null, null);
+
+        // Assert
+        assertThat(evaluacionJurado.getId()).isEqualTo(id);
+        assertThat(evaluacionJurado.getEvaluacion()).isNull();
+        assertThat(evaluacionJurado.getJurado()).isNull();
+    }
 }

@@ -90,6 +90,9 @@ public final class EventTopics {
         public static final String BIBLIOTECARIO_REMOVIDO =
                 "usuarios.bibliotecario.removido";
 
+        public static final String JURADO_REMOVIDO =
+                "usuarios.jurado.removido";
+
         public static final String JURADO_AGREGADO =
                 "usuarios.jurado.agregado";
     }
