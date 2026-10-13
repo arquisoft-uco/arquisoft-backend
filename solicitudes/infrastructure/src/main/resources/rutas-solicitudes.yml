@@ -17,6 +17,7 @@ rutas:
       novedad-asesor-por-id: /novedad-asesor/{solicitudId}
       cambio-asesor: /cambio-asesor
       cambio-asesor-recibidas: /cambio-asesor/recibidas
+      cambio-asesor-enviadas: /cambio-asesor/enviadas
       cambio-asesor-por-id: /cambio-asesor/{solicitudId}
       ampliacion-plazo: /ampliacion-plazo
       tipos-solicitud: /tipos-solicitud
