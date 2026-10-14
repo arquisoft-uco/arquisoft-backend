@@ -9,6 +9,7 @@ import com.arquisoft.solicitudes.domain.respuesta.RespuestaSolicitudDomain;
 import com.arquisoft.solicitudes.domain.respuesta.exception.SolicitudYaRespondidaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAmpliacionPlazoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
@@ -207,5 +208,25 @@ class ResponderSolicitudValidatorImplTest {
                 resumen(true, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), REMITENTE, responsable),
                 usuario(REMITENTE), usuario(responsable), false))
                 .isInstanceOf(SolicitudTipoNoCoincideCambioAsesorException.class);
+    }
+
+    @Test
+    void debePasar_cuandoSeEsperabaAmpliacionDePlazoYLaSolicitudEsDeEseTipo() {
+        var responsable = UtilUUID.generarNuevoUUID();
+
+        assertThatCode(() -> validator.validar(entrada(responsable, TipoSolicitud.AMPLIACION_DE_PLAZO),
+                resumen(true, TipoSolicitud.AMPLIACION_DE_PLAZO.getId(), REMITENTE, responsable),
+                usuario(REMITENTE), usuario(responsable), false))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarTipoNoCoincideAmpliacionPlazo_cuandoSeEsperabaAmpliacionDePlazoYLaSolicitudEsDeOtroTipo() {
+        var responsable = UtilUUID.generarNuevoUUID();
+
+        assertThatThrownBy(() -> validator.validar(entrada(responsable, TipoSolicitud.AMPLIACION_DE_PLAZO),
+                resumen(true, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), REMITENTE, responsable),
+                usuario(REMITENTE), usuario(responsable), false))
+                .isInstanceOf(SolicitudTipoNoCoincideAmpliacionPlazoException.class);
     }
 }

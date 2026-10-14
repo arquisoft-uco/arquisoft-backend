@@ -88,13 +88,28 @@ class SolicitudRespondidaEventTest {
     }
 
     @Test
+    void debeExponerElTemaYElTipoDeEventoDeAmpliacionPlazo_cuandoElTipoEsAmpliacionDePlazo() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(UtilUUID.generarNuevoUUID(), "Se aprueba la ampliacion");
+
+        // Act
+        var evento = new SolicitudRespondidaEvent(
+                TipoSolicitud.AMPLIACION_DE_PLAZO, respuesta, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.AMPLIACION_PLAZO_RESPONDIDA);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.ampliacion_plazo_respondida");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudAmpliacionPlazoRespondidaEvent");
+    }
+
+    @Test
     void debeLanzarTipoNoEncontrado_cuandoElTipoNoTieneEventoDeRespuesta() {
         // Arrange
         var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "contenido");
 
         // Act & Assert
         assertThatThrownBy(() -> new SolicitudRespondidaEvent(
-                TipoSolicitud.AMPLIACION_DE_PLAZO, respuesta, REMITENTE, RESPONSABLE))
+                TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, respuesta, REMITENTE, RESPONSABLE))
                 .isInstanceOf(TipoSolicitudNoEncontradoException.class);
     }
 

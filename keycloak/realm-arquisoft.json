@@ -91,6 +91,7 @@
               "fichas:ficha-perfil:update-asesor",
               "solicitudes:solicitud-cambio-asesor-recibida:view",
               "solicitudes:respuesta-novedad-coordinador:create",
+              "solicitudes:respuesta-ampliacion-plazo:create",
               "fichas:ficha-perfil-coordinador:view",
               "solicitudes:respuesta-novedad-coordinador:update",
               "mapas-ruta:mapa-ruta:update-fecha-fin",
@@ -1853,6 +1854,15 @@
         {
           "id": "210e1e80-6faa-4bbf-b201-ff94c55148d8",
           "name": "solicitudes:respuesta-novedad-coordinador:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "95b307e5-ce68-4973-a8a9-89cb511ff226",
+          "name": "solicitudes:respuesta-ampliacion-plazo:create",
           "description": "",
           "composite": false,
           "clientRole": true,
