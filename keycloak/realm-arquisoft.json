@@ -95,6 +95,7 @@
               "solicitudes:respuesta-novedad-coordinador:create",
               "fichas:ficha-perfil-coordinador:view",
               "solicitudes:respuesta-novedad-coordinador:update",
+              "solicitudes:respuesta-cambio-asesor:update",
               "mapas-ruta:mapa-ruta:update-fecha-fin",
               "fichas:estudiante-ficha-perfil:delete",
               "evaluaciones:item-cuantitativo-jurado:delete",
@@ -864,6 +865,15 @@
         {
           "id": "d51a0c88-717a-4e71-a3e0-526418cb1a46",
           "name": "solicitudes:respuesta-novedad-coordinador:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7babca23-d40b-49fe-9910-1b0f2ba8ea98",
+          "name": "solicitudes:respuesta-cambio-asesor:update",
           "description": "",
           "composite": false,
           "clientRole": true,
