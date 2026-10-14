@@ -56,6 +56,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "solicitudes:respuesta-cambio-asesor:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
               "mapas-ruta:mapa-ruta-coordinador:view",
               "fichas:ficha-perfil:create",
@@ -1897,6 +1898,15 @@
         {
           "id": "5bd8b163-4b75-413c-9ecb-4bb1fc520418",
           "name": "fichas:item-ficha-perfil:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "ad76f5c8-3562-4832-8b0c-693f6c89a8e9",
+          "name": "solicitudes:respuesta-cambio-asesor:delete",
           "description": "",
           "composite": false,
           "clientRole": true,
