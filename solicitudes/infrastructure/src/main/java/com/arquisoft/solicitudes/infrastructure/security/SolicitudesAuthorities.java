@@ -8,6 +8,8 @@ public final class SolicitudesAuthorities {
     public static final String SOLICITUD_NOVEDAD_ASESOR_CREATE = "solicitudes:solicitud-novedad-asesor:create";
     public static final String SOLICITUD_CAMBIO_ASESOR_CREATE = "solicitudes:solicitud-cambio-asesor:create";
     public static final String SOLICITUD_AMPLIACION_PLAZO_CREATE = "solicitudes:solicitud-ampliacion-plazo:create";
+    public static final String SOLICITUD_AMPLIACION_PLAZO_DELETE =
+            "solicitudes:solicitud-ampliacion-plazo:delete";
     public static final String SOLICITUD_CAMBIO_ASESOR_DELETE =
             "solicitudes:solicitud-cambio-asesor:delete";
     public static final String SOLICITUD_NOVEDAD_COORDINADOR_DELETE =
@@ -77,6 +79,9 @@ public final class SolicitudesAuthorities {
 
         public static final String HAS_SOLICITUD_AMPLIACION_PLAZO_CREATE =
                 HAS_AUTHORITY_INICIO + SOLICITUD_AMPLIACION_PLAZO_CREATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_SOLICITUD_AMPLIACION_PLAZO_DELETE =
+                HAS_AUTHORITY_INICIO + SOLICITUD_AMPLIACION_PLAZO_DELETE + HAS_AUTHORITY_FIN;
 
         public static final String HAS_SOLICITUD_CAMBIO_ASESOR_DELETE =
                 HAS_AUTHORITY_INICIO + SOLICITUD_CAMBIO_ASESOR_DELETE + HAS_AUTHORITY_FIN;

@@ -29,6 +29,8 @@ public enum SolicitudKey implements ClaveMensaje {
             "solicitudes.dominio.solicitud.error.tipo-no-coincide-asesor", 0),
     ERROR_SOLICITUD_TIPO_NO_COINCIDE_CAMBIO_ASESOR(
             "solicitudes.dominio.solicitud.error.tipo-no-coincide-cambio-asesor", 0),
+    ERROR_SOLICITUD_TIPO_NO_COINCIDE_AMPLIACION_PLAZO(
+            "solicitudes.dominio.solicitud.error.tipo-no-coincide-ampliacion-plazo", 0),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
             "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-recibidas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_RECIBIDAS_COMPLETADA(
