@@ -200,6 +200,36 @@ class SolicitudQueryOutputAdapterTest {
     }
 
     @Test
+    void debeRetornarSoloLasSolicitudesAmpliacionDePlazoDelDestinatario_cuandoElCriteriaFuerzaTipoYDestinatario() {
+        // Arrange
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        var otroCoord = sembrarDestinatario("Otro", "COORD-2", "otro@uco.edu.co");
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "es novedad");
+        sembrarSolicitud(ana, coord, TIPO_AMPLIACION,
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es ampliacion");
+        sembrarSolicitud(ana, otroCoord, TIPO_AMPLIACION,
+                LocalDateTime.of(2026, 3, 3, 10, 0).toInstant(ZoneOffset.UTC), "ampliacion ajena");
+        sincronizar();
+
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
+                                coord.getUsuarioId().toString()),
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_AMPLIACION))))
+                .build();
+
+        // Act
+        var resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(SolicitudReadModel::mensajeSolicitud)
+                .containsExactly("es ampliacion");
+    }
+
+    @Test
     void debeFiltrarPorNombreDelRemitente_cuandoElCriteriaTraeEsePredicado() {
         // Arrange
         var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");

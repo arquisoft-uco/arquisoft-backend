@@ -28,4 +28,9 @@ public class EvaluacionCuantitativaJuradoCommandOutputAdapter implements Evaluac
         repository.save(EvaluacionCuantitativaJuradoJpaMapper.toJpaEntity(evaluacionCuantitativaJurado));
         logger.debug(EvaluacionCuantitativaJuradoKey.LOG_GUARDADO, evaluacionCuantitativaJurado.id());
     }
+
+    @Override
+    public boolean existePorItem(UUID item) {
+        return repository.existsByItemId(item);
+    }
 }

@@ -21,6 +21,8 @@ rutas:
       cambio-asesor-por-id: /cambio-asesor/{solicitudId}
       ampliacion-plazo: /ampliacion-plazo
       ampliacion-plazo-enviadas: /ampliacion-plazo/enviadas
+      ampliacion-plazo-recibidas: /ampliacion-plazo/recibidas
+      ampliacion-plazo-por-id: /ampliacion-plazo/{solicitudId}
       tipos-solicitud: /tipos-solicitud
     respuesta:
       base: /solicitudes
@@ -29,9 +31,11 @@ rutas:
       novedad-asesor: /novedad-asesor/{solicitudId}/respuesta
       novedad-coordinador-estado: /novedad-coordinador/{solicitudId}/respuesta/estado
       novedad-asesor-estado: /novedad-asesor/{solicitudId}/respuesta/estado
+      cambio-asesor-estado: /cambio-asesor/{solicitudId}/respuesta/estado
       novedad-coordinador-recibidas: /novedad-coordinador/respuestas/recibidas
       novedad-asesor-recibidas: /novedad-asesor/respuestas/recibidas
       cambio-asesor-recibidas: /cambio-asesor/respuestas/recibidas
       novedad-coordinador-enviadas: /novedad-coordinador/respuestas/enviadas
       novedad-asesor-enviadas: /novedad-asesor/respuestas/enviadas
+      cambio-asesor-enviadas: /cambio-asesor/respuestas/enviadas
       estados-respuesta: /estados-respuesta
