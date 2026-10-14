@@ -5,27 +5,43 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de Respuesta. */
 public enum RespuestaKey implements ClaveMensaje {
 
-    ERROR_SOLICITUD_YA_RESPONDIDA("solicitudes.dominio.respuesta.error.solicitud-ya-respondida", 1),
+    ERROR_SOLICITUD_YA_RESPONDIDA("solicitudes.dominio.respuesta.error.solicitud-ya-respondida", 0),
     LOG_RESPONDIENDO("solicitudes.aplicacion.respuesta.log.respondiendo", 3),
     LOG_VERIFICACION_RESPUESTA("solicitudes.aplicacion.respuesta.log.verificacion-respuesta", 4),
     LOG_RESPONDIDA("solicitudes.aplicacion.respuesta.log.respondida", 2),
     LOG_GUARDADA("solicitudes.infraestructura.respuesta.log.guardada", 1),
-    ERROR_RESPUESTA_NO_ENCONTRADA("solicitudes.dominio.respuesta.error.no-encontrada", 1),
-    ERROR_RESPUESTA_NO_EN_REVISION("solicitudes.dominio.respuesta.error.no-en-revision", 1),
-    LOG_ELIMINANDO("solicitudes.aplicacion.respuesta.log.eliminando", 2),
+    ERROR_RESPUESTA_NO_ENCONTRADA("solicitudes.dominio.respuesta.error.no-encontrada", 0),
+    ERROR_RESPUESTA_NO_EN_REVISION("solicitudes.dominio.respuesta.error.no-en-revision", 0),
+    LOG_ELIMINANDO("solicitudes.aplicacion.respuesta.log.eliminando", 3),
     LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.respuesta.log.verificacion-eliminacion", 2),
-    LOG_ELIMINADA("solicitudes.aplicacion.respuesta.log.eliminada", 1),
+    LOG_ELIMINADA("solicitudes.aplicacion.respuesta.log.eliminada", 2),
     LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.respuesta.log.eliminada", 1),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
             "solicitudes.aplicacion.respuesta.log.consultando-novedad-coordinador-recibidas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_RECIBIDAS_COMPLETADA(
             "solicitudes.aplicacion.respuesta.log.consulta-novedad-coordinador-recibidas-completada", 3),
+    LOG_CONSULTANDO_NOVEDAD_ASESOR_RECIBIDAS(
+            "solicitudes.aplicacion.respuesta.log.consultando-novedad-asesor-recibidas", 4),
+    LOG_CONSULTA_NOVEDAD_ASESOR_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-novedad-asesor-recibidas-completada", 3),
+    LOG_CONSULTANDO_CAMBIO_ASESOR_RECIBIDAS(
+            "solicitudes.aplicacion.respuesta.log.consultando-cambio-asesor-recibidas", 4),
+    LOG_CONSULTA_CAMBIO_ASESOR_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-cambio-asesor-recibidas-completada", 3),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_ENVIADAS(
             "solicitudes.aplicacion.respuesta.log.consultando-novedad-coordinador-enviadas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_ENVIADAS_COMPLETADA(
             "solicitudes.aplicacion.respuesta.log.consulta-novedad-coordinador-enviadas-completada", 3),
+    LOG_CONSULTANDO_NOVEDAD_ASESOR_ENVIADAS(
+            "solicitudes.aplicacion.respuesta.log.consultando-novedad-asesor-enviadas", 4),
+    LOG_CONSULTA_NOVEDAD_ASESOR_ENVIADAS_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-novedad-asesor-enviadas-completada", 3),
+    LOG_CONSULTANDO_CAMBIO_ASESOR_ENVIADAS(
+            "solicitudes.aplicacion.respuesta.log.consultando-cambio-asesor-enviadas", 4),
+    LOG_CONSULTA_CAMBIO_ASESOR_ENVIADAS_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-cambio-asesor-enviadas-completada", 3),
     ERROR_ESTADO_RESPUESTA_NO_RESOLUTIVO(
-            "solicitudes.dominio.respuesta.error.estado-no-resolutivo", 2),
+            "solicitudes.dominio.respuesta.error.estado-no-resolutivo", 1),
     LOG_MODIFICANDO_ESTADO("solicitudes.aplicacion.respuesta.log.modificando-estado", 3),
     LOG_VERIFICACION_MODIFICACION_ESTADO(
             "solicitudes.aplicacion.respuesta.log.verificacion-modificacion-estado", 4),

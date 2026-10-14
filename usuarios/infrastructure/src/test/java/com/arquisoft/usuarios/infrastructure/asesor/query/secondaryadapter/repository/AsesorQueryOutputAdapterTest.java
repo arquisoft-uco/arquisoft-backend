@@ -1,15 +1,11 @@
 package com.arquisoft.usuarios.infrastructure.asesor.query.secondaryadapter.repository;
 
-import com.arquisoft.usuarios.application.asesor.query.criteria.AsesorCriteria;
 import com.arquisoft.usuarios.application.asesor.query.criteria.AsesorVigenteCriteria;
-import com.arquisoft.usuarios.application.asesor.query.readmodel.AsesorReadModel;
 import com.arquisoft.usuarios.application.asesor.query.readmodel.AsesorVigenteReadModel;
 import com.arquisoft.usuarios.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
-import com.arquisoft.shared.query.SortOrder;
-import com.arquisoft.shared.query.pagination.SortDirection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +13,6 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,9 +23,6 @@ class AsesorQueryOutputAdapterTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
-    @Autowired
-    private AsesorQueryRepository asesorQueryRepository;
 
     @Autowired
     private AsesorVigenteQueryRepository asesorVigenteQueryRepository;
@@ -45,9 +37,7 @@ class AsesorQueryOutputAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new AsesorQueryOutputAdapter(
-                asesorQueryRepository,
                 asesorVigenteQueryRepository,
-                new AsesorJpaSpecification(),
                 new AsesorVigenteJpaSpecification());
 
         vigenteUno = persistirAsesor("1001", "Ana Ramirez", "ana.ramirez@uco.edu.co", "ACTIVO", null);
@@ -66,83 +56,6 @@ class AsesorQueryOutputAdapterTest {
                 .estadoId("ACTIVO")
                 .build());
         entityManager.flush();
-    }
-
-    @Test
-    void debeIncluirVigentesYDadosDeBaja_conVigenteCorrecto_cuandoConsultaTodos() {
-        // Act
-        var resultado = adapter.consultarTodos(
-                AsesorCriteria.builder().pagina(0).tamanio(10).build());
-
-        // Assert
-        assertThat(resultado.getContent()).hasSize(4);
-        assertThat(resultado.getContent())
-                .filteredOn(a -> a.id().equals(dadoDeBaja))
-                .extracting(AsesorReadModel::vigente, AsesorReadModel::estado)
-                .containsExactly(org.assertj.core.groups.Tuple.tuple(false, "ACTIVO"));
-        assertThat(resultado.getContent())
-                .filteredOn(a -> a.id().equals(vigenteUno))
-                .extracting(AsesorReadModel::vigente)
-                .containsExactly(true);
-    }
-
-    @Test
-    void debeFiltrarSoloLosDadosDeBaja_cuandoConsultaTodosConVigenteFalse() {
-        // Arrange
-        var criteria = AsesorCriteria.builder().pagina(0).tamanio(10)
-                .raiz(NodoFiltro.predicado("vigente", FiltroOperador.ES, "false"))
-                .build();
-
-        // Act
-        var resultado = adapter.consultarTodos(criteria);
-
-        // Assert
-        assertThat(resultado.getContent()).hasSize(1);
-        assertThat(resultado.getContent().get(0).id()).isEqualTo(dadoDeBaja);
-    }
-
-    @Test
-    void debeFiltrarPorNombre_cuandoConsultaTodos() {
-        // Arrange
-        var criteria = AsesorCriteria.builder().pagina(0).tamanio(10)
-                .raiz(NodoFiltro.predicado("nombre", FiltroOperador.CONTIENE, "Bruno"))
-                .build();
-
-        // Act
-        var resultado = adapter.consultarTodos(criteria);
-
-        // Assert
-        assertThat(resultado.getContent()).hasSize(1);
-        assertThat(resultado.getContent().get(0).id()).isEqualTo(vigenteDos);
-    }
-
-    @Test
-    void debeOrdenarPorIdentificador_cuandoConsultaTodos() {
-        // Arrange
-        var criteria = AsesorCriteria.builder().pagina(0).tamanio(10)
-                .ordenamiento(List.of(SortOrder.of("identificador", SortDirection.DESC)))
-                .build();
-
-        // Act
-        var resultado = adapter.consultarTodos(criteria);
-
-        // Assert
-        assertThat(resultado.getContent())
-                .extracting(AsesorReadModel::identificador)
-                .containsExactly("1004", "1003", "1002", "1001");
-    }
-
-    @Test
-    void debeReportarTotalElementsCorrecto_cuandoPaginaTodosConTamanioUno() {
-        // Arrange
-        var criteria = AsesorCriteria.builder().pagina(0).tamanio(1).build();
-
-        // Act
-        var resultado = adapter.consultarTodos(criteria);
-
-        // Assert
-        assertThat(resultado.getContent()).hasSize(1);
-        assertThat(resultado.getTotalElements()).isEqualTo(4L);
     }
 
     @Test

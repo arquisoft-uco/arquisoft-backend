@@ -5,7 +5,9 @@ import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.Estado
 import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.EstadoFichaPerfilReadModel;
 import com.arquisoft.fichas.application.estadofichaperfil.query.secondaryport.EstadoFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryadapter.repository.mapper.EstadoFichaPerfilAsesorQueryMapper;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryadapter.repository.mapper.EstadoFichaPerfilCoordinadorQueryMapper;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryadapter.repository.mapper.EstadoFichaPerfilQueryMapper;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryadapter.repository.mapper.EstadoFichaPerfilRepresentanteQueryMapper;
 import com.arquisoft.shared.jpa.util.PageableMapper;
 import com.arquisoft.shared.jpa.util.PaginationMapper;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
@@ -22,6 +24,8 @@ public class EstadoFichaPerfilQueryOutputAdapter implements EstadoFichaPerfilQue
     private final EstadoFichaPerfilEstudianteQueryRepository estadoFichaPerfilEstudianteQueryRepository;
     private final EstadoFichaPerfilAsesorQueryRepository estadoFichaPerfilAsesorQueryRepository;
     private final EstadoFichaPerfilAsesorJpaSpecification estadoFichaPerfilAsesorSpecification;
+    private final EstadoFichaPerfilRepresentanteQueryRepository estadoFichaPerfilRepresentanteQueryRepository;
+    private final EstadoFichaPerfilCoordinadorQueryRepository estadoFichaPerfilCoordinadorQueryRepository;
 
     @Override
     public List<EstadoFichaPerfilReadModel> consultarPorFichaYEstudiante(UUID fichaPerfil, UUID estudiante) {
@@ -40,5 +44,23 @@ public class EstadoFichaPerfilQueryOutputAdapter implements EstadoFichaPerfilQue
         return PaginationMapper.toResult(
                 estadoFichaPerfilAsesorQueryRepository.findAll(spec, pageable)
                         .map(EstadoFichaPerfilAsesorQueryMapper::toReadModel));
+    }
+
+    @Override
+    public List<EstadoFichaPerfilReadModel> consultarPorFichaYRepresentante(UUID fichaPerfil, UUID representanteComite) {
+        return estadoFichaPerfilRepresentanteQueryRepository
+                .findByFichaPerfilIdAndRepresentanteComiteIdOrderByFechaActualizacionAsc(fichaPerfil, representanteComite)
+                .stream()
+                .map(EstadoFichaPerfilRepresentanteQueryMapper::toReadModel)
+                .toList();
+    }
+
+    @Override
+    public List<EstadoFichaPerfilReadModel> consultarPorFicha(UUID fichaPerfil) {
+        return estadoFichaPerfilCoordinadorQueryRepository
+                .findByFichaPerfilIdOrderByFechaActualizacionAscIdAsc(fichaPerfil)
+                .stream()
+                .map(EstadoFichaPerfilCoordinadorQueryMapper::toReadModel)
+                .toList();
     }
 }

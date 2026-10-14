@@ -7,6 +7,7 @@ import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.util.UtilColeccion;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 import com.arquisoft.shared.validation.ValidatorUUID;
 
@@ -19,13 +20,10 @@ public record OmitirEvaluacionesCualitativasJuradoCommand(
         List<UUID> evaluaciones) {
 
     public static OmitirEvaluacionesCualitativasJuradoCommand crear(
-            String evaluacionJurado, List<String> evaluaciones) {
+            UUID evaluacionJurado, List<String> evaluaciones) {
         var result = new ValidationResult();
 
-        ValidatorTexto.noEnBlanco(evaluacionJurado,
-                EvaluacionesFields.EvaluacionCualitativaJurado.EVALUACION_JURADO,
-                EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO, result);
-        ValidatorUUID.uuidValido(evaluacionJurado,
+        ValidatorObjeto.noNulo(evaluacionJurado,
                 EvaluacionesFields.EvaluacionCualitativaJurado.EVALUACION_JURADO,
                 EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO, result);
 
@@ -34,7 +32,7 @@ public record OmitirEvaluacionesCualitativasJuradoCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new OmitirEvaluacionesCualitativasJuradoCommand(
-                UtilUUID.generarUUIDDesdeTexto(evaluacionJurado),
+                evaluacionJurado,
                 ids);
     }
 

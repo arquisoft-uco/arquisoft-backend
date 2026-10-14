@@ -21,6 +21,7 @@ public enum EvaluacionCuantitativaJuradoKey implements ClaveMensaje {
             "evaluaciones.dominio.evaluacioncuantitativajurado.error.omision-evaluacion-jurado-finalizada", 1),
     ERROR_EVALUACIONES_CON_OBSERVACIONES(
             "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluaciones-con-observaciones", 2),
+    ERROR_PUNTAJE_NO_ENTERO("evaluaciones.aplicacion.evaluacioncuantitativajurado.error.puntaje-no-entero", 0),
     ERROR_NO_ENCONTRADA("evaluaciones.dominio.evaluacioncuantitativajurado.error.no-encontrada", 1),
     ERROR_NO_PERTENECE_JURADO(
             "evaluaciones.dominio.evaluacioncuantitativajurado.error.no-pertenece-jurado", 1),

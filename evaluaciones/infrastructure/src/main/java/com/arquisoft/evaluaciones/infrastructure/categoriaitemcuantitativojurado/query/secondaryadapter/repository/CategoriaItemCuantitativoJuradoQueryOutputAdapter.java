@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativojurado.query.secondaryadapter.repository;
 
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.criteria.CategoriaItemCuantitativoJuradoCriteria;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.readmodel.CategoriaItemCuantitativoJuradoReadModel;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.secondaryport.CategoriaItemCuantitativoJuradoQueryOutputPort;
 import com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativojurado.query.secondaryadapter.repository.mapper.CategoriaItemCuantitativoJuradoQueryMapper;
@@ -17,10 +18,10 @@ public class CategoriaItemCuantitativoJuradoQueryOutputAdapter
     private final CategoriaItemCuantitativoJuradoQueryRepository repository;
 
     @Override
-    public List<CategoriaItemCuantitativoJuradoReadModel> consultar(String nombre) {
-        var entidades = UtilObjeto.esNulo(nombre)
+    public List<CategoriaItemCuantitativoJuradoReadModel> consultar(CategoriaItemCuantitativoJuradoCriteria criteria) {
+        var entidades = UtilObjeto.esNulo(criteria.nombre())
                 ? repository.findAllByOrderByNombreAsc()
-                : repository.findByNombreContainingIgnoreCaseOrderByNombreAsc(nombre);
+                : repository.findByNombreContainingIgnoreCaseOrderByNombreAsc(criteria.nombre());
 
         return entidades.stream()
                 .map(CategoriaItemCuantitativoJuradoQueryMapper::toReadModel)

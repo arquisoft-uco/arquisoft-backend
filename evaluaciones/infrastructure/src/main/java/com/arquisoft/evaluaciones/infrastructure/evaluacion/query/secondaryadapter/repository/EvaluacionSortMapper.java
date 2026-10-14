@@ -8,6 +8,8 @@ import java.util.Map;
 
 final class EvaluacionSortMapper {
 
+    static final String RUTA_DESEMPATE = "id";
+
     private static final Map<String, String> RUTAS;
 
     static {

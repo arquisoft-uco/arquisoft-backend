@@ -2,10 +2,13 @@ package com.arquisoft.proyectos.application.estudianteproyectogrado.command.usec
 
 import com.arquisoft.proyectos.application.estudiante.command.finder.EstudiantesVigentesPorIdsFinder;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.finder.EstudiantesVinculadosContadorFinder;
+import com.arquisoft.proyectos.application.estudianteproyectogrado.command.finder.EstudiantesYaVinculadosFinder;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.secondaryport.EstudianteProyectoGradoOutputPort;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.secondaryport.entity.EstudianteProyectoGradoEntity;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.validator.AsignarEstudiantesProyectoGradoValidator;
+import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estudiante.EstudianteDomain;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.AgregacionEstudiantesProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.EstudianteProyectoGradoDomain;
@@ -51,10 +54,16 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
     private ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
 
     @Mock
+    private EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
+
+    @Mock
     private EstudiantesVigentesPorIdsFinder estudiantesVigentesPorIdsFinder;
 
     @Mock
     private EstudiantesVinculadosContadorFinder estudiantesVinculadosContadorFinder;
+
+    @Mock
+    private EstudiantesYaVinculadosFinder estudiantesYaVinculadosFinder;
 
     @Mock
     private AsignarEstudiantesProyectoGradoValidator validator;
@@ -73,13 +82,15 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
 
     private final ProyectoGradoDomain proyecto = ProyectoGradoDomain.crear(
             UUID.randomUUID(), "Sistema de gestión", UUID.randomUUID());
+    private final EstadoProyectoGradoDomain estadoActual = EstadoProyectoGradoDomain.crear(proyecto.getId());
     private final List<EstudianteDomain> vigentes = List.of(
             estudiante("Ana Gomez", "ana.gomez@soyuco.edu.co"),
             estudiante("Luis Diaz", "luis.diaz@soyuco.edu.co"),
             estudiante("Eva Ruiz", "eva.ruiz@soyuco.edu.co"));
     private final AgregacionEstudiantesProyectoGradoDomain entrada = AgregacionEstudiantesProyectoGradoDomain.crear(
             EstudianteProyectoGradoDomain.crear(proyecto.getId(),
-                    vigentes.stream().map(EstudianteDomain::getId).toList()));
+                    vigentes.stream().map(EstudianteDomain::getId).toList()),
+            proyecto.getCoordinador());
 
     private static EstudianteDomain estudiante(String nombre, String email) {
         return EstudianteDomain.reconstruir(UUID.randomUUID(), "2020", nombre, email,
@@ -88,7 +99,9 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
 
     private void stubFinders() {
         when(proyectoGradoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
+        when(estadoActualProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estadoActual);
         when(estudiantesVigentesPorIdsFinder.obtener(entrada.getEstudiantes())).thenReturn(vigentes);
+        when(estudiantesYaVinculadosFinder.obtener(entrada)).thenReturn(List.of());
         when(estudiantesVinculadosContadorFinder.obtener(proyecto.getId())).thenReturn(0L);
     }
 
@@ -116,12 +129,14 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
                     new ContactoEstudiante("Eva Ruiz", "eva.ruiz@soyuco.edu.co"));
         });
 
-        var orden = inOrder(proyectoGradoPorIdFinder, estudiantesVigentesPorIdsFinder,
+        var orden = inOrder(proyectoGradoPorIdFinder, estadoActualProyectoGradoFinder, estudiantesVigentesPorIdsFinder, estudiantesYaVinculadosFinder,
                 estudiantesVinculadosContadorFinder, validator, estudianteProyectoGradoOutputPort, eventPublisher);
         orden.verify(proyectoGradoPorIdFinder, times(1)).obtener(proyecto.getId());
+        orden.verify(estadoActualProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(estudiantesVigentesPorIdsFinder, times(1)).obtener(entrada.getEstudiantes());
+        orden.verify(estudiantesYaVinculadosFinder, times(1)).obtener(entrada);
         orden.verify(estudiantesVinculadosContadorFinder, times(1)).obtener(proyecto.getId());
-        orden.verify(validator).validar(entrada, proyecto, vigentes, 0L);
+        orden.verify(validator).validar(entrada, proyecto, estadoActual, vigentes, List.of(), 0L);
         orden.verify(estudianteProyectoGradoOutputPort).vincular(anyList());
         orden.verify(eventPublisher).publish(any());
     }
@@ -131,7 +146,7 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
         // Arrange
         stubFinders();
         doThrow(new EstudiantesNoVigentesException(List.of(UUID.randomUUID())))
-                .when(validator).validar(eq(entrada), any(), anyList(), anyLong());
+                .when(validator).validar(eq(entrada), any(), any(), anyList(), anyList(), anyLong());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada)).isInstanceOf(EstudiantesNoVigentesException.class);

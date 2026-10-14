@@ -9,7 +9,7 @@ public class SolicitudRespondidaRuleImpl implements SolicitudRespondidaRule {
     @Override
     public void validar(RespuestaSolicitud respuesta) {
         if (respuesta.yaRespondida()) {
-            throw new SolicitudYaRespondidaException(respuesta.solicitud());
+            throw new SolicitudYaRespondidaException();
         }
     }
 }

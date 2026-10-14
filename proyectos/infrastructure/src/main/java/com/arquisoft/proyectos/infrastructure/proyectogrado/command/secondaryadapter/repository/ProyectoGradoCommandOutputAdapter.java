@@ -30,6 +30,11 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     }
 
     @Override
+    public boolean existePorId(UUID proyectoGrado) {
+        return proyectoGradoRepository.existsById(proyectoGrado);
+    }
+
+    @Override
     public Optional<ProyectoGradoEntity> obtenerPorId(UUID proyectoGrado) {
         return proyectoGradoRepository.findById(proyectoGrado).map(ProyectoGradoJpaMapper::toEntity);
     }

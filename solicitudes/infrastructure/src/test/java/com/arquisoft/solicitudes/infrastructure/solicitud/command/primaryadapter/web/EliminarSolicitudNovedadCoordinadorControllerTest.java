@@ -71,15 +71,15 @@ class EliminarSolicitudNovedadCoordinadorControllerTest {
     @Test
     void debe204YTomarElRemitenteDelJwt_cuandoLaPeticionEsValida() throws Exception {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID remitente = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
 
         // Act & Assert
         mockMvc.perform(delete(RUTA + solicitud)
                         .with(jwtDe(remitente, SolicitudesAuthorities.SOLICITUD_NOVEDAD_COORDINADOR_DELETE)))
                 .andExpect(status().isNoContent());
 
-        ArgumentCaptor<EliminarSolicitudNovedadCoordinadorCommand> captor =
+        var captor =
                 ArgumentCaptor.forClass(EliminarSolicitudNovedadCoordinadorCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().solicitud()).isEqualTo(solicitud);
@@ -113,7 +113,7 @@ class EliminarSolicitudNovedadCoordinadorControllerTest {
     @Test
     void debe422_cuandoElInteractorRechazaPorReglaDeNegocio() throws Exception {
         // Arrange
-        doThrow(new SolicitudConRespuestasException(UUID.randomUUID()))
+        doThrow(new SolicitudConRespuestasException())
                 .when(interactor).ejecutar(any());
 
         // Act & Assert

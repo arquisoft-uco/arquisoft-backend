@@ -5,13 +5,11 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 
-import java.util.UUID;
-
 public final class EstadoRespuestaNoResolutivoException extends DomainException {
 
-    public EstadoRespuestaNoResolutivoException(UUID solicitud, String nuevoEstado) {
+    public EstadoRespuestaNoResolutivoException(String nuevoEstado) {
         super(
-                Mensajes.formatear(RespuestaKey.ERROR_ESTADO_RESPUESTA_NO_RESOLUTIVO, nuevoEstado, solicitud),
+                Mensajes.formatear(RespuestaKey.ERROR_ESTADO_RESPUESTA_NO_RESOLUTIVO, nuevoEstado),
                 SolicitudesCodes.Respuesta.ESTADO_NO_RESOLUTIVO
         );
     }

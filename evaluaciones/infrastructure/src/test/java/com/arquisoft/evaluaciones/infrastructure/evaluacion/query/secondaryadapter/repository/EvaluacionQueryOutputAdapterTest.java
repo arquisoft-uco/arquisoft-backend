@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -246,6 +247,38 @@ class EvaluacionQueryOutputAdapterTest {
                 .containsExactly("Gamma " + sufijo);
         assertThat(resultado.getTotalElements()).isEqualTo(3);
         assertThat(resultado.getTotalPages()).isEqualTo(2);
+    }
+
+    @Test
+    void debeDesempatarPorId_cuandoVariasEvaluacionesCompartenProyecto() {
+        // Arrange
+        var esperadas = List.of(
+                        sembrarEvaluacion(UUID.randomUUID(), "Alfa", 1, "PENDIENTE"),
+                        sembrarEvaluacion(UUID.randomUUID(), "Alfa", 2, "PENDIENTE"),
+                        sembrarEvaluacion(UUID.randomUUID(), "Alfa", 3, "PENDIENTE"),
+                        sembrarEvaluacion(UUID.randomUUID(), "Alfa", 4, "PENDIENTE"))
+                .stream().sorted(Comparator.comparing(UUID::toString)).toList();
+
+        // Act
+        var primeraPagina = adapter.consultarTodas(criteriaPorProyecto(0));
+        var segundaPagina = adapter.consultarTodas(criteriaPorProyecto(1));
+
+        // Assert
+        assertThat(primeraPagina.getContent())
+                .extracting(EvaluacionReadModel::id)
+                .containsExactlyElementsOf(esperadas.subList(0, 2));
+        assertThat(segundaPagina.getContent())
+                .extracting(EvaluacionReadModel::id)
+                .containsExactlyElementsOf(esperadas.subList(2, 4));
+    }
+
+    private EvaluacionCriteria criteriaPorProyecto(int pagina) {
+        return EvaluacionCriteria.builder()
+                .raiz(deEstaPrueba())
+                .pagina(pagina)
+                .tamanio(2)
+                .ordenamiento(List.of(SortOrder.of("proyecto", SortDirection.ASC)))
+                .build();
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.arquisoft.solicitudes.domain.respuesta.event;
 
 import com.arquisoft.shared.message.constant.EventTopics;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.exception.TipoSolicitudNoEncontradoException;
@@ -55,10 +56,51 @@ class SolicitudEstadoModificadoEventTest {
     }
 
     @Test
+    void debeExponerElTemaYElTipoDeEventoDelAsesor_cuandoElTipoEsNovedadParaElAsesor() {
+        // Arrange
+        var solicitud = UUID.randomUUID();
+
+        // Act
+        var evento = new SolicitudEstadoModificadoEvent(
+                TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, solicitud,
+                EstadoRespuesta.NO_APROBADA, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_ASESOR_ESTADO_MODIFICADO);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.novedad_asesor_estado_modificado");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudNovedadAsesorEstadoModificadoEvent");
+        assertThat(evento.getSolicitudId()).isEqualTo(solicitud);
+        assertThat(evento.getNuevoEstado()).isEqualTo(EstadoRespuesta.NO_APROBADA.getId());
+        assertThat(evento.getNuevoEstadoNombre()).isEqualTo(EstadoRespuesta.NO_APROBADA.getNombre());
+        assertThat(evento.getRemitenteEmail()).isEqualTo("ana@uco.edu.co");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+    }
+
+    @Test
+    void debeExponerElTemaYElTipoDeEventoDeCambioAsesor_cuandoElTipoEsCambioDeAsesor() {
+        // Arrange
+        var solicitud = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var evento = new SolicitudEstadoModificadoEvent(
+                TipoSolicitud.CAMBIO_DE_ASESOR, solicitud,
+                EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.CAMBIO_ASESOR_ESTADO_MODIFICADO);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.cambio_asesor_estado_modificado");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudCambioAsesorEstadoModificadoEvent");
+        assertThat(evento.getSolicitudId()).isEqualTo(solicitud);
+        assertThat(evento.getNuevoEstado()).isEqualTo(EstadoRespuesta.APROBADA.getId());
+        assertThat(evento.getRemitenteEmail()).isEqualTo("ana@uco.edu.co");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+    }
+
+    @Test
     void debeLanzarTipoNoEncontrado_cuandoElTipoNoTieneEventoDeEstadoModificado() {
         // Act & Assert
         assertThatThrownBy(() -> new SolicitudEstadoModificadoEvent(
-                TipoSolicitud.CAMBIO_DE_ASESOR, UUID.randomUUID(),
+                TipoSolicitud.AMPLIACION_DE_PLAZO, UUID.randomUUID(),
                 EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE))
                 .isInstanceOf(TipoSolicitudNoEncontradoException.class);
     }

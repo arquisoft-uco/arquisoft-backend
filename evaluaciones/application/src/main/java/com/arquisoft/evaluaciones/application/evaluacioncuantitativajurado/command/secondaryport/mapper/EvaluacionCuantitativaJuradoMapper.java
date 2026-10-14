@@ -11,4 +11,9 @@ public final class EvaluacionCuantitativaJuradoMapper {
         return EvaluacionCuantitativaJuradoDomain.reconstruir(
                 entity.id(), entity.evaluacionJurado(), entity.item(), entity.puntaje());
     }
+
+    public static EvaluacionCuantitativaJuradoEntity toEntity(EvaluacionCuantitativaJuradoDomain domain) {
+        return new EvaluacionCuantitativaJuradoEntity(
+                domain.getId(), domain.getEvaluacionJurado(), domain.getItem(), domain.getPuntaje());
+    }
 }
