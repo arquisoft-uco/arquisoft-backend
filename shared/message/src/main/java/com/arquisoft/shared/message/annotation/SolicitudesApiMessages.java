@@ -417,6 +417,17 @@ public final class SolicitudesApiMessages {
                 "Sin permisos para consultar respuestas de solicitudes de cambio de asesor "
                         + "recibidas";
 
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_SUMMARY =
+                "Consultar respuestas de solicitudes de ampliación de plazo recibidas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_DESCRIPTION =
+                "Consulta paginada y filtrable de las respuestas recibidas por el estudiante autenticado a sus solicitudes de ampliación de plazo.";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_200 =
+                "Página de respuestas de solicitudes de ampliación de plazo recibidas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar respuestas de solicitudes de ampliación de plazo recibidas";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_SUMMARY =
                 "Consultar respuestas de solicitudes de novedad para el coordinador enviadas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_DESCRIPTION =
