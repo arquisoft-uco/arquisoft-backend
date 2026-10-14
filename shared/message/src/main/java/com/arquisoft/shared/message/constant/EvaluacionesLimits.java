@@ -41,7 +41,6 @@ public final class EvaluacionesLimits {
 
         private ObservacionItemJurado() {}
 
-        public static final int DESCRIPCION_MIN = 1;
         public static final int DESCRIPCION_MAX = 500;
     }
 }

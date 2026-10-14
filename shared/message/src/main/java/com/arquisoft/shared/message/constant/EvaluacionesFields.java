@@ -78,6 +78,17 @@ public final class EvaluacionesFields {
         public static final String JURADOS = "jurados";
     }
 
+    public static final class Jurado {
+
+        private Jurado() {}
+
+        public static final String ID = "id";
+        public static final String IDENTIFICADOR = "identificador";
+        public static final String NOMBRE = "nombre";
+        public static final String EMAIL = "email";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
     public static final class ItemCuantitativoJurado {
 
         private ItemCuantitativoJurado() {}

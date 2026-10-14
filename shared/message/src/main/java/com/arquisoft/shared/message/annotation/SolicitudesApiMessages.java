@@ -95,6 +95,19 @@ public final class SolicitudesApiMessages {
         public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_422 =
                 "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
 
+        public static final String ELIMINAR_CAMBIO_ASESOR_SUMMARY =
+                "Eliminar solicitud para cambio de asesor";
+        public static final String ELIMINAR_CAMBIO_ASESOR_DESCRIPTION =
+                "Permite a un estudiante eliminar definitivamente una solicitud para cambio de "
+                        + "asesor que envió por error.";
+        public static final String ELIMINAR_CAMBIO_ASESOR_RESP_204 = "Solicitud eliminada";
+        public static final String ELIMINAR_CAMBIO_ASESOR_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_CAMBIO_ASESOR_RESP_403 =
+                "Sin permisos para eliminar solicitudes para cambio de asesor";
+        public static final String ELIMINAR_CAMBIO_ASESOR_RESP_422 =
+                "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_SUMMARY =
                 "Consultar solicitudes de novedad para el coordinador recibidas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_DESCRIPTION =
@@ -107,6 +120,19 @@ public final class SolicitudesApiMessages {
                 "Criterio de filtro, orden o paginación inválido";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de novedad para el coordinador recibidas";
+
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_SUMMARY =
+                "Consultar solicitudes de cambio de asesor recibidas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_DESCRIPTION =
+                "Permite a un coordinador consultar de forma paginada y filtrable las solicitudes de "
+                        + "cambio de asesor que ha recibido. El alcance se limita a las "
+                        + "solicitudes dirigidas al coordinador autenticado.";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_200 =
+                "Página de solicitudes de cambio de asesor recibidas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de cambio de asesor recibidas";
 
         public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_SUMMARY =
                 "Consultar solicitudes de novedad para el asesor recibidas";
@@ -144,6 +170,19 @@ public final class SolicitudesApiMessages {
                 "Criterio de filtro, orden o paginación inválido";
         public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de novedad para el asesor enviadas";
+
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_SUMMARY =
+                "Consultar solicitudes de cambio de asesor enviadas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_DESCRIPTION =
+                "Permite a un estudiante consultar de forma paginada y filtrable las solicitudes de "
+                        + "cambio de asesor que ha enviado. El alcance se limita a las "
+                        + "solicitudes cuyo remitente es el estudiante autenticado.";
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_RESP_200 =
+                "Página de solicitudes de cambio de asesor enviadas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de cambio de asesor enviadas";
     }
 
     public static final class Respuesta {
@@ -164,6 +203,19 @@ public final class SolicitudesApiMessages {
         public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_403 =
                 "Sin permisos para responder solicitudes de novedad para el coordinador";
         public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
+
+        public static final String RESPONDER_CAMBIO_ASESOR_SUMMARY =
+                "Responder solicitud para cambio de asesor";
+        public static final String RESPONDER_CAMBIO_ASESOR_DESCRIPTION =
+                "Permite a un coordinador responder una solicitud para cambio de asesor que le fue "
+                        + "dirigida, registrando el contenido de la respuesta.";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_201 =
+                "Respuesta registrada — retorna el UUID asignado";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_400 = "Datos inválidos";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_403 =
+                "Sin permisos para responder solicitudes para cambio de asesor";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_422 =
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
 
         public static final String RESPONDER_NOVEDAD_ASESOR_SUMMARY =
@@ -269,6 +321,21 @@ public final class SolicitudesApiMessages {
                 "Sin permisos para consultar respuestas de solicitudes de novedad para el asesor "
                         + "recibidas";
 
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_SUMMARY =
+                "Consultar respuestas de solicitudes de cambio de asesor recibidas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_DESCRIPTION =
+                "Permite a un estudiante consultar de forma paginada y filtrable las respuestas que ha "
+                        + "recibido a sus solicitudes de cambio de asesor. El alcance se "
+                        + "limita a las respuestas de solicitudes cuyo remitente es el estudiante "
+                        + "autenticado.";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_200 =
+                "Página de respuestas de solicitudes de cambio de asesor recibidas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar respuestas de solicitudes de cambio de asesor "
+                        + "recibidas";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_SUMMARY =
                 "Consultar respuestas de solicitudes de novedad para el coordinador enviadas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_DESCRIPTION =
@@ -281,6 +348,20 @@ public final class SolicitudesApiMessages {
                 "Criterio de filtro, orden o paginación inválido";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_403 =
                 "Sin permisos para consultar respuestas de solicitudes de novedad para el coordinador "
+                        + "enviadas";
+
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_SUMMARY =
+                "Consultar respuestas de solicitudes de novedad para el asesor enviadas";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_DESCRIPTION =
+                "Permite a un asesor consultar de forma paginada y filtrable las respuestas que ha "
+                        + "enviado a solicitudes de novedad para el asesor. El alcance se limita a "
+                        + "las respuestas de solicitudes cuyo destinatario es el asesor autenticado.";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_RESP_200 =
+                "Página de respuestas de solicitudes de novedad para el asesor enviadas";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_RESP_403 =
+                "Sin permisos para consultar respuestas de solicitudes de novedad para el asesor "
                         + "enviadas";
     }
 

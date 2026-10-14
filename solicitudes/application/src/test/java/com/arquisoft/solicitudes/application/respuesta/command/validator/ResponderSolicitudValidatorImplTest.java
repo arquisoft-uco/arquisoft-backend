@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.respuesta.command.validator;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.respuesta.command.validator.impl.ResponderSolicitudValidatorImpl;
 import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEncontradoException;
 import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
@@ -9,6 +10,7 @@ import com.arquisoft.solicitudes.domain.respuesta.exception.SolicitudYaRespondid
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -185,5 +187,25 @@ class ResponderSolicitudValidatorImplTest {
                 resumen(true, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId(), REMITENTE, responsable),
                 usuario(REMITENTE), usuario(responsable), false))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debePasar_cuandoSeEsperabaCambioDeAsesorYLaSolicitudEsDeEseTipo() {
+        var responsable = UtilUUID.generarNuevoUUID();
+
+        assertThatCode(() -> validator.validar(entrada(responsable, TipoSolicitud.CAMBIO_DE_ASESOR),
+                resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), REMITENTE, responsable),
+                usuario(REMITENTE), usuario(responsable), false))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarTipoNoCoincideCambioAsesor_cuandoSeEsperabaCambioDeAsesorYLaSolicitudEsDeOtroTipo() {
+        var responsable = UtilUUID.generarNuevoUUID();
+
+        assertThatThrownBy(() -> validator.validar(entrada(responsable, TipoSolicitud.CAMBIO_DE_ASESOR),
+                resumen(true, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), REMITENTE, responsable),
+                usuario(REMITENTE), usuario(responsable), false))
+                .isInstanceOf(SolicitudTipoNoCoincideCambioAsesorException.class);
     }
 }

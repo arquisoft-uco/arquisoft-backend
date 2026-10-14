@@ -38,8 +38,6 @@ public final class EvaluacionesAuthorities {
     public static final String EVALUACION_CUALITATIVA_JURADO_CREATE =
             "evaluaciones:evaluacion-cualitativa-jurado:create";
 
-    public static final String EVALUACION_JURADO_CREATE =
-            "evaluaciones:evaluacion-jurado:create";
     public static final String OBSERVACION_ITEM_JURADO_CREATE =
             "evaluaciones:observacion-item-jurado:create";
 
@@ -54,6 +52,8 @@ public final class EvaluacionesAuthorities {
 
     public static final String EVALUACION_JURADO_ESTUDIANTE_VIEW =
             "evaluaciones:evaluacion-jurado-estudiante:view";
+    public static final String EVALUACION_JURADO_CREATE =
+            "evaluaciones:evaluacion-jurado:create";
 
     public static final String EVALUACION_COORDINADOR_VIEW =
             "evaluaciones:evaluacion-coordinador:view";

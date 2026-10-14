@@ -9,4 +9,9 @@ public interface EstudianteProyectoGradoQueryRepository
         extends QueryRepository<EstudianteProyectoGradoJpaQueryEntity, UUID> {
 
     List<EstudianteProyectoGradoJpaQueryEntity> findByProyectoGradoIdOrderByNombreAscIdAsc(UUID proyectoGradoId);
+
+    List<EstudianteProyectoGradoJpaQueryEntity> findByProyectoGradoIdAndVigenteTrueOrderByNombreAscIdAsc(
+            UUID proyectoGradoId);
+
+    boolean existsByProyectoGradoIdAndEstudianteIdAndVigenteTrue(UUID proyectoGradoId, UUID estudianteId);
 }

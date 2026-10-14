@@ -33,7 +33,7 @@ public class RegistrarObservacionItemJuradoUseCaseImpl implements RegistrarObser
 
         var evaluacion = evaluacionCuantitativaJuradoPorIdFinder
                 .obtener(observacion.getEvaluacionCuantitativaJurado());
-        var finalizada = evaluacionJuradoFinalizadaFinder.obtener(evaluacion.getEvaluacionJurado());
+        var finalizada = evaluacionJuradoFinalizadaFinder.obtener(observacion.getEvaluacionCuantitativaJurado());
         var descripcionYaExiste = descripcionObservacionItemJuradoExisteFinder.obtener(
                 new CriterioDescripcionObservacionItemJurado(
                         observacion.getEvaluacionCuantitativaJurado(), observacion.getDescripcion()));

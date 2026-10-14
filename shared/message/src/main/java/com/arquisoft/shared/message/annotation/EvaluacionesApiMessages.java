@@ -145,7 +145,7 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones de jurado";
         public static final String TAG_DESCRIPTION =
-                "Asignación de jurados a una evaluación y consulta de las evaluaciones de jurado asociadas";
+                "Asignación y consulta de las evaluaciones de jurado de una evaluación";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones de jurado";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta de forma paginada las evaluaciones de jurado de una evaluación, con filtro "
@@ -154,7 +154,6 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 =
                 "El identificador no es válido o el filtro/orden solicitado no es aceptado";
         public static final String CONSULTAR_RESP_422 = "La evaluación no existe";
-
         public static final String ASIGNAR_SUMMARY = "Asignar jurados a una evaluación";
         public static final String ASIGNAR_DESCRIPTION =
                 "Asigna un conjunto de jurados a una evaluación y devuelve los identificadores generados";

@@ -137,6 +137,17 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_EXCEDE_VALOR_ITEM";
     }
 
+    public static final class Jurado {
+
+        private Jurado() {}
+
+        public static final String ID_REQUERIDO = "JURADO_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "JURADO_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "JURADO_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "JURADO_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "JURADO_OCURRIDO_EN_REQUERIDO";
+    }
+
     public static final class ItemCuantitativoJurado {
 
         private ItemCuantitativoJurado() {}

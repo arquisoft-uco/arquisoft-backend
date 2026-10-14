@@ -16,7 +16,7 @@ public interface EvaluacionJuradoOutputPort {
 
     Set<UUID> consultarJuradosAsignados(UUID evaluacion, Set<UUID> jurados);
 
-    boolean estaFinalizada(UUID evaluacionJurado);
+    boolean estaFinalizada(UUID evaluacionCuantitativaJurado);
 
     boolean estaFinalizadaPorObservacion(UUID observacion);
 }
