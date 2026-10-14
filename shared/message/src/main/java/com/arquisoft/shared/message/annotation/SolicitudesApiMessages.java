@@ -311,6 +311,17 @@ public final class SolicitudesApiMessages {
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
                         + "encontrada o ya no está en revisión";
 
+        public static final String ELIMINAR_AMPLIACION_PLAZO_SUMMARY = "Eliminar respuesta de solicitud para ampliación de plazo";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_DESCRIPTION =
+                "Permite a un coordinador eliminar definitivamente la respuesta que registró para una "
+                        + "solicitud para ampliación de plazo, mientras siga en revisión.";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_204 = "Respuesta eliminada";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_400 = "Identificador de solicitud inválido";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_403 = "Sin permisos para eliminar respuestas de solicitudes de ampliación de plazo";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
+                        + "encontrada o ya no está en revisión";
+
         public static final String ELIMINAR_NOVEDAD_ASESOR_SUMMARY =
                 "Eliminar respuesta de solicitud de novedad para el asesor";
         public static final String ELIMINAR_NOVEDAD_ASESOR_DESCRIPTION =
