@@ -7,6 +7,7 @@ import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontrad
 import com.arquisoft.solicitudes.domain.respuesta.model.ResumenRespuesta;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAmpliacionPlazoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
@@ -34,7 +35,7 @@ class EliminarRespuestaValidatorImplTest {
 
     @ParameterizedTest
     @EnumSource(value = TipoSolicitud.class,
-            names = {"NOVEDAD_PARA_EL_ASESOR", "NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR"})
+            names = {"NOVEDAD_PARA_EL_ASESOR", "NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO"})
     void debePasar_cuandoLasCincoReglasSeCumplen(TipoSolicitud tipo) {
         // Arrange
         var solicitud = UUID.randomUUID();
@@ -50,7 +51,7 @@ class EliminarRespuestaValidatorImplTest {
 
     @ParameterizedTest
     @EnumSource(value = TipoSolicitud.class,
-            names = {"NOVEDAD_PARA_EL_ASESOR", "NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR"})
+            names = {"NOVEDAD_PARA_EL_ASESOR", "NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO"})
     void debeLanzarSolicitudNoEncontrada_cuandoLaSolicitudNoExiste(TipoSolicitud tipo) {
         // Arrange
         var solicitud = UUID.randomUUID();
@@ -107,9 +108,24 @@ class EliminarRespuestaValidatorImplTest {
                 .isInstanceOf(SolicitudTipoNoCoincideCambioAsesorException.class);
     }
 
+    @Test
+    void debeLanzarSolicitudTipoNoCoincideAmpliacionPlazo_cuandoSeEliminaUnaSolicitudDeOtroTipo() {
+        // Arrange
+        var solicitud = UUID.randomUUID();
+        var entrada = EliminacionRespuestaDomain.crear(
+                solicitud, UUID.randomUUID(), TipoSolicitud.AMPLIACION_DE_PLAZO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(entrada,
+                resumenSolicitud(solicitud, UUID.randomUUID(),
+                        TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()),
+                new ResumenRespuesta(solicitud, ESTADO_OK)))
+                .isInstanceOf(SolicitudTipoNoCoincideAmpliacionPlazoException.class);
+    }
+
     @ParameterizedTest
     @EnumSource(value = TipoSolicitud.class,
-            names = {"NOVEDAD_PARA_EL_ASESOR", "NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR"})
+            names = {"NOVEDAD_PARA_EL_ASESOR", "NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO"})
     void debeLanzarSolicitudNoEsDestinatario_cuandoElResponsableNoEsElDestinatario(TipoSolicitud tipo) {
         // Arrange
         var solicitud = UUID.randomUUID();
@@ -124,7 +140,7 @@ class EliminarRespuestaValidatorImplTest {
 
     @ParameterizedTest
     @EnumSource(value = TipoSolicitud.class,
-            names = {"NOVEDAD_PARA_EL_ASESOR", "NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR"})
+            names = {"NOVEDAD_PARA_EL_ASESOR", "NOVEDAD_PARA_EL_COORDINADOR", "CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO"})
     void debeLanzarRespuestaNoEncontrada_cuandoNoExisteRespuestaParaLaSolicitud(TipoSolicitud tipo) {
         // Arrange
         var solicitud = UUID.randomUUID();

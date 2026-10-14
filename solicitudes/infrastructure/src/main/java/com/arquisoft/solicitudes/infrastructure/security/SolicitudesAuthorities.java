@@ -44,6 +44,8 @@ public final class SolicitudesAuthorities {
             "solicitudes:respuesta-novedad-coordinador:delete";
     public static final String RESPUESTA_CAMBIO_ASESOR_DELETE =
             "solicitudes:respuesta-cambio-asesor:delete";
+    public static final String RESPUESTA_AMPLIACION_PLAZO_DELETE =
+            "solicitudes:respuesta-ampliacion-plazo:delete";
     public static final String RESPUESTA_NOVEDAD_ASESOR_DELETE =
             "solicitudes:respuesta-novedad-asesor:delete";
     public static final String RESPUESTA_NOVEDAD_COORDINADOR_UPDATE =
@@ -135,6 +137,9 @@ public final class SolicitudesAuthorities {
 
         public static final String HAS_RESPUESTA_CAMBIO_ASESOR_DELETE =
                 HAS_AUTHORITY_INICIO + RESPUESTA_CAMBIO_ASESOR_DELETE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_RESPUESTA_AMPLIACION_PLAZO_DELETE =
+                HAS_AUTHORITY_INICIO + RESPUESTA_AMPLIACION_PLAZO_DELETE + HAS_AUTHORITY_FIN;
 
         public static final String HAS_RESPUESTA_NOVEDAD_ASESOR_DELETE =
                 HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_ASESOR_DELETE + HAS_AUTHORITY_FIN;

@@ -57,6 +57,7 @@
           "client": {
             "arquisoft-api": [
               "solicitudes:respuesta-cambio-asesor:delete",
+              "solicitudes:respuesta-ampliacion-plazo:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
               "solicitudes:respuesta-cambio-asesor-enviada:view",
               "mapas-ruta:mapa-ruta-coordinador:view",
@@ -1967,6 +1968,15 @@
         {
           "id": "ad76f5c8-3562-4832-8b0c-693f6c89a8e9",
           "name": "solicitudes:respuesta-cambio-asesor:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "9f75b098-2782-4c32-8704-607797cad42f",
+          "name": "solicitudes:respuesta-ampliacion-plazo:delete",
           "description": "",
           "composite": false,
           "clientRole": true,
