@@ -37,4 +37,15 @@ public class EvaluacionCualitativaJuradoCommandOutputAdapter implements Evaluaci
     public boolean existePorItem(UUID item) {
         return repository.existsByItem(item);
     }
+
+    @Override
+    public Set<UUID> consultarIdsPorEvaluacionJurado(UUID evaluacionJurado, Set<UUID> evaluaciones) {
+        return repository.findIdsPorEvaluacionJurado(evaluacionJurado, evaluaciones);
+    }
+
+    @Override
+    public void eliminarPorIds(UUID evaluacionJurado, Set<UUID> evaluaciones) {
+        repository.eliminarPorIds(evaluacionJurado, evaluaciones);
+        logger.debug(EvaluacionCualitativaJuradoKey.LOG_LOTE_ELIMINADO, evaluaciones.size());
+    }
 }

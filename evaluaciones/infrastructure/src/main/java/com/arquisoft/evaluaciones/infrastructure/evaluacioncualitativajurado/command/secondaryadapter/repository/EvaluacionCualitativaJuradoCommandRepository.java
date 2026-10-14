@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativajurado.co
 
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativajurado.command.secondaryadapter.entity.EvaluacionCualitativaJuradoJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -17,4 +18,15 @@ public interface EvaluacionCualitativaJuradoCommandRepository
             @Param("evaluacionJurado") UUID evaluacionJurado, @Param("items") Set<UUID> items);
 
     boolean existsByItem(UUID item);
+
+    @Query("select e.id from EvaluacionCualitativaJuradoJpaEntity e "
+            + "where e.evaluacionJurado = :evaluacionJurado and e.id in :evaluaciones")
+    Set<UUID> findIdsPorEvaluacionJurado(
+            @Param("evaluacionJurado") UUID evaluacionJurado, @Param("evaluaciones") Set<UUID> evaluaciones);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from EvaluacionCualitativaJuradoJpaEntity e "
+            + "where e.evaluacionJurado = :evaluacionJurado and e.id in :evaluaciones")
+    void eliminarPorIds(
+            @Param("evaluacionJurado") UUID evaluacionJurado, @Param("evaluaciones") Set<UUID> evaluaciones);
 }
