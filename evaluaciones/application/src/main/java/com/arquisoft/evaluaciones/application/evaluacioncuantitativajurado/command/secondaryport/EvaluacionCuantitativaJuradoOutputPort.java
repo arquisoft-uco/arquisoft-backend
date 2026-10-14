@@ -10,4 +10,6 @@ public interface EvaluacionCuantitativaJuradoOutputPort {
     Optional<EvaluacionCuantitativaJuradoEntity> obtenerPorId(UUID id);
 
     void actualizar(EvaluacionCuantitativaJuradoEntity evaluacionCuantitativaJurado);
+
+    boolean existePorItem(UUID item);
 }

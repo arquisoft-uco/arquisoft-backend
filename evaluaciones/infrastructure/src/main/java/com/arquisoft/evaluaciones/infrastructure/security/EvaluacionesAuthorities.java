@@ -28,6 +28,8 @@ public final class EvaluacionesAuthorities {
             "evaluaciones:item-cuantitativo-jurado:update";
     public static final String ITEM_CUANTITATIVO_JURADO_VIEW =
             "evaluaciones:item-cuantitativo-jurado:view";
+    public static final String ITEM_CUANTITATIVO_JURADO_DELETE =
+            "evaluaciones:item-cuantitativo-jurado:delete";
 
     public static final String EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_VIEW =
             "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view";
@@ -90,6 +92,8 @@ public final class EvaluacionesAuthorities {
                 HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_ITEM_CUANTITATIVO_JURADO_UPDATE =
                 HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_UPDATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_ITEM_CUANTITATIVO_JURADO_DELETE =
+                HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_DELETE + HAS_AUTHORITY_FIN;
 
         public static final String HAS_EVALUACION_CUALITATIVA_JURADO_CREATE =
                 HAS_AUTHORITY_INICIO + EVALUACION_CUALITATIVA_JURADO_CREATE + HAS_AUTHORITY_FIN;

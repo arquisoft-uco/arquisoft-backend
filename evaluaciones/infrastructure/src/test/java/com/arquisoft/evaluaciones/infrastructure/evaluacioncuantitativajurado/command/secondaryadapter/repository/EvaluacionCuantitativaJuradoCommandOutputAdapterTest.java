@@ -88,4 +88,26 @@ class EvaluacionCuantitativaJuradoCommandOutputAdapterTest {
         assertThat(actualizada.getEvaluacionJuradoId()).isEqualTo(evaluacionJurado);
         assertThat(actualizada.getItemId()).isEqualTo(item);
     }
+
+    @Test
+    void debeDelegarExistePorItemEnRepositorio_cuandoConsultaExistencia() {
+        // Arrange
+        var item = UUID.randomUUID();
+        entityManager.persist(EvaluacionCuantitativaJuradoJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .evaluacionJuradoId(UUID.randomUUID())
+                .itemId(item)
+                .puntaje(300)
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var existe = adapter.existePorItem(item);
+        var noExiste = adapter.existePorItem(UUID.randomUUID());
+
+        // Assert
+        assertThat(existe).isTrue();
+        assertThat(noExiste).isFalse();
+    }
 }

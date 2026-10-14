@@ -219,6 +219,14 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_204 = "Descripción actualizada";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "El ítem cuantitativo no existe";
+        public static final String REMOVER_SUMMARY = "Remover ítem cuantitativo";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve un ítem cuantitativo del jurado registrado por equivocación, "
+                        + "siempre que no se haya usado en ninguna evaluación";
+        public static final String REMOVER_RESP_204 = "Ítem cuantitativo removido";
+        public static final String REMOVER_RESP_400 = "Identificador inválido";
+        public static final String REMOVER_RESP_422 =
+                "El ítem cuantitativo no existe o ya fue usado en evaluaciones del jurado";
         public static final String CONSULTAR_SUMMARY = "Consultar ítems cuantitativos";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta todos los ítems cuantitativos disponibles para que el jurado evalúe un "

@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface EvaluacionCuantitativaJuradoCommandRepository
         extends JpaRepository<EvaluacionCuantitativaJuradoJpaEntity, UUID> {
+
+    boolean existsByItemId(UUID itemId);
 }
