@@ -52,6 +52,8 @@ public final class SolicitudesAuthorities {
             "solicitudes:respuesta-novedad-coordinador-enviada:view";
     public static final String RESPUESTA_NOVEDAD_ASESOR_ENVIADA_VIEW =
             "solicitudes:respuesta-novedad-asesor-enviada:view";
+    public static final String RESPUESTA_CAMBIO_ASESOR_ENVIADA_VIEW =
+            "solicitudes:respuesta-cambio-asesor-enviada:view";
     public static final String TIPO_SOLICITUD_VIEW = "solicitudes:tipo-solicitud:view";
     public static final String ESTADO_RESPUESTA_VIEW = "solicitudes:estado-respuesta:view";
 
@@ -136,6 +138,9 @@ public final class SolicitudesAuthorities {
 
         public static final String HAS_RESPUESTA_NOVEDAD_ASESOR_ENVIADA_VIEW =
                 HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_ASESOR_ENVIADA_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_RESPUESTA_CAMBIO_ASESOR_ENVIADA_VIEW =
+                HAS_AUTHORITY_INICIO + RESPUESTA_CAMBIO_ASESOR_ENVIADA_VIEW + HAS_AUTHORITY_FIN;
 
         public static final String HAS_TIPO_SOLICITUD_VIEW =
                 HAS_AUTHORITY_INICIO + TIPO_SOLICITUD_VIEW + HAS_AUTHORITY_FIN;

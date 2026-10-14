@@ -33,4 +33,5 @@ rutas:
       cambio-asesor-recibidas: /cambio-asesor/respuestas/recibidas
       novedad-coordinador-enviadas: /novedad-coordinador/respuestas/enviadas
       novedad-asesor-enviadas: /novedad-asesor/respuestas/enviadas
+      cambio-asesor-enviadas: /cambio-asesor/respuestas/enviadas
       estados-respuesta: /estados-respuesta
