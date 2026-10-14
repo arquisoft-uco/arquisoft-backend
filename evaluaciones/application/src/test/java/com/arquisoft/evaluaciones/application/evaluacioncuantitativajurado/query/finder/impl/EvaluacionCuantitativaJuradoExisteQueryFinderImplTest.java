@@ -1,6 +1,6 @@
 package com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.query.finder.impl;
 
-import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.query.secondaryport.EvaluacionCuantitativaJuradoQueryOutputPort;
+import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.query.secondaryport.EvaluacionCuantitativaJuradoAccesoQueryOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 class EvaluacionCuantitativaJuradoExisteQueryFinderImplTest {
 
     @Mock
-    private EvaluacionCuantitativaJuradoQueryOutputPort outputPort;
+    private EvaluacionCuantitativaJuradoAccesoQueryOutputPort outputPort;
 
     @InjectMocks
     private EvaluacionCuantitativaJuradoExisteQueryFinderImpl finder;

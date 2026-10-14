@@ -4,7 +4,6 @@ import java.util.List;
 
 public record ModificarUsuarioRequestDTO(
         String identificador,
-        String nombre,
         String email,
         String contacto,
         String nombres,

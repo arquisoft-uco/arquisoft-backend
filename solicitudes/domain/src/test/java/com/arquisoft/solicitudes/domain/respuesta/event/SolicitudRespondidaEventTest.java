@@ -1,6 +1,7 @@
 package com.arquisoft.solicitudes.domain.respuesta.event;
 
 import com.arquisoft.shared.message.constant.EventTopics;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.exception.TipoSolicitudNoEncontradoException;
@@ -57,13 +58,43 @@ class SolicitudRespondidaEventTest {
     }
 
     @Test
+    void debeExponerElTemaYElTipoDeEventoDelAsesor_cuandoElTipoEsNovedadParaElAsesor() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "Puedes presentar el lunes");
+
+        // Act
+        var evento = new SolicitudRespondidaEvent(
+                TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, respuesta, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.novedad_asesor_respondida");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudNovedadAsesorRespondidaEvent");
+    }
+
+    @Test
+    void debeExponerElTemaYElTipoDeEventoDeCambioAsesor_cuandoElTipoEsCambioDeAsesor() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(UtilUUID.generarNuevoUUID(), "Se aprueba el cambio");
+
+        // Act
+        var evento = new SolicitudRespondidaEvent(
+                TipoSolicitud.CAMBIO_DE_ASESOR, respuesta, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.CAMBIO_ASESOR_RESPONDIDA);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.cambio_asesor_respondida");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudCambioAsesorRespondidaEvent");
+    }
+
+    @Test
     void debeLanzarTipoNoEncontrado_cuandoElTipoNoTieneEventoDeRespuesta() {
         // Arrange
         var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "contenido");
 
         // Act & Assert
         assertThatThrownBy(() -> new SolicitudRespondidaEvent(
-                TipoSolicitud.CAMBIO_DE_ASESOR, respuesta, REMITENTE, RESPONSABLE))
+                TipoSolicitud.AMPLIACION_DE_PLAZO, respuesta, REMITENTE, RESPONSABLE))
                 .isInstanceOf(TipoSolicitudNoEncontradoException.class);
     }
 

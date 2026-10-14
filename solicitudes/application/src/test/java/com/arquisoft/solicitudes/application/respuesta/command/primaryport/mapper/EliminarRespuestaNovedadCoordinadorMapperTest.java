@@ -1,6 +1,7 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.EliminarRespuestaNovedadCoordinadorCommand;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -10,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EliminarRespuestaNovedadCoordinadorMapperTest {
 
     @Test
-    void debeCopiarSolicitudYCoordinadorUsuario_cuandoMapeaElComando() {
+    void debeCopiarSolicitudResponsableYTipoEsperado_cuandoMapeaElComando() {
         // Arrange
         var solicitud = UUID.randomUUID();
         var coordinador = UUID.randomUUID();
@@ -22,6 +23,7 @@ class EliminarRespuestaNovedadCoordinadorMapperTest {
 
         // Assert
         assertThat(dominio.getSolicitud()).isEqualTo(solicitud);
-        assertThat(dominio.getCoordinadorUsuario()).isEqualTo(coordinador);
+        assertThat(dominio.getResponsableUsuario()).isEqualTo(coordinador);
+        assertThat(dominio.getTipoEsperado()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
     }
 }

@@ -7,7 +7,6 @@ import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.PuntajeEvaluacionCuantitativaJuradoExcedeValorItemException;
 import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
-import com.arquisoft.shared.web.config.JacksonConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({
         com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
-        JacksonConfig.class,
         CambiarPuntajeEvaluacionCuantitativaJuradoControllerTest.TestSecurityConfig.class
 })
 class CambiarPuntajeEvaluacionCuantitativaJuradoControllerTest {

@@ -13,4 +13,8 @@ public interface EstadoFichaPerfilQueryOutputPort {
     List<EstadoFichaPerfilReadModel> consultarPorFichaYEstudiante(UUID fichaPerfil, UUID estudiante);
 
     PaginatedResult<EstadoFichaPerfilAsesorReadModel> consultarPorAsesor(EstadoFichaPerfilAsesorCriteria criteria);
+
+    List<EstadoFichaPerfilReadModel> consultarPorFichaYRepresentante(UUID fichaPerfil, UUID representanteComite);
+
+    List<EstadoFichaPerfilReadModel> consultarPorFicha(UUID fichaPerfil);
 }

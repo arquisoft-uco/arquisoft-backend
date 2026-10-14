@@ -30,7 +30,7 @@ class ModificarUsuarioInteractorImplTest {
         interactor = new ModificarUsuarioInteractorImpl(modificarUsuarioUseCase);
         var usuarioId = UUID.randomUUID();
         var datos = new ModificarUsuarioCommand.DatosModificarUsuario(
-                null, "Nombre Nuevo", null, null, null, null);
+                null, null, null, "Nombre", "Nuevo");
         var command = ModificarUsuarioCommand.crear(usuarioId.toString(), datos, List.of());
 
         // Act

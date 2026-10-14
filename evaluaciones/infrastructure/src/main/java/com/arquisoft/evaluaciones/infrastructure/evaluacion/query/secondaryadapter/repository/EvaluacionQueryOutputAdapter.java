@@ -19,7 +19,8 @@ public class EvaluacionQueryOutputAdapter implements EvaluacionQueryOutputPort {
 
     @Override
     public PaginatedResult<EvaluacionReadModel> consultarTodas(EvaluacionCriteria criteria) {
-        var pageable = PageableMapper.toPageable(criteria, EvaluacionSortMapper::traducir);
+        var pageable = PageableMapper.toPageable(
+                criteria, EvaluacionSortMapper::traducir, EvaluacionSortMapper.RUTA_DESEMPATE);
 
         return PaginationMapper.toResult(
                 evaluacionQueryRepository.findAll(specification.desdeCriteria(criteria), pageable)

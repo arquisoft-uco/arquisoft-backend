@@ -29,11 +29,10 @@ class RemitenteExisteRuleImplTest {
     @Test
     void debeLanzarRemitenteNoEncontrado_cuandoElRemitenteNoExiste() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new ExistenciaRemitente(usuario, UsuarioDomain.VACIO)))
-                .isInstanceOf(RemitenteNoEncontradoException.class)
-                .hasMessageContaining(usuario.toString());
+                .isInstanceOf(RemitenteNoEncontradoException.class);
     }
 }

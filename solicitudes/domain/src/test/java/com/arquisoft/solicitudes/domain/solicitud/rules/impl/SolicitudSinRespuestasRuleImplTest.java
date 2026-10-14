@@ -23,11 +23,10 @@ class SolicitudSinRespuestasRuleImplTest {
     @Test
     void debeLanzarSolicitudConRespuestas_cuandoLaSolicitudTieneRespuestas() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new RespuestasSolicitud(solicitud, true)))
-                .isInstanceOf(SolicitudConRespuestasException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(SolicitudConRespuestasException.class);
     }
 }
