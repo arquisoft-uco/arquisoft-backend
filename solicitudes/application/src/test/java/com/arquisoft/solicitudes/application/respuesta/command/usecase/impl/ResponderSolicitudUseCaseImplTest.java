@@ -172,6 +172,34 @@ class ResponderSolicitudUseCaseImplTest {
     }
 
     @Test
+    void debePublicarElEventoDeAmpliacionPlazo_cuandoElTipoEsAmpliacionDePlazo() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(solicitud, "Se aprueba la ampliacion");
+        var entradaAmpliacion = RespuestaSolicitudDomain.crear(
+                respuesta, coordinadorUsuario, TipoSolicitud.AMPLIACION_DE_PLAZO);
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteUsuario, coordinadorUsuario, TipoSolicitud.AMPLIACION_DE_PLAZO.getId()));
+        when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", UtilFecha.generarInstanteActual()));
+        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", UtilFecha.generarInstanteActual()));
+
+        // Act
+        useCase.ejecutar(entradaAmpliacion);
+
+        // Assert
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudRespondidaEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        var evento = eventCaptor.getValue();
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.AMPLIACION_PLAZO_RESPONDIDA);
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudAmpliacionPlazoRespondidaEvent");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO),
+                eq(TipoSolicitud.AMPLIACION_DE_PLAZO.getId()), eq(solicitud), eq(coordinadorUsuario));
+    }
+
+    @Test
     void debeAbortarSinRegistrarNiPublicar_cuandoElValidatorLanza() {
         // Arrange
         stubFlujoValido();
