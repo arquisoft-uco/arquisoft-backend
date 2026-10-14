@@ -56,7 +56,9 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "solicitudes:respuesta-cambio-asesor:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
+              "solicitudes:respuesta-cambio-asesor-enviada:view",
               "mapas-ruta:mapa-ruta-coordinador:view",
               "fichas:ficha-perfil:create",
               "fichas:estudiante-ficha-perfil:create",
@@ -90,10 +92,12 @@
               "proyectos:estudiante-proyecto-grado:delete",
               "fichas:ficha-perfil:update-asesor",
               "solicitudes:solicitud-cambio-asesor-recibida:view",
+              "solicitudes:solicitud-ampliacion-plazo-recibida:view",
               "solicitudes:respuesta-novedad-coordinador:create",
               "solicitudes:respuesta-ampliacion-plazo:create",
               "fichas:ficha-perfil-coordinador:view",
               "solicitudes:respuesta-novedad-coordinador:update",
+              "solicitudes:respuesta-cambio-asesor:update",
               "mapas-ruta:mapa-ruta:update-fecha-fin",
               "fichas:estudiante-ficha-perfil:delete",
               "evaluaciones:item-cuantitativo-jurado:delete",
@@ -264,6 +268,7 @@
               "solicitudes:tipo-solicitud:view",
               "evaluaciones:evaluacion-jurado-estudiante:view",
               "solicitudes:solicitud-cambio-asesor-enviada:view",
+              "solicitudes:solicitud-ampliacion-plazo-enviada:view",
               "proyectos:estado-proyecto-grado-estudiante:view",
               "fichas:ficha-perfil:update",
               "solicitudes:estado-respuesta:view",
@@ -880,6 +885,15 @@
           "attributes": {}
         },
         {
+          "id": "7babca23-d40b-49fe-9910-1b0f2ba8ea98",
+          "name": "solicitudes:respuesta-cambio-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "1b9ecba1-62da-4c6a-885f-fe9820e8da36",
           "name": "usuarios:jurado:delete",
           "description": "",
@@ -1069,6 +1083,15 @@
           "attributes": {}
         },
         {
+          "id": "446b3b4d-716e-490b-9bc3-8a1110034eca",
+          "name": "solicitudes:solicitud-ampliacion-plazo-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "1be47cbb-0894-45c3-b43f-efdbbe9a3ff3",
           "name": "fichas:item-ficha-perfil-coordinador:view",
           "description": "",
@@ -1224,6 +1247,15 @@
         {
           "id": "c3ec803c-262e-4b96-ac34-aab70ce4f43d",
           "name": "solicitudes:respuesta-novedad-coordinador-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "e62a0fed-76b2-4ce1-8e38-ab732cc2b161",
+          "name": "solicitudes:respuesta-cambio-asesor-enviada:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1843,6 +1875,15 @@
           "attributes": {}
         },
         {
+          "id": "f5966093-8883-4df3-a1da-176bec500059",
+          "name": "solicitudes:solicitud-ampliacion-plazo-recibida:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "b0b0e9ed-01b9-4966-b297-a3286662ba24",
           "name": "fichas:item-ficha-perfil-asesor:view",
           "description": "",
@@ -1917,6 +1958,15 @@
         {
           "id": "5bd8b163-4b75-413c-9ecb-4bb1fc520418",
           "name": "fichas:item-ficha-perfil:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "ad76f5c8-3562-4832-8b0c-693f6c89a8e9",
+          "name": "solicitudes:respuesta-cambio-asesor:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

@@ -55,6 +55,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-asesor-estado-modificado", 0),
     CUERPO_SOLICITUD_NOVEDAD_ASESOR_ESTADO_MODIFICADO(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-novedad-asesor-estado-modificado", 3),
+    ASUNTO_SOLICITUD_CAMBIO_ASESOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-cambio-asesor-estado-modificado", 0),
+    CUERPO_SOLICITUD_CAMBIO_ASESOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-cambio-asesor-estado-modificado", 3),
     ASUNTO_REVISION_ITEM_AGREGADA(
             "notificaciones.aplicacion.plantilla.asunto.revision-item-agregada", 1),
     CUERPO_REVISION_ITEM_AGREGADA(
