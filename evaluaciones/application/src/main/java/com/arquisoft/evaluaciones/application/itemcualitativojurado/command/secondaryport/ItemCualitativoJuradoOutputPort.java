@@ -15,5 +15,7 @@ public interface ItemCualitativoJuradoOutputPort {
 
     void actualizarDescripcion(UUID id, String descripcion);
 
+    void eliminar(UUID id);
+
     Set<UUID> consultarIdsExistentes(Set<UUID> ids);
 }

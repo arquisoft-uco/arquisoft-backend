@@ -56,7 +56,9 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "solicitudes:respuesta-cambio-asesor:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
+              "solicitudes:respuesta-cambio-asesor-enviada:view",
               "mapas-ruta:mapa-ruta-coordinador:view",
               "fichas:ficha-perfil:create",
               "fichas:estudiante-ficha-perfil:create",
@@ -94,6 +96,7 @@
               "solicitudes:respuesta-novedad-coordinador:create",
               "fichas:ficha-perfil-coordinador:view",
               "solicitudes:respuesta-novedad-coordinador:update",
+              "solicitudes:respuesta-cambio-asesor:update",
               "mapas-ruta:mapa-ruta:update-fecha-fin",
               "fichas:estudiante-ficha-perfil:delete",
               "evaluaciones:item-cuantitativo-jurado:delete",
@@ -258,6 +261,7 @@
               "solicitudes:solicitud-ampliacion-plazo:create",
               "solicitudes:solicitud-novedad-coordinador:delete",
               "solicitudes:solicitud-cambio-asesor:delete",
+              "solicitudes:solicitud-ampliacion-plazo:delete",
               "proyectos:estudiante-proyecto-grado-estudiante:view",
               "proyectos:asesor-proyecto-grado-estudiante:view",
               "solicitudes:tipo-solicitud:view",
@@ -726,6 +730,15 @@
           "attributes": {}
         },
         {
+          "id": "a6a1b7c0-6caf-4dfc-83f5-8c972af91ec1",
+          "name": "solicitudes:solicitud-ampliacion-plazo:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "10105add-b373-4bda-9668-29be7cde41b4",
           "name": "solicitudes:solicitud-cambio-asesor:delete",
           "description": "",
@@ -863,6 +876,15 @@
         {
           "id": "d51a0c88-717a-4e71-a3e0-526418cb1a46",
           "name": "solicitudes:respuesta-novedad-coordinador:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7babca23-d40b-49fe-9910-1b0f2ba8ea98",
+          "name": "solicitudes:respuesta-cambio-asesor:update",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1214,6 +1236,15 @@
         {
           "id": "c3ec803c-262e-4b96-ac34-aab70ce4f43d",
           "name": "solicitudes:respuesta-novedad-coordinador-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "e62a0fed-76b2-4ce1-8e38-ab732cc2b161",
+          "name": "solicitudes:respuesta-cambio-asesor-enviada:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1907,6 +1938,15 @@
         {
           "id": "5bd8b163-4b75-413c-9ecb-4bb1fc520418",
           "name": "fichas:item-ficha-perfil:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "ad76f5c8-3562-4832-8b0c-693f6c89a8e9",
+          "name": "solicitudes:respuesta-cambio-asesor:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

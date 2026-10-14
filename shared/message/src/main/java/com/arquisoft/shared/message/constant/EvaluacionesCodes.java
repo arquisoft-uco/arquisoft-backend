@@ -21,6 +21,8 @@ public final class EvaluacionesCodes {
                 "ITEM_CUALITATIVO_JURADO_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO =
                 "ITEM_CUALITATIVO_JURADO_NO_ENCONTRADO";
+        public static final String ITEM_EN_USO =
+                "ITEM_CUALITATIVO_JURADO_EN_USO";
     }
 
     public static final class CriterioItemCualitativoJurado {

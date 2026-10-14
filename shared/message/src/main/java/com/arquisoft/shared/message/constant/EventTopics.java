@@ -135,5 +135,8 @@ public final class EventTopics {
 
         public static final String NOVEDAD_ASESOR_ESTADO_MODIFICADO =
                 "solicitudes.respuesta.novedad_asesor_estado_modificado";
+
+        public static final String CAMBIO_ASESOR_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.cambio_asesor_estado_modificado";
     }
 }

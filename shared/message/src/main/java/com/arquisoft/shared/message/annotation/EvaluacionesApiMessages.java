@@ -34,6 +34,14 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_204 = "Descripción actualizada";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "El ítem cualitativo no existe";
+        public static final String REMOVER_SUMMARY = "Remover ítem cualitativo";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve un ítem cualitativo del jurado registrado por equivocación, "
+                        + "siempre que no se haya usado en ninguna evaluación";
+        public static final String REMOVER_RESP_204 = "Ítem cualitativo removido";
+        public static final String REMOVER_RESP_400 = "Identificador inválido";
+        public static final String REMOVER_RESP_422 =
+                "El ítem cualitativo no existe o ya fue usado en evaluaciones del jurado";
     }
 
     public static final class CriterioItemCualitativoJurado {
@@ -113,6 +121,22 @@ public final class EvaluacionesApiMessages {
         public static final String CAMBIAR_PUNTAJE_RESP_422 =
                 "La evaluación no existe, no pertenece al jurado autenticado, su evaluación de jurado "
                         + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
+    }
+
+    public static final class Evaluacion {
+
+        private Evaluacion() {}
+
+        public static final String TAG_NAME = "Evaluaciones";
+        public static final String TAG_DESCRIPTION = "Consulta de las evaluaciones de los entregables";
+        public static final String CONSULTAR_SUMMARY = "Filtrar evaluaciones (coordinador)";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta de forma paginada todas las evaluaciones con su entregable y su estado, con "
+                        + "filtro por estado, proyecto o identificador del entregable y orden por proyecto "
+                        + "(por defecto, ascendente) o estado";
+        public static final String CONSULTAR_RESP_200 = "Página de evaluaciones";
+        public static final String CONSULTAR_RESP_400 =
+                "El filtro, el orden o la paginación solicitados no son aceptados";
     }
 
     public static final class EvaluacionJurado {
