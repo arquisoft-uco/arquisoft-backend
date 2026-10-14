@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.application.observacionitemjurado.command.sec
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.secondaryport.entity.ObservacionItemJuradoEntity;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface ObservacionItemJuradoOutputPort {
@@ -16,4 +17,6 @@ public interface ObservacionItemJuradoOutputPort {
     boolean existeOtraConDescripcion(UUID observacion, String descripcion);
 
     void actualizarDescripcion(UUID id, String descripcion);
+
+    boolean existenPorEvaluacionesCuantitativas(Set<UUID> evaluacionesCuantitativas);
 }
