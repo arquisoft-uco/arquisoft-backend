@@ -29,8 +29,42 @@ public class NotificacionesSolicitudesQueueConfig {
     public static final String NOVEDAD_COORDINADOR_RESPONDIDA_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_COORDINADOR_RESPONDIDA;
 
+    public static final String NOVEDAD_ASESOR_RESPONDIDA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA;
+
+    public static final String CAMBIO_ASESOR_RESPONDIDA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.CAMBIO_ASESOR_RESPONDIDA;
+
     public static final String NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_COORDINADOR_ESTADO_MODIFICADO;
+
+    public static final String NOVEDAD_ASESOR_ESTADO_MODIFICADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_ASESOR_ESTADO_MODIFICADO;
+
+    public static final String CAMBIO_ASESOR_ESTADO_MODIFICADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.CAMBIO_ASESOR_ESTADO_MODIFICADO;
+
+    @Bean
+    public Declarables notificacionesSolicitudCambioAsesorEstadoModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                CAMBIO_ASESOR_ESTADO_MODIFICADO_QUEUE,
+                EventTopics.Solicitudes.CAMBIO_ASESOR_ESTADO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesSolicitudNovedadAsesorRespondidaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                NOVEDAD_ASESOR_RESPONDIDA_QUEUE,
+                EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 
     @Bean
     public Declarables notificacionesSolicitudNovedadCoordinadorRespondidaDeclarables(
@@ -44,12 +78,34 @@ public class NotificacionesSolicitudesQueueConfig {
     }
 
     @Bean
+    public Declarables notificacionesSolicitudCambioAsesorRespondidaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                CAMBIO_ASESOR_RESPONDIDA_QUEUE,
+                EventTopics.Solicitudes.CAMBIO_ASESOR_RESPONDIDA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
     public Declarables notificacionesSolicitudNovedadCoordinadorEstadoModificadoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
             @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
         return ColaEvento.declarar(
                 NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_QUEUE,
                 EventTopics.Solicitudes.NOVEDAD_COORDINADOR_ESTADO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesSolicitudNovedadAsesorEstadoModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                NOVEDAD_ASESOR_ESTADO_MODIFICADO_QUEUE,
+                EventTopics.Solicitudes.NOVEDAD_ASESOR_ESTADO_MODIFICADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

@@ -5,8 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de Solicitud. */
 public enum SolicitudKey implements ClaveMensaje {
 
-    ERROR_REMITENTE_NO_ENCONTRADO("solicitudes.dominio.solicitud.error.remitente-no-encontrado", 1),
-    ERROR_DESTINATARIO_NO_ENCONTRADO("solicitudes.dominio.solicitud.error.destinatario-no-encontrado", 1),
+    ERROR_REMITENTE_NO_ENCONTRADO("solicitudes.dominio.solicitud.error.remitente-no-encontrado", 0),
+    ERROR_DESTINATARIO_NO_ENCONTRADO("solicitudes.dominio.solicitud.error.destinatario-no-encontrado", 0),
     ERROR_SOLICITUD_DUPLICADA("solicitudes.dominio.solicitud.error.solicitud-duplicada", 0),
     LOG_ENVIANDO("solicitudes.aplicacion.solicitud.log.enviando", 3),
     LOG_VERIFICACION_ENVIO("solicitudes.aplicacion.solicitud.log.verificacion-envio", 1),
@@ -16,25 +16,49 @@ public enum SolicitudKey implements ClaveMensaje {
     LOG_VERIFICACION_REGISTRO_DESTINATARIO(
             "solicitudes.aplicacion.destinatario.log.verificacion-registro", 2),
     LOG_GUARDADA("solicitudes.infraestructura.solicitud.log.guardada", 1),
-    ERROR_SOLICITUD_NO_ENCONTRADA("solicitudes.dominio.solicitud.error.no-encontrada", 1),
-    ERROR_SOLICITUD_NO_PROPIA("solicitudes.dominio.solicitud.error.no-propia", 1),
-    ERROR_SOLICITUD_TIPO_NO_COINCIDE("solicitudes.dominio.solicitud.error.tipo-no-coincide", 1),
-    ERROR_SOLICITUD_CON_RESPUESTAS("solicitudes.dominio.solicitud.error.con-respuestas", 1),
-    ERROR_SOLICITUD_NO_ES_DESTINATARIO("solicitudes.dominio.solicitud.error.no-es-destinatario", 1),
+    ERROR_SOLICITUD_NO_ENCONTRADA("solicitudes.dominio.solicitud.error.no-encontrada", 0),
+    ERROR_SOLICITUD_NO_PROPIA("solicitudes.dominio.solicitud.error.no-propia", 0),
+    ERROR_SOLICITUD_TIPO_NO_COINCIDE("solicitudes.dominio.solicitud.error.tipo-no-coincide", 0),
+    ERROR_SOLICITUD_CON_RESPUESTAS("solicitudes.dominio.solicitud.error.con-respuestas", 0),
+    ERROR_SOLICITUD_NO_ES_DESTINATARIO("solicitudes.dominio.solicitud.error.no-es-destinatario", 0),
     LOG_ELIMINANDO("solicitudes.aplicacion.solicitud.log.eliminando", 3),
     LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.solicitud.log.verificacion-eliminacion", 2),
     LOG_ELIMINADA("solicitudes.aplicacion.solicitud.log.eliminada", 2),
     LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.solicitud.log.eliminada", 1),
     ERROR_SOLICITUD_TIPO_NO_COINCIDE_ASESOR(
-            "solicitudes.dominio.solicitud.error.tipo-no-coincide-asesor", 1),
+            "solicitudes.dominio.solicitud.error.tipo-no-coincide-asesor", 0),
+    ERROR_SOLICITUD_TIPO_NO_COINCIDE_CAMBIO_ASESOR(
+            "solicitudes.dominio.solicitud.error.tipo-no-coincide-cambio-asesor", 0),
+    ERROR_SOLICITUD_TIPO_NO_COINCIDE_AMPLIACION_PLAZO(
+            "solicitudes.dominio.solicitud.error.tipo-no-coincide-ampliacion-plazo", 0),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
             "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-recibidas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_RECIBIDAS_COMPLETADA(
             "solicitudes.aplicacion.solicitud.log.consulta-novedad-coordinador-recibidas-completada", 3),
+    LOG_CONSULTANDO_CAMBIO_ASESOR_RECIBIDAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-cambio-asesor-recibidas", 4),
+    LOG_CONSULTA_CAMBIO_ASESOR_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-cambio-asesor-recibidas-completada", 3),
+    LOG_CONSULTANDO_AMPLIACION_PLAZO_RECIBIDAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-ampliacion-plazo-recibidas", 4),
+    LOG_CONSULTA_AMPLIACION_PLAZO_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-ampliacion-plazo-recibidas-completada", 3),
+    LOG_CONSULTANDO_NOVEDAD_ASESOR_RECIBIDAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-novedad-asesor-recibidas", 4),
+    LOG_CONSULTA_NOVEDAD_ASESOR_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-novedad-asesor-recibidas-completada", 3),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_ENVIADAS(
             "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-enviadas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_ENVIADAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-novedad-coordinador-enviadas-completada", 3);
+            "solicitudes.aplicacion.solicitud.log.consulta-novedad-coordinador-enviadas-completada", 3),
+    LOG_CONSULTANDO_NOVEDAD_ASESOR_ENVIADAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-novedad-asesor-enviadas", 4),
+    LOG_CONSULTA_NOVEDAD_ASESOR_ENVIADAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-novedad-asesor-enviadas-completada", 3),
+    LOG_CONSULTANDO_CAMBIO_ASESOR_ENVIADAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-cambio-asesor-enviadas", 4),
+    LOG_CONSULTA_CAMBIO_ASESOR_ENVIADAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-cambio-asesor-enviadas-completada", 3);
 
     private final String clave;
     private final int parametros;

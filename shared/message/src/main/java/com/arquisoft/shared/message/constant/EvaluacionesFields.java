@@ -26,7 +26,6 @@ public final class EvaluacionesFields {
         private CategoriaItemCuantitativoJurado() {}
 
         public static final String NOMBRE = "nombre";
-        public static final String DESCRIPCION = "descripcion";
     }
 
     public static final class EvaluacionCualitativaJurado {
@@ -77,6 +76,24 @@ public final class EvaluacionesFields {
 
         public static final String EVALUACION = "evaluacion";
         public static final String JURADO = "jurado";
+    }
+
+    public static final class AsignacionJuradosEvaluacion {
+
+        private AsignacionJuradosEvaluacion() {}
+
+        public static final String JURADOS = "jurados";
+    }
+
+    public static final class Jurado {
+
+        private Jurado() {}
+
+        public static final String ID = "id";
+        public static final String IDENTIFICADOR = "identificador";
+        public static final String NOMBRE = "nombre";
+        public static final String EMAIL = "email";
+        public static final String OCURRIDO_EN = "ocurridoEn";
     }
 
     public static final class ItemCuantitativoJurado {

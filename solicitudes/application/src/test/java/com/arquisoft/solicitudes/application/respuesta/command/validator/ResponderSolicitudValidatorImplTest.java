@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.respuesta.command.validator;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.respuesta.command.validator.impl.ResponderSolicitudValidatorImpl;
 import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEncontradoException;
 import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
@@ -9,6 +10,7 @@ import com.arquisoft.solicitudes.domain.respuesta.exception.SolicitudYaRespondid
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
@@ -48,8 +50,8 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debePasarValidarExistencia_cuandoSolicitudRemitenteYCoordinadorExisten() {
-        UUID remitente = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatCode(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, remitente, coordinador),
@@ -59,7 +61,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarSolicitudNoEncontrada_cuandoLaSolicitudNoExiste() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(false, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -69,7 +71,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarRemitenteNoEncontrado_cuandoElRemitenteNoTieneReplicaLocal() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -79,7 +81,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarDestinatarioNoEncontrado_cuandoElCoordinadorNoTieneReplicaLocal() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -89,7 +91,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeValidarSolicitudAntesQueRemitente_cuandoAmbasFallan() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(false, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -99,7 +101,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeValidarRemitenteAntesQueDestinatario_cuandoAmbosFallan() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -109,7 +111,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debePasarValidarReglasDeNegocio_cuandoLasTresReglasSeCumplen() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatCode(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -119,7 +121,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarTipoNoCoincide_cuandoLaSolicitudEsDeOtroTipo() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), REMITENTE, coordinador),
@@ -129,7 +131,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarNoEsDestinatario_cuandoElResponsableNoEsElDestinatario() {
-        UUID destinatario = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(UUID.randomUUID()),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, destinatario),
@@ -139,7 +141,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarYaRespondida_cuandoLaSolicitudTieneRespuesta() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(coordinador),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, coordinador),
@@ -149,7 +151,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeValidarTipoAntesQueDestinatario_cuandoAmbosFallan() {
-        UUID destinatario = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(UUID.randomUUID()),
                 resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), REMITENTE, destinatario),
@@ -159,7 +161,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeValidarDestinatarioAntesQueUnicidad_cuandoAmbosFallan() {
-        UUID destinatario = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entradaCoordinador(UUID.randomUUID()),
                 resumen(true, TIPO_COORDINADOR, REMITENTE, destinatario),
@@ -169,7 +171,7 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debeLanzarElErrorDelAsesor_cuandoSeEsperabaNovedadParaElAsesorYLaSolicitudEsDeOtroTipo() {
-        UUID responsable = UUID.randomUUID();
+        var responsable = UUID.randomUUID();
 
         assertThatThrownBy(() -> validator.validar(entrada(responsable, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR),
                 resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), REMITENTE, responsable),
@@ -179,11 +181,31 @@ class ResponderSolicitudValidatorImplTest {
 
     @Test
     void debePasar_cuandoSeEsperabaNovedadParaElAsesorYLaSolicitudEsDeEseTipo() {
-        UUID responsable = UUID.randomUUID();
+        var responsable = UUID.randomUUID();
 
         assertThatCode(() -> validator.validar(entrada(responsable, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR),
                 resumen(true, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId(), REMITENTE, responsable),
                 usuario(REMITENTE), usuario(responsable), false))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debePasar_cuandoSeEsperabaCambioDeAsesorYLaSolicitudEsDeEseTipo() {
+        var responsable = UtilUUID.generarNuevoUUID();
+
+        assertThatCode(() -> validator.validar(entrada(responsable, TipoSolicitud.CAMBIO_DE_ASESOR),
+                resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), REMITENTE, responsable),
+                usuario(REMITENTE), usuario(responsable), false))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarTipoNoCoincideCambioAsesor_cuandoSeEsperabaCambioDeAsesorYLaSolicitudEsDeOtroTipo() {
+        var responsable = UtilUUID.generarNuevoUUID();
+
+        assertThatThrownBy(() -> validator.validar(entrada(responsable, TipoSolicitud.CAMBIO_DE_ASESOR),
+                resumen(true, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), REMITENTE, responsable),
+                usuario(REMITENTE), usuario(responsable), false))
+                .isInstanceOf(SolicitudTipoNoCoincideCambioAsesorException.class);
     }
 }

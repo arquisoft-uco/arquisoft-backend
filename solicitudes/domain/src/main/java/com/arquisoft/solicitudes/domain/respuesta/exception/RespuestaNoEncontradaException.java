@@ -5,13 +5,11 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 
-import java.util.UUID;
-
 public final class RespuestaNoEncontradaException extends DomainException {
 
-    public RespuestaNoEncontradaException(UUID solicitud) {
+    public RespuestaNoEncontradaException() {
         super(
-                Mensajes.formatear(RespuestaKey.ERROR_RESPUESTA_NO_ENCONTRADA, solicitud),
+                Mensajes.formatear(RespuestaKey.ERROR_RESPUESTA_NO_ENCONTRADA),
                 SolicitudesCodes.Respuesta.RESPUESTA_NO_ENCONTRADA
         );
     }
