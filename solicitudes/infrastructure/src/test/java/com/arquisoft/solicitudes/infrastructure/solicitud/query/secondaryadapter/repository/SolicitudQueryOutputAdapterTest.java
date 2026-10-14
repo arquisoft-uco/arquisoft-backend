@@ -31,6 +31,7 @@ class SolicitudQueryOutputAdapterTest {
 
     private static final String TIPO_NOVEDAD = "NOVEDAD_PARA_EL_COORDINADOR";
     private static final String TIPO_CAMBIO = "CAMBIO_DE_ASESOR";
+    private static final String TIPO_AMPLIACION = "AMPLIACION_DE_PLAZO";
 
     @Autowired
     private TestEntityManager entityManager;
@@ -48,6 +49,8 @@ class SolicitudQueryOutputAdapterTest {
                 .id(TIPO_NOVEDAD).nombre("Novedad para el Coordinador").descripcion("desc").build());
         entityManager.persist(TipoSolicitudJpaEntity.builder()
                 .id(TIPO_CAMBIO).nombre("Cambio de Asesor").descripcion("desc").build());
+        entityManager.persist(TipoSolicitudJpaEntity.builder()
+                .id(TIPO_AMPLIACION).nombre("Ampliación de Plazo").descripcion("desc").build());
         entityManager.flush();
     }
 
@@ -194,6 +197,36 @@ class SolicitudQueryOutputAdapterTest {
         assertThat(resultado.getContent())
                 .extracting(SolicitudReadModel::mensajeSolicitud)
                 .containsExactly("es cambio");
+    }
+
+    @Test
+    void debeRetornarSoloLasSolicitudesAmpliacionDePlazoDelDestinatario_cuandoElCriteriaFuerzaTipoYDestinatario() {
+        // Arrange
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        var otroCoord = sembrarDestinatario("Otro", "COORD-2", "otro@uco.edu.co");
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "es novedad");
+        sembrarSolicitud(ana, coord, TIPO_AMPLIACION,
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es ampliacion");
+        sembrarSolicitud(ana, otroCoord, TIPO_AMPLIACION,
+                LocalDateTime.of(2026, 3, 3, 10, 0).toInstant(ZoneOffset.UTC), "ampliacion ajena");
+        sincronizar();
+
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
+                                coord.getUsuarioId().toString()),
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_AMPLIACION))))
+                .build();
+
+        // Act
+        var resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(SolicitudReadModel::mensajeSolicitud)
+                .containsExactly("es ampliacion");
     }
 
     @Test

@@ -92,6 +92,7 @@
               "proyectos:estudiante-proyecto-grado:delete",
               "fichas:ficha-perfil:update-asesor",
               "solicitudes:solicitud-cambio-asesor-recibida:view",
+              "solicitudes:solicitud-ampliacion-plazo-recibida:view",
               "solicitudes:respuesta-novedad-coordinador:create",
               "fichas:ficha-perfil-coordinador:view",
               "solicitudes:respuesta-novedad-coordinador:update",
@@ -1856,6 +1857,15 @@
         {
           "id": "f8ced3d7-0829-4d40-83e4-1eab1262ea0b",
           "name": "solicitudes:solicitud-cambio-asesor-recibida:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "f5966093-8883-4df3-a1da-176bec500059",
+          "name": "solicitudes:solicitud-ampliacion-plazo-recibida:view",
           "description": "",
           "composite": false,
           "clientRole": true,
