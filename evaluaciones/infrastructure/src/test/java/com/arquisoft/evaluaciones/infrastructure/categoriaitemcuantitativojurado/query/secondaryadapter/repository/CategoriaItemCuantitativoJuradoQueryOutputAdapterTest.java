@@ -1,100 +1,120 @@
 package com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativojurado.query.secondaryadapter.repository;
 
-import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.readmodel.CategoriaItemCuantitativoJuradoReadModel;
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.criteria.CategoriaItemCuantitativoJuradoCriteria;
+import com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativojurado.command.secondaryadapter.entity.CategoriaItemCuantitativoJuradoJpaEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.test.context.TestPropertySource;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@DataJpaTest
+@TestPropertySource(properties = {
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.jpa.show-sql=false"
+})
 class CategoriaItemCuantitativoJuradoQueryOutputAdapterTest {
 
-    @Mock
+    @Autowired
+    private TestEntityManager entityManager;
+
+    @Autowired
     private CategoriaItemCuantitativoJuradoQueryRepository repository;
 
-    @InjectMocks
     private CategoriaItemCuantitativoJuradoQueryOutputAdapter adapter;
 
-    @Test
-    void debeInvocarFindAllByOrderByNombreAsc_cuandoNombreEsNulo() {
-        // Arrange
+    @BeforeEach
+    void setUp() {
+        adapter = new CategoriaItemCuantitativoJuradoQueryOutputAdapter(repository);
+    }
+
+    private UUID sembrar(String nombre, String descripcion) {
         var id = UUID.randomUUID();
-        var entity = CategoriaItemCuantitativoJuradoJpaQueryEntity.builder()
+        entityManager.persist(CategoriaItemCuantitativoJuradoJpaEntity.builder()
                 .id(id)
-                .nombre("Puntualidad")
-                .descripcion("Evalúa la puntualidad")
-                .build();
-        when(repository.findAllByOrderByNombreAsc()).thenReturn(List.of(entity));
-
-        // Act
-        var resultado = adapter.consultar(null);
-
-        // Assert
-        assertThat(resultado).hasSize(1);
-        assertThat(resultado.get(0).id()).isEqualTo(id);
-        verify(repository, times(1)).findAllByOrderByNombreAsc();
-        verify(repository, never()).findByNombreContainingIgnoreCaseOrderByNombreAsc(anyString());
+                .nombre(nombre)
+                .descripcion(descripcion)
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+        return id;
     }
 
     @Test
-    void debeInvocarFindByNombreContaining_cuandoNombreNoEsNulo() {
+    void debeRetornarTodasOrdenadasPorNombre_cuandoNoHayFiltro() {
         // Arrange
-        var id = UUID.randomUUID();
-        var entity = CategoriaItemCuantitativoJuradoJpaQueryEntity.builder()
-                .id(id)
-                .nombre("Puntualidad")
-                .descripcion("Evalúa la puntualidad")
-                .build();
-        when(repository.findByNombreContainingIgnoreCaseOrderByNombreAsc("Puntual")).thenReturn(List.of(entity));
+        sembrar("Rigor", "Evalúa el rigor");
+        sembrar("Coherencia", "Evalúa la coherencia");
+        sembrar("Puntualidad", "Evalúa la puntualidad");
 
         // Act
-        var resultado = adapter.consultar("Puntual");
+        var resultado = adapter.consultar(new CategoriaItemCuantitativoJuradoCriteria(null));
 
         // Assert
-        assertThat(resultado).hasSize(1);
-        verify(repository, times(1)).findByNombreContainingIgnoreCaseOrderByNombreAsc("Puntual");
-        verify(repository, never()).findAllByOrderByNombreAsc();
+        assertThat(resultado)
+                .extracting(categoria -> categoria.nombre())
+                .containsExactly("Coherencia", "Puntualidad", "Rigor");
     }
 
     @Test
-    void debeMapearIdNombreYDescripcion_deTodosLosElementos() {
+    void debeFiltrarPorCoincidenciaParcialSinDistinguirMayusculas_cuandoHayNombre() {
         // Arrange
-        var id = UUID.randomUUID();
-        var entity = CategoriaItemCuantitativoJuradoJpaQueryEntity.builder()
-                .id(id)
-                .nombre("Coherencia")
-                .descripcion("Evalúa la coherencia argumentativa")
-                .build();
-        when(repository.findAllByOrderByNombreAsc()).thenReturn(List.of(entity));
+        sembrar("Rigor metodológico", "Evalúa el rigor");
+        sembrar("Coherencia", "Evalúa la coherencia");
+        sembrar("Puntualidad", "Evalúa la puntualidad");
 
         // Act
-        var resultado = adapter.consultar(null);
+        var resultado = adapter.consultar(new CategoriaItemCuantitativoJuradoCriteria("RIGOR"));
 
         // Assert
-        CategoriaItemCuantitativoJuradoReadModel readModel = resultado.get(0);
+        assertThat(resultado)
+                .extracting(categoria -> categoria.nombre())
+                .containsExactly("Rigor metodológico");
+    }
+
+    @Test
+    void debeOrdenarElResultadoFiltradoPorNombre_cuandoVariasCoinciden() {
+        // Arrange
+        sembrar("Calidad de redacción", "Evalúa la redacción");
+        sembrar("Calidad técnica", "Evalúa lo técnico");
+        sembrar("Alcance", "Evalúa el alcance");
+
+        // Act
+        var resultado = adapter.consultar(new CategoriaItemCuantitativoJuradoCriteria("calidad"));
+
+        // Assert
+        assertThat(resultado)
+                .extracting(categoria -> categoria.nombre())
+                .containsExactly("Calidad de redacción", "Calidad técnica");
+    }
+
+    @Test
+    void debeMapearIdNombreYDescripcion_deLaColumnaDelSubselect() {
+        // Arrange
+        var id = sembrar("Coherencia", "Evalúa la coherencia argumentativa");
+
+        // Act
+        var resultado = adapter.consultar(new CategoriaItemCuantitativoJuradoCriteria(null));
+
+        // Assert
+        var readModel = resultado.get(0);
         assertThat(readModel.id()).isEqualTo(id);
         assertThat(readModel.nombre()).isEqualTo("Coherencia");
         assertThat(readModel.descripcion()).isEqualTo("Evalúa la coherencia argumentativa");
     }
 
     @Test
-    void debeRetornarListaVacia_cuandoElRepositorioNoTieneRegistros() {
+    void debeRetornarListaVacia_cuandoNoHayCoincidencias() {
         // Arrange
-        when(repository.findAllByOrderByNombreAsc()).thenReturn(List.of());
+        sembrar("Coherencia", "Evalúa la coherencia");
 
         // Act
-        var resultado = adapter.consultar(null);
+        var resultado = adapter.consultar(new CategoriaItemCuantitativoJuradoCriteria("inexistente"));
 
         // Assert
         assertThat(resultado).isEmpty();

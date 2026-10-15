@@ -17,7 +17,7 @@ class OmitirEvaluacionesCuantitativasJuradoCommandTest {
     @Test
     void debeCrearCommand_cuandoDatosValidos() {
         // Arrange
-        var evaluacionJurado = UUID.randomUUID().toString();
+        var evaluacionJurado = UUID.randomUUID();
         var primera = UUID.randomUUID().toString();
         var segunda = UUID.randomUUID().toString();
 
@@ -25,16 +25,16 @@ class OmitirEvaluacionesCuantitativasJuradoCommandTest {
         var command = OmitirEvaluacionesCuantitativasJuradoCommand.crear(evaluacionJurado, List.of(primera, segunda));
 
         // Assert
-        assertThat(command.evaluacionJurado()).isEqualTo(UUID.fromString(evaluacionJurado));
+        assertThat(command.evaluacionJurado()).isEqualTo(evaluacionJurado);
         assertThat(command.evaluaciones())
                 .containsExactly(UUID.fromString(primera), UUID.fromString(segunda));
     }
 
     @Test
-    void debeRechazarEvaluacionJurado_cuandoNoEsUnUuid() {
+    void debeRechazarEvaluacionJurado_cuandoEsNula() {
         // Act & Assert
         assertThatThrownBy(() -> OmitirEvaluacionesCuantitativasJuradoCommand.crear(
-                "no-es-un-uuid", List.of(UUID.randomUUID().toString())))
+                null, List.of(UUID.randomUUID().toString())))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -47,7 +47,7 @@ class OmitirEvaluacionesCuantitativasJuradoCommandTest {
     void debeRechazarLoteVacio_cuandoLaListaDeEvaluacionesEstaVacia() {
         // Act & Assert
         assertThatThrownBy(() -> OmitirEvaluacionesCuantitativasJuradoCommand.crear(
-                UUID.randomUUID().toString(), List.of()))
+                UUID.randomUUID(), List.of()))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -60,7 +60,7 @@ class OmitirEvaluacionesCuantitativasJuradoCommandTest {
     void debeRechazarLoteVacio_cuandoLaListaDeEvaluacionesEsNula() {
         // Act & Assert
         assertThatThrownBy(() -> OmitirEvaluacionesCuantitativasJuradoCommand.crear(
-                UUID.randomUUID().toString(), null))
+                UUID.randomUUID(), null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -70,13 +70,13 @@ class OmitirEvaluacionesCuantitativasJuradoCommandTest {
     }
 
     @Test
-    void debeAcumularErroresIndexados_cuandoHayIdsEnBlancoOInvalidosYEvaluacionJuradoInvalida() {
+    void debeAcumularErroresIndexados_cuandoHayIdsEnBlancoOInvalidosYEvaluacionJuradoNula() {
         // Arrange
         var idValido = UUID.randomUUID().toString();
         var evaluaciones = List.of(" ", idValido, "no-es-un-uuid");
 
         // Act & Assert
-        assertThatThrownBy(() -> OmitirEvaluacionesCuantitativasJuradoCommand.crear("xyz", evaluaciones))
+        assertThatThrownBy(() -> OmitirEvaluacionesCuantitativasJuradoCommand.crear(null, evaluaciones))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())

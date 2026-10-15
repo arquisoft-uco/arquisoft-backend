@@ -32,7 +32,6 @@ public final class EvaluacionesLimits {
         private CategoriaItemCuantitativoJurado() {}
 
         public static final int NOMBRE_MAX = 100;
-        public static final int DESCRIPCION_MAX = 300;
     }
 
     public static final class ItemCuantitativoJurado {
@@ -49,7 +48,6 @@ public final class EvaluacionesLimits {
 
         private ObservacionItemJurado() {}
 
-        public static final int DESCRIPCION_MIN = 1;
         public static final int DESCRIPCION_MAX = 500;
     }
 }

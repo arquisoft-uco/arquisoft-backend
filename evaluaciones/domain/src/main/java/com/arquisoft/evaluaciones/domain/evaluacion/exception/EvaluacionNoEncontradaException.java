@@ -12,6 +12,7 @@ public final class EvaluacionNoEncontradaException extends DomainException {
     public EvaluacionNoEncontradaException(UUID evaluacion) {
         super(
                 Mensajes.formatear(EvaluacionKey.ERROR_NO_ENCONTRADA, evaluacion),
-                EvaluacionesCodes.Evaluacion.NO_ENCONTRADA);
+                EvaluacionesCodes.Evaluacion.NO_ENCONTRADA
+        );
     }
 }

@@ -1,6 +1,5 @@
 package com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.secondaryadapter.repository.mapper;
 
-import com.arquisoft.evaluaciones.application.estadoevaluacion.query.readmodel.EstadoEvaluacionReadModel;
 import com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.secondaryadapter.repository.EstadoEvaluacionJpaQueryEntity;
 import org.junit.jupiter.api.Test;
 
@@ -11,14 +10,14 @@ class EstadoEvaluacionQueryMapperTest {
     @Test
     void debeMapearEntityAReadModel_conTodosLosCampos() {
         // Arrange
-        EstadoEvaluacionJpaQueryEntity entity = EstadoEvaluacionJpaQueryEntity.builder()
+        var entity = EstadoEvaluacionJpaQueryEntity.builder()
                 .id("PENDIENTE")
                 .nombre("Pendiente")
                 .descripcion("Indica que una evaluación está pendiente por realizar")
                 .build();
 
         // Act
-        EstadoEvaluacionReadModel resultado = EstadoEvaluacionQueryMapper.toReadModel(entity);
+        var resultado = EstadoEvaluacionQueryMapper.toReadModel(entity);
 
         // Assert
         assertThat(resultado.id()).isEqualTo("PENDIENTE");

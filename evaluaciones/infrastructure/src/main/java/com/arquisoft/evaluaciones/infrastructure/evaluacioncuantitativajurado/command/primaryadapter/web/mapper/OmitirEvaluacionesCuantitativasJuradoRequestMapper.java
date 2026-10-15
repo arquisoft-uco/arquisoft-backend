@@ -13,7 +13,7 @@ public final class OmitirEvaluacionesCuantitativasJuradoRequestMapper {
     public static OmitirEvaluacionesCuantitativasJuradoCommand toCommand(
             OmitirEvaluacionesCuantitativasJuradoRequestDTO dto, UUID evaluacionJurado) {
         return OmitirEvaluacionesCuantitativasJuradoCommand.crear(
-                evaluacionJurado.toString(),
+                evaluacionJurado,
                 UtilColeccion.aplicarPorDefecto(dto.evaluaciones()));
     }
 }

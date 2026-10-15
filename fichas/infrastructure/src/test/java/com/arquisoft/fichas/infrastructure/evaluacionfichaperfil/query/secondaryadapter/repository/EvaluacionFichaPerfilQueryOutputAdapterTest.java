@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.evaluacionfichaperfil.query.readmodel.EvaluacionFichaPerfilCoordinadorReadModel;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.readmodel.EvaluacionFichaPerfilEstudianteReadModel;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.readmodel.EvaluacionFichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.entity.EstadoEvaluacionJpaEntity;
@@ -32,13 +33,118 @@ class EvaluacionFichaPerfilQueryOutputAdapterTest {
     @Autowired
     private EvaluacionFichaPerfilEstudianteQueryRepository estudianteRepository;
 
+    @Autowired
+    private EvaluacionFichaPerfilCoordinadorQueryRepository coordinadorRepository;
+
     private EvaluacionFichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EvaluacionFichaPerfilQueryOutputAdapter(repository, estudianteRepository);
+        adapter = new EvaluacionFichaPerfilQueryOutputAdapter(repository, estudianteRepository, coordinadorRepository);
         persistirEstado("EN_EVALUACION", "En Evaluación");
         persistirEstado("APROBADA", "Aprobada");
+    }
+
+    @Test
+    void debeRetornarTodasLasEvaluacionesDeLaFicha_ordenadasPorFechaCreacionAscendente() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var representante = persistirRepresentante("María Gómez", null);
+        var base = Instant.now().minus(10, ChronoUnit.DAYS);
+        var reciente = persistirEvaluacion(ficha, representante, base.plus(2, ChronoUnit.DAYS));
+        var antigua = persistirEvaluacion(ficha, representante, base);
+        var media = persistirEvaluacion(ficha, representante, base.plus(1, ChronoUnit.DAYS));
+        persistirTrazabilidad(antigua, "EN_EVALUACION", base);
+        persistirTrazabilidad(antigua, "APROBADA", base.plus(1, ChronoUnit.HOURS));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorFicha(ficha);
+
+        // Assert
+        assertThat(resultado).extracting(EvaluacionFichaPerfilCoordinadorReadModel::id)
+                .containsExactly(antigua, media, reciente);
+        assertThat(resultado.get(0)).satisfies(e -> {
+            assertThat(e.fichaPerfil()).isEqualTo(ficha);
+            assertThat(e.fechaCreacion()).isNotNull();
+            assertThat(e.estadoEvaluacion()).isEqualTo("APROBADA");
+            assertThat(e.estadoEvaluacionNombre()).isEqualTo("Aprobada");
+            assertThat(e.representanteComite().id()).isEqualTo(representante);
+            assertThat(e.representanteComite().nombre()).isEqualTo("María Gómez");
+        });
+    }
+
+    @Test
+    void debeIncluirEvaluacionEnEvaluacionYDescartada_conSuEstado() {
+        // Arrange
+        persistirEstado("DESCARTADA", "Descartada");
+        var ficha = UUID.randomUUID();
+        var representante = persistirRepresentante("María Gómez", null);
+        var base = Instant.now().minus(2, ChronoUnit.HOURS);
+        var enEvaluacion = persistirEvaluacion(ficha, representante, base);
+        var descartada = persistirEvaluacion(ficha, representante, base.plus(1, ChronoUnit.MINUTES));
+        persistirTrazabilidad(enEvaluacion, "EN_EVALUACION", base);
+        persistirTrazabilidad(descartada, "EN_EVALUACION", base);
+        persistirTrazabilidad(descartada, "DESCARTADA", base.plus(1, ChronoUnit.HOURS));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorFicha(ficha);
+
+        // Assert
+        assertThat(resultado).extracting(EvaluacionFichaPerfilCoordinadorReadModel::estadoEvaluacion)
+                .containsExactly("EN_EVALUACION", "DESCARTADA");
+        assertThat(resultado.get(1).estadoEvaluacionNombre()).isEqualTo("Descartada");
+    }
+
+    @Test
+    void debeIncluirEvaluacion_cuandoRepresentanteDadoDeBajaYSinEstados() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var representante = persistirRepresentante("Carlos Ruiz", Instant.now());
+        var evaluacion = persistirEvaluacion(ficha, representante, Instant.now());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorFicha(ficha);
+
+        // Assert
+        assertThat(resultado).singleElement().satisfies(e -> {
+            assertThat(e.id()).isEqualTo(evaluacion);
+            assertThat(e.representanteComite().nombre()).isEqualTo("Carlos Ruiz");
+            assertThat(e.estadoEvaluacion()).isNull();
+            assertThat(e.estadoEvaluacionNombre()).isNull();
+        });
+    }
+
+    @Test
+    void debeNoMezclarEvaluaciones_deOtraFicha() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var representante = persistirRepresentante("María Gómez", null);
+        var propia = persistirEvaluacion(ficha, representante, Instant.now());
+        persistirEvaluacion(UUID.randomUUID(), representante, Instant.now());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorFicha(ficha);
+
+        // Assert
+        assertThat(resultado).extracting(EvaluacionFichaPerfilCoordinadorReadModel::id)
+                .containsExactly(propia);
+    }
+
+    @Test
+    void debeRetornarListaVacia_cuandoFichaNoExisteONoTieneEvaluaciones() {
+        // Act
+        var resultado = adapter.consultarPorFicha(UUID.randomUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
     }
 
     @Test

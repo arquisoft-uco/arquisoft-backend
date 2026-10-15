@@ -3,7 +3,7 @@ package com.arquisoft.solicitudes.application.respuesta.command.primaryport.inte
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.EliminarRespuestaNovedadCoordinadorInteractor;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper.EliminarRespuestaNovedadCoordinadorMapper;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.EliminarRespuestaNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.application.respuesta.command.usecase.EliminarRespuestaNovedadCoordinadorUseCase;
+import com.arquisoft.solicitudes.application.respuesta.command.usecase.EliminarRespuestaUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class EliminarRespuestaNovedadCoordinadorInteractorImpl
         implements EliminarRespuestaNovedadCoordinadorInteractor {
 
-    private final EliminarRespuestaNovedadCoordinadorUseCase eliminarRespuestaNovedadCoordinadorUseCase;
+    private final EliminarRespuestaUseCase eliminarRespuestaUseCase;
 
     @Override
     @Transactional(transactionManager = "solicitudesTransactionManager")
     public void ejecutar(EliminarRespuestaNovedadCoordinadorCommand command) {
-        eliminarRespuestaNovedadCoordinadorUseCase.ejecutar(
+        eliminarRespuestaUseCase.ejecutar(
                 EliminarRespuestaNovedadCoordinadorMapper.toDomain(command));
     }
 }

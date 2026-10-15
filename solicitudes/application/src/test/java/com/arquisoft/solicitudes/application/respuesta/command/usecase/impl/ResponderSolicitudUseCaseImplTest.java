@@ -1,8 +1,10 @@
 package com.arquisoft.solicitudes.application.respuesta.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.constant.EventTopics;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.entity.RespuestaEntity;
 import com.arquisoft.solicitudes.application.respuesta.command.validator.ResponderSolicitudValidator;
@@ -21,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -89,12 +90,12 @@ class ResponderSolicitudUseCaseImplTest {
         stubFlujoValido();
 
         // Act
-        UUID id = useCase.ejecutar(entrada);
+        var id = useCase.ejecutar(entrada);
 
         // Assert
-        ArgumentCaptor<RespuestaEntity> entityCaptor = ArgumentCaptor.forClass(RespuestaEntity.class);
+        var entityCaptor = ArgumentCaptor.forClass(RespuestaEntity.class);
         verify(respuestaOutputPort).registrar(entityCaptor.capture());
-        RespuestaEntity persistida = entityCaptor.getValue();
+        var persistida = entityCaptor.getValue();
         assertThat(persistida.solicitud()).isEqualTo(solicitud);
         assertThat(persistida.estadoRespuesta()).isEqualTo(EstadoRespuesta.EN_REVISION.getId());
         assertThat(persistida.contenido()).isEqualTo("No puedo asistir");
@@ -115,10 +116,94 @@ class ResponderSolicitudUseCaseImplTest {
     }
 
     @Test
+    void debePublicarElEventoDelAsesor_cuandoElTipoEsNovedadParaElAsesor() {
+        // Arrange
+        var asesorUsuario = UUID.randomUUID();
+        var respuesta = RespuestaDomain.crear(solicitud, "Puedes presentar el lunes");
+        var entradaAsesor = RespuestaSolicitudDomain.crear(
+                respuesta, asesorUsuario, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteUsuario, asesorUsuario, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()));
+        when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now()));
+        when(datosUsuarioFinder.obtener(asesorUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(asesorUsuario, "ASE-1", "Pedro Asesor", "pedro@uco.edu.co", Instant.now()));
+
+        // Act
+        useCase.ejecutar(entradaAsesor);
+
+        // Assert
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudRespondidaEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        var evento = eventCaptor.getValue();
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA);
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Asesor");
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO),
+                eq(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()), eq(solicitud), eq(asesorUsuario));
+    }
+
+    @Test
+    void debePublicarElEventoDeCambioAsesor_cuandoElTipoEsCambioDeAsesor() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(solicitud, "Se aprueba el cambio");
+        var entradaCambio = RespuestaSolicitudDomain.crear(
+                respuesta, coordinadorUsuario, TipoSolicitud.CAMBIO_DE_ASESOR);
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteUsuario, coordinadorUsuario, TipoSolicitud.CAMBIO_DE_ASESOR.getId()));
+        when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", UtilFecha.generarInstanteActual()));
+        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", UtilFecha.generarInstanteActual()));
+
+        // Act
+        useCase.ejecutar(entradaCambio);
+
+        // Assert
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudRespondidaEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        var evento = eventCaptor.getValue();
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.CAMBIO_ASESOR_RESPONDIDA);
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudCambioAsesorRespondidaEvent");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO),
+                eq(TipoSolicitud.CAMBIO_DE_ASESOR.getId()), eq(solicitud), eq(coordinadorUsuario));
+    }
+
+    @Test
+    void debePublicarElEventoDeAmpliacionPlazo_cuandoElTipoEsAmpliacionDePlazo() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(solicitud, "Se aprueba la ampliacion");
+        var entradaAmpliacion = RespuestaSolicitudDomain.crear(
+                respuesta, coordinadorUsuario, TipoSolicitud.AMPLIACION_DE_PLAZO);
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteUsuario, coordinadorUsuario, TipoSolicitud.AMPLIACION_DE_PLAZO.getId()));
+        when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", UtilFecha.generarInstanteActual()));
+        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", UtilFecha.generarInstanteActual()));
+
+        // Act
+        useCase.ejecutar(entradaAmpliacion);
+
+        // Assert
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudRespondidaEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        var evento = eventCaptor.getValue();
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.AMPLIACION_PLAZO_RESPONDIDA);
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudAmpliacionPlazoRespondidaEvent");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO),
+                eq(TipoSolicitud.AMPLIACION_DE_PLAZO.getId()), eq(solicitud), eq(coordinadorUsuario));
+    }
+
+    @Test
     void debeAbortarSinRegistrarNiPublicar_cuandoElValidatorLanza() {
         // Arrange
         stubFlujoValido();
-        doThrow(new SolicitudYaRespondidaException(solicitud))
+        doThrow(new SolicitudYaRespondidaException())
                 .when(validator).validar(any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert
@@ -135,7 +220,7 @@ class ResponderSolicitudUseCaseImplTest {
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
         when(datosUsuarioFinder.obtener(any())).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new SolicitudYaRespondidaException(solicitud))
+        doThrow(new SolicitudYaRespondidaException())
                 .when(validator).validar(any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert
@@ -157,7 +242,7 @@ class ResponderSolicitudUseCaseImplTest {
         useCase.ejecutar(entrada);
 
         // Assert
-        InOrder inOrder = inOrder(datosSolicitudFinder, solicitudTieneRespuestasFinder,
+        var inOrder = inOrder(datosSolicitudFinder, solicitudTieneRespuestasFinder,
                 datosUsuarioFinder, validator, respuestaOutputPort, eventPublisher);
         inOrder.verify(datosSolicitudFinder).obtener(solicitud);
         inOrder.verify(solicitudTieneRespuestasFinder).obtener(solicitud);

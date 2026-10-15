@@ -26,9 +26,9 @@ class SolicitudDuplicadaFinderImplTest {
     @Test
     void debeDescomponerLaClaveYDelegarEnElPuerto_cuandoSeConsultaLaDuplicidad() {
         // Arrange
-        UUID destinatario = UUID.randomUUID();
-        UUID remitente = UUID.randomUUID();
-        Instant fecha = Instant.now();
+        var destinatario = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var fecha = Instant.now();
         var clave = new ClaveSolicitud(destinatario, remitente, fecha, "mensaje");
         when(solicitudOutputPort.existePorCombinacionUnica(destinatario, remitente, fecha, "mensaje"))
                 .thenReturn(true);
