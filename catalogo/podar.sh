@@ -32,7 +32,7 @@
 
 set -eu
 
-CONTEXTOS="app fichas seguridad usuarios notificaciones evaluaciones proyectos solicitudes biblioteca repositorio_artefactos artefactos"
+CONTEXTOS="app fichas seguridad usuarios notificaciones evaluaciones proyectos solicitudes biblioteca repositorio_artefactos artefactos mapas_ruta"
 
 CATALOGO_DIR="${CATALOGO_DIR:-$(dirname "$0")}"
 DRY_RUN="${DRY_RUN:-0}"

@@ -150,4 +150,12 @@ public final class EventTopics {
         public static final String VERSION_REPOSITORIO_ARTEFACTO_SUBIDA =
                 "repositorio_artefactos.version_repositorio_artefacto.subida";
     }
+
+    public static final class MapasRuta {
+
+        private MapasRuta() {}
+
+        public static final String MAPA_RUTA_AGREGADO =
+                "mapas_ruta.mapa_ruta.agregado";
+    }
 }
