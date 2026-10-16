@@ -36,20 +36,26 @@ public record AgregarMapaRutaCommand(
                 MapasRutaFields.MapaRuta.COORDINADOR,
                 MapasRutaCodes.MapaRuta.COORDINADOR_REQUERIDO, result);
 
-        if (ValidatorTexto.noEnBlanco(fechaInicio,
+        var fechaInicioValida = ValidatorTexto.noEnBlanco(fechaInicio,
                 MapasRutaFields.MapaRuta.FECHA_INICIO,
-                MapasRutaCodes.MapaRuta.FECHA_INICIO_REQUERIDA, result)) {
-            ValidatorFecha.fechaValida(fechaInicio,
-                    MapasRutaFields.MapaRuta.FECHA_INICIO,
-                    MapasRutaCodes.MapaRuta.FECHA_INICIO_INVALIDA, result);
-        }
+                MapasRutaCodes.MapaRuta.FECHA_INICIO_REQUERIDA, result)
+                && ValidatorFecha.fechaValida(fechaInicio,
+                MapasRutaFields.MapaRuta.FECHA_INICIO,
+                MapasRutaCodes.MapaRuta.FECHA_INICIO_INVALIDA, result);
 
-        if (ValidatorTexto.noEnBlanco(fechaFin,
+        var fechaFinValida = ValidatorTexto.noEnBlanco(fechaFin,
                 MapasRutaFields.MapaRuta.FECHA_FIN,
-                MapasRutaCodes.MapaRuta.FECHA_FIN_REQUERIDA, result)) {
-            ValidatorFecha.fechaValida(fechaFin,
+                MapasRutaCodes.MapaRuta.FECHA_FIN_REQUERIDA, result)
+                && ValidatorFecha.fechaValida(fechaFin,
+                MapasRutaFields.MapaRuta.FECHA_FIN,
+                MapasRutaCodes.MapaRuta.FECHA_FIN_INVALIDA, result);
+
+        if (fechaInicioValida && fechaFinValida) {
+            ValidatorFecha.posterior(
+                    UtilFecha.parsearFechaDesdeTexto(fechaFin),
+                    UtilFecha.parsearFechaDesdeTexto(fechaInicio),
                     MapasRutaFields.MapaRuta.FECHA_FIN,
-                    MapasRutaCodes.MapaRuta.FECHA_FIN_INVALIDA, result);
+                    MapasRutaCodes.MapaRuta.FECHA_FIN_NO_POSTERIOR, result);
         }
 
         result.lanzarSiTieneErroresDeEntrada();

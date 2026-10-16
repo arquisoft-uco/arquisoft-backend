@@ -13,25 +13,12 @@ import java.util.UUID;
 
 public final class MapaRutaDomain {
 
-    public static final MapaRutaDomain VACIO = new MapaRutaDomain(
-            UtilUUID.obtenerUUIDPorDefecto(),
-            UtilUUID.obtenerUUIDPorDefecto(),
-            LocalDate.MIN,
-            LocalDate.MIN);
-
     private UUID id;
     private UUID proyectoGrado;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
 
     private MapaRutaDomain() {}
-
-    private MapaRutaDomain(UUID id, UUID proyectoGrado, LocalDate fechaInicio, LocalDate fechaFin) {
-        this.id = id;
-        this.proyectoGrado = proyectoGrado;
-        this.fechaInicio = fechaInicio;
-        this.fechaFin = fechaFin;
-    }
 
     public static MapaRutaDomain crear(UUID proyectoGrado, LocalDate fechaInicio, LocalDate fechaFin) {
         var mapaRuta = new MapaRutaDomain();
@@ -45,10 +32,6 @@ public final class MapaRutaDomain {
 
         result.lanzarSiTieneErrores();
         return mapaRuta;
-    }
-
-    public static MapaRutaDomain reconstruir(UUID id, UUID proyectoGrado, LocalDate fechaInicio, LocalDate fechaFin) {
-        return new MapaRutaDomain(id, proyectoGrado, fechaInicio, fechaFin);
     }
 
     private void setId() {
@@ -105,9 +88,5 @@ public final class MapaRutaDomain {
 
     public LocalDate getFechaFin() {
         return fechaFin;
-    }
-
-    public boolean esVacio() {
-        return this == VACIO;
     }
 }

@@ -292,6 +292,9 @@ services:
       DB_BIBLIOTECA_URL: jdbc:postgresql://postgres:5432/biblioteca
       DB_BIBLIOTECA_USERNAME: arquisoft_user
       DB_BIBLIOTECA_PASSWORD: arquisoft123
+      DB_MAPAS_RUTA_URL: jdbc:postgresql://postgres:5432/mapas_ruta
+      DB_MAPAS_RUTA_USERNAME: arquisoft_user
+      DB_MAPAS_RUTA_PASSWORD: arquisoft123
       # 'log' no intenta conectar a ningún servidor SMTP — Mailpit es opcional.
       # Para probar la entrega real: levantar el servicio 'mailpit' y poner esta var en 'smtp'.
       NOTIFICACION_PROVEEDOR: ${NOTIFICACION_PROVEEDOR:-log}

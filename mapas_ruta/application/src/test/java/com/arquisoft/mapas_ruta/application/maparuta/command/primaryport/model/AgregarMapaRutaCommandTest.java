@@ -66,6 +66,37 @@ class AgregarMapaRutaCommandTest {
     }
 
     @Test
+    void debeRechazarFechaFin_cuandoEsIgualOAnteriorALaFechaInicio() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID().toString();
+        var coordinador = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> AgregarMapaRutaCommand.crear(proyectoGrado, coordinador, "2026-10-01", "2026-10-01"))
+                .isInstanceOfSatisfying(ApplicationValidationException.class, excepcion ->
+                        assertThat(excepcion.getValidationResult().getErrores())
+                                .extracting(ValidationError::campo, ValidationError::codigoError)
+                                .containsExactly(tuple(MapasRutaFields.MapaRuta.FECHA_FIN,
+                                        MapasRutaCodes.MapaRuta.FECHA_FIN_NO_POSTERIOR)));
+        assertThatThrownBy(() -> AgregarMapaRutaCommand.crear(proyectoGrado, coordinador, "2026-10-01", "2026-09-30"))
+                .isInstanceOf(ApplicationValidationException.class);
+    }
+
+    @Test
+    void debeOmitirLaComparacion_cuandoUnaDeLasFechasEsInvalida() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID().toString();
+        var coordinador = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> AgregarMapaRutaCommand.crear(proyectoGrado, coordinador, "2026-10-01", "no-es-fecha"))
+                .isInstanceOfSatisfying(ApplicationValidationException.class, excepcion ->
+                        assertThat(excepcion.getValidationResult().getErrores())
+                                .extracting(ValidationError::codigoError)
+                                .containsExactly(MapasRutaCodes.MapaRuta.FECHA_FIN_INVALIDA));
+    }
+
+    @Test
     void debeRechazarFechaFinInvalida_cuandoTieneFormatoErroneo() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID().toString();
