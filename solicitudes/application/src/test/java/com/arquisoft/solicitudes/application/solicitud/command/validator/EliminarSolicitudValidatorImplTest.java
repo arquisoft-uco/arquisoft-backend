@@ -5,11 +5,15 @@ import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudDomain;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudConRespuestasException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoPropiaException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAmpliacionPlazoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
+
+import com.arquisoft.shared.util.UtilUUID;
 
 import java.util.UUID;
 
@@ -115,5 +119,57 @@ class EliminarSolicitudValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(
                 entrada(solicitud, solicitante, tipo), resumen(solicitud, solicitante, tipo), true))
                 .isInstanceOf(SolicitudConRespuestasException.class);
+    }
+
+    @Test
+    void debePasar_cuandoLasCuatroReglasSeCumplenParaCambioAsesor() {
+        // Arrange
+        var solicitud = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
+        var tipo = TipoSolicitud.CAMBIO_DE_ASESOR;
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(
+                entrada(solicitud, solicitante, tipo), resumen(solicitud, solicitante, tipo), false))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarElErrorDeCambioAsesor_cuandoSeEsperabaCambioAsesorYLaSolicitudEsDeOtroTipo() {
+        // Arrange
+        var solicitud = UUID.randomUUID();
+        var solicitante = UUID.randomUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                entrada(solicitud, solicitante, TipoSolicitud.CAMBIO_DE_ASESOR),
+                resumen(solicitud, solicitante, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR), false))
+                .isInstanceOf(SolicitudTipoNoCoincideCambioAsesorException.class);
+    }
+
+    @Test
+    void debePasar_cuandoLasCuatroReglasSeCumplenParaAmpliacionPlazo() {
+        // Arrange
+        var solicitud = UtilUUID.generarNuevoUUID();
+        var solicitante = UtilUUID.generarNuevoUUID();
+        var tipo = TipoSolicitud.AMPLIACION_DE_PLAZO;
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(
+                entrada(solicitud, solicitante, tipo), resumen(solicitud, solicitante, tipo), false))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarElErrorDeAmpliacionPlazo_cuandoSeEsperabaAmpliacionPlazoYLaSolicitudEsDeOtroTipo() {
+        // Arrange
+        var solicitud = UtilUUID.generarNuevoUUID();
+        var solicitante = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                entrada(solicitud, solicitante, TipoSolicitud.AMPLIACION_DE_PLAZO),
+                resumen(solicitud, solicitante, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR), false))
+                .isInstanceOf(SolicitudTipoNoCoincideAmpliacionPlazoException.class);
     }
 }

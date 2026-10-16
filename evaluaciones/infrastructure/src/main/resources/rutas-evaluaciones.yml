@@ -8,6 +8,8 @@ rutas:
     evaluacion:
       base: /evaluaciones
       jurados: /{evaluacionId}/jurados
+      evaluaciones-jurado: /{evaluacionId}/evaluaciones-jurado
+      coordinador: /coordinador
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
       por-id: /{itemId}
@@ -15,6 +17,8 @@ rutas:
       base: /evaluaciones/criterios-item-cualitativo-jurado
     categorias-item-cuantitativo-jurado:
       base: /evaluaciones/categorias-item-cuantitativo-jurado
+    categorias-item-cuantitativo-asesor:
+      base: /evaluaciones/categorias-item-cuantitativo-asesor
     evaluaciones-jurado:
       base: /evaluaciones/evaluaciones-jurado
       cualitativas: /{evaluacionJuradoId}/cualitativas
@@ -25,3 +29,10 @@ rutas:
     evaluaciones-cuantitativas-jurado:
       base: /evaluaciones/evaluaciones-cuantitativas-jurado
       puntaje: /{id}/puntaje
+      observaciones: /{id}/observaciones
+      observaciones-jurado: /{id}/observaciones/jurado
+    observaciones-item-jurado:
+      base: /evaluaciones/observaciones-item-jurado
+      por-id: /{observacionId}
+    estados-evaluacion:
+      base: /evaluaciones/estados-evaluacion

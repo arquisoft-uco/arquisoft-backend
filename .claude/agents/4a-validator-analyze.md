@@ -12,8 +12,8 @@ completo. No escribes archivos: eso lo hace `@4b-validator-report`.
 
 **Modo orquestado.** Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue
 `.claude/templates/HANDOFF.md`: el reporte completo **es el cuerpo de tu `.out.md`**, precedido por la
-línea `ESTADO: OK` si es ✅ APROBADO o `ESTADO: RECHAZADO` si es ⛔, y respondes solo la línea de
-traspaso. Ese `.out.md` es el **único archivo** que escribes (`Write` está para eso); no tocas el repo
+línea `ESTADO: OK · {n} menores` si es ✅ APROBADO o `ESTADO: RECHAZADO` si es ⛔ (el orquestador
+decide por ese conteo si hay corte), y respondes solo la línea de traspaso. Ese `.out.md` es el **único archivo** que escribes (`Write` está para eso); no tocas el repo
 ni `.workspace/validator/`. Si el `.in.md` es un ajuste (`{ID}-AJ{n}`), valida el diff del ajuste con
 las mismas FASES.
 
@@ -22,8 +22,9 @@ cita una sección de skill (*en cursiva*), el porqué y la forma correcta están
 
 ## FASE 0 — Cargar contexto
 
-Invoca `arquisoft-arquitectura` y `arquisoft-estandares`. Si el plan las contradice, repórtalo como
-observación.
+Invoca `arquisoft-arquitectura` y `arquisoft-estandares`. Si el plan las contradice, el check
+afectado conserva su severidad y el hallazgo nombra al plan como causa: un plan aprobado no convierte
+un ❌ en ⚠️. Solo cede donde la propia fila del check lo deja en manos del plan ("salvo que el plan…").
 
 **Si el plan tiene la sección 10 (Eventos RabbitMQ), lee también
 `arquisoft-arquitectura/references/eventos.md` y `arquisoft-estandares/references/eventos.md`
@@ -135,9 +136,8 @@ aunque el plan lo declare (se descarta en el exchange); repórtalo como decisió
 dominio — una sola forma*): el `UseCase` inyecta la **interfaz** `EventPublisher` y publica tras
 persistir; el domain es plano (sin acumular ni drenar eventos); el evento vive en
 `domain/{feature}/event/`, extiende `DomainEvent`, pasa `EVENT_TOPIC` (`{contexto}.{entidad}.{accion}`)
-a `super(...)` y carga lo que el consumidor necesita. Un `Finder` que alimenta el evento consultado
-después de persistir, o cuyo `VACIO` ninguna `Rule` rechaza, es ❌: el evento sale vacío con la
-escritura confirmada.
+a `super(...)` y carga lo que el consumidor necesita, con cada dato de un `Finder` sujeto a la fila
+*`Finder` después del `Validator`* del Nivel 2.6.
 
 **Si el plan dice "Eventos: ninguno", el exceso también es ❌**: archivo bajo `event/`,
 `EventPublisher` inyectado o clave nueva de evento. Cita la sección 4.
@@ -193,6 +193,7 @@ Fuente: `arquisoft-estandares` → *Identificadores y DTOs*; `arquisoft-arquitec
 |---|:---:|
 | `Command` `record` en `command/primaryport/model/`; `ReadModel` `record` en `query/readmodel/`; ninguno con Lombok/Jackson | ❌ |
 | Campos en español iguales al domain y con nombre objetual (`asesorFicha`, no `asesorFichaId`) | ❌ |
+| `Command.crear(...)` o `{Consulta}{Entidad}Query.crear(...)` con un parámetro del cliente que no pasa por ningún `Validator*` (obligatoriedad, longitud de `{Contexto}Limits`, formato), aunque el dominio lo valide después. Recorre los parámetros uno por uno | ❌ |
 | Identificador del body tipado `UUID`, o validado con Jakarta en vez de `ValidatorUUID.uuidValido(...)` en `Command.crear(...)` | ❌ |
 | `RequestDTO` con cualquier anotación o lógica (única excepción: `toString()` que enmascara un secreto, `IniciarSesionRequestDTO`), o sin `{Accion}{Entidad}RequestMapper` (`final`, constructor privado, `static toCommand`) | ❌ |
 | `Command` construido con `new` en vez de `crear(...)` | ❌ |
@@ -227,6 +228,7 @@ entrada*.
 | `Finder` que lanza por "no encontrado", devuelve `Optional` o `Entity`, no extiende `Finder<T, R>`/`SupplierFinder<R>` o su método no es `obtener` (`Finder<Void, R>` o un parámetro ignorado es hallazgo) | ❌ |
 | `UseCase` que hace `isPresent()`/`get()`/`orElse`/`map` sobre un `Finder` en vez de `esVacio()`/`UtilUUID.esPorDefecto(...)` | ❌ |
 | `FinderImpl` que encadena otro `Finder`, compara/deriva o hace varios lookups | ❌ |
+| **`Finder` después del `Validator`:** en un comando, `Finder` consultado tras `validar(...)`, o resultado que la escritura o el evento leen sin una `Rule` que rechace su `VACIO`. Ni una FK ni la razón del plan lo rebajan — *Validator, Rule, Finder* | ❌ |
 | `UseCase` que calcula un veredicto y se lo pasa al `Validator` en vez del dato crudo | ❌ |
 | **`Finder` dependiente** colapsable en un método del `OutputPort` — *El `Finder` dependiente*. No es hallazgo si el plan justifica la cascada ni por tener varios `Finder`s independientes | ⚠️ |
 | `{Entidad}OutputPort` con un método sobre otro domain, o comando que lee otra feature importando su `domain/`/adaptador en vez de su `Finder` + `OutputPort` de `command/` | ❌ |
@@ -245,7 +247,9 @@ Fuente: `arquisoft-arquitectura` → *Rutas y autorización viven en constantes,
 | Client role fuera de kebab-case `{contexto}:{recurso}:{accion}`, o distinto del de la sección 9 del plan | ❌ |
 | Client role **ya asociado a otro endpoint** en `{Contexto}Authorities` (cada endpoint lleva el suyo, diferenciado por calificador: `-coordinador`/`-asesor`) | ❌ |
 | `hasRole(...)` o roles realm directos | ❌ |
+| Client role nuevo sin definición en `roles.client.arquisoft-api` de `keycloak/realm-arquisoft.json`, ausente de los `composites` de un rol realm que la sección 9 le asigna (o compuesto en uno que no le asigna), o el archivo deja de ser JSON válido | ❌ |
 | Ruta literal en vez de placeholder (`"${rutas.{contexto}.{recurso}.base:/{recurso}}"`), o clase `{Contexto}Routes` | ❌ |
+| Base de la ruta con el nombre del contexto delante del recurso (`/{contexto}/{recurso}`) en vez del recurso solo, aunque el plan la pida así | ❌ |
 
 ### Nivel 2.8 — Paginación y filtros (si la HU de lectura lo requiere)
 
@@ -373,7 +377,7 @@ Lee `.claude/templates/VALIDATOR.md` en esta fase —no la reconstruyas de memor
 reporte con sus encabezados `##` exactos y en orden. Los hallazgos van en `## Errores Bloqueantes` /
 `## Errores Menores` con su `[Nivel X.Y]`. Es un contrato: `@4c-commit` saca de campos fijos
 (`**Mensaje:**`, `**Rama:**`, `**Archivos a incluir:**`, `**Compilación:**`, `**Endpoints
-documentados:**`, Score, Tests, bloqueantes) lo que el usuario confirma y la evidencia del checklist
+documentados:**`, `**Keycloak:**`, Score, Tests, bloqueantes) lo que el usuario confirma y la evidencia del checklist
 del PR.
 
 - **`Autor`** se copia literal del plan. Si no lo trae, `git config user.name`/`user.email`, y
@@ -381,6 +385,8 @@ del PR.
 - **El `Cuerpo` se escribe desde el código:** cada identificador (rol, routing key, ruta, clase,
   tabla) se copia del archivo donde vive, sin fundir dos distintos en una frase. Va literal al commit
   y al PR.
+- **`Keycloak`** se lee de `keycloak/realm-arquisoft.json`, no del plan: cada client role nuevo con
+  los roles realm que de verdad lo componen en el archivo.
 - Una sección sin hallazgos dice "Ninguno": nunca se borra.
 - `Archivos a incluir` es la lista explícita, una ruta por línea con su estado de
   `git status -s -uall` — nunca "ver `git status`". Solo código, tests, migraciones y recursos: el

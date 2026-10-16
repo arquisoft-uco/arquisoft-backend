@@ -1,6 +1,7 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.usecase.impl;
 
 import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
+import com.arquisoft.proyectos.application.estadoproyectogrado.command.usecase.AsignarEstadoInicialProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.usecase.AsignarEstudiantesProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoDeFichaExisteFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.result.RegistroProyectoGradoResult;
@@ -10,7 +11,7 @@ import com.arquisoft.proyectos.application.proyectogrado.command.validator.Regis
 import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.proyectos.domain.coordinador.exception.CoordinadorNoVigenteException;
 import com.arquisoft.proyectos.domain.coordinador.model.ContactoCoordinador;
-import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGrado;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.AgregacionEstudiantesProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.EstudianteProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
@@ -56,6 +57,9 @@ class RegistrarProyectoGradoUseCaseImplTest {
     private RegistrarProyectoGradoValidator validator;
 
     @Mock
+    private AsignarEstadoInicialProyectoGradoUseCase asignarEstadoInicialProyectoGradoUseCase;
+
+    @Mock
     private AsignarEstudiantesProyectoGradoUseCase asignarEstudiantesProyectoGradoUseCase;
 
     @Mock
@@ -73,7 +77,9 @@ class RegistrarProyectoGradoUseCaseImplTest {
     private final AgregacionEstudiantesProyectoGradoDomain estudiantes = AgregacionEstudiantesProyectoGradoDomain.crear(
             EstudianteProyectoGradoDomain.crear(proyecto.getId(), List.of(UUID.randomUUID(), UUID.randomUUID())),
             coordinadorId);
-    private final RegistroProyectoGradoDomain registro = RegistroProyectoGradoDomain.crear(proyecto, estudiantes);
+    private final EstadoProyectoGradoDomain estadoInicial = EstadoProyectoGradoDomain.crear(proyecto.getId());
+    private final RegistroProyectoGradoDomain registro = RegistroProyectoGradoDomain.crear(
+            proyecto, estadoInicial, estudiantes);
     private final CoordinadorDomain coordinador = CoordinadorDomain.reconstruir(coordinadorId, "1020",
             "Laura Mesa", "laura.mesa@uco.edu.co", Instant.parse("2026-09-01T10:00:00Z"), null);
 
@@ -95,7 +101,6 @@ class RegistrarProyectoGradoUseCaseImplTest {
         var entidad = ArgumentCaptor.forClass(ProyectoGradoEntity.class);
         verify(proyectoGradoOutputPort).registrar(entidad.capture());
         assertThat(entidad.getValue().id()).isEqualTo(proyecto.getId());
-        assertThat(entidad.getValue().estadoProyectoGrado()).isEqualTo(EstadoProyectoGrado.EN_PROCESO.getId());
 
         var evento = ArgumentCaptor.forClass(DomainEvent.class);
         verify(eventPublisher).publish(evento.capture());
@@ -108,11 +113,13 @@ class RegistrarProyectoGradoUseCaseImplTest {
         });
 
         var orden = inOrder(proyectoGradoDeFichaExisteFinder, coordinadorPorIdFinder, validator,
-                proyectoGradoOutputPort, asignarEstudiantesProyectoGradoUseCase, eventPublisher);
+                proyectoGradoOutputPort, asignarEstadoInicialProyectoGradoUseCase, asignarEstudiantesProyectoGradoUseCase,
+                eventPublisher);
         orden.verify(proyectoGradoDeFichaExisteFinder, times(1)).obtener(proyecto.getFichaPerfil());
         orden.verify(coordinadorPorIdFinder, times(1)).obtener(coordinadorId);
         orden.verify(validator).validar(coordinadorId, coordinador);
         orden.verify(proyectoGradoOutputPort).registrar(any());
+        orden.verify(asignarEstadoInicialProyectoGradoUseCase).ejecutar(estadoInicial);
         orden.verify(asignarEstudiantesProyectoGradoUseCase).ejecutar(estudiantes);
         orden.verify(eventPublisher).publish(any());
     }
@@ -131,6 +138,7 @@ class RegistrarProyectoGradoUseCaseImplTest {
         verify(coordinadorPorIdFinder, never()).obtener(any());
         verify(validator, never()).validar(any(), any());
         verify(proyectoGradoOutputPort, never()).registrar(any());
+        verify(asignarEstadoInicialProyectoGradoUseCase, never()).ejecutar(any());
         verify(asignarEstudiantesProyectoGradoUseCase, never()).ejecutar(any());
         verify(eventPublisher, never()).publish(any());
     }
@@ -146,6 +154,7 @@ class RegistrarProyectoGradoUseCaseImplTest {
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(registro)).isInstanceOf(CoordinadorNoVigenteException.class);
         verify(proyectoGradoOutputPort, never()).registrar(any());
+        verify(asignarEstadoInicialProyectoGradoUseCase, never()).ejecutar(any());
         verify(asignarEstudiantesProyectoGradoUseCase, never()).ejecutar(any());
         verify(eventPublisher, never()).publish(any());
     }

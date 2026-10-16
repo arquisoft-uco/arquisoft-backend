@@ -7,10 +7,6 @@ public final class MapaRutaMapper {
 
     private MapaRutaMapper() {}
 
-    public static MapaRutaDomain toDomain(MapaRutaEntity entity) {
-        return MapaRutaDomain.reconstruir(entity.id(), entity.proyectoGrado(), entity.fechaInicio(), entity.fechaFin());
-    }
-
     public static MapaRutaEntity toEntity(MapaRutaDomain domain) {
         return new MapaRutaEntity(domain.getId(), domain.getProyectoGrado(), domain.getFechaInicio(), domain.getFechaFin());
     }

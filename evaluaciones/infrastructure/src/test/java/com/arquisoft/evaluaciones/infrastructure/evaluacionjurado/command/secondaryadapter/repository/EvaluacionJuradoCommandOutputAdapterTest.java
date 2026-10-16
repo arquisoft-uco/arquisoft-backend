@@ -1,6 +1,8 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.repository;
 
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EvaluacionJuradoEntity;
+import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.secondaryadapter.entity.EvaluacionCuantitativaJuradoJpaEntity;
+import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.command.secondaryadapter.entity.ObservacionItemJuradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
 import jakarta.persistence.EntityManager;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.util.List;
 import java.util.Set;
@@ -27,6 +30,9 @@ class EvaluacionJuradoCommandOutputAdapterTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private TestEntityManager testEntityManager;
 
     @Autowired
     private EvaluacionJuradoCommandRepository repository;
@@ -80,6 +86,39 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         return evaluacionJurado;
     }
 
+    private UUID sembrarObservacion(UUID evaluacionJurado) {
+        var evaluacionCuantitativaJurado = UUID.randomUUID();
+        var observacion = UUID.randomUUID();
+        testEntityManager.persist(EvaluacionCuantitativaJuradoJpaEntity.builder()
+                .id(evaluacionCuantitativaJurado)
+                .evaluacionJuradoId(evaluacionJurado)
+                .itemId(UUID.randomUUID())
+                .puntaje(100)
+                .build());
+        testEntityManager.persist(ObservacionItemJuradoJpaEntity.builder()
+                .id(observacion)
+                .evaluacionCuantitativaJuradoId(evaluacionCuantitativaJurado)
+                .descripcion("Sustenta el puntaje otorgado")
+                .build());
+        testEntityManager.flush();
+        testEntityManager.clear();
+        return observacion;
+    }
+
+    private UUID sembrarEvaluacionCuantitativaJurado(String estadoEvaluacion) {
+        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), estadoEvaluacion);
+        UUID evaluacionCuantitativaJurado = UUID.randomUUID();
+        entityManager.createNativeQuery(
+                "INSERT INTO evaluacion_cuantitativa_jurado (id, evaluacion_jurado_id, item_id, puntaje) "
+                        + "VALUES (?, ?, ?, ?)")
+                .setParameter(1, evaluacionCuantitativaJurado).setParameter(2, evaluacionJurado)
+                .setParameter(3, UUID.randomUUID()).setParameter(4, 300)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+        return evaluacionCuantitativaJurado;
+    }
+
     // H2 entrega las columnas uuid de una consulta nativa como byte[] (PostgreSQL las entrega como
     // UUID), asi que aqui se ejercita la consulta real por su columna de texto y el mapeo de los
     // identificadores se cubre en EstadoEvaluacionJuradoJpaMapperTest.
@@ -113,6 +152,30 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     void debeRetornarVacio_cuandoLaEvaluacionJuradoNoExiste() {
         // Act & Assert
         assertThat(adapter.obtenerEstadoBloqueado(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaTrue_cuandoLaEvaluacionEstaFinalizada() {
+        // Arrange
+        UUID evaluacionCuantitativaJurado = sembrarEvaluacionCuantitativaJurado("FINALIZADA");
+
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(evaluacionCuantitativaJurado)).isTrue();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaFalse_cuandoLaEvaluacionNoEstaFinalizada() {
+        // Arrange
+        UUID evaluacionCuantitativaJurado = sembrarEvaluacionCuantitativaJurado("PENDIENTE");
+
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(evaluacionCuantitativaJurado)).isFalse();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaFalse_cuandoLaEvaluacionCuantitativaJuradoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(UUID.randomUUID())).isFalse();
     }
 
     @Test
@@ -156,5 +219,43 @@ class EvaluacionJuradoCommandOutputAdapterTest {
 
         // Assert
         assertThat(asignados).containsExactly(asignado);
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaPorObservacionTrue_cuandoLaEvaluacionDeLaObservacionEstaFinalizada() {
+        // Arrange
+        var observacion = sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "FINALIZADA"));
+        sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "PENDIENTE"));
+
+        // Act
+        var finalizada = adapter.estaFinalizadaPorObservacion(observacion);
+
+        // Assert
+        assertThat(finalizada).isTrue();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaPorObservacionFalse_cuandoLaEvaluacionDeLaObservacionNoEstaFinalizada() {
+        // Arrange
+        var observacion = sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "PENDIENTE"));
+        sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "FINALIZADA"));
+
+        // Act
+        var finalizada = adapter.estaFinalizadaPorObservacion(observacion);
+
+        // Assert
+        assertThat(finalizada).isFalse();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaPorObservacionFalse_cuandoLaObservacionNoExiste() {
+        // Arrange
+        sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "FINALIZADA"));
+
+        // Act
+        var finalizada = adapter.estaFinalizadaPorObservacion(UUID.randomUUID());
+
+        // Assert
+        assertThat(finalizada).isFalse();
     }
 }

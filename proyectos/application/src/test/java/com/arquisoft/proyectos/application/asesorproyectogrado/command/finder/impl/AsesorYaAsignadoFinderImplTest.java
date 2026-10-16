@@ -28,7 +28,7 @@ class AsesorYaAsignadoFinderImplTest {
         // Arrange
         var vinculo = AsesorProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
         var entrada = AsignacionAsesorProyectoGradoDomain.crear(vinculo, UtilUUID.generarNuevoUUID());
-        when(asesorProyectoGradoOutputPort.existePorAsesorYProyectoGradoYEstado(
+        when(asesorProyectoGradoOutputPort.existePorAsesorYProyectoGradoConEstadoVigente(
                 vinculo.getAsesor(), vinculo.getProyectoGrado(), EstadoAsesor.ASIGNADO.getId())).thenReturn(true);
 
         // Act

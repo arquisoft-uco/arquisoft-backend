@@ -13,7 +13,8 @@ modificas código de producción sin aprobación explícita** (ver "Protocolo de
 
 Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue `.claude/templates/HANDOFF.md`: no hay
 usuario en el canal, lo aprobado está en «Decisiones», y cada pregunta que este archivo te manda
-hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder y
+hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder,
+con la línea `ESTADO` de `HANDOFF.md` como línea 1 (uno de sus cuatro valores, nada encima), y
 responde solo la línea de traspaso.
 
 En este agente: la confirmación de la estimación y la aprobación por capa se omiten, salvo que la
@@ -130,6 +131,9 @@ asserts — no tests nuevos):
 - Contra el N+1, siembra la colección con **al menos 3** elementos y verifica una sola llamada: con
   uno no se distingue 1 de N.
 - Una cascada condicional se prueba por su camino corto: `verify(segundoFinder, never())`.
+- En un comando, `inOrder(...)` con todos los `Finder`s antes de `validator.validar(...)`. Un
+  `Finder` que el código consulta después de validar es un bug de producción para `## Bugs`, no un
+  orden que el test copie (`arquisoft-estandares` → *Validator, Rule, Finder*).
 
 Si en Arrange stubeas un `Finder` para alimentar la entrada de otro, eso es un `Finder` dependiente.
 Si el plan no lo justifica con una cascada legítima de `arquisoft-estandares` → *El `Finder`
