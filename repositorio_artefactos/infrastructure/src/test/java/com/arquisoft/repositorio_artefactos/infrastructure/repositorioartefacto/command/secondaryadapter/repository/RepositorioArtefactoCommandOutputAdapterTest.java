@@ -72,4 +72,32 @@ class RepositorioArtefactoCommandOutputAdapterTest {
         assertThat(mismoNombre).isTrue();
         assertThat(otroNombre).isFalse();
     }
+
+    @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var adapter = new RepositorioArtefactoCommandOutputAdapter(repositorioArtefactoCommandRepository, logger);
+        var administrador = sembrarAdministrador();
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new RepositorioArtefactoEntity(id, "Repo", "Descripcion", administrador));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(encontrado).isPresent();
+        assertThat(encontrado.get().nombreRepositorio()).isEqualTo("Repo");
+        assertThat(encontrado.get().administrador()).isEqualTo(administrador);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoAusente() {
+        // Arrange
+        var adapter = new RepositorioArtefactoCommandOutputAdapter(repositorioArtefactoCommandRepository, logger);
+
+        // Act & Assert
+        assertThat(adapter.obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
 }

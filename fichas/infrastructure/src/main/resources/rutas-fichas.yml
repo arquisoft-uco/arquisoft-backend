@@ -48,9 +48,3 @@ rutas:
       observaciones-evaluacion-coordinador: /{fichaPerfilId}/observaciones-evaluacion/coordinador
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
-    minio-guia:
-      base: /fichas/minio/guia
-      upload-url: /upload-url
-      download-url: /download-url
-      existe: /existe
-      objeto: /objeto

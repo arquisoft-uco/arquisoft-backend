@@ -74,8 +74,8 @@ de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 ### Bounded Contexts
 
 Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`,
-`solicitudes`, `biblioteca`, `repositorio_artefactos` y `mapas_ruta`. Los otros dos (`artefactos`, `entregables`) son andamiaje:
-solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
+`solicitudes`, `biblioteca`, `repositorio_artefactos`, `artefactos` y `mapas_ruta`. El único andamiaje
+que queda es `entregables`: solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
 `RegistrarUsuario` lo da de alta en Keycloak y publica los eventos con los que `fichas` y `proyectos`
 mantienen sus réplicas.
 
@@ -131,6 +131,7 @@ Lo que hay que saber de cada uno para no romper el grafo:
 | `shared:util` | `UtilTexto`, `UtilUUID`, `UtilColeccion`, `UtilFecha`, `UtilNumero`, `UtilObjeto`, `UtilEnum` | Prefijo `Util` en inglés, el resto en español |
 | `shared:tracing` | Contexto de traza completo (ver *Correlación*) | Único `shared:*` con capas hexagonales internas; **no** depende de spring-web ni spring-security |
 | `shared:message` | Códigos, campos, límites, textos Swagger, `EventTopics`, enums `{Feature}Key`, fachada `Mensajes` | — |
+| `shared:minio` | `AlmacenamientoObjetos`: formulario POST firmado con política, `statObject`, lectura en streaming, copia condicionada al ETag y borrado | Nunca crea buckets ni lista (la cuenta del backend en la nube no tiene `ListBucket`): el bucket lo crea `minio/configurar.sh`. Un objeto ausente (`NoSuchKey`) se devuelve vacío, no lanza |
 
 **Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
 crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
@@ -199,7 +200,7 @@ Forma, espejando cualquier otro puerto secundario:
     │   │   ├── web/                        # Un Controller por acción + dto/ + mapper/
     │   │   └── amqp/{productor}/{entidad}/ # {Evento}Consumer + {Evento}Payload
     │   └── secondaryadapter/               # entity/ (JpaEntity) + mapper/ + repository/
-    │                                       #   (o keycloak/, redis/, jwt/, smtp/…)
+    │                                       #   (o keycloak/, redis/, jwt/, smtp/, minio/, tika/…)
     └── query/
         ├── primaryadapter/web/             # Controller + dto/ + mapper/
         └── secondaryadapter/repository/    # JpaQueryEntity (@Subselect) + Specification +

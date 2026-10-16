@@ -8,6 +8,9 @@ import com.arquisoft.shared.message.key.repositorio_artefactos.RepositorioArtefa
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class RepositorioArtefactoCommandOutputAdapter implements RepositorioArtefactoOutputPort {
@@ -19,6 +22,11 @@ public class RepositorioArtefactoCommandOutputAdapter implements RepositorioArte
     public void registrar(RepositorioArtefactoEntity repositorio) {
         repositorioArtefactoCommandRepository.save(RepositorioArtefactoJpaMapper.toJpaEntity(repositorio));
         logger.debug(RepositorioArtefactoKey.LOG_GUARDADO, repositorio.id());
+    }
+
+    @Override
+    public Optional<RepositorioArtefactoEntity> obtenerPorId(UUID id) {
+        return repositorioArtefactoCommandRepository.findById(id).map(RepositorioArtefactoJpaMapper::toEntity);
     }
 
     @Override

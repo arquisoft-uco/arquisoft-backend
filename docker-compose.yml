@@ -216,6 +216,25 @@ services:
       retries: 5
       start_period: 20s
 
+  # Crea el bucket de plantillas y aplica su ciclo de vida (HU-275). Misma imagen que "minio": trae mcli.
+  # El backend espera a que termine; los buckets los crea este script, nunca el backend.
+  minio-configurador:
+    image: 'pgsty/minio:RELEASE.2026-04-17T00-00-00Z'
+    container_name: arquisoft-minio-configurador
+    restart: "no"
+    entrypoint: ["/bin/sh", "/minio/configurar.sh"]
+    environment:
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - ./minio:/minio:ro
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
   # ==================== MAILPIT (servidor SMTP de desarrollo) ====================
   # Captura todo el correo que envía el backend y lo muestra en una bandeja web.
   # Nada sale a internet: permite probar la entrega real sin escribirle a una persona.
@@ -308,6 +327,7 @@ services:
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
     ports:
       - "8080:8080"
     depends_on:
@@ -325,6 +345,8 @@ services:
         condition: service_healthy  # ✅ Backend espera Keycloak listo
       minio:
         condition: service_healthy
+      minio-configurador:
+        condition: service_completed_successfully
     networks:
       - arquisoft-network
 

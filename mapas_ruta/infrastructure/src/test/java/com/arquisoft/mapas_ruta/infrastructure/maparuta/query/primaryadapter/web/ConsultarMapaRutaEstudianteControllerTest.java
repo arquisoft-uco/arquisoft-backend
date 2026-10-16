@@ -4,6 +4,7 @@ import com.arquisoft.mapas_ruta.application.maparuta.query.primaryport.interacto
 import com.arquisoft.mapas_ruta.application.maparuta.query.primaryport.model.ConsultarMapaRutaEstudianteQuery;
 import com.arquisoft.mapas_ruta.application.maparuta.query.readmodel.MapaRutaEstudianteReadModel;
 import com.arquisoft.mapas_ruta.infrastructure.security.MapasRutaAuthorities;
+import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.MapasRutaFields;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
@@ -38,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarMapaRutaEstudianteController.class)
-@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+@Import({AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarMapaRutaEstudianteControllerTest.TestSecurityConfig.class})
 class ConsultarMapaRutaEstudianteControllerTest {

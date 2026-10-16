@@ -1,0 +1,9 @@
+package com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.primaryport.interactor;
+
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.primaryport.model.SubirVersionRepositorioArtefactoCommand;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.VersionRepositorioArtefactoSubidaResult;
+import com.arquisoft.shared.interactor.Interactor;
+
+public interface SubirVersionRepositorioArtefactoInteractor
+        extends Interactor<SubirVersionRepositorioArtefactoCommand, VersionRepositorioArtefactoSubidaResult> {
+}

@@ -143,6 +143,14 @@ public final class EventTopics {
                 "solicitudes.respuesta.cambio_asesor_estado_modificado";
     }
 
+    public static final class RepositorioArtefactos {
+
+        private RepositorioArtefactos() {}
+
+        public static final String VERSION_REPOSITORIO_ARTEFACTO_SUBIDA =
+                "repositorio_artefactos.version_repositorio_artefacto.subida";
+    }
+
     public static final class MapasRuta {
 
         private MapasRuta() {}

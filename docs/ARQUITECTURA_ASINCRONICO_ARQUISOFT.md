@@ -342,7 +342,7 @@ de hilo (request → executor async) antes de que el evento llegue al broker.
 | Base de datos | PostgreSQL 18, una por contexto (no un schema compartido) |
 | Outbox | Spring Modulith 2.0.0 — tabla `event_publication` por contexto |
 | Cache | Redis 7 (Lettuce) |
-| Almacenamiento de archivos | MinIO (`shared:minio`) — usado hoy por `fichas` para la guía de elaboración (`MinioGuiaController`) |
+| Almacenamiento de archivos | MinIO (`shared:minio`) — lo consume `repositorio_artefactos` (carga directa del navegador por formulario POST firmado) |
 | Autenticación | Keycloak 26.6 (OAuth2/OIDC Resource Server) |
 | Framework | Spring Boot 4.0.5, Java 21 (Virtual Threads habilitados) |
 | Build | Gradle 9.0.0 |
