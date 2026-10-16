@@ -1,0 +1,11 @@
+package com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.secondaryport;
+
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.criteria.CategoriaItemCuantitativoAsesorCriteria;
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.readmodel.CategoriaItemCuantitativoAsesorReadModel;
+
+import java.util.List;
+
+public interface CategoriaItemCuantitativoAsesorQueryOutputPort {
+
+    List<CategoriaItemCuantitativoAsesorReadModel> consultar(CategoriaItemCuantitativoAsesorCriteria criteria);
+}
