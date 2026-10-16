@@ -44,8 +44,11 @@ public final class ContextosCatalogo {
     /** Contexto repositorio_artefactos. */
     public static final String REPOSITORIO_ARTEFACTOS = "repositorio_artefactos";
 
+    /** Contexto artefactos. */
+    public static final String ARTEFACTOS = "artefactos";
+
     /** Todos los contextos, en el orden en que se cargan. */
     public static final List<String> TODOS = List.of(
             APP, FICHAS, SEGURIDAD, USUARIOS, NOTIFICACIONES, EVALUACIONES, PROYECTOS, SOLICITUDES,
-            BIBLIOTECA, REPOSITORIO_ARTEFACTOS);
+            BIBLIOTECA, REPOSITORIO_ARTEFACTOS, ARTEFACTOS);
 }

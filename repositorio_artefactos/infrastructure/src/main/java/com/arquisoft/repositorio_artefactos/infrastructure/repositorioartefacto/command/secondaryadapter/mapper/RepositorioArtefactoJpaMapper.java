@@ -7,6 +7,14 @@ public final class RepositorioArtefactoJpaMapper {
 
     private RepositorioArtefactoJpaMapper() {}
 
+    public static RepositorioArtefactoEntity toEntity(RepositorioArtefactoJpaEntity jpaEntity) {
+        return new RepositorioArtefactoEntity(
+                jpaEntity.getId(),
+                jpaEntity.getNombreRepositorio(),
+                jpaEntity.getDescripcion(),
+                jpaEntity.getAdministrador());
+    }
+
     public static RepositorioArtefactoJpaEntity toJpaEntity(RepositorioArtefactoEntity entity) {
         return RepositorioArtefactoJpaEntity.builder()
                 .id(entity.id())

@@ -1,0 +1,9 @@
+package com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.usecase;
+
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.CargaVersionRepositorioArtefactoResult;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SolicitudCargaVersionRepositorioArtefactoDomain;
+import com.arquisoft.shared.usecase.UseCase;
+
+public interface SolicitarCargaVersionRepositorioArtefactoUseCase
+        extends UseCase<SolicitudCargaVersionRepositorioArtefactoDomain, CargaVersionRepositorioArtefactoResult> {
+}
