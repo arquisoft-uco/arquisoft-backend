@@ -17,7 +17,9 @@ public enum ValidadorKey implements ClaveMensaje {
     UUID_INVALIDO("app.dominio.validador.error.uuid-invalido", 1),
     COLECCION_VACIA("app.dominio.validador.error.coleccion-vacia", 1),
     TAMANIO_MAXIMO("app.dominio.validador.error.tamanio-maximo", 2),
-    SIN_DUPLICADOS("app.dominio.validador.error.sin-duplicados", 2);
+    SIN_DUPLICADOS("app.dominio.validador.error.sin-duplicados", 2),
+    FECHA_INVALIDA("app.dominio.validador.error.fecha-invalida", 1),
+    FECHA_POSTERIOR("app.dominio.validador.error.fecha-posterior", 2);
 
     private final String clave;
     private final int parametros;

@@ -142,4 +142,12 @@ public final class EventTopics {
         public static final String CAMBIO_ASESOR_ESTADO_MODIFICADO =
                 "solicitudes.respuesta.cambio_asesor_estado_modificado";
     }
+
+    public static final class MapasRuta {
+
+        private MapasRuta() {}
+
+        public static final String MAPA_RUTA_AGREGADO =
+                "mapas_ruta.mapa_ruta.agregado";
+    }
 }
