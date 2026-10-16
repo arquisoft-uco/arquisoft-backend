@@ -8,6 +8,7 @@ public enum RepositorioArtefactoKey implements ClaveMensaje {
     ERROR_ADMINISTRADOR_NO_VIGENTE(
             "repositorio_artefactos.dominio.repositorioartefacto.error.administrador-no-vigente", 1),
     ERROR_DUPLICADO("repositorio_artefactos.dominio.repositorioartefacto.error.duplicado", 1),
+    ERROR_NO_ENCONTRADO("repositorio_artefactos.dominio.repositorioartefacto.error.no-encontrado", 1),
     LOG_GENERANDO("repositorio_artefactos.aplicacion.repositorioartefacto.log.generando", 1),
     LOG_VERIFICACION_GENERAR("repositorio_artefactos.aplicacion.repositorioartefacto.log.verificacion-generar", 2),
     LOG_GENERADO("repositorio_artefactos.aplicacion.repositorioartefacto.log.generado", 1),

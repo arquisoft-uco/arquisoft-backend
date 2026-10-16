@@ -93,4 +93,28 @@ class RepositorioArtefactoDomainTest {
                         .anySatisfy(error -> assertThat(error.codigoError())
                                 .isEqualTo(RepositorioArtefactosCodes.RepositorioArtefacto.DESCRIPCION_REQUERIDA)));
     }
+
+    @Test
+    void debeReconstruir_sinValidarYRecortando() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var administrador = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var repositorio = RepositorioArtefactoDomain.reconstruir(id, "  Repo  ", " Desc ", administrador);
+
+        // Assert
+        assertThat(repositorio.getId()).isEqualTo(id);
+        assertThat(repositorio.getNombreRepositorio()).isEqualTo("Repo");
+        assertThat(repositorio.getDescripcion()).isEqualTo("Desc");
+        assertThat(repositorio.getAdministrador()).isEqualTo(administrador);
+        assertThat(repositorio.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeIndicarVacio_soloParaElCentinela() {
+        // Act & Assert
+        assertThat(RepositorioArtefactoDomain.VACIO.esVacio()).isTrue();
+        assertThat(RepositorioArtefactoDomain.VACIO.getNombreRepositorio()).isEmpty();
+    }
 }

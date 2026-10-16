@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
+import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
@@ -31,7 +32,6 @@ import com.arquisoft.shared.message.key.fichas.EstudianteKey;
 import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
 import com.arquisoft.shared.message.key.fichas.ObservacionEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.ObservacionItemKey;
 import com.arquisoft.shared.message.key.fichas.TipoItemKey;
@@ -48,6 +48,7 @@ import com.arquisoft.shared.message.key.proyectos.AsesorKey;
 import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
 import com.arquisoft.shared.message.key.repositorio_artefactos.AdministradorKey;
 import com.arquisoft.shared.message.key.repositorio_artefactos.RepositorioArtefactoKey;
+import com.arquisoft.shared.message.key.repositorio_artefactos.VersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.proyectos.AsesorProyectoGradoKey;
 import com.arquisoft.shared.message.key.proyectos.EstadoAsesorKey;
 import com.arquisoft.shared.message.key.proyectos.EstadoProyectoGradoKey;
@@ -132,7 +133,6 @@ public final class ClavesCatalogo {
             ObservacionItemJuradoKey.class,
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
-            MinioGuiaKey.class,
             ObservacionEvaluacionKey.class,
             ObservacionItemKey.class,
             TipoItemKey.class,
@@ -179,6 +179,8 @@ public final class ClavesCatalogo {
             BibliotecarioKey.class,
             AdministradorKey.class,
             RepositorioArtefactoKey.class,
+            VersionRepositorioArtefactoKey.class,
+            AgregarVersionRepositorioArtefactoKey.class,
             AgregarJuradoKey.class,
             RemoverJuradoKey.class,
             JuradoKey.class,

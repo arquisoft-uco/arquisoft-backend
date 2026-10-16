@@ -14,6 +14,9 @@ import java.util.UUID;
 
 public final class RepositorioArtefactoDomain {
 
+    public static final RepositorioArtefactoDomain VACIO = RepositorioArtefactoDomain.reconstruir(
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilUUID.obtenerUUIDPorDefecto());
+
     private UUID id;
     private String nombreRepositorio;
     private String descripcion;
@@ -32,6 +35,16 @@ public final class RepositorioArtefactoDomain {
         repositorio.setAdministrador(administrador, result);
 
         result.lanzarSiTieneErrores();
+        return repositorio;
+    }
+
+    public static RepositorioArtefactoDomain reconstruir(
+            UUID id, String nombreRepositorio, String descripcion, UUID administrador) {
+        var repositorio = new RepositorioArtefactoDomain();
+        repositorio.id = id;
+        repositorio.nombreRepositorio = UtilTexto.aplicarTrim(nombreRepositorio);
+        repositorio.descripcion = UtilTexto.aplicarTrim(descripcion);
+        repositorio.administrador = administrador;
         return repositorio;
     }
 
@@ -94,5 +107,9 @@ public final class RepositorioArtefactoDomain {
 
     public UUID getAdministrador() {
         return administrador;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

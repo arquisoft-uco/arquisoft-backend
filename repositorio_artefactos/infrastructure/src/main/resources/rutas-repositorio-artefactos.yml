@@ -5,3 +5,5 @@ rutas:
   repositorio-artefactos:
     repositorio-artefactos:
       base: /repositorio-artefactos
+      cargas-version: /{repositorioId}/versiones/cargas
+      versiones: /{repositorioId}/versiones
