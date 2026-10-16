@@ -8,7 +8,9 @@ import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthoritie
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
+import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -60,7 +62,9 @@ public class ConsultarCategoriasItemCuantitativoAsesorController {
                     description = EvaluacionesApiMessages.Comun.RESP_403)
     })
     public ResponseEntity<List<CategoriaItemCuantitativoAsesorResponseDTO>> consultarCategoriasItemCuantitativoAsesor(
-            @RequestParam(required = false) String nombre) {
+            @Parameter(description = EvaluacionesApiMessages.CategoriaItemCuantitativoAsesor.CONSULTAR_PARAM_NOMBRE)
+            @RequestParam(name = EvaluacionesFields.CategoriaItemCuantitativoAsesor.NOMBRE, required = false)
+            String nombre) {
         var query = ConsultarCategoriasItemCuantitativoAsesorRequestMapper.toQuery(nombre);
         var categorias = interactor.ejecutar(query);
 

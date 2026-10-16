@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.usecase.impl;
 
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.criteria.CategoriaItemCuantitativoAsesorCriteria;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.readmodel.CategoriaItemCuantitativoAsesorReadModel;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.secondaryport.CategoriaItemCuantitativoAsesorQueryOutputPort;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.usecase.ConsultarCategoriasItemCuantitativoAsesorUseCase;
@@ -20,10 +21,10 @@ public class ConsultarCategoriasItemCuantitativoAsesorUseCaseImpl
     private final AppLogger logger;
 
     @Override
-    public List<CategoriaItemCuantitativoAsesorReadModel> ejecutar(String nombre) {
-        logger.debug(CategoriaItemCuantitativoAsesorKey.LOG_CONSULTANDO, UtilObjeto.noEsNulo(nombre));
+    public List<CategoriaItemCuantitativoAsesorReadModel> ejecutar(CategoriaItemCuantitativoAsesorCriteria criteria) {
+        logger.debug(CategoriaItemCuantitativoAsesorKey.LOG_CONSULTANDO, UtilObjeto.noEsNulo(criteria.nombre()));
 
-        var resultado = queryOutputPort.consultar(nombre);
+        var resultado = queryOutputPort.consultar(criteria);
 
         logger.debug(CategoriaItemCuantitativoAsesorKey.LOG_CONSULTA_COMPLETADA, resultado.size());
 

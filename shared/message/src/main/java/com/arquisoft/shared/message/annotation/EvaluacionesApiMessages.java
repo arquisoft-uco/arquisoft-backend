@@ -70,6 +70,8 @@ public final class EvaluacionesApiMessages {
                 "Consulta las categorías de ítem cuantitativo del asesor, opcionalmente filtradas "
                         + "por nombre (coincidencia parcial, sin distinguir mayúsculas/minúsculas), "
                         + "ordenadas por nombre";
+        public static final String CONSULTAR_PARAM_NOMBRE =
+                "Texto a buscar dentro del nombre de la categoría (opcional, máximo 100 caracteres)";
         public static final String CONSULTAR_RESP_200 = "Listado de categorías de ítem cuantitativo del asesor";
         public static final String CONSULTAR_RESP_400 = "Filtro de nombre inválido";
     }

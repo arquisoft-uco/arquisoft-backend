@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativoaseso
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.primaryport.interactor.ConsultarCategoriasItemCuantitativoAsesorInteractor;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.readmodel.CategoriaItemCuantitativoAsesorReadModel;
 import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
+import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ConsultarCategoriasItemCuantitativoAsesorController.class)
 @Import({
-        com.arquisoft.shared.logger.AppLoggerConfig.class,
+        AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         ConsultarCategoriasItemCuantitativoAsesorControllerTest.TestSecurityConfig.class
 })
@@ -77,7 +78,7 @@ class ConsultarCategoriasItemCuantitativoAsesorControllerTest {
         // Arrange
         var idPuntualidad = UUID.randomUUID();
         var idRigor = UUID.randomUUID();
-        List<CategoriaItemCuantitativoAsesorReadModel> categorias = List.of(
+        var categorias = List.of(
                 new CategoriaItemCuantitativoAsesorReadModel(idPuntualidad, "Puntualidad", "Evalúa la puntualidad"),
                 new CategoriaItemCuantitativoAsesorReadModel(idRigor, "Rigor", "Evalúa el rigor")
         );

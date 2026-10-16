@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativoasesor.query.secondaryadapter.repository;
 
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.criteria.CategoriaItemCuantitativoAsesorCriteria;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +58,7 @@ class CategoriaItemCuantitativoAsesorQueryOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var resultado = adapter.consultar(null);
+        var resultado = adapter.consultar(new CategoriaItemCuantitativoAsesorCriteria(null));
 
         // Assert
         assertThat(resultado).extracting("id", "nombre", "descripcion").containsExactly(
@@ -76,7 +77,7 @@ class CategoriaItemCuantitativoAsesorQueryOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var resultado = adapter.consultar("PUNTUAL");
+        var resultado = adapter.consultar(new CategoriaItemCuantitativoAsesorCriteria("PUNTUAL"));
 
         // Assert
         assertThat(resultado).extracting("nombre").containsExactly("Impuntual", "Puntualidad");
@@ -90,12 +91,12 @@ class CategoriaItemCuantitativoAsesorQueryOutputAdapterTest {
         entityManager.clear();
 
         // Act & Assert
-        assertThat(adapter.consultar("inexistente")).isEmpty();
+        assertThat(adapter.consultar(new CategoriaItemCuantitativoAsesorCriteria("inexistente"))).isEmpty();
     }
 
     @Test
     void debeRetornarListaVacia_cuandoLaTablaEstaVacia() {
         // Act & Assert
-        assertThat(adapter.consultar(null)).isEmpty();
+        assertThat(adapter.consultar(new CategoriaItemCuantitativoAsesorCriteria(null))).isEmpty();
     }
 }

@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.usecase.impl;
 
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.criteria.CategoriaItemCuantitativoAsesorCriteria;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.readmodel.CategoriaItemCuantitativoAsesorReadModel;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.secondaryport.CategoriaItemCuantitativoAsesorQueryOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
@@ -28,6 +29,9 @@ class ConsultarCategoriasItemCuantitativoAsesorUseCaseImplTest {
     @Mock
     private AppLogger logger;
 
+    private final CategoriaItemCuantitativoAsesorCriteria criteriaSinFiltro =
+            new CategoriaItemCuantitativoAsesorCriteria(null);
+
     @InjectMocks
     private ConsultarCategoriasItemCuantitativoAsesorUseCaseImpl useCase;
 
@@ -37,31 +41,31 @@ class ConsultarCategoriasItemCuantitativoAsesorUseCaseImplTest {
         var esperados = List.of(
                 new CategoriaItemCuantitativoAsesorReadModel(UUID.randomUUID(), "Puntualidad", "Evalúa la puntualidad"),
                 new CategoriaItemCuantitativoAsesorReadModel(UUID.randomUUID(), "Rigor", "Evalúa el rigor"));
-        when(queryOutputPort.consultar(null)).thenReturn(esperados);
+        when(queryOutputPort.consultar(criteriaSinFiltro)).thenReturn(esperados);
 
         // Act
-        var resultado = useCase.ejecutar(null);
+        var resultado = useCase.ejecutar(criteriaSinFiltro);
 
         // Assert
         assertThat(resultado).containsExactlyElementsOf(esperados);
-        verify(queryOutputPort, times(1)).consultar(null);
+        verify(queryOutputPort, times(1)).consultar(criteriaSinFiltro);
         verifyNoMoreInteractions(queryOutputPort);
     }
 
     @Test
     void debeRetornarListaFiltrada_cuandoSeConsultaConNombre() {
         // Arrange
-        var nombre = "Puntualidad";
+        var criteria = new CategoriaItemCuantitativoAsesorCriteria("Puntualidad");
         var esperados = List.of(
                 new CategoriaItemCuantitativoAsesorReadModel(UUID.randomUUID(), "Puntualidad", "Evalúa la puntualidad"));
-        when(queryOutputPort.consultar(nombre)).thenReturn(esperados);
+        when(queryOutputPort.consultar(criteria)).thenReturn(esperados);
 
         // Act
-        var resultado = useCase.ejecutar(nombre);
+        var resultado = useCase.ejecutar(criteria);
 
         // Assert
         assertThat(resultado).containsExactlyElementsOf(esperados);
-        verify(queryOutputPort, times(1)).consultar(nombre);
+        verify(queryOutputPort, times(1)).consultar(criteria);
     }
 
     @Test
@@ -70,7 +74,7 @@ class ConsultarCategoriasItemCuantitativoAsesorUseCaseImplTest {
         when(queryOutputPort.consultar(any())).thenReturn(List.of());
 
         // Act
-        var resultado = useCase.ejecutar("inexistente");
+        var resultado = useCase.ejecutar(new CategoriaItemCuantitativoAsesorCriteria("inexistente"));
 
         // Assert
         assertThat(resultado).isEmpty();

@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativoasesor.query.secondaryadapter.repository;
 
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.criteria.CategoriaItemCuantitativoAsesorCriteria;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.readmodel.CategoriaItemCuantitativoAsesorReadModel;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.secondaryport.CategoriaItemCuantitativoAsesorQueryOutputPort;
 import com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativoasesor.query.secondaryadapter.repository.mapper.CategoriaItemCuantitativoAsesorQueryMapper;
@@ -17,10 +18,10 @@ public class CategoriaItemCuantitativoAsesorQueryOutputAdapter
     private final CategoriaItemCuantitativoAsesorQueryRepository repository;
 
     @Override
-    public List<CategoriaItemCuantitativoAsesorReadModel> consultar(String nombre) {
-        var entidades = UtilObjeto.esNulo(nombre)
+    public List<CategoriaItemCuantitativoAsesorReadModel> consultar(CategoriaItemCuantitativoAsesorCriteria criteria) {
+        var entidades = UtilObjeto.esNulo(criteria.nombre())
                 ? repository.findAllByOrderByNombreAsc()
-                : repository.findByNombreContainingIgnoreCaseOrderByNombreAsc(nombre);
+                : repository.findByNombreContainingIgnoreCaseOrderByNombreAsc(criteria.nombre());
 
         return entidades.stream()
                 .map(CategoriaItemCuantitativoAsesorQueryMapper::toReadModel)

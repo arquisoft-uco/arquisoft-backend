@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.primaryport.interactor.impl;
 
+import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.criteria.CategoriaItemCuantitativoAsesorCriteria;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.primaryport.model.ConsultarCategoriasItemCuantitativoAsesorQuery;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.readmodel.CategoriaItemCuantitativoAsesorReadModel;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.usecase.ConsultarCategoriasItemCuantitativoAsesorUseCase;
@@ -26,18 +27,19 @@ class ConsultarCategoriasItemCuantitativoAsesorInteractorImplTest {
     private ConsultarCategoriasItemCuantitativoAsesorInteractorImpl interactor;
 
     @Test
-    void debeDelegarEnElUseCase_conElNombreDelQuery() {
+    void debeDelegarEnElUseCase_conElCriteriaDerivadoDelQuery() {
         // Arrange
         var query = ConsultarCategoriasItemCuantitativoAsesorQuery.crear("Puntualidad");
+        var criteria = new CategoriaItemCuantitativoAsesorCriteria(query.nombre());
         var esperados = List.of(
                 new CategoriaItemCuantitativoAsesorReadModel(UUID.randomUUID(), "Puntualidad", "Evalúa la puntualidad"));
-        when(useCase.ejecutar(query.nombre())).thenReturn(esperados);
+        when(useCase.ejecutar(criteria)).thenReturn(esperados);
 
         // Act
         var resultado = interactor.ejecutar(query);
 
         // Assert
         assertThat(resultado).containsExactlyElementsOf(esperados);
-        verify(useCase).ejecutar(query.nombre());
+        verify(useCase).ejecutar(criteria);
     }
 }
