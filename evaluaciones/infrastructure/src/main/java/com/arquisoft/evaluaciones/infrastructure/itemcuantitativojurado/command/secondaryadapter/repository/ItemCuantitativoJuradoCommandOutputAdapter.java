@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -25,8 +26,30 @@ public class ItemCuantitativoJuradoCommandOutputAdapter
     }
 
     @Override
+    public Optional<ItemCuantitativoJuradoEntity> obtenerPorId(UUID id) {
+        return repository.findById(id).map(ItemCuantitativoJuradoJpaMapper::toEntity);
+    }
+
+    @Override
     public boolean existePorNombreYCategoriaIgnorandoMayusculas(
             String nombre, UUID categoriaId) {
         return repository.existsByNombreIgnoreCaseAndCategoriaId(nombre, categoriaId);
+    }
+
+    @Override
+    public boolean existePorId(UUID id) {
+        return repository.existsById(id);
+    }
+
+    @Override
+    public void actualizarDescripcion(UUID id, String descripcion) {
+        repository.actualizarDescripcion(id, descripcion);
+        logger.debug(ItemCuantitativoJuradoKey.LOG_DESCRIPCION_ACTUALIZADA, id);
+    }
+
+    @Override
+    public void eliminar(UUID id) {
+        repository.deleteById(id);
+        logger.debug(ItemCuantitativoJuradoKey.LOG_ELIMINADO, id);
     }
 }

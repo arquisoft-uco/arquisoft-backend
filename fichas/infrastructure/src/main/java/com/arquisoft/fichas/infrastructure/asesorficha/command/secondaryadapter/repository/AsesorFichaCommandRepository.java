@@ -14,6 +14,9 @@ public interface AsesorFichaCommandRepository extends JpaRepository<AsesorFichaJ
 
     Optional<AsesorFichaJpaEntity> findByIdAndEliminadoEnIsNull(UUID id);
 
+    @Query("SELECT f.asesorFicha FROM FichaPerfilJpaEntity f WHERE f.id = :fichaPerfil")
+    Optional<AsesorFichaJpaEntity> findByFichaPerfilId(@Param("fichaPerfil") UUID fichaPerfil);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE AsesorFichaJpaEntity a SET a.eliminadoEn = :ocurridoEn, a.ocurridoEn = :ocurridoEn WHERE a.id = :id")
     int eliminarLogica(@Param("id") UUID id, @Param("ocurridoEn") Instant ocurridoEn);

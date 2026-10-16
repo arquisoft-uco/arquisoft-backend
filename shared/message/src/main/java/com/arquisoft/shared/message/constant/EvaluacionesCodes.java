@@ -21,6 +21,8 @@ public final class EvaluacionesCodes {
                 "ITEM_CUALITATIVO_JURADO_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO =
                 "ITEM_CUALITATIVO_JURADO_NO_ENCONTRADO";
+        public static final String ITEM_EN_USO =
+                "ITEM_CUALITATIVO_JURADO_EN_USO";
     }
 
     public static final class CriterioItemCualitativoJurado {
@@ -35,6 +37,14 @@ public final class EvaluacionesCodes {
                 "CRITERIO_ITEM_CUALITATIVO_JURADO_DESCRIPCION_REQUERIDA";
         public static final String DESCRIPCION_DEMASIADO_LARGA =
                 "CRITERIO_ITEM_CUALITATIVO_JURADO_DESCRIPCION_DEMASIADO_LARGA";
+    }
+
+    public static final class CategoriaItemCuantitativoJurado {
+
+        private CategoriaItemCuantitativoJurado() {}
+
+        public static final String NOMBRE_FILTRO_DEMASIADO_LARGO =
+                "CATEGORIA_ITEM_CUANTITATIVO_JURADO_NOMBRE_FILTRO_DEMASIADO_LARGO";
     }
 
     public static final class EvaluacionCualitativaJurado {
@@ -59,6 +69,20 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_JURADO_CRITERIOS_NO_ENCONTRADOS";
         public static final String ITEMS_YA_REGISTRADOS =
                 "EVALUACION_CUALITATIVA_JURADO_ITEMS_YA_REGISTRADOS";
+        public static final String EVALUACIONES_NO_ENCONTRADAS =
+                "EVALUACION_CUALITATIVA_JURADO_EVALUACIONES_NO_ENCONTRADAS";
+        public static final String EVALUACION_JURADO_FINALIZADA =
+                "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_FINALIZADA";
+    }
+
+    public static final class OmisionEvaluacionesCualitativasJurado {
+
+        private OmisionEvaluacionesCualitativasJurado() {}
+
+        public static final String LOTE_VACIO = "OMISION_EVALUACIONES_CUALITATIVAS_LOTE_VACIO";
+        public static final String EVALUACIONES_REPETIDAS = "OMISION_EVALUACIONES_CUALITATIVAS_EVALUACIONES_REPETIDAS";
+        public static final String EVALUACION_REQUERIDA = "OMISION_EVALUACIONES_CUALITATIVAS_EVALUACION_REQUERIDA";
+        public static final String EVALUACION_INVALIDA = "OMISION_EVALUACIONES_CUALITATIVAS_EVALUACION_INVALIDA";
     }
 
     public static final class RegistroEvaluacionesCualitativasJurado {
@@ -77,6 +101,81 @@ public final class EvaluacionesCodes {
         public static final String ESTADO_REQUERIDO = "EVALUACION_ESTADO_REQUERIDO";
         public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
+        public static final String NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
+    }
+
+    public static final class EvaluacionJurado {
+
+        private EvaluacionJurado() {}
+
+        public static final String EVALUACION_REQUERIDO = "EVALUACION_JURADO_EVALUACION_REQUERIDO";
+        public static final String JURADO_REQUERIDO = "EVALUACION_JURADO_JURADO_REQUERIDO";
+        public static final String JURADO_INVALIDO = "EVALUACION_JURADO_JURADO_INVALIDO";
+        public static final String JURADOS_NO_ENCONTRADOS = "EVALUACION_JURADO_JURADOS_NO_ENCONTRADOS";
+        public static final String JURADOS_YA_ASIGNADOS = "EVALUACION_JURADO_JURADOS_YA_ASIGNADOS";
+    }
+
+    public static final class AsignacionJuradosEvaluacion {
+
+        private AsignacionJuradosEvaluacion() {}
+
+        public static final String LOTE_VACIO = "ASIGNACION_JURADOS_EVALUACION_LOTE_VACIO";
+        public static final String JURADOS_REPETIDOS = "ASIGNACION_JURADOS_EVALUACION_JURADOS_REPETIDOS";
+    }
+
+    public static final class EvaluacionCuantitativaJurado {
+
+        private EvaluacionCuantitativaJurado() {}
+
+        public static final String ID_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_ID_REQUERIDO";
+        public static final String EVALUACION_JURADO_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
+        public static final String JURADO_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_JURADO_REQUERIDO";
+        public static final String ITEM_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_ITEM_REQUERIDO";
+        public static final String PUNTAJE_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_REQUERIDO";
+        public static final String PUNTAJE_FUERA_DE_RANGO =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_FUERA_DE_RANGO";
+        public static final String PUNTAJE_NO_ENTERO =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_NO_ENTERO";
+        public static final String NO_ENCONTRADA =
+                "EVALUACION_CUANTITATIVA_JURADO_NO_ENCONTRADA";
+        public static final String NO_PERTENECE_JURADO =
+                "EVALUACION_CUANTITATIVA_JURADO_NO_PERTENECE_JURADO";
+        public static final String EVALUACION_FINALIZADA =
+                "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_FINALIZADA";
+        public static final String PUNTAJE_EXCEDE_VALOR_ITEM =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_EXCEDE_VALOR_ITEM";
+        public static final String EVALUACIONES_NO_ENCONTRADAS =
+                "EVALUACION_CUANTITATIVA_JURADO_EVALUACIONES_NO_ENCONTRADAS";
+        public static final String OMISION_EVALUACION_JURADO_FINALIZADA =
+                "EVALUACION_CUANTITATIVA_JURADO_OMISION_EVALUACION_JURADO_FINALIZADA";
+        public static final String EVALUACIONES_CON_OBSERVACIONES =
+                "EVALUACION_CUANTITATIVA_JURADO_EVALUACIONES_CON_OBSERVACIONES";
+    }
+
+    public static final class OmisionEvaluacionesCuantitativasJurado {
+
+        private OmisionEvaluacionesCuantitativasJurado() {}
+
+        public static final String LOTE_VACIO = "OMISION_EVALUACIONES_CUANTITATIVAS_LOTE_VACIO";
+        public static final String EVALUACIONES_REPETIDAS = "OMISION_EVALUACIONES_CUANTITATIVAS_EVALUACIONES_REPETIDAS";
+        public static final String EVALUACION_REQUERIDA = "OMISION_EVALUACIONES_CUANTITATIVAS_EVALUACION_REQUERIDA";
+        public static final String EVALUACION_INVALIDA = "OMISION_EVALUACIONES_CUANTITATIVAS_EVALUACION_INVALIDA";
+    }
+
+    public static final class Jurado {
+
+        private Jurado() {}
+
+        public static final String ID_REQUERIDO = "JURADO_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "JURADO_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "JURADO_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "JURADO_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "JURADO_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class ItemCuantitativoJurado {
@@ -101,5 +200,33 @@ public final class EvaluacionesCodes {
                 "ITEM_CUANTITATIVO_JURADO_CATEGORIA_NO_ENCONTRADA";
         public static final String NOMBRE_CATEGORIA_DUPLICADO =
                 "ITEM_CUANTITATIVO_JURADO_NOMBRE_CATEGORIA_DUPLICADO";
+        public static final String ITEM_ID_REQUERIDO =
+                "ITEM_CUANTITATIVO_JURADO_ID_REQUERIDO";
+        public static final String ITEM_NO_ENCONTRADO =
+                "ITEM_CUANTITATIVO_JURADO_NO_ENCONTRADO";
+        public static final String ITEM_EN_USO =
+                "ITEM_CUANTITATIVO_JURADO_EN_USO";
+    }
+
+    public static final class ObservacionItemJurado {
+
+        private ObservacionItemJurado() {}
+
+        public static final String EVALUACION_CUANTITATIVA_JURADO_REQUERIDA =
+                "OBSERVACION_ITEM_JURADO_EVALUACION_CUANTITATIVA_JURADO_REQUERIDA";
+        public static final String DESCRIPCION_REQUERIDA =
+                "OBSERVACION_ITEM_JURADO_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_DEMASIADO_LARGA =
+                "OBSERVACION_ITEM_JURADO_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String EVALUACION_NO_ENCONTRADA =
+                "OBSERVACION_ITEM_JURADO_EVALUACION_NO_ENCONTRADA";
+        public static final String EVALUACION_JURADO_FINALIZADA =
+                "OBSERVACION_ITEM_JURADO_EVALUACION_JURADO_FINALIZADA";
+        public static final String DESCRIPCION_DUPLICADA =
+                "OBSERVACION_ITEM_JURADO_DESCRIPCION_DUPLICADA";
+        public static final String ID_REQUERIDO =
+                "OBSERVACION_ITEM_JURADO_ID_REQUERIDO";
+        public static final String NO_ENCONTRADA =
+                "OBSERVACION_ITEM_JURADO_NO_ENCONTRADA";
     }
 }

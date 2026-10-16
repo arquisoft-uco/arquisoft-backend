@@ -71,4 +71,11 @@ public final class UsuariosFields {
 
         public static final String USUARIO = "usuario";
     }
+
+    public static final class Jurado {
+
+        private Jurado() {}
+
+        public static final String USUARIO = "usuario";
+    }
 }

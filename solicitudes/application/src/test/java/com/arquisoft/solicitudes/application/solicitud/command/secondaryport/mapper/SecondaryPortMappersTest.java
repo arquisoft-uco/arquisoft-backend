@@ -4,7 +4,6 @@ import com.arquisoft.solicitudes.application.destinatario.command.secondaryport.
 import com.arquisoft.solicitudes.application.destinatario.command.secondaryport.mapper.DestinatarioMapper;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.entity.RemitenteEntity;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.mapper.RemitenteMapper;
-import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.entity.SolicitudEntity;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.mapper.UsuarioMapper;
 import com.arquisoft.solicitudes.domain.destinatario.DestinatarioDomain;
@@ -24,17 +23,17 @@ class SecondaryPortMappersTest {
     @Test
     void debeConvertirLaSolicitudUsandoLosIdsDeFilaDeRemitenteYDestinatario() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID destinatarioUsuario = UUID.randomUUID();
-        UUID remitenteUsuario = UUID.randomUUID();
-        UUID destinatarioFila = UUID.randomUUID();
-        UUID remitenteFila = UUID.randomUUID();
-        Instant fecha = Instant.now();
-        SolicitudDomain domain = SolicitudDomain.reconstruir(id, destinatarioUsuario, remitenteUsuario, fecha,
+        var id = UUID.randomUUID();
+        var destinatarioUsuario = UUID.randomUUID();
+        var remitenteUsuario = UUID.randomUUID();
+        var destinatarioFila = UUID.randomUUID();
+        var remitenteFila = UUID.randomUUID();
+        var fecha = Instant.now();
+        var domain = SolicitudDomain.reconstruir(id, destinatarioUsuario, remitenteUsuario, fecha,
                 "mensaje", TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 
         // Act
-        SolicitudEntity entity = SolicitudMapper.toEntity(domain, remitenteFila, destinatarioFila);
+        var entity = SolicitudMapper.toEntity(domain, remitenteFila, destinatarioFila);
 
         // Assert
         assertThat(entity.id()).isEqualTo(id);
@@ -48,21 +47,21 @@ class SecondaryPortMappersTest {
     @Test
     void debeConvertirRemitenteYDestinatarioEnAmbasDirecciones() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID usuario = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
 
         // Act & Assert — remitente
-        RemitenteEntity remitenteEntity = RemitenteMapper.toEntity(RemitenteDomain.reconstruir(id, usuario));
+        var remitenteEntity = RemitenteMapper.toEntity(RemitenteDomain.reconstruir(id, usuario));
         assertThat(remitenteEntity).isEqualTo(new RemitenteEntity(id, usuario));
-        RemitenteDomain remitenteDomain = RemitenteMapper.toDomain(remitenteEntity);
+        var remitenteDomain = RemitenteMapper.toDomain(remitenteEntity);
         assertThat(remitenteDomain.getId()).isEqualTo(id);
         assertThat(remitenteDomain.getUsuario()).isEqualTo(usuario);
 
         // Act & Assert — destinatario
-        DestinatarioEntity destinatarioEntity =
+        var destinatarioEntity =
                 DestinatarioMapper.toEntity(DestinatarioDomain.reconstruir(id, usuario));
         assertThat(destinatarioEntity).isEqualTo(new DestinatarioEntity(id, usuario));
-        DestinatarioDomain destinatarioDomain = DestinatarioMapper.toDomain(destinatarioEntity);
+        var destinatarioDomain = DestinatarioMapper.toDomain(destinatarioEntity);
         assertThat(destinatarioDomain.getId()).isEqualTo(id);
         assertThat(destinatarioDomain.getUsuario()).isEqualTo(usuario);
     }
@@ -70,13 +69,13 @@ class SecondaryPortMappersTest {
     @Test
     void debeConvertirElUsuarioEnAmbasDirecciones() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        Instant ocurridoEn = Instant.now();
-        UsuarioDomain domain = UsuarioDomain.reconstruir(id, "EST-1", "Ana", "ana@uco.edu.co", ocurridoEn);
+        var id = UUID.randomUUID();
+        var ocurridoEn = Instant.now();
+        var domain = UsuarioDomain.reconstruir(id, "EST-1", "Ana", "ana@uco.edu.co", ocurridoEn);
 
         // Act
-        UsuarioEntity entity = UsuarioMapper.toEntity(domain);
-        UsuarioDomain vuelta = UsuarioMapper.toDomain(entity);
+        var entity = UsuarioMapper.toEntity(domain);
+        var vuelta = UsuarioMapper.toDomain(entity);
 
         // Assert
         assertThat(entity).isEqualTo(new UsuarioEntity(id, "EST-1", "Ana", "ana@uco.edu.co", ocurridoEn));

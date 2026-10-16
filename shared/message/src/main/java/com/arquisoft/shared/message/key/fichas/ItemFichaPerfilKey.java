@@ -26,6 +26,8 @@ public enum ItemFichaPerfilKey implements ClaveMensaje {
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.itemfichaperfil.log.consulta-estudiante-completada", 1),
     LOG_CONSULTANDO_REPRESENTANTE("fichas.aplicacion.itemfichaperfil.log.consultando-representante", 1),
     LOG_CONSULTA_REPRESENTANTE_COMPLETADA("fichas.aplicacion.itemfichaperfil.log.consulta-representante-completada", 1),
+    LOG_CONSULTANDO_COORDINADOR("fichas.aplicacion.itemfichaperfil.log.consultando-coordinador", 1),
+    LOG_CONSULTA_COORDINADOR_COMPLETADA("fichas.aplicacion.itemfichaperfil.log.consulta-coordinador-completada", 1),
     LOG_GUARDADO("fichas.infraestructura.itemfichaperfil.log.guardado", 1),
     LOG_ELIMINADO("fichas.infraestructura.itemfichaperfil.log.eliminado", 1);
 

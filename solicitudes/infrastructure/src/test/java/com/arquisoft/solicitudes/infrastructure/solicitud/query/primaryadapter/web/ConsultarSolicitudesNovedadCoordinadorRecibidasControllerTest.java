@@ -95,7 +95,7 @@ class ConsultarSolicitudesNovedadCoordinadorRecibidasControllerTest {
     @Test
     void debeSerializarSolicitudResponseDTOConRemitenteEmbebido_yTomarElCoordinadorDelJwt() throws Exception {
         // Arrange
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
         var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana Estudiante",
                 "ana@uco.edu.co");
         var destinatario = new DestinatarioReadModel(UUID.randomUUID(), "COORD-1", "Coordinadora Uno",
@@ -131,7 +131,7 @@ class ConsultarSolicitudesNovedadCoordinadorRecibidasControllerTest {
                 .thenThrow(new FiltroException("campo de filtro no permitido: mensajeSolicitud",
                         "app.consulta.campo-filtro-no-permitido"));
 
-        String body = """
+        var body = """
                 {
                   "filtros": {
                     "tipo": "PREDICADO",

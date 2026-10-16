@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -83,5 +84,28 @@ class AsesorFichaCommandRepositoryTest {
         assertThat(guardado.getNombre()).isEqualTo("Ana Gomez");
         assertThat(guardado.getEmail()).isEqualTo("ana.gomez@uco.edu.co");
         assertThat(guardado.getOcurridoEn()).isEqualTo(ocurridoEn);
+    }
+
+    @Test
+    void debeNavegarAlAsesorDeLaFicha_cuandoSeBuscaPorFichaPerfil() {
+        // Arrange
+        var asesorDeLaFicha = sembrar(Instant.parse("2026-09-01T10:00:00Z"), null);
+        sembrar(Instant.parse("2026-09-01T10:00:00Z"), null);
+        var ficha = entityManager.persistFlushFind(FichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .tituloProyecto("Sistema de gestión")
+                .asesorFicha(asesorDeLaFicha)
+                .build());
+        entityManager.clear();
+
+        // Act
+        var encontrado = repository.findByFichaPerfilId(ficha.getId());
+        var deFichaInexistente = repository.findByFichaPerfilId(UUID.randomUUID());
+
+        // Assert
+        assertThat(encontrado).isPresent();
+        assertThat(encontrado.get().getId()).isEqualTo(asesorDeLaFicha.getId());
+        assertThat(encontrado.get().getNombre()).isEqualTo("Ana Perez");
+        assertThat(deFichaInexistente).isEmpty();
     }
 }

@@ -17,7 +17,7 @@ public final class BibliotecarioDomain {
 
     public static final BibliotecarioDomain VACIO = BibliotecarioDomain.reconstruir(
             UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO,
-            Instant.EPOCH, UtilFecha.VACIO);
+            UtilFecha.VACIO, UtilFecha.VACIO);
 
     private UUID id;
     private String identificador;
