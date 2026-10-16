@@ -1,0 +1,48 @@
+package com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.secondaryadapter.repository;
+
+import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.EvaluacionCuantitativaJuradoOutputPort;
+import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.entity.EvaluacionCuantitativaJuradoEntity;
+import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.secondaryadapter.mapper.EvaluacionCuantitativaJuradoJpaMapper;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+@Component
+@RequiredArgsConstructor
+public class EvaluacionCuantitativaJuradoCommandOutputAdapter implements EvaluacionCuantitativaJuradoOutputPort {
+
+    private final EvaluacionCuantitativaJuradoCommandRepository repository;
+    private final AppLogger logger;
+
+    @Override
+    public Optional<EvaluacionCuantitativaJuradoEntity> obtenerPorId(UUID id) {
+        return repository.findById(id).map(EvaluacionCuantitativaJuradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public void actualizar(EvaluacionCuantitativaJuradoEntity evaluacionCuantitativaJurado) {
+        repository.save(EvaluacionCuantitativaJuradoJpaMapper.toJpaEntity(evaluacionCuantitativaJurado));
+        logger.debug(EvaluacionCuantitativaJuradoKey.LOG_GUARDADO, evaluacionCuantitativaJurado.id());
+    }
+
+    @Override
+    public boolean existePorItem(UUID item) {
+        return repository.existsByItemId(item);
+    }
+
+    @Override
+    public Set<UUID> consultarIdsPorEvaluacionJurado(UUID evaluacionJurado, Set<UUID> evaluaciones) {
+        return repository.findIdsPorEvaluacionJurado(evaluacionJurado, evaluaciones);
+    }
+
+    @Override
+    public void eliminarPorIds(UUID evaluacionJurado, Set<UUID> evaluaciones) {
+        repository.eliminarPorIds(evaluacionJurado, evaluaciones);
+        logger.debug(EvaluacionCuantitativaJuradoKey.LOG_LOTE_ELIMINADO, evaluaciones.size());
+    }
+}

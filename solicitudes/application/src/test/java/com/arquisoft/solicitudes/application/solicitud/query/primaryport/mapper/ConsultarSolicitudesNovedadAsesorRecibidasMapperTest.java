@@ -36,7 +36,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
-        SolicitudCriteria criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
                 query(asesor, criterio));
 
         // Assert
@@ -56,7 +56,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente);
 
         // Act
-        SolicitudCriteria criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
                 query(asesor, criterio));
 
         // Assert
@@ -76,7 +76,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(2, 25, ordenamiento, null);
 
         // Act
-        SolicitudCriteria criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
                 query(asesor, criterio));
 
         // Assert
@@ -94,7 +94,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
-        SolicitudCriteria criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
                 query(asesor, criterio));
 
         // Assert

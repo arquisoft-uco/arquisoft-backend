@@ -9,7 +9,7 @@ public class DestinatarioExisteRuleImpl implements DestinatarioExisteRule {
     @Override
     public void validar(ExistenciaDestinatario existencia) {
         if (existencia.destinatario().esVacio()) {
-            throw new DestinatarioNoEncontradoException(existencia.usuario());
+            throw new DestinatarioNoEncontradoException();
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudAmpliacionPlazoCommand;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudDomain;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +13,13 @@ class EnviarSolicitudAmpliacionPlazoMapperTest {
     @Test
     void debeConstruirElBundle_cuandoElComandoEsValido() {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
         var command = EnviarSolicitudAmpliacionPlazoCommand.crear(
                 remitente, destinatario.toString(), "  ampliacion de plazo  ");
 
         // Act
-        EnvioSolicitudDomain envio =
+        var envio =
                 EnviarSolicitudAmpliacionPlazoMapper.toDomain(command);
 
         // Assert
@@ -39,7 +38,7 @@ class EnviarSolicitudAmpliacionPlazoMapperTest {
                 UUID.randomUUID(), UUID.randomUUID().toString(), "mensaje");
 
         // Act
-        EnvioSolicitudDomain envio =
+        var envio =
                 EnviarSolicitudAmpliacionPlazoMapper.toDomain(command);
 
         // Assert

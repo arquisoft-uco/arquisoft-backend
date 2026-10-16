@@ -14,10 +14,10 @@ class RemitenteDomainTest {
     @Test
     void debeCrearElRemitente_cuandoElUsuarioEsValido() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
 
         // Act
-        RemitenteDomain remitente = RemitenteDomain.crear(usuario);
+        var remitente = RemitenteDomain.crear(usuario);
 
         // Assert
         assertThat(remitente.getId()).isNotNull();
@@ -27,7 +27,7 @@ class RemitenteDomainTest {
     @Test
     void debeAcumularError_cuandoElUsuarioEsNulo() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> RemitenteDomain.crear(null));
 
         // Assert

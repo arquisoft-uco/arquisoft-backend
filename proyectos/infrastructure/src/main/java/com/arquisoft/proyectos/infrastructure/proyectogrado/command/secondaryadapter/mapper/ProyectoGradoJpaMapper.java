@@ -12,8 +12,7 @@ public final class ProyectoGradoJpaMapper {
                 jpaEntity.getId(),
                 jpaEntity.getFichaPerfilId(),
                 jpaEntity.getTituloProyecto(),
-                jpaEntity.getCoordinadorId(),
-                jpaEntity.getEstadoProyectoGradoId());
+                jpaEntity.getCoordinadorId());
     }
 
     public static ProyectoGradoJpaEntity toJpaEntity(ProyectoGradoEntity entity) {
@@ -22,7 +21,6 @@ public final class ProyectoGradoJpaMapper {
                 .fichaPerfilId(entity.fichaPerfil())
                 .tituloProyecto(entity.tituloProyecto())
                 .coordinadorId(entity.coordinador())
-                .estadoProyectoGradoId(entity.estadoProyectoGrado())
                 .build();
     }
 }

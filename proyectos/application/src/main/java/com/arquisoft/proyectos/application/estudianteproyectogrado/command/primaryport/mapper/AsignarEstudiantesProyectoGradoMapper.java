@@ -12,12 +12,13 @@ public final class AsignarEstudiantesProyectoGradoMapper {
     private AsignarEstudiantesProyectoGradoMapper() {}
 
     public static AgregacionEstudiantesProyectoGradoDomain toDomain(AsignarEstudiantesProyectoGradoCommand command) {
-        return toDomain(command.proyectoGrado(), command.estudiantes());
+        return toDomain(command.proyectoGrado(), command.coordinador(), command.estudiantes());
     }
 
-    public static AgregacionEstudiantesProyectoGradoDomain toDomain(UUID proyectoGrado, List<UUID> estudiantes) {
+    public static AgregacionEstudiantesProyectoGradoDomain toDomain(UUID proyectoGrado, UUID coordinador,
+                                                                   List<UUID> estudiantes) {
         var relaciones = EstudianteProyectoGradoDomain.crear(proyectoGrado, estudiantes);
 
-        return AgregacionEstudiantesProyectoGradoDomain.crear(relaciones);
+        return AgregacionEstudiantesProyectoGradoDomain.crear(relaciones, coordinador);
     }
 }

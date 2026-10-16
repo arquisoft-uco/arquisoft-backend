@@ -14,11 +14,11 @@ class EliminarSolicitudNovedadCoordinadorCommandTest {
     @Test
     void debeCrearElComando_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID remitente = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
 
         // Act
-        EliminarSolicitudNovedadCoordinadorCommand command =
+        var command =
                 EliminarSolicitudNovedadCoordinadorCommand.crear(
                         solicitud.toString(), remitente);
 
@@ -30,7 +30,7 @@ class EliminarSolicitudNovedadCoordinadorCommandTest {
     @Test
     void debeAcumularLosErroresDeEntrada_cuandoAmbosIdentificadoresSonInvalidos() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EliminarSolicitudNovedadCoordinadorCommand.crear("no-es-uuid", null));
 
         // Assert
@@ -42,7 +42,7 @@ class EliminarSolicitudNovedadCoordinadorCommandTest {
     @Test
     void debeLanzarErrorDeEntrada_cuandoLaSolicitudEstaEnBlanco() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EliminarSolicitudNovedadCoordinadorCommand.crear("  ", UUID.randomUUID()));
 
         // Assert
