@@ -13,5 +13,6 @@ public final class MapasRutaFields {
         public static final String FECHA_INICIO = "fechaInicio";
         public static final String FECHA_FIN = "fechaFin";
         public static final String COORDINADOR = "coordinador";
+        public static final String ESTUDIANTE = "estudiante";
     }
 }
