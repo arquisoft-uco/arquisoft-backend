@@ -8,6 +8,8 @@ import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -26,5 +28,16 @@ public class MapaRutaCommandOutputAdapter implements MapaRutaOutputPort {
     @Override
     public boolean existePorProyectoGrado(UUID proyectoGrado) {
         return repository.existsByProyectoGradoId(proyectoGrado);
+    }
+
+    @Override
+    public Optional<MapaRutaEntity> obtenerPorId(UUID mapaRuta) {
+        return repository.findById(mapaRuta).map(MapaRutaJpaMapper::toEntity);
+    }
+
+    @Override
+    public void actualizarFechaFin(UUID mapaRuta, LocalDate fechaFin) {
+        repository.actualizarFechaFin(mapaRuta, fechaFin);
+        logger.debug(MapaRutaKey.LOG_GUARDADO, mapaRuta);
     }
 }

@@ -29,6 +29,15 @@ public final class MapasRutaApiMessages {
         public static final String AGREGAR_RESP_422 =
                 "Proyecto inexistente, no asignado al coordinador, fuera de proceso "
                         + "o con mapa de ruta existente";
+        public static final String CAMBIAR_FECHA_FIN_SUMMARY = "Cambiar la fecha de fin de un mapa de ruta";
+        public static final String CAMBIAR_FECHA_FIN_DESCRIPTION =
+                "Modifica la fecha de fin del mapa de ruta de un proyecto de grado en proceso. "
+                        + "La fecha de inicio no se modifica y solo el coordinador asignado al proyecto puede hacerlo";
+        public static final String CAMBIAR_FECHA_FIN_RESP_204 = "Fecha de fin del mapa de ruta modificada";
+        public static final String CAMBIAR_FECHA_FIN_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_FECHA_FIN_RESP_422 =
+                "Mapa de ruta inexistente, proyecto no asignado al coordinador, fuera de proceso "
+                        + "o fecha de fin no posterior a la de inicio";
         public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar el mapa de ruta del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Devuelve el título del proyecto de grado al que pertenece el estudiante autenticado "

@@ -9,3 +9,4 @@ rutas:
       base: /mapas-ruta
       estudiante: /estudiante
       coordinador: /coordinador
+      fecha-fin: /{id}/fecha-fin

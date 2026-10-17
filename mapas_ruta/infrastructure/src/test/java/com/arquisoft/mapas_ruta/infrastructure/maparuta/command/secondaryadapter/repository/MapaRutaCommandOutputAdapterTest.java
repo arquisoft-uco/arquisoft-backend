@@ -52,6 +52,54 @@ class MapaRutaCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerPorId() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        entityManager.persistAndFlush(MapaRutaJpaEntity.builder()
+                .id(id)
+                .proyectoGradoId(proyectoGrado)
+                .fechaInicio(LocalDate.of(2026, 10, 1))
+                .fechaFin(LocalDate.of(2026, 12, 1))
+                .build());
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorId(id);
+        var ausente = adapter.obtenerPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrado).contains(new MapaRutaEntity(
+                id, proyectoGrado, LocalDate.of(2026, 10, 1), LocalDate.of(2026, 12, 1)));
+        assertThat(ausente).isEmpty();
+    }
+
+    @Test
+    void debeActualizarSoloFechaFin_sinTocarFechaInicio() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        entityManager.persistAndFlush(MapaRutaJpaEntity.builder()
+                .id(id)
+                .proyectoGradoId(proyectoGrado)
+                .fechaInicio(LocalDate.of(2026, 10, 1))
+                .fechaFin(LocalDate.of(2026, 12, 1))
+                .build());
+
+        // Act
+        adapter.actualizarFechaFin(id, LocalDate.of(2026, 12, 20));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var guardado = entityManager.find(MapaRutaJpaEntity.class, id);
+        assertThat(guardado.getFechaFin()).isEqualTo(LocalDate.of(2026, 12, 20));
+        assertThat(guardado.getFechaInicio()).isEqualTo(LocalDate.of(2026, 10, 1));
+        assertThat(guardado.getProyectoGradoId()).isEqualTo(proyectoGrado);
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
     void debeIndicarExistencia_cuandoConsultaPorProyectoGrado() {
         // Arrange
         var conMapa = UtilUUID.generarNuevoUUID();

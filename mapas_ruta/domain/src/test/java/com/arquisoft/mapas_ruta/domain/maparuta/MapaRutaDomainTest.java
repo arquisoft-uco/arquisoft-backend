@@ -31,6 +31,7 @@ class MapaRutaDomainTest {
         assertThat(mapaRuta.getProyectoGrado()).isEqualTo(proyectoGrado);
         assertThat(mapaRuta.getFechaInicio()).isEqualTo(INICIO);
         assertThat(mapaRuta.getFechaFin()).isEqualTo(FIN);
+        assertThat(mapaRuta.esVacio()).isFalse();
     }
 
     @Test
@@ -66,5 +67,26 @@ class MapaRutaDomainTest {
                                 }));
         assertThatThrownBy(() -> MapaRutaDomain.crear(proyectoGrado, INICIO, INICIO.minusDays(1)))
                 .isInstanceOf(DomainValidationException.class);
+    }
+
+    @Test
+    void debeReconstruirSinValidar_cuandoLosDatosVienenDeLaBase() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var mapaRuta = MapaRutaDomain.reconstruir(id, null, FIN, INICIO);
+
+        // Assert
+        assertThat(mapaRuta.getId()).isEqualTo(id);
+        assertThat(mapaRuta.getProyectoGrado()).isNull();
+        assertThat(mapaRuta.getFechaInicio()).isEqualTo(FIN);
+        assertThat(mapaRuta.getFechaFin()).isEqualTo(INICIO);
+    }
+
+    @Test
+    void debeIdentificarElCentinela_cuandoSeConsultaEsVacio() {
+        // Act & Assert
+        assertThat(MapaRutaDomain.VACIO.esVacio()).isTrue();
     }
 }
