@@ -14,12 +14,14 @@ rutas:
       estados-ficha: /estados-ficha
       estado-asesor: /{fichaPerfilId}/estados-ficha
       estados-ficha-representante: /{fichaPerfilId}/estados-ficha/representante
+      estados-ficha-coordinador: /{fichaPerfilId}/estados-ficha/coordinador
       tipos-item: /tipos-item
       estados-evaluacion: /estados-evaluacion
       estados-revision: /estados-revision
       items: /{fichaPerfilId}/items
       items-estudiante: /{fichaPerfilId}/items/estudiante
       items-representante: /{fichaPerfilId}/items/representante
+      items-coordinador: /{fichaPerfilId}/items/coordinador
       item-por-id: /items/{itemId}
       item-revisiones: /items/{itemId}/revisiones
       revision-observaciones: /revisiones/{revisionItemId}/observaciones
@@ -28,6 +30,7 @@ rutas:
       revisiones-item-asesor: /revisiones-item/asesor
       observaciones-item-asesor: /observaciones-item/asesor
       observaciones-item-estudiante: /observaciones-item/estudiante
+      observacion-item-por-id: /observaciones-item/{observacionItemId}
       revisiones-item-estudiante: /revisiones-item/estudiante
       estudiantes: /{fichaPerfilId}/estudiantes
       estudiante-por-id: /{fichaPerfilId}/estudiantes/{estudianteId}
@@ -35,16 +38,13 @@ rutas:
       evaluaciones: /{fichaId}/evaluaciones
       evaluaciones-representante: /{fichaPerfilId}/evaluaciones/representante
       evaluaciones-estudiante: /{fichaPerfilId}/evaluaciones/estudiante
+      evaluaciones-coordinador: /{fichaPerfilId}/evaluaciones/coordinador
       estudiante: /estudiante
       evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
       evaluacion-observaciones-estudiante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/estudiante
       evaluacion-observaciones-asesor: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/asesor
+      evaluacion-observaciones-representante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/representante
       observacion-evaluacion-por-id: /observaciones-evaluacion/{observacionEvaluacionId}
+      observaciones-evaluacion-coordinador: /{fichaPerfilId}/observaciones-evaluacion/coordinador
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
-    minio-guia:
-      base: /fichas/minio/guia
-      upload-url: /upload-url
-      download-url: /download-url
-      existe: /existe
-      objeto: /objeto

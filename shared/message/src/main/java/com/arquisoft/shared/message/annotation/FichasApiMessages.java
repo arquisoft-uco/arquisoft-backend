@@ -128,6 +128,15 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_REPRESENTANTE_RESP_200 = "Lista de ítems de la ficha de perfil (vacía si no aplica)";
         public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_REPRESENTANTE_RESP_403 = "Sin el permiso para consultar ítems como representante del comité";
+
+        public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar ítems de una ficha de perfil a decidir";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Permite al coordinador consultar los ítems de contenido (tipo y contenido) de cualquier ficha de "
+                        + "perfil para fundamentar su decisión de aprobarla. Si la ficha no existe o no tiene "
+                        + "ítems devuelve una lista vacía.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 = "Lista de ítems de la ficha de perfil (vacía si no aplica)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 = "Sin el permiso para consultar ítems como coordinador";
     }
 
     public static final class ConsultaEstudianteFichaPerfil {
@@ -188,6 +197,13 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
                 "Sin el permiso para consultar los estados como representante del comité";
+        public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar los estados de una ficha de perfil como coordinador";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Devuelve la trazabilidad completa de estados de la ficha de perfil indicada, ordenada de la más antigua "
+                        + "a la más reciente, sin filtrar por actor.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 = "Lista de estados de la ficha de perfil (vacía si no tiene estados)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 = "Sin el permiso para consultar los estados como coordinador";
         public static final String AGREGAR_APROBACION_SUMMARY = "Registrar la decisión de aprobación de una ficha de perfil";
         public static final String AGREGAR_APROBACION_DESCRIPTION = "El coordinador acepta o no la ficha; el estado se deriva de las evaluaciones";
         public static final String AGREGAR_APROBACION_RESP_201 = "Estado de aprobación registrado; devuelve el id del nuevo estado";
@@ -282,6 +298,27 @@ public final class FichasApiMessages {
                 "Revisión no encontrada, revisión cerrada, ficha no asesorada por el usuario autenticado "
                         + "o texto de observación duplicado";
 
+        public static final String MODIFICAR_SUMMARY = "Modificar el contenido de una observación de ítem";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Permite al asesor asignado a la ficha modificar únicamente el texto de una observación "
+                        + "existente. No cambia su estado y no puede hacerse si la revisión está cerrada.";
+        public static final String MODIFICAR_RESP_204 = "Observación modificada exitosamente";
+        public static final String MODIFICAR_RESP_400 = "Observación inválida o ausente, o identificador mal formado";
+        public static final String MODIFICAR_RESP_403 = "Sin permiso para modificar observaciones";
+        public static final String MODIFICAR_RESP_422 =
+                "Observación no encontrada, revisión cerrada, ficha no asesorada por el usuario autenticado "
+                        + "o texto duplicado en la revisión";
+
+        public static final String REMOVER_SUMMARY = "Remover una observación de ítem";
+        public static final String REMOVER_DESCRIPTION =
+                "Permite al asesor asignado a la ficha remover una observación existente de una revisión de "
+                        + "ítem. No puede hacerse si la revisión está cerrada.";
+        public static final String REMOVER_RESP_204 = "Observación removida exitosamente";
+        public static final String REMOVER_RESP_400 = "Identificador mal formado";
+        public static final String REMOVER_RESP_403 = "Sin permiso para remover observaciones";
+        public static final String REMOVER_RESP_422 =
+                "Observación no encontrada, ficha no asesorada por el usuario autenticado o revisión cerrada";
+
         public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar observaciones de ítem elaboradas";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Permite al asesor de ficha consultar, de forma paginada y filtrable, las observaciones "
@@ -365,6 +402,29 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_400 = "Identificador de evaluación o de asesor ficha inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 =
                 "Sin permiso para consultar observaciones de evaluaciones de las fichas que asesora";
+
+        public static final String CONSULTAR_REPRESENTANTE_SUMMARY =
+                "Consultar las observaciones de una evaluación que registró";
+        public static final String CONSULTAR_REPRESENTANTE_DESCRIPTION =
+                "Permite al representante del comité consultar las observaciones de una evaluación de ficha de perfil "
+                        + "que él registró. Si la evaluación no existe o la registró otro representante, la lista llega vacía.";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_200 =
+                "Observaciones de la evaluación (lista vacía si no existe o no la registró el solicitante)";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "Identificador de evaluación inválido";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
+                "Sin permiso para consultar observaciones de evaluaciones que registró";
+
+        public static final String CONSULTAR_COORDINADOR_SUMMARY =
+                "Consultar observaciones de las evaluaciones de una Ficha Perfil a decidir";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Devuelve las observaciones de todas las evaluaciones de la ficha de perfil indicada, incluidas las de "
+                        + "evaluaciones en evaluación o descartadas.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 =
+                "Observaciones de las evaluaciones de la ficha (vacía si la ficha no existe o no tiene observaciones)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 =
+                "El identificador de ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 =
+                "El usuario no tiene el permiso fichas:observacion-evaluacion-coordinador:view";
     }
 
     public static final class EstudianteFichaPerfil {
@@ -423,6 +483,18 @@ public final class FichasApiMessages {
                 "El identificador de ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-estudiante:view";
+
+        public static final String CONSULTAR_COORDINADOR_SUMMARY =
+                "Consultar información de las evaluaciones de una Ficha Perfil a decidir";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Devuelve todas las evaluaciones de la ficha de perfil indicada, incluidas las que están en evaluación "
+                        + "o descartadas, con su estado actual y el representante del comité que las realizó.";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 =
+                "Listado de evaluaciones de la ficha (vacío si la ficha no existe o no tiene evaluaciones)";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 =
+                "El identificador de ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COORDINADOR_RESP_403 =
+                "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-coordinador:view";
     }
 
     public static final class EstadoEvaluacionFicha {
@@ -495,33 +567,5 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_RESP_200 = "Lista de estados de revisión retornada exitosamente";
         public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
-    }
-
-    public static final class MinioGuia {
-
-        private MinioGuia() {}
-
-        public static final String TAG_NAME = "MinIO Guía";
-        public static final String TAG_DESCRIPTION = "Endpoints de prueba para validar el módulo shared:minio. Eliminar tras el PoC.";
-
-        public static final String CARGA_SUMMARY = "Generar presigned URL de carga";
-        public static final String CARGA_DESCRIPTION = "Retorna una URL firmada para subir un archivo directamente a MinIO (PUT). Válida 15 minutos.";
-        public static final String CARGA_RESP_200 = "URL generada exitosamente";
-
-        public static final String DESCARGA_SUMMARY = "Generar presigned URL de descarga";
-        public static final String DESCARGA_DESCRIPTION =
-                "Retorna una URL firmada para descargar un archivo directamente de MinIO (GET). Válida 15 minutos.";
-        public static final String DESCARGA_RESP_200 = "URL generada exitosamente";
-
-        public static final String EXISTE_SUMMARY = "Verificar si un objeto existe";
-        public static final String EXISTE_DESCRIPTION = "Comprueba si el objeto indicado existe en el bucket";
-        public static final String EXISTE_RESP_200 = "Resultado de la verificación";
-
-        public static final String ELIMINAR_SUMMARY = "Eliminar un objeto";
-        public static final String ELIMINAR_DESCRIPTION = "Elimina el objeto indicado del bucket";
-        public static final String ELIMINAR_RESP_204 = "Objeto eliminado";
-
-        public static final String PARAM_BUCKET = "Nombre del bucket destino";
-        public static final String PARAM_KEY = "Clave del objeto (ruta + nombre)";
     }
 }

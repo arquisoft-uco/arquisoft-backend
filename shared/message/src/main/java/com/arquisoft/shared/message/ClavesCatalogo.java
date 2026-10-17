@@ -5,18 +5,24 @@ import java.util.List;
 import java.util.Set;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
+import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.message.key.app.PaginacionKey;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
+import com.arquisoft.shared.message.key.evaluaciones.CategoriaItemCuantitativoAsesorKey;
+import com.arquisoft.shared.message.key.evaluaciones.CategoriaItemCuantitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.CriterioItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.JuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.ObservacionItemJuradoKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
@@ -27,20 +33,28 @@ import com.arquisoft.shared.message.key.fichas.EstudianteKey;
 import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
 import com.arquisoft.shared.message.key.fichas.ObservacionEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.ObservacionItemKey;
 import com.arquisoft.shared.message.key.fichas.TipoItemKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.message.key.fichas.EstadoRevisionKey;
+import com.arquisoft.shared.message.key.mapas_ruta.AsignacionProyectoKey;
+import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
+import com.arquisoft.shared.message.key.mapas_ruta.ProyectoGradoMapasRutaKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.message.key.proyectos.AsesorKey;
 import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
+import com.arquisoft.shared.message.key.repositorio_artefactos.AdministradorKey;
+import com.arquisoft.shared.message.key.repositorio_artefactos.RepositorioArtefactoKey;
+import com.arquisoft.shared.message.key.repositorio_artefactos.VersionRepositorioArtefactoKey;
+import com.arquisoft.shared.message.key.proyectos.AsesorProyectoGradoKey;
+import com.arquisoft.shared.message.key.proyectos.EstadoAsesorKey;
 import com.arquisoft.shared.message.key.proyectos.EstadoProyectoGradoKey;
+import com.arquisoft.shared.message.key.proyectos.EstadoProyectoKey;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectoGradoKey;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectosKey;
 import com.arquisoft.shared.message.key.proyectos.ProyectoGradoKey;
@@ -63,20 +77,16 @@ import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarRepresentanteComiteKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarBibliotecarioKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarJuradoKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarAdministradoresAdministradorKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresAdministradorKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaVigentesKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresVigentesKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarBibliotecariosAdministradorKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresVigentesKey;
-import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarJuradosVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstadosUsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarIdentidadUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuariosAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.CambiarEstadoUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.EliminarUsuarioKey;
@@ -89,39 +99,14 @@ import com.arquisoft.shared.message.key.usuarios.RemoverAsesorKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverBibliotecarioKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverEstudianteKey;
+import com.arquisoft.shared.message.key.usuarios.RemoverJuradoKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverRepresentanteComiteKey;
 
 
-/**
- * Registro explícito de los enums que componen el catálogo.
- *
- * <p>El arranque fail-fast necesita enumerar en producción todas las claves declaradas, para
- * pedírselas a Redis y abortar si falta alguna. Un escaneo de classpath en tiempo de ejecución es
- * frágil dentro de un {@code jar} y caro en el arranque, así que la lista es explícita: una línea
- * por enum.
- *
- * <p>El agujero de toda lista manual — alguien añade un enum y olvida registrarlo — lo cierra
- * {@code CatalogoCargaTest}, que escanea el paquete {@code key} sobre las clases compiladas y falla
- * el build si el registro no coincide con lo escaneado. La lista vive en producción; la garantía de
- * que está completa vive en el test.
- */
 public final class ClavesCatalogo {
 
     private ClavesCatalogo() {}
 
-    /**
-     * Los enums registrados, uno por feature.
-     *
-     * <p>Es un {@code Set.of} y no un {@code List.of} a propósito: rechaza duplicados al inicializar
-     * la clase, así que una línea repetida revienta en el arranque en vez de dejar un enum registrado
-     * dos veces y otro sin registrar, en silencio.
-     *
-     * <p>Ese fallo ya ocurrió una vez, cuando cuatro nombres colisionaban por pares y había que
-     * cualificarlos aquí: bastaba con que el "optimizar imports" del IDE colapsara un par para que dos
-     * enums desaparecieran del registro. La defensa de verdad no era el {@code Set} sino renombrarlos
-     * —{@code EnvioNotificacionKey}—, porque un nombre único no se puede colapsar. Lo que queda aquí
-     * es la red por si alguien duplica una línea a mano.
-     */
     public static final Set<Class<? extends ClaveMensaje>> ENUMS = Set.of(
             AlmacenamientoKey.class,
             ConsultaKey.class,
@@ -131,6 +116,7 @@ public final class ClavesCatalogo {
             ValidadorKey.class,
             EstadoEvaluacionFichaKey.class,
             EstadoEvaluacionKey.class,
+            com.arquisoft.shared.message.key.evaluaciones.EstadoEvaluacionKey.class,
             EstadoFichaKey.class,
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,
@@ -140,12 +126,15 @@ public final class ClavesCatalogo {
             ItemCualitativoJuradoKey.class,
             ItemCuantitativoJuradoKey.class,
             CriterioItemCualitativoJuradoKey.class,
+            CategoriaItemCuantitativoAsesorKey.class,
+            CategoriaItemCuantitativoJuradoKey.class,
             EvaluacionCualitativaJuradoKey.class,
             EvaluacionCuantitativaJuradoKey.class,
+            EvaluacionJuradoKey.class,
             EvaluacionKey.class,
+            ObservacionItemJuradoKey.class,
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
-            MinioGuiaKey.class,
             ObservacionEvaluacionKey.class,
             ObservacionItemKey.class,
             TipoItemKey.class,
@@ -191,25 +180,33 @@ public final class ClavesCatalogo {
             RemoverBibliotecarioKey.class,
             BibliotecarioKey.class,
             RevisionAsesorKey.class,
+            AdministradorKey.class,
+            RepositorioArtefactoKey.class,
+            VersionRepositorioArtefactoKey.class,
+            AgregarVersionRepositorioArtefactoKey.class,
+            AgregarJuradoKey.class,
+            RemoverJuradoKey.class,
+            JuradoKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
             ProyectoGradoKey.class,
             EstudianteProyectoGradoKey.class,
             EstadoProyectoGradoKey.class,
-            ConsultarCoordinadoresAdministradorKey.class,
+            EstadoProyectoKey.class,
+            AsesorProyectoGradoKey.class,
+            EstadoAsesorKey.class,
             ConsultarCoordinadoresVigentesKey.class,
-            ConsultarEstudiantesAdministradorKey.class,
+            ConsultarJuradosVigentesKey.class,
             ConsultarEstudiantesVigentesKey.class,
-            ConsultarAsesoresAdministradorKey.class,
             ConsultarAsesoresVigentesKey.class,
-            ConsultarAsesoresFichaAdministradorKey.class,
             ConsultarAsesoresFichaVigentesKey.class,
-            ConsultarRepresentantesComiteAdministradorKey.class,
             ConsultarRepresentantesComiteVigentesKey.class,
             ConsultarUsuariosAdministradorKey.class,
-            ConsultarAdministradoresAdministradorKey.class,
-            ConsultarBibliotecariosAdministradorKey.class,
-            ConsultarEstadosUsuarioKey.class
+            ConsultarEstadosUsuarioKey.class,
+            ConsultarIdentidadUsuarioKey.class,
+            AsignacionProyectoKey.class,
+            MapaRutaKey.class,
+            ProyectoGradoMapasRutaKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

@@ -6,6 +6,7 @@ import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.usuarios.domain.bibliotecario.BibliotecarioDomain;
 import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
+import com.arquisoft.usuarios.domain.jurado.JuradoDomain;
 import com.arquisoft.usuarios.domain.representantecomite.RepresentanteComiteDomain;
 
 import java.util.UUID;
@@ -13,4 +14,4 @@ import java.util.UUID;
 public record RolesUsuario(UUID usuario, EstudianteDomain estudiante, AsesorDomain asesor,
                            AsesorFichaDomain asesorFicha, CoordinadorDomain coordinador,
                            RepresentanteComiteDomain representanteComite, AdministradorDomain administrador,
-                           BibliotecarioDomain bibliotecario) {}
+                           BibliotecarioDomain bibliotecario, JuradoDomain jurado) {}

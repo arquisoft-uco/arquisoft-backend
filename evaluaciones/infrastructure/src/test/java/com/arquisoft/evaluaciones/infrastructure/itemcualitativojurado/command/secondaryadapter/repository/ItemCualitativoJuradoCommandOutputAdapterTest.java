@@ -4,6 +4,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.secondaryport.entity.ItemCualitativoJuradoEntity;
 import com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.secondaryadapter.entity.ItemCualitativoJuradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -93,6 +94,19 @@ class ItemCualitativoJuradoCommandOutputAdapterTest {
         verify(repository).actualizarDescripcion(id, descripcion);
         verify(repository, never()).saveAndFlush(any());
         verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeEliminarPorIdYRegistrarLog_cuandoEliminaItem() {
+        // Arrange
+        var id = UUID.randomUUID();
+
+        // Act
+        adapter.eliminar(id);
+
+        // Assert
+        verify(repository).deleteById(id);
+        verify(logger).debug(ItemCualitativoJuradoKey.LOG_ELIMINADO, id);
     }
 
     @Test
