@@ -26,6 +26,7 @@ import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaPerfilKey;
+import com.arquisoft.shared.message.key.fichas.EstadoObservacionRevisionKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.AsesorFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteKey;
@@ -140,6 +141,7 @@ public final class ClavesCatalogo {
             RepresentanteComiteKey.class,
             RevisionItemKey.class,
             EstadoRevisionKey.class,
+            EstadoObservacionRevisionKey.class,
             EstadoRespuestaKey.class,
             RespuestaKey.class,
             SolicitudKey.class,
