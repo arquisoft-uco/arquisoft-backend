@@ -20,4 +20,11 @@ public final class ArtefactosFields {
         public static final String TIPO_CONTENIDO = "tipoContenido";
         public static final String TAMANO_BYTES = "tamanoBytes";
     }
+
+    public static final class RevisionAsesor {
+
+        private RevisionAsesor() {}
+
+        public static final String ESTUDIANTE = "estudiante";
+    }
 }

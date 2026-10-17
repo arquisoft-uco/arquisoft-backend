@@ -1,6 +1,8 @@
 dependencies {
     implementation project(':artefactos:domain')
     implementation project(':shared:application')
+    implementation project(':shared:query')
+
     implementation project(':shared:logger')
 
     // Transactional — solo necesitamos @Transactional, no todo el starter

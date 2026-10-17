@@ -39,4 +39,11 @@ public final class ArtefactosCodes {
         public static final String TAMANO_BYTES_INVALIDO =
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_TAMANO_BYTES_INVALIDO";
     }
+
+    public static final class RevisionAsesor {
+
+        private RevisionAsesor() {}
+
+        public static final String ESTUDIANTE_REQUERIDO = "REVISION_ASESOR_ESTUDIANTE_REQUERIDO";
+    }
 }

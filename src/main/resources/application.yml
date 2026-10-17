@@ -23,6 +23,7 @@ spring:
       - "classpath:rutas-proyectos.yml"
       - "classpath:rutas-evaluaciones.yml"
       - "classpath:rutas-solicitudes.yml"
+      - "classpath:rutas-artefactos.yml"
       - "classpath:rutas-repositorio-artefactos.yml"
       - "classpath:rutas-mapas-ruta.yml"
   banner:

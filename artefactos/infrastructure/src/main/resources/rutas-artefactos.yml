@@ -1,0 +1,8 @@
+# ==================== RUTAS DE CONTROLADORES — CONTEXTO ARTEFACTOS ====================
+# Un placeholder por segmento de path. Vive en este modulo (no en el application.yml raiz)
+# para que, si este contexto se extrae a microservicio, se lleve su propia configuracion.
+rutas:
+  artefactos:
+    revisiones-asesor:
+      base: /artefactos/revisiones-asesor
+      estudiante: /estudiante
