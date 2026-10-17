@@ -29,4 +29,17 @@ public interface EstudianteFichaPerfilQueryRepository
     List<EstudianteFichaPerfilJpaQueryEntity> findCompanerosByFichaPerfilIdAndEstudianteId(
             @Param("fichaPerfil") UUID fichaPerfil,
             @Param("estudiante") UUID estudiante);
+
+    @Query("""
+            SELECT e FROM EstudianteFichaPerfilJpaQueryEntity e
+            WHERE e.vigente = true
+              AND e.fichaPerfilId IN (
+                  SELECT propio.fichaPerfilId FROM EstudianteFichaPerfilJpaQueryEntity propio
+                  WHERE propio.estudianteId = :estudiante
+                    AND propio.vigente = true
+              )
+            ORDER BY e.nombre ASC
+            """)
+    List<EstudianteFichaPerfilJpaQueryEntity> findVigentesDeFichasDelEstudiante(
+            @Param("estudiante") UUID estudiante);
 }

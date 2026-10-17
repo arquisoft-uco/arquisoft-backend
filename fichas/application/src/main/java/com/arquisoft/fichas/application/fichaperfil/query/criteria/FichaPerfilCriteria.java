@@ -12,7 +12,8 @@ public final class FichaPerfilCriteria extends QueryCriteria {
         TITULO_PROYECTO("tituloProyecto", true,  true),
         ASESOR_NOMBRE  ("asesorNombre",   true,  true),
         ASESOR_EMAIL   ("asesorEmail",    true,  true),
-        ASESOR_ID      ("asesorId",       true,  false);
+        ASESOR_ID      ("asesorId",       true,  false),
+        ESTADO_FICHA   ("estadoFicha",    true,  false);
 
         private final String  clave;
         private final boolean filtrable;

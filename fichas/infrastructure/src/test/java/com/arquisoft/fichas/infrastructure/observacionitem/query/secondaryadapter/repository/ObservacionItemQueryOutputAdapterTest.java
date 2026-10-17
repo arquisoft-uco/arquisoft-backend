@@ -41,6 +41,9 @@ class ObservacionItemQueryOutputAdapterTest {
     @Autowired
     private ObservacionItemQueryRepository observacionItemRepository;
 
+    @Autowired
+    private ObservacionItemEstudianteQueryRepository observacionItemEstudianteRepository;
+
     private ObservacionItemQueryOutputAdapter adapter;
 
     private EstadoObservacionRevisionJpaEntity pendiente;
@@ -52,7 +55,8 @@ class ObservacionItemQueryOutputAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new ObservacionItemQueryOutputAdapter(
-                observacionItemRepository, new ObservacionItemJpaSpecification());
+                observacionItemRepository, new ObservacionItemJpaSpecification(),
+                observacionItemEstudianteRepository, new ObservacionItemEstudianteJpaSpecification());
 
         pendiente = entityManager.persist(EstadoObservacionRevisionJpaEntity.builder()
                 .id("PENDIENTE").nombre("Pendiente").descripcion("La observacion esta pendiente").build());

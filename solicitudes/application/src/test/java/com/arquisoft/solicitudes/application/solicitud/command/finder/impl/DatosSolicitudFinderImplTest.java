@@ -27,10 +27,11 @@ class DatosSolicitudFinderImplTest {
     @Test
     void debeArmarElResumenSolicitud_cuandoElPuertoDevuelveLosDatos() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID remitenteUsuario = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var remitenteUsuario = UUID.randomUUID();
+        var destinatarioUsuario = UUID.randomUUID();
         when(solicitudOutputPort.buscarDatos(solicitud)).thenReturn(Optional.of(
-                new DatosSolicitudEntity(remitenteUsuario,
+                new DatosSolicitudEntity(remitenteUsuario, destinatarioUsuario,
                         TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
 
         // Act
@@ -40,6 +41,7 @@ class DatosSolicitudFinderImplTest {
         assertThat(resumen.esVacio()).isFalse();
         assertThat(resumen.solicitud()).isEqualTo(solicitud);
         assertThat(resumen.remitenteUsuario()).isEqualTo(remitenteUsuario);
+        assertThat(resumen.destinatarioUsuario()).isEqualTo(destinatarioUsuario);
         assertThat(resumen.tipoSolicitud())
                 .isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
     }
@@ -47,7 +49,7 @@ class DatosSolicitudFinderImplTest {
     @Test
     void debeDevolverVacio_cuandoElPuertoNoEncuentraLaSolicitud() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         when(solicitudOutputPort.buscarDatos(solicitud)).thenReturn(Optional.empty());
 
         // Act & Assert

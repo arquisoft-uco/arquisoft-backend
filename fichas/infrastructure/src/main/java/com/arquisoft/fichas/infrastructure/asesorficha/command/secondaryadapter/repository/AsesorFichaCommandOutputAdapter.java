@@ -53,4 +53,9 @@ public class AsesorFichaCommandOutputAdapter implements AsesorFichaOutputPort {
                 asesorFicha.email(), asesorFicha.ocurridoEn());
         logger.debug(AsesorFichaKey.LOG_ACTUALIZADO, asesorFicha.id());
     }
+
+    @Override
+    public Optional<AsesorFichaEntity> obtenerPorFichaPerfil(UUID fichaPerfil) {
+        return asesorFichaCommandRepository.findByFichaPerfilId(fichaPerfil).map(AsesorFichaJpaMapper::toEntity);
+    }
 }

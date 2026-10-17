@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.ContactoEstudianteEntity;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.IntegranteFichaEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -35,4 +36,14 @@ public interface EstudianteFichaPerfilCommandRepository
               AND e.eliminadoEn IS NULL
             """)
     List<ContactoEstudianteEntity> findContactosByFichaPerfilId(@Param("fichaPerfilId") UUID fichaPerfilId);
+
+    @Query("""
+            SELECT new com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.IntegranteFichaEntity(
+                e.id, e.nombre, e.email)
+            FROM EstudianteFichaPerfilJpaEntity ef
+            JOIN EstudianteJpaEntity e ON e.id = ef.estudianteId
+            WHERE ef.fichaPerfilId = :fichaPerfil
+              AND e.eliminadoEn IS NULL
+            """)
+    List<IntegranteFichaEntity> findIntegrantesVigentesByFichaPerfilId(@Param("fichaPerfil") UUID fichaPerfil);
 }

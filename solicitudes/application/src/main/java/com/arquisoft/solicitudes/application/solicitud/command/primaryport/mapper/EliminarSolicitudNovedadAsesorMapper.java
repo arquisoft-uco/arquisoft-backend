@@ -1,15 +1,16 @@
 package com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EliminarSolicitudNovedadAsesorCommand;
-import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudNovedadAsesorDomain;
+import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudDomain;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 
 public final class EliminarSolicitudNovedadAsesorMapper {
 
     private EliminarSolicitudNovedadAsesorMapper() {}
 
-    public static EliminacionSolicitudNovedadAsesorDomain toDomain(
+    public static EliminacionSolicitudDomain toDomain(
             EliminarSolicitudNovedadAsesorCommand command) {
-        return EliminacionSolicitudNovedadAsesorDomain.crear(
-                command.solicitud(), command.remitenteUsuario());
+        return EliminacionSolicitudDomain.crear(
+                command.solicitud(), command.remitenteUsuario(), TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
     }
 }

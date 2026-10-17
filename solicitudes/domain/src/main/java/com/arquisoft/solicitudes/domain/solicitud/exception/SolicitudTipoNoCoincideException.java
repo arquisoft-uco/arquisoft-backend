@@ -5,13 +5,11 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 
-import java.util.UUID;
-
 public final class SolicitudTipoNoCoincideException extends DomainException {
 
-    public SolicitudTipoNoCoincideException(UUID solicitud) {
+    public SolicitudTipoNoCoincideException() {
         super(
-                Mensajes.formatear(SolicitudKey.ERROR_SOLICITUD_TIPO_NO_COINCIDE, solicitud),
+                Mensajes.formatear(SolicitudKey.ERROR_SOLICITUD_TIPO_NO_COINCIDE),
                 SolicitudesCodes.Solicitud.SOLICITUD_TIPO_NO_COINCIDE
         );
     }

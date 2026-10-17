@@ -5,10 +5,14 @@ import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
 import com.arquisoft.shared.message.key.usuarios.ModificarUsuarioKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
+import com.arquisoft.usuarios.application.bibliotecario.command.usecase.AgregarBibliotecarioUseCase;
 import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
+import com.arquisoft.usuarios.application.jurado.command.usecase.AgregarJuradoUseCase;
+import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoOtroUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtraIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtroUsuarioExisteFinder;
@@ -22,6 +26,7 @@ import com.arquisoft.usuarios.application.usuario.command.secondaryport.mapper.U
 import com.arquisoft.usuarios.application.usuario.command.usecase.ModificarUsuarioUseCase;
 import com.arquisoft.usuarios.application.usuario.command.validator.ModificarUsuarioValidator;
 import com.arquisoft.usuarios.domain.usuario.ModificacionUsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.event.UsuarioModificadoEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -42,6 +47,10 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
     private final AgregarCoordinadorUseCase agregarCoordinadorUseCase;
     private final AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
     private final AgregarAsesorUseCase agregarAsesorUseCase;
+    private final AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
+    private final AgregarAdministradorUseCase agregarAdministradorUseCase;
+    private final AgregarBibliotecarioUseCase agregarBibliotecarioUseCase;
+    private final AgregarJuradoUseCase agregarJuradoUseCase;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
@@ -75,6 +84,21 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
                     usuario.getNombre(), usuario.getEmail()));
         }
 
+        agregarRoles(modificacion, usuario);
+
+        if (modificacion.modificaIdentidad()) {
+            proveedorIdentidadOutputPort.actualizar(new ModificacionIdentidadEntity(
+                    modificacion.getUsuario(), modificacion.getEmail(), modificacion.getNombres(),
+                    modificacion.getApellidos()));
+        }
+
+        proveedorIdentidadOutputPort.asignarRealmRoles(modificacion.getUsuario(), modificacion.getRoles());
+
+        logger.info(ModificarUsuarioKey.LOG_MODIFICADO, modificacion.getUsuario(),
+                modificacion.getRoles().size());
+    }
+
+    private void agregarRoles(ModificacionUsuarioDomain modificacion, UsuarioDomain usuario) {
         if (modificacion.contieneRol(UsuariosRealmRoles.ESTUDIANTE)) {
             agregarEstudianteUseCase.ejecutar(usuario);
         }
@@ -91,15 +115,20 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
             agregarAsesorUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.modificaIdentidad()) {
-            proveedorIdentidadOutputPort.actualizar(new ModificacionIdentidadEntity(
-                    modificacion.getUsuario(), modificacion.getEmail(), modificacion.getNombres(),
-                    modificacion.getApellidos()));
+        if (modificacion.contieneRol(UsuariosRealmRoles.REPRESENTANTE_COMITE)) {
+            agregarRepresentanteComiteUseCase.ejecutar(usuario);
         }
 
-        proveedorIdentidadOutputPort.asignarRealmRoles(modificacion.getUsuario(), modificacion.getRoles());
+        if (modificacion.contieneRol(UsuariosRealmRoles.ADMINISTRADOR)) {
+            agregarAdministradorUseCase.ejecutar(usuario);
+        }
 
-        logger.info(ModificarUsuarioKey.LOG_MODIFICADO, modificacion.getUsuario(),
-                modificacion.getRoles().size());
+        if (modificacion.contieneRol(UsuariosRealmRoles.BIBLIOTECARIO)) {
+            agregarBibliotecarioUseCase.ejecutar(usuario);
+        }
+
+        if (modificacion.contieneRol(UsuariosRealmRoles.JURADO)) {
+            agregarJuradoUseCase.ejecutar(usuario);
+        }
     }
 }

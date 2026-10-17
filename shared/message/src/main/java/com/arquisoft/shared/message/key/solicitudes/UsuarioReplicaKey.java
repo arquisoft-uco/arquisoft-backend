@@ -21,7 +21,9 @@ public enum UsuarioReplicaKey implements ClaveMensaje {
     LOG_ACTUALIZACION_DESCARTADA(
             "solicitudes.infraestructura.usuarioreplica.log.actualizacion-descartada", 3),
     LOG_ACTUALIZACION_NO_REPLICADO(
-            "solicitudes.infraestructura.usuarioreplica.log.actualizacion-no-replicado", 1);
+            "solicitudes.infraestructura.usuarioreplica.log.actualizacion-no-replicado", 1),
+    LOG_ADMINISTRADOR_REMOVIDO_RECIBIDO_STUB(
+            "solicitudes.infraestructura.usuarioreplica.log.administrador-removido-recibido-stub", 2);
 
     private final String clave;
     private final int parametros;

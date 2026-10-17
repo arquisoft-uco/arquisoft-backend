@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web
 
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.asesorficha.query.primaryadapter.web.dto.AsesorFichaResponseDTO;
+import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.dto.EstadoFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.dto.FichaPerfilResponseDTO;
 
 public final class FichaPerfilResponseMapper {
@@ -16,6 +17,10 @@ public final class FichaPerfilResponseMapper {
                         readModel.asesorFicha().id(),
                         readModel.asesorFicha().identificador(),
                         readModel.asesorFicha().nombre(),
-                        readModel.asesorFicha().email()));
+                        readModel.asesorFicha().email()),
+                new EstadoFichaPerfilResponseDTO(
+                        readModel.estado().id(),
+                        readModel.estado().nombre(),
+                        readModel.estado().fechaActualizacion()));
     }
 }

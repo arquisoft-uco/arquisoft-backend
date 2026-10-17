@@ -15,7 +15,8 @@ class ResumenSolicitudTest {
 
     @Test
     void debeReportarNoVacio_cuandoTieneDatosReales() {
-        var resumen = new ResumenSolicitud(UUID.randomUUID(), UUID.randomUUID(), "NOVEDAD_PARA_EL_COORDINADOR");
+        var resumen = new ResumenSolicitud(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "NOVEDAD_PARA_EL_COORDINADOR");
 
         assertThat(resumen.esVacio()).isFalse();
     }

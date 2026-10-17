@@ -1,7 +1,7 @@
 package com.arquisoft.solicitudes.application.solicitud.command.finder.impl;
 
+import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudTieneRespuestasFinder;
-import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +11,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SolicitudTieneRespuestasFinderImpl implements SolicitudTieneRespuestasFinder {
 
-    private final SolicitudOutputPort solicitudOutputPort;
+    private final RespuestaOutputPort respuestaOutputPort;
 
     @Override
     public Boolean obtener(UUID solicitud) {
-        return solicitudOutputPort.tieneRespuestas(solicitud);
+        return respuestaOutputPort.existePorSolicitud(solicitud);
     }
 }

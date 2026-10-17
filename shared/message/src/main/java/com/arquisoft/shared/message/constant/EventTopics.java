@@ -19,6 +19,32 @@ public final class EventTopics {
 
         public static final String REVISION_ITEM_AGREGADO =
                 "fichas.revision_item.agregado";
+
+        public static final String FICHA_PERFIL_APROBADA =
+                "fichas.ficha_perfil.aprobada";
+
+        public static final String FICHA_PERFIL_NO_APROBADA =
+                "fichas.ficha_perfil.no_aprobada";
+
+        public static final String ESTADO_FICHA_PERFIL_AGREGADO =
+                "fichas.estado_ficha_perfil.agregado";
+    }
+
+    public static final class Proyectos {
+
+        private Proyectos() {}
+
+        public static final String PROYECTO_GRADO_REGISTRADO =
+                "proyectos.proyecto_grado.registrado";
+
+        public static final String ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS =
+                "proyectos.estudiante_proyecto_grado.asignados";
+
+        public static final String ASESOR_PROYECTO_GRADO_ASIGNADO =
+                "proyectos.asesor_proyecto_grado.asignado";
+
+        public static final String ASESOR_PROYECTO_GRADO_FINALIZADO =
+                "proyectos.asesor_proyecto_grado.finalizado";
     }
 
     public static final class Usuarios {
@@ -48,6 +74,35 @@ public final class EventTopics {
                 "usuarios.asesor.agregado";
         public static final String ASESOR_REMOVIDO =
                 "usuarios.asesor.removido";
+
+        public static final String REPRESENTANTE_COMITE_AGREGADO =
+                "usuarios.representantecomite.agregado";
+        public static final String REPRESENTANTE_COMITE_REMOVIDO =
+                "usuarios.representantecomite.removido";
+
+        public static final String ADMINISTRADOR_AGREGADO =
+                "usuarios.administrador.agregado";
+        public static final String ADMINISTRADOR_REMOVIDO =
+                "usuarios.administrador.removido";
+
+        public static final String BIBLIOTECARIO_AGREGADO =
+                "usuarios.bibliotecario.agregado";
+        public static final String BIBLIOTECARIO_REMOVIDO =
+                "usuarios.bibliotecario.removido";
+
+        public static final String JURADO_REMOVIDO =
+                "usuarios.jurado.removido";
+
+        public static final String JURADO_AGREGADO =
+                "usuarios.jurado.agregado";
+    }
+
+    public static final class Evaluaciones {
+
+        private Evaluaciones() {}
+
+        public static final String EVALUACIONES_CUALITATIVAS_JURADO_REGISTRADAS =
+                "evaluaciones.evaluacion_cualitativa_jurado.registradas";
     }
 
     public static final class Solicitudes {
@@ -65,5 +120,44 @@ public final class EventTopics {
 
         public static final String AMPLIACION_PLAZO_ENVIADA =
                 "solicitudes.solicitud.ampliacion_plazo_enviada";
+
+        public static final String NOVEDAD_COORDINADOR_RESPONDIDA =
+                "solicitudes.respuesta.novedad_coordinador_respondida";
+
+        public static final String NOVEDAD_ASESOR_RESPONDIDA =
+                "solicitudes.respuesta.novedad_asesor_respondida";
+
+        public static final String CAMBIO_ASESOR_RESPONDIDA =
+                "solicitudes.respuesta.cambio_asesor_respondida";
+
+        public static final String AMPLIACION_PLAZO_RESPONDIDA =
+                "solicitudes.respuesta.ampliacion_plazo_respondida";
+
+        public static final String NOVEDAD_COORDINADOR_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.novedad_coordinador_estado_modificado";
+
+        public static final String NOVEDAD_ASESOR_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.novedad_asesor_estado_modificado";
+
+        public static final String CAMBIO_ASESOR_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.cambio_asesor_estado_modificado";
+    }
+
+    public static final class RepositorioArtefactos {
+
+        private RepositorioArtefactos() {}
+
+        public static final String VERSION_REPOSITORIO_ARTEFACTO_SUBIDA =
+                "repositorio_artefactos.version_repositorio_artefacto.subida";
+    }
+
+    public static final class MapasRuta {
+
+        private MapasRuta() {}
+
+        public static final String MAPA_RUTA_AGREGADO =
+                "mapas_ruta.mapa_ruta.agregado";
+        public static final String MAPA_RUTA_FECHA_FIN_CAMBIADA =
+                "mapas_ruta.mapa_ruta.fecha_fin_cambiada";
     }
 }

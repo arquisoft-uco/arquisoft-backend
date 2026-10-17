@@ -41,4 +41,13 @@ public class EstudianteFichaPerfilQueryOutputAdapter implements EstudianteFichaP
                 .map(EstudianteFichaPerfilQueryMapper::toReadModel)
                 .toList();
     }
+
+    @Override
+    public List<EstudianteFichaPerfilReadModel> consultarVigentesDeFichasDelEstudiante(UUID estudiante) {
+        return estudianteFichaPerfilQueryRepository
+                .findVigentesDeFichasDelEstudiante(estudiante)
+                .stream()
+                .map(EstudianteFichaPerfilQueryMapper::toReadModel)
+                .toList();
+    }
 }

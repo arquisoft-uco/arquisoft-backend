@@ -10,8 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -21,19 +20,22 @@ public class FichaPerfilEstudianteQueryOutputAdapter implements FichaPerfilEstud
     private final EstudianteFichaPerfilQueryOutputPort estudianteFichaPerfilQueryOutputPort;
 
     @Override
-    public Optional<FichaPerfilEstudianteReadModel> consultar(FichaPerfilEstudianteCriteria criteria) {
-        var estudiantes = estudianteFichaPerfilQueryOutputPort.consultarVigentesPorFicha(criteria.fichaPerfil());
+    public List<FichaPerfilEstudianteReadModel> consultarPorEstudiante(FichaPerfilEstudianteCriteria criteria) {
+        var vinculos = estudianteFichaPerfilQueryOutputPort
+                .consultarVigentesDeFichasDelEstudiante(criteria.estudiante());
 
-        if (!estaVinculado(estudiantes, criteria.estudiante())) {
-            return Optional.empty();
+        if (vinculos.isEmpty()) {
+            return List.of();
         }
 
-        return fichaPerfilEstudianteQueryRepository.findById(criteria.fichaPerfil())
-                .map(cabecera -> FichaPerfilEstudianteQueryMapper.toReadModel(cabecera, estudiantes));
-    }
+        var estudiantesPorFicha = vinculos.stream()
+                .collect(Collectors.groupingBy(EstudianteFichaPerfilReadModel::fichaPerfilId));
 
-    private static boolean estaVinculado(List<EstudianteFichaPerfilReadModel> estudiantes, UUID estudiante) {
-        return estudiantes.stream()
-                .anyMatch(vinculado -> vinculado.estudianteId().equals(estudiante));
+        return fichaPerfilEstudianteQueryRepository
+                .findByIdInOrderByTituloProyectoAsc(estudiantesPorFicha.keySet())
+                .stream()
+                .map(cabecera -> FichaPerfilEstudianteQueryMapper
+                        .toReadModel(cabecera, estudiantesPorFicha.get(cabecera.getId())))
+                .toList();
     }
 }

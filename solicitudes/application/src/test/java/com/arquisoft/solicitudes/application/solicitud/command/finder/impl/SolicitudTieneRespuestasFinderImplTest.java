@@ -1,6 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.finder.impl;
 
-import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
+import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 class SolicitudTieneRespuestasFinderImplTest {
 
     @Mock
-    private SolicitudOutputPort solicitudOutputPort;
+    private RespuestaOutputPort respuestaOutputPort;
 
     @InjectMocks
     private SolicitudTieneRespuestasFinderImpl finder;
@@ -24,8 +24,8 @@ class SolicitudTieneRespuestasFinderImplTest {
     @Test
     void debeDelegarEnElPuerto_cuandoLaSolicitudTieneRespuestas() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        when(solicitudOutputPort.tieneRespuestas(solicitud)).thenReturn(true);
+        var solicitud = UUID.randomUUID();
+        when(respuestaOutputPort.existePorSolicitud(solicitud)).thenReturn(true);
 
         // Act & Assert
         assertThat(finder.obtener(solicitud)).isTrue();
@@ -34,8 +34,8 @@ class SolicitudTieneRespuestasFinderImplTest {
     @Test
     void debeDelegarEnElPuerto_cuandoLaSolicitudNoTieneRespuestas() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        when(solicitudOutputPort.tieneRespuestas(solicitud)).thenReturn(false);
+        var solicitud = UUID.randomUUID();
+        when(respuestaOutputPort.existePorSolicitud(solicitud)).thenReturn(false);
 
         // Act & Assert
         assertThat(finder.obtener(solicitud)).isFalse();

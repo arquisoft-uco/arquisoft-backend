@@ -24,7 +24,9 @@ on:
 # Cancela builds en curso de la misma rama/tag (ahorra minutos al construir en todas las ramas)
 concurrency:
   group: docker-build-${{ github.ref }}
-  cancel-in-progress: true
+  # En develop no se cancela: CD Deploy espera la imagen sha-<short> de CADA push,
+  # y un build cancelado por el merge siguiente la deja esperando hasta fallar.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
 
 env:
   REGISTRY: ghcr.io
@@ -47,7 +49,7 @@ jobs:
 
       # ── Login GHCR ──
       - name: Login a GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -64,7 +66,7 @@ jobs:
       # ── Metadata (tags y labels) ──
       - name: Extraer metadata Docker
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # El nombre del paquete se normaliza a minúsculas (requisito de GHCR)
@@ -83,7 +85,7 @@ jobs:
       # platforms: el servidor de despliegue (Oracle, Ampere A1) es arm64; se
       # incluye amd64 también para poder correr la imagen en local/x86 sin rebuild.
       - name: Build y push imagen Docker
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: true

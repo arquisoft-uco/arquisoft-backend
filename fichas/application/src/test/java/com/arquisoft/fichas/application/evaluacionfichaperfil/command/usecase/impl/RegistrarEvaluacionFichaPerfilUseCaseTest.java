@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.i
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.finder.EvaluacionDeRepresentanteExisteFinder;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
-import com.arquisoft.fichas.application.representantecomite.command.finder.RepresentanteComiteExisteFinder;
+import com.arquisoft.fichas.application.representantecomite.command.finder.RepresentanteComiteVigenteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AsignarEstadoInicialEvaluacionUseCase;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
@@ -46,7 +46,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
     private FichaPerfilExisteFinder fichaPerfilExisteFinder;
 
     @Mock
-    private RepresentanteComiteExisteFinder representanteComiteExisteFinder;
+    private RepresentanteComiteVigenteFinder representanteComiteVigenteFinder;
 
     @Mock
     private EvaluacionDeRepresentanteExisteFinder evaluacionDeRepresentanteExisteFinder;
@@ -87,11 +87,11 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilExisteFinder, representanteComiteExisteFinder,
+        InOrder inOrder = inOrder(fichaPerfilExisteFinder, representanteComiteVigenteFinder,
                 evaluacionDeRepresentanteExisteFinder, registrarEvaluacionFichaPerfilValidator,
                 evaluacionFichaPerfilOutputPort);
         inOrder.verify(fichaPerfilExisteFinder).obtener(ficha);
-        inOrder.verify(representanteComiteExisteFinder).obtener(representante);
+        inOrder.verify(representanteComiteVigenteFinder).obtener(representante);
         inOrder.verify(evaluacionDeRepresentanteExisteFinder).obtener(evaluacion);
         inOrder.verify(registrarEvaluacionFichaPerfilValidator).validar(evaluacion, true, true, false);
         inOrder.verify(evaluacionFichaPerfilOutputPort).registrarEvaluacion(entidadDe(evaluacion));
@@ -160,7 +160,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
     private void stubConsultas(EvaluacionFichaPerfilDomain evaluacion, boolean fichaExiste,
                                boolean representanteExiste, boolean evaluacionYaExiste) {
         when(fichaPerfilExisteFinder.obtener(ficha)).thenReturn(fichaExiste);
-        when(representanteComiteExisteFinder.obtener(representante)).thenReturn(representanteExiste);
+        when(representanteComiteVigenteFinder.obtener(representante)).thenReturn(representanteExiste);
         when(evaluacionDeRepresentanteExisteFinder.obtener(evaluacion)).thenReturn(evaluacionYaExiste);
     }
 

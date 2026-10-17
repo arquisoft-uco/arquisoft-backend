@@ -34,14 +34,11 @@ class SolicitudCommandOutputAdapterTest {
     private UUID remitenteFila;
     private UUID remitenteUsuarioId;
     private UUID destinatarioFila;
+    private UUID destinatarioUsuarioId;
 
     @BeforeEach
     void setUp() {
         adapter = new SolicitudCommandOutputAdapter(repository, mock(AppLogger.class));
-
-        ejecutarSql("CREATE TABLE IF NOT EXISTS respuesta ("
-                + "id UUID PRIMARY KEY, solicitud_id UUID NOT NULL, fecha_respuesta TIMESTAMP, "
-                + "contenido VARCHAR(100), estado_respuesta_id VARCHAR(60))");
 
         entityManager.persist(TipoSolicitudJpaEntity.builder()
                 .id(TIPO).nombre("Novedad para el Coordinador").descripcion("desc").build());
@@ -49,25 +46,16 @@ class SolicitudCommandOutputAdapterTest {
         remitenteFila = UUID.randomUUID();
         remitenteUsuarioId = UUID.randomUUID();
         destinatarioFila = UUID.randomUUID();
+        destinatarioUsuarioId = UUID.randomUUID();
         entityManager.persist(RemitenteJpaEntity.builder()
                 .id(remitenteFila).usuarioId(remitenteUsuarioId).build());
         entityManager.persist(DestinatarioJpaEntity.builder()
-                .id(destinatarioFila).usuarioId(UUID.randomUUID()).build());
+                .id(destinatarioFila).usuarioId(destinatarioUsuarioId).build());
         entityManager.flush();
     }
 
-    private void ejecutarSql(String sql) {
-        entityManager.getEntityManager()
-                .unwrap(org.hibernate.Session.class)
-                .doWork(connection -> {
-                    try (var statement = connection.createStatement()) {
-                        statement.execute(sql);
-                    }
-                });
-    }
-
     private UUID sembrarSolicitud(String mensaje) {
-        UUID solicitudId = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         adapter.registrar(new SolicitudEntity(solicitudId, destinatarioFila, remitenteFila,
                 Instant.parse("2026-02-01T10:30:00Z"), mensaje, TIPO));
         entityManager.flush();
@@ -78,8 +66,8 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeInsertarLaSolicitudConSusClavesForaneas_cuandoRegistra() {
         // Arrange
-        UUID solicitudId = UUID.randomUUID();
-        Instant fecha = Instant.parse("2026-02-01T10:30:00Z");
+        var solicitudId = UUID.randomUUID();
+        var fecha = Instant.parse("2026-02-01T10:30:00Z");
 
         // Act
         adapter.registrar(new SolicitudEntity(
@@ -88,7 +76,7 @@ class SolicitudCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        SolicitudJpaEntity guardada = entityManager.find(SolicitudJpaEntity.class, solicitudId);
+        var guardada = entityManager.find(SolicitudJpaEntity.class, solicitudId);
         assertThat(guardada).isNotNull();
         assertThat(guardada.getMensajeSolicitud()).isEqualTo("una novedad");
         assertThat(guardada.getRemitente().getId()).isEqualTo(remitenteFila);
@@ -99,7 +87,7 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeRetornarTrue_cuandoYaExisteLaCombinacionUnica() {
         // Arrange
-        Instant fecha = Instant.parse("2026-02-01T10:30:00Z");
+        var fecha = Instant.parse("2026-02-01T10:30:00Z");
         adapter.registrar(new SolicitudEntity(
                 UUID.randomUUID(), destinatarioFila, remitenteFila, fecha, "duplicable", TIPO));
         entityManager.flush();
@@ -113,7 +101,7 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeRetornarFalse_cuandoLaCombinacionNoCoincide() {
         // Arrange
-        Instant fecha = Instant.parse("2026-02-01T10:30:00Z");
+        var fecha = Instant.parse("2026-02-01T10:30:00Z");
         adapter.registrar(new SolicitudEntity(
                 UUID.randomUUID(), destinatarioFila, remitenteFila, fecha, "original", TIPO));
         entityManager.flush();
@@ -125,13 +113,14 @@ class SolicitudCommandOutputAdapterTest {
     }
 
     @Test
-    void debeProyectarRemitenteUsuarioYTipo_cuandoBuscaDatosDeUnaSolicitudExistente() {
+    void debeProyectarUsuariosYTipo_cuandoBuscaDatosDeUnaSolicitudExistente() {
         // Arrange
-        UUID solicitudId = sembrarSolicitud("una novedad");
+        var solicitudId = sembrarSolicitud("una novedad");
 
         // Act & Assert
         assertThat(adapter.buscarDatos(solicitudId)).hasValueSatisfying(datos -> {
             assertThat(datos.remitenteUsuario()).isEqualTo(remitenteUsuarioId);
+            assertThat(datos.destinatarioUsuario()).isEqualTo(destinatarioUsuarioId);
             assertThat(datos.tipoSolicitud()).isEqualTo(TIPO);
         });
     }
@@ -143,33 +132,9 @@ class SolicitudCommandOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarFalse_cuandoLaSolicitudNoTieneRespuestas() {
-        // Arrange
-        UUID solicitudId = sembrarSolicitud("sin respuestas");
-
-        // Act & Assert
-        assertThat(adapter.tieneRespuestas(solicitudId)).isFalse();
-    }
-
-    @Test
-    void debeRetornarTrue_cuandoLaSolicitudTieneUnaRespuesta() {
-        // Arrange
-        UUID solicitudId = sembrarSolicitud("con respuesta");
-        entityManager.getEntityManager().createNativeQuery(
-                        "INSERT INTO respuesta (id, solicitud_id, fecha_respuesta, contenido, "
-                        + "estado_respuesta_id) VALUES (:id, :sol, CURRENT_TIMESTAMP, 'r', 'EN_REVISION')")
-                .setParameter("id", UUID.randomUUID())
-                .setParameter("sol", solicitudId)
-                .executeUpdate();
-
-        // Act & Assert
-        assertThat(adapter.tieneRespuestas(solicitudId)).isTrue();
-    }
-
-    @Test
     void debeBorrarLaFila_cuandoElimina() {
         // Arrange
-        UUID solicitudId = sembrarSolicitud("a eliminar");
+        var solicitudId = sembrarSolicitud("a eliminar");
 
         // Act
         adapter.eliminar(solicitudId);

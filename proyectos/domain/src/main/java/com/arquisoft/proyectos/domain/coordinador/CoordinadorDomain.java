@@ -17,7 +17,7 @@ public final class CoordinadorDomain {
 
     public static final CoordinadorDomain VACIO = CoordinadorDomain.reconstruir(
             UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO,
-            Instant.EPOCH, UtilFecha.VACIO);
+            UtilFecha.VACIO, UtilFecha.VACIO);
 
     private UUID id;
     private String identificador;
