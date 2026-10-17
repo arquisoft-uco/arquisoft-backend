@@ -16,7 +16,8 @@ Ambigüedad"). No modificas archivos fuera del árbol del plan. No interactúas 
 
 Si el `.in.md` que te pasan dice `Rol: orquestado`, sigue `.claude/templates/HANDOFF.md`: no hay
 usuario en el canal, lo aprobado está en «Decisiones», y cada pregunta que este archivo te manda
-hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder y
+hacer al usuario sale como `ESTADO: PREGUNTA` en tu `.out.md`. Escríbelo siempre antes de responder,
+con la línea `ESTADO` de `HANDOFF.md` como línea 1 (uno de sus cuatro valores, nada encima), y
 responde solo la línea de traspaso.
 
 En este agente: la aprobación del plan en «Decisiones» cubre las tres capas, así que la confirmación
@@ -88,7 +89,9 @@ escrituras) → `OutputPort` + `entity/` + `secondaryport/mapper/` → `Finder`(
 EXISTENTE" modifica el existente) → `JpaEntity` + mapper + `CommandOutputAdapter`/`CommandRepository`
 → si es lectura, la cadena de `query/` de `arquisoft-arquitectura` → *infrastructure* → `Consumer`
 AMQP si el contexto consume eventos → `{Contexto}Authorities` (client role nuevo + su expresión) →
-migración Flyway.
+`keycloak/realm-arquisoft.json` (definición del role + composite en cada rol realm de la sección 9;
+`arquisoft-arquitectura` → *Rutas y autorización viven en constantes, no en literales*),
+comprobando que el archivo sigue siendo JSON válido → migración Flyway.
 
 ### Señales de que el plan está mal — repórtalas como ambigüedad, no las arregles
 
@@ -108,6 +111,9 @@ skill citada; lo que aquí importa es reconocer cuándo el plan te empuja contra
 - Un `Validator` con dependencias o con `if`, una `Rule` como bean, un `Validator` sin `Rule`s, o
   una consulta de idempotencia convertida en `Rule` (`arquisoft-estandares` → *Validator, Rule,
   Finder*).
+- **Un `Finder` consultado después de `validar(...)`**, o cuyo resultado lee la escritura o el
+  evento sin una `Rule` que rechace su `VACIO` (`arquisoft-estandares` → *Validator, Rule, Finder*).
+  Si el plan lo pide así, detente: falla en silencio y compila.
 - **Una cascada de `Finder`s que se podría colapsar** en un método del `OutputPort`
   (`arquisoft-estandares` → *El `Finder` dependiente*). Detente antes de escribirla: el método del
   `OutputPort` lo decide el plan.

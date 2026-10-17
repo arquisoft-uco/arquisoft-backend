@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.application.estudianteproyectogrado.command.usecase.impl;
 
+import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
 import com.arquisoft.proyectos.application.estudiante.command.finder.EstudiantesVigentesPorIdsFinder;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.finder.EstudiantesVinculadosContadorFinder;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.finder.EstudiantesYaVinculadosFinder;
@@ -26,6 +27,7 @@ public class AsignarEstudiantesProyectoGradoUseCaseImpl implements AsignarEstudi
 
     private final EstudianteProyectoGradoOutputPort estudianteProyectoGradoOutputPort;
     private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private final EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
     private final EstudiantesVigentesPorIdsFinder estudiantesVigentesPorIdsFinder;
     private final EstudiantesVinculadosContadorFinder estudiantesVinculadosContadorFinder;
     private final EstudiantesYaVinculadosFinder estudiantesYaVinculadosFinder;
@@ -38,14 +40,16 @@ public class AsignarEstudiantesProyectoGradoUseCaseImpl implements AsignarEstudi
         logger.info(EstudianteProyectoGradoKey.LOG_ASIGNANDO, entrada.getProyectoGrado(), entrada.getCantidad());
 
         var proyecto = proyectoGradoPorIdFinder.obtener(entrada.getProyectoGrado());
+        var estadoActual = estadoActualProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         var vigentes = estudiantesVigentesPorIdsFinder.obtener(entrada.getEstudiantes());
         var yaVinculados = estudiantesYaVinculadosFinder.obtener(entrada);
         var vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(entrada.getProyectoGrado());
 
         logger.debug(EstudianteProyectoGradoKey.LOG_VERIFICACION_ASIGNAR,
-                !proyecto.esVacio(), vigentes.size(), yaVinculados.size(), vinculadosActuales);
+                !proyecto.esVacio(), !estadoActual.esVacio(), vigentes.size(), yaVinculados.size(),
+                vinculadosActuales);
 
-        validator.validar(entrada, proyecto, vigentes, yaVinculados, vinculadosActuales);
+        validator.validar(entrada, proyecto, estadoActual, vigentes, yaVinculados, vinculadosActuales);
 
         estudianteProyectoGradoOutputPort.vincular(
                 entrada.getRelaciones().stream().map(EstudianteProyectoGradoMapper::toEntity).toList());

@@ -24,10 +24,11 @@ public final class MapasRutaApiMessages {
                 "Crea el mapa de ruta de un proyecto de grado en proceso con su fecha de inicio y su fecha de fin. "
                         + "Solo el coordinador asignado al proyecto puede crearlo, y cada proyecto admite un único mapa";
         public static final String AGREGAR_RESP_201 = "Mapa de ruta creado";
-        public static final String AGREGAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String AGREGAR_RESP_400 =
+                "Datos de entrada inválidos o fecha de fin no posterior a la fecha de inicio";
         public static final String AGREGAR_RESP_422 =
-                "Fechas incoherentes, proyecto inexistente, no asignado al coordinador, "
-                        + "fuera de proceso o con mapa de ruta existente";
+                "Proyecto inexistente, no asignado al coordinador, fuera de proceso "
+                        + "o con mapa de ruta existente";
         public static final String CAMBIAR_FECHA_FIN_SUMMARY = "Cambiar la fecha de fin de un mapa de ruta";
         public static final String CAMBIAR_FECHA_FIN_DESCRIPTION =
                 "Modifica la fecha de fin del mapa de ruta de un proyecto de grado en proceso. "

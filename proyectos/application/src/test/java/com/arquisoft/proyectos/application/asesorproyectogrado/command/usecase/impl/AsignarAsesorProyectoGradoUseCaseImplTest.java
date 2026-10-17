@@ -6,7 +6,9 @@ import com.arquisoft.proyectos.application.asesorproyectogrado.command.finder.As
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondaryport.AsesorProyectoGradoOutputPort;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondaryport.entity.AsesorProyectoGradoEntity;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.validator.AsignarAsesorProyectoGradoValidator;
+import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsignacionAsesorProyectoGradoDomain;
@@ -51,6 +53,9 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
     private ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
 
     @Mock
+    private EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
+
+    @Mock
     private AsesorPorIdFinder asesorPorIdFinder;
 
     @Mock
@@ -73,6 +78,7 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
 
     private final ProyectoGradoDomain proyecto = ProyectoGradoDomain.crear(
             UtilUUID.generarNuevoUUID(), "Sistema de gestión", UtilUUID.generarNuevoUUID());
+    private final EstadoProyectoGradoDomain estadoActual = EstadoProyectoGradoDomain.crear(proyecto.getId());
     private final AsesorDomain asesor = AsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), "2020",
             "Luis Diaz", "luis.diaz@soyuco.edu.co", Instant.parse("2026-09-01T10:00:00Z"), null);
     private final AsignacionAsesorProyectoGradoDomain entrada = AsignacionAsesorProyectoGradoDomain.crear(
@@ -80,6 +86,7 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
 
     private void stubFinders() {
         when(proyectoGradoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
+        when(estadoActualProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estadoActual);
         when(asesorPorIdFinder.obtener(asesor.getId())).thenReturn(asesor);
         when(asesorYaAsignadoFinder.obtener(entrada)).thenReturn(false);
         when(asesoresAsignadosContadorFinder.obtener(proyecto.getId())).thenReturn(0L);
@@ -97,7 +104,7 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
         assertThat(id).isEqualTo(entrada.getAsesorProyectoGrado().getId());
 
         var vinculo = ArgumentCaptor.forClass(AsesorProyectoGradoEntity.class);
-        verify(asesorProyectoGradoOutputPort).asignar(vinculo.capture());
+        verify(asesorProyectoGradoOutputPort).registrar(vinculo.capture());
         assertThat(vinculo.getValue().id()).isEqualTo(id);
         assertThat(vinculo.getValue().asesor()).isEqualTo(asesor.getId());
         assertThat(vinculo.getValue().proyectoGrado()).isEqualTo(proyecto.getId());
@@ -111,15 +118,16 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
             assertThat(publicado.getAsesor()).isEqualTo(new ContactoAsesor("Luis Diaz", "luis.diaz@soyuco.edu.co"));
         });
 
-        var orden = inOrder(proyectoGradoPorIdFinder, asesorPorIdFinder, asesorYaAsignadoFinder,
+        var orden = inOrder(proyectoGradoPorIdFinder, estadoActualProyectoGradoFinder, asesorPorIdFinder, asesorYaAsignadoFinder,
                 asesoresAsignadosContadorFinder, validator, asesorProyectoGradoOutputPort, eventPublisher, logger);
         orden.verify(logger).info(eq(AsesorProyectoGradoKey.LOG_ASIGNANDO), eq(proyecto.getId()), eq(asesor.getId()));
         orden.verify(proyectoGradoPorIdFinder, times(1)).obtener(proyecto.getId());
+        orden.verify(estadoActualProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesor.getId());
         orden.verify(asesorYaAsignadoFinder, times(1)).obtener(entrada);
         orden.verify(asesoresAsignadosContadorFinder, times(1)).obtener(proyecto.getId());
-        orden.verify(validator).validar(entrada, proyecto, asesor, false, 0L);
-        orden.verify(asesorProyectoGradoOutputPort).asignar(any());
+        orden.verify(validator).validar(entrada, proyecto, estadoActual, asesor, false, 0L);
+        orden.verify(asesorProyectoGradoOutputPort).registrar(any());
         orden.verify(eventPublisher).publish(any());
         orden.verify(logger).info(eq(AsesorProyectoGradoKey.LOG_ASIGNADO), eq(proyecto.getId()), eq(asesor.getId()));
     }
@@ -129,11 +137,11 @@ class AsignarAsesorProyectoGradoUseCaseImplTest {
         // Arrange
         stubFinders();
         doThrow(new CupoAsesoresExcedidoException(1))
-                .when(validator).validar(eq(entrada), any(), any(), eq(false), anyLong());
+                .when(validator).validar(eq(entrada), any(), any(), any(), eq(false), anyLong());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada)).isInstanceOf(CupoAsesoresExcedidoException.class);
-        verify(asesorProyectoGradoOutputPort, never()).asignar(any());
+        verify(asesorProyectoGradoOutputPort, never()).registrar(any());
         verify(eventPublisher, never()).publish(any());
         verify(logger, never()).info(eq(AsesorProyectoGradoKey.LOG_ASIGNADO), eq(proyecto.getId()), eq(asesor.getId()));
     }

@@ -24,7 +24,9 @@ on:
 # Cancela builds en curso de la misma rama/tag (ahorra minutos al construir en todas las ramas)
 concurrency:
   group: docker-build-${{ github.ref }}
-  cancel-in-progress: true
+  # En develop no se cancela: CD Deploy espera la imagen sha-<short> de CADA push,
+  # y un build cancelado por el merge siguiente la deja esperando hasta fallar.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
 
 env:
   REGISTRY: ghcr.io

@@ -13,6 +13,10 @@ import java.util.UUID;
 
 public final class AsesorProyectoGradoDomain {
 
+    public static final AsesorProyectoGradoDomain VACIO = reconstruir(
+            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
+            EstadoAsesor.VACIO, UtilFecha.VACIO);
+
     private UUID id;
     private UUID asesor;
     private UUID proyectoGrado;
@@ -29,6 +33,21 @@ public final class AsesorProyectoGradoDomain {
         vinculo.setAsesor(asesor, result);
         vinculo.setProyectoGrado(proyectoGrado, result);
         vinculo.setEstadoAsesorInicial();
+        vinculo.setFechaAsignado();
+
+        result.lanzarSiTieneErrores();
+        return vinculo;
+    }
+
+    public static AsesorProyectoGradoDomain crearConEstado(UUID asesor, UUID proyectoGrado,
+                                                           EstadoAsesor estadoAsesor) {
+        var vinculo = new AsesorProyectoGradoDomain();
+        var result = new ValidationResult();
+
+        vinculo.setId();
+        vinculo.setAsesor(asesor, result);
+        vinculo.setProyectoGrado(proyectoGrado, result);
+        vinculo.setEstadoAsesor(estadoAsesor, result);
         vinculo.setFechaAsignado();
 
         result.lanzarSiTieneErrores();
@@ -68,6 +87,15 @@ public final class AsesorProyectoGradoDomain {
         this.proyectoGrado = proyectoGrado;
     }
 
+    private void setEstadoAsesor(EstadoAsesor estadoAsesor, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(estadoAsesor,
+                ProyectosFields.AsesorProyectoGrado.ESTADO_ASESOR,
+                ProyectosCodes.AsesorProyectoGrado.ESTADO_ASESOR_REQUERIDO, result)) {
+            return;
+        }
+        this.estadoAsesor = estadoAsesor;
+    }
+
     private void setEstadoAsesorInicial() {
         this.estadoAsesor = EstadoAsesor.ASIGNADO;
     }
@@ -94,5 +122,9 @@ public final class AsesorProyectoGradoDomain {
 
     public Instant getFechaAsignado() {
         return fechaAsignado;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

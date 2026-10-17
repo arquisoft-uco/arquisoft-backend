@@ -81,7 +81,8 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
     private UUID sembrarJurado() {
         UUID jurado = UUID.randomUUID();
         entityManager.createNativeQuery(
-                "INSERT INTO jurado (id, identificador, nombre, email) VALUES (?, 'DOC-1', 'Jurado Uno', 'j1@uco.edu.co')")
+                "INSERT INTO jurado (id, identificador, nombre, email, ocurrido_en) "
+                        + "VALUES (?, 'DOC-1', 'Jurado Uno', 'j1@uco.edu.co', CURRENT_TIMESTAMP)")
                 .setParameter(1, jurado).executeUpdate();
         return jurado;
     }

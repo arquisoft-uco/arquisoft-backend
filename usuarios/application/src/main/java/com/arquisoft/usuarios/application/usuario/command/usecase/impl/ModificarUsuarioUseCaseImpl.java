@@ -11,6 +11,7 @@ import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUs
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
+import com.arquisoft.usuarios.application.jurado.command.usecase.AgregarJuradoUseCase;
 import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoOtroUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtraIdentidadExisteFinder;
@@ -49,6 +50,7 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
     private final AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
     private final AgregarAdministradorUseCase agregarAdministradorUseCase;
     private final AgregarBibliotecarioUseCase agregarBibliotecarioUseCase;
+    private final AgregarJuradoUseCase agregarJuradoUseCase;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
@@ -96,9 +98,6 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
                 modificacion.getRoles().size());
     }
 
-    // TODO HU250 (jurado):
-    //  despachar aqui su Agregar{Rol}UseCase con modificacion.contieneRol(...): si la fila del rol ya existe
-    //  eliminada logicamente (removida por HU251), el use case la reactiva en vez de crear una nueva.
     private void agregarRoles(ModificacionUsuarioDomain modificacion, UsuarioDomain usuario) {
         if (modificacion.contieneRol(UsuariosRealmRoles.ESTUDIANTE)) {
             agregarEstudianteUseCase.ejecutar(usuario);
@@ -126,6 +125,10 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
 
         if (modificacion.contieneRol(UsuariosRealmRoles.BIBLIOTECARIO)) {
             agregarBibliotecarioUseCase.ejecutar(usuario);
+        }
+
+        if (modificacion.contieneRol(UsuariosRealmRoles.JURADO)) {
+            agregarJuradoUseCase.ejecutar(usuario);
         }
     }
 }

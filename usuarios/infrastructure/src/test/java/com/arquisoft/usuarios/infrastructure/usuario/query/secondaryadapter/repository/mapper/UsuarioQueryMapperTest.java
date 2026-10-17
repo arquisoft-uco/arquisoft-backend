@@ -71,4 +71,22 @@ class UsuarioQueryMapperTest {
         assertThat(readModel.esBibliotecario()).isTrue();
         assertThat(readModel.esAdministrador()).isFalse();
     }
+
+    @Test
+    void debePropagarEsJurado_cuandoConvierteAReadModel() {
+        // Arrange
+        var entity = UsuarioJpaQueryEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .estado("ACTIVO")
+                .vigente(true)
+                .esJurado(true)
+                .build();
+
+        // Act
+        var readModel = UsuarioQueryMapper.toReadModel(entity);
+
+        // Assert
+        assertThat(readModel.esJurado()).isTrue();
+        assertThat(readModel.esBibliotecario()).isFalse();
+    }
 }

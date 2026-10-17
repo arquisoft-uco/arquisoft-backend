@@ -2,13 +2,16 @@ package com.arquisoft.proyectos.application.asesorproyectogrado.command.secondar
 
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.secondaryport.entity.AsesorProyectoGradoEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AsesorProyectoGradoOutputPort {
 
-    void asignar(AsesorProyectoGradoEntity vinculo);
+    void registrar(AsesorProyectoGradoEntity vinculo);
 
-    boolean existePorAsesorYProyectoGradoYEstado(UUID asesor, UUID proyectoGrado, String estadoAsesor);
+    boolean existePorAsesorYProyectoGradoConEstadoVigente(UUID asesor, UUID proyectoGrado, String estadoAsesor);
 
-    long contarPorProyectoGradoYEstado(UUID proyectoGrado, String estadoAsesor);
+    long contarPorProyectoGradoConEstadoVigente(UUID proyectoGrado, String estadoAsesor);
+
+    Optional<AsesorProyectoGradoEntity> obtenerVigentePorAsesorYProyectoGrado(UUID asesor, UUID proyectoGrado);
 }

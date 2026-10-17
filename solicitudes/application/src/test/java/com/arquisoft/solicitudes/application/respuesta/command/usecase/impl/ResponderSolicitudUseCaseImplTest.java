@@ -4,6 +4,7 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.EventTopics;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.entity.RespuestaEntity;
 import com.arquisoft.solicitudes.application.respuesta.command.validator.ResponderSolicitudValidator;
@@ -140,6 +141,62 @@ class ResponderSolicitudUseCaseImplTest {
         assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Asesor");
         verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO),
                 eq(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()), eq(solicitud), eq(asesorUsuario));
+    }
+
+    @Test
+    void debePublicarElEventoDeCambioAsesor_cuandoElTipoEsCambioDeAsesor() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(solicitud, "Se aprueba el cambio");
+        var entradaCambio = RespuestaSolicitudDomain.crear(
+                respuesta, coordinadorUsuario, TipoSolicitud.CAMBIO_DE_ASESOR);
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteUsuario, coordinadorUsuario, TipoSolicitud.CAMBIO_DE_ASESOR.getId()));
+        when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", UtilFecha.generarInstanteActual()));
+        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", UtilFecha.generarInstanteActual()));
+
+        // Act
+        useCase.ejecutar(entradaCambio);
+
+        // Assert
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudRespondidaEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        var evento = eventCaptor.getValue();
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.CAMBIO_ASESOR_RESPONDIDA);
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudCambioAsesorRespondidaEvent");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO),
+                eq(TipoSolicitud.CAMBIO_DE_ASESOR.getId()), eq(solicitud), eq(coordinadorUsuario));
+    }
+
+    @Test
+    void debePublicarElEventoDeAmpliacionPlazo_cuandoElTipoEsAmpliacionDePlazo() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(solicitud, "Se aprueba la ampliacion");
+        var entradaAmpliacion = RespuestaSolicitudDomain.crear(
+                respuesta, coordinadorUsuario, TipoSolicitud.AMPLIACION_DE_PLAZO);
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteUsuario, coordinadorUsuario, TipoSolicitud.AMPLIACION_DE_PLAZO.getId()));
+        when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", UtilFecha.generarInstanteActual()));
+        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", UtilFecha.generarInstanteActual()));
+
+        // Act
+        useCase.ejecutar(entradaAmpliacion);
+
+        // Assert
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudRespondidaEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        var evento = eventCaptor.getValue();
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.AMPLIACION_PLAZO_RESPONDIDA);
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudAmpliacionPlazoRespondidaEvent");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO),
+                eq(TipoSolicitud.AMPLIACION_DE_PLAZO.getId()), eq(solicitud), eq(coordinadorUsuario));
     }
 
     @Test

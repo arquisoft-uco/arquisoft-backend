@@ -33,6 +33,9 @@ public class JuradoJpaEntity {
     @Column(name = "email", nullable = false, length = 50)
     private String email;
 
+    @Column(name = "ocurrido_en", nullable = false)
+    private Instant ocurridoEn;
+
     @Column(name = "eliminado_en")
     private Instant eliminadoEn;
 }

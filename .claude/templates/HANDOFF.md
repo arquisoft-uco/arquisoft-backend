@@ -57,7 +57,10 @@ ESTADO: OK|PREGUNTA|RECHAZADO|ERROR · {máx. 15 palabras}
 {rutas de lo producido, y de qué archivo de entrada debe leer el siguiente}
 ```
 
-La primera línea es el estado: para saber si un paso terminó basta leerla (`Read` con `limit: 1`).
+La línea 1 es la línea `ESTADO`, sin título ni nada encima, y su valor es uno de los cuatro: `OK`,
+`PREGUNTA`, `RECHAZADO` o `ERROR`. El orquestador solo lee esa línea (`Read` con `limit: 1`) y decide
+por el valor: un título encima o un sinónimo (`COMPLETADO`, `APROBADO`) lo deja sin saber si el paso
+terminó. El veredicto propio de tu fase (aprobado, todos pasan, score) va detrás del `·`.
 
 **Excepción — `@4a`:** su entregable es un texto largo, así que el cuerpo de su `.out.md` **es** el
 reporte completo (`# Reporte de Validación — {ID}`, con las secciones de `VALIDATOR.md`), precedido por
@@ -73,7 +76,8 @@ mano trae el trabajo del delegado a su contexto y rompe la regla de oro.
 Prompt del `Agent`, siempre igual y corto: `Lee {ruta .in.md} y ejecútalo.`
 
 El delegado responde **una sola línea**: `ESTADO: … · {ruta .out.md} · {máx. 15 palabras}`. Si no la
-trae, trátalo como `ERROR`.
+trae, o la línea 1 de su `.out.md` no es una línea `ESTADO` válida, pídele con `SendMessage` que la
+corrija; si no lo hace, trátalo como `ERROR`. No avances sobre un estado que tuviste que interpretar.
 
 | Estado | Qué haces |
 |---|---|

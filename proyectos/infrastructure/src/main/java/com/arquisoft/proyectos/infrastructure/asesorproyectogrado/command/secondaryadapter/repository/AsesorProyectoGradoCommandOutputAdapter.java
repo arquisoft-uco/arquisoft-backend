@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.proyectos.AsesorProyectoGradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -18,19 +19,28 @@ public class AsesorProyectoGradoCommandOutputAdapter implements AsesorProyectoGr
     private final AppLogger logger;
 
     @Override
-    public void asignar(AsesorProyectoGradoEntity vinculo) {
+    public void registrar(AsesorProyectoGradoEntity vinculo) {
         asesorProyectoGradoRepository.save(AsesorProyectoGradoJpaMapper.toJpaEntity(vinculo));
         logger.debug(AsesorProyectoGradoKey.LOG_GUARDADO, vinculo.id(), vinculo.proyectoGrado());
     }
 
     @Override
-    public boolean existePorAsesorYProyectoGradoYEstado(UUID asesor, UUID proyectoGrado, String estadoAsesor) {
+    public boolean existePorAsesorYProyectoGradoConEstadoVigente(UUID asesor, UUID proyectoGrado,
+                                                                 String estadoAsesor) {
         return asesorProyectoGradoRepository
-                .existsByAsesorIdAndProyectoGradoIdAndEstadoAsesorId(asesor, proyectoGrado, estadoAsesor);
+                .existsByAsesorAndProyectoGradoWithEstadoVigente(asesor, proyectoGrado, estadoAsesor);
     }
 
     @Override
-    public long contarPorProyectoGradoYEstado(UUID proyectoGrado, String estadoAsesor) {
-        return asesorProyectoGradoRepository.countByProyectoGradoIdAndEstadoAsesorId(proyectoGrado, estadoAsesor);
+    public long contarPorProyectoGradoConEstadoVigente(UUID proyectoGrado, String estadoAsesor) {
+        return asesorProyectoGradoRepository.countByProyectoGradoWithEstadoVigente(proyectoGrado, estadoAsesor);
+    }
+
+    @Override
+    public Optional<AsesorProyectoGradoEntity> obtenerVigentePorAsesorYProyectoGrado(UUID asesor,
+                                                                                    UUID proyectoGrado) {
+        return asesorProyectoGradoRepository
+                .findFirstByAsesorIdAndProyectoGradoIdOrderByFechaAsignadoDesc(asesor, proyectoGrado)
+                .map(AsesorProyectoGradoJpaMapper::toEntity);
     }
 }
