@@ -184,6 +184,7 @@ public final class EvaluacionesCodes {
         public static final String NOMBRE_REQUERIDO = "JURADO_NOMBRE_REQUERIDO";
         public static final String EMAIL_REQUERIDO = "JURADO_EMAIL_REQUERIDO";
         public static final String OCURRIDO_EN_REQUERIDO = "JURADO_OCURRIDO_EN_REQUERIDO";
+        public static final String NO_ENCONTRADO = "JURADO_NO_ENCONTRADO";
     }
 
     public static final class ItemCuantitativoJurado {
