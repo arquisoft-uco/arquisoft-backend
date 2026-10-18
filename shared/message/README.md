@@ -67,7 +67,7 @@ shared/message/
     │   │   └── FichasFields, FichasLimits, NotificacionesFields, NotificacionesLimits
     │   ├── key/{contexto}/{Concepto}Key.java   ← una clase por concepto, no una por contexto
     │   │   ├── app/       → ConsultaKey, MensajeriaKey, AlmacenamientoKey, PaginacionKey, ValidadorKey, HttpKey, NotificacionKey
-    │   │   ├── fichas/    → FichaPerfilKey, EstadoFichaKey, EstadoFichaPerfilKey, ItemFichaPerfilKey, EstudianteKey, EstudianteFichaPerfilKey, EvaluacionFichaPerfilKey, EstadoEvaluacionFichaKey, RepresentanteComiteKey, UsuarioKey, MinioGuiaKey
+    │   │   ├── fichas/    → FichaPerfilKey, EstadoFichaKey, EstadoFichaPerfilKey, ItemFichaPerfilKey, EstudianteKey, EstudianteFichaPerfilKey, EvaluacionFichaPerfilKey, EstadoEvaluacionFichaKey, RepresentanteComiteKey, UsuarioKey
     │   │   ├── seguridad/ → AutenticacionKey, CredencialesKey, IdentidadKey, IniciarSesionKey, LimiteSolicitudesKey, RolKey, SesionKey, TokenKey, TokenInvalidadoKey, ConfiguracionKey
     │   │   ├── notificaciones/ → NotificacionKey, ConsumidorKey, PlantillaKey
     │   │   └── usuarios/  → UsuarioKey

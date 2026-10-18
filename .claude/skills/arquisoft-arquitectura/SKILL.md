@@ -19,10 +19,12 @@ contexto completo y el patrón a copiar—. Ábrelo con `Read` cuando necesites 
 | `seguridad` | `command/result/` (+`mapper/`), excepciones por capa dentro del slice, controllers por acción, `RequestDTO` `record` + `RequestMapper`, `AppLogger` | Sin BD (Keycloak + Redis): no hay `JpaEntity`, Flyway ni `@Transactional`. Sus cuatro `*ResponseDTO` son clases Lombok, no `record` |
 | `notificaciones` | `Consumer` AMQP; comando **sin `Validator`** (su única consulta es un corte de idempotencia con `Finder` + `if/return`, no una `Rule`) | — |
 | `usuarios` | Lado **dueño** de una réplica y adaptador hacia proveedor externo: `RegistrarUsuarioUseCaseImpl` persiste, da de alta en Keycloak (`secondaryadapter/keycloak/KeycloakProveedorIdentidadOutputAdapter`) y encadena `Agregar{Estudiante,Coordinador,Asesor,AsesorFicha}` desde el orquestador; cada uno publica su `*Agregado`. `RemoverEstudianteUseCaseImpl` es la baja lógica con `*Removido` | Sin lado `query/` |
-| `evaluaciones` | Molde de un **contexto que arranca** (`itemcualitativojurado`): `Controller` → `RequestMapper` → `Command.crear` → `Interactor` → `UseCase` → `Finder` → `Validator` → `Rule` → `OutputPort` (`Entity`) → `JpaMapper` → `CommandRepository`, migración timestamp y `EvaluacionesAuthorities`. También la **consulta con política de acceso**: `ConsultarEvaluacionesCualitativasJuradoUseCaseImpl` (`arquisoft-estandares` → *Validación en una consulta*) | Sin eventos ni consumidores; sus consultas no paginan ni filtran |
+| `evaluaciones` | Molde de un **contexto que arranca** (`itemcualitativojurado`): `Controller` → `RequestMapper` → `Command.crear` → `Interactor` → `UseCase` → `Finder` → `Validator` → `Rule` → `OutputPort` (`Entity`) → `JpaMapper` → `CommandRepository`, migración timestamp y `EvaluacionesAuthorities`. También la **consulta con política de acceso**: `ConsultarEvaluacionesCualitativasJuradoUseCaseImpl` (`arquisoft-estandares` → *Validación en una consulta*) | Un solo consumidor (`jurado`, réplica de `usuarios.jurado.agregado`) y sin eventos propios; sus consultas no paginan ni filtran |
 | `proyectos` | Lado **réplica**: consume `*Agregado`/`*Removido` de `usuarios` (`primaryadapter/amqp/usuarios/{entidad}/`) para sus espejos de `asesor`, `coordinador` y `estudiante`. Cada caso de uso devuelve una sellada (`AgregacionAsesorResult` → `Agregada`/`Duplicada`/`Descartada`; `Descartada` = evento más viejo que el `ocurridoEn` guardado) | Sin controllers, `query/` ni eventos propios |
 | `solicitudes` | **Un flujo con variantes por tipo** y camino completo a `notificaciones`. Un `Interactor` por tipo (`EnviarSolicitud{Tipo}`, `EliminarSolicitud{Tipo}`, `ResponderSolicitud{Tipo}`, `ModificarEstadoRespuesta{Tipo}`) converge en un use case por acción; el mapper del interactor fija el tipo esperado en el objeto de acción y `SolicitudEsDelTipoRule` despacha a la regla del tipo, así los códigos de error por tipo no cambian. `EnviarSolicitudUseCase` orquesta `RegistrarRemitente`/`RegistrarDestinatario` (`void`, cada uno con su `Validator` de existencia) y un solo `EnviarSolicitudValidator.validar(...)`. Sus eventos (`SolicitudEnviadaEvent`, `SolicitudRespondidaEvent`, `SolicitudEstadoModificadoEvent`, con `responsableNombre` genérico) derivan tema y tipo de `TipoSolicitud`, y `notificaciones` los consume con un consumidor por tipo (`amqp/solicitudes/{solicitud,respuesta}/`). Réplica de `usuario` + lado `query/` cuyo mapper fuerza el filtro por JWT y tipo | `UsuarioSolicitudesCommandOutputAdapter`/`…CommandRepository` llevan el contexto en el nombre (convención retirada) |
 | `biblioteca` | **Contexto nuevo que nace como réplica** (HU-240): andamiaje completo (módulos Gradle, base, `BibliotecaDataSourceConfig`, Flyway, colas, catálogo) + réplica de `bibliotecario`, calcada de `proyectos/coordinador` | Solo *Agregar*: sin `bibliotecario.removido`, `usuario.modificado`, lápida, controllers ni `query/` |
+| `repositorio_artefactos` | **Réplica de `administrador` completa** (HU-273): `agregado`, `removido` con lápida y `usuario.modificado`, calcada de `proyectos/coordinador`, más el comando `GenerarRepositorioArtefacto` (escritura con client role propio y `Finder` de vigencia del administrador antes del `Validator`) | Sin `query/`. Primer **productor** del contexto (HU-275, `VersionRepositorioArtefactoSubidaEvent`, con su `event_publication`) y primer contexto con adaptadores a MinIO (`secondaryadapter/minio/`, vía `shared:minio`) y Tika (`secondaryadapter/tika/`): el archivo no pasa por el backend, la subida va en dos pasos (formulario firmado + confirmar) y el contenido se valida por magic numbers |
+| `artefactos` | **Réplica de un hecho inmutable de otro contexto** (HU-275): `VersionRepositorioArtefactoSubidaConsumer` + `Payload` local → `Command.crear` → `Interactor` → `UseCase` → `Finder` (`existePorId`) → `OutputPort`, calcada de `biblioteca` con `AgregacionVersionRepositorioArtefactoResult` (`Agregada`/`Duplicada`). Idempotencia por existencia del id, sin `Validator` ni `Rule`; la tabla no lleva `ocurrido_en` ni `eliminado_en` | Solo *Agregar*: sin baja, lápida, controllers ni `query/`; `Command.crear` y `Domain.crear` agrupan `DatosArchivo` por el tope de 7 parámetros |
 
 ## Los planes y reportes de `.workspace/` NO son referencia de convención
 
@@ -433,8 +435,23 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
 
 - `@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")` — placeholder con default; **no
   existe `{Contexto}Routes`**. Nunca el prefijo `/api`: ya es el `context-path`.
+- La base del `@RequestMapping` es **el recurso, en un solo segmento kebab-case, sin el nombre del
+  contexto delante**: `/fichas-perfil`, `/proyectos-grado`, `/solicitudes`, `/usuarios`. El contexto
+  es una frontera del código, no del contrato HTTP. Anteponerlo alarga cada ruta y, cuando el recurso
+  se llama como el contexto, repite el nombre (`/repositorio-artefactos/repositorios-artefactos`).
+  Lo anidado (`/{id}/estudiantes`, `/coordinador`) cuelga de esa base. `evaluaciones`
+  (`/evaluaciones/{recurso}`) no sigue esta forma: no la tomes como molde de rutas.
 - `@PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_CREATE)`, nunca el literal
   `"hasAuthority('...')"`. `FichasAuthorities` declara el client role crudo (para tests) y su SpEL.
 - **Un client role por endpoint, propio y distinto**, para concederlo o revocarlo por separado en
   Keycloak. Dos endpoints sobre el mismo recurso se diferencian con un calificador:
   `fichas:ficha-perfil-coordinador:view` vs `fichas:ficha-perfil-asesor:view`.
+- **Todo client role nuevo se registra en `keycloak/realm-arquisoft.json`**, en dos sitios: su
+  definición en `roles.client.arquisoft-api` (`id` UUID nuevo, `clientRole: true`,
+  `composite: false`, el `containerId` de sus hermanos) y su nombre en
+  `composites.client.arquisoft-api` de cada rol realm que usa el endpoint (si ese rol realm era
+  `composite: false`, pasa a `true` y gana el bloque `composites`). Sin esto todo compila y los tests
+  pasan —`jwt().authorities(...)` inyecta el rol a mano—, pero en un Keycloak importado de cero ningún
+  usuario lo recibe y el endpoint responde 403 a todos. Referencia: el rol realm `asesor`, que compone
+  `proyectos:proyecto-grado-asesor-detalle:view`. Un JSON roto aborta el `--import-realm` entero, y
+  un Keycloak que ya tiene el realm ignora el archivo (`keycloak/README.md`).

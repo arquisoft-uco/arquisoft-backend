@@ -581,31 +581,17 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }
 
-    public static final class MinioGuia {
+    public static final class EstadoObservacionRevision {
 
-        private MinioGuia() {}
+        private EstadoObservacionRevision() {}
 
-        public static final String TAG_NAME = "MinIO Guía";
-        public static final String TAG_DESCRIPTION = "Endpoints de prueba para validar el módulo shared:minio. Eliminar tras el PoC.";
+        public static final String TAG_NAME = "Estados de Observación de Revisión";
+        public static final String TAG_DESCRIPTION = "Catálogo de estados disponibles para las observaciones de ítem de una revisión de ficha";
 
-        public static final String CARGA_SUMMARY = "Generar presigned URL de carga";
-        public static final String CARGA_DESCRIPTION = "Retorna una URL firmada para subir un archivo directamente a MinIO (PUT). Válida 15 minutos.";
-        public static final String CARGA_RESP_200 = "URL generada exitosamente";
-
-        public static final String DESCARGA_SUMMARY = "Generar presigned URL de descarga";
-        public static final String DESCARGA_DESCRIPTION =
-                "Retorna una URL firmada para descargar un archivo directamente de MinIO (GET). Válida 15 minutos.";
-        public static final String DESCARGA_RESP_200 = "URL generada exitosamente";
-
-        public static final String EXISTE_SUMMARY = "Verificar si un objeto existe";
-        public static final String EXISTE_DESCRIPTION = "Comprueba si el objeto indicado existe en el bucket";
-        public static final String EXISTE_RESP_200 = "Resultado de la verificación";
-
-        public static final String ELIMINAR_SUMMARY = "Eliminar un objeto";
-        public static final String ELIMINAR_DESCRIPTION = "Elimina el objeto indicado del bucket";
-        public static final String ELIMINAR_RESP_204 = "Objeto eliminado";
-
-        public static final String PARAM_BUCKET = "Nombre del bucket destino";
-        public static final String PARAM_KEY = "Clave del objeto (ruta + nombre)";
+        public static final String CONSULTAR_SUMMARY = "Consultar todos los estados de observación de revisión disponibles";
+        public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados de observación de ítem del catálogo sin filtros ni paginación";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados de observación de revisión retornada exitosamente";
+        public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
+        public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }
 }

@@ -107,4 +107,72 @@ class EstudianteProyectoGradoQueryOutputAdapterTest {
         // Assert
         assertThat(resultado).isEmpty();
     }
+
+    @Test
+    void debeRetornarCompanerosVigentesOrdenadosPorNombre_cuandoHayBajasYOtrosProyectos() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var carla = vincular(proyectoGrado, "Carla", "2022", null);
+        var ana = vincular(proyectoGrado, "Ana", "2020", null);
+        vincular(proyectoGrado, "Beto", "2021", Instant.parse("2026-09-10T10:00:00Z"));
+        vincular(UtilUUID.generarNuevoUUID(), "Diego", "2023", null);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarCompanerosVigentesPorProyecto(proyectoGrado);
+
+        // Assert
+        assertThat(resultado).extracting(r -> r.estudianteId()).containsExactly(ana, carla);
+        var primero = resultado.getFirst();
+        assertThat(primero.identificador()).isEqualTo("2020");
+        assertThat(primero.nombre()).isEqualTo("Ana");
+        assertThat(primero.email()).isEqualTo("2020@soyuco.edu.co");
+    }
+
+    @Test
+    void debeRetornarSoloVigentesOrdenadosPorNombre_cuandoConsultaAsesorados() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var carla = vincular(proyectoGrado, "Carla", "2022", null);
+        var ana = vincular(proyectoGrado, "Ana", "2020", null);
+        vincular(proyectoGrado, "Beto", "2021", Instant.parse("2026-09-10T10:00:00Z"));
+        vincular(UtilUUID.generarNuevoUUID(), "Diego", "2023", null);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarAsesoradosVigentesPorProyecto(proyectoGrado);
+
+        // Assert
+        assertThat(resultado).extracting(r -> r.estudianteId()).containsExactly(ana, carla);
+        var primero = resultado.getFirst();
+        assertThat(primero.identificador()).isEqualTo("2020");
+        assertThat(primero.nombre()).isEqualTo("Ana");
+        assertThat(primero.email()).isEqualTo("2020@soyuco.edu.co");
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoSinEstudiantesVigentes() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        vincular(proyectoGrado, "Beto", "2021", Instant.parse("2026-09-10T10:00:00Z"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarAsesoradosVigentesPorProyecto(proyectoGrado);
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoProyectoSinCompaneros() {
+        // Act
+        var resultado = adapter.consultarCompanerosVigentesPorProyecto(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
 }

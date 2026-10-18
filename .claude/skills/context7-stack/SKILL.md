@@ -34,6 +34,7 @@ tabla se actualiza: no la des por buena sin mirarla.
 | Hibernate ORM | `/hibernate/hibernate-orm` | 4 278 | via Boot 4.0 (`@Subselect`/`@Immutable`/`@Synchronize`) |
 | PostgreSQL (driver) | `/websites/postgresql` | — | **42.7.2** (servidor PostgreSQL 18) |
 | MinIO | `/minio/minio` | — | **8.5.12** |
+| Apache Tika | `/websites/tika_apache_3_2_3` (3.x; `/apache/tika` es 4.x, API distinta) | — | **3.3.3** (`tika-core` + `tika-parser-microsoft-module`; `DefaultDetector` + `TikaInputStream`) |
 | springdoc-openapi | `/springdoc/springdoc-openapi` | — | **2.8.8** |
 
 **IDs alternativos** (más snippets, para consultas amplias): Spring Boot `/spring-projects/spring-boot`

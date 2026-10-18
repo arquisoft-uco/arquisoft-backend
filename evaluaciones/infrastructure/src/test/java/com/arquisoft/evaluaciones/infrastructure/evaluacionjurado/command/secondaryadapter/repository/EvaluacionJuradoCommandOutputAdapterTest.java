@@ -1,14 +1,24 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.repository;
 
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EvaluacionJuradoEntity;
+import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.secondaryadapter.entity.EvaluacionCuantitativaJuradoJpaEntity;
+import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.command.secondaryadapter.entity.ObservacionItemJuradoJpaEntity;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 // Las tablas evaluacion/estado_evaluacion no tienen @Entity en el lado de comando (esta HU solo lee
 // el jurado y el estado, no gestiona EvaluacionJurado/Evaluacion como recursos propios), asi que
@@ -22,13 +32,19 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     private EntityManager entityManager;
 
     @Autowired
+    private TestEntityManager testEntityManager;
+
+    @Autowired
     private EvaluacionJuradoCommandRepository repository;
 
     private EvaluacionJuradoCommandOutputAdapter adapter;
 
+    private AppLogger logger;
+
     @BeforeEach
     void setUp() {
-        adapter = new EvaluacionJuradoCommandOutputAdapter(repository);
+        logger = mock(AppLogger.class);
+        adapter = new EvaluacionJuradoCommandOutputAdapter(repository, logger);
         crearEsquemaDeSoporte();
     }
 
@@ -70,6 +86,39 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         return evaluacionJurado;
     }
 
+    private UUID sembrarObservacion(UUID evaluacionJurado) {
+        var evaluacionCuantitativaJurado = UUID.randomUUID();
+        var observacion = UUID.randomUUID();
+        testEntityManager.persist(EvaluacionCuantitativaJuradoJpaEntity.builder()
+                .id(evaluacionCuantitativaJurado)
+                .evaluacionJuradoId(evaluacionJurado)
+                .itemId(UUID.randomUUID())
+                .puntaje(100)
+                .build());
+        testEntityManager.persist(ObservacionItemJuradoJpaEntity.builder()
+                .id(observacion)
+                .evaluacionCuantitativaJuradoId(evaluacionCuantitativaJurado)
+                .descripcion("Sustenta el puntaje otorgado")
+                .build());
+        testEntityManager.flush();
+        testEntityManager.clear();
+        return observacion;
+    }
+
+    private UUID sembrarEvaluacionCuantitativaJurado(String estadoEvaluacion) {
+        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), estadoEvaluacion);
+        UUID evaluacionCuantitativaJurado = UUID.randomUUID();
+        entityManager.createNativeQuery(
+                "INSERT INTO evaluacion_cuantitativa_jurado (id, evaluacion_jurado_id, item_id, puntaje) "
+                        + "VALUES (?, ?, ?, ?)")
+                .setParameter(1, evaluacionCuantitativaJurado).setParameter(2, evaluacionJurado)
+                .setParameter(3, UUID.randomUUID()).setParameter(4, 300)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+        return evaluacionCuantitativaJurado;
+    }
+
     // H2 entrega las columnas uuid de una consulta nativa como byte[] (PostgreSQL las entrega como
     // UUID), asi que aqui se ejercita la consulta real por su columna de texto y el mapeo de los
     // identificadores se cubre en EstadoEvaluacionJuradoJpaMapperTest.
@@ -103,5 +152,110 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     void debeRetornarVacio_cuandoLaEvaluacionJuradoNoExiste() {
         // Act & Assert
         assertThat(adapter.obtenerEstadoBloqueado(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaTrue_cuandoLaEvaluacionEstaFinalizada() {
+        // Arrange
+        UUID evaluacionCuantitativaJurado = sembrarEvaluacionCuantitativaJurado("FINALIZADA");
+
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(evaluacionCuantitativaJurado)).isTrue();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaFalse_cuandoLaEvaluacionNoEstaFinalizada() {
+        // Arrange
+        UUID evaluacionCuantitativaJurado = sembrarEvaluacionCuantitativaJurado("PENDIENTE");
+
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(evaluacionCuantitativaJurado)).isFalse();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaFalse_cuandoLaEvaluacionCuantitativaJuradoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(UUID.randomUUID())).isFalse();
+    }
+
+    @Test
+    void debePersistirElLoteCompletoYLoguear_cuandoSeRegistranTodas() {
+        // Arrange
+        var evaluacion = UUID.randomUUID();
+        var entidades = List.of(
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()));
+
+        // Act
+        adapter.registrarTodas(entidades);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(repository.findAllById(entidades.stream().map(EvaluacionJuradoEntity::id).toList()))
+                .extracting(fila -> fila.getJurado())
+                .containsExactlyInAnyOrderElementsOf(
+                        entidades.stream().map(EvaluacionJuradoEntity::jurado).toList());
+        verify(logger).debug(EvaluacionJuradoKey.LOG_LOTE_GUARDADO, 3);
+    }
+
+    @Test
+    void debeDevolverSoloLosJuradosYaVinculadosALaEvaluacion_cuandoSeConsultan() {
+        // Arrange
+        var evaluacion = UUID.randomUUID();
+        var otraEvaluacion = UUID.randomUUID();
+        var asignado = UUID.randomUUID();
+        var asignadoEnOtra = UUID.randomUUID();
+        var libre = UUID.randomUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, asignado),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), otraEvaluacion, asignadoEnOtra)));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var asignados = adapter.consultarJuradosAsignados(evaluacion, Set.of(asignado, asignadoEnOtra, libre));
+
+        // Assert
+        assertThat(asignados).containsExactly(asignado);
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaPorObservacionTrue_cuandoLaEvaluacionDeLaObservacionEstaFinalizada() {
+        // Arrange
+        var observacion = sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "FINALIZADA"));
+        sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "PENDIENTE"));
+
+        // Act
+        var finalizada = adapter.estaFinalizadaPorObservacion(observacion);
+
+        // Assert
+        assertThat(finalizada).isTrue();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaPorObservacionFalse_cuandoLaEvaluacionDeLaObservacionNoEstaFinalizada() {
+        // Arrange
+        var observacion = sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "PENDIENTE"));
+        sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "FINALIZADA"));
+
+        // Act
+        var finalizada = adapter.estaFinalizadaPorObservacion(observacion);
+
+        // Assert
+        assertThat(finalizada).isFalse();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaPorObservacionFalse_cuandoLaObservacionNoExiste() {
+        // Arrange
+        sembrarObservacion(sembrarEvaluacionJurado(UUID.randomUUID(), "FINALIZADA"));
+
+        // Act
+        var finalizada = adapter.estaFinalizadaPorObservacion(UUID.randomUUID());
+
+        // Assert
+        assertThat(finalizada).isFalse();
     }
 }

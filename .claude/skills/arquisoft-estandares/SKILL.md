@@ -23,6 +23,12 @@ asignar un valor inválido. Helpers por tipo: `ValidatorObjeto` (`noNulo`), `Val
 (`noVacia`, `tamanioMaximo`, `sinDuplicados`). Firma uniforme
 `(valor, …, campo, codigoError, ValidationResult) → boolean`. No existe `DomainValidator`.
 
+Lo que `crear(...)` fija sin recibirlo del llamador (el id, la fecha de alta, el estado inicial) nace
+en un setter privado **sin argumentos** que lo asigna directo: `setId()`, `setFechaAsignado()`,
+`setEstadoInicial()`. Pasarlo desde `crear` como argumento deja una validación de nulidad que nunca
+falla y un código de error que nunca sale, y esconde en la fábrica una decisión que es del agregado.
+Para el estado, el setter se llama `set{Atributo}Inicial()`. Ver `ProyectoGradoDomain.setEstadoInicial()`.
+
 **Recorta antes de validar, y valida el valor recortado** (`var recortado =
 UtilTexto.aplicarTrim(x);`, y `recortado` va a todos los `Validator*` y al campo; referencia
 `AutenticacionDomain.setCorreo`). `correoValido` no aplica trim y `longitudMaxima` mide los espacios,
@@ -46,6 +52,15 @@ las `Rule`s con lo consultado, el `OutputPort` persiste. Las `Rule`s corren en s
 lanza en su violación, así que una regla dependiente **confía en que la anterior ya lanzó** —
 guardarla con un `if` es código muerto. Si la ausencia cambia la conclusión, esa decisión va dentro
 de la `Rule`.
+
+**Todos los `Finder`s de un comando corren antes del `Validator`, y lo que la escritura o el evento
+leen de un `Finder` lo decidió antes una `Rule`.** Un `Finder` consultado después de `validar(...)`
+devuelve su `VACIO` sin lanzar y ya nada lo detiene: se persiste o se publica con campos vacíos, y
+compila y pasa los tests. Una FK o "la réplica no se borra" no reemplazan esa `Rule`: garantizan la
+fila, no lo que devuelve el `Finder` (un id equivocado, un filtro de vigencia, un adaptador que
+cambia). Si un lookup depende de otro, se encadena igual antes del `Validator`: el `VACIO` del primero
+entrega el id por defecto, el segundo devuelve su `VACIO`, y la `Rule` del primero, ordenada antes,
+es la que lanza. Referencia del orden: `AsignarAsesorProyectoGradoUseCaseImpl`.
 
 - **Un `Finder` = una sola llamada a un `OutputPort`.** No encadena `Finder`s, no compara ni deriva
   (`a.equals(b)`, `count > 0`). Combinar fuentes es del `UseCase`; decidir es de una `Rule`.
@@ -165,16 +180,26 @@ La variante N+1 (una lista de `UUID` y un `Finder` por elemento) se colapsa igua
 con `JOIN` dentro del adaptador. **El límite es a las cascadas, no a la cantidad**: varios `Finder`s
 independientes están bien. Cascadas legítimas:
 
-- El segundo lookup es **condicional** y ahorra viajes en el camino corto.
+- El segundo lookup es **condicional** y ahorra viajes en el camino corto. Solo en una lectura o
+  un corte de idempotencia: en un comando nunca se condiciona a la validación (ver *Validator, Rule,
+  Finder*).
 - Los dos `OutputPort` son de **features o contextos distintos** (entre contextos no hay `JOIN`).
 - El identificador intermedio **es un dato que la `Rule` necesita**, no un peldaño.
 
 ## Identificadores y DTOs
 
-Los IDs del body HTTP llegan como `String` y se validan en `Command.crear(...)` con
-`ValidatorUUID.uuidValido(...)`, convirtiendo con `UtilUUID.generarUUIDDesdeTexto` — **nunca con una
-anotación Jakarta**. El `Command` y los `@PathVariable` sí van tipados `UUID`. Ver
-`RegistrarFichaPerfilCommand.java`.
+`Command.crear(...)` y `{Consulta}{Entidad}Query.crear(...)` validan la integridad de **cada dato que
+llega del cliente** —obligatoriedad, longitud contra `{Contexto}Limits` y formato— y acumulan en un
+`ValidationResult` que cierra con `lanzarSiTieneErroresDeEntrada()` (400). El dominio repite esas
+invariantes (422), pero no las reemplaza. Si solo valida el dominio, un payload malformado sale con
+422 en vez de 400 y con un `fieldErrors[]` distinto, y en una consulta, que no construye dominio,
+llega sin validar al repositorio. Compila y pasa los tests igual. La señal es mecánica: cada
+parámetro de `crear` pasa por algún `Validator*` (un opcional, solo si llega). Ver
+`RegistrarFichaPerfilCommand.java` y `ConsultarCategoriasItemCuantitativoJuradoQuery.java`.
+
+Los IDs del body HTTP llegan como `String` y se validan ahí con `ValidatorUUID.uuidValido(...)`,
+convirtiendo con `UtilUUID.generarUUIDDesdeTexto` — **nunca con una anotación Jakarta**. El `Command`
+y los `@PathVariable` sí van tipados `UUID`.
 
 El `RequestDTO` es un `record` **sin ninguna anotación**, y un `{Accion}{Entidad}RequestMapper`
 (`final`, constructor privado, `static toCommand`) llama a `Command.crear(...)`

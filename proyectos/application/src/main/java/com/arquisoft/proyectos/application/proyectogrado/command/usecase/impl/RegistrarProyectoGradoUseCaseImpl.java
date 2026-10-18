@@ -1,6 +1,7 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.usecase.impl;
 
 import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
+import com.arquisoft.proyectos.application.estadoproyectogrado.command.usecase.AsignarEstadoInicialProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.usecase.AsignarEstudiantesProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoDeFichaExisteFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.result.RegistroProyectoGradoResult;
@@ -26,6 +27,7 @@ public class RegistrarProyectoGradoUseCaseImpl implements RegistrarProyectoGrado
     private final ProyectoGradoDeFichaExisteFinder proyectoGradoDeFichaExisteFinder;
     private final CoordinadorPorIdFinder coordinadorPorIdFinder;
     private final RegistrarProyectoGradoValidator validator;
+    private final AsignarEstadoInicialProyectoGradoUseCase asignarEstadoInicialProyectoGradoUseCase;
     private final AsignarEstudiantesProyectoGradoUseCase asignarEstudiantesProyectoGradoUseCase;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
@@ -48,6 +50,8 @@ public class RegistrarProyectoGradoUseCaseImpl implements RegistrarProyectoGrado
         validator.validar(proyecto.getCoordinador(), coordinador);
 
         proyectoGradoOutputPort.registrar(ProyectoGradoMapper.toEntity(proyecto));
+
+        asignarEstadoInicialProyectoGradoUseCase.ejecutar(registro.getEstadoInicial());
 
         asignarEstudiantesProyectoGradoUseCase.ejecutar(registro.getEstudiantes());
 

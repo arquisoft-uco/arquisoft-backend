@@ -24,10 +24,26 @@ public enum RespuestaKey implements ClaveMensaje {
             "solicitudes.aplicacion.respuesta.log.consultando-novedad-asesor-recibidas", 4),
     LOG_CONSULTA_NOVEDAD_ASESOR_RECIBIDAS_COMPLETADA(
             "solicitudes.aplicacion.respuesta.log.consulta-novedad-asesor-recibidas-completada", 3),
+    LOG_CONSULTANDO_CAMBIO_ASESOR_RECIBIDAS(
+            "solicitudes.aplicacion.respuesta.log.consultando-cambio-asesor-recibidas", 4),
+    LOG_CONSULTA_CAMBIO_ASESOR_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-cambio-asesor-recibidas-completada", 3),
+    LOG_CONSULTANDO_AMPLIACION_PLAZO_RECIBIDAS(
+            "solicitudes.aplicacion.respuesta.log.consultando-ampliacion-plazo-recibidas", 4),
+    LOG_CONSULTA_AMPLIACION_PLAZO_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-ampliacion-plazo-recibidas-completada", 3),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_ENVIADAS(
             "solicitudes.aplicacion.respuesta.log.consultando-novedad-coordinador-enviadas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_ENVIADAS_COMPLETADA(
             "solicitudes.aplicacion.respuesta.log.consulta-novedad-coordinador-enviadas-completada", 3),
+    LOG_CONSULTANDO_NOVEDAD_ASESOR_ENVIADAS(
+            "solicitudes.aplicacion.respuesta.log.consultando-novedad-asesor-enviadas", 4),
+    LOG_CONSULTA_NOVEDAD_ASESOR_ENVIADAS_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-novedad-asesor-enviadas-completada", 3),
+    LOG_CONSULTANDO_CAMBIO_ASESOR_ENVIADAS(
+            "solicitudes.aplicacion.respuesta.log.consultando-cambio-asesor-enviadas", 4),
+    LOG_CONSULTA_CAMBIO_ASESOR_ENVIADAS_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-cambio-asesor-enviadas-completada", 3),
     ERROR_ESTADO_RESPUESTA_NO_RESOLUTIVO(
             "solicitudes.dominio.respuesta.error.estado-no-resolutivo", 1),
     LOG_MODIFICANDO_ESTADO("solicitudes.aplicacion.respuesta.log.modificando-estado", 3),

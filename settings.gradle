@@ -84,3 +84,9 @@ include 'biblioteca'
 include 'biblioteca:domain'
 include 'biblioteca:application'
 include 'biblioteca:infrastructure'
+
+// Contexto 12: Mapas de Ruta (planificación del proyecto de grado: fechas, tareas y planes)
+include 'mapas_ruta'
+include 'mapas_ruta:domain'
+include 'mapas_ruta:application'
+include 'mapas_ruta:infrastructure'

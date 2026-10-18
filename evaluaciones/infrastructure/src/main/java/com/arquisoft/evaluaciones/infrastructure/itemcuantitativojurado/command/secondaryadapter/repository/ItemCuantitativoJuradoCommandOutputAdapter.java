@@ -46,4 +46,10 @@ public class ItemCuantitativoJuradoCommandOutputAdapter
         repository.actualizarDescripcion(id, descripcion);
         logger.debug(ItemCuantitativoJuradoKey.LOG_DESCRIPCION_ACTUALIZADA, id);
     }
+
+    @Override
+    public void eliminar(UUID id) {
+        repository.deleteById(id);
+        logger.debug(ItemCuantitativoJuradoKey.LOG_ELIMINADO, id);
+    }
 }
