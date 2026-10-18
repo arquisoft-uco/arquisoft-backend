@@ -71,8 +71,10 @@ separa en dos).
 **3. Client role y roles realm.** Formato `{contexto}:{recurso-kebab}:{accion}`, minúsculas con
 guiones. Roles realm: `coordinador`, `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`,
 `representante-comite`, `estudiante`, `administrador`. **Un client role por endpoint, propio y
-distinto**, para concederlo o revocarlo sin tocar a otros: `grep` en `{Contexto}Authorities` que no
-esté declarado ya. Mismo recurso con otro actor o alcance → calificador en el segmento de recurso
+distinto**, para concederlo o revocarlo sin tocar a otros: `grep` en `{Contexto}Authorities` y en
+`keycloak/realm-arquisoft.json` que no esté declarado ya. Los roles realm que se respondan aquí son
+los que lo componen en el realm (sección 9 y fila de Keycloak en la sección 6). Mismo recurso con
+otro actor o alcance → calificador en el segmento de recurso
 (`fichas:ficha-perfil-asesor:view` vs `fichas:ficha-perfil-coordinador:view`). En recurso anidado,
 el recurso es la entidad afectada (`POST /fichas-perfil/{id}/estudiantes` →
 `fichas:estudiante-ficha-perfil:create`).
@@ -186,6 +188,8 @@ Desde la sección 4 el plan es condicional:
 ### {contexto}/application — `…/application/{feature}/`
 ### {contexto}/infrastructure — `…/infrastructure/{feature}/`
 ### shared:message y catálogo
+### Keycloak — `keycloak/`
+| ✏️ | `realm-arquisoft.json` | Define `{contexto}:{recurso}:{accion}` en `arquisoft-api` y lo compone en `{rol realm}` |
 ### Migración
 
 ## 7. Notas de implementación           ← solo lo que no se deduce de la sección 6
@@ -195,7 +199,7 @@ Desde la sección 4 el plan es condicional:
 | Método | Ruta (sin /api) | Clave de propiedad | Request | Response | HTTP | Client role |
 
 ## 9. Seguridad
-| Client role | Roles realm | Endpoint |
+| Client role | Roles realm que lo componen en `realm-arquisoft.json` | Endpoint |
 {Si hay otro endpoint sobre el mismo recurso: una línea con el role que NO se reutiliza.}
 
 ## 10. Eventos RabbitMQ                 ← solo si 5 = A/B
@@ -229,7 +233,8 @@ Paquetes y sufijos exactos: `arquisoft-arquitectura`. Lo que suele faltar en el 
 
 | Caso | Filas |
 |---|---|
-| Escritura | `Command`, `primaryport/mapper/` (siempre), `Interactor`, `UseCase` (recibe dominio), `Finder`s, `secondaryport/` (`OutputPort` + `entity/` + `mapper/`), `Controller` + `dto/` + `mapper/`, `secondaryadapter/` (`JpaEntity`, `JpaMapper`, `CommandOutputAdapter`, `CommandRepository`), ✏️ `{Contexto}Authorities` |
+| Escritura | `Command`, `primaryport/mapper/` (siempre), `Interactor`, `UseCase` (recibe dominio), `Finder`s, `secondaryport/` (`OutputPort` + `entity/` + `mapper/`), `Controller` + `dto/` + `mapper/`, `secondaryadapter/` (`JpaEntity`, `JpaMapper`, `CommandOutputAdapter`, `CommandRepository`) |
+| Endpoint nuevo (escritura o consulta) | ✏️ `{Contexto}Authorities` (role crudo + SpEL) y ✏️ `keycloak/realm-arquisoft.json` (definición + composite en cada rol realm de la sección 9; `arquisoft-arquitectura` → *Rutas y autorización viven en constantes, no en literales*) |
 | `Validator` | solo si la sección 3 tiene alguna `Rule` |
 | `result/` + `ResponseMapper` | solo si la pregunta 11 fue C |
 | `event/` | solo si la pregunta 5 fue A/B |
@@ -258,8 +263,9 @@ acción necesita*). Sin ese caso, el mapper devuelve el domain directo.
 
 - **Rutas (sección 8):** el path identifica, el body transporta. `POST /padres/{padreId}/hijos`;
   sub-recurso con PK propia sin anidar; identidad compuesta `DELETE /padres/{p}/hijos/{h}`; cambio
-  de referencia `PATCH /padres/{id}/{campo}`. PATCH por defecto (no hay PUT). Sin `/api`. Anota la
-  ruta efectiva y la clave `rutas.{contexto}.{recurso}…`.
+  de referencia `PATCH /padres/{id}/{campo}`. PATCH por defecto (no hay PUT). Sin `/api`. La base es
+  el recurso sin prefijo de contexto (`arquisoft-arquitectura` → *Rutas y autorización viven en
+  constantes*). Anota la ruta efectiva y la clave `rutas.{contexto}.{recurso}…`.
 - **Logs y catálogo:** cada punto de log es entregable de la sección 6 (nivel, clave con aridad,
   línea de catálogo); la estructura por flujo está en `arquisoft-estandares`. Un correo en un log va
   enmascarado y se dice. Sin textos nuevos: "Sin cambios al catálogo de mensajes".
@@ -299,7 +305,7 @@ Solo decisiones de **esta** historia con nombres reales: si un ítem se leería 
 va. Un ítem por decisión tomada en la FASE 3: eventos (o "ninguno"), razón de un estado sin
 notificación, presupuesto de I/O y cascadas justificadas, `Rule`s del `Validator` en orden o "sin
 `Validator`", política de acceso o "ninguna", cortes sin excepción, objeto de acción, retorno y
-entrada, encadenamiento, client role nuevo y el que no se reutiliza, réplica o consulta síncrona,
+entrada, encadenamiento, client role nuevo con los roles realm que lo componen y el que no se reutiliza, réplica o consulta síncrona,
 vigencia (`eliminado_en`) de cada consulta a réplica, migración y constantes del MER, y el commit
 sugerido `feat({contexto}): {descripción}`.
 

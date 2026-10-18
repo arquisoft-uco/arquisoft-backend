@@ -9,4 +9,7 @@ public interface AsesorProyectoGradoQueryRepository
         extends QueryRepository<AsesorProyectoGradoJpaQueryEntity, UUID> {
 
     List<AsesorProyectoGradoJpaQueryEntity> findByProyectoGradoIdOrderByFechaAsignadoDescIdDesc(UUID proyectoGradoId);
+
+    boolean existsByProyectoGradoIdAndAsesorIdAndEstadoAsesorAndActualTrue(
+            UUID proyectoGradoId, UUID asesorId, String estadoAsesor);
 }

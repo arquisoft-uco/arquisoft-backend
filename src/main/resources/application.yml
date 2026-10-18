@@ -24,6 +24,8 @@ spring:
       - "classpath:rutas-evaluaciones.yml"
       - "classpath:rutas-solicitudes.yml"
       - "classpath:rutas-artefactos.yml"
+      - "classpath:rutas-repositorio-artefactos.yml"
+      - "classpath:rutas-mapas-ruta.yml"
   banner:
     location: classpath:banner.txt
   application:
@@ -195,16 +197,24 @@ spring.mail:
           enable: ${MAIL_SMTP_STARTTLS:false}
 
 # ==================== MINIO (Object Storage) ====================
-# Presigned URLs permiten subir/descargar archivos directamente desde el cliente,
-# sin que el backend actúe como proxy — conserva recursos en servidores limitados.
+# El archivo nunca pasa por el backend: este firma un formulario POST con politica y el navegador sube
+# directo a MinIO. endpoint-publico es el host que alcanza el navegador (el endpoint del backend, p. ej.
+# http://minio:9000 en compose, no); la firma de un POST con politica no cubre el host.
 minio:
   endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  endpoint-publico: ${MINIO_PUBLIC_ENDPOINT:http://localhost:9000}
   access-key: ${MINIO_ACCESS_KEY:minioadmin}
   secret-key: ${MINIO_SECRET_KEY:minioadmin}
   presigned-url-expiry:
-    upload-minutes: ${MINIO_UPLOAD_EXPIRY_MINUTES:15}
-    download-minutes: ${MINIO_DOWNLOAD_EXPIRY_MINUTES:15}
-  trust-self-signed-certificates: ${MINIO_TRUST_SELF_SIGNED_CERTS:false}
+    formulario-carga-minutos: ${MINIO_UPLOAD_EXPIRY_MINUTES:15}
+
+# ==================== REPOSITORIO DE ARTEFACTOS (almacenamiento) ====================
+# El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (5 MB); los 50 MB
+# de ADR-004 son una cuota total por proyecto de grado en artefactos, no un limite por archivo.
+repositorio-artefactos:
+  almacenamiento:
+    bucket: ${REPOSITORIO_ARTEFACTOS_BUCKET:repositorio-artefactos}
+    tamano-maximo-bytes: ${REPOSITORIO_ARTEFACTOS_TAMANO_MAXIMO_BYTES:5242880}
 
 # ==================== DATASOURCES POR BOUNDED CONTEXT ====================
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
@@ -320,6 +330,17 @@ datasource:
       connection-timeout: 20000
       pool-name: HikariPool-Biblioteca
 
+  mapas_ruta:
+    url: ${DB_MAPAS_RUTA_URL:jdbc:postgresql://localhost:5432/mapas_ruta}
+    username: ${DB_MAPAS_RUTA_USERNAME:arquisoft_user}
+    password: ${DB_MAPAS_RUTA_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-MapasRuta
+
 # ==================== KEYCLOAK ====================
 # Propiedades propias para KeycloakAuthAdapter y SecurityConfig.
 # No se usa el adapter keycloak-spring-boot-adapter (removido en SB3+).
@@ -402,7 +423,7 @@ logging:
   # binding relajado de Spring Boot solo llega a nivel de PAQUETE, nunca de clase, asi que sin
   # grupos no hay forma de tocar `org.hibernate.SQL` y `org.hibernate.type` a la vez desde .env.
   group:
-    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones, com.arquisoft.proyectos, com.arquisoft.solicitudes, com.arquisoft.biblioteca, com.arquisoft.artefactos
+    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones, com.arquisoft.proyectos, com.arquisoft.solicitudes, com.arquisoft.biblioteca, com.arquisoft.repositorio_artefactos, com.arquisoft.artefactos, com.arquisoft.mapas_ruta
     plataforma: com.arquisoft.shared
     datos: org.hibernate.SQL, org.hibernate.type
     seguridad: org.springframework.security

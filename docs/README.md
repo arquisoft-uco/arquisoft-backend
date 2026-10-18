@@ -45,7 +45,7 @@ archivo de configuración.
 ## Almacenamiento de archivos
 
 El proyecto usa **MinIO** (`shared:minio`) para almacenamiento de objetos — no Nextcloud. Hoy
-lo consume `fichas` para la guía de elaboración de trabajos de grado (`MinioGuiaController`).
+lo consume `repositorio_artefactos` (subida de plantillas por formulario POST firmado).
 
 ---
 

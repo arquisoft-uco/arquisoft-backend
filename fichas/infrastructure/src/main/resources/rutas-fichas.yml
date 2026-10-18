@@ -18,6 +18,7 @@ rutas:
       tipos-item: /tipos-item
       estados-evaluacion: /estados-evaluacion
       estados-revision: /estados-revision
+      estados-observacion-revision: /estados-observacion-revision
       items: /{fichaPerfilId}/items
       items-estudiante: /{fichaPerfilId}/items/estudiante
       items-representante: /{fichaPerfilId}/items/representante
@@ -39,6 +40,7 @@ rutas:
       evaluaciones-representante: /{fichaPerfilId}/evaluaciones/representante
       evaluaciones-estudiante: /{fichaPerfilId}/evaluaciones/estudiante
       evaluaciones-coordinador: /{fichaPerfilId}/evaluaciones/coordinador
+      evaluaciones-asesor: /evaluaciones/asesor
       estudiante: /estudiante
       evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
       evaluacion-observaciones-estudiante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/estudiante
@@ -48,9 +50,3 @@ rutas:
       observaciones-evaluacion-coordinador: /{fichaPerfilId}/observaciones-evaluacion/coordinador
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
-    minio-guia:
-      base: /fichas/minio/guia
-      upload-url: /upload-url
-      download-url: /download-url
-      existe: /existe
-      objeto: /objeto

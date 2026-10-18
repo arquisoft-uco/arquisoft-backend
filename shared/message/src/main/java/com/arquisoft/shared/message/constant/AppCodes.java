@@ -60,9 +60,10 @@ public final class AppCodes {
 
         private Minio() {}
 
-        public static final String URL_CARGA_FALLIDA = "MINIO_URL_CARGA_FALLIDA";
-        public static final String URL_DESCARGA_FALLIDA = "MINIO_URL_DESCARGA_FALLIDA";
+        public static final String FORMULARIO_CARGA_FALLIDO = "MINIO_FORMULARIO_CARGA_FALLIDO";
+        public static final String CONSULTA_FALLIDA = "MINIO_CONSULTA_FALLIDA";
+        public static final String LECTURA_FALLIDA = "MINIO_LECTURA_FALLIDA";
+        public static final String COPIA_FALLIDA = "MINIO_COPIA_FALLIDA";
         public static final String ELIMINACION_FALLIDA = "MINIO_ELIMINACION_FALLIDA";
-        public static final String VERIFICACION_FALLIDA = "MINIO_VERIFICACION_FALLIDA";
     }
 }

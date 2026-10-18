@@ -21,7 +21,10 @@ public final class SolicitudEstadoModificadoEvent extends DomainEvent {
                     "SolicitudNovedadCoordinadorEstadoModificadoEvent"),
             TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, new IdentidadEvento(
                     EventTopics.Solicitudes.NOVEDAD_ASESOR_ESTADO_MODIFICADO,
-                    "SolicitudNovedadAsesorEstadoModificadoEvent"));
+                    "SolicitudNovedadAsesorEstadoModificadoEvent"),
+            TipoSolicitud.CAMBIO_DE_ASESOR, new IdentidadEvento(
+                    EventTopics.Solicitudes.CAMBIO_ASESOR_ESTADO_MODIFICADO,
+                    "SolicitudCambioAsesorEstadoModificadoEvent"));
 
     private final UUID solicitudId;
     private final String nuevoEstado;

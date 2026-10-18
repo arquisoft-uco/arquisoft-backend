@@ -1,6 +1,7 @@
 package com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.query.secondaryadapter.repository;
 
 import com.arquisoft.proyectos.application.estudianteproyectogrado.query.readmodel.CompaneroProyectoGradoReadModel;
+import com.arquisoft.proyectos.application.estudianteproyectogrado.query.readmodel.EstudianteAsesoradoProyectoGradoReadModel;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.query.readmodel.EstudianteProyectoGradoReadModel;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.query.secondaryport.EstudianteProyectoGradoQueryOutputPort;
 import com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.query.secondaryadapter.repository.mapper.EstudianteProyectoGradoQueryMapper;
@@ -27,6 +28,13 @@ public class EstudianteProyectoGradoQueryOutputAdapter implements EstudianteProy
     public List<CompaneroProyectoGradoReadModel> consultarCompanerosVigentesPorProyecto(UUID proyectoGrado) {
         return repository.findByProyectoGradoIdAndVigenteTrueOrderByNombreAscIdAsc(proyectoGrado).stream()
                 .map(EstudianteProyectoGradoQueryMapper::toCompaneroReadModel)
+                .toList();
+    }
+
+    @Override
+    public List<EstudianteAsesoradoProyectoGradoReadModel> consultarAsesoradosVigentesPorProyecto(UUID proyectoGrado) {
+        return repository.findByProyectoGradoIdAndVigenteTrueOrderByNombreAscIdAsc(proyectoGrado).stream()
+                .map(EstudianteProyectoGradoQueryMapper::toAsesoradoReadModel)
                 .toList();
     }
 }

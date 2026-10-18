@@ -23,15 +23,6 @@ class EstadoRevisionAsesorQueryOutputAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new EstadoRevisionAsesorQueryOutputAdapter(repository);
-        entityManager.createNativeQuery("""
-                CREATE TABLE IF NOT EXISTS estado_revision_asesor (
-                    id VARCHAR(60) NOT NULL,
-                    nombre VARCHAR(60) NOT NULL,
-                    descripcion VARCHAR(300) NOT NULL,
-                    orden INTEGER NOT NULL,
-                    PRIMARY KEY (id))
-                """).executeUpdate();
-        entityManager.flush();
     }
 
     private void sembrarEstado(String id, String nombre, String descripcion, int orden) {

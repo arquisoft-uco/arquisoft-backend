@@ -89,7 +89,9 @@ escrituras) → `OutputPort` + `entity/` + `secondaryport/mapper/` → `Finder`(
 EXISTENTE" modifica el existente) → `JpaEntity` + mapper + `CommandOutputAdapter`/`CommandRepository`
 → si es lectura, la cadena de `query/` de `arquisoft-arquitectura` → *infrastructure* → `Consumer`
 AMQP si el contexto consume eventos → `{Contexto}Authorities` (client role nuevo + su expresión) →
-migración Flyway.
+`keycloak/realm-arquisoft.json` (definición del role + composite en cada rol realm de la sección 9;
+`arquisoft-arquitectura` → *Rutas y autorización viven en constantes, no en literales*),
+comprobando que el archivo sigue siendo JSON válido → migración Flyway.
 
 ### Señales de que el plan está mal — repórtalas como ambigüedad, no las arregles
 

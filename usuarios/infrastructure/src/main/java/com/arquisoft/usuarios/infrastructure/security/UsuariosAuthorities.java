@@ -15,6 +15,7 @@ public final class UsuariosAuthorities {
     public static final String ASESOR_FICHA_DELETE = "usuarios:asesor-ficha:delete";
     public static final String COORDINADOR_DELETE = "usuarios:coordinador:delete";
     public static final String COORDINADOR_VIGENTE_VIEW = "usuarios:coordinador-vigente:view";
+    public static final String JURADO_VIGENTE_VIEW = "usuarios:jurado-vigente:view";
     public static final String REPRESENTANTE_COMITE_DELETE = "usuarios:representante-comite:delete";
     public static final String REPRESENTANTE_COMITE_VIGENTE_VIEW = "usuarios:representante-comite-vigente:view";
     public static final String ESTUDIANTE_VIGENTE_VIEW = "usuarios:estudiante-vigente:view";
@@ -23,6 +24,7 @@ public final class UsuariosAuthorities {
     public static final String ESTADO_USUARIO_VIEW = "usuarios:estado-usuario:view";
     public static final String ADMINISTRADOR_DELETE = "usuarios:administrador:delete";
     public static final String BIBLIOTECARIO_DELETE = "usuarios:bibliotecario:delete";
+    public static final String JURADO_DELETE = "usuarios:jurado:delete";
 
     public static final class Expresiones {
 
@@ -64,6 +66,9 @@ public final class UsuariosAuthorities {
         public static final String HAS_COORDINADOR_VIGENTE_VIEW =
                 HAS_AUTHORITY_INICIO + COORDINADOR_VIGENTE_VIEW + HAS_AUTHORITY_FIN;
 
+        public static final String HAS_JURADO_VIGENTE_VIEW =
+                HAS_AUTHORITY_INICIO + JURADO_VIGENTE_VIEW + HAS_AUTHORITY_FIN;
+
         public static final String HAS_REPRESENTANTE_COMITE_DELETE =
                 HAS_AUTHORITY_INICIO + REPRESENTANTE_COMITE_DELETE + HAS_AUTHORITY_FIN;
 
@@ -87,5 +92,8 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_BIBLIOTECARIO_DELETE =
                 HAS_AUTHORITY_INICIO + BIBLIOTECARIO_DELETE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_JURADO_DELETE =
+                HAS_AUTHORITY_INICIO + JURADO_DELETE + HAS_AUTHORITY_FIN;
     }
 }

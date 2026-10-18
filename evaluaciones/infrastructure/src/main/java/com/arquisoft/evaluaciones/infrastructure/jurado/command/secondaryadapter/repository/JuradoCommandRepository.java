@@ -26,4 +26,8 @@ public interface JuradoCommandRepository extends JpaRepository<JuradoJpaEntity, 
     int reactivar(@Param("id") UUID id, @Param("identificador") String identificador,
                   @Param("nombre") String nombre, @Param("email") String email,
                   @Param("ocurridoEn") Instant ocurridoEn);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE JuradoJpaEntity j SET j.eliminadoEn = :ocurridoEn, j.ocurridoEn = :ocurridoEn WHERE j.id = :id")
+    int eliminarLogica(@Param("id") UUID id, @Param("ocurridoEn") Instant ocurridoEn);
 }

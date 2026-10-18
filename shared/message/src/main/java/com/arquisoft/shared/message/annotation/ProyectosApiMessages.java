@@ -108,12 +108,32 @@ public final class ProyectosApiMessages {
                 "Proyecto de grado no encontrado o estudiante no vinculado a él";
     }
 
+    public static final class ConsultaEstadoProyectoGrado {
+
+        private ConsultaEstadoProyectoGrado() {}
+
+        public static final String TAG_NAME = "Consulta de Estados de Proyecto de Grado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta del historial de estados de un proyecto de grado";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar los estados del proyecto de grado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Permite al estudiante vinculado a un proyecto de grado consultar el historial de estados por los "
+                        + "que ha pasado, ordenado por fecha de actualización de la más reciente a la más antigua";
+        public static final String CONSULTAR_RESP_200 = "Historial de estados del proyecto de grado";
+        public static final String CONSULTAR_RESP_400 = "Identificador de proyecto de grado inválido";
+        public static final String CONSULTAR_RESP_403 =
+                "Sin permiso para consultar los estados de un proyecto de grado";
+        public static final String CONSULTAR_RESP_422 =
+                "Proyecto de grado no encontrado o estudiante no vinculado a él";
+    }
+
     public static final class ConsultaProyectoGrado {
 
         private ConsultaProyectoGrado() {}
 
         public static final String TAG_NAME = "Consulta de Proyectos de Grado";
-        public static final String TAG_DESCRIPTION = "Consulta de los proyectos de grado de un coordinador";
+        public static final String TAG_DESCRIPTION = "Consulta de los proyectos de grado de un coordinador, de un estudiante o de un asesor";
 
         public static final String CONSULTAR_SUMMARY = "Consultar los proyectos de grado del coordinador";
         public static final String CONSULTAR_DESCRIPTION =
@@ -122,6 +142,39 @@ public final class ProyectosApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de proyectos de grado del coordinador";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
         public static final String CONSULTAR_RESP_403 = "Sin permiso para consultar los proyectos de grado";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar los proyectos de grado del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Permite al estudiante consultar los proyectos de grado a los que está vinculado, "
+                        + "con su ficha de perfil, título y estado actual; lista vacía si no pertenece a ninguno";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Lista de proyectos de grado del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador del estudiante inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
+                "Sin permiso para consultar los proyectos de grado del estudiante";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar los proyectos de grado que asesora";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Permite al asesor consultar, con paginación, filtros por título y estado del proyecto y orden "
+                        + "por título, los proyectos de grado en los que tiene una asignación vigente; "
+                        + "página vacía si no asesora ninguno";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de proyectos de grado que asesora";
+        public static final String CONSULTAR_ASESOR_RESP_400 =
+                "Identificador del asesor, filtro, orden o paginación inválidos";
+        public static final String CONSULTAR_ASESOR_RESP_403 =
+                "Sin permiso para consultar los proyectos de grado que asesora";
+
+        public static final String CONSULTAR_DETALLE_ASESOR_SUMMARY =
+                "Consultar la información de un proyecto de grado que asesora";
+        public static final String CONSULTAR_DETALLE_ASESOR_DESCRIPTION =
+                "Permite al asesor consultar la ficha de perfil, el título y el estado actual de un proyecto "
+                        + "de grado en el que tiene una asignación vigente";
+        public static final String CONSULTAR_DETALLE_ASESOR_RESP_200 = "Información del proyecto de grado";
+        public static final String CONSULTAR_DETALLE_ASESOR_RESP_400 =
+                "Identificador del proyecto de grado o del asesor inválido";
+        public static final String CONSULTAR_DETALLE_ASESOR_RESP_403 =
+                "Sin permiso para consultar la información del proyecto de grado que asesora";
+        public static final String CONSULTAR_DETALLE_ASESOR_RESP_422 =
+                "El proyecto de grado no existe o el asesor no lo tiene asignado";
     }
 
     public static final class ConsultaEstudianteProyectoGrado {
@@ -154,5 +207,18 @@ public final class ProyectosApiMessages {
                 "Sin permiso para consultar los compañeros de un proyecto de grado";
         public static final String CONSULTAR_COMPANEROS_RESP_422 =
                 "Proyecto de grado no encontrado o estudiante no vinculado a él";
+
+        public static final String CONSULTAR_ASESORADOS_SUMMARY =
+                "Consultar los estudiantes de un proyecto de grado que asesora";
+        public static final String CONSULTAR_ASESORADOS_DESCRIPTION =
+                "Permite al asesor asignado a un proyecto de grado consultar el identificador, nombre y "
+                        + "correo de los estudiantes vigentes del proyecto, ordenados por nombre";
+        public static final String CONSULTAR_ASESORADOS_RESP_200 = "Estudiantes vigentes del proyecto de grado";
+        public static final String CONSULTAR_ASESORADOS_RESP_400 =
+                "Identificador de proyecto de grado o de asesor inválido";
+        public static final String CONSULTAR_ASESORADOS_RESP_403 =
+                "Sin permiso para consultar los estudiantes de un proyecto de grado asesorado";
+        public static final String CONSULTAR_ASESORADOS_RESP_422 =
+                "Proyecto de grado no encontrado o asesor sin asignación vigente en él";
     }
 }

@@ -8,15 +8,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class MinioProperties {
 
     private String endpoint;
+    private String endpointPublico;
     private String accessKey;
     private String secretKey;
     private Expiry presignedUrlExpiry = new Expiry();
-    // Permite certificados autofirmados. Usar solo en dev/staging; en prod usar un cert de CA válida.
-    private boolean trustSelfSignedCertificates = false;
 
     @Data
     public static class Expiry {
-        private int uploadMinutes = 15;
-        private int downloadMinutes = 15;
+        private int formularioCargaMinutos = 15;
     }
 }

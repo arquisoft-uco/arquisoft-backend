@@ -21,6 +21,13 @@ public final class EvaluacionesFields {
         public static final String DESCRIPCION = "descripcion";
     }
 
+    public static final class CategoriaItemCuantitativoAsesor {
+
+        private CategoriaItemCuantitativoAsesor() {}
+
+        public static final String NOMBRE = "nombre";
+    }
+
     public static final class CategoriaItemCuantitativoJurado {
 
         private CategoriaItemCuantitativoJurado() {}
@@ -51,6 +58,20 @@ public final class EvaluacionesFields {
     public static final class RegistroEvaluacionesCualitativasJurado {
 
         private RegistroEvaluacionesCualitativasJurado() {}
+
+        public static final String EVALUACIONES = "evaluaciones";
+    }
+
+    public static final class OmisionEvaluacionesCualitativasJurado {
+
+        private OmisionEvaluacionesCualitativasJurado() {}
+
+        public static final String EVALUACIONES = "evaluaciones";
+    }
+
+    public static final class OmisionEvaluacionesCuantitativasJurado {
+
+        private OmisionEvaluacionesCuantitativasJurado() {}
 
         public static final String EVALUACIONES = "evaluaciones";
     }
@@ -104,6 +125,7 @@ public final class EvaluacionesFields {
 
         private ObservacionItemJurado() {}
 
+        public static final String ID = "id";
         public static final String EVALUACION_CUANTITATIVA_JURADO = "evaluacionCuantitativaJurado";
         public static final String DESCRIPCION = "descripcion";
     }
