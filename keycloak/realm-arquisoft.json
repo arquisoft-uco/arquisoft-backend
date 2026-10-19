@@ -321,7 +321,8 @@
               "solicitudes:respuesta-novedad-asesor:create",
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
-              "proyectos:proyecto-grado-asesor-detalle:view"
+              "proyectos:proyecto-grado-asesor-detalle:view",
+              "artefactos:estado-revision-asesor:view"
             ]
           }
         },
@@ -1206,6 +1207,15 @@
         {
           "id": "9a5395ad-5e88-4f8c-ac4d-346814dc7e33",
           "name": "artefactos:revision-asesor-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "031f0856-1ba9-432b-862c-c54732205b01",
+          "name": "artefactos:estado-revision-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,

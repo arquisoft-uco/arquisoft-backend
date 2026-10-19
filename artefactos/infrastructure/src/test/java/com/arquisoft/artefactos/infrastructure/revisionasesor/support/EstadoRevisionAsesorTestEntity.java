@@ -16,6 +16,12 @@ public class EstadoRevisionAsesorTestEntity {
     @Column(name = "nombre")
     private String nombre;
 
+    @Column(name = "descripcion", length = 300)
+    private String descripcion;
+
+    @Column(name = "orden")
+    private Integer orden;
+
     protected EstadoRevisionAsesorTestEntity() {}
 
     public EstadoRevisionAsesorTestEntity(String id, String nombre) {
