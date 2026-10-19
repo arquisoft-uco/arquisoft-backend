@@ -7,4 +7,4 @@ rutas:
       base: /artefactos/revisiones-asesor
       estudiante: /estudiante
     estados-revision-asesor:
-      base: /artefactos/estados-revision-asesor
+      base: /estados-revision-asesor

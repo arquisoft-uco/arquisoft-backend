@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         ConsultarEstadosRevisionAsesorControllerTest.TestSecurityConfig.class})
 class ConsultarEstadosRevisionAsesorControllerTest {
 
-    private static final String RUTA = "/artefactos/estados-revision-asesor";
+    private static final String RUTA = "/estados-revision-asesor";
 
     @TestConfiguration
     @EnableWebSecurity
