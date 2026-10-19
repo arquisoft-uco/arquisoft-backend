@@ -322,7 +322,8 @@
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
               "proyectos:proyecto-grado-asesor-detalle:view",
-              "artefactos:estado-revision-asesor:view"
+              "artefactos:estado-revision-asesor:view",
+              "evaluaciones:evaluacion-asesor:view"
             ]
           }
         },
@@ -1729,6 +1730,15 @@
         {
           "id": "1d0d09e1-d20e-4790-b725-6b16528af494",
           "name": "evaluaciones:evaluacion-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7c2e5a1d-3b9f-4d6a-8e41-5f0a9c3d2b17",
+          "name": "evaluaciones:evaluacion-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,

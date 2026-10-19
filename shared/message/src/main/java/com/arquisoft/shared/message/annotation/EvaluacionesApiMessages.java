@@ -177,6 +177,11 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de evaluaciones";
         public static final String CONSULTAR_RESP_400 =
                 "El filtro, el orden o la paginación solicitados no son aceptados";
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar evaluaciones (asesor)";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Consulta de forma paginada las evaluaciones asociadas al asesor autenticado con su entregable y "
+                        + "su estado, con filtro por estado, proyecto o identificador del entregable y orden por "
+                        + "proyecto (por defecto, ascendente) o estado";
     }
 
     public static final class EvaluacionJurado {

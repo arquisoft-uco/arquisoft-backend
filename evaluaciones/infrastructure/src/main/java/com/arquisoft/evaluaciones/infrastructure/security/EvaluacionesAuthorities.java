@@ -69,6 +69,9 @@ public final class EvaluacionesAuthorities {
     public static final String EVALUACION_COORDINADOR_VIEW =
             "evaluaciones:evaluacion-coordinador:view";
 
+    public static final String EVALUACION_ASESOR_VIEW =
+            "evaluaciones:evaluacion-asesor:view";
+
     public static final class Expresiones {
 
         private Expresiones() {}
@@ -141,5 +144,8 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_EVALUACION_COORDINADOR_VIEW =
                 HAS_AUTHORITY_INICIO + EVALUACION_COORDINADOR_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_EVALUACION_ASESOR_VIEW =
+                HAS_AUTHORITY_INICIO + EVALUACION_ASESOR_VIEW + HAS_AUTHORITY_FIN;
     }
 }
