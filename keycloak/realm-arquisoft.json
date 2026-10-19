@@ -255,6 +255,7 @@
               "solicitudes:solicitud-novedad-asesor:delete",
               "solicitudes:respuesta-novedad-coordinador-recibida:view",
               "fichas:ficha-perfil-estudiante:view",
+              "fichas:estado-observacion-revision-estudiante:view",
               "solicitudes:solicitud-novedad-coordinador-enviada:view",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "solicitudes:solicitud-novedad-asesor-enviada:view",
@@ -1711,6 +1712,15 @@
         {
           "id": "c6c5d200-af53-4f15-baf0-4e297a9875e0",
           "name": "fichas:estado-observacion-revision:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7b1e4f52-3c9a-4d68-a0e5-9f2d6c8b1a34",
+          "name": "fichas:estado-observacion-revision-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
