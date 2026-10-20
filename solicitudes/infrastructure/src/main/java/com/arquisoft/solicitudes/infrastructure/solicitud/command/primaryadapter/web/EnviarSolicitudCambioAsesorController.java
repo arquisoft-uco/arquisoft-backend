@@ -5,11 +5,10 @@ import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.SolicitudesApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.EnviarSolicitudCambioAsesorInteractor;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.dto.EnviarSolicitudCambioAsesorRequestDTO;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.dto.EnviarSolicitudCambioAsesorResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.mapper.EnviarSolicitudCambioAsesorRequestMapper;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,9 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +34,6 @@ public class EnviarSolicitudCambioAsesorController {
     private final EnviarSolicitudCambioAsesorInteractor enviarSolicitudCambioAsesorInteractor;
 
     @PostMapping("${rutas.solicitudes.solicitud.cambio-asesor:/cambio-asesor}")
-    @PreAuthorize(SolicitudesAuthorities.Expresiones.HAS_SOLICITUD_CAMBIO_ASESOR_CREATE)
     @Operation(
             summary = SolicitudesApiMessages.Solicitud.ENVIAR_CAMBIO_ASESOR_SUMMARY,
             description = SolicitudesApiMessages.Solicitud.ENVIAR_CAMBIO_ASESOR_DESCRIPTION,
@@ -60,9 +55,9 @@ public class EnviarSolicitudCambioAsesorController {
     })
     public ResponseEntity<EnviarSolicitudCambioAsesorResponseDTO> enviar(
             @RequestBody EnviarSolicitudCambioAsesorRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var remitenteUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var remitenteUsuario = identidad.id();
 
         var id = enviarSolicitudCambioAsesorInteractor.ejecutar(
                 EnviarSolicitudCambioAsesorRequestMapper.toCommand(request, remitenteUsuario));
