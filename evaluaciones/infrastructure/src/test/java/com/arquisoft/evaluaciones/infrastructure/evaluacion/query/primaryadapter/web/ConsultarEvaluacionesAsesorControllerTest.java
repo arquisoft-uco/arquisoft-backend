@@ -3,7 +3,6 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacion.query.primaryadapte
 import com.arquisoft.evaluaciones.application.evaluacion.query.primaryport.interactor.ConsultarEvaluacionesAsesorInteractor;
 import com.arquisoft.evaluaciones.application.evaluacion.query.primaryport.model.ConsultarEvaluacionesAsesorQuery;
 import com.arquisoft.evaluaciones.application.evaluacion.query.readmodel.EvaluacionReadModel;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.query.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
@@ -18,10 +17,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -50,7 +47,6 @@ class ConsultarEvaluacionesAsesorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -78,8 +74,7 @@ class ConsultarEvaluacionesAsesorControllerTest {
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDelAsesor(String sub) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(token -> token.subject(sub))
-                .authorities(new SimpleGrantedAuthority(EvaluacionesAuthorities.EVALUACION_ASESOR_VIEW));
+                .jwt(token -> token.subject(sub));
     }
 
     @Test
@@ -169,13 +164,4 @@ class ConsultarEvaluacionesAsesorControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    void debeRetornar403_cuandoSoloTieneElClientRoleDelCoordinador() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        EvaluacionesAuthorities.EVALUACION_COORDINADOR_VIEW))))
-                .andExpect(status().isForbidden());
-    }
 }

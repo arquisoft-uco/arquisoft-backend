@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.evaluacion.query.primaryport.inter
 import com.arquisoft.evaluaciones.infrastructure.evaluacion.query.primaryadapter.web.dto.EvaluacionResponseDTO;
 import com.arquisoft.evaluaciones.infrastructure.evaluacion.query.primaryadapter.web.mapper.ConsultarEvaluacionesAsesorRequestMapper;
 import com.arquisoft.evaluaciones.infrastructure.evaluacion.query.primaryadapter.web.mapper.EvaluacionResponseMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -22,7 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,7 +39,6 @@ public class ConsultarEvaluacionesAsesorController {
     private final ConsultarEvaluacionesAsesorInteractor consultarEvaluacionesAsesorInteractor;
 
     @PostMapping("${rutas.evaluaciones.evaluacion.asesor:/asesor}")
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_EVALUACION_ASESOR_VIEW)
     @Operation(
             summary = EvaluacionesApiMessages.Evaluacion.CONSULTAR_ASESOR_SUMMARY,
             description = EvaluacionesApiMessages.Evaluacion.CONSULTAR_ASESOR_DESCRIPTION,
