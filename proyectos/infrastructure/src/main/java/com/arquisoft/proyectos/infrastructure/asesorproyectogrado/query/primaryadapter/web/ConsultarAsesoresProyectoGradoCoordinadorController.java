@@ -4,12 +4,11 @@ import com.arquisoft.proyectos.application.asesorproyectogrado.query.primaryport
 import com.arquisoft.proyectos.infrastructure.asesorproyectogrado.query.primaryadapter.web.dto.AsesorProyectoGradoResponseDTO;
 import com.arquisoft.proyectos.infrastructure.asesorproyectogrado.query.primaryadapter.web.mapper.ConsultarAsesoresProyectoGradoCoordinadorRequestMapper;
 import com.arquisoft.proyectos.infrastructure.asesorproyectogrado.query.primaryadapter.web.mapper.AsesorProyectoGradoResponseMapper;
-import com.arquisoft.proyectos.infrastructure.security.ProyectosAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ProyectosApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,9 +18,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +36,6 @@ public class ConsultarAsesoresProyectoGradoCoordinadorController {
     private final ConsultarAsesoresProyectoGradoCoordinadorInteractor interactor;
 
     @GetMapping("${rutas.proyectos.proyectos-grado.asesores:/{proyectoGradoId}/asesores}")
-    @PreAuthorize(ProyectosAuthorities.Expresiones.HAS_ASESOR_PROYECTO_GRADO_COORDINADOR_VIEW)
     @Operation(
             summary = ProyectosApiMessages.ConsultaAsesorProyectoGrado.CONSULTAR_SUMMARY,
             description = ProyectosApiMessages.ConsultaAsesorProyectoGrado.CONSULTAR_DESCRIPTION,
@@ -63,9 +58,9 @@ public class ConsultarAsesoresProyectoGradoCoordinadorController {
     })
     public ResponseEntity<List<AsesorProyectoGradoResponseDTO>> consultarAsesores(
             @PathVariable UUID proyectoGradoId,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var coordinador = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var coordinador = identidad.id();
 
         var query = ConsultarAsesoresProyectoGradoCoordinadorRequestMapper.toQuery(proyectoGradoId, coordinador);
 
