@@ -17,12 +17,13 @@ import java.util.Optional;
 public class JwtTokenOutputAdapter implements ValidacionTokenOutputPort {
 
     private final JwtDecoder jwtDecoder;
+    private final JwtIdentidadMapper jwtIdentidadMapper;
     private final AppLogger logger;
 
     @Override
     public Optional<IdentidadProveedor> extraerIdentidad(String token) {
         try {
-            return Optional.of(JwtIdentidadMapper.toModel(jwtDecoder.decode(token)));
+            return Optional.of(jwtIdentidadMapper.toModel(jwtDecoder.decode(token)));
         } catch (JwtException e) {
             logger.warn(TokenKey.LOG_VALIDACION_FALLIDA, e.getMessage());
             return Optional.empty();

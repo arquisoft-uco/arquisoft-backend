@@ -4,7 +4,7 @@ import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.seguridad.application.auth.command.primaryport.interactor.RefrescarTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.primaryport.model.RefrescarTokenCommand;
 import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
-import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
+import com.arquisoft.seguridad.infrastructure.filter.JwtListaNegraFilter;
 import com.arquisoft.seguridad.infrastructure.filter.LimitadorSolicitudesFilter;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = RefrescarTokenController.class,
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
-                classes = {JwtBlacklistFilter.class, LimitadorSolicitudesFilter.class}))
+                classes = {JwtListaNegraFilter.class, LimitadorSolicitudesFilter.class}))
 @Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class, SeguridadWebTestConfig.class, AppLoggerConfig.class})
 class RefrescarTokenControllerTest {
 

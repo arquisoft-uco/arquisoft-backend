@@ -1,9 +1,13 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.jwt;
 
+import com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.jwt.mapper.JwtIdentidadMapper;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import com.arquisoft.shared.logger.AppLogger;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -28,8 +32,17 @@ class JwtTokenOutputAdapterTest {
     @Mock
     private AppLogger logger;
 
-    @InjectMocks
+    private static final String ISSUER = "https://idp.example.com/realms/test";
+
     private JwtTokenOutputAdapter jwtTokenAdapter;
+
+    @BeforeEach
+    void crearAdaptador() {
+        var emisor = new AutenticacionProperties.Emisor("legado", true, ISSUER, "", List.of(), ModoAutorizacion.ROLE_TABLE,
+                true, new ClaimsIdentidad("sub", "email", "preferred_username", "name", "realm_access.roles", ""));
+        jwtTokenAdapter = new JwtTokenOutputAdapter(jwtDecoder,
+                new JwtIdentidadMapper(new AutenticacionProperties(List.of(emisor))), logger);
+    }
 
     private Jwt buildJwt(Map<String, Object> claims) {
         return Jwt.withTokenValue("token-de-prueba")
@@ -38,6 +51,7 @@ class JwtTokenOutputAdapterTest {
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(3600))
                 .subject("uuid-usuario")
+                .issuer(ISSUER)
                 .build();
     }
 

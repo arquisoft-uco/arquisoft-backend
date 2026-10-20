@@ -53,7 +53,9 @@ class InteractoresSeguridadTest {
             AutenticarUsuarioInteractorImpl.class,
             RefrescarTokenInteractorImpl.class,
             CerrarSesionInteractorImpl.class,
-            ValidarTokenInteractorImpl.class
+            ValidarTokenInteractorImpl.class,
+            com.arquisoft.seguridad.application.autorizacion.command.primaryport.interactor.impl
+                    .AutorizarAccesoInteractorImpl.class
     })
     void debeNoDeclararTransaccion_cuandoEsInteractorDeSeguridad(Class<?> interactor) {
         // Arrange

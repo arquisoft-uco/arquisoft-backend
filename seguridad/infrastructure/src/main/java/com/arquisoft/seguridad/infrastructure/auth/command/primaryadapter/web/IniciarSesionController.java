@@ -8,6 +8,7 @@ import com.arquisoft.seguridad.infrastructure.auth.command.primaryadapter.web.ma
 import com.arquisoft.shared.message.annotation.SeguridadApiMessages;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@ConditionalOnProperty(name = "security.direct-login.provider", havingValue = "keycloak", matchIfMissing = true)
 @RequestMapping("${rutas.seguridad.auth.base:/auth}")
 @RequiredArgsConstructor
 @Tag(name = SeguridadApiMessages.Autenticacion.TAG_NAME,

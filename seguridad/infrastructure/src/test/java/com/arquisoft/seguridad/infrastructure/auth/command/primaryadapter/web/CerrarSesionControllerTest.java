@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.primaryadapter.web;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import com.arquisoft.seguridad.application.auth.command.primaryport.interactor.CerrarSesionInteractor;
 import com.arquisoft.seguridad.application.auth.command.primaryport.model.TokenSesionCommand;
 import org.junit.jupiter.api.Test;
@@ -9,9 +10,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -60,13 +62,8 @@ class CerrarSesionControllerTest {
         assertThat(captor.getValue().tiempoVidaRestante()).isZero();
     }
 
-    private Jwt jwtCon(Instant expiracion) {
-        return Jwt.withTokenValue("token-prueba")
-                .header("alg", "RS256")
-                .subject("uuid-estudiante")
-                .jti("jti-123")
-                .expiresAt(expiracion)
-                .issuedAt(Instant.now().minusSeconds(120))
-                .build();
+    private IdentidadActual jwtCon(Instant expiracion) {
+        return new IdentidadActual(UUID.randomUUID(), "estudiante@uco.edu.co", "estudiante", List.of(), "jti-123",
+                expiracion);
     }
 }

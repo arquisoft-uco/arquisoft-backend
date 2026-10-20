@@ -3,7 +3,7 @@ package com.arquisoft.seguridad.infrastructure.auth.command.primaryadapter.web.m
 import com.arquisoft.seguridad.application.auth.command.primaryport.model.TokenSesionCommand;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilObjeto;
-import org.springframework.security.oauth2.jwt.Jwt;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 
 import java.time.Duration;
 
@@ -14,12 +14,12 @@ public final class CerrarSesionRequestMapper {
 
     private CerrarSesionRequestMapper() {}
 
-    public static TokenSesionCommand toCommand(Jwt jwt) {
-        return new TokenSesionCommand(jwt.getId(), calcularTiempoVidaRestante(jwt));
+    public static TokenSesionCommand toCommand(IdentidadActual identidad) {
+        return new TokenSesionCommand(identidad.idToken(), calcularTiempoVidaRestante(identidad));
     }
 
-    private static long calcularTiempoVidaRestante(Jwt jwt) {
-        var expiracion = jwt.getExpiresAt();
+    private static long calcularTiempoVidaRestante(IdentidadActual identidad) {
+        var expiracion = identidad.expiraEn();
         var ahora = UtilFecha.generarInstanteActual();
         if (UtilObjeto.esNulo(expiracion) || !ahora.isBefore(expiracion)) {
             return TTL_EXPIRADO;
