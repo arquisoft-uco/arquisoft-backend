@@ -1,5 +1,9 @@
 # Aprovisionamiento del realm
 
+> Este realm solo sirve al emisor legado (`security.authentication.issuers[legado]`), al login
+> directo deprecado y al aprovisionamiento de `usuarios`. La identidad y la autorizacion del backend
+> las resuelve el emisor configurado (Security Baseline); este archivo no se toca para endpoints nuevos.
+
 `realm-arquisoft.json` es un export del realm `arquisoft`. Vive aquí, y no dentro de un módulo,
 porque no pertenece a ningún bounded context: describe la infraestructura de identidad que
 `seguridad` y `usuarios` consumen por igual. Mismo criterio que `catalogo/` y `plantillas/`.

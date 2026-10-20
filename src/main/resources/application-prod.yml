@@ -8,7 +8,7 @@
 # - Sin spring.datasource global: cada bounded context tiene su propio DataSource.
 # - Sin spring.jpa global: cada *DataSourceConfig.java configura su EntityManagerFactory.
 # - Sin spring.flyway global: cada *DataSourceConfig.java configura su instancia Flyway.
-# - Sin defaults en datasources ni en Keycloak: todas las variables son obligatorias en producción.
+# - Sin defaults en datasources, emisor de identidad ni PEP: todas las variables son obligatorias en producción.
 # ==============================================================================
 
 spring:
@@ -36,30 +36,6 @@ spring:
           max-active: 20
           max-idle: 10
           min-idle: 5
-
-  # ==================== OAUTH2 / KEYCLOAK (Spring Boot 3.x+) ====================
-  # Resource Server: valida tokens JWT entrantes.
-  # Client: permite al backend llamar al endpoint /token de Keycloak.
-  # En producción todas las variables son obligatorias — sin defaults.
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}
-          jwk-set-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
-      client:
-        provider:
-          keycloak:
-            issuer-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}
-            token-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token
-            jwk-set-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
-        registration:
-          keycloak:
-            provider: keycloak
-            client-id: ${KEYCLOAK_CLIENT_ID}
-            client-secret: ${KEYCLOAK_CLIENT_SECRET}
-            authorization-grant-type: password
-            scope: openid, profile, email
 
 # ==================== DATASOURCES POR BOUNDED CONTEXT (PROD) ====================
 datasource:
@@ -182,23 +158,23 @@ datasource:
       minimum-idle: 2
       connection-timeout: 30000
 
-# ==================== KEYCLOAK (propiedades propias) ====================
-# Leídas por KeycloakAuthAdapter y SecurityConfig via @Value("${arquisoft.keycloak.*}").
-# Sin defaults — obligatorias en producción.
-arquisoft:
-  keycloak:
-    server-url: ${KEYCLOAK_URL}
-    realm: ${KEYCLOAK_REALM}
-    client-id: ${KEYCLOAK_CLIENT_ID}
-    client-secret: ${KEYCLOAK_CLIENT_SECRET}
-    expected-audience: ${KEYCLOAK_EXPECTED_AUDIENCE:arquisoft-api}
-
 # ==================== CORS Y RATE LIMITING (PROD) ====================
 # Leídas por CorsConfig y RateLimitConfig via @Value("${security.cors.*}") y @Value("${security.rate-limit.*}")
 security:
+  # Obligatorias en produccion (sin defaults): ValidadorConfiguracionSeguridad aborta el arranque si faltan,
+  # si el modo de autorizacion es none, si security.enabled=false o si allow-insecure-http=true.
+  defaults:
+    issuer-uri: ${AUTH_ISSUER_URI}
+  authorization:
+    pep:
+      url: ${PEP_URL}
+      application-name: ${PEP_APPLICATION_NAME}
+      environment: ${PEP_ENVIRONMENT}
+      credential: ${PEP_REGISTRATION_TOKEN}
+      allow-insecure-http: false
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
-    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type,X-Correlation-Id}
     allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
   rate-limit:
     enabled: ${RATE_LIMIT_ENABLED:true}

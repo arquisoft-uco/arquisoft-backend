@@ -422,7 +422,7 @@ necesite**: una entidad no es de comando ni de consulta. Lo que el lado consulta
 | OutputAdapter (lectura) | `{feature}/query/secondaryadapter/repository/` | `QueryOutputAdapter` | `FichaPerfilQueryOutputAdapter` |
 | Repositorio (lectura) | `{feature}/query/secondaryadapter/repository/` | `QueryRepository` | `FichaPerfilQueryRepository` |
 | Mapper JpaQueryEntity → ReadModel | `{feature}/query/secondaryadapter/repository/mapper/` | `QueryMapper` | `FichaPerfilQueryMapper` |
-| Adaptador no-JPA | `{feature}/command/secondaryadapter/{tecnologia}/` | `OutputAdapter` | `KeycloakAuthOutputAdapter` |
+| Adaptador no-JPA | `{feature}/command/secondaryadapter/{tecnologia}/` | `OutputAdapter` | `KeycloakAutenticacionOutputAdapter` |
 | Configuración | `config/` | `Config` | `FichasDataSourceConfig` |
 
 Un adaptador de salida que no habla JPA no usa `repository/`, usa un subpaquete con el nombre de su
@@ -683,7 +683,7 @@ Esta configuración hace que Spring Boot reemplace automáticamente los executor
 | Componente del proyecto | Efecto |
 |---|---|
 | Todos los **Controllers** REST (requests HTTP) | Cada request corre en un virtual thread |
-| **`KeycloakAuthOutputAdapter`** (HTTP a Keycloak) | Bloqueo I/O sin consumir OS thread |
+| **`KeycloakAutenticacionOutputAdapter`** (HTTP a Keycloak) | Bloqueo I/O sin consumir OS thread |
 | **`JwtTokenOutputAdapter`** (decodificación JWT) | Igual |
 | **`FichaPerfilCommandOutputAdapter`** y todos los OutputAdapters JPA/JDBC | Queries a BD sin bloquear OS thread |
 | **`@RabbitListener`** en los `Consumer` AMQP | Mensajes procesados en virtual threads |
