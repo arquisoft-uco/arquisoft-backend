@@ -41,7 +41,7 @@ una skill, gana la skill.**
 ```
 
 El gate real es `check` (tests + checkstyle + `jacocoTestCoverageVerification` + la tarea
-`verificarCapasHexagonales` del build raíz), no `test`.
+`verificarCapasHexagonales` y `verificarNeutralidadProveedorIdentidad` del build raíz), no `test`.
 
 ## Local Environment
 
@@ -76,12 +76,12 @@ de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`,
 `solicitudes`, `biblioteca`, `repositorio_artefactos`, `artefactos` y `mapas_ruta`. El único andamiaje
 que queda es `entregables`: solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
-`RegistrarUsuario` lo da de alta en Keycloak y publica los eventos con los que `fichas` y `proyectos`
+`RegistrarUsuario` lo da de alta en el proveedor de identidad configurado y publica los eventos con los que `fichas` y `proyectos`
 mantienen sus réplicas.
 
 | Context | Database |
 |---------|----------|
-| `seguridad` | *(sin DB — auth vía Keycloak + Redis)* |
+| `seguridad` | *(sin DB — identidad externa + Redis)* |
 | `usuarios` | `usuarios` |
 | `fichas` | `fichas_perfil` |
 | `notificaciones` | `notificaciones` |
@@ -206,7 +206,6 @@ Forma, espejando cualquier otro puerto secundario:
         └── secondaryadapter/repository/    # JpaQueryEntity (@Subselect) + Specification +
                                             #   SortMapper + QueryOutputAdapter + QueryRepository
 config/     # {Context}DataSourceConfig, {Contexto}Queues, *QueueConfig
-security/   # {Context}Authorities
 handler/    # {Context}GlobalExceptionHandler (@RestControllerAdvice) — solo seguridad tiene uno
 filter/     # Filtros HTTP del contexto
 src/main/resources/db/migration/{contexto}/   # Flyway — subcarpeta propia, siempre
@@ -280,13 +279,15 @@ el enunciado, para reconocer una desviación de un vistazo.
   su propio `query/validator/` **antes** de leer; las `Rule`s son del `domain/` y se comparten con los
   comandos, los `Validator`s no. Sin política en la HU, no hay `Validator`.
 - Sin literales: códigos en `{Contexto}Codes`, campos en `{Contexto}Fields`, límites en
-  `{Contexto}Limits`, Swagger en `{Contexto}ApiMessages`/`ApiCodes`/`ApiSecurity`, autorización en
-  `{Contexto}Authorities.Expresiones.HAS_*`. **Las rutas son la excepción** y se quedan inline como
-  placeholder de propiedad (`"${rutas.seguridad.auth.login:/login}"`); no existe `{Contexto}Routes`.
-  Nunca el prefijo `/api`: ya es el `context-path`.
-- **Un client role por endpoint, propio y distinto** — nunca se reutiliza el de otro. Dos endpoints
-  sobre el mismo recurso se diferencian con un calificador
-  (`fichas:ficha-perfil-coordinador:view` vs `fichas:ficha-perfil-asesor:view`).
+  `{Contexto}Limits`, Swagger en `{Contexto}ApiMessages`/`ApiCodes`/`ApiSecurity`. **Las rutas son la
+  excepción** y se quedan inline como placeholder de propiedad (`"${rutas.seguridad.auth.login:/login}"`);
+  no existe `{Contexto}Routes`. Nunca el prefijo `/api`: ya es el `context-path`.
+- **La autorización no vive en el controlador:** ni `@PreAuthorize` ni roles. La decide
+  `AutorizacionAccesoFilter` consultando a `DecisionAccesoOutputPort` por método + plantilla de ruta, con
+  un adaptador por emisor elegido por propiedad (`pep`, `role-table`, `none`). Un endpoint nuevo es un
+  recurso del PDP y, mientras exista el emisor legado, una fila en `autorizacion-equivalencias.yml`
+  (`CompletitudEquivalenciasAutorizacionTest` lo exige). El controlador recibe `IdentidadActual`
+  (`shared:web`), nunca `Jwt` ni `@AuthenticationPrincipal`.
 
 **Eventos**
 - El `UseCase` inyecta la **interfaz** `EventPublisher` y publica tras persistir. El agregado es una
@@ -417,7 +418,7 @@ Java puro.
 | PostgreSQL | 18 (una **base** por contexto, con su DataSource, EntityManagerFactory y Flyway) |
 | RabbitMQ | 4.2.5 |
 | Redis | 7 (Lettuce) |
-| Keycloak | 26.6 (OAuth2/OIDC Resource Server) |
+| Proveedor de identidad | OIDC, multi-emisor por JWKS (Security Baseline; Keycloak 26.6 solo como emisor legado) |
 | Flyway | 12.4.0 |
 | JUnit | 6.0.3 (Jupiter) |
 | Spring Modulith | 2.0.0 |
@@ -437,7 +438,11 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 
 ## Security
 
-- JWT validado contra el JWK Set de Keycloak (`seguridad/infrastructure/config/security/SeguridadConfig`).
+- JWT validado localmente contra el JWK Set del emisor configurado (multi-emisor,
+  `security.authentication.issuers[*]`; `seguridad/infrastructure/config/security/SeguridadConfig`). El
+  backend no guarda sesión ni permisos: la decisión de acceso se consulta al proveedor en **cada**
+  solicitud protegida (`AutorizacionAccesoFilter` → `DecisionAccesoOutputPort`) y falla cerrado con 503.
+  No se cachea: el contrato PEP-PDP prohíbe reutilizar decisiones.
 - CORS por defecto: `localhost:3000`, `4200`, `5173` (`CORS_ALLOWED_ORIGINS`). CSRF deshabilitado,
   sesiones stateless.
 - `TrazabilidadFilter` emite una línea `AUDIT` por petición con método, URI, usuario, duración y
@@ -468,7 +473,7 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
     es por instancia: N réplicas dan N× cuota — sigue siendo un límite, y es el precio de no tener
     estado compartido justo cuando el estado compartido es lo que falló.
 
-  `JwtBlacklistFilter` **sí** falla abierto, y ahí es lo correcto por una razón que no aplica arriba:
+  `JwtListaNegraFilter` **sí** falla abierto, y ahí es lo correcto por una razón que no aplica arriba:
   el radio de impacto está acotado porque la entrada de la lista negra expira con el propio token
   (5–15 min), así que una caída solo puede honrar un token revocado hasta que habría expirado igual.
   Detalle: [docs/fail-open-vs-fail-closed.md](docs/fail-open-vs-fail-closed.md).
@@ -485,8 +490,9 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
   `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class, …})`
   — sin `GlobalAppExceptionHandler` toda excepción sale 500; sin `AppLoggerConfig` falta el bean
   `AppLogger`. Mocks con `@MockitoBean` (nunca `@MockBean`), autenticación con
-  `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` usando la constante de
-  `{Contexto}Authorities` — nunca `@WithMockUser` (prefija `ROLE_`).
+  `SecurityMockMvcRequestPostProcessors.jwt().jwt(j -> j.subject(...))` sin `.authorities(...)` e
+  importando `IdentidadActualTestConfig` — nunca `@WithMockUser` (prefija `ROLE_`). No hay tests 403 por
+  rol en controladores: se cubren en `AutorizacionAccesoFilterTest`.
 - Spring Boot 4 reubicó los paquetes de slice test: las rutas
   `org.springframework.boot.test.autoconfigure.*` de Boot 3 no existen.
 - Nombres `debeHacerAlgo_cuandoCondicion()`, patrón Arrange / Act / Assert con sus marcadores, sin
