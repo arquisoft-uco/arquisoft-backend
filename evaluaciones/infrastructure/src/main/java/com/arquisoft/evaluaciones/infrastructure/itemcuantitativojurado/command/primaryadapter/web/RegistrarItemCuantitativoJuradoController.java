@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.pri
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.primaryadapter.web.dto.RegistrarItemCuantitativoJuradoRequestDTO;
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.primaryadapter.web.dto.RegistrarItemCuantitativoJuradoResponseDTO;
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.primaryadapter.web.mapper.RegistrarItemCuantitativoJuradoRequestMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -19,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +36,6 @@ public class RegistrarItemCuantitativoJuradoController {
     private final RegistrarItemCuantitativoJuradoInteractor interactor;
 
     @PostMapping
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_ITEM_CUANTITATIVO_JURADO_CREATE)
     @Operation(
             summary = EvaluacionesApiMessages.ItemCuantitativoJurado.REGISTRAR_SUMMARY,
             description = EvaluacionesApiMessages.ItemCuantitativoJurado.REGISTRAR_DESCRIPTION,

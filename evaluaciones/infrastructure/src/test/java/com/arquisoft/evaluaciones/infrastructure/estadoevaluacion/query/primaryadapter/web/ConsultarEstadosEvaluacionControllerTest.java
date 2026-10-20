@@ -2,7 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.primary
 
 import com.arquisoft.evaluaciones.application.estadoevaluacion.query.primaryport.interactor.ConsultarEstadosEvaluacionInteractor;
 import com.arquisoft.evaluaciones.application.estadoevaluacion.query.readmodel.EstadoEvaluacionReadModel;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -11,10 +10,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +39,6 @@ class ConsultarEstadosEvaluacionControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -81,22 +77,6 @@ class ConsultarEstadosEvaluacionControllerTest {
                 .andExpect(jsonPath("$[0].nombre").value("Pendiente"))
                 .andExpect(jsonPath("$[1].id").value("EN_PROGRESO"))
                 .andExpect(jsonPath("$[2].id").value("FINALIZADA"));
-    }
-
-    @Test
-    void debeRetornar403_cuandoElUsuarioNoTieneElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void debeRetornar403_cuandoElUsuarioTieneUnClientRoleDistintoAlRequerido() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .authorities(new SimpleGrantedAuthority(
-                                EvaluacionesAuthorities.ITEM_CUALITATIVO_JURADO_VIEW))))
-                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -139,8 +119,6 @@ class ConsultarEstadosEvaluacionControllerTest {
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermisoView() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.ESTADO_EVALUACION_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

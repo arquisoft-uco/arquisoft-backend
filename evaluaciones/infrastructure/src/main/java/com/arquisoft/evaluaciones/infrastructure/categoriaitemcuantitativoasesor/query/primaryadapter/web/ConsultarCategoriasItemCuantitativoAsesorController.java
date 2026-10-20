@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.qu
 import com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativoasesor.query.primaryadapter.web.dto.CategoriaItemCuantitativoAsesorResponseDTO;
 import com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativoasesor.query.primaryadapter.web.mapper.CategoriaItemCuantitativoAsesorResponseMapper;
 import com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativoasesor.query.primaryadapter.web.mapper.ConsultarCategoriasItemCuantitativoAsesorRequestMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,7 +37,6 @@ public class ConsultarCategoriasItemCuantitativoAsesorController {
     private final ConsultarCategoriasItemCuantitativoAsesorInteractor interactor;
 
     @GetMapping
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_CATEGORIA_ITEM_CUANTITATIVO_ASESOR_VIEW)
     @Operation(
             summary = EvaluacionesApiMessages.CategoriaItemCuantitativoAsesor.CONSULTAR_SUMMARY,
             description = EvaluacionesApiMessages.CategoriaItemCuantitativoAsesor.CONSULTAR_DESCRIPTION,

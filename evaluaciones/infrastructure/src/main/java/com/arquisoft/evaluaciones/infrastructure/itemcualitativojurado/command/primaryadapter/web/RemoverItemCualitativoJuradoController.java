@@ -2,7 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.
 
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.primaryport.interactor.RemoverItemCualitativoJuradoInteractor;
 import com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.primaryadapter.web.mapper.RemoverItemCualitativoJuradoRequestMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,7 +33,6 @@ public class RemoverItemCualitativoJuradoController {
     private final RemoverItemCualitativoJuradoInteractor interactor;
 
     @DeleteMapping("${rutas.evaluaciones.items-cualitativos-jurado.por-id:/{itemId}}")
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_ITEM_CUALITATIVO_JURADO_DELETE)
     @Operation(
             summary = EvaluacionesApiMessages.ItemCualitativoJurado.REMOVER_SUMMARY,
             description = EvaluacionesApiMessages.ItemCualitativoJurado.REMOVER_DESCRIPTION,

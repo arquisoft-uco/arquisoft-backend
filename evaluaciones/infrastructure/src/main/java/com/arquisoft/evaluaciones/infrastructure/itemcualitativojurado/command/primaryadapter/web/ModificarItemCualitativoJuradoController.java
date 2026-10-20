@@ -3,7 +3,6 @@ package com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.primaryport.interactor.ModificarItemCualitativoJuradoInteractor;
 import com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.primaryadapter.web.dto.ModificarItemCualitativoJuradoRequestDTO;
 import com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.primaryadapter.web.mapper.ModificarItemCualitativoJuradoRequestMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -17,7 +16,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,7 +35,6 @@ public class ModificarItemCualitativoJuradoController {
     private final ModificarItemCualitativoJuradoInteractor interactor;
 
     @PatchMapping("${rutas.evaluaciones.items-cualitativos-jurado.por-id:/{itemId}}")
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_ITEM_CUALITATIVO_JURADO_UPDATE)
     @Operation(
             summary = EvaluacionesApiMessages.ItemCualitativoJurado.MODIFICAR_SUMMARY,
             description = EvaluacionesApiMessages.ItemCualitativoJurado.MODIFICAR_DESCRIPTION,
