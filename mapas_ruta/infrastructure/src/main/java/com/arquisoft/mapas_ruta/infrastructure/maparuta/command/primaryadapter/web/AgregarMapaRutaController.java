@@ -4,12 +4,11 @@ import com.arquisoft.mapas_ruta.application.maparuta.command.primaryport.interac
 import com.arquisoft.mapas_ruta.infrastructure.maparuta.command.primaryadapter.web.dto.AgregarMapaRutaRequestDTO;
 import com.arquisoft.mapas_ruta.infrastructure.maparuta.command.primaryadapter.web.dto.AgregarMapaRutaResponseDTO;
 import com.arquisoft.mapas_ruta.infrastructure.maparuta.command.primaryadapter.web.mapper.AgregarMapaRutaRequestMapper;
-import com.arquisoft.mapas_ruta.infrastructure.security.MapasRutaAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.MapasRutaApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,9 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +35,6 @@ public class AgregarMapaRutaController {
     private final AgregarMapaRutaInteractor interactor;
 
     @PostMapping
-    @PreAuthorize(MapasRutaAuthorities.Expresiones.HAS_MAPA_RUTA_CREATE)
     @Operation(
             summary = MapasRutaApiMessages.MapaRuta.AGREGAR_SUMMARY,
             description = MapasRutaApiMessages.MapaRuta.AGREGAR_DESCRIPTION,
@@ -66,8 +61,8 @@ public class AgregarMapaRutaController {
     })
     public ResponseEntity<AgregarMapaRutaResponseDTO> agregar(
             @RequestBody AgregarMapaRutaRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
-        var coordinador = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+            IdentidadActual identidad) {
+        var coordinador = identidad.id();
         var id = interactor.ejecutar(AgregarMapaRutaRequestMapper.toCommand(request, coordinador));
         return ResponseEntity.status(HttpStatus.CREATED).body(new AgregarMapaRutaResponseDTO(id));
     }
