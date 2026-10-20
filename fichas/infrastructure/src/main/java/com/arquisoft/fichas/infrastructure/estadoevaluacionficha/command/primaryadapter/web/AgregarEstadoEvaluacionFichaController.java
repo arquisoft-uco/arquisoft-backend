@@ -5,7 +5,6 @@ import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.primaryport.interactor.AgregarEstadoEvaluacionFichaInteractor;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.primaryadapter.web.dto.AgregarEstadoEvaluacionFichaRequestDTO;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.primaryadapter.web.dto.AgregarEstadoEvaluacionFichaResponseDTO;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,15 +17,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 
 
 @RestController
@@ -39,7 +35,6 @@ public class AgregarEstadoEvaluacionFichaController {
     private final AgregarEstadoEvaluacionFichaInteractor agregarEstadoEvaluacionFichaInteractor;
 
     @PostMapping
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_EVALUACION_FICHA_CREATE)
     @Operation(
             summary = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_SUMMARY,
             description = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_DESCRIPTION,
@@ -59,9 +54,9 @@ public class AgregarEstadoEvaluacionFichaController {
     })
     public ResponseEntity<AgregarEstadoEvaluacionFichaResponseDTO> agregar(
             @RequestBody AgregarEstadoEvaluacionFichaRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var representanteComiteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var representanteComiteId = identidad.id();
         var id = agregarEstadoEvaluacionFichaInteractor.ejecutar(AgregarEstadoEvaluacionFichaRequestMapper.toCommand(request, representanteComiteId));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new AgregarEstadoEvaluacionFichaResponseDTO(id));

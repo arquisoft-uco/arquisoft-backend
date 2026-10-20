@@ -4,9 +4,9 @@ import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConf
 import com.arquisoft.fichas.application.estadoficha.query.primaryport.interactor.ConsultarEstadosFichaInteractor;
 import com.arquisoft.fichas.application.estadoficha.query.primaryport.model.ConsultarEstadosFichaQuery;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.security.FichasRoles;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,17 +14,15 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,15 +35,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEstadosFichaController.class)
-@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarEstadosFichaControllerTest.TestSecurityConfig.class})
 class ConsultarEstadosFichaControllerTest {
 
     private static final String RUTA = "/fichas-perfil/estados-ficha";
+    private static final UUID ACTOR = UUID.randomUUID();
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -75,7 +73,7 @@ class ConsultarEstadosFichaControllerTest {
         var queryCaptor = ArgumentCaptor.forClass(ConsultarEstadosFichaQuery.class);
 
         // Act
-        mockMvc.perform(get(RUTA).with(conRolesRealm(FichasRoles.Realm.ASESOR_FICHA)))
+        mockMvc.perform(get(RUTA).with(conRoles(FichasRoles.Identidad.ASESOR_FICHA)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("DISPONIBLE_PARA_EVALUACION"))
@@ -85,7 +83,7 @@ class ConsultarEstadosFichaControllerTest {
 
         // Assert
         verify(consultarEstadosFichaInteractor).ejecutar(queryCaptor.capture());
-        assertThat(queryCaptor.getValue().roles()).containsExactly(FichasRoles.Negocio.ASESOR_FICHA);
+        assertThat(queryCaptor.getValue().rolesIdentidad()).containsExactly(FichasRoles.Negocio.ASESOR_FICHA);
     }
 
     @Test
@@ -95,13 +93,13 @@ class ConsultarEstadosFichaControllerTest {
         var queryCaptor = ArgumentCaptor.forClass(ConsultarEstadosFichaQuery.class);
 
         // Act
-        mockMvc.perform(get(RUTA).with(conRolesRealm("estudiante")))
+        mockMvc.perform(get(RUTA).with(conRoles("estudiante")))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
 
         // Assert
         verify(consultarEstadosFichaInteractor).ejecutar(queryCaptor.capture());
-        assertThat(queryCaptor.getValue().roles()).isEmpty();
+        assertThat(queryCaptor.getValue().rolesIdentidad()).isEmpty();
     }
 
     @Test
@@ -113,21 +111,8 @@ class ConsultarEstadosFichaControllerTest {
         verify(consultarEstadosFichaInteractor, never()).ejecutar(any());
     }
 
-    @Test
-    void debe403_cuandoNoTieneElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.claim("realm_access", Map.of("roles", List.of(FichasRoles.Realm.ASESOR_FICHA))))
-                                .authorities(new SimpleGrantedAuthority("otro-permiso-incorrecto"))))
-                .andExpect(status().isForbidden());
-
-        verify(consultarEstadosFichaInteractor, never()).ejecutar(any());
-    }
-
-    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor conRolesRealm(String... rolesRealm) {
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor conRoles(String... roles) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.claim("realm_access", Map.of("roles", List.of(rolesRealm))))
-                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW));
+                .jwt(j -> j.subject(ACTOR.toString()).claim("roles", List.of(roles)));
     }
 }

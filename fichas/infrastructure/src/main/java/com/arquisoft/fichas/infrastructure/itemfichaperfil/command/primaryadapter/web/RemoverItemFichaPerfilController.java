@@ -3,7 +3,6 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapt
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.RemoverItemFichaPerfilInteractor;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,15 +12,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 
 import java.util.UUID;
 
@@ -35,7 +31,6 @@ public class RemoverItemFichaPerfilController {
     private final RemoverItemFichaPerfilInteractor removerItemFichaPerfilInteractor;
 
     @DeleteMapping("${rutas.fichas.fichas-perfil.item-por-id:/items/{itemId}}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_DELETE)
     @Operation(
             summary = FichasApiMessages.ItemFichaPerfil.REMOVER_SUMMARY,
             description = FichasApiMessages.ItemFichaPerfil.REMOVER_DESCRIPTION,
@@ -55,8 +50,8 @@ public class RemoverItemFichaPerfilController {
     })
     public ResponseEntity<Void> remover(
             @PathVariable UUID itemId,
-            @AuthenticationPrincipal Jwt jwt) {
-        var estudianteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+            IdentidadActual identidad) {
+        var estudianteId = identidad.id();
         var command = RemoverItemFichaPerfilCommand.crear(itemId, estudianteId);
         removerItemFichaPerfilInteractor.ejecutar(command);
         return ResponseEntity.noContent().build();

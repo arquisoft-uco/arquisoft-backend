@@ -4,12 +4,11 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.query.primaryport.
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.primaryadapter.web.dto.EvaluacionFichaPerfilEstudianteResponseDTO;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.primaryadapter.web.mapper.ConsultarEvaluacionesFichaPerfilEstudianteRequestMapper;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.primaryadapter.web.mapper.EvaluacionFichaPerfilEstudianteResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,9 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +38,6 @@ public class ConsultarEvaluacionesFichaPerfilEstudianteController {
     private final ConsultarEvaluacionesFichaPerfilEstudianteInteractor consultarEvaluacionesFichaPerfilEstudianteInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.evaluaciones-estudiante:/{fichaPerfilId}/evaluaciones/estudiante}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_EVALUACION_FICHA_PERFIL_ESTUDIANTE_VIEW)
     @Operation(
             summary = FichasApiMessages.EvaluacionFichaPerfil.CONSULTAR_ESTUDIANTE_SUMMARY,
             description = FichasApiMessages.EvaluacionFichaPerfil.CONSULTAR_ESTUDIANTE_DESCRIPTION,
@@ -63,9 +58,9 @@ public class ConsultarEvaluacionesFichaPerfilEstudianteController {
     })
     public ResponseEntity<List<EvaluacionFichaPerfilEstudianteResponseDTO>> consultarEvaluaciones(
             @PathVariable UUID fichaPerfilId,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var estudiante = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var estudiante = identidad.id();
 
         var evaluaciones = consultarEvaluacionesFichaPerfilEstudianteInteractor.ejecutar(
                 ConsultarEvaluacionesFichaPerfilEstudianteRequestMapper.toQuery(fichaPerfilId, estudiante));

@@ -6,7 +6,6 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.primarypor
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.interactor.RemoverEstudianteFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -15,10 +14,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -44,7 +41,6 @@ class RemoverEstudianteFichaPerfilControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -76,8 +72,7 @@ class RemoverEstudianteFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
@@ -101,8 +96,7 @@ class RemoverEstudianteFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -119,8 +113,7 @@ class RemoverEstudianteFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -137,8 +130,7 @@ class RemoverEstudianteFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -155,20 +147,6 @@ class RemoverEstudianteFichaPerfilControllerTest {
     }
 
     @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-
-        // Act & Assert
-        mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
-                        fichaPerfilId, estudianteId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:otra-autoridad"))))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debe400_cuandoFichaPerfilIdInvalido() throws Exception {
         // Arrange
         String fichaPerfilIdInvalido = "no-es-un-uuid";
@@ -177,8 +155,7 @@ class RemoverEstudianteFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilIdInvalido, estudianteId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -191,8 +168,7 @@ class RemoverEstudianteFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteIdInvalido)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isBadRequest());
     }
 

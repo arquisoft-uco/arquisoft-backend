@@ -4,14 +4,13 @@ import com.arquisoft.fichas.application.estadofichaperfil.query.primaryport.inte
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapter.web.dto.EstadoFichaPerfilAsesorResponseDTO;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapter.web.mapper.ConsultarEstadosFichaPerfilAsesorRequestMapper;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapter.web.mapper.EstadoFichaPerfilAsesorResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,9 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +36,6 @@ public class ConsultarEstadosFichaPerfilAsesorController {
     private final ConsultarEstadosFichaPerfilAsesorInteractor consultarEstadosFichaPerfilAsesorInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.estados-asesor:/estados-ficha/asesor}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_PERFIL_ASESOR_VIEW)
     @Operation(
             summary = FichasApiMessages.EstadoFichaPerfil.CONSULTAR_ASESOR_SUMMARY,
             description = FichasApiMessages.EstadoFichaPerfil.CONSULTAR_ASESOR_DESCRIPTION,
@@ -61,9 +56,9 @@ public class ConsultarEstadosFichaPerfilAsesorController {
     })
     public ResponseEntity<PageResponseDTO<EstadoFichaPerfilAsesorResponseDTO>> consultarEstadosAsesor(
             @RequestBody(required = false) QueryCriteriaRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var asesorFicha = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var asesorFicha = identidad.id();
         var resultado = consultarEstadosFichaPerfilAsesorInteractor.ejecutar(
                 ConsultarEstadosFichaPerfilAsesorRequestMapper.toQuery(request, asesorFicha));
 

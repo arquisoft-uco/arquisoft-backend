@@ -3,12 +3,11 @@ package com.arquisoft.fichas.infrastructure.observacionevaluacion.query.primarya
 import com.arquisoft.fichas.application.observacionevaluacion.query.primaryport.interactor.ConsultarObservacionesEvaluacionRepresentanteInteractor;
 import com.arquisoft.fichas.application.observacionevaluacion.query.primaryport.model.ConsultarObservacionesEvaluacionRepresentanteQuery;
 import com.arquisoft.fichas.application.observacionevaluacion.query.readmodel.ObservacionEvaluacionReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
-import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -29,7 +26,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -39,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarObservacionesEvaluacionRepresentanteController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarObservacionesEvaluacionRepresentanteControllerTest.TestSecurityConfig.class})
 class ConsultarObservacionesEvaluacionRepresentanteControllerTest {
 
@@ -50,7 +46,6 @@ class ConsultarObservacionesEvaluacionRepresentanteControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -71,14 +66,13 @@ class ConsultarObservacionesEvaluacionRepresentanteControllerTest {
     private ConsultarObservacionesEvaluacionRepresentanteInteractor consultarObservacionesEvaluacionRepresentanteInteractor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol(
-            String subject, String authority) {
+            String subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject(subject))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(j -> j.subject(subject));
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRepresentante() {
-        return jwtConRol(REPRESENTANTE_ID.toString(), FichasAuthorities.OBSERVACION_EVALUACION_REPRESENTANTE_VIEW);
+        return jwtConRol(REPRESENTANTE_ID.toString());
     }
 
     @Test
@@ -128,13 +122,11 @@ class ConsultarObservacionesEvaluacionRepresentanteControllerTest {
     }
 
     @Test
-    void debeResponder400ConCampoRepresentanteComite_cuandoElSubjectNoEsUuid() throws Exception {
+    void debeResponder401ConCampoRepresentanteComite_cuandoElSubjectNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(get(RUTA, EVALUACION_ID)
-                        .with(jwtConRol("no-es-uuid", FichasAuthorities.OBSERVACION_EVALUACION_REPRESENTANTE_VIEW)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors[*].field")
-                        .value(hasItem(FichasFields.ObservacionEvaluacion.REPRESENTANTE_COMITE)));
+                        .with(jwtConRol("no-es-uuid")))
+                .andExpect(status().isUnauthorized());
 
         verifyNoInteractions(consultarObservacionesEvaluacionRepresentanteInteractor);
     }
@@ -144,17 +136,6 @@ class ConsultarObservacionesEvaluacionRepresentanteControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA, EVALUACION_ID))
                 .andExpect(status().isUnauthorized());
-
-        verifyNoInteractions(consultarObservacionesEvaluacionRepresentanteInteractor);
-    }
-
-    @Test
-    void debeResponder403_cuandoTieneSoloElClientRoleDelAsesor() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA, EVALUACION_ID)
-                        .with(jwtConRol(REPRESENTANTE_ID.toString(),
-                                FichasAuthorities.OBSERVACION_EVALUACION_ASESOR_VIEW)))
-                .andExpect(status().isForbidden());
 
         verifyNoInteractions(consultarObservacionesEvaluacionRepresentanteInteractor);
     }

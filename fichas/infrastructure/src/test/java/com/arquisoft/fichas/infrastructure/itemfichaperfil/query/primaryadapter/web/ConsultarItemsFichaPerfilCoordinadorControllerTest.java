@@ -3,7 +3,6 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.query.primaryadapter
 import com.arquisoft.fichas.application.itemfichaperfil.query.primaryport.interactor.ConsultarItemsFichaPerfilCoordinadorInteractor;
 import com.arquisoft.fichas.application.itemfichaperfil.query.primaryport.model.ConsultarItemsFichaPerfilCoordinadorQuery;
 import com.arquisoft.fichas.application.itemfichaperfil.query.readmodel.ItemFichaPerfilReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
@@ -15,10 +14,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -46,7 +43,6 @@ class ConsultarItemsFichaPerfilCoordinadorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -66,9 +62,8 @@ class ConsultarItemsFichaPerfilCoordinadorControllerTest {
     @MockitoBean
     private ConsultarItemsFichaPerfilCoordinadorInteractor consultarItemsFichaPerfilCoordinadorInteractor;
 
-    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol(String authority) {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(authority));
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol() {
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -81,7 +76,7 @@ class ConsultarItemsFichaPerfilCoordinadorControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA, FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.ITEM_FICHA_PERFIL_COORDINADOR_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].id").value(itemId.toString()))
@@ -103,7 +98,7 @@ class ConsultarItemsFichaPerfilCoordinadorControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA, FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.ITEM_FICHA_PERFIL_COORDINADOR_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -113,7 +108,7 @@ class ConsultarItemsFichaPerfilCoordinadorControllerTest {
     void debeResponder400_cuandoFichaPerfilIdNoEsUUID() throws Exception {
         // Act & Assert
         mockMvc.perform(get(RUTA, "no-es-uuid")
-                        .with(jwtConRol(FichasAuthorities.ITEM_FICHA_PERFIL_COORDINADOR_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isBadRequest());
 
         verify(consultarItemsFichaPerfilCoordinadorInteractor, never()).ejecutar(any());
@@ -124,15 +119,5 @@ class ConsultarItemsFichaPerfilCoordinadorControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA, FICHA_ID))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeResponder403_cuandoFaltaElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA, FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.ITEM_FICHA_PERFIL_ASESOR_VIEW)))
-                .andExpect(status().isForbidden());
-
-        verify(consultarItemsFichaPerfilCoordinadorInteractor, never()).ejecutar(any());
     }
 }

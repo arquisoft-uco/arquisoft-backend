@@ -8,10 +8,10 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -19,10 +19,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -37,14 +35,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AgregarItemFichaPerfilController.class)
-@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+@Import({IdentidadActualTestConfig.class, com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         AgregarItemFichaPerfilControllerTest.TestSecurityConfig.class})
 class AgregarItemFichaPerfilControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -81,8 +78,7 @@ class AgregarItemFichaPerfilControllerTest {
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_CREATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isCreated())
@@ -100,8 +96,7 @@ class AgregarItemFichaPerfilControllerTest {
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_CREATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyInvalido))
                 .andExpect(status().isBadRequest());
@@ -116,25 +111,13 @@ class AgregarItemFichaPerfilControllerTest {
     }
 
     @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("otro:permiso")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debe422_cuandoTipoDuplicado() throws Exception {
         when(agregarItemFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new ItemTipoDuplicadoException("OBJETIVO_GENERAL"));
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_CREATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnprocessableEntity());
@@ -147,8 +130,7 @@ class AgregarItemFichaPerfilControllerTest {
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_CREATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnprocessableEntity());
@@ -168,8 +150,7 @@ class AgregarItemFichaPerfilControllerTest {
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_CREATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnprocessableEntity())
