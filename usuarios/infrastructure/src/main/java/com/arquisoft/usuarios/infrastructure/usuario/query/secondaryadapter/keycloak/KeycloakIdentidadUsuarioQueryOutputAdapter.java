@@ -14,6 +14,7 @@ import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentida
 import com.arquisoft.usuarios.infrastructure.usuario.query.secondaryadapter.keycloak.mapper.KeycloakIdentidadUsuarioMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +30,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
 @Component
+@ConditionalOnProperty(name = "security.identity-provisioning.provider", havingValue = "keycloak", matchIfMissing = true)
 public class KeycloakIdentidadUsuarioQueryOutputAdapter implements IdentidadUsuarioQueryOutputPort {
 
     private static final ParameterizedTypeReference<Map<String, Object>> MAPA_JSON =
@@ -58,16 +60,16 @@ public class KeycloakIdentidadUsuarioQueryOutputAdapter implements IdentidadUsua
         this.restTemplate = restTemplate;
     }
 
-    @Value("${arquisoft.keycloak.server-url}")
+    @Value("${security.identity-provisioning.keycloak.server-url}")
     private String serverUrl;
 
-    @Value("${arquisoft.keycloak.realm}")
+    @Value("${security.identity-provisioning.keycloak.realm}")
     private String realm;
 
-    @Value("${arquisoft.keycloak.client-id}")
+    @Value("${security.identity-provisioning.keycloak.client-id}")
     private String clientId;
 
-    @Value("${arquisoft.keycloak.client-secret:#{null}}")
+    @Value("${security.identity-provisioning.keycloak.client-secret:#{null}}")
     private String clientSecret;
 
     @Override

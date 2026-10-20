@@ -10,7 +10,6 @@ import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConf
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.usuarios.application.coordinador.query.primaryport.interactor.ConsultarCoordinadoresVigentesInteractor;
 import com.arquisoft.usuarios.application.coordinador.query.readmodel.CoordinadorVigenteReadModel;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +18,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -48,7 +45,6 @@ class ConsultarCoordinadoresVigentesControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -69,8 +65,7 @@ class ConsultarCoordinadoresVigentesControllerTest {
     private ConsultarCoordinadoresVigentesInteractor consultarCoordinadoresVigentesInteractor;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor vigente() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.COORDINADOR_VIGENTE_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test

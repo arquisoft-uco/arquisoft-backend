@@ -2,7 +2,7 @@ package com.arquisoft.usuarios.application.estudiante.command.usecase.impl;
 
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.estudiante.command.finder.EstudiantePorUsuarioFinder;
@@ -90,7 +90,7 @@ class RemoverEstudianteUseCaseImplTest {
         var captorEvento = ArgumentCaptor.forClass(EstudianteRemovidoEvent.class);
         orden.verify(removerEstudianteValidator).validar(id, vigente);
         orden.verify(estudianteOutputPort).eliminarLogica(eq(id), captorInstante.capture());
-        orden.verify(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.ESTUDIANTE);
+        orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.ESTUDIANTE);
         orden.verify(eventPublisher).publish(captorEvento.capture());
 
         assertThat(captorInstante.getValue()).isNotEqualTo(UtilFecha.VACIO);
@@ -114,7 +114,7 @@ class RemoverEstudianteUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(EstudianteDomain.crear(id)))
                 .isInstanceOf(EstudianteNoEncontradoException.class);
         verify(estudianteOutputPort, never()).eliminarLogica(any(), any());
-        verify(proveedorIdentidadOutputPort, never()).revocarRealmRole(any(), anyString());
+        verify(proveedorIdentidadOutputPort, never()).revocarRol(any(), anyString());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -131,7 +131,7 @@ class RemoverEstudianteUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(EstudianteDomain.crear(id)))
                 .isInstanceOf(EstudianteNoEncontradoException.class);
         verify(estudianteOutputPort, never()).eliminarLogica(any(), any());
-        verify(proveedorIdentidadOutputPort, never()).revocarRealmRole(any(), anyString());
+        verify(proveedorIdentidadOutputPort, never()).revocarRol(any(), anyString());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -142,7 +142,7 @@ class RemoverEstudianteUseCaseImplTest {
         when(estudiantePorUsuarioFinder.obtener(id)).thenReturn(EstudianteDomain.crear(id));
         when(usuarioPorIdFinder.obtener(id)).thenReturn(usuario(id));
         var fallo = new InfrastructureException("Proveedor de identidad caido", "PROVEEDOR_NO_DISPONIBLE");
-        doThrow(fallo).when(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.ESTUDIANTE);
+        doThrow(fallo).when(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.ESTUDIANTE);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(EstudianteDomain.crear(id))).isSameAs(fallo);

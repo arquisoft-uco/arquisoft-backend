@@ -3,7 +3,7 @@ package com.arquisoft.usuarios.application.usuario.command.primaryport.model;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.UsuariosCodes;
 import com.arquisoft.shared.message.constant.UsuariosFields;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import com.arquisoft.shared.util.UtilColeccion;
 import com.arquisoft.shared.util.UtilTexto;
@@ -55,7 +55,7 @@ public record RegistrarUsuarioCommand(
                         Mensajes.obtener(RegistrarUsuarioKey.ERROR_ROL_REQUERIDO)));
         rolesNormalizados.stream()
                 .filter(rol -> !UtilTexto.esVacioONulo(rol))
-                .filter(rol -> !UsuariosRealmRoles.CONOCIDOS.contains(rol))
+                .filter(rol -> !UsuariosRoles.CONOCIDOS.contains(rol))
                 .forEach(rol -> result.agregarError(UsuariosFields.Usuario.ROLES,
                         UsuariosCodes.Usuario.ROL_NO_VALIDO,
                         Mensajes.formatear(RegistrarUsuarioKey.ERROR_ROL_NO_VALIDO, rol)));

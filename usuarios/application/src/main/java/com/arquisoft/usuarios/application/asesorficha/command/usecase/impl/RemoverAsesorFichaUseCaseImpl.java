@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.asesorficha.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RemoverAsesorFichaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
@@ -41,7 +41,7 @@ public class RemoverAsesorFichaUseCaseImpl implements RemoverAsesorFichaUseCase 
 
         asesorFicha.remover(UtilFecha.generarInstanteActual());
         asesorFichaOutputPort.eliminarLogica(asesorFicha.getUsuario(), asesorFicha.getEliminadoEn());
-        proveedorIdentidadOutputPort.revocarRealmRole(asesorFicha.getUsuario(), UsuariosRealmRoles.ASESOR_FICHA);
+        proveedorIdentidadOutputPort.revocarRol(asesorFicha.getUsuario(), UsuariosRoles.ASESOR_FICHA);
 
         eventPublisher.publish(new AsesorFichaRemovidoEvent(
                 usuario.getId(), usuario.getIdentificador(), usuario.getNombre(), usuario.getEmail()));

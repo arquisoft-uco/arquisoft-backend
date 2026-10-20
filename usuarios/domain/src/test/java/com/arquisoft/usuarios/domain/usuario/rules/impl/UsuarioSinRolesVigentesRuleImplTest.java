@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.domain.usuario.rules.impl;
 
 import com.arquisoft.shared.message.constant.UsuariosCodes;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.usuarios.domain.administrador.AdministradorDomain;
@@ -73,9 +73,9 @@ class UsuarioSinRolesVigentesRuleImplTest {
                     assertThat(ex.getCodigoError()).isEqualTo(UsuariosCodes.Usuario.ROLES_VIGENTES);
                     assertThat(ex.getMessage())
                             .contains(usuario.toString())
-                            .contains(": " + UsuariosRealmRoles.ASESOR + ".")
-                            .doesNotContain(UsuariosRealmRoles.ESTUDIANTE)
-                            .doesNotContain(UsuariosRealmRoles.COORDINADOR);
+                            .contains(": " + UsuariosRoles.ASESOR + ".")
+                            .doesNotContain(UsuariosRoles.ESTUDIANTE)
+                            .doesNotContain(UsuariosRoles.COORDINADOR);
                 });
     }
 
@@ -97,8 +97,8 @@ class UsuarioSinRolesVigentesRuleImplTest {
                     assertThat(ex.getCodigoError()).isEqualTo(UsuariosCodes.Usuario.ROLES_VIGENTES);
                     assertThat(ex.getMessage())
                             .contains(usuario.toString())
-                            .contains(": " + UsuariosRealmRoles.REPRESENTANTE_COMITE + ".")
-                            .doesNotContain(UsuariosRealmRoles.COORDINADOR);
+                            .contains(": " + UsuariosRoles.REPRESENTANTE_COMITE + ".")
+                            .doesNotContain(UsuariosRoles.COORDINADOR);
                 });
     }
 
@@ -133,7 +133,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
                     assertThat(ex.getCodigoError()).isEqualTo(UsuariosCodes.Usuario.ROLES_VIGENTES);
                     assertThat(ex.getMessage())
                             .contains(usuario.toString())
-                            .contains(": " + UsuariosRealmRoles.ADMINISTRADOR + ".");
+                            .contains(": " + UsuariosRoles.ADMINISTRADOR + ".");
                 });
     }
 
@@ -164,7 +164,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
                     assertThat(ex.getCodigoError()).isEqualTo(UsuariosCodes.Usuario.ROLES_VIGENTES);
                     assertThat(ex.getMessage())
                             .contains(usuario.toString())
-                            .contains(": " + UsuariosRealmRoles.BIBLIOTECARIO + ".");
+                            .contains(": " + UsuariosRoles.BIBLIOTECARIO + ".");
                 });
     }
 
@@ -194,7 +194,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
                     assertThat(ex.getCodigoError()).isEqualTo(UsuariosCodes.Usuario.ROLES_VIGENTES);
                     assertThat(ex.getMessage())
                             .contains(usuario.toString())
-                            .contains(": " + UsuariosRealmRoles.JURADO + ".");
+                            .contains(": " + UsuariosRoles.JURADO + ".");
                 });
     }
 
@@ -225,7 +225,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(roles))
                 .isInstanceOf(UsuarioRolesVigentesException.class)
-                .hasMessageContaining(String.join(", ", UsuariosRealmRoles.ESTUDIANTE, UsuariosRealmRoles.ASESOR,
-                        UsuariosRealmRoles.ASESOR_FICHA, UsuariosRealmRoles.COORDINADOR, UsuariosRealmRoles.JURADO));
+                .hasMessageContaining(String.join(", ", UsuariosRoles.ESTUDIANTE, UsuariosRoles.ASESOR,
+                        UsuariosRoles.ASESOR_FICHA, UsuariosRoles.COORDINADOR, UsuariosRoles.JURADO));
     }
 }

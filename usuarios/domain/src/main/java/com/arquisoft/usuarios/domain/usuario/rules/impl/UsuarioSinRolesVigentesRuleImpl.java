@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.domain.usuario.rules.impl;
 
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioRolesVigentesException;
 import com.arquisoft.usuarios.domain.usuario.model.RolesUsuario;
 import com.arquisoft.usuarios.domain.usuario.rules.UsuarioSinRolesVigentesRule;
@@ -16,28 +16,28 @@ public class UsuarioSinRolesVigentesRuleImpl implements UsuarioSinRolesVigentesR
         var vigentes = new ArrayList<String>();
 
         if (vigente(roles.estudiante().esVacio(), roles.estudiante().estaEliminado())) {
-            vigentes.add(UsuariosRealmRoles.ESTUDIANTE);
+            vigentes.add(UsuariosRoles.ESTUDIANTE);
         }
         if (vigente(roles.asesor().esVacio(), roles.asesor().estaEliminado())) {
-            vigentes.add(UsuariosRealmRoles.ASESOR);
+            vigentes.add(UsuariosRoles.ASESOR);
         }
         if (vigente(roles.asesorFicha().esVacio(), roles.asesorFicha().estaEliminado())) {
-            vigentes.add(UsuariosRealmRoles.ASESOR_FICHA);
+            vigentes.add(UsuariosRoles.ASESOR_FICHA);
         }
         if (vigente(roles.coordinador().esVacio(), roles.coordinador().estaEliminado())) {
-            vigentes.add(UsuariosRealmRoles.COORDINADOR);
+            vigentes.add(UsuariosRoles.COORDINADOR);
         }
         if (vigente(roles.representanteComite().esVacio(), roles.representanteComite().estaEliminado())) {
-            vigentes.add(UsuariosRealmRoles.REPRESENTANTE_COMITE);
+            vigentes.add(UsuariosRoles.REPRESENTANTE_COMITE);
         }
         if (vigente(roles.administrador().esVacio(), roles.administrador().estaEliminado())) {
-            vigentes.add(UsuariosRealmRoles.ADMINISTRADOR);
+            vigentes.add(UsuariosRoles.ADMINISTRADOR);
         }
         if (vigente(roles.bibliotecario().esVacio(), roles.bibliotecario().estaEliminado())) {
-            vigentes.add(UsuariosRealmRoles.BIBLIOTECARIO);
+            vigentes.add(UsuariosRoles.BIBLIOTECARIO);
         }
         if (vigente(roles.jurado().esVacio(), roles.jurado().estaEliminado())) {
-            vigentes.add(UsuariosRealmRoles.JURADO);
+            vigentes.add(UsuariosRoles.JURADO);
         }
 
         if (!vigentes.isEmpty()) {

@@ -182,7 +182,7 @@ class KeycloakProveedorIdentidadOutputAdapterModificacionTest {
     @Test
     void noDebeLlamarAKeycloak_cuandoAsignarRealmRolesRecibeListaVacia() {
         // Act & Assert
-        assertThatCode(() -> adapter.asignarRealmRoles(UUID.randomUUID(), List.of())).doesNotThrowAnyException();
+        assertThatCode(() -> adapter.asignarRoles(UUID.randomUUID(), List.of())).doesNotThrowAnyException();
         verify(restTemplate, never()).exchange(any(String.class), any(HttpMethod.class),
                 any(HttpEntity.class), eq(Void.class));
     }
@@ -198,7 +198,7 @@ class KeycloakProveedorIdentidadOutputAdapterModificacionTest {
                 .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
         // Act & Assert
-        assertThatCode(() -> adapter.asignarRealmRoles(usuario, List.of("estudiante")))
+        assertThatCode(() -> adapter.asignarRoles(usuario, List.of("estudiante")))
                 .doesNotThrowAnyException();
         verify(restTemplate, times(1)).exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.POST),
                 any(HttpEntity.class), eq(Void.class));
