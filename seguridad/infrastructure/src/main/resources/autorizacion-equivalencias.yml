@@ -160,6 +160,7 @@ security:
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:create"}
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones/cargas", role: "repositorio-artefactos:carga-version-repositorio-artefacto:create"}
         # artefactos
+        - {method: GET, path: "/api/estados-revision-asesor", role: "artefactos:estado-revision-asesor:view"}
         - {method: POST, path: "/api/artefactos/revisiones-asesor/estudiante", role: "artefactos:revision-asesor-estudiante:view"}
         # mapas_ruta
         - {method: POST, path: "/api/mapas-ruta", role: "mapas-ruta:mapa-ruta:create"}
