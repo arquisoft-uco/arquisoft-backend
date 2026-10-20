@@ -4,11 +4,11 @@ import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.com
 import com.arquisoft.repositorio_artefactos.infrastructure.repositorioartefacto.command.primaryadapter.web.dto.GenerarRepositorioArtefactoRequestDTO;
 import com.arquisoft.repositorio_artefactos.infrastructure.repositorioartefacto.command.primaryadapter.web.dto.GenerarRepositorioArtefactoResponseDTO;
 import com.arquisoft.repositorio_artefactos.infrastructure.repositorioartefacto.command.primaryadapter.web.mapper.GenerarRepositorioArtefactoRequestMapper;
-import com.arquisoft.repositorio_artefactos.infrastructure.security.RepositorioArtefactosAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.RepositorioArtefactosApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,9 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +35,6 @@ public class GenerarRepositorioArtefactoController {
     private final GenerarRepositorioArtefactoInteractor interactor;
 
     @PostMapping
-    @PreAuthorize(RepositorioArtefactosAuthorities.Expresiones.HAS_REPOSITORIO_ARTEFACTO_CREATE)
     @Operation(
             summary = RepositorioArtefactosApiMessages.RepositorioArtefacto.GENERAR_SUMMARY,
             description = RepositorioArtefactosApiMessages.RepositorioArtefacto.GENERAR_DESCRIPTION,
@@ -66,9 +62,9 @@ public class GenerarRepositorioArtefactoController {
     })
     public ResponseEntity<GenerarRepositorioArtefactoResponseDTO> generar(
             @RequestBody GenerarRepositorioArtefactoRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
         var id = interactor.ejecutar(
-                GenerarRepositorioArtefactoRequestMapper.toCommand(request, jwt.getSubject()));
+                GenerarRepositorioArtefactoRequestMapper.toCommand(request, identidad.id().toString()));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new GenerarRepositorioArtefactoResponseDTO(id));
     }

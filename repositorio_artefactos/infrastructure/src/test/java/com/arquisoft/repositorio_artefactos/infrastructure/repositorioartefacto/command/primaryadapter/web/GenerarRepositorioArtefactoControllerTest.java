@@ -3,12 +3,12 @@ package com.arquisoft.repositorio_artefactos.infrastructure.repositorioartefacto
 import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.primaryport.interactor.GenerarRepositorioArtefactoInteractor;
 import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.primaryport.model.GenerarRepositorioArtefactoCommand;
 import com.arquisoft.repositorio_artefactos.domain.administrador.exception.AdministradorNoVigenteException;
-import com.arquisoft.repositorio_artefactos.infrastructure.security.RepositorioArtefactosAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.RepositorioArtefactosCodes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -37,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(GenerarRepositorioArtefactoController.class)
-@Import({
+@Import({IdentidadActualTestConfig.class,
         AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         GenerarRepositorioArtefactoControllerTest.TestSecurityConfig.class
@@ -51,7 +49,6 @@ class GenerarRepositorioArtefactoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -79,8 +76,7 @@ class GenerarRepositorioArtefactoControllerTest {
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso(String subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(subject))
-                .authorities(new SimpleGrantedAuthority(RepositorioArtefactosAuthorities.REPOSITORIO_ARTEFACTO_CREATE));
+                .jwt(jwt -> jwt.subject(subject));
     }
 
     @Test
@@ -104,13 +100,13 @@ class GenerarRepositorioArtefactoControllerTest {
     }
 
     @Test
-    void debeResponder400_cuandoElSubjectNoEsUuid() throws Exception {
+    void debeResponder401_cuandoElSubjectNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(post(RUTA)
                         .with(jwtConPermiso("no-es-uuid"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
         verifyNoInteractions(interactor);
     }
 
@@ -138,19 +134,6 @@ class GenerarRepositorioArtefactoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeResponder403_cuandoNoTieneElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(UtilUUID.generarNuevoUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("otro:recurso:view")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-        verifyNoInteractions(interactor);
     }
 
     @Test
