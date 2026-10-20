@@ -156,7 +156,7 @@ El compuesto se arma de abajo arriba — `RegistrarFichaPerfilMapper` es la refe
 | `command/secondaryadapter/entity/` (+`mapper/`, `repository/`) | JPA + `OutputAdapter` + repo Spring Data | `FichaPerfilJpaEntity.java`, `FichaPerfilJpaMapper.java`, `FichaPerfilCommandOutputAdapter.java`, `FichaPerfilCommandRepository.java` |
 | `query/primaryadapter/web/` (+`dto/`, `mapper/`) | `Controller` de lectura + `{Entidad}ResponseDTO` + `{Entidad}ResponseMapper` + `Consultar{Entidad}[{Rol}]RequestMapper.toQuery(dto[, datoDelJwt])`, que arma el **`Query`**, nunca el `Criteria` | `ConsultarFichasPerfilCoordinadorController.java`, `FichaPerfilResponseMapper.java`, `ConsultarFichasPerfilCoordinadorRequestMapper.java` |
 | `query/secondaryadapter/repository/` (+`mapper/`) | `@Subselect`/`@Immutable`/`@Synchronize`, plana; specification, sort, adapter, repo | `FichaPerfilJpaQueryEntity.java`, `FichaPerfilJpaSpecification.java`, `FichaPerfilSortMapper.java`, `FichaPerfilQueryOutputAdapter.java`, `FichaPerfilQueryRepository.java` |
-| `{feature}/exception/` | Excepciones de infraestructura del feature (→ 503), dentro del slice | `seguridad/infrastructure/auth/exception/ProveedorIdentidadNoDisponibleException.java` |
+| `{feature}/exception/` | Excepciones de infraestructura del feature (→ 503), dentro del slice | `seguridad/infrastructure/autenticacion/exception/ProveedorIdentidadNoDisponibleException.java` |
 | `config/`, `filter/` | Transversales del contexto | `FichasDataSourceConfig.java`, `seguridad/infrastructure/filter/AutorizacionAccesoFilter.java` |
 | `handler/` | El `@RestControllerAdvice`, si lo hay — **nunca en `exception/`** (solo `seguridad` tiene uno) | `SeguridadGlobalExceptionHandler.java` |
 | `src/main/resources/db/migration/{contexto}/` | Migraciones Flyway, subcarpeta propia obligatoria | `V20260504181427__crear_tablas_fichas_perfil.sql` |
@@ -275,7 +275,7 @@ No hay `exception/` a nivel de contexto:
 | Fallo real de infraestructura, desde un `OutputAdapter` | `infrastructure/{feature}/exception/` | 503 |
 
 **Toda la jerarquía de un concepto va junta:** `AutenticacionException` y sus subclases
-`CredencialesInvalidasException`/`TokenInvalidoException` viven en `seguridad/application/auth/exception/`;
+`CredencialesInvalidasException`/`TokenInvalidoException` viven en `seguridad/application/autenticacion/exception/`;
 `ProveedorIdentidadNoDisponibleException` (proveedor de identidad caído) baja a `infrastructure/auth/exception/`. Una
 subclase en distinta capa que su padre parte la jerarquía en dos módulos.
 

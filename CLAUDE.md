@@ -506,7 +506,7 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 | Qué | Dónde | Convención que rompe |
 |---|---|---|
 | `EstadoEvaluacionCommandRepository` | `fichas/…/estadoevaluacion/…/repository/` | Código muerto: ningún `OutputPort`/`OutputAdapter` lo consume |
-| Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/auth/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
+| Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/autenticacion/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
 | Enums de catálogo en dos ubicaciones | `domain/{catalogo}/` vs `domain/{feature}/model/` | **Decisión abierta del proyecto, no la "arregles".** Un enum nuevo sigue lo que ya use su contexto |
 | `AdministradorRemovidoConsumer` stub | `solicitudes/…/usuario/…/amqp/usuarios/administrador/` | **Deliberado, HU-232.** Consume `usuarios.administrador.removido` para que el evento tenga cola enlazada, pero solo loguea `info` y confirma: la réplica de `usuario` en `solicitudes` es genérica y no distingue el rol, y qué significa "dejó de ser administrador" ahí es una decisión de negocio pendiente. Activar = invocar un `Interactor` de baja/actualización de la réplica cuando una HU lo defina |
 | `UsuarioSolicitudesCommandOutputAdapter` / `UsuarioSolicitudesCommandRepository` | `solicitudes/…/usuario/…/repository/` | La réplica lleva el contexto en el nombre. Con los beans nombrados por FQN, una réplica usa el nombre natural (`UsuarioCommandOutputAdapter`); ver `arquisoft-arquitectura/references/eventos.md` → *Replicación entre contextos* |

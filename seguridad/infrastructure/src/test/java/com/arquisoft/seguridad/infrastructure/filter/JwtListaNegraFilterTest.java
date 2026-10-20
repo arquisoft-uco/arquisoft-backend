@@ -3,7 +3,7 @@ package com.arquisoft.seguridad.infrastructure.filter;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.security.RutasPublicas;
-import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
+import com.arquisoft.seguridad.application.autenticacion.command.secondaryport.TokenInvalidadoOutputPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

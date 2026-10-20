@@ -491,7 +491,7 @@ copie creyendo que son la regla, y para que se resuelvan cuando se toque esa par
 
 | Qué | Dónde | Convención | Estado |
 |---|---|---|---|
-| `*ResponseDTO` como clase Lombok `@Data`/`@Builder` | `seguridad/infrastructure/auth/command/primaryadapter/web/dto/` (los cuatro) | Los DTO de respuesta son `record`, como en `fichas` | Pendiente de migrar |
+| `*ResponseDTO` como clase Lombok `@Data`/`@Builder` | `seguridad/infrastructure/autenticacion/command/primaryadapter/web/dto/` (los cuatro) | Los DTO de respuesta son `record`, como en `fichas` | Pendiente de migrar |
 | `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Código muerto: no hay `OutputPort` ni `OutputAdapter` que lo consuma | Pendiente de eliminar |
 | `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub con `// TODO: persistir en tabla espejo`. Por eso no tiene `Interactor`, ni `@Transactional`, ni `Validator`, y el `UsuarioCreadoConsumer` inyecta el `UseCase` directo — cuando persista de verdad debe pasar por un `Interactor` | Pendiente de implementar |
 

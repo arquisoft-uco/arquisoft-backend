@@ -3,7 +3,7 @@ package com.arquisoft.seguridad.infrastructure.filter;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.Mensajes;
-import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
+import com.arquisoft.seguridad.application.autenticacion.command.secondaryport.TokenInvalidadoOutputPort;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.security.RutasPublicas;
 import com.arquisoft.shared.util.UtilObjeto;
