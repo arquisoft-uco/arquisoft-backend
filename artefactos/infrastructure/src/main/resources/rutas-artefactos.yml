@@ -6,3 +6,5 @@ rutas:
     revisiones-asesor:
       base: /artefactos/revisiones-asesor
       estudiante: /estudiante
+    estados-revision-asesor:
+      base: /estados-revision-asesor
