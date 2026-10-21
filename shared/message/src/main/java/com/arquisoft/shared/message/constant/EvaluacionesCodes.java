@@ -110,6 +110,7 @@ public final class EvaluacionesCodes {
         public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
         public static final String NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
+        public static final String ASESOR_REQUERIDO = "EVALUACION_ASESOR_REQUERIDO";
     }
 
     public static final class EvaluacionJurado {
