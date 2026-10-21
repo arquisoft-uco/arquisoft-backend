@@ -16,6 +16,7 @@ import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.key.evaluaciones.CategoriaItemCuantitativoAsesorKey;
 import com.arquisoft.shared.message.key.evaluaciones.CategoriaItemCuantitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.CriterioItemCualitativoJuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaAsesorKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
@@ -130,6 +131,7 @@ public final class ClavesCatalogo {
             CriterioItemCualitativoJuradoKey.class,
             CategoriaItemCuantitativoAsesorKey.class,
             CategoriaItemCuantitativoJuradoKey.class,
+            EvaluacionCualitativaAsesorKey.class,
             EvaluacionCualitativaJuradoKey.class,
             EvaluacionCuantitativaJuradoKey.class,
             EvaluacionJuradoKey.class,

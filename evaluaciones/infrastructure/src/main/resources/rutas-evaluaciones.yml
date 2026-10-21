@@ -25,6 +25,9 @@ rutas:
       cualitativas: /{evaluacionJuradoId}/cualitativas
       cuantitativas: /{evaluacionJuradoId}/cuantitativas
       jurado: /jurado
+    evaluaciones-asesor:
+      base: /evaluaciones-asesor
+      cualitativas: /{evaluacionAsesorId}/cualitativas
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
       por-id: /{itemId}

@@ -44,6 +44,14 @@ public final class EvaluacionesFields {
         public static final String CRITERIO = "criterio";
     }
 
+    public static final class EvaluacionCualitativaAsesor {
+
+        private EvaluacionCualitativaAsesor() {}
+
+        public static final String EVALUACION_ASESOR = "evaluacionAsesor";
+        public static final String ASESOR = "asesor";
+    }
+
     public static final class EvaluacionCuantitativaJurado {
 
         private EvaluacionCuantitativaJurado() {}

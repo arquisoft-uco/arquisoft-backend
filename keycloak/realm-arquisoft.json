@@ -307,6 +307,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
               "solicitudes:respuesta-novedad-asesor:update",
               "solicitudes:respuesta-novedad-asesor:delete",
@@ -624,6 +625,15 @@
         {
           "id": "be44b326-f0f0-417c-9c6b-fcb3d515869f",
           "name": "mapas-ruta:mapa-ruta-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "6b0f2d4e-8a31-4c57-9e1d-3a7c5b92f4a8",
+          "name": "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,

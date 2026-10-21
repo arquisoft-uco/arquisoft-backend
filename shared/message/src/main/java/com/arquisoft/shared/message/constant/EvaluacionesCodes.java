@@ -83,6 +83,20 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_FINALIZADA";
     }
 
+    public static final class EvaluacionCualitativaAsesor {
+
+        private EvaluacionCualitativaAsesor() {}
+
+        public static final String EVALUACION_ASESOR_REQUERIDO =
+                "EVALUACION_CUALITATIVA_ASESOR_EVALUACION_ASESOR_REQUERIDO";
+        public static final String ASESOR_REQUERIDO =
+                "EVALUACION_CUALITATIVA_ASESOR_ASESOR_REQUERIDO";
+        public static final String EVALUACION_ASESOR_NO_ENCONTRADA =
+                "EVALUACION_CUALITATIVA_ASESOR_EVALUACION_ASESOR_NO_ENCONTRADA";
+        public static final String NO_PERTENECE_ASESOR =
+                "EVALUACION_CUALITATIVA_ASESOR_NO_PERTENECE_ASESOR";
+    }
+
     public static final class OmisionEvaluacionesCualitativasJurado {
 
         private OmisionEvaluacionesCualitativasJurado() {}
