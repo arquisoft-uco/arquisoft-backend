@@ -50,6 +50,15 @@ public final class EvaluacionesFields {
 
         public static final String EVALUACION_ASESOR = "evaluacionAsesor";
         public static final String ASESOR = "asesor";
+        public static final String ITEM = "item";
+        public static final String CRITERIO = "criterio";
+    }
+
+    public static final class RegistroEvaluacionesCualitativasAsesor {
+
+        private RegistroEvaluacionesCualitativasAsesor() {}
+
+        public static final String EVALUACIONES = "evaluaciones";
     }
 
     public static final class EvaluacionCuantitativaJurado {

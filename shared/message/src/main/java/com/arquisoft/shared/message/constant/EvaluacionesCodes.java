@@ -95,6 +95,28 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_ASESOR_EVALUACION_ASESOR_NO_ENCONTRADA";
         public static final String NO_PERTENECE_ASESOR =
                 "EVALUACION_CUALITATIVA_ASESOR_NO_PERTENECE_ASESOR";
+        public static final String ITEM_REQUERIDO =
+                "EVALUACION_CUALITATIVA_ASESOR_ITEM_REQUERIDO";
+        public static final String ITEM_INVALIDO =
+                "EVALUACION_CUALITATIVA_ASESOR_ITEM_INVALIDO";
+        public static final String CRITERIO_REQUERIDO =
+                "EVALUACION_CUALITATIVA_ASESOR_CRITERIO_REQUERIDO";
+        public static final String CRITERIO_INVALIDO =
+                "EVALUACION_CUALITATIVA_ASESOR_CRITERIO_INVALIDO";
+        public static final String ITEMS_NO_ENCONTRADOS =
+                "EVALUACION_CUALITATIVA_ASESOR_ITEMS_NO_ENCONTRADOS";
+        public static final String CRITERIOS_NO_ENCONTRADOS =
+                "EVALUACION_CUALITATIVA_ASESOR_CRITERIOS_NO_ENCONTRADOS";
+        public static final String ITEMS_YA_REGISTRADOS =
+                "EVALUACION_CUALITATIVA_ASESOR_ITEMS_YA_REGISTRADOS";
+    }
+
+    public static final class RegistroEvaluacionesCualitativasAsesor {
+
+        private RegistroEvaluacionesCualitativasAsesor() {}
+
+        public static final String LOTE_VACIO = "REGISTRO_EVALUACIONES_CUALITATIVAS_ASESOR_LOTE_VACIO";
+        public static final String ITEMS_REPETIDOS = "REGISTRO_EVALUACIONES_CUALITATIVAS_ASESOR_ITEMS_REPETIDOS";
     }
 
     public static final class OmisionEvaluacionesCualitativasJurado {
