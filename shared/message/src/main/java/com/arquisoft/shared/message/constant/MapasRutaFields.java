@@ -23,5 +23,6 @@ public final class MapasRutaFields {
         public static final String MAPA_RUTA = "mapaRuta";
         public static final String DESCRIPCION = "descripcion";
         public static final String ASESOR = "asesor";
+        public static final String TAREA = "tarea";
     }
 }
