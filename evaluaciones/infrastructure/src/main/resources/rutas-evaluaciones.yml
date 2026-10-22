@@ -11,6 +11,7 @@ rutas:
       evaluaciones-jurado: /{evaluacionId}/evaluaciones-jurado
       coordinador: /coordinador
       asesor: /asesor
+      estudiante: /estudiante
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
       por-id: /{itemId}
