@@ -262,6 +262,7 @@
               "solicitudes:solicitud-novedad-asesor-enviada:view",
               "usuarios:coordinador-vigente:view",
               "mapas-ruta:tarea:view",
+              "mapas-ruta:tarea-mapa-ruta-estudiante:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
               "solicitudes:solicitud-novedad-asesor:create",
               "solicitudes:solicitud:create",
@@ -1014,6 +1015,15 @@
         {
           "id": "35fe0366-a963-4efb-a707-c61e86241bc5",
           "name": "mapas-ruta:tarea:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8d3f6a2e-5c41-4b7a-9e20-1f6b7c3a4d95",
+          "name": "mapas-ruta:tarea-mapa-ruta-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
