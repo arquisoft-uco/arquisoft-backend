@@ -133,7 +133,8 @@
               "evaluaciones:categoria-item-cuantitativo-jurado:view",
               "evaluaciones:evaluacion-cualitativa-jurado:create",
               "evaluaciones:evaluacion-cualitativa-jurado:delete",
-              "evaluaciones:criterio-item-cualitativo-jurado:view"
+              "evaluaciones:criterio-item-cualitativo-jurado:view",
+              "evaluaciones:evaluacion-jurado-jurado:view"
             ]
           }
         },
@@ -307,6 +308,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
               "solicitudes:respuesta-novedad-asesor:update",
               "solicitudes:respuesta-novedad-asesor:delete",
@@ -323,7 +325,8 @@
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
               "proyectos:proyecto-grado-asesor-detalle:view",
-              "artefactos:estado-revision-asesor:view"
+              "artefactos:estado-revision-asesor:view",
+              "evaluaciones:evaluacion-asesor:view"
             ]
           }
         },
@@ -630,6 +633,15 @@
           "attributes": {}
         },
         {
+          "id": "6b0f2d4e-8a31-4c57-9e1d-3a7c5b92f4a8",
+          "name": "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "f36e53d7-ce60-4674-9987-31aa9b831b41",
           "name": "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
           "description": "",
@@ -803,6 +815,15 @@
         {
           "id": "fdc02231-5661-4b8a-ad50-975f72709dec",
           "name": "evaluaciones:evaluacion-jurado-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3b7d5f0e-9c42-4a6e-8d1f-6a2e4c9b7f15",
+          "name": "evaluaciones:evaluacion-jurado-jurado:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1739,6 +1760,15 @@
         {
           "id": "1d0d09e1-d20e-4790-b725-6b16528af494",
           "name": "evaluaciones:evaluacion-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7c2e5a1d-3b9f-4d6a-8e41-5f0a9c3d2b17",
+          "name": "evaluaciones:evaluacion-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,

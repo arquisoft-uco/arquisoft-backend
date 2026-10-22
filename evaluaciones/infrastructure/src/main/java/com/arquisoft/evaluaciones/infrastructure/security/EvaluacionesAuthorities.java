@@ -63,6 +63,8 @@ public final class EvaluacionesAuthorities {
 
     public static final String EVALUACION_JURADO_ESTUDIANTE_VIEW =
             "evaluaciones:evaluacion-jurado-estudiante:view";
+    public static final String EVALUACION_JURADO_JURADO_VIEW =
+            "evaluaciones:evaluacion-jurado-jurado:view";
     public static final String EVALUACION_JURADO_CREATE =
             "evaluaciones:evaluacion-jurado:create";
 
@@ -138,6 +140,9 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_EVALUACION_JURADO_ESTUDIANTE_VIEW =
                 HAS_AUTHORITY_INICIO + EVALUACION_JURADO_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_EVALUACION_JURADO_JURADO_VIEW =
+                HAS_AUTHORITY_INICIO + EVALUACION_JURADO_JURADO_VIEW + HAS_AUTHORITY_FIN;
 
         public static final String HAS_EVALUACION_COORDINADOR_VIEW =
                 HAS_AUTHORITY_INICIO + EVALUACION_COORDINADOR_VIEW + HAS_AUTHORITY_FIN;

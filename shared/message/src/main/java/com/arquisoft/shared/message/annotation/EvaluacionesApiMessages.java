@@ -128,6 +128,22 @@ public final class EvaluacionesApiMessages {
                         + "o alguna evaluación cualitativa no existe en ella o está repetida";
     }
 
+    public static final class EvaluacionCualitativaAsesor {
+
+        private EvaluacionCualitativaAsesor() {}
+
+        public static final String TAG_NAME = "Evaluaciones cualitativas del asesor";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de las evaluaciones cualitativas asociadas a una evaluación de asesor";
+        public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cualitativas del asesor";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta las evaluaciones cualitativas realizadas por el asesor autenticado en una evaluación suya";
+        public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cualitativas del asesor";
+        public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String CONSULTAR_RESP_422 =
+                "La evaluación de asesor no existe o no pertenece al asesor autenticado";
+    }
+
     public static final class EvaluacionCuantitativaJurado {
 
         private EvaluacionCuantitativaJurado() {}
@@ -177,6 +193,11 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de evaluaciones";
         public static final String CONSULTAR_RESP_400 =
                 "El filtro, el orden o la paginación solicitados no son aceptados";
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar evaluaciones (asesor)";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Consulta de forma paginada las evaluaciones asociadas al asesor autenticado con su entregable y "
+                        + "su estado, con filtro por estado, proyecto o identificador del entregable y orden por "
+                        + "proyecto (por defecto, ascendente) o estado";
     }
 
     public static final class EvaluacionJurado {
@@ -194,6 +215,14 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 =
                 "El identificador no es válido o el filtro/orden solicitado no es aceptado";
         public static final String CONSULTAR_RESP_422 = "La evaluación no existe";
+        public static final String CONSULTAR_ASIGNADAS_SUMMARY = "Consultar evaluaciones asignadas al jurado";
+        public static final String CONSULTAR_ASIGNADAS_DESCRIPTION =
+                "Lista las evaluaciones que el coordinador asignó al jurado autenticado, con su estado y su "
+                        + "entregable; primero las pendientes, luego las en progreso y al final las finalizadas";
+        public static final String CONSULTAR_ASIGNADAS_RESP_200 =
+                "Evaluaciones asignadas al jurado (vacía si no tiene asignaciones)";
+        public static final String CONSULTAR_ASIGNADAS_RESP_400 = "La identidad del jurado autenticado no es válida";
+        public static final String CONSULTAR_ASIGNADAS_RESP_422 = "El jurado autenticado no existe";
         public static final String ASIGNAR_SUMMARY = "Asignar jurados a una evaluación";
         public static final String ASIGNAR_DESCRIPTION =
                 "Asigna un conjunto de jurados a una evaluación y devuelve los identificadores generados";

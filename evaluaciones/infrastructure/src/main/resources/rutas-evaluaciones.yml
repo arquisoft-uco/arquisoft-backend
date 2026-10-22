@@ -10,6 +10,7 @@ rutas:
       jurados: /{evaluacionId}/jurados
       evaluaciones-jurado: /{evaluacionId}/evaluaciones-jurado
       coordinador: /coordinador
+      asesor: /asesor
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
       por-id: /{itemId}
@@ -23,6 +24,10 @@ rutas:
       base: /evaluaciones/evaluaciones-jurado
       cualitativas: /{evaluacionJuradoId}/cualitativas
       cuantitativas: /{evaluacionJuradoId}/cuantitativas
+      jurado: /jurado
+    evaluaciones-asesor:
+      base: /evaluaciones-asesor
+      cualitativas: /{evaluacionAsesorId}/cualitativas
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
       por-id: /{itemId}
