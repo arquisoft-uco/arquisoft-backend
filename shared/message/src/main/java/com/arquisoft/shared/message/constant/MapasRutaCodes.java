@@ -31,4 +31,24 @@ public final class MapasRutaCodes {
         public static final String NO_EN_PROCESO = "PROYECTO_GRADO_NO_EN_PROCESO";
         public static final String ESTADO_NO_ENCONTRADO = "PROYECTO_GRADO_ESTADO_NO_ENCONTRADO";
     }
+
+    public static final class Tarea {
+
+        private Tarea() {}
+
+        public static final String MAPA_RUTA_REQUERIDO = "TAREA_MAPA_RUTA_REQUERIDO";
+        public static final String DESCRIPCION_REQUERIDA = "TAREA_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_DEMASIADO_LARGA = "TAREA_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String ASESOR_REQUERIDO = "TAREA_ASESOR_REQUERIDO";
+        public static final String ASESOR_INVALIDO = "TAREA_ASESOR_INVALIDO";
+        public static final String TAREA_DUPLICADA = "TAREA_DUPLICADA";
+        public static final String ESTADO_ITEM_NO_ENCONTRADO = "ESTADO_ITEM_NO_ENCONTRADO";
+    }
+
+    public static final class AsignacionAsesor {
+
+        private AsignacionAsesor() {}
+
+        public static final String NO_ASIGNADO = "ASESOR_NO_ASIGNADO_PROYECTO_GRADO";
+    }
 }
