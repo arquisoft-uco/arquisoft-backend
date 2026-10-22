@@ -107,6 +107,15 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cualitativas del jurado";
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
         public static final String CONSULTAR_RESP_422 = "La evaluación de jurado no existe";
+        public static final String CONSULTAR_REALIZADAS_SUMMARY =
+                "Consultar evaluaciones cualitativas realizadas por el jurado";
+        public static final String CONSULTAR_REALIZADAS_DESCRIPTION =
+                "Consulta las evaluaciones cualitativas de una evaluación de jurado que pertenece al jurado autenticado";
+        public static final String CONSULTAR_REALIZADAS_RESP_200 =
+                "Listado de evaluaciones cualitativas realizadas por el jurado";
+        public static final String CONSULTAR_REALIZADAS_RESP_400 = "Datos de entrada inválidos";
+        public static final String CONSULTAR_REALIZADAS_RESP_422 =
+                "La evaluación de jurado no existe o pertenece a otro jurado";
         public static final String REGISTRAR_SUMMARY = "Registrar lote de evaluaciones cualitativas";
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra un lote de evaluaciones cualitativas del jurado sobre una evaluación de jurado";

@@ -15,7 +15,7 @@ import java.util.UUID;
 @Entity
 @Immutable
 @Subselect("""
-        SELECT ej.id AS id
+        SELECT ej.id AS id, ej.jurado_id AS jurado_id
         FROM evaluacion_jurado ej
         """)
 @Synchronize("evaluacion_jurado")
@@ -27,4 +27,7 @@ public class EvaluacionJuradoAccesoJpaQueryEntity {
     @Id
     @Column(name = "id")
     private UUID id;
+
+    @Column(name = "jurado_id")
+    private UUID juradoId;
 }

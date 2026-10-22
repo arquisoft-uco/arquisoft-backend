@@ -134,7 +134,8 @@
               "evaluaciones:evaluacion-cualitativa-jurado:create",
               "evaluaciones:evaluacion-cualitativa-jurado:delete",
               "evaluaciones:criterio-item-cualitativo-jurado:view",
-              "evaluaciones:evaluacion-jurado-jurado:view"
+              "evaluaciones:evaluacion-jurado-jurado:view",
+              "evaluaciones:evaluacion-cualitativa-jurado-jurado:view"
             ]
           }
         },
@@ -643,6 +644,15 @@
         {
           "id": "f36e53d7-ce60-4674-9987-31aa9b831b41",
           "name": "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "379131d7-1772-4351-b0f2-aca5b7292143",
+          "name": "evaluaciones:evaluacion-cualitativa-jurado-jurado:view",
           "description": "",
           "composite": false,
           "clientRole": true,

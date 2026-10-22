@@ -16,6 +16,9 @@ public enum EvaluacionCualitativaJuradoKey implements ClaveMensaje {
             "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluaciones-no-encontradas", 2),
     ERROR_EVALUACION_JURADO_FINALIZADA(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluacion-jurado-finalizada", 1),
+    ERROR_NO_PERTENECE_JURADO(
+            "evaluaciones.dominio.evaluacioncualitativajurado.error.no-pertenece-jurado", 1),
+    LOG_CONSULTANDO_REALIZADAS("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando-realizadas", 2),
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consulta-completada", 1),
     LOG_REGISTRANDO_LOTE("evaluaciones.aplicacion.evaluacioncualitativajurado.log.registrando-lote", 2),
