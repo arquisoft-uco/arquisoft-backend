@@ -26,7 +26,7 @@ class IdentidadActualSeguridadAdapterTest {
     private final IdentidadActualSeguridadAdapter adaptador = new IdentidadActualSeguridadAdapter(
             new AutenticacionProperties(List.of(new AutenticacionProperties.Emisor("legado", true, ISSUER, "",
                     List.of(), ModoAutorizacion.ROLE_TABLE, true,
-                    new ClaimsIdentidad("sub", "email", "preferred_username", "name", "realm_access.roles", "")))));
+                    new ClaimsIdentidad("sub", "email", "preferred_username", "name", "realm_access.roles")))));
 
     @AfterEach
     void limpiar() {

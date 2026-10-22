@@ -10,7 +10,7 @@ class AutenticacionPropertiesTest {
 
     private static AutenticacionProperties.Emisor emisor(String id, boolean habilitado, boolean listaNegra) {
         return new AutenticacionProperties.Emisor(id, habilitado, "https://" + id, "", List.of("a", " "),
-                ModoAutorizacion.PEP, listaNegra, new ClaimsIdentidad("sub", "email", "u", "n", "", ""));
+                ModoAutorizacion.PEP, listaNegra, new ClaimsIdentidad("sub", "email", "u", "n", ""));
     }
 
     @Test

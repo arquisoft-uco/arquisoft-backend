@@ -7,6 +7,5 @@ public record ClaimsIdentidad(
         @DefaultValue("email") String correo,
         @DefaultValue("preferred_username") String nombreUsuario,
         @DefaultValue("name") String nombre,
-        @DefaultValue("") String roles,
-        @DefaultValue("") String permisos) {
+        @DefaultValue("") String roles) {
 }

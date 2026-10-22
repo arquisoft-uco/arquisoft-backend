@@ -21,21 +21,34 @@ public record PepProperties(
         @DefaultValue("0") int maxRetries,
         @DefaultValue("200ms") Duration retryBackoff) {
 
+    // Los consume ValidadorConfiguracionSeguridad en @PostConstruct, antes del catalogo de mensajes: textos literales.
+    private static final String FALTA_URL = "falta security.authorization.pep.url";
+    private static final String FALTA_APPLICATION_NAME = "falta security.authorization.pep.application-name";
+    private static final String FALTA_ENVIRONMENT = "falta security.authorization.pep.environment";
+    private static final String FALTA_CREDENCIAL = "falta la credencial de la aplicacion ante el PEP";
+    private static final String URL_NO_HTTPS =
+            "security.authorization.pep.url debe ser HTTPS (HTTP solo con allow-insecure-http=true)";
+    private static final String URL_CON_PARTES_PROHIBIDAS =
+            "security.authorization.pep.url no admite userinfo, query ni fragmento";
+    private static final String URL_INVALIDA = "security.authorization.pep.url no es una URI valida";
+    private static final String ESQUEMA_HTTPS = "https";
+    private static final String ESQUEMA_HTTP = "http";
+
     public List<String> problemas() {
         var problemas = new ArrayList<String>();
         if (url.isBlank()) {
-            problemas.add("falta security.authorization.pep.url");
+            problemas.add(FALTA_URL);
         } else {
             problemas.addAll(problemasDeUrl());
         }
         if (applicationName.isBlank()) {
-            problemas.add("falta security.authorization.pep.application-name");
+            problemas.add(FALTA_APPLICATION_NAME);
         }
         if (environment.isBlank()) {
-            problemas.add("falta security.authorization.pep.environment");
+            problemas.add(FALTA_ENVIRONMENT);
         }
         if (credential.isBlank()) {
-            problemas.add("falta la credencial de la aplicacion ante el PEP");
+            problemas.add(FALTA_CREDENCIAL);
         }
         return problemas;
     }
@@ -44,18 +57,18 @@ public record PepProperties(
         try {
             var uri = URI.create(url);
             var problemas = new ArrayList<String>();
-            var esHttps = "https".equalsIgnoreCase(uri.getScheme());
-            var esHttp = "http".equalsIgnoreCase(uri.getScheme());
+            var esHttps = ESQUEMA_HTTPS.equalsIgnoreCase(uri.getScheme());
+            var esHttp = ESQUEMA_HTTP.equalsIgnoreCase(uri.getScheme());
             if (!esHttps && !(esHttp && allowInsecureHttp)) {
-                problemas.add("security.authorization.pep.url debe ser HTTPS (HTTP solo con allow-insecure-http=true)");
+                problemas.add(URL_NO_HTTPS);
             }
             if (UtilObjeto.noEsNulo(uri.getUserInfo()) || UtilObjeto.noEsNulo(uri.getQuery())
                     || UtilObjeto.noEsNulo(uri.getFragment())) {
-                problemas.add("security.authorization.pep.url no admite userinfo, query ni fragmento");
+                problemas.add(URL_CON_PARTES_PROHIBIDAS);
             }
             return problemas;
         } catch (IllegalArgumentException e) {
-            return List.of("security.authorization.pep.url no es una URI valida");
+            return List.of(URL_INVALIDA);
         }
     }
 

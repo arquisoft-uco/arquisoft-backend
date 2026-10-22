@@ -54,6 +54,8 @@ class InteractoresSeguridadTest {
             RefrescarTokenInteractorImpl.class,
             CerrarSesionInteractorImpl.class,
             ValidarTokenInteractorImpl.class,
+            com.arquisoft.seguridad.application.mapeoroles.command.primaryport.interactor.impl
+                    .ActualizarMapeoRolesInteractorImpl.class,
             com.arquisoft.seguridad.application.autorizacion.command.primaryport.interactor.impl
                     .AutorizarAccesoInteractorImpl.class
     })

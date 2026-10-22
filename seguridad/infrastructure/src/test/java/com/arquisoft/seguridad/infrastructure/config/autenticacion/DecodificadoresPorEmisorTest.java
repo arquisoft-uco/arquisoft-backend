@@ -52,7 +52,7 @@ class DecodificadoresPorEmisorTest {
 
     private static AutenticacionProperties.Emisor emisor(String id, boolean habilitado, String issuer, String audiencia) {
         return new AutenticacionProperties.Emisor(id, habilitado, issuer, jwksUri, List.of(audiencia),
-                ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "u", "n", "", ""));
+                ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "u", "n", ""));
     }
 
     private static String firmado(String issuer, String audiencia) throws Exception {

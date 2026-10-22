@@ -21,7 +21,7 @@ class JwtIdentidadMapperTest {
 
     private final JwtIdentidadMapper mapper = new JwtIdentidadMapper(new AutenticacionProperties(List.of(
             new AutenticacionProperties.Emisor("principal", true, ISSUER, "", List.of(), ModoAutorizacion.PEP, false,
-                    new ClaimsIdentidad("sub", "email", "preferred_username", "name", "", "")))));
+                    new ClaimsIdentidad("sub", "email", "preferred_username", "name", "")))));
 
     private static Jwt jwt(String issuer) {
         return Jwt.withTokenValue("t").header("alg", "RS256").issuer(issuer).subject("u-1")

@@ -70,6 +70,7 @@ import com.arquisoft.shared.message.key.seguridad.AutorizacionKey;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
+import com.arquisoft.shared.message.key.seguridad.MapeoRolesKey;
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
@@ -158,6 +159,7 @@ public final class ClavesCatalogo {
             ConfiguracionKey.class,
             IniciarSesionKey.class,
             LimiteSolicitudesKey.class,
+            MapeoRolesKey.class,
             SesionKey.class,
             TokenInvalidadoKey.class,
             TokenKey.class,

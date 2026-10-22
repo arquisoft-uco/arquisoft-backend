@@ -76,5 +76,6 @@ public final class SeguridadCodes {
         public static final String ACCESO_EMISOR_EXCEDE_LIMITE = "ACCESO_EMISOR_EXCEDE_LIMITE";
         public static final String ACCESO_CORRELACION_EXCEDE_LIMITE = "ACCESO_CORRELACION_EXCEDE_LIMITE";
         public static final String PROVEEDOR_AUTORIZACION_NO_DISPONIBLE = "PROVEEDOR_AUTORIZACION_NO_DISPONIBLE";
+        public static final String CONFIGURACION_INSEGURA = "CONFIGURACION_INSEGURA";
     }
 }

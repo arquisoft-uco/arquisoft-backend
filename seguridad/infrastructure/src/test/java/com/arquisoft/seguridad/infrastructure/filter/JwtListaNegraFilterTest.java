@@ -64,7 +64,7 @@ class JwtListaNegraFilterTest {
 
     private JwtListaNegraFilter filtroConListaNegra(boolean blacklist) {
         var emisor = new AutenticacionProperties.Emisor("principal", true, ISSUER, "", List.of(),
-                ModoAutorizacion.PEP, blacklist, new ClaimsIdentidad("sub", "email", "preferred_username", "name", "", ""));
+                ModoAutorizacion.PEP, blacklist, new ClaimsIdentidad("sub", "email", "preferred_username", "name", ""));
         return new JwtListaNegraFilter(logger, rutasPublicas, new AutenticacionProperties(List.of(emisor)),
                 tokenInvalidadoPort, objectMapper);
     }

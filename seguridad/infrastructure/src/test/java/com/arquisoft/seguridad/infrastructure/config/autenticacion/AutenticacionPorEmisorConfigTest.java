@@ -25,7 +25,7 @@ class AutenticacionPorEmisorConfigTest {
 
     private final AutenticacionProperties propiedades = new AutenticacionProperties(List.of(
             new AutenticacionProperties.Emisor("principal", true, ISSUER, "", List.of(), ModoAutorizacion.PEP, false,
-                    new ClaimsIdentidad("uid", "email", "u", "n", "", ""))));
+                    new ClaimsIdentidad("uid", "email", "u", "n", ""))));
 
     private static String token(String issuer) {
         return new PlainJWT(new JWTClaimsSet.Builder().issuer(issuer).build()).serialize();

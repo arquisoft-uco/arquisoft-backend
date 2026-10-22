@@ -9,7 +9,7 @@ Contexto acotado responsable de la autenticación y de la decisión de acceso de
 | Responsabilidad | Mecanismo |
 |---|---|
 | Autenticación de solicitudes | Resource server multi-emisor: JWT validado por JWKS, `iss` y `aud` de cada emisor configurado (`security.authentication.issuers`) |
-| Decisión de acceso | `DecisionAccesoOutputPort` por solicitud, con adaptador por emisor: `pep` (PEP de Security Baseline), `role-table` (tabla de equivalencias del emisor legado) o `none` (solo desarrollo) |
+| Decisión de acceso | `DecisionAccesoOutputPort` por solicitud, con adaptador por emisor: `pep` (PEP de Security Baseline), `role-table` (tabla de equivalencias del emisor legado) o `none` (solo desarrollo). El `role-table` toma los realm roles del token y comprueba en Redis, con un script Lua, si alguno otorga el client role que la tabla exige al endpoint; el índice client role → realm roles lo refresca un `@Scheduled` desde la Admin API del proveedor (feature `mapeoroles`, `KEYCLOAK_CLIENT_UUID` obligatoria). El emisor legado ya no emite `resource_access` |
 | Identidad del actor | `IdentidadActual` (`shared:web`) resuelta desde el JWT con los claims configurados por emisor |
 | Login directo (deprecado) | Proveedor `security.direct-login.provider` (`keycloak` o `none`) |
 | Cierre de sesión | Lista negra de JTI en Redis con TTL automático, solo para emisores con `blacklist: true` |

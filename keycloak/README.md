@@ -32,4 +32,12 @@ así debe quedar: el secreto vive en `.env-*.properties` y nunca en el repo.
 - El cliente `arquisoft-api` con *service accounts* habilitado y, del cliente `realm-management`,
   los roles `manage-users`, `view-realm` y `view-users` — los tres que necesita el registro de
   usuarios (`KeycloakProveedorIdentidadOutputAdapter`).
+- El access token lleva solo realm roles (`realm_access.roles`): el client scope `roles` no tiene el
+  mapper *client roles*, porque expandir los composites en `resource_access` superaba los 8 KB. El
+  backend resuelve los client roles consultando la Admin API (composites del cliente `arquisoft-api`),
+  por lo que necesita el UUID de ese cliente en `KEYCLOAK_CLIENT_UUID` (en este realm es el `id` de
+  `arquisoft-api`; en la consola, el último segmento de la URL de Clients → `arquisoft-api`). La cuenta
+  de servicio solo necesita `view-realm`.
+- *Full scope allowed* activo en los clientes que emiten el token (`react-app`, `arquisoft-api`): sin
+  él `realm_access.roles` solo trae los roles con scope mapping.
 - SMTP configurado, o `execute-actions-email` falla al final del registro.

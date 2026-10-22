@@ -39,7 +39,7 @@ class JwtTokenOutputAdapterTest {
     @BeforeEach
     void crearAdaptador() {
         var emisor = new AutenticacionProperties.Emisor("legado", true, ISSUER, "", List.of(), ModoAutorizacion.ROLE_TABLE,
-                true, new ClaimsIdentidad("sub", "email", "preferred_username", "name", "realm_access.roles", ""));
+                true, new ClaimsIdentidad("sub", "email", "preferred_username", "name", "realm_access.roles"));
         jwtTokenAdapter = new JwtTokenOutputAdapter(jwtDecoder,
                 new JwtIdentidadMapper(new AutenticacionProperties(List.of(emisor))), logger);
     }

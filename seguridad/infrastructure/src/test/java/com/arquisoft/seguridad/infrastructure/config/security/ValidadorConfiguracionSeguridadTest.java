@@ -4,6 +4,9 @@ import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadap
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
+import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapter.keycloak.KeycloakFuenteMapeoRolesProperties;
+import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapter.redis.MapeoRolesProperties;
+import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.AutorizacionKey;
 import org.junit.jupiter.api.Test;
@@ -23,7 +26,7 @@ class ValidadorConfiguracionSeguridadTest {
 
     private static AutenticacionProperties.Emisor emisor(String id, boolean habilitado, ModoAutorizacion modo) {
         return new AutenticacionProperties.Emisor(id, habilitado, "https://" + id, "", List.of(), modo, false,
-                new ClaimsIdentidad("sub", "email", "u", "n", "", ""));
+                new ClaimsIdentidad("sub", "email", "u", "n", ""));
     }
 
     private static PepProperties pep(String credencial, boolean inseguro, String url) {
@@ -31,14 +34,38 @@ class ValidadorConfiguracionSeguridadTest {
                 0, Duration.ofMillis(200));
     }
 
+    private static final String UUID_CLIENTE = "cffeb896-738c-4000-80cf-8cf99e05233f";
+
+    private static MapeoRolesProperties expansionValida() {
+        return new MapeoRolesProperties(Duration.ofMinutes(5), Duration.ofMinutes(15), Duration.ofSeconds(30),
+                Duration.ofSeconds(60));
+    }
+
+    private static KeycloakFuenteMapeoRolesProperties keycloakValido() {
+        return new KeycloakFuenteMapeoRolesProperties("http://kc", "arquisoft", "arquisoft-api", "secreto", UUID_CLIENTE,
+                Duration.ofSeconds(2), Duration.ofSeconds(3));
+    }
+
+    private static AutenticacionProperties.Emisor emisorTabla(String roles) {
+        return new AutenticacionProperties.Emisor("legado", true, "https://legado", "", List.of(),
+                ModoAutorizacion.ROLE_TABLE, true, new ClaimsIdentidad("sub", "email", "u", "n", roles));
+    }
+
     private static ValidadorConfiguracionSeguridad validador(List<AutenticacionProperties.Emisor> emisores, PepProperties pep,
+                                                             String perfil, boolean habilitada, String modoRuta) {
+        return validador(emisores, pep, expansionValida(), keycloakValido(), perfil, habilitada, modoRuta);
+    }
+
+    private static ValidadorConfiguracionSeguridad validador(List<AutenticacionProperties.Emisor> emisores, PepProperties pep,
+                                                             MapeoRolesProperties expansion,
+                                                             KeycloakFuenteMapeoRolesProperties keycloak,
                                                              String perfil, boolean habilitada, String modoRuta) {
         var entorno = new MockEnvironment();
         if (perfil != null) {
             entorno.setActiveProfiles(perfil);
         }
         var validador = new ValidadorConfiguracionSeguridad(mock(AppLogger.class), new AutenticacionProperties(emisores),
-                pep, mock(RutasPublicas.class), entorno);
+                pep, expansion, keycloak, mock(RutasPublicas.class), entorno);
         ReflectionTestUtils.setField(validador, "seguridadHabilitada", habilitada);
         ReflectionTestUtils.setField(validador, "modoRuta", modoRuta);
         return validador;
@@ -62,7 +89,7 @@ class ValidadorConfiguracionSeguridadTest {
                 pep("cred", false, "https://pep.test"), null, true, "template");
 
         // Act / Assert
-        assertThatThrownBy(validador::validar).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(validador::validar).isInstanceOf(InfrastructureException.class);
     }
 
     @Test
@@ -95,7 +122,74 @@ class ValidadorConfiguracionSeguridadTest {
         assertThat(modoNone.problemas()).hasSize(1);
         assertThat(sinSeguridad.problemas()).hasSize(2);
         assertThat(httpInseguro.problemas()).hasSize(1);
-        assertThatThrownBy(modoNone::validar).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(modoNone::validar).isInstanceOf(InfrastructureException.class);
+    }
+
+    @Test
+    void debeAceptar_cuandoRoleTableTieneRolesYExpansionValida() {
+        // Arrange
+        var validador = validador(List.of(emisorTabla("realm_access.roles")), pep("", false, ""), null, true, "template");
+
+        // Act / Assert
+        assertThat(validador.problemas()).isEmpty();
+    }
+
+    @Test
+    void debeFallar_cuandoRoleTableNoTieneClaimsRoles() {
+        // Arrange
+        var validador = validador(List.of(emisorTabla("")), pep("", false, ""), null, true, "template");
+
+        // Act / Assert
+        assertThat(validador.problemas()).hasSize(1).first().asString().contains("claims.roles");
+        assertThatThrownBy(validador::validar).isInstanceOf(InfrastructureException.class);
+    }
+
+    @Test
+    void debeFallar_cuandoRoleTableNoTieneClientUuid() {
+        // Arrange
+        var sinUuid = new KeycloakFuenteMapeoRolesProperties("http://kc", "arquisoft", "arquisoft-api", "secreto", "",
+                Duration.ofSeconds(2), Duration.ofSeconds(3));
+        var validador = validador(List.of(emisorTabla("realm_access.roles")), pep("", false, ""), expansionValida(),
+                sinUuid, null, true, "template");
+
+        // Act / Assert
+        assertThat(validador.problemas()).hasSize(1).first().asString().contains("client-uuid");
+    }
+
+    @Test
+    void debeFallar_cuandoRoleTableTieneClientUuidInvalido() {
+        // Arrange
+        var uuidInvalido = new KeycloakFuenteMapeoRolesProperties("http://kc", "arquisoft", "arquisoft-api", "secreto",
+                "arquisoft-api", Duration.ofSeconds(2), Duration.ofSeconds(3));
+        var validador = validador(List.of(emisorTabla("realm_access.roles")), pep("", false, ""), expansionValida(),
+                uuidInvalido, null, true, "template");
+
+        // Act / Assert
+        assertThat(validador.problemas()).hasSize(1).first().asString().contains("UUID");
+    }
+
+    @Test
+    void debeFallar_cuandoRoleTableTieneIntervalosIncoherentes() {
+        // Arrange
+        var incoherente = new MapeoRolesProperties(Duration.ofMinutes(5), Duration.ofMinutes(6), Duration.ofSeconds(30),
+                Duration.ofSeconds(60));
+        var validador = validador(List.of(emisorTabla("realm_access.roles")), pep("", false, ""), incoherente,
+                keycloakValido(), null, true, "template");
+
+        // Act / Assert
+        assertThat(validador.problemas()).hasSize(1).first().asString().contains("ttl");
+    }
+
+    @Test
+    void debeNoExigirExpansion_cuandoSoloHayPep() {
+        // Arrange
+        var sinDatos = new KeycloakFuenteMapeoRolesProperties("", "", "", "", "", Duration.ofSeconds(2),
+                Duration.ofSeconds(3));
+        var validador = validador(List.of(emisor("principal", true, ModoAutorizacion.PEP)), pep("cred", false, "https://pep.test"),
+                expansionValida(), sinDatos, null, true, "template");
+
+        // Act / Assert
+        assertThat(validador.problemas()).isEmpty();
     }
 
     @Test
@@ -103,10 +197,11 @@ class ValidadorConfiguracionSeguridadTest {
         // Arrange
         var logger = mock(AppLogger.class);
         var conAudiencia = new AutenticacionProperties.Emisor("con", true, "https://con", "", List.of("api"),
-                ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "u", "n", "", ""));
+                ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "u", "n", ""));
         var validador = new ValidadorConfiguracionSeguridad(logger,
                 new AutenticacionProperties(List.of(emisor("sin", true, ModoAutorizacion.PEP), conAudiencia)),
-                pep("cred", false, "https://pep.test"), mock(RutasPublicas.class), new MockEnvironment());
+                pep("cred", false, "https://pep.test"), expansionValida(), keycloakValido(),
+                mock(RutasPublicas.class), new MockEnvironment());
 
         // Act
         validador.registrarConfiguracionAplicada();

@@ -39,7 +39,7 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
 
     private static AutenticacionProperties.Emisor emisor(String id, ModoAutorizacion modo) {
         return new AutenticacionProperties.Emisor(id, true, "https://" + id, "", List.of(), modo, false,
-                new ClaimsIdentidad("sub", "email", "preferred_username", "name", "", ""));
+                new ClaimsIdentidad("sub", "email", "preferred_username", "name", ""));
     }
 
     private static SolicitudAcceso solicitud(String emisor) {

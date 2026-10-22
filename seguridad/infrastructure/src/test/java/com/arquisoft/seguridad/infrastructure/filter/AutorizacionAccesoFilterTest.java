@@ -73,7 +73,7 @@ class AutorizacionAccesoFilterTest {
     @BeforeEach
     void preparar() {
         var emisor = new AutenticacionProperties.Emisor("principal", true, ISSUER, "", List.of(),
-                ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "preferred_username", "name", "", ""));
+                ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "preferred_username", "name", ""));
         var rutas = new RutasPublicas("/api", List.of("/actuator/health/**"), List.of("/auth/logout"), "none",
                 new MockEnvironment());
         filtro = new AutorizacionAccesoFilter(interactor, resolvedor, gestorTraza, rutas,

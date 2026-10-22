@@ -385,7 +385,6 @@ security:
           nombre-usuario: preferred_username
           nombre: name
           roles: realm_access.roles
-          permisos: resource_access.${KEYCLOAK_CLIENT_ID:arquisoft-api}.roles
   authorization:
     public-paths: ${SECURITY_PUBLIC_PATHS:/actuator/health/**,/actuator/prometheus,/swagger-ui/**,/v3/api-docs/**,/swagger-resources/**}
     authenticated-paths: ${SECURITY_AUTHENTICATED_PATHS:/auth/logout}
@@ -402,6 +401,22 @@ security:
       read-timeout: ${PEP_READ_TIMEOUT:3s}
       max-retries: ${PEP_MAX_RETRIES:0}
       retry-backoff: ${PEP_RETRY_BACKOFF:200ms}
+    # Resolucion de client roles del emisor role-table: el token lleva solo realm roles y el backend
+    # consulta en Redis un indice client role -> realm roles que lo otorgan, refrescado desde la
+    # Admin API del proveedor. Sin emisor role-table habilitado no hace nada y client-uuid no se exige.
+    role-expansion:
+      refresh-interval: ${ROLE_EXPANSION_REFRESH_INTERVAL:PT5M}
+      ttl: ${ROLE_EXPANSION_TTL:PT15M}
+      check-interval: ${ROLE_EXPANSION_CHECK_INTERVAL:PT30S}
+      lock-lease: ${ROLE_EXPANSION_LOCK_LEASE:PT60S}
+      keycloak:
+        server-url: ${KEYCLOAK_URL:http://localhost:8081}
+        realm: ${KEYCLOAK_REALM:arquisoft}
+        client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
+        client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+        client-uuid: ${KEYCLOAK_CLIENT_UUID:}
+        connect-timeout: ${ROLE_EXPANSION_CONNECT_TIMEOUT:2s}
+        read-timeout: ${ROLE_EXPANSION_READ_TIMEOUT:3s}
   # Login directo y aprovisionamiento de usuarios contra el proveedor actual (keycloak | none).
   direct-login:
     provider: ${DIRECT_LOGIN_PROVIDER:keycloak}

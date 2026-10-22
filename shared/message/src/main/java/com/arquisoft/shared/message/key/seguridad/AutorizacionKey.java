@@ -6,7 +6,6 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum AutorizacionKey implements ClaveMensaje {
 
     ERROR_PROVEEDOR_NO_DISPONIBLE("seguridad.infraestructura.autorizacion.error.proveedor-no-disponible", 0),
-    ERROR_CONFIGURACION_INSEGURA("seguridad.infraestructura.autorizacion.error.configuracion-insegura", 0),
     LOG_AUTORIZANDO("seguridad.aplicacion.autorizacion.log.autorizando", 2),
     LOG_DECISION("seguridad.aplicacion.autorizacion.log.decision", 3),
     LOG_PEP_NO_DISPONIBLE("seguridad.infraestructura.autorizacion.log.pep-no-disponible", 2),

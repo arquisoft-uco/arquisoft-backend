@@ -443,6 +443,11 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
   backend no guarda sesión ni permisos: la decisión de acceso se consulta al proveedor en **cada**
   solicitud protegida (`AutorizacionAccesoFilter` → `DecisionAccesoOutputPort`) y falla cerrado con 503.
   No se cachea: el contrato PEP-PDP prohíbe reutilizar decisiones.
+- El emisor `role-table` no lee client roles del token (solo `realm_access.roles`): resuelve el client
+  role que la tabla de equivalencias exige al endpoint con el índice de Redis (client role → realm
+  roles que lo otorgan, generación versionada con puntero), que `ActualizarMapeoRolesScheduler`
+  refresca desde la Admin API del proveedor. Exige `KEYCLOAK_CLIENT_UUID`; sin índice vigente falla
+  cerrado con 503. El índice es una caché de lo que declara el proveedor, no de decisiones.
 - CORS por defecto: `localhost:3000`, `4200`, `5173` (`CORS_ALLOWED_ORIGINS`). CSRF deshabilitado,
   sesiones stateless.
 - `TrazabilidadFilter` emite una línea `AUDIT` por petición con método, URI, usuario, duración y
