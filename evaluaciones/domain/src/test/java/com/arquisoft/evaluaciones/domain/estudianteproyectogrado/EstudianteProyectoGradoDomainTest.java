@@ -100,6 +100,36 @@ class EstudianteProyectoGradoDomainTest {
     }
 
     @Test
+    void debeFijarEliminadoEnIgualAOcurridoEn_cuandoSeRemueve() {
+        // Arrange
+        var vinculo = EstudianteProyectoGradoDomain.crear(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), OCURRIDO_EN);
+        var removidoEn = OCURRIDO_EN.plusSeconds(60);
+
+        // Act
+        vinculo.remover(removidoEn);
+
+        // Assert
+        assertThat(vinculo.estaEliminado()).isTrue();
+        assertThat(vinculo.getEliminadoEn()).isEqualTo(removidoEn);
+        assertThat(vinculo.getOcurridoEn()).isEqualTo(removidoEn);
+    }
+
+    @Test
+    void debeRechazarRemover_cuandoOcurridoEnEsNulo() {
+        // Arrange
+        var vinculo = EstudianteProyectoGradoDomain.crear(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), OCURRIDO_EN);
+
+        // Act & Assert
+        assertThatThrownBy(() -> vinculo.remover(null))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(e -> e.campo())
+                        .containsExactly(EvaluacionesFields.EstudianteProyectoGrado.OCURRIDO_EN));
+    }
+
+    @Test
     void debeReconocerseComoVacio_cuandoEsElCentinela() {
         // Assert
         assertThat(EstudianteProyectoGradoDomain.VACIO.esVacio()).isTrue();

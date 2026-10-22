@@ -34,4 +34,24 @@ class EvaluacionesProyectosQueueConfigTest {
                             .isEqualTo(EvaluacionesProyectosQueueConfig.ESTUDIANTES_ASIGNADOS_QUEUE);
                 });
     }
+
+    @Test
+    void debeDeclararColaYBindingDeDestituido_cuandoSeConstruyeLaConfiguracion() {
+        // Act
+        var declarables = config.evaluacionesEstudianteProyectoGradoDestituidoDeclarables(eventos, deadLetter);
+
+        // Assert
+        var colas = declarables.getDeclarablesByType(Queue.class).stream().map(Queue::getName).toList();
+        assertThat(colas).contains(EvaluacionesProyectosQueueConfig.ESTUDIANTE_DESTITUIDO_QUEUE);
+        assertThat(EvaluacionesProyectosQueueConfig.ESTUDIANTE_DESTITUIDO_QUEUE)
+                .isEqualTo(EvaluacionesQueues.PREFIJO + EventTopics.Proyectos.ESTUDIANTE_PROYECTO_GRADO_DESTITUIDO);
+        assertThat(declarables.getDeclarablesByType(Binding.class))
+                .anySatisfy(binding -> {
+                    assertThat(binding.getExchange()).isEqualTo("eventos");
+                    assertThat(binding.getRoutingKey())
+                            .isEqualTo(EventTopics.Proyectos.ESTUDIANTE_PROYECTO_GRADO_DESTITUIDO);
+                    assertThat(binding.getDestination())
+                            .isEqualTo(EvaluacionesProyectosQueueConfig.ESTUDIANTE_DESTITUIDO_QUEUE);
+                });
+    }
 }

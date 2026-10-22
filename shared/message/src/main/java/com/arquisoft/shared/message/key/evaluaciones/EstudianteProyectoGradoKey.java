@@ -8,7 +8,12 @@ public enum EstudianteProyectoGradoKey implements ClaveMensaje {
     LOG_ASIGNADOS_RECIBIDO("evaluaciones.infraestructura.estudianteproyectogrado.log.asignados-recibido", 3),
     LOG_VERIFICACION_AGREGAR("evaluaciones.aplicacion.estudianteproyectogrado.log.verificacion-agregar", 2),
     LOG_AGREGADOS("evaluaciones.infraestructura.estudianteproyectogrado.log.agregados", 5),
-    LOG_GUARDADOS("evaluaciones.infraestructura.estudianteproyectogrado.log.guardados", 1);
+    LOG_GUARDADOS("evaluaciones.infraestructura.estudianteproyectogrado.log.guardados", 1),
+    LOG_DESTITUIDO_RECIBIDO("evaluaciones.infraestructura.estudianteproyectogrado.log.destituido-recibido", 3),
+    LOG_VERIFICACION_REMOVER("evaluaciones.aplicacion.estudianteproyectogrado.log.verificacion-remover", 2),
+    LOG_REMOVIDO("evaluaciones.infraestructura.estudianteproyectogrado.log.removido", 2),
+    LOG_LAPIDA("evaluaciones.infraestructura.estudianteproyectogrado.log.lapida", 2),
+    LOG_REMOCION_DESCARTADA("evaluaciones.infraestructura.estudianteproyectogrado.log.remocion-descartada", 3);
 
     private final String clave;
     private final int parametros;

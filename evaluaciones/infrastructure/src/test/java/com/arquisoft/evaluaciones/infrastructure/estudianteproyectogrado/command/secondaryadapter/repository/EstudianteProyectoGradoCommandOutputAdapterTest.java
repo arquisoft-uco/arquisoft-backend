@@ -67,6 +67,48 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeBuscarPorElParEstudianteProyecto_cuandoExisteElVinculo() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var buscado = vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, UtilFecha.VACIO);
+        var otroProyecto = vinculo(buscado.estudiante(), UtilUUID.generarNuevoUUID(), UtilFecha.VACIO);
+        adapter.guardarTodos(List.of(buscado, otroProyecto));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorEstudianteYProyectoGrado(buscado.estudiante(), proyectoGrado);
+        var ausente = adapter.obtenerPorEstudianteYProyectoGrado(UtilUUID.generarNuevoUUID(), proyectoGrado);
+
+        // Assert
+        assertThat(encontrado).contains(buscado);
+        assertThat(ausente).isEmpty();
+    }
+
+    @Test
+    void debeMarcarLaBajaLogica_cuandoSeGuardaElVinculoRemovido() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var vigente = vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, UtilFecha.VACIO);
+        adapter.guardarTodos(List.of(vigente));
+        entityManager.flush();
+        entityManager.clear();
+        var removidoEn = Instant.parse("2026-10-21T10:00:00Z");
+        var removido = new EstudianteProyectoGradoEntity(
+                vigente.id(), vigente.estudiante(), proyectoGrado, removidoEn, removidoEn);
+
+        // Act
+        adapter.guardar(removido);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(adapter.consultarPorProyectoGrado(proyectoGrado)).containsExactly(removido);
+        assertThat(entityManager.find(EstudianteProyectoGradoJpaEntity.class, vigente.id()).getEliminadoEn())
+                .isEqualTo(removidoEn);
+    }
+
+    @Test
     void debeDevolverVacio_cuandoElProyectoNoTieneVinculos() {
         // Act
         var vinculos = adapter.consultarPorProyectoGrado(UtilUUID.generarNuevoUUID());

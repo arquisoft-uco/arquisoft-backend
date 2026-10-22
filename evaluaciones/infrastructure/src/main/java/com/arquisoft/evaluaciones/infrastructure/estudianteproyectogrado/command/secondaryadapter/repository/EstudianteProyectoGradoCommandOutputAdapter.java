@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -26,8 +27,21 @@ public class EstudianteProyectoGradoCommandOutputAdapter implements EstudiantePr
     }
 
     @Override
+    public Optional<EstudianteProyectoGradoEntity> obtenerPorEstudianteYProyectoGrado(
+            UUID estudiante, UUID proyectoGrado) {
+        return repository.findByEstudianteIdAndProyectoGradoId(estudiante, proyectoGrado)
+                .map(EstudianteProyectoGradoJpaMapper::toEntity);
+    }
+
+    @Override
     public void guardarTodos(List<EstudianteProyectoGradoEntity> vinculos) {
         repository.saveAll(vinculos.stream().map(EstudianteProyectoGradoJpaMapper::toJpaEntity).toList());
         logger.debug(EstudianteProyectoGradoKey.LOG_GUARDADOS, vinculos.size());
+    }
+
+    @Override
+    public void guardar(EstudianteProyectoGradoEntity vinculo) {
+        repository.save(EstudianteProyectoGradoJpaMapper.toJpaEntity(vinculo));
+        logger.debug(EstudianteProyectoGradoKey.LOG_GUARDADOS, 1);
     }
 }
