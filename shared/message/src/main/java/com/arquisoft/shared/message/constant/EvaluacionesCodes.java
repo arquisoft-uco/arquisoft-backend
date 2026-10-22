@@ -147,6 +147,7 @@ public final class EvaluacionesCodes {
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
         public static final String NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
         public static final String ASESOR_REQUERIDO = "EVALUACION_ASESOR_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO = "EVALUACION_ESTUDIANTE_REQUERIDO";
     }
 
     public static final class EvaluacionJurado {
@@ -210,6 +211,17 @@ public final class EvaluacionesCodes {
         public static final String EVALUACIONES_REPETIDAS = "OMISION_EVALUACIONES_CUANTITATIVAS_EVALUACIONES_REPETIDAS";
         public static final String EVALUACION_REQUERIDA = "OMISION_EVALUACIONES_CUANTITATIVAS_EVALUACION_REQUERIDA";
         public static final String EVALUACION_INVALIDA = "OMISION_EVALUACIONES_CUANTITATIVAS_EVALUACION_INVALIDA";
+    }
+
+    public static final class EstudianteProyectoGrado {
+
+        private EstudianteProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_PROYECTO_GRADO_REQUERIDO";
+        public static final String ESTUDIANTES_REQUERIDOS = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTES_REQUERIDOS";
+        public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
+        public static final String ESTUDIANTE_DUPLICADO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_DUPLICADO";
     }
 
     public static final class Jurado {

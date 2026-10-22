@@ -193,6 +193,7 @@ public final class ClavesCatalogo {
             AgregarJuradoKey.class,
             RemoverJuradoKey.class,
             JuradoKey.class,
+            com.arquisoft.shared.message.key.evaluaciones.EstudianteProyectoGradoKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
             ProyectoGradoKey.class,

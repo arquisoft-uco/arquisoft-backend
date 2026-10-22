@@ -62,7 +62,7 @@ public class AsignarEstudiantesProyectoGradoUseCaseImpl implements AsignarEstudi
 
     private static List<ContactoEstudiante> contactos(List<EstudianteDomain> estudiantes) {
         return estudiantes.stream()
-                .map(estudiante -> new ContactoEstudiante(estudiante.getNombre(), estudiante.getEmail()))
+                .map(estudiante -> new ContactoEstudiante(estudiante.getId(), estudiante.getNombre(), estudiante.getEmail()))
                 .toList();
     }
 }
