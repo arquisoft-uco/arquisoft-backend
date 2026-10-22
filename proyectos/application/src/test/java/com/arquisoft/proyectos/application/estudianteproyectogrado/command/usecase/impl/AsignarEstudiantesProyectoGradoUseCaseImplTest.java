@@ -106,7 +106,7 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
     }
 
     @Test
-    void debeVincularLosTresYPublicarConSusContactos_cuandoLaAsignacionEsValida() {
+    void debePublicarEventoConIdDeCadaEstudiante_cuandoAsigna() {
         // Arrange
         stubFinders();
 
@@ -124,9 +124,9 @@ class AsignarEstudiantesProyectoGradoUseCaseImplTest {
             assertThat(publicado.getProyectoGradoId()).isEqualTo(proyecto.getId());
             assertThat(publicado.getTituloProyecto()).isEqualTo("Sistema de gestión");
             assertThat(publicado.getEstudiantes()).containsExactly(
-                    new ContactoEstudiante("Ana Gomez", "ana.gomez@soyuco.edu.co"),
-                    new ContactoEstudiante("Luis Diaz", "luis.diaz@soyuco.edu.co"),
-                    new ContactoEstudiante("Eva Ruiz", "eva.ruiz@soyuco.edu.co"));
+                    new ContactoEstudiante(vigentes.get(0).getId(), "Ana Gomez", "ana.gomez@soyuco.edu.co"),
+                    new ContactoEstudiante(vigentes.get(1).getId(), "Luis Diaz", "luis.diaz@soyuco.edu.co"),
+                    new ContactoEstudiante(vigentes.get(2).getId(), "Eva Ruiz", "eva.ruiz@soyuco.edu.co"));
         });
 
         var orden = inOrder(proyectoGradoPorIdFinder, estadoActualProyectoGradoFinder, estudiantesVigentesPorIdsFinder, estudiantesYaVinculadosFinder,
