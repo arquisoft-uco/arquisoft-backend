@@ -43,6 +43,7 @@ public final class MapasRutaCodes {
         public static final String ASESOR_INVALIDO = "TAREA_ASESOR_INVALIDO";
         public static final String TAREA_DUPLICADA = "TAREA_DUPLICADA";
         public static final String ESTADO_ITEM_NO_ENCONTRADO = "ESTADO_ITEM_NO_ENCONTRADO";
+        public static final String TAREA_REQUERIDA = "TAREA_REQUERIDA";
     }
 
     public static final class AsignacionAsesor {
