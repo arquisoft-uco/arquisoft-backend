@@ -117,6 +117,16 @@ public final class EvaluacionesFields {
         public static final String JURADOS = "jurados";
     }
 
+    public static final class EstudianteProyectoGrado {
+
+        private EstudianteProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String ESTUDIANTES = "estudiantes";
+        public static final String ESTUDIANTE = "estudiante";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
     public static final class Jurado {
 
         private Jurado() {}
