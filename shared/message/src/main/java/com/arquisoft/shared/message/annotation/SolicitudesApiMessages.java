@@ -108,6 +108,19 @@ public final class SolicitudesApiMessages {
         public static final String ELIMINAR_CAMBIO_ASESOR_RESP_422 =
                 "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
 
+        public static final String ELIMINAR_AMPLIACION_PLAZO_SUMMARY =
+                "Eliminar solicitud para ampliación de plazo";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_DESCRIPTION =
+                "Permite a un estudiante eliminar definitivamente una solicitud para ampliación de "
+                        + "plazo que envió por error.";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_204 = "Solicitud eliminada";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_403 =
+                "Sin permisos para eliminar solicitudes para ampliación de plazo";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_422 =
+                "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_SUMMARY =
                 "Consultar solicitudes de novedad para el coordinador recibidas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_DESCRIPTION =
@@ -133,6 +146,19 @@ public final class SolicitudesApiMessages {
                 "Criterio de filtro, orden o paginación inválido";
         public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de cambio de asesor recibidas";
+
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_SUMMARY =
+                "Consultar solicitudes de ampliación de plazo recibidas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_DESCRIPTION =
+                "Permite a un coordinador consultar de forma paginada y filtrable las solicitudes de "
+                        + "ampliación de plazo que ha recibido. El alcance se limita a las "
+                        + "solicitudes dirigidas al coordinador autenticado.";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_200 =
+                "Página de solicitudes de ampliación de plazo recibidas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de ampliación de plazo recibidas";
 
         public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_SUMMARY =
                 "Consultar solicitudes de novedad para el asesor recibidas";
@@ -183,6 +209,19 @@ public final class SolicitudesApiMessages {
                 "Criterio de filtro, orden o paginación inválido";
         public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de cambio de asesor enviadas";
+
+        public static final String CONSULTAR_AMPLIACION_PLAZO_ENVIADAS_SUMMARY =
+                "Consultar solicitudes de ampliación de plazo enviadas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_ENVIADAS_DESCRIPTION =
+                "Permite a un estudiante consultar de forma paginada y filtrable las solicitudes de "
+                        + "ampliación de plazo que ha enviado. El alcance se limita a las "
+                        + "solicitudes cuyo remitente es el estudiante autenticado.";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_ENVIADAS_RESP_200 =
+                "Página de solicitudes de ampliación de plazo enviadas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_ENVIADAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_ENVIADAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de ampliación de plazo enviadas";
     }
 
     public static final class Respuesta {
@@ -203,6 +242,32 @@ public final class SolicitudesApiMessages {
         public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_403 =
                 "Sin permisos para responder solicitudes de novedad para el coordinador";
         public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
+
+        public static final String RESPONDER_CAMBIO_ASESOR_SUMMARY =
+                "Responder solicitud para cambio de asesor";
+        public static final String RESPONDER_CAMBIO_ASESOR_DESCRIPTION =
+                "Permite a un coordinador responder una solicitud para cambio de asesor que le fue "
+                        + "dirigida, registrando el contenido de la respuesta.";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_201 =
+                "Respuesta registrada — retorna el UUID asignado";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_400 = "Datos inválidos";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_403 =
+                "Sin permisos para responder solicitudes para cambio de asesor";
+        public static final String RESPONDER_CAMBIO_ASESOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
+
+        public static final String RESPONDER_AMPLIACION_PLAZO_SUMMARY =
+                "Responder solicitud para ampliación de plazo";
+        public static final String RESPONDER_AMPLIACION_PLAZO_DESCRIPTION =
+                "Permite a un coordinador responder una solicitud para ampliación de plazo que le fue "
+                        + "dirigida, registrando el contenido de la respuesta.";
+        public static final String RESPONDER_AMPLIACION_PLAZO_RESP_201 =
+                "Respuesta registrada — retorna el UUID asignado";
+        public static final String RESPONDER_AMPLIACION_PLAZO_RESP_400 = "Datos inválidos";
+        public static final String RESPONDER_AMPLIACION_PLAZO_RESP_403 =
+                "Sin permisos para responder solicitudes para ampliación de plazo";
+        public static final String RESPONDER_AMPLIACION_PLAZO_RESP_422 =
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
 
         public static final String RESPONDER_NOVEDAD_ASESOR_SUMMARY =
@@ -229,6 +294,31 @@ public final class SolicitudesApiMessages {
         public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_403 =
                 "Sin permisos para eliminar respuestas de solicitudes de novedad para el coordinador";
         public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
+                        + "encontrada o ya no está en revisión";
+
+        public static final String ELIMINAR_CAMBIO_ASESOR_SUMMARY =
+                "Eliminar respuesta de solicitud para cambio de asesor";
+        public static final String ELIMINAR_CAMBIO_ASESOR_DESCRIPTION =
+                "Permite a un coordinador eliminar definitivamente la respuesta que registró para una "
+                        + "solicitud para cambio de asesor, mientras siga en revisión.";
+        public static final String ELIMINAR_CAMBIO_ASESOR_RESP_204 = "Respuesta eliminada";
+        public static final String ELIMINAR_CAMBIO_ASESOR_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_CAMBIO_ASESOR_RESP_403 =
+                "Sin permisos para eliminar respuestas de solicitudes para cambio de asesor";
+        public static final String ELIMINAR_CAMBIO_ASESOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
+                        + "encontrada o ya no está en revisión";
+
+        public static final String ELIMINAR_AMPLIACION_PLAZO_SUMMARY = "Eliminar respuesta de solicitud para ampliación de plazo";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_DESCRIPTION =
+                "Permite a un coordinador eliminar definitivamente la respuesta que registró para una "
+                        + "solicitud para ampliación de plazo, mientras siga en revisión.";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_204 = "Respuesta eliminada";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_400 = "Identificador de solicitud inválido";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_403 = "Sin permisos para eliminar respuestas de solicitudes de ampliación de plazo";
+        public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_422 =
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
                         + "encontrada o ya no está en revisión";
 
@@ -278,6 +368,21 @@ public final class SolicitudesApiMessages {
                 "Solicitud no encontrada, de otro tipo, dirigida a otro asesor; respuesta no "
                         + "encontrada, ya no está en revisión, o el nuevo estado no es resolutivo";
 
+        public static final String MODIFICAR_ESTADO_CAMBIO_ASESOR_SUMMARY =
+                "Modificar estado de la respuesta de solicitud para cambio de asesor";
+        public static final String MODIFICAR_ESTADO_CAMBIO_ASESOR_DESCRIPTION =
+                "Permite a un coordinador determinar el veredicto (aprobada o no aprobada) de la "
+                        + "respuesta que registró para una solicitud de cambio de asesor que le fue "
+                        + "dirigida, mientras siga en revisión.";
+        public static final String MODIFICAR_ESTADO_CAMBIO_ASESOR_RESP_204 = "Estado modificado";
+        public static final String MODIFICAR_ESTADO_CAMBIO_ASESOR_RESP_400 =
+                "Identificador de solicitud inválido, o nuevo estado en blanco";
+        public static final String MODIFICAR_ESTADO_CAMBIO_ASESOR_RESP_403 =
+                "Sin permisos para modificar el estado de respuestas de solicitudes de cambio de asesor";
+        public static final String MODIFICAR_ESTADO_CAMBIO_ASESOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
+                        + "encontrada, ya no está en revisión, o el nuevo estado no es resolutivo";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_SUMMARY =
                 "Consultar respuestas de solicitudes de novedad para el coordinador recibidas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_DESCRIPTION =
@@ -308,6 +413,32 @@ public final class SolicitudesApiMessages {
                 "Sin permisos para consultar respuestas de solicitudes de novedad para el asesor "
                         + "recibidas";
 
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_SUMMARY =
+                "Consultar respuestas de solicitudes de cambio de asesor recibidas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_DESCRIPTION =
+                "Permite a un estudiante consultar de forma paginada y filtrable las respuestas que ha "
+                        + "recibido a sus solicitudes de cambio de asesor. El alcance se "
+                        + "limita a las respuestas de solicitudes cuyo remitente es el estudiante "
+                        + "autenticado.";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_200 =
+                "Página de respuestas de solicitudes de cambio de asesor recibidas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_CAMBIO_ASESOR_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar respuestas de solicitudes de cambio de asesor "
+                        + "recibidas";
+
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_SUMMARY =
+                "Consultar respuestas de solicitudes de ampliación de plazo recibidas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_DESCRIPTION =
+                "Consulta paginada y filtrable de las respuestas recibidas por el estudiante autenticado a sus solicitudes de ampliación de plazo.";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_200 =
+                "Página de respuestas de solicitudes de ampliación de plazo recibidas";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar respuestas de solicitudes de ampliación de plazo recibidas";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_SUMMARY =
                 "Consultar respuestas de solicitudes de novedad para el coordinador enviadas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_DESCRIPTION =
@@ -335,6 +466,19 @@ public final class SolicitudesApiMessages {
         public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_RESP_403 =
                 "Sin permisos para consultar respuestas de solicitudes de novedad para el asesor "
                         + "enviadas";
+
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_SUMMARY =
+                "Consultar respuestas de solicitudes de cambio de asesor enviadas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_DESCRIPTION =
+                "Permite a un coordinador consultar de forma paginada y filtrable las respuestas que ha "
+                        + "enviado a solicitudes de cambio de asesor. El alcance se limita a las "
+                        + "respuestas de solicitudes cuyo destinatario es el coordinador autenticado.";
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_RESP_200 =
+                "Página de respuestas de solicitudes de cambio de asesor enviadas";
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_CAMBIO_ASESOR_ENVIADAS_RESP_403 =
+                "Sin permisos para consultar respuestas de solicitudes de cambio de asesor enviadas";
     }
 
     public static final class TipoSolicitud {

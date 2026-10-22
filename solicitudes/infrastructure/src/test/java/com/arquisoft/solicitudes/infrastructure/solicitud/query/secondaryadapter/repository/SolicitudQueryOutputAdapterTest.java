@@ -14,6 +14,8 @@ import com.arquisoft.shared.query.SortOrder;
 import com.arquisoft.shared.query.pagination.SortDirection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
@@ -31,6 +33,7 @@ class SolicitudQueryOutputAdapterTest {
 
     private static final String TIPO_NOVEDAD = "NOVEDAD_PARA_EL_COORDINADOR";
     private static final String TIPO_CAMBIO = "CAMBIO_DE_ASESOR";
+    private static final String TIPO_AMPLIACION = "AMPLIACION_DE_PLAZO";
 
     @Autowired
     private TestEntityManager entityManager;
@@ -48,6 +51,8 @@ class SolicitudQueryOutputAdapterTest {
                 .id(TIPO_NOVEDAD).nombre("Novedad para el Coordinador").descripcion("desc").build());
         entityManager.persist(TipoSolicitudJpaEntity.builder()
                 .id(TIPO_CAMBIO).nombre("Cambio de Asesor").descripcion("desc").build());
+        entityManager.persist(TipoSolicitudJpaEntity.builder()
+                .id(TIPO_AMPLIACION).nombre("Ampliación de Plazo").descripcion("desc").build());
         entityManager.flush();
     }
 
@@ -194,6 +199,36 @@ class SolicitudQueryOutputAdapterTest {
         assertThat(resultado.getContent())
                 .extracting(SolicitudReadModel::mensajeSolicitud)
                 .containsExactly("es cambio");
+    }
+
+    @Test
+    void debeRetornarSoloLasSolicitudesAmpliacionDePlazoDelDestinatario_cuandoElCriteriaFuerzaTipoYDestinatario() {
+        // Arrange
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        var otroCoord = sembrarDestinatario("Otro", "COORD-2", "otro@uco.edu.co");
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "es novedad");
+        sembrarSolicitud(ana, coord, TIPO_AMPLIACION,
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es ampliacion");
+        sembrarSolicitud(ana, otroCoord, TIPO_AMPLIACION,
+                LocalDateTime.of(2026, 3, 3, 10, 0).toInstant(ZoneOffset.UTC), "ampliacion ajena");
+        sincronizar();
+
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
+                                coord.getUsuarioId().toString()),
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_AMPLIACION))))
+                .build();
+
+        // Act
+        var resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(SolicitudReadModel::mensajeSolicitud)
+                .containsExactly("es ampliacion");
     }
 
     @Test
@@ -427,25 +462,29 @@ class SolicitudQueryOutputAdapterTest {
                 .containsExactly("Alba", "Zulma");
     }
 
-    @Test
-    void debeRetornarSoloCambioDeAsesorDelRemitente_cuandoElCriteriaFuerzaTipoYRemitente() {
+    @ParameterizedTest
+    @CsvSource({
+            "CAMBIO_DE_ASESOR, es cambio, cambio ajeno",
+            "AMPLIACION_DE_PLAZO, es ampliacion, ampliacion ajena"})
+    void debeRetornarSoloElTipoForzadoDelRemitente_cuandoElCriteriaFuerzaTipoYRemitente(
+            String tipo, String mensajePropio, String mensajeAjeno) {
         // Arrange
         var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
         var otra = sembrarRemitente("Otra", "EST-2", "otra@uco.edu.co");
         var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
         sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "es novedad");
-        sembrarSolicitud(ana, coord, TIPO_CAMBIO,
-                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es cambio");
-        sembrarSolicitud(otra, coord, TIPO_CAMBIO,
-                LocalDateTime.of(2026, 3, 3, 10, 0).toInstant(ZoneOffset.UTC), "cambio ajeno");
+        sembrarSolicitud(ana, coord, tipo,
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), mensajePropio);
+        sembrarSolicitud(otra, coord, tipo,
+                LocalDateTime.of(2026, 3, 3, 10, 0).toInstant(ZoneOffset.UTC), mensajeAjeno);
         sincronizar();
 
         var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
-                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_CAMBIO))))
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, tipo))))
                 .build();
 
         // Act
@@ -454,7 +493,7 @@ class SolicitudQueryOutputAdapterTest {
         // Assert
         assertThat(resultado.getContent())
                 .extracting(SolicitudReadModel::mensajeSolicitud)
-                .containsExactly("es cambio");
+                .containsExactly(mensajePropio);
         assertThat(resultado.getContent().get(0).destinatario().usuarioId())
                 .isEqualTo(coord.getUsuarioId());
     }

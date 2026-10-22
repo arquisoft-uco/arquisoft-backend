@@ -6,10 +6,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Set;
 import java.util.UUID;
 
 public interface ObservacionItemJuradoCommandRepository
         extends JpaRepository<ObservacionItemJuradoJpaEntity, UUID> {
+
+    boolean existsByEvaluacionCuantitativaJuradoIdIn(Set<UUID> evaluacionesCuantitativas);
 
     boolean existsByEvaluacionCuantitativaJuradoIdAndDescripcion(UUID evaluacionCuantitativaJuradoId, String descripcion);
 

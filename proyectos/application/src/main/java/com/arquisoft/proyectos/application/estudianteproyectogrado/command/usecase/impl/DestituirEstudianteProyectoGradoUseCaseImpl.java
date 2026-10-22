@@ -7,8 +7,10 @@ import com.arquisoft.proyectos.application.estudianteproyectogrado.command.useca
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.validator.DestituirEstudianteProyectoGradoValidator;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.DestitucionEstudianteProyectoGradoDomain;
+import com.arquisoft.proyectos.domain.estudianteproyectogrado.event.EstudianteProyectoGradoDestituidoEvent;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectoGradoKey;
+import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +23,7 @@ public class DestituirEstudianteProyectoGradoUseCaseImpl implements DestituirEst
     private final EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
     private final EstudianteVinculadoFinder estudianteVinculadoFinder;
     private final DestituirEstudianteProyectoGradoValidator validator;
+    private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
@@ -37,6 +40,9 @@ public class DestituirEstudianteProyectoGradoUseCaseImpl implements DestituirEst
         validator.validar(entrada, proyecto, estadoActual, vinculado);
 
         estudianteProyectoGradoOutputPort.desvincular(entrada.getProyectoGrado(), entrada.getEstudiante());
+
+        eventPublisher.publish(new EstudianteProyectoGradoDestituidoEvent(
+                entrada.getProyectoGrado(), entrada.getEstudiante()));
 
         logger.info(EstudianteProyectoGradoKey.LOG_DESTITUIDO, entrada.getProyectoGrado(), entrada.getEstudiante());
     }

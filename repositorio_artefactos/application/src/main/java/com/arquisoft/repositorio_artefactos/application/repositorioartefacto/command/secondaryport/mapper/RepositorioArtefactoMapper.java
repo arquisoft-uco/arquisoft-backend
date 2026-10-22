@@ -14,4 +14,12 @@ public final class RepositorioArtefactoMapper {
                 repositorio.getDescripcion(),
                 repositorio.getAdministrador());
     }
+
+    public static RepositorioArtefactoDomain toDomain(RepositorioArtefactoEntity entity) {
+        return RepositorioArtefactoDomain.reconstruir(
+                entity.id(),
+                entity.nombreRepositorio(),
+                entity.descripcion(),
+                entity.administrador());
+    }
 }

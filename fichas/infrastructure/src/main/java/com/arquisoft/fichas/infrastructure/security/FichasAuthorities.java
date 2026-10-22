@@ -28,6 +28,7 @@ public final class FichasAuthorities {
     public static final String EVALUACION_FICHA_PERFIL_REPRESENTANTE_VIEW = "fichas:evaluacion-ficha-perfil-representante:view";
     public static final String EVALUACION_FICHA_PERFIL_ESTUDIANTE_VIEW = "fichas:evaluacion-ficha-perfil-estudiante:view";
     public static final String EVALUACION_FICHA_PERFIL_COORDINADOR_VIEW = "fichas:evaluacion-ficha-perfil-coordinador:view";
+    public static final String EVALUACION_FICHA_PERFIL_ASESOR_VIEW = "fichas:evaluacion-ficha-perfil-asesor:view";
 
     public static final String ESTADO_EVALUACION_FICHA_CREATE = "fichas:estado-evaluacion-ficha:create";
 
@@ -65,6 +66,8 @@ public final class FichasAuthorities {
     public static final String ESTADO_EVALUACION_VIEW = "fichas:estado-evaluacion:view";
 
     public static final String ESTADO_REVISION_VIEW = "fichas:estado-revision:view";
+
+    public static final String ESTADO_OBSERVACION_REVISION_VIEW = "fichas:estado-observacion-revision:view";
 
     public static final class Expresiones {
 
@@ -115,6 +118,8 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + EVALUACION_FICHA_PERFIL_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_EVALUACION_FICHA_PERFIL_COORDINADOR_VIEW =
                 HAS_AUTHORITY_INICIO + EVALUACION_FICHA_PERFIL_COORDINADOR_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_EVALUACION_FICHA_PERFIL_ASESOR_VIEW =
+                HAS_AUTHORITY_INICIO + EVALUACION_FICHA_PERFIL_ASESOR_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_EVALUACION_FICHA_CREATE =
                 HAS_AUTHORITY_INICIO + ESTADO_EVALUACION_FICHA_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_FICHA_VIEW =
@@ -137,6 +142,8 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + ESTADO_EVALUACION_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_REVISION_VIEW =
                 HAS_AUTHORITY_INICIO + ESTADO_REVISION_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTADO_OBSERVACION_REVISION_VIEW =
+                HAS_AUTHORITY_INICIO + ESTADO_OBSERVACION_REVISION_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_REVISION_ITEM_CREATE =
                 HAS_AUTHORITY_INICIO + REVISION_ITEM_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_REVISION_ITEM_ASESOR_VIEW =

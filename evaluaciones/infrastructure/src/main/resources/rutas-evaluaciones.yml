@@ -9,6 +9,9 @@ rutas:
       base: /evaluaciones
       jurados: /{evaluacionId}/jurados
       evaluaciones-jurado: /{evaluacionId}/evaluaciones-jurado
+      coordinador: /coordinador
+      asesor: /asesor
+      estudiante: /estudiante
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
       por-id: /{itemId}
@@ -16,10 +19,16 @@ rutas:
       base: /evaluaciones/criterios-item-cualitativo-jurado
     categorias-item-cuantitativo-jurado:
       base: /evaluaciones/categorias-item-cuantitativo-jurado
+    categorias-item-cuantitativo-asesor:
+      base: /evaluaciones/categorias-item-cuantitativo-asesor
     evaluaciones-jurado:
       base: /evaluaciones/evaluaciones-jurado
       cualitativas: /{evaluacionJuradoId}/cualitativas
       cuantitativas: /{evaluacionJuradoId}/cuantitativas
+      jurado: /jurado
+    evaluaciones-asesor:
+      base: /evaluaciones-asesor
+      cualitativas: /{evaluacionAsesorId}/cualitativas
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
       por-id: /{itemId}

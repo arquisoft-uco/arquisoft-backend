@@ -21,6 +21,13 @@ public final class EvaluacionesFields {
         public static final String DESCRIPCION = "descripcion";
     }
 
+    public static final class CategoriaItemCuantitativoAsesor {
+
+        private CategoriaItemCuantitativoAsesor() {}
+
+        public static final String NOMBRE = "nombre";
+    }
+
     public static final class CategoriaItemCuantitativoJurado {
 
         private CategoriaItemCuantitativoJurado() {}
@@ -35,6 +42,23 @@ public final class EvaluacionesFields {
         public static final String EVALUACION_JURADO = "evaluacionJurado";
         public static final String ITEM = "item";
         public static final String CRITERIO = "criterio";
+    }
+
+    public static final class EvaluacionCualitativaAsesor {
+
+        private EvaluacionCualitativaAsesor() {}
+
+        public static final String EVALUACION_ASESOR = "evaluacionAsesor";
+        public static final String ASESOR = "asesor";
+        public static final String ITEM = "item";
+        public static final String CRITERIO = "criterio";
+    }
+
+    public static final class RegistroEvaluacionesCualitativasAsesor {
+
+        private RegistroEvaluacionesCualitativasAsesor() {}
+
+        public static final String EVALUACIONES = "evaluaciones";
     }
 
     public static final class EvaluacionCuantitativaJurado {
@@ -55,12 +79,28 @@ public final class EvaluacionesFields {
         public static final String EVALUACIONES = "evaluaciones";
     }
 
+    public static final class OmisionEvaluacionesCualitativasJurado {
+
+        private OmisionEvaluacionesCualitativasJurado() {}
+
+        public static final String EVALUACIONES = "evaluaciones";
+    }
+
+    public static final class OmisionEvaluacionesCuantitativasJurado {
+
+        private OmisionEvaluacionesCuantitativasJurado() {}
+
+        public static final String EVALUACIONES = "evaluaciones";
+    }
+
     public static final class Evaluacion {
 
         private Evaluacion() {}
 
         public static final String EVALUACION = "evaluacion";
         public static final String ESTADO = "estado";
+        public static final String ASESOR = "asesor";
+        public static final String ESTUDIANTE = "estudiante";
     }
 
     public static final class EvaluacionJurado {
@@ -76,6 +116,16 @@ public final class EvaluacionesFields {
         private AsignacionJuradosEvaluacion() {}
 
         public static final String JURADOS = "jurados";
+    }
+
+    public static final class EstudianteProyectoGrado {
+
+        private EstudianteProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String ESTUDIANTES = "estudiantes";
+        public static final String ESTUDIANTE = "estudiante";
+        public static final String OCURRIDO_EN = "ocurridoEn";
     }
 
     public static final class Jurado {

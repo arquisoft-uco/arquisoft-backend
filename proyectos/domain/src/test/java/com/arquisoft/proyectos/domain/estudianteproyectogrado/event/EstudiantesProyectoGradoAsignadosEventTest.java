@@ -16,7 +16,7 @@ class EstudiantesProyectoGradoAsignadosEventTest {
     void debeExponerLosDatosYUnaCopiaDeLosEstudiantes_cuandoSeConstruyeElEvento() {
         // Arrange
         var proyectoGrado = UUID.randomUUID();
-        var estudiante = new ContactoEstudiante("Ana Gomez", "ana.gomez@soyuco.edu.co");
+        var estudiante = new ContactoEstudiante(UUID.randomUUID(), "Ana Gomez", "ana.gomez@soyuco.edu.co");
         var estudiantes = new ArrayList<>(List.of(estudiante));
 
         // Act
@@ -31,5 +31,19 @@ class EstudiantesProyectoGradoAsignadosEventTest {
         assertThat(evento.getTipoEvento()).isEqualTo(EstudiantesProyectoGradoAsignadosEvent.EVENT_TYPE);
         assertThat(evento.getIdEvento()).isNotBlank();
         assertThat(evento.getOcurridoEn()).isNotNull();
+    }
+
+    @Test
+    void debeConservarIdNombreYEmail_cuandoSeConstruyeConContactos() {
+        // Arrange
+        var id = UUID.randomUUID();
+
+        // Act
+        var contacto = new ContactoEstudiante(id, "Ana Gomez", "ana.gomez@soyuco.edu.co");
+
+        // Assert
+        assertThat(contacto.id()).isEqualTo(id);
+        assertThat(contacto.nombre()).isEqualTo("Ana Gomez");
+        assertThat(contacto.email()).isEqualTo("ana.gomez@soyuco.edu.co");
     }
 }

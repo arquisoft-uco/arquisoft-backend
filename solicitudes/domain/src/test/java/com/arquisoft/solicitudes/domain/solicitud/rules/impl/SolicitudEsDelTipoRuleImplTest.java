@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.domain.solicitud.rules.impl;
 
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAmpliacionPlazoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
@@ -57,7 +58,7 @@ class SolicitudEsDelTipoRuleImplTest {
     void debeLanzarTipoNoEncontrado_cuandoElTipoEsperadoNoTieneRegla() {
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(concordancia(
-                TipoSolicitud.CAMBIO_DE_ASESOR, TipoSolicitud.AMPLIACION_DE_PLAZO)))
+                TipoSolicitud.CAMBIO_DE_ASESOR, TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS)))
                 .isInstanceOf(TipoSolicitudNoEncontradoException.class);
     }
 
@@ -75,5 +76,21 @@ class SolicitudEsDelTipoRuleImplTest {
         assertThatThrownBy(() -> regla.validar(concordancia(
                 TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, TipoSolicitud.CAMBIO_DE_ASESOR)))
                 .isInstanceOf(SolicitudTipoNoCoincideCambioAsesorException.class);
+    }
+
+    @Test
+    void noDebeLanzar_cuandoElTipoCoincideConAmpliacionDePlazo() {
+        // Act & Assert
+        assertThatCode(() -> regla.validar(concordancia(
+                TipoSolicitud.AMPLIACION_DE_PLAZO, TipoSolicitud.AMPLIACION_DE_PLAZO)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarElErrorDeAmpliacionPlazo_cuandoSeEsperabaAmpliacionDePlazo() {
+        // Act & Assert
+        assertThatThrownBy(() -> regla.validar(concordancia(
+                TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, TipoSolicitud.AMPLIACION_DE_PLAZO)))
+                .isInstanceOf(SolicitudTipoNoCoincideAmpliacionPlazoException.class);
     }
 }

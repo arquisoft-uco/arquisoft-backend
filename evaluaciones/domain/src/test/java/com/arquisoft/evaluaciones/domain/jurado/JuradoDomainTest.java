@@ -126,6 +126,38 @@ class JuradoDomainTest {
     }
 
     @Test
+    void debeAsignarEliminadoEnYOcurridoEn_cuandoSeRemueve() {
+        // Arrange
+        var jurado = JuradoDomain.crear(
+                UtilUUID.generarNuevoUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", OCURRIDO_EN);
+        var nuevoOcurridoEn = Instant.parse("2026-09-24T12:00:00Z");
+
+        // Act
+        jurado.remover(nuevoOcurridoEn);
+
+        // Assert
+        assertThat(jurado.getEliminadoEn()).isEqualTo(nuevoOcurridoEn);
+        assertThat(jurado.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+        assertThat(jurado.estaEliminado()).isTrue();
+    }
+
+    @Test
+    void debeLanzarValidacionYConservarVigente_cuandoRemoverRecibeOcurridoEnNulo() {
+        // Arrange
+        var jurado = JuradoDomain.crear(
+                UtilUUID.generarNuevoUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", OCURRIDO_EN);
+
+        // Act & Assert
+        assertThatThrownBy(() -> jurado.remover(null))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(e -> e.campo())
+                        .containsExactly(EvaluacionesFields.Jurado.OCURRIDO_EN));
+        assertThat(jurado.estaEliminado()).isFalse();
+        assertThat(jurado.getOcurridoEn()).isEqualTo(OCURRIDO_EN);
+    }
+
+    @Test
     void debeExponerCentinelaVacioNoEliminado_cuandoSeConsultaVacio() {
         // Act
         var vacio = JuradoDomain.VACIO;

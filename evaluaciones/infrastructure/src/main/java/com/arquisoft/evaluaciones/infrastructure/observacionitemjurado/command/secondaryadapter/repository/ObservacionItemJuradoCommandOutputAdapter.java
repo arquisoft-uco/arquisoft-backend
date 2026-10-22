@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -43,5 +44,10 @@ public class ObservacionItemJuradoCommandOutputAdapter implements ObservacionIte
     public void actualizarDescripcion(UUID id, String descripcion) {
         repository.actualizarDescripcion(id, descripcion);
         logger.debug(ObservacionItemJuradoKey.LOG_GUARDADA, id);
+    }
+
+    @Override
+    public boolean existenPorEvaluacionesCuantitativas(Set<UUID> evaluacionesCuantitativas) {
+        return repository.existsByEvaluacionCuantitativaJuradoIdIn(evaluacionesCuantitativas);
     }
 }

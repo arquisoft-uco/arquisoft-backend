@@ -74,8 +74,8 @@ de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 ### Bounded Contexts
 
 Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`,
-`solicitudes`, `biblioteca`, `mapas_ruta` y `repositorio_artefactos`. Los otros dos (`artefactos`, `entregables`) son andamiaje:
-solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
+`solicitudes`, `biblioteca`, `repositorio_artefactos`, `artefactos` y `mapas_ruta`. El único andamiaje
+que queda es `entregables`: solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
 `RegistrarUsuario` lo da de alta en Keycloak y publica los eventos con los que `fichas` y `proyectos`
 mantienen sus réplicas.
 
@@ -131,6 +131,7 @@ Lo que hay que saber de cada uno para no romper el grafo:
 | `shared:util` | `UtilTexto`, `UtilUUID`, `UtilColeccion`, `UtilFecha`, `UtilNumero`, `UtilObjeto`, `UtilEnum` | Prefijo `Util` en inglés, el resto en español |
 | `shared:tracing` | Contexto de traza completo (ver *Correlación*) | Único `shared:*` con capas hexagonales internas; **no** depende de spring-web ni spring-security |
 | `shared:message` | Códigos, campos, límites, textos Swagger, `EventTopics`, enums `{Feature}Key`, fachada `Mensajes` | — |
+| `shared:minio` | `AlmacenamientoObjetos`: formulario POST firmado con política, `statObject`, lectura en streaming, copia condicionada al ETag y borrado | Nunca crea buckets ni lista (la cuenta del backend en la nube no tiene `ListBucket`): el bucket lo crea `minio/configurar.sh`. Un objeto ausente (`NoSuchKey`) se devuelve vacío, no lanza |
 
 **Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
 crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
@@ -199,7 +200,7 @@ Forma, espejando cualquier otro puerto secundario:
     │   │   ├── web/                        # Un Controller por acción + dto/ + mapper/
     │   │   └── amqp/{productor}/{entidad}/ # {Evento}Consumer + {Evento}Payload
     │   └── secondaryadapter/               # entity/ (JpaEntity) + mapper/ + repository/
-    │                                       #   (o keycloak/, redis/, jwt/, smtp/…)
+    │                                       #   (o keycloak/, redis/, jwt/, smtp/, minio/, tika/…)
     └── query/
         ├── primaryadapter/web/             # Controller + dto/ + mapper/
         └── secondaryadapter/repository/    # JpaQueryEntity (@Subselect) + Specification +
@@ -505,6 +506,7 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 | `UsuarioSolicitudesCommandOutputAdapter` / `UsuarioSolicitudesCommandRepository` | `solicitudes/…/usuario/…/repository/` | La réplica lleva el contexto en el nombre. Con los beans nombrados por FQN, una réplica usa el nombre natural (`UsuarioCommandOutputAdapter`); ver `arquisoft-arquitectura/references/eventos.md` → *Replicación entre contextos* |
 | `ProyectoGradoDeEstudianteQueryOutputAdapter` stub | `mapas_ruta/…/asignacionproyecto/query/secondaryadapter/webclient/` | **Deliberado, HU-052.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `ProyectoGradoDeEstudianteQueryFinder` + el corte del use case están cableados y activos; el adaptador ignora al estudiante, devuelve siempre el proyecto fijo de su constante `PROYECTO_GRADO_SIMULADO` y loguea `warn`. Consecuencia: `GET /mapas-ruta/estudiante` devuelve **el mismo mapa a todo estudiante** (no verifica pertenencia), o 404 si ese proyecto no tiene mapa sembrado. Activar = reemplazar el cuerpo del adaptador y borrar la constante; checklist en `PLAN-HU-052.md` §5 |
 | `AsignacionAsesorOutputAdapter` stub | `mapas_ruta/…/asignacionasesor/command/secondaryadapter/webclient/` | **Deliberado, HU-007.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` (¿el asesor está asignado al proyecto?) — ninguno existe aún. El puerto + `AsesorAsignadoProyectoGradoFinder` + `AsesorAsignadoProyectoGradoRule` están cableados y activos; el adaptador ignora los argumentos, devuelve siempre `true` y loguea `warn`. Consecuencia: `POST /mapas-ruta/{mapaRutaId}/tareas` no verifica Tarea-POL-03 (el asesor de la tarea pertenece al proyecto). Además la réplica `asesor` no tiene consumidor: en un entorno real el `INSERT` de `tarea` falla por `fk_tarea_asesor` hasta que una HU la pueble. Activar = reemplazar el cuerpo del adaptador y borrar el `warn`; checklist en `PLAN-HU-007.md` §5 |
+| `ConsultarEvaluacionesEstudianteController` y `ConsultarEvaluacionesAsesorController` sin `@PreAuthorize` | `evaluaciones/…/evaluacion/query/primaryadapter/web/` | **Deliberado, HU-013.** Un client role por endpoint. Ambos exigen JWT autenticado (`anyRequest().authenticated()`) pero no client role; el commit `f18162fad` ya lo hizo con el del asesor y `4bd888424` con fichas. El acceso a los datos lo acota el filtro forzado `estudianteId`/`asesorId` = `sub` del JWT en el `Mapper` de la consulta, nunca un parámetro del cliente. No copiar para endpoints que no acoten por `sub` |
 
 ## Reference Documentation
 

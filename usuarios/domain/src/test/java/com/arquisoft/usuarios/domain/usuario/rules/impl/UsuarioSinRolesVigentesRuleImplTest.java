@@ -8,6 +8,7 @@ import com.arquisoft.usuarios.domain.administrador.AdministradorDomain;
 import com.arquisoft.usuarios.domain.asesor.AsesorDomain;
 import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.usuarios.domain.bibliotecario.BibliotecarioDomain;
+import com.arquisoft.usuarios.domain.jurado.JuradoDomain;
 import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
 import com.arquisoft.usuarios.domain.representantecomite.RepresentanteComiteDomain;
@@ -32,7 +33,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
         // Arrange
         var roles = new RolesUsuario(UtilUUID.generarNuevoUUID(), EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO,
-                BibliotecarioDomain.VACIO);
+                BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(roles)).doesNotThrowAnyException();
@@ -47,7 +48,8 @@ class UsuarioSinRolesVigentesRuleImplTest {
                 AsesorDomain.reconstruir(usuario, ELIMINADO_EN),
                 AsesorFichaDomain.reconstruir(usuario, ELIMINADO_EN),
                 CoordinadorDomain.reconstruir(usuario, ELIMINADO_EN),
-                RepresentanteComiteDomain.reconstruir(usuario, ELIMINADO_EN), AdministradorDomain.VACIO, BibliotecarioDomain.VACIO);
+                RepresentanteComiteDomain.reconstruir(usuario, ELIMINADO_EN), AdministradorDomain.VACIO, BibliotecarioDomain.VACIO,
+                JuradoDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(roles)).doesNotThrowAnyException();
@@ -62,7 +64,8 @@ class UsuarioSinRolesVigentesRuleImplTest {
                 AsesorDomain.reconstruir(usuario, UtilFecha.VACIO),
                 AsesorFichaDomain.reconstruir(usuario, ELIMINADO_EN),
                 CoordinadorDomain.VACIO,
-                RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO, BibliotecarioDomain.VACIO);
+                RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO,
+                BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(roles))
@@ -85,7 +88,8 @@ class UsuarioSinRolesVigentesRuleImplTest {
                 AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO,
                 CoordinadorDomain.reconstruir(usuario, ELIMINADO_EN),
-                RepresentanteComiteDomain.reconstruir(usuario, UtilFecha.VACIO), AdministradorDomain.VACIO, BibliotecarioDomain.VACIO);
+                RepresentanteComiteDomain.reconstruir(usuario, UtilFecha.VACIO), AdministradorDomain.VACIO,
+                BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(roles))
@@ -104,7 +108,8 @@ class UsuarioSinRolesVigentesRuleImplTest {
         var usuario = UtilUUID.generarNuevoUUID();
         var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
-                RepresentanteComiteDomain.reconstruir(usuario, ELIMINADO_EN), AdministradorDomain.VACIO, BibliotecarioDomain.VACIO);
+                RepresentanteComiteDomain.reconstruir(usuario, ELIMINADO_EN), AdministradorDomain.VACIO,
+                BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(roles)).doesNotThrowAnyException();
@@ -119,7 +124,8 @@ class UsuarioSinRolesVigentesRuleImplTest {
                 AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO,
                 CoordinadorDomain.VACIO,
-                RepresentanteComiteDomain.VACIO, AdministradorDomain.reconstruir(usuario, UtilFecha.VACIO), BibliotecarioDomain.VACIO);
+                RepresentanteComiteDomain.VACIO, AdministradorDomain.reconstruir(usuario, UtilFecha.VACIO),
+                BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(roles))
@@ -137,7 +143,8 @@ class UsuarioSinRolesVigentesRuleImplTest {
         var usuario = UtilUUID.generarNuevoUUID();
         var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
-                RepresentanteComiteDomain.VACIO, AdministradorDomain.reconstruir(usuario, ELIMINADO_EN), BibliotecarioDomain.VACIO);
+                RepresentanteComiteDomain.VACIO, AdministradorDomain.reconstruir(usuario, ELIMINADO_EN),
+                BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(roles)).doesNotThrowAnyException();
@@ -149,7 +156,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
         var usuario = UtilUUID.generarNuevoUUID();
         var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO,
-                AdministradorDomain.VACIO, BibliotecarioDomain.crear(usuario));
+                AdministradorDomain.VACIO, BibliotecarioDomain.crear(usuario), JuradoDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(roles))
@@ -167,7 +174,37 @@ class UsuarioSinRolesVigentesRuleImplTest {
         var usuario = UtilUUID.generarNuevoUUID();
         var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO,
-                AdministradorDomain.VACIO, BibliotecarioDomain.reconstruir(usuario, ELIMINADO_EN));
+                AdministradorDomain.VACIO, BibliotecarioDomain.reconstruir(usuario, ELIMINADO_EN), JuradoDomain.VACIO);
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(roles)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarConJurado_cuandoSoloElJuradoSigueVigente() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
+                AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO,
+                AdministradorDomain.VACIO, BibliotecarioDomain.VACIO, JuradoDomain.crear(usuario));
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(roles))
+                .isInstanceOfSatisfying(UsuarioRolesVigentesException.class, ex -> {
+                    assertThat(ex.getCodigoError()).isEqualTo(UsuariosCodes.Usuario.ROLES_VIGENTES);
+                    assertThat(ex.getMessage())
+                            .contains(usuario.toString())
+                            .contains(": " + UsuariosRealmRoles.JURADO + ".");
+                });
+    }
+
+    @Test
+    void noDebeLanzar_cuandoElJuradoYaFueRemovido() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
+                AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO,
+                AdministradorDomain.VACIO, BibliotecarioDomain.VACIO, JuradoDomain.reconstruir(usuario, ELIMINADO_EN));
 
         // Act & Assert
         assertThatCode(() -> rule.validar(roles)).doesNotThrowAnyException();
@@ -182,12 +219,13 @@ class UsuarioSinRolesVigentesRuleImplTest {
                 AsesorDomain.reconstruir(usuario, UtilFecha.VACIO),
                 AsesorFichaDomain.reconstruir(usuario, UtilFecha.VACIO),
                 CoordinadorDomain.reconstruir(usuario, UtilFecha.VACIO),
-                RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO, BibliotecarioDomain.VACIO);
+                RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO,
+                BibliotecarioDomain.VACIO, JuradoDomain.reconstruir(usuario, UtilFecha.VACIO));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(roles))
                 .isInstanceOf(UsuarioRolesVigentesException.class)
                 .hasMessageContaining(String.join(", ", UsuariosRealmRoles.ESTUDIANTE, UsuariosRealmRoles.ASESOR,
-                        UsuariosRealmRoles.ASESOR_FICHA, UsuariosRealmRoles.COORDINADOR));
+                        UsuariosRealmRoles.ASESOR_FICHA, UsuariosRealmRoles.COORDINADOR, UsuariosRealmRoles.JURADO));
     }
 }
