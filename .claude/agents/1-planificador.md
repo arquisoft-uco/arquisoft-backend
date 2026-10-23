@@ -70,10 +70,13 @@ separa en dos).
 
 **3. Autorización del endpoint.** El controlador no autoriza: la decisión de acceso es externa
 (`DecisionAccesoOutputPort`) y se identifica por `método + plantilla de ruta` con `/api` (los nombres
-de variable cuentan). Pregunta qué roles o perfiles del PDP usan el endpoint —solo para el recurso
-del anexo y la sección 9— y recuerda que el endpoint nuevo exige una fila en
-`seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml` mientras exista el
-emisor legado (`CompletitudEquivalenciasAutorizacionTest` lo comprueba). El controlador recibe
+de variable cuentan). Pregunta qué roles de negocio (realm roles) usan el endpoint —para la sección
+9— y recuerda que el endpoint nuevo exige una fila con su client role en
+`seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml`
+(`CompletitudEquivalenciasAutorizacionTest` lo comprueba), y ese client role en
+`keycloak/realm-arquisoft.json`, como composite de los realm roles que respondió el usuario: sin eso
+el endpoint da 403 a todos (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera
+del controlador*). El controlador recibe
 `IdentidadActual`, nunca `Jwt` ni `@PreAuthorize`. Mapeo de los roles de negocio actuales: `coordinador`,
 `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`, `representante-comite`, `estudiante`,
 `administrador`.
@@ -188,17 +191,18 @@ Desde la sección 4 el plan es condicional:
 ### {contexto}/infrastructure — `…/infrastructure/{feature}/`
 ### shared:message y catálogo
 ### Autorización — `seguridad/infrastructure/src/main/resources/`
-| ✏️ | `autorizacion-equivalencias.yml` | Fila `{MÉTODO} /api/{plantilla}` → rol legado, solo si el endpoint es nuevo |
+| ✏️ | `autorizacion-equivalencias.yml` | Fila `{MÉTODO} /api/{plantilla}` → client role, solo si el endpoint es nuevo |
+| ✏️ | `keycloak/realm-arquisoft.json` | Client role en `arquisoft-api` + composite en cada realm role de la sección 9 |
 ### Migración
 
 ## 7. Notas de implementación           ← solo lo que no se deduce de la sección 6
 - `{Clase}`: {firma o decisión no obvia, máx. 2 líneas}
 
 ## 8. Endpoints
-| Método | Ruta (sin /api) | Clave de propiedad | Request | Response | HTTP | Roles PDP |
+| Método | Ruta (sin /api) | Clave de propiedad | Request | Response | HTTP | Realm roles |
 
 ## 9. Seguridad
-| Recurso PDP (método + plantilla con /api) | Roles PDP que lo usan | Fila en `autorizacion-equivalencias.yml` |
+| Recurso (método + plantilla con /api) | Client role (fila en `autorizacion-equivalencias.yml`) | Realm roles que lo otorgan en `realm-arquisoft.json` |
 
 ## 10. Eventos RabbitMQ                 ← solo si 5 = A/B
 | Dirección | Routing key | Payload | Receptor |
@@ -232,7 +236,7 @@ Paquetes y sufijos exactos: `arquisoft-arquitectura`. Lo que suele faltar en el 
 | Caso | Filas |
 |---|---|
 | Escritura | `Command`, `primaryport/mapper/` (siempre), `Interactor`, `UseCase` (recibe dominio), `Finder`s, `secondaryport/` (`OutputPort` + `entity/` + `mapper/`), `Controller` + `dto/` + `mapper/`, `secondaryadapter/` (`JpaEntity`, `JpaMapper`, `CommandOutputAdapter`, `CommandRepository`) |
-| Endpoint nuevo (escritura o consulta) | Recurso nuevo en el PDP (sección 9), ✏️ fila en `autorizacion-equivalencias.yml` y `IdentidadActual` en el controlador (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*) |
+| Endpoint nuevo (escritura o consulta) | Recurso nuevo (sección 9), ✏️ fila en `autorizacion-equivalencias.yml`, ✏️ client role en `realm-arquisoft.json` y `IdentidadActual` en el controlador (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*) |
 | `Validator` | solo si la sección 3 tiene alguna `Rule` |
 | `result/` + `ResponseMapper` | solo si la pregunta 11 fue C |
 | `event/` | solo si la pregunta 5 fue A/B |
@@ -293,9 +297,9 @@ Presupuesto: pequeña 15-25 · mediana 25-50 · grande 50-80 · más de 80, revi
 capa, una línea cada uno (`debeX_cuandoY`). Escritura: domain (`crear` válido + un test de
 `fieldErrors[]` acumulados, cada `Rule`) → application (`UseCase`: éxito con orden y **un** rechazo
 con el `Validator` mockeado, no uno por `Rule`, que el use case no los distingue; `Validator` con
-`Rule`s reales, un caso por regla y su prioridad) → infrastructure (`@DataJpaTest`, `@WebMvcTest` 201/400/401/403/422). Consulta:
+`Rule`s reales, un caso por regla y su prioridad) → infrastructure (`@DataJpaTest`, `@WebMvcTest` 201/400/401/422). Consulta:
 `UseCase`, `SortMapperTest` si hay orden, `QueryOutputAdapter` siempre con `@DataJpaTest`
-(Mockito no ejecuta el `@Subselect`), `Controller` 200/400/401/403.
+(Mockito no ejecuta el `@Subselect`), `Controller` 200/400/401.
 
 ### Sección 13 — Checklist de Implementación
 
@@ -303,7 +307,7 @@ Solo decisiones de **esta** historia con nombres reales: si un ítem se leería 
 va. Un ítem por decisión tomada en la FASE 3: eventos (o "ninguno"), razón de un estado sin
 notificación, presupuesto de I/O y cascadas justificadas, `Rule`s del `Validator` en orden o "sin
 `Validator`", política de acceso o "ninguna", cortes sin excepción, objeto de acción, retorno y
-entrada, encadenamiento, recurso PDP y roles PDP que lo usan con su fila de equivalencias, réplica o consulta síncrona,
+entrada, encadenamiento, recurso con su client role y los realm roles que lo otorgan, réplica o consulta síncrona,
 vigencia (`eliminado_en`) de cada consulta a réplica, migración y constantes del MER, y el commit
 sugerido `feat({contexto}): {descripción}`.
 

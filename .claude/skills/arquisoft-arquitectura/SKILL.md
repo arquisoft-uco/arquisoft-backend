@@ -16,7 +16,7 @@ contexto completo y el patrón a copiar—. Ábrelo con `Read` cuando necesites 
 
 | Contexto | Referencia de | Límite (no se copia) |
 |---|---|---|
-| `seguridad` | `command/result/` (+`mapper/`), excepciones por capa dentro del slice, controllers por acción, `RequestDTO` `record` + `RequestMapper`, `AppLogger` | Sin BD (identidad externa + Redis): no hay `JpaEntity`, Flyway ni `@Transactional`. Referencia de autorización: `AutorizacionAccesoFilter` + `DecisionAccesoOutputPort` con un adaptador por emisor (`secondaryadapter/{pep,equivalencias,none}`) e `IdentidadActual`. Sus cuatro `*ResponseDTO` son clases Lombok, no `record` |
+| `seguridad` | `command/result/` (+`mapper/`), excepciones por capa dentro del slice, controllers por acción, `RequestDTO` `record` + `RequestMapper`, `AppLogger` | Sin BD (identidad externa + Redis): no hay `JpaEntity`, Flyway ni `@Transactional`. Referencia de autorización: `AutorizacionAccesoFilter` + `DecisionAccesoOutputPort` con un adaptador por emisor (`secondaryadapter/{pep,equivalencias,none}`) e `IdentidadActual`; `mapeoroles/` refresca en Redis el índice client role → realm roles que usa `equivalencias`. Sus cuatro `*ResponseDTO` son clases Lombok, no `record` |
 | `notificaciones` | `Consumer` AMQP; comando **sin `Validator`** (su única consulta es un corte de idempotencia con `Finder` + `if/return`, no una `Rule`) | — |
 | `usuarios` | Lado **dueño** de una réplica y adaptador hacia proveedor externo: `RegistrarUsuarioUseCaseImpl` persiste, da de alta en el proveedor de identidad (`secondaryadapter/keycloak/KeycloakProveedorIdentidadOutputAdapter`, seleccionable por `security.identity-provisioning.provider`) y encadena `Agregar{Estudiante,Coordinador,Asesor,AsesorFicha}` desde el orquestador; cada uno publica su `*Agregado`. `RemoverEstudianteUseCaseImpl` es la baja lógica con `*Removido` | Sin lado `query/` |
 | `evaluaciones` | Molde de un **contexto que arranca** (`itemcualitativojurado`): `Controller` → `RequestMapper` → `Command.crear` → `Interactor` → `UseCase` → `Finder` → `Validator` → `Rule` → `OutputPort` (`Entity`) → `JpaMapper` → `CommandRepository` y migración timestamp. También la **consulta con política de acceso**: `ConsultarEvaluacionesCualitativasJuradoUseCaseImpl` (`arquisoft-estandares` → *Validación en una consulta*) | Un solo consumidor (`jurado`, réplica de `usuarios.jurado.agregado`) y sin eventos propios; sus consultas no paginan ni filtran |
@@ -445,12 +445,22 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
   decide `AutorizacionAccesoFilter` (`seguridad:infrastructure`) preguntando a `DecisionAccesoOutputPort`
   por `método + plantilla de ruta` (con `/api`). El adaptador del emisor (`pep`, `role-table` o `none`)
   se elige por propiedad, así que cambiar de proveedor no toca ningún controlador. Un permiso en el
-  controlador lo ata al modelo de authorities del token, que el proveedor nuevo ya no emite.
-- **Un endpoint nuevo es un recurso nuevo del PDP:** se registra con su método y su plantilla exacta
-  (los nombres de variable cuentan: `{id}` y `{fichaPerfilId}` son recursos distintos) y, mientras
-  exista el emisor legado, con una fila en `seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml`.
+  controlador lo ataría a las authorities del token, que no llevan client roles.
+- **Un endpoint nuevo es un recurso nuevo:** se registra con su método y su plantilla exacta (los
+  nombres de variable cuentan: `{id}` y `{fichaPerfilId}` son recursos distintos) como una fila en
+  `seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml`, el mapa endpoint → client role.
   `CompletitudEquivalenciasAutorizacionTest` rompe el build si falta la fila o sobra una, y escribe
   `build/reports/autorizacion/recursos-pdp.csv` con la lista para el equipo de seguridad.
+- **Cada fila de la tabla exige su client role en `keycloak/realm-arquisoft.json`**, en dos sitios: en
+  `roles.client.arquisoft-api` (el rol existe) y en los `composites.client.arquisoft-api` de cada realm
+  role de negocio que usa el endpoint (el rol se otorga). El token del emisor `role-table` lleva solo
+  realm roles: el backend resuelve el client role con un índice que lee de Keycloak qué realm role lo
+  incluye como composite directo. Un client role que solo está en la tabla, o que cuelga de otro rol
+  compuesto, no entra al índice y el endpoint responde 403 a todos sin que nada falle en el build.
+  El client role es uno por controlador, `{contexto}:{recurso}:{acción}` (`fichas:revision-item:create`),
+  nunca el de otro endpoint; si dos roles distintos acceden al mismo recurso, se califica el recurso
+  (`-coordinador` / `-asesor`). La excepción es un flujo partido en dos endpoints que no tiene sentido
+  otorgar a medias (`repositorio-artefactos:version-repositorio-artefacto:upload`).
 - **El controlador recibe `IdentidadActual`** (`shared:web`), nunca `Jwt`, `@AuthenticationPrincipal` ni
   claims. Los contextos no declaran `starter-security` ni `oauth2-resource-server` en `implementation`;
   `verificarNeutralidadProveedorIdentidad` (cuelga de `check`) falla si el vocabulario de proveedor

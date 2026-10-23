@@ -284,10 +284,13 @@ el enunciado, para reconocer una desviación de un vistazo.
   no existe `{Contexto}Routes`. Nunca el prefijo `/api`: ya es el `context-path`.
 - **La autorización no vive en el controlador:** ni `@PreAuthorize` ni roles. La decide
   `AutorizacionAccesoFilter` consultando a `DecisionAccesoOutputPort` por método + plantilla de ruta, con
-  un adaptador por emisor elegido por propiedad (`pep`, `role-table`, `none`). Un endpoint nuevo es un
-  recurso del PDP y, mientras exista el emisor legado, una fila en `autorizacion-equivalencias.yml`
-  (`CompletitudEquivalenciasAutorizacionTest` lo exige). El controlador recibe `IdentidadActual`
-  (`shared:web`), nunca `Jwt` ni `@AuthenticationPrincipal`.
+  un adaptador por emisor elegido por propiedad (`pep`, `role-table`, `none`). Un endpoint nuevo es una
+  fila en `autorizacion-equivalencias.yml`, el mapa endpoint → client role
+  (`CompletitudEquivalenciasAutorizacionTest` lo exige), y ese client role en
+  `keycloak/realm-arquisoft.json`: creado en `arquisoft-api` y como composite directo de cada realm role
+  que lo usa — si falta, el endpoint responde 403 a todos y el build no lo detecta. Un client role por
+  controlador. El controlador recibe `IdentidadActual` (`shared:web`), nunca `Jwt` ni
+  `@AuthenticationPrincipal`.
 
 **Eventos**
 - El `UseCase` inyecta la **interfaz** `EventPublisher` y publica tras persistir. El agregado es una
@@ -418,7 +421,7 @@ Java puro.
 | PostgreSQL | 18 (una **base** por contexto, con su DataSource, EntityManagerFactory y Flyway) |
 | RabbitMQ | 4.2.5 |
 | Redis | 7 (Lettuce) |
-| Proveedor de identidad | OIDC, multi-emisor por JWKS (Security Baseline; Keycloak 26.6 solo como emisor legado) |
+| Proveedor de identidad | OIDC, multi-emisor por JWKS (Security Baseline; Keycloak 26.6, realm en `keycloak/realm-arquisoft.json`) |
 | Flyway | 12.4.0 |
 | JUnit | 6.0.3 (Jupiter) |
 | Spring Modulith | 2.0.0 |
@@ -517,7 +520,6 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 | `UsuarioSolicitudesCommandOutputAdapter` / `UsuarioSolicitudesCommandRepository` | `solicitudes/…/usuario/…/repository/` | La réplica lleva el contexto en el nombre. Con los beans nombrados por FQN, una réplica usa el nombre natural (`UsuarioCommandOutputAdapter`); ver `arquisoft-arquitectura/references/eventos.md` → *Replicación entre contextos* |
 | `ProyectoGradoDeEstudianteQueryOutputAdapter` stub | `mapas_ruta/…/asignacionproyecto/query/secondaryadapter/webclient/` | **Deliberado, HU-052.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `ProyectoGradoDeEstudianteQueryFinder` + el corte del use case están cableados y activos; el adaptador ignora al estudiante, devuelve siempre el proyecto fijo de su constante `PROYECTO_GRADO_SIMULADO` y loguea `warn`. Consecuencia: `GET /mapas-ruta/estudiante` devuelve **el mismo mapa a todo estudiante** (no verifica pertenencia), o 404 si ese proyecto no tiene mapa sembrado. Activar = reemplazar el cuerpo del adaptador y borrar la constante; checklist en `PLAN-HU-052.md` §5 |
 | `AsignacionAsesorOutputAdapter` stub | `mapas_ruta/…/asignacionasesor/command/secondaryadapter/webclient/` | **Deliberado, HU-007.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` (¿el asesor está asignado al proyecto?) — ninguno existe aún. El puerto + `AsesorAsignadoProyectoGradoFinder` + `AsesorAsignadoProyectoGradoRule` están cableados y activos; el adaptador ignora los argumentos, devuelve siempre `true` y loguea `warn`. Consecuencia: `POST /mapas-ruta/{mapaRutaId}/tareas` no verifica Tarea-POL-03 (el asesor de la tarea pertenece al proyecto). Además la réplica `asesor` no tiene consumidor: en un entorno real el `INSERT` de `tarea` falla por `fk_tarea_asesor` hasta que una HU la pueble. Activar = reemplazar el cuerpo del adaptador y borrar el `warn`; checklist en `PLAN-HU-007.md` §5 |
-| `ConsultarEvaluacionesEstudianteController` y `ConsultarEvaluacionesAsesorController` sin `@PreAuthorize` | `evaluaciones/…/evaluacion/query/primaryadapter/web/` | **Deliberado, HU-013.** Un client role por endpoint. Ambos exigen JWT autenticado (`anyRequest().authenticated()`) pero no client role; el commit `f18162fad` ya lo hizo con el del asesor y `4bd888424` con fichas. El acceso a los datos lo acota el filtro forzado `estudianteId`/`asesorId` = `sub` del JWT en el `Mapper` de la consulta, nunca un parámetro del cliente. No copiar para endpoints que no acoten por `sub` |
 
 ## Reference Documentation
 

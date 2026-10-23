@@ -70,7 +70,7 @@ La query va en inglés y con los nombres de las APIs que buscas. Ejemplos que fu
 | Controller | `/websites/spring_io_spring-framework_reference_6_2` | `"RestController PostMapping RequestBody ResponseEntity"` |
 | Filtro HTTP | `/websites/spring_io_spring-framework_reference_6_2` | `"OncePerRequestFilter doFilterInternal HttpServletRequest"` |
 | Resource Server / JWT | `/websites/spring_io_spring-security_reference_6_5` | `"OAuth2 resource server JWT decoder issuer-uri"` |
-| `SecurityFilterChain` | `/websites/spring_io_spring-security_reference_6_5` | `"SecurityFilterChain requestMatchers hasAuthority"` |
+| `SecurityFilterChain` | `/websites/spring_io_spring-security_reference_6_5` | `"SecurityFilterChain addFilterAfter custom authorization filter"` |
 | Rate limiting | `/bucket4j/bucket4j` | `"Bucket tryConsume refill greedy bandwidth filter"` |
 | Consumer AMQP | `/websites/spring_io` | `"RabbitListener manual ack Channel basicAck basicNack"` |
 | Colas / bindings | `/websites/spring_io` | `"TopicExchange Queue Binding Declarables"` |

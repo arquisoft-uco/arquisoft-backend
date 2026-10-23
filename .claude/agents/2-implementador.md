@@ -88,8 +88,9 @@ escrituras) → `OutputPort` + `entity/` + `secondaryport/mapper/` → `Finder`(
 **infrastructure:** DTOs + `RequestMapper` → `Controller` (uno por acción; con "Endpoint
 EXISTENTE" modifica el existente) → `JpaEntity` + mapper + `CommandOutputAdapter`/`CommandRepository`
 → si es lectura, la cadena de `query/` de `arquisoft-arquitectura` → *infrastructure* → `Consumer`
-AMQP si el contexto consume eventos → fila en `autorizacion-equivalencias.yml` si el endpoint es
-nuevo (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*); el
+AMQP si el contexto consume eventos → fila en `autorizacion-equivalencias.yml` y su client role en
+`keycloak/realm-arquisoft.json` (rol de `arquisoft-api` + composite en los realm roles de la sección 9)
+si el endpoint es nuevo (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*); el
 controlador recibe `IdentidadActual` y no lleva anotaciones de autorización → migración Flyway.
 
 ### Señales de que el plan está mal — repórtalas como ambigüedad, no las arregles
