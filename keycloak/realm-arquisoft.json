@@ -202,8 +202,6 @@
               "evaluaciones:item-cuantitativo-jurado:view",
               "evaluaciones:item-cualitativo-jurado:create",
               "repositorio-artefactos:repositorio-artefacto:create",
-              "repositorio-artefactos:carga-version-repositorio-artefacto:create",
-              "repositorio-artefactos:version-repositorio-artefacto:create",
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
@@ -223,7 +221,8 @@
               "usuarios:jurado:delete",
               "evaluaciones:item-cuantitativo-jurado:delete",
               "evaluaciones:criterio-item-cualitativo-jurado:view",
-              "usuarios:coordinador:delete"
+              "usuarios:coordinador:delete",
+              "repositorio-artefactos:version-repositorio-artefacto:upload"
             ]
           }
         },
@@ -751,17 +750,8 @@
           "attributes": {}
         },
         {
-          "id": "d5f669d1-a5b6-4813-afc3-94d121a5d46b",
-          "name": "repositorio-artefactos:carga-version-repositorio-artefacto:create",
-          "description": "",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
-          "attributes": {}
-        },
-        {
           "id": "62753e6b-9f3a-4381-93bb-c2a539f63b44",
-          "name": "repositorio-artefactos:version-repositorio-artefacto:create",
+          "name": "repositorio-artefactos:version-repositorio-artefacto:upload",
           "description": "",
           "composite": false,
           "clientRole": true,

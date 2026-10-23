@@ -164,8 +164,8 @@ security:
         - {method: GET, path: "/api/solicitudes/tipos-solicitud", role: "solicitudes:tipo-solicitud:view"}
         # repositorio_artefactos
         - {method: POST, path: "/api/repositorio-artefactos", role: "repositorio-artefactos:repositorio-artefacto:create"}
-        - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:create"}
-        - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones/cargas", role: "repositorio-artefactos:carga-version-repositorio-artefacto:create"}
+        - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
+        - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones/cargas", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
         # artefactos
         - {method: GET, path: "/api/estados-revision-asesor", role: "artefactos:estado-revision-asesor:view"}
         - {method: POST, path: "/api/artefactos/revisiones-asesor/estudiante", role: "artefactos:revision-asesor-estudiante:view"}
