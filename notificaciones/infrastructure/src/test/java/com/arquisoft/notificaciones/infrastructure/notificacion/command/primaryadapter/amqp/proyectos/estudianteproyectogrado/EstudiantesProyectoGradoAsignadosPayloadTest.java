@@ -14,7 +14,7 @@ class EstudiantesProyectoGradoAsignadosPayloadTest {
 
     private final tools.jackson.databind.json.JsonMapper mapper = new RabbitMQConfig().rabbitObjectMapper();
 
-    public record ContactoDePrueba(String nombre, String email) {
+    public record ContactoDePrueba(UUID id, String nombre, String email) {
     }
 
     private static final class EstudiantesAsignadosEventoDePrueba extends DomainEvent {
@@ -47,8 +47,8 @@ class EstudiantesProyectoGradoAsignadosPayloadTest {
     void debeConservarLosEstudiantes_cuandoSeLeeElEventoPublicado() {
         // Arrange
         var evento = new EstudiantesAsignadosEventoDePrueba(UUID.randomUUID(),
-                List.of(new ContactoDePrueba("Ana Gomez", "ana.gomez@soyuco.edu.co"),
-                        new ContactoDePrueba("Luis Diaz", "luis.diaz@soyuco.edu.co")));
+                List.of(new ContactoDePrueba(UUID.randomUUID(), "Ana Gomez", "ana.gomez@soyuco.edu.co"),
+                        new ContactoDePrueba(UUID.randomUUID(), "Luis Diaz", "luis.diaz@soyuco.edu.co")));
 
         // Act
         var payload = mapper.readValue(mapper.writeValueAsString(evento),
@@ -62,6 +62,21 @@ class EstudiantesProyectoGradoAsignadosPayloadTest {
         assertThat(payload.estudiantes()).containsExactly(
                 new EstudiantesProyectoGradoAsignadosPayload.ContactoPayload("Ana Gomez", "ana.gomez@soyuco.edu.co"),
                 new EstudiantesProyectoGradoAsignadosPayload.ContactoPayload("Luis Diaz", "luis.diaz@soyuco.edu.co"));
+    }
+
+    @Test
+    void debeIgnorarIdDelContacto_cuandoElEventoLoTrae() {
+        // Arrange
+        var evento = new EstudiantesAsignadosEventoDePrueba(UUID.randomUUID(),
+                List.of(new ContactoDePrueba(UUID.randomUUID(), "Ana Gomez", "ana.gomez@soyuco.edu.co")));
+
+        // Act
+        var payload = mapper.readValue(mapper.writeValueAsString(evento),
+                EstudiantesProyectoGradoAsignadosPayload.class);
+
+        // Assert
+        assertThat(payload.estudiantes()).containsExactly(
+                new EstudiantesProyectoGradoAsignadosPayload.ContactoPayload("Ana Gomez", "ana.gomez@soyuco.edu.co"));
     }
 
     @Test

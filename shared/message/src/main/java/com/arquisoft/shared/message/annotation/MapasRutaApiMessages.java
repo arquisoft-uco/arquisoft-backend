@@ -56,4 +56,28 @@ public final class MapasRutaApiMessages {
         public static final String CONSULTAR_COORDINADOR_RESP_200 = "Página de mapas de ruta del coordinador";
         public static final String CONSULTAR_COORDINADOR_RESP_400 = "Criterio de filtro u ordenamiento inválido";
     }
+
+    public static final class Tarea {
+
+        private Tarea() {}
+
+        public static final String TAG_NAME = "Tareas";
+        public static final String TAG_DESCRIPTION = "Tareas del mapa de ruta de un proyecto de grado";
+        public static final String ASIGNAR_SUMMARY = "Asignar una nueva tarea";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Asigna una nueva tarea, con su descripción y su asesor, al mapa de ruta de un proyecto de grado "
+                        + "en proceso. La tarea nace en estado Nueva y su descripción no se repite dentro del mapa";
+        public static final String ASIGNAR_RESP_201 = "Tarea asignada";
+        public static final String ASIGNAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String ASIGNAR_RESP_422 =
+                "Mapa de ruta inexistente, descripción duplicada o demasiado larga, proyecto fuera de proceso "
+                        + "o asesor no asignado al proyecto";
+        public static final String CONSULTAR_INFORMACION_SUMMARY = "Consultar la información de una tarea";
+        public static final String CONSULTAR_INFORMACION_DESCRIPTION =
+                "Devuelve el detalle de una tarea: su descripción, su estado, el mapa de ruta al que pertenece "
+                        + "y el asesor responsable";
+        public static final String CONSULTAR_INFORMACION_RESP_200 = "Información de la tarea";
+        public static final String CONSULTAR_INFORMACION_RESP_400 = "Identificador de tarea inválido";
+        public static final String CONSULTAR_INFORMACION_RESP_404 = "La tarea no existe";
+    }
 }

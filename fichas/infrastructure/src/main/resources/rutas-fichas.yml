@@ -19,6 +19,7 @@ rutas:
       estados-evaluacion: /estados-evaluacion
       estados-revision: /estados-revision
       estados-observacion-revision: /estados-observacion-revision
+      estados-observacion-revision-estudiante: /estados-observacion-revision/estudiante
       items: /{fichaPerfilId}/items
       items-estudiante: /{fichaPerfilId}/items/estudiante
       items-representante: /{fichaPerfilId}/items/representante

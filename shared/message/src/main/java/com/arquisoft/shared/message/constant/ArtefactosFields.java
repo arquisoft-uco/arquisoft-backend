@@ -27,4 +27,11 @@ public final class ArtefactosFields {
 
         public static final String ESTUDIANTE = "estudiante";
     }
+
+    public static final class EstudianteArtefacto {
+
+        private EstudianteArtefacto() {}
+
+        public static final String ARTEFACTO = "artefacto";
+    }
 }

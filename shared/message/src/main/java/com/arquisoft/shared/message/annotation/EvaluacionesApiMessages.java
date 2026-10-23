@@ -107,6 +107,15 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cualitativas del jurado";
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
         public static final String CONSULTAR_RESP_422 = "La evaluación de jurado no existe";
+        public static final String CONSULTAR_REALIZADAS_SUMMARY =
+                "Consultar evaluaciones cualitativas realizadas por el jurado";
+        public static final String CONSULTAR_REALIZADAS_DESCRIPTION =
+                "Consulta las evaluaciones cualitativas de una evaluación de jurado que pertenece al jurado autenticado";
+        public static final String CONSULTAR_REALIZADAS_RESP_200 =
+                "Listado de evaluaciones cualitativas realizadas por el jurado";
+        public static final String CONSULTAR_REALIZADAS_RESP_400 = "Datos de entrada inválidos";
+        public static final String CONSULTAR_REALIZADAS_RESP_422 =
+                "La evaluación de jurado no existe o pertenece a otro jurado";
         public static final String REGISTRAR_SUMMARY = "Registrar lote de evaluaciones cualitativas";
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra un lote de evaluaciones cualitativas del jurado sobre una evaluación de jurado";
@@ -126,6 +135,31 @@ public final class EvaluacionesApiMessages {
         public static final String OMITIR_RESP_422 =
                 "La evaluación de jurado no existe, está finalizada, "
                         + "o alguna evaluación cualitativa no existe en ella o está repetida";
+    }
+
+    public static final class EvaluacionCualitativaAsesor {
+
+        private EvaluacionCualitativaAsesor() {}
+
+        public static final String TAG_NAME = "Evaluaciones cualitativas del asesor";
+        public static final String TAG_DESCRIPTION =
+                "Registro y consulta de las evaluaciones cualitativas asociadas a una evaluación de asesor";
+        public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cualitativas del asesor";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta las evaluaciones cualitativas realizadas por el asesor autenticado en una evaluación suya";
+        public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cualitativas del asesor";
+        public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String CONSULTAR_RESP_422 =
+                "La evaluación de asesor no existe o no pertenece al asesor autenticado";
+        public static final String REGISTRAR_SUMMARY = "Registrar evaluaciones cualitativas del asesor";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra en un solo lote las evaluaciones cualitativas del asesor autenticado "
+                        + "sobre una evaluación suya";
+        public static final String REGISTRAR_RESP_201 = "Lote registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación no existe, no pertenece al asesor, está finalizada, "
+                        + "o algún ítem/criterio no existe o ya fue registrado";
     }
 
     public static final class EvaluacionCuantitativaJurado {
@@ -177,6 +211,17 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de evaluaciones";
         public static final String CONSULTAR_RESP_400 =
                 "El filtro, el orden o la paginación solicitados no son aceptados";
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar evaluaciones (asesor)";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Consulta de forma paginada las evaluaciones asociadas al asesor autenticado con su entregable y "
+                        + "su estado, con filtro por estado, proyecto o identificador del entregable y orden por "
+                        + "proyecto (por defecto, ascendente) o estado";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Filtrar evaluaciones (estudiante)";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Consulta de forma paginada las evaluaciones de los entregables del proyecto de grado del "
+                        + "estudiante autenticado con su entregable y su estado, con filtro por estado, proyecto, "
+                        + "identificador del entregable o del proyecto de grado y orden por proyecto "
+                        + "(por defecto, ascendente) o estado";
     }
 
     public static final class EvaluacionJurado {
@@ -194,6 +239,14 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 =
                 "El identificador no es válido o el filtro/orden solicitado no es aceptado";
         public static final String CONSULTAR_RESP_422 = "La evaluación no existe";
+        public static final String CONSULTAR_ASIGNADAS_SUMMARY = "Consultar evaluaciones asignadas al jurado";
+        public static final String CONSULTAR_ASIGNADAS_DESCRIPTION =
+                "Lista las evaluaciones que el coordinador asignó al jurado autenticado, con su estado y su "
+                        + "entregable; primero las pendientes, luego las en progreso y al final las finalizadas";
+        public static final String CONSULTAR_ASIGNADAS_RESP_200 =
+                "Evaluaciones asignadas al jurado (vacía si no tiene asignaciones)";
+        public static final String CONSULTAR_ASIGNADAS_RESP_400 = "La identidad del jurado autenticado no es válida";
+        public static final String CONSULTAR_ASIGNADAS_RESP_422 = "El jurado autenticado no existe";
         public static final String ASIGNAR_SUMMARY = "Asignar jurados a una evaluación";
         public static final String ASIGNAR_DESCRIPTION =
                 "Asigna un conjunto de jurados a una evaluación y devuelve los identificadores generados";

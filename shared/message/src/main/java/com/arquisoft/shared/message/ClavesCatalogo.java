@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
 import com.arquisoft.shared.message.key.artefactos.EstadoRevisionAsesorKey;
+import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
@@ -16,6 +17,7 @@ import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.key.evaluaciones.CategoriaItemCuantitativoAsesorKey;
 import com.arquisoft.shared.message.key.evaluaciones.CategoriaItemCuantitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.CriterioItemCualitativoJuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaAsesorKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
@@ -41,8 +43,10 @@ import com.arquisoft.shared.message.key.fichas.TipoItemKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.message.key.fichas.EstadoRevisionKey;
+import com.arquisoft.shared.message.key.mapas_ruta.AsignacionAsesorKey;
 import com.arquisoft.shared.message.key.mapas_ruta.AsignacionProyectoKey;
 import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
+import com.arquisoft.shared.message.key.mapas_ruta.TareaKey;
 import com.arquisoft.shared.message.key.mapas_ruta.ProyectoGradoMapasRutaKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
@@ -131,6 +135,7 @@ public final class ClavesCatalogo {
             CriterioItemCualitativoJuradoKey.class,
             CategoriaItemCuantitativoAsesorKey.class,
             CategoriaItemCuantitativoJuradoKey.class,
+            EvaluacionCualitativaAsesorKey.class,
             EvaluacionCualitativaJuradoKey.class,
             EvaluacionCuantitativaJuradoKey.class,
             EvaluacionJuradoKey.class,
@@ -186,6 +191,7 @@ public final class ClavesCatalogo {
             BibliotecarioKey.class,
             EstadoRevisionAsesorKey.class,
             RevisionAsesorKey.class,
+            EstudianteArtefactoKey.class,
             AdministradorKey.class,
             RepositorioArtefactoKey.class,
             VersionRepositorioArtefactoKey.class,
@@ -193,6 +199,7 @@ public final class ClavesCatalogo {
             AgregarJuradoKey.class,
             RemoverJuradoKey.class,
             JuradoKey.class,
+            com.arquisoft.shared.message.key.evaluaciones.EstudianteProyectoGradoKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
             ProyectoGradoKey.class,
@@ -212,6 +219,8 @@ public final class ClavesCatalogo {
             ConsultarIdentidadUsuarioKey.class,
             AsignacionProyectoKey.class,
             MapaRutaKey.class,
+            TareaKey.class,
+            AsignacionAsesorKey.class,
             ProyectoGradoMapasRutaKey.class
     );
 
