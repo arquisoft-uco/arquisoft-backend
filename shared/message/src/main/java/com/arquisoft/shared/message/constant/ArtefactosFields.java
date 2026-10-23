@@ -34,4 +34,11 @@ public final class ArtefactosFields {
 
         public static final String ARTEFACTO = "artefacto";
     }
+
+    public static final class Observacion {
+
+        private Observacion() {}
+
+        public static final String REVISION_ASESOR = "revisionAsesor";
+    }
 }
