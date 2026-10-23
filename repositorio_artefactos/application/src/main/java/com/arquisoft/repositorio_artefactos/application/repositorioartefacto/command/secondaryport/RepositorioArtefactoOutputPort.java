@@ -11,5 +11,9 @@ public interface RepositorioArtefactoOutputPort {
 
     boolean existePorNombreRepositorio(String nombreRepositorio);
 
+    boolean existeOtroConNombreRepositorio(String nombreRepositorio, UUID repositorio);
+
     Optional<RepositorioArtefactoEntity> obtenerPorId(UUID id);
+
+    void actualizarDatos(UUID repositorio, String nombreRepositorio, String descripcion);
 }

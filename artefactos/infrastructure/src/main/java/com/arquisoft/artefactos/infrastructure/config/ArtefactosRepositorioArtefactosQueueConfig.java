@@ -15,6 +15,20 @@ public class ArtefactosRepositorioArtefactosQueueConfig {
     public static final String VERSION_REPOSITORIO_ARTEFACTO_SUBIDA_QUEUE =
             ArtefactosQueues.PREFIJO + EventTopics.RepositorioArtefactos.VERSION_REPOSITORIO_ARTEFACTO_SUBIDA;
 
+    public static final String REPOSITORIO_ARTEFACTO_MODIFICADO_QUEUE =
+            ArtefactosQueues.PREFIJO + EventTopics.RepositorioArtefactos.REPOSITORIO_ARTEFACTO_MODIFICADO;
+
+    @Bean
+    public Declarables artefactosRepositorioArtefactoModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REPOSITORIO_ARTEFACTO_MODIFICADO_QUEUE,
+                EventTopics.RepositorioArtefactos.REPOSITORIO_ARTEFACTO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     @Bean
     public Declarables artefactosVersionRepositorioArtefactoSubidaDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
