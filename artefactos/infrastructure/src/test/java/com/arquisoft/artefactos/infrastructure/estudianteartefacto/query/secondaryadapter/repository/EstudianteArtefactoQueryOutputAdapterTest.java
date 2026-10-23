@@ -38,10 +38,14 @@ class EstudianteArtefactoQueryOutputAdapterTest {
     }
 
     private UUID vincular(UUID artefacto, String nombre, Instant eliminadoEn) {
+        return vincular(UtilUUID.generarNuevoUUID(), artefacto, nombre, eliminadoEn);
+    }
+
+    private UUID vincular(UUID vinculo, UUID artefacto, String nombre, Instant eliminadoEn) {
         var estudiante = UtilUUID.generarNuevoUUID();
         entityManager.persist(new EstudianteTestEntity(
                 estudiante, "ID-" + nombre, nombre, nombre.toLowerCase() + "@uco.edu.co", eliminadoEn));
-        entityManager.persist(new EstudianteArtefactoTestEntity(UtilUUID.generarNuevoUUID(), artefacto, estudiante));
+        entityManager.persist(new EstudianteArtefactoTestEntity(vinculo, artefacto, estudiante));
         return estudiante;
     }
 
@@ -66,8 +70,10 @@ class EstudianteArtefactoQueryOutputAdapterTest {
     void debeDesempatarPorId_cuandoDosEstudiantesTienenElMismoNombre() {
         // Arrange
         var artefacto = sembrarArtefacto();
-        var primero = vincular(artefacto, "Ana", null);
-        var segundo = vincular(artefacto, "Ana", null);
+        var vinculoMenor = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        var vinculoMayor = UUID.fromString("00000000-0000-0000-0000-000000000002");
+        var estudianteDelMayor = vincular(vinculoMayor, artefacto, "Ana", null);
+        var estudianteDelMenor = vincular(vinculoMenor, artefacto, "Ana", null);
         entityManager.flush();
         entityManager.clear();
 
@@ -75,9 +81,8 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         var resultado = adapter.consultarPorArtefacto(artefacto);
 
         // Assert
-        assertThat(resultado).hasSize(2);
-        assertThat(resultado.get(0).id().compareTo(resultado.get(1).id())).isNegative();
-        assertThat(resultado).extracting("estudianteId").containsExactlyInAnyOrder(primero, segundo);
+        assertThat(resultado).extracting("id").containsExactly(vinculoMenor, vinculoMayor);
+        assertThat(resultado).extracting("estudianteId").containsExactly(estudianteDelMenor, estudianteDelMayor);
     }
 
     @Test
