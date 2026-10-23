@@ -103,7 +103,9 @@
               "fichas:estudiante-ficha-perfil:delete",
               "evaluaciones:item-cuantitativo-jurado:delete",
               "fichas:estado-ficha-perfil-coordinador:view",
-              "proyectos:estudiante-proyecto-grado:create"
+              "proyectos:estudiante-proyecto-grado:create",
+              "mapas-ruta:tarea:create",
+              "solicitudes:respuesta-cambio-asesor:create"
             ]
           }
         },
@@ -171,7 +173,10 @@
               "evaluaciones:categoria-item-cuantitativo-asesor:view",
               "usuarios:estudiante-vigente:view",
               "fichas:estado-ficha-perfil-asesor:view",
-              "fichas:estado-ficha-perfil-asesor:create"
+              "fichas:estado-ficha-perfil-asesor:create",
+              "fichas:revision-item:create",
+              "fichas:revision-item:delete",
+              "fichas:observacion-item:create"
             ]
           }
         },
@@ -2107,6 +2112,24 @@
         {
           "id": "1aa11b4f-cf13-4077-8399-30a240c06523",
           "name": "artefactos:estudiante-artefacto:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "aa51e8e0-9375-43af-8a21-d0250088eb9f",
+          "name": "mapas-ruta:tarea:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "f52bb47d-a31f-42b3-9f01-ebc19228f717",
+          "name": "solicitudes:respuesta-cambio-asesor:create",
           "description": "",
           "composite": false,
           "clientRole": true,

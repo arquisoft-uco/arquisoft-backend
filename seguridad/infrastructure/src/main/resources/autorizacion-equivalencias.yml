@@ -45,7 +45,7 @@ security:
         - {method: GET, path: "/api/fichas-perfil/evaluaciones/{evaluacionFichaPerfilId}/observaciones/representante", role: "fichas:observacion-evaluacion-representante:view"}
         - {method: DELETE, path: "/api/fichas-perfil/items/{itemId}", role: "fichas:item-ficha-perfil:delete"}
         - {method: PATCH, path: "/api/fichas-perfil/items/{itemId}", role: "fichas:item-ficha-perfil:update"}
-        - {method: POST, path: "/api/fichas-perfil/items/{itemId}/revisiones", role: "fichas:revision-item:create"}  # sin rol realm
+        - {method: POST, path: "/api/fichas-perfil/items/{itemId}/revisiones", role: "fichas:revision-item:create"}
         - {method: DELETE, path: "/api/fichas-perfil/observaciones-evaluacion/{observacionEvaluacionId}", role: "fichas:observacion-evaluacion:delete"}
         - {method: PATCH, path: "/api/fichas-perfil/observaciones-evaluacion/{observacionEvaluacionId}", role: "fichas:observacion-evaluacion:update"}
         - {method: POST, path: "/api/fichas-perfil/observaciones-item/asesor", role: "fichas:observacion-item-asesor:view"}
@@ -54,8 +54,8 @@ security:
         - {method: PATCH, path: "/api/fichas-perfil/observaciones-item/{observacionItemId}", role: "fichas:observacion-item:update"}
         - {method: POST, path: "/api/fichas-perfil/revisiones-item/asesor", role: "fichas:revision-item-asesor:view"}
         - {method: POST, path: "/api/fichas-perfil/revisiones-item/estudiante", role: "fichas:revision-item-estudiante:view"}
-        - {method: DELETE, path: "/api/fichas-perfil/revisiones/{revisionItemId}", role: "fichas:revision-item:delete"}  # sin rol realm
-        - {method: POST, path: "/api/fichas-perfil/revisiones/{revisionItemId}/observaciones", role: "fichas:observacion-item:create"}  # sin rol realm
+        - {method: DELETE, path: "/api/fichas-perfil/revisiones/{revisionItemId}", role: "fichas:revision-item:delete"}
+        - {method: POST, path: "/api/fichas-perfil/revisiones/{revisionItemId}/observaciones", role: "fichas:observacion-item:create"}
         - {method: PATCH, path: "/api/fichas-perfil/revisiones/{revisionItemId}/visualizada", role: "fichas:revision-item-visualizada:update"}
         - {method: GET, path: "/api/fichas-perfil/tipos-item", role: "fichas:tipo-item:view"}
         - {method: POST, path: "/api/fichas-perfil/{fichaId}/evaluaciones", role: "fichas:evaluacion-ficha-perfil:create"}
@@ -140,7 +140,7 @@ security:
         - {method: POST, path: "/api/solicitudes/cambio-asesor/respuestas/recibidas", role: "solicitudes:respuesta-cambio-asesor-recibida:view"}
         - {method: DELETE, path: "/api/solicitudes/cambio-asesor/{solicitudId}", role: "solicitudes:solicitud-cambio-asesor:delete"}
         - {method: DELETE, path: "/api/solicitudes/cambio-asesor/{solicitudId}/respuesta", role: "solicitudes:respuesta-cambio-asesor:delete"}
-        - {method: POST, path: "/api/solicitudes/cambio-asesor/{solicitudId}/respuesta", role: "solicitudes:respuesta-cambio-asesor:create"}  # sin rol realm
+        - {method: POST, path: "/api/solicitudes/cambio-asesor/{solicitudId}/respuesta", role: "solicitudes:respuesta-cambio-asesor:create"}
         - {method: PATCH, path: "/api/solicitudes/cambio-asesor/{solicitudId}/respuesta/estado", role: "solicitudes:respuesta-cambio-asesor:update"}
         - {method: GET, path: "/api/solicitudes/estados-respuesta", role: "solicitudes:estado-respuesta:view"}
         - {method: POST, path: "/api/solicitudes/novedad-asesor", role: "solicitudes:solicitud-novedad-asesor:create"}
@@ -175,5 +175,5 @@ security:
         - {method: POST, path: "/api/mapas-ruta/coordinador", role: "mapas-ruta:mapa-ruta-coordinador:view"}
         - {method: GET, path: "/api/mapas-ruta/estudiante", role: "mapas-ruta:mapa-ruta-estudiante:view"}
         - {method: PATCH, path: "/api/mapas-ruta/{id}/fecha-fin", role: "mapas-ruta:mapa-ruta:update-fecha-fin"}
-        - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas", role: "mapas-ruta:tarea:create"}  # sin rol realm
+        - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas", role: "mapas-ruta:tarea:create"}
         - {method: GET, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:view"}
