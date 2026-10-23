@@ -21,7 +21,6 @@ public record PepProperties(
         @DefaultValue("0") int maxRetries,
         @DefaultValue("200ms") Duration retryBackoff) {
 
-    // Los consume ValidadorConfiguracionSeguridad en @PostConstruct, antes del catalogo de mensajes: textos literales.
     private static final String FALTA_URL = "falta security.authorization.pep.url";
     private static final String FALTA_APPLICATION_NAME = "falta security.authorization.pep.application-name";
     private static final String FALTA_ENVIRONMENT = "falta security.authorization.pep.environment";
