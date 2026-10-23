@@ -284,8 +284,8 @@ el enunciado, para reconocer una desviación de un vistazo.
   no existe `{Contexto}Routes`. Nunca el prefijo `/api`: ya es el `context-path`.
 - **La autorización no vive en el controlador:** ni `@PreAuthorize` ni roles. La decide
   `AutorizacionAccesoFilter` consultando a `DecisionAccesoOutputPort` por método + plantilla de ruta, con
-  un adaptador por emisor elegido por propiedad (`pep`, `role-table`, `none`). Un endpoint nuevo es una
-  fila en `autorizacion-equivalencias.yml`, el mapa endpoint → client role
+  un adaptador por emisor elegido por propiedad (`pep`, `role-table`, `none`). Un endpoint nuevo es un
+  recurso del PDP y una fila en `autorizacion-equivalencias.yml`, el mapa endpoint → client role
   (`CompletitudEquivalenciasAutorizacionTest` lo exige), y ese client role en
   `keycloak/realm-arquisoft.json`: creado en `arquisoft-api` y como composite directo de cada realm role
   que lo usa — si falta, el endpoint responde 403 a todos y el build no lo detecta. Un client role por

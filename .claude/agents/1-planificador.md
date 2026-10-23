@@ -70,8 +70,8 @@ separa en dos).
 
 **3. Autorización del endpoint.** El controlador no autoriza: la decisión de acceso es externa
 (`DecisionAccesoOutputPort`) y se identifica por `método + plantilla de ruta` con `/api` (los nombres
-de variable cuentan). Pregunta qué roles de negocio (realm roles) usan el endpoint —para la sección
-9— y recuerda que el endpoint nuevo exige una fila con su client role en
+de variable cuentan). Pregunta qué roles o perfiles del PDP usan el endpoint y qué realm roles otorgan
+su client role —para el recurso del anexo y la sección 9— y recuerda que el endpoint nuevo exige una fila con su client role en
 `seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml`
 (`CompletitudEquivalenciasAutorizacionTest` lo comprueba), y ese client role en
 `keycloak/realm-arquisoft.json`, como composite de los realm roles que respondió el usuario: sin eso
@@ -199,10 +199,10 @@ Desde la sección 4 el plan es condicional:
 - `{Clase}`: {firma o decisión no obvia, máx. 2 líneas}
 
 ## 8. Endpoints
-| Método | Ruta (sin /api) | Clave de propiedad | Request | Response | HTTP | Realm roles |
+| Método | Ruta (sin /api) | Clave de propiedad | Request | Response | HTTP | Roles PDP |
 
 ## 9. Seguridad
-| Recurso (método + plantilla con /api) | Client role (fila en `autorizacion-equivalencias.yml`) | Realm roles que lo otorgan en `realm-arquisoft.json` |
+| Recurso PDP (método + plantilla con /api) | Roles PDP que lo usan | Client role (fila en `autorizacion-equivalencias.yml`) | Realm roles que lo otorgan en `realm-arquisoft.json` |
 
 ## 10. Eventos RabbitMQ                 ← solo si 5 = A/B
 | Dirección | Routing key | Payload | Receptor |
@@ -236,7 +236,7 @@ Paquetes y sufijos exactos: `arquisoft-arquitectura`. Lo que suele faltar en el 
 | Caso | Filas |
 |---|---|
 | Escritura | `Command`, `primaryport/mapper/` (siempre), `Interactor`, `UseCase` (recibe dominio), `Finder`s, `secondaryport/` (`OutputPort` + `entity/` + `mapper/`), `Controller` + `dto/` + `mapper/`, `secondaryadapter/` (`JpaEntity`, `JpaMapper`, `CommandOutputAdapter`, `CommandRepository`) |
-| Endpoint nuevo (escritura o consulta) | Recurso nuevo (sección 9), ✏️ fila en `autorizacion-equivalencias.yml`, ✏️ client role en `realm-arquisoft.json` y `IdentidadActual` en el controlador (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*) |
+| Endpoint nuevo (escritura o consulta) | Recurso nuevo en el PDP (sección 9), ✏️ fila en `autorizacion-equivalencias.yml`, ✏️ client role en `realm-arquisoft.json` y `IdentidadActual` en el controlador (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*) |
 | `Validator` | solo si la sección 3 tiene alguna `Rule` |
 | `result/` + `ResponseMapper` | solo si la pregunta 11 fue C |
 | `event/` | solo si la pregunta 5 fue A/B |
@@ -307,7 +307,7 @@ Solo decisiones de **esta** historia con nombres reales: si un ítem se leería 
 va. Un ítem por decisión tomada en la FASE 3: eventos (o "ninguno"), razón de un estado sin
 notificación, presupuesto de I/O y cascadas justificadas, `Rule`s del `Validator` en orden o "sin
 `Validator`", política de acceso o "ninguna", cortes sin excepción, objeto de acción, retorno y
-entrada, encadenamiento, recurso con su client role y los realm roles que lo otorgan, réplica o consulta síncrona,
+entrada, encadenamiento, recurso PDP y roles PDP que lo usan con su client role y los realm roles que lo otorgan, réplica o consulta síncrona,
 vigencia (`eliminado_en`) de cada consulta a réplica, migración y constantes del MER, y el commit
 sugerido `feat({contexto}): {descripción}`.
 

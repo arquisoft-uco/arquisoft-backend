@@ -243,7 +243,7 @@ Fuente: `arquisoft-arquitectura` → *Rutas en placeholders y autorización fuer
 |---|:---:|
 | Controlador con `@PreAuthorize`, `hasAuthority`, `hasRole`, `Jwt` o `@AuthenticationPrincipal`: la identidad llega como `IdentidadActual` y la autorización no vive ahí | ❌ |
 | Endpoint nuevo sin fila en `autorizacion-equivalencias.yml` (y sin estar en rutas públicas o exentas), o `CompletitudEquivalenciasAutorizacionTest` en rojo | ❌ |
-| Recurso (método + plantilla con `/api`) o client role distinto del de la sección 9 del plan | ❌ |
+| Recurso PDP (método + plantilla con `/api`) o client role distinto del de la sección 9 del plan | ❌ |
 | Client role de la fila nueva ausente de `roles.client.arquisoft-api` en `keycloak/realm-arquisoft.json`, o sin composite directo en los realm roles de la sección 9 (responde 403 a todos y el build no lo detecta) | ❌ |
 | Client role reutilizado de otro endpoint sin la justificación de flujo partido | ⚠️ |
 | `verificarNeutralidadProveedorIdentidad` en rojo, o vocabulario de proveedor (Keycloak, PEP, `realm_access`, `resource_access`) fuera de `seguridad:infrastructure` y de los adaptadores de `usuarios` | ❌ |
@@ -385,7 +385,7 @@ del PR.
   tabla) se copia del archivo donde vive, sin fundir dos distintos en una frase. Va literal al commit
   y al PR.
 - **`Autorización`** se lee de `autorizacion-equivalencias.yml`, `keycloak/realm-arquisoft.json` y la
-  sección 9 del plan: por cada endpoint nuevo, su recurso, el client role de la fila que de verdad existe
+  sección 9 del plan: por cada endpoint nuevo, su recurso PDP, el client role de la fila que de verdad existe
   y los realm roles que lo tienen como composite en el JSON.
 - Una sección sin hallazgos dice "Ninguno": nunca se borra.
 - `Archivos a incluir` es la lista explícita, una ruta por línea con su estado de

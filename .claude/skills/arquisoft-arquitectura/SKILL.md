@@ -446,7 +446,7 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
   por `método + plantilla de ruta` (con `/api`). El adaptador del emisor (`pep`, `role-table` o `none`)
   se elige por propiedad, así que cambiar de proveedor no toca ningún controlador. Un permiso en el
   controlador lo ataría a las authorities del token, que no llevan client roles.
-- **Un endpoint nuevo es un recurso nuevo:** se registra con su método y su plantilla exacta (los
+- **Un endpoint nuevo es un recurso nuevo del PDP:** se registra con su método y su plantilla exacta (los
   nombres de variable cuentan: `{id}` y `{fichaPerfilId}` son recursos distintos) como una fila en
   `seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml`, el mapa endpoint → client role.
   `CompletitudEquivalenciasAutorizacionTest` rompe el build si falta la fila o sobra una, y escribe
