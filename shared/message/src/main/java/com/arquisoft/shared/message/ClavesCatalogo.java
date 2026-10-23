@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
 import com.arquisoft.shared.message.key.artefactos.EstadoRevisionAsesorKey;
+import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
@@ -188,6 +189,7 @@ public final class ClavesCatalogo {
             BibliotecarioKey.class,
             EstadoRevisionAsesorKey.class,
             RevisionAsesorKey.class,
+            EstudianteArtefactoKey.class,
             AdministradorKey.class,
             RepositorioArtefactoKey.class,
             VersionRepositorioArtefactoKey.class,

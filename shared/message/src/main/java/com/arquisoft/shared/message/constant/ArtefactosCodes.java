@@ -46,4 +46,11 @@ public final class ArtefactosCodes {
 
         public static final String ESTUDIANTE_REQUERIDO = "REVISION_ASESOR_ESTUDIANTE_REQUERIDO";
     }
+
+    public static final class EstudianteArtefacto {
+
+        private EstudianteArtefacto() {}
+
+        public static final String ARTEFACTO_ID_REQUERIDO = "ESTUDIANTE_ARTEFACTO_ARTEFACTO_ID_REQUERIDO";
+    }
 }

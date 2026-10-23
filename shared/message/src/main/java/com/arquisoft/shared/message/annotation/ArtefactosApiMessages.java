@@ -32,6 +32,22 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permiso para consultar las revisiones del asesor";
     }
 
+    public static final class EstudianteArtefacto {
+
+        private EstudianteArtefacto() {}
+
+        public static final String TAG_NAME = "Estudiantes de artefactos";
+        public static final String TAG_DESCRIPTION = "Consulta de los estudiantes vinculados a un artefacto";
+        public static final String CONSULTAR_SUMMARY = "Consultar los estudiantes vinculados a un artefacto";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve, sin paginar y ordenados por nombre, los estudiantes vinculados al artefacto con su "
+                        + "nombre, correo y si siguen vigentes. Un artefacto sin vínculos o inexistente devuelve "
+                        + "una lista vacía.";
+        public static final String CONSULTAR_RESP_200 = "Listado de estudiantes vinculados al artefacto";
+        public static final String CONSULTAR_RESP_400 = "Identificador de artefacto inválido";
+        public static final String CONSULTAR_RESP_403 = "Sin permisos para consultar los estudiantes del artefacto";
+    }
+
     public static final class EstadoRevisionAsesor {
 
         private EstadoRevisionAsesor() {}
