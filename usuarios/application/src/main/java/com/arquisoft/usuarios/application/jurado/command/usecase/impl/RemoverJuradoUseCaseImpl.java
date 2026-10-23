@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.jurado.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RemoverJuradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
@@ -41,7 +41,7 @@ public class RemoverJuradoUseCaseImpl implements RemoverJuradoUseCase {
 
         jurado.remover(UtilFecha.generarInstanteActual());
         juradoOutputPort.eliminarLogica(jurado.getUsuario(), jurado.getEliminadoEn());
-        proveedorIdentidadOutputPort.revocarRealmRole(jurado.getUsuario(), UsuariosRealmRoles.JURADO);
+        proveedorIdentidadOutputPort.revocarRol(jurado.getUsuario(), UsuariosRoles.JURADO);
 
         eventPublisher.publish(new JuradoRemovidoEvent(
                 usuario.getId(), usuario.getIdentificador(), usuario.getNombre(), usuario.getEmail()));

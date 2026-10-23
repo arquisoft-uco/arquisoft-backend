@@ -5,13 +5,13 @@ import com.arquisoft.fichas.application.observacionitem.command.primaryport.mode
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorException;
 import com.arquisoft.fichas.domain.observacionitem.exception.ObservacionItemNoEncontradaException;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemCerradaException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,10 +21,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -43,13 +41,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RemoverObservacionItemController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         RemoverObservacionItemControllerTest.TestSecurityConfig.class})
 class RemoverObservacionItemControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -89,8 +86,7 @@ class RemoverObservacionItemControllerTest {
         // Act
         mockMvc.perform(delete(RUTA, OBSERVACION_ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_DELETE))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isNoContent());
 
         // Assert
@@ -105,21 +101,19 @@ class RemoverObservacionItemControllerTest {
         // Act & Assert
         mockMvc.perform(delete(RUTA, "no-es-un-uuid")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_DELETE))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isBadRequest());
 
         verify(removerObservacionItemInteractor, never()).ejecutar(any());
     }
 
     @Test
-    void debe400_cuandoElSubjectDelJwtNoEsUuid() throws Exception {
+    void debe401_cuandoElSubjectDelJwtNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(delete(RUTA, OBSERVACION_ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject("no-es-un-uuid"))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_DELETE))))
-                .andExpect(status().isBadRequest());
+                                .jwt(j -> j.subject("no-es-un-uuid"))))
+                .andExpect(status().isUnauthorized());
 
         verify(removerObservacionItemInteractor, never()).ejecutar(any());
     }
@@ -129,18 +123,6 @@ class RemoverObservacionItemControllerTest {
         // Act & Assert
         mockMvc.perform(delete(RUTA, OBSERVACION_ITEM_ID))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_cuandoElClientRoleEsElDeOtroEndpoint() throws Exception {
-        // Act & Assert — OBSERVACION_ITEM_UPDATE protege modificar, no remover
-        mockMvc.perform(delete(RUTA, OBSERVACION_ITEM_ID)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_UPDATE))))
-                .andExpect(status().isForbidden());
-
-        verify(removerObservacionItemInteractor, never()).ejecutar(any());
     }
 
     @ParameterizedTest
@@ -153,8 +135,7 @@ class RemoverObservacionItemControllerTest {
         // Act & Assert
         mockMvc.perform(delete(RUTA, OBSERVACION_ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_DELETE))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(codigoEsperado));
     }

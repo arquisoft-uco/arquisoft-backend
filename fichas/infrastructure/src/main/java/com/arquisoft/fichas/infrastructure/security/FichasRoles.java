@@ -4,9 +4,9 @@ public final class FichasRoles {
 
     private FichasRoles() {}
 
-    public static final class Realm {
+    public static final class Identidad {
 
-        private Realm() {}
+        private Identidad() {}
 
         public static final String ASESOR_FICHA = "asesor-ficha";
         public static final String COORDINADOR = "coordinador";

@@ -15,8 +15,8 @@ public enum TokenKey implements ClaveMensaje {
     LOG_REFRESH_DEBUG("seguridad.aplicacion.token.log.refresh-debug", 0),
     LOG_REFRESH_EXITOSO("seguridad.aplicacion.token.log.refresh-exitoso", 0),
     LOG_REFRESH_INVALIDO("seguridad.infraestructura.token.log.refresh-invalido", 0),
-    LOG_ERROR_REFRESCO_KEYCLOAK("seguridad.infraestructura.token.log.error-refresco-keycloak", 2),
-    LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO("seguridad.infraestructura.token.log.keycloak-no-disponible-refresco", 1),
+    LOG_ERROR_REFRESCO_PROVEEDOR("seguridad.infraestructura.token.log.error-refresco-proveedor", 2),
+    LOG_PROVEEDOR_NO_DISPONIBLE_REFRESCO("seguridad.infraestructura.token.log.proveedor-no-disponible-refresco", 1),
     LOG_INVALIDO_HANDLER("seguridad.infraestructura.token.log.invalido-handler", 3);
 
     private final String clave;

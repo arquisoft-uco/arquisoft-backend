@@ -4,14 +4,13 @@ import com.arquisoft.fichas.application.revisionitem.query.primaryport.interacto
 import com.arquisoft.fichas.infrastructure.revisionitem.query.primaryadapter.web.dto.RevisionItemResponseDTO;
 import com.arquisoft.fichas.infrastructure.revisionitem.query.primaryadapter.web.mapper.ConsultarRevisionesItemEstudianteRequestMapper;
 import com.arquisoft.fichas.infrastructure.revisionitem.query.primaryadapter.web.mapper.RevisionItemResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,9 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +35,6 @@ public class ConsultarRevisionesItemEstudianteController {
     private final ConsultarRevisionesItemEstudianteInteractor consultarRevisionesItemEstudianteInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.revisiones-item-estudiante:/revisiones-item/estudiante}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_REVISION_ITEM_ESTUDIANTE_VIEW)
     @Operation(
             summary = FichasApiMessages.RevisionItem.CONSULTAR_ESTUDIANTE_SUMMARY,
             description = FichasApiMessages.RevisionItem.CONSULTAR_ESTUDIANTE_DESCRIPTION,
@@ -60,9 +55,9 @@ public class ConsultarRevisionesItemEstudianteController {
     })
     public ResponseEntity<PageResponseDTO<RevisionItemResponseDTO>> consultarDeSuFicha(
             @RequestBody(required = false) QueryCriteriaRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var estudiante = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var estudiante = identidad.id();
         var resultado = consultarRevisionesItemEstudianteInteractor.ejecutar(
                 ConsultarRevisionesItemEstudianteRequestMapper.toQuery(request, estudiante));
 

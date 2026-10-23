@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.query
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.query.primaryadapter.web.dto.EvaluacionCuantitativaJuradoResponseDTO;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.query.primaryadapter.web.mapper.ConsultarEvaluacionesCuantitativasJuradoRequestMapper;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.query.primaryadapter.web.mapper.EvaluacionCuantitativaJuradoResponseMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +36,6 @@ public class ConsultarEvaluacionesCuantitativasJuradoController {
     private final ConsultarEvaluacionesCuantitativasJuradoInteractor interactor;
 
     @GetMapping("${rutas.evaluaciones.evaluaciones-jurado.cuantitativas:/{evaluacionJuradoId}/cuantitativas}")
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_VIEW)
     @Operation(
             summary = EvaluacionesApiMessages.EvaluacionCuantitativaJurado.CONSULTAR_SUMMARY,
             description = EvaluacionesApiMessages.EvaluacionCuantitativaJurado.CONSULTAR_DESCRIPTION,

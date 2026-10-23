@@ -145,5 +145,6 @@ public final class FichasFields {
         private EstadoFicha() {}
 
         public static final String ROLES = "roles";
+        public static final String ACTOR = "actor";
     }
 }

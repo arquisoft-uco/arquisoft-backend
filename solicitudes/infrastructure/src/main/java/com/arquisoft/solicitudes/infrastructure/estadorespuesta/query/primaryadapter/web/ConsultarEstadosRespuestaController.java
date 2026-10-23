@@ -3,7 +3,6 @@ package com.arquisoft.solicitudes.infrastructure.estadorespuesta.query.primaryad
 import com.arquisoft.solicitudes.application.estadorespuesta.query.primaryport.interactor.ConsultarEstadosRespuestaInteractor;
 import com.arquisoft.solicitudes.infrastructure.estadorespuesta.query.primaryadapter.web.dto.EstadoRespuestaResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.estadorespuesta.query.primaryadapter.web.mapper.EstadoRespuestaResponseMapper;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.SolicitudesApiMessages;
@@ -17,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +32,6 @@ public class ConsultarEstadosRespuestaController {
     private final ConsultarEstadosRespuestaInteractor consultarEstadosRespuestaInteractor;
 
     @GetMapping("${rutas.solicitudes.respuesta.estados-respuesta:/estados-respuesta}")
-    @PreAuthorize(SolicitudesAuthorities.Expresiones.HAS_ESTADO_RESPUESTA_VIEW)
     @Operation(
             summary = SolicitudesApiMessages.EstadoRespuesta.CONSULTAR_SUMMARY,
             description = SolicitudesApiMessages.EstadoRespuesta.CONSULTAR_DESCRIPTION,

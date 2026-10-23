@@ -2,11 +2,11 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web
 
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilAsesoradasInteractor;
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.model.ConsultarFichasPerfilAsesoradasQuery;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +15,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -36,13 +34,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarFichasPerfilAsesoradasController.class)
-@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarFichasPerfilAsesoradasControllerTest.TestSecurityConfig.class})
 class ConsultarFichasPerfilAsesoradasControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -74,8 +71,7 @@ class ConsultarFichasPerfilAsesoradasControllerTest {
         mockMvc.perform(post("/fichas-perfil/asesor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_ASESOR_VIEW))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray());
     }
@@ -90,8 +86,7 @@ class ConsultarFichasPerfilAsesoradasControllerTest {
         mockMvc.perform(post("/fichas-perfil/asesor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_ASESOR_VIEW))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(0));
@@ -122,8 +117,7 @@ class ConsultarFichasPerfilAsesoradasControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_ASESOR_VIEW))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isOk());
     }
 
@@ -150,8 +144,7 @@ class ConsultarFichasPerfilAsesoradasControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_ASESOR_VIEW))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -164,17 +157,6 @@ class ConsultarFichasPerfilAsesoradasControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoSinClientRoleFichaPerfilAsesorView() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post("/fichas-perfil/asesor")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("otro:permiso"))))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeExtraerAsesorFichaDelSubjectDelJwt_yPasarloAlInteractor() throws Exception {
         // Arrange
         when(consultarFichasPerfilAsesoradasInteractor.ejecutar(any(ConsultarFichasPerfilAsesoradasQuery.class)))
@@ -184,8 +166,7 @@ class ConsultarFichasPerfilAsesoradasControllerTest {
         mockMvc.perform(post("/fichas-perfil/asesor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_ASESOR_VIEW))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isOk());
 
         // Assert

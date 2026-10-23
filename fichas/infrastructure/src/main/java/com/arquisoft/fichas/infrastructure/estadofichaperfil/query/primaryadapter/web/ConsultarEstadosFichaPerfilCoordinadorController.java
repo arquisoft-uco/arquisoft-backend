@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.estadofichaperfil.query.primaryport.inte
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapter.web.dto.EstadoFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapter.web.mapper.ConsultarEstadosFichaPerfilCoordinadorRequestMapper;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapter.web.mapper.EstadoFichaPerfilResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +37,6 @@ public class ConsultarEstadosFichaPerfilCoordinadorController {
     private final ConsultarEstadosFichaPerfilCoordinadorInteractor consultarEstadosFichaPerfilCoordinadorInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.estados-ficha-coordinador:/{fichaPerfilId}/estados-ficha/coordinador}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_PERFIL_COORDINADOR_VIEW)
     @Operation(
             summary = FichasApiMessages.EstadoFichaPerfil.CONSULTAR_COORDINADOR_SUMMARY,
             description = FichasApiMessages.EstadoFichaPerfil.CONSULTAR_COORDINADOR_DESCRIPTION,

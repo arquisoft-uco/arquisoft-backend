@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.administrador.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
@@ -94,7 +94,7 @@ class RemoverAdministradorUseCaseImplTest {
                 proveedorIdentidadOutputPort, eventPublisher);
         orden.verify(removerAdministradorValidator).validar(actor, usuarioId, administrador, 2L);
         orden.verify(administradorOutputPort).eliminarLogica(eq(usuarioId), any());
-        orden.verify(proveedorIdentidadOutputPort).revocarRealmRole(usuarioId, UsuariosRealmRoles.ADMINISTRADOR);
+        orden.verify(proveedorIdentidadOutputPort).revocarRol(usuarioId, UsuariosRoles.ADMINISTRADOR);
 
         var captorEvento = ArgumentCaptor.forClass(AdministradorRemovidoEvent.class);
         orden.verify(eventPublisher).publish(captorEvento.capture());

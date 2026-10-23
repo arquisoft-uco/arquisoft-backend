@@ -1,3 +1,7 @@
+plugins {
+    id 'java-test-fixtures'
+}
+
 dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:logger')
@@ -26,6 +30,12 @@ dependencies {
 
     // Spring Security Core (AuthorizationDeniedException, AccessDeniedException)
     implementation "org.springframework.security:spring-security-core"
+
+    // Fixtures de test: resolver de IdentidadActual para los @WebMvcTest de los contextos
+    testFixturesImplementation "org.springframework.security:spring-security-core"
+    testFixturesImplementation "org.springframework.security:spring-security-oauth2-jose"
+    testFixturesImplementation "org.springframework:spring-webmvc"
+    testFixturesImplementation "org.springframework.boot:spring-boot-starter-test"
 
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"

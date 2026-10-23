@@ -5,7 +5,6 @@ import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.UsuariosApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.EliminarUsuarioInteractor;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.mapper.EliminarUsuarioRequestMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +31,6 @@ public class EliminarUsuarioController {
     private final EliminarUsuarioInteractor eliminarUsuarioInteractor;
 
     @DeleteMapping("${rutas.usuarios.usuarios.eliminar:/{usuarioId}}")
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_USUARIO_DELETE)
     @Operation(
             summary = UsuariosApiMessages.Usuario.ELIMINAR_SUMMARY,
             description = UsuariosApiMessages.Usuario.ELIMINAR_DESCRIPTION,

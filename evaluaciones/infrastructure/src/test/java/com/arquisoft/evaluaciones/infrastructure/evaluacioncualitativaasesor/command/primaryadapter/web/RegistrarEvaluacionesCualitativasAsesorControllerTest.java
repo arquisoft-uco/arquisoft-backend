@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(RegistrarEvaluacionesCualitativasAsesorController.class)
 @Import({
+        IdentidadActualTestConfig.class,
         com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         RegistrarEvaluacionesCualitativasAsesorControllerTest.TestSecurityConfig.class

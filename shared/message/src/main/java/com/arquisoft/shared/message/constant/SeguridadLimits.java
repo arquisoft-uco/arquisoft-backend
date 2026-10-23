@@ -29,4 +29,15 @@ public final class SeguridadLimits {
 
         public static final long EXPIRACION_MIN = 1L;
     }
+
+    public static final class Acceso {
+
+        private Acceso() {}
+
+        public static final int METODO_MAX = 10;
+        public static final int RECURSO_MAX = 2048;
+        public static final int CREDENCIAL_MAX = 8192;
+        public static final int EMISOR_MAX = 100;
+        public static final int CORRELACION_MAX = 128;
+    }
 }

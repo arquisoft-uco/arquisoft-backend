@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.application.usuario.command.validator.impl;
 
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.usuarios.domain.administrador.AdministradorDomain;
@@ -102,7 +102,7 @@ class EliminarUsuarioValidatorImplTest {
                 AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
                 RepresentanteComiteDomain.crear(id))))
                 .isInstanceOf(UsuarioRolesVigentesException.class)
-                .hasMessageContaining(UsuariosRealmRoles.REPRESENTANTE_COMITE);
+                .hasMessageContaining(UsuariosRoles.REPRESENTANTE_COMITE);
     }
 
     @Test
@@ -126,7 +126,7 @@ class EliminarUsuarioValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(id, usuario(id, UtilFecha.VACIO),
                 rolesConAdministrador(id, AdministradorDomain.crear(id))))
                 .isInstanceOf(UsuarioRolesVigentesException.class)
-                .hasMessageContaining(UsuariosRealmRoles.ADMINISTRADOR);
+                .hasMessageContaining(UsuariosRoles.ADMINISTRADOR);
     }
 
     @Test
@@ -140,7 +140,7 @@ class EliminarUsuarioValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(id, usuario(id, UtilFecha.VACIO), roles))
                 .isInstanceOf(UsuarioRolesVigentesException.class)
-                .hasMessageContaining(UsuariosRealmRoles.JURADO);
+                .hasMessageContaining(UsuariosRoles.JURADO);
     }
 
     @Test

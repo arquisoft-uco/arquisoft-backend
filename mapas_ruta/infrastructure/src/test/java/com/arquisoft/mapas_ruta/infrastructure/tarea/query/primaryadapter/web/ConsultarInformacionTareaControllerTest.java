@@ -3,11 +3,11 @@ package com.arquisoft.mapas_ruta.infrastructure.tarea.query.primaryadapter.web;
 import com.arquisoft.mapas_ruta.application.tarea.query.primaryport.interactor.ConsultarInformacionTareaInteractor;
 import com.arquisoft.mapas_ruta.application.tarea.query.primaryport.model.ConsultarInformacionTareaQuery;
 import com.arquisoft.mapas_ruta.application.tarea.query.readmodel.TareaReadModel;
-import com.arquisoft.mapas_ruta.infrastructure.security.MapasRutaAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -38,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarInformacionTareaController.class)
-@Import({AppLoggerConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarInformacionTareaControllerTest.TestSecurityConfig.class})
 class ConsultarInformacionTareaControllerTest {
@@ -47,7 +45,6 @@ class ConsultarInformacionTareaControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -69,8 +66,7 @@ class ConsultarInformacionTareaControllerTest {
     private ConsultarInformacionTareaInteractor interactor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtEstudiante() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(MapasRutaAuthorities.TAREA_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -126,16 +122,6 @@ class ConsultarInformacionTareaControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA, UtilUUID.generarNuevoUUID()))
                 .andExpect(status().isUnauthorized());
-        verify(interactor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debeRetornar403_cuandoSoloTieneElClientRoleDeCrearTarea() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA, UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(MapasRutaAuthorities.TAREA_CREATE))))
-                .andExpect(status().isForbidden());
         verify(interactor, never()).ejecutar(any());
     }
 }

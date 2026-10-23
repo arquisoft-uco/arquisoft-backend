@@ -21,7 +21,7 @@ import com.arquisoft.usuarios.application.usuario.command.validator.RegistrarUsu
 import com.arquisoft.usuarios.domain.usuario.RegistroUsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
@@ -70,35 +70,35 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
         var usuario = UsuarioDomain.crear(identidadId, registro);
         usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));
 
-        if (registro.contieneRol(UsuariosRealmRoles.ESTUDIANTE)) {
+        if (registro.contieneRol(UsuariosRoles.ESTUDIANTE)) {
             agregarEstudianteUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.COORDINADOR)) {
+        if (registro.contieneRol(UsuariosRoles.COORDINADOR)) {
             agregarCoordinadorUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.ASESOR_FICHA)) {
+        if (registro.contieneRol(UsuariosRoles.ASESOR_FICHA)) {
             agregarAsesorFichaUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.ASESOR)) {
+        if (registro.contieneRol(UsuariosRoles.ASESOR)) {
             agregarAsesorUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.REPRESENTANTE_COMITE)) {
+        if (registro.contieneRol(UsuariosRoles.REPRESENTANTE_COMITE)) {
             agregarRepresentanteComiteUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.ADMINISTRADOR)) {
+        if (registro.contieneRol(UsuariosRoles.ADMINISTRADOR)) {
             agregarAdministradorUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.BIBLIOTECARIO)) {
+        if (registro.contieneRol(UsuariosRoles.BIBLIOTECARIO)) {
             agregarBibliotecarioUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.JURADO)) {
+        if (registro.contieneRol(UsuariosRoles.JURADO)) {
             agregarJuradoUseCase.ejecutar(usuario);
         }
 

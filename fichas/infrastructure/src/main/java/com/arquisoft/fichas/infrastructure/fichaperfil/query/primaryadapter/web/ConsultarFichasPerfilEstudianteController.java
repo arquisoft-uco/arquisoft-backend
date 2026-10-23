@@ -4,11 +4,10 @@ import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.dto.FichaPerfilEstudianteResponseDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.ConsultarFichasPerfilEstudianteRequestMapper;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.FichaPerfilEstudianteResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,9 +18,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +33,6 @@ public class ConsultarFichasPerfilEstudianteController {
     private final ConsultarFichasPerfilEstudianteInteractor consultarFichasPerfilEstudianteInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.estudiante:/estudiante}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_ESTUDIANTE_VIEW)
     @Operation(
             summary = FichasApiMessages.FichaPerfil.CONSULTAR_ESTUDIANTE_SUMMARY,
             description = FichasApiMessages.FichaPerfil.CONSULTAR_ESTUDIANTE_DESCRIPTION,
@@ -52,9 +47,9 @@ public class ConsultarFichasPerfilEstudianteController {
                     description = FichasApiMessages.FichaPerfil.CONSULTAR_ESTUDIANTE_RESP_403)
     })
     public ResponseEntity<List<FichaPerfilEstudianteResponseDTO>> consultarFichasPerfil(
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var estudiante = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var estudiante = identidad.id();
 
         var fichas = consultarFichasPerfilEstudianteInteractor
                 .ejecutar(ConsultarFichasPerfilEstudianteRequestMapper.toQuery(estudiante))

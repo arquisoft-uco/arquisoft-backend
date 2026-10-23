@@ -3,7 +3,6 @@ package com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadap
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.ConsultarTiposSolicitudInteractor;
 import com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web.dto.TipoSolicitudResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web.mapper.TipoSolicitudResponseMapper;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.SolicitudesApiMessages;
@@ -17,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +32,6 @@ public class ConsultarTiposSolicitudController {
     private final ConsultarTiposSolicitudInteractor consultarTiposSolicitudInteractor;
 
     @GetMapping("${rutas.solicitudes.solicitud.tipos-solicitud:/tipos-solicitud}")
-    @PreAuthorize(SolicitudesAuthorities.Expresiones.HAS_TIPO_SOLICITUD_VIEW)
     @Operation(
             summary = SolicitudesApiMessages.TipoSolicitud.CONSULTAR_SUMMARY,
             description = SolicitudesApiMessages.TipoSolicitud.CONSULTAR_DESCRIPTION,

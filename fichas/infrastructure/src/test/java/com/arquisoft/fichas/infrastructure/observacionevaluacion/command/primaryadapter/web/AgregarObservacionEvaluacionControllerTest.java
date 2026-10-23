@@ -5,12 +5,12 @@ import com.arquisoft.fichas.application.observacionevaluacion.command.primarypor
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.domain.observacionevaluacion.exception.EvaluacionFichaCerradaException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +19,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -41,13 +39,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AgregarObservacionEvaluacionController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         AgregarObservacionEvaluacionControllerTest.TestSecurityConfig.class})
 class AgregarObservacionEvaluacionControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -114,18 +111,6 @@ class AgregarObservacionEvaluacionControllerTest {
     }
 
     @Test
-    void debe403_cuandoAuthorityDeOtroEndpoint() throws Exception {
-        // Act & Assert — el client role de observar un ítem no habilita observar una evaluación
-        mockMvc.perform(post(RUTA, EVALUACION_FICHA_PERFIL_ID)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(REPRESENTANTE_COMITE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debe422_cuandoLaEvaluacionNoEsPropia() throws Exception {
         // Arrange
         when(agregarObservacionEvaluacionInteractor.ejecutar(any()))
@@ -153,8 +138,7 @@ class AgregarObservacionEvaluacionControllerTest {
     private MockHttpServletRequestBuilder peticionAutorizada(String body) {
         return post(RUTA, EVALUACION_FICHA_PERFIL_ID)
                 .with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .jwt(j -> j.subject(REPRESENTANTE_COMITE_ID.toString()))
-                        .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_EVALUACION_CREATE)))
+                        .jwt(j -> j.subject(REPRESENTANTE_COMITE_ID.toString())))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body);
     }

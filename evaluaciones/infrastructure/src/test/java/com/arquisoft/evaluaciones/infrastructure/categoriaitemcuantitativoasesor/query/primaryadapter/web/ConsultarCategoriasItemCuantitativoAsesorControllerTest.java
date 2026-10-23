@@ -2,7 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativoaseso
 
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.primaryport.interactor.ConsultarCategoriasItemCuantitativoAsesorInteractor;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativoasesor.query.readmodel.CategoriaItemCuantitativoAsesorReadModel;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -13,10 +12,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -27,7 +24,6 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -47,7 +43,6 @@ class ConsultarCategoriasItemCuantitativoAsesorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -139,22 +134,7 @@ class ConsultarCategoriasItemCuantitativoAsesorControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    void debeRetornar403_cuandoTieneElClientRoleDelJurado() throws Exception {
-        // Arrange
-        var jwtJurado = SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.CATEGORIA_ITEM_CUANTITATIVO_JURADO_VIEW));
-
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(jwtJurado))
-                .andExpect(status().isForbidden());
-        verifyNoInteractions(interactor);
-    }
-
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermisoView() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.CATEGORIA_ITEM_CUANTITATIVO_ASESOR_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

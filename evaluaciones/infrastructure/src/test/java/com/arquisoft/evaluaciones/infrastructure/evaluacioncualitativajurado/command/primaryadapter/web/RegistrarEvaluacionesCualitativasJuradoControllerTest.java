@@ -2,7 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativajurado.co
 
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.primaryport.interactor.RegistrarEvaluacionesCualitativasJuradoInteractor;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -12,10 +11,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -50,7 +47,6 @@ class RegistrarEvaluacionesCualitativasJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -149,18 +145,6 @@ class RegistrarEvaluacionesCualitativasJuradoControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoNoTienePermiso() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeRetornar422_cuandoLaEvaluacionDeJuradoNoExiste() throws Exception {
         // Arrange
         doThrow(new EvaluacionJuradoNoEncontradaException(EVALUACION_JURADO_ID))
@@ -175,8 +159,6 @@ class RegistrarEvaluacionesCualitativasJuradoControllerTest {
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.EVALUACION_CUALITATIVA_JURADO_CREATE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

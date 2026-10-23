@@ -3,12 +3,11 @@ package com.arquisoft.mapas_ruta.infrastructure.maparuta.query.primaryadapter.we
 import com.arquisoft.mapas_ruta.application.maparuta.query.primaryport.interactor.ConsultarMapaRutaEstudianteInteractor;
 import com.arquisoft.mapas_ruta.application.maparuta.query.primaryport.model.ConsultarMapaRutaEstudianteQuery;
 import com.arquisoft.mapas_ruta.application.maparuta.query.readmodel.MapaRutaEstudianteReadModel;
-import com.arquisoft.mapas_ruta.infrastructure.security.MapasRutaAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
-import com.arquisoft.shared.message.constant.MapasRutaFields;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarMapaRutaEstudianteController.class)
-@Import({AppLoggerConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarMapaRutaEstudianteControllerTest.TestSecurityConfig.class})
 class ConsultarMapaRutaEstudianteControllerTest {
@@ -48,7 +45,6 @@ class ConsultarMapaRutaEstudianteControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -71,8 +67,7 @@ class ConsultarMapaRutaEstudianteControllerTest {
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtEstudiante(String subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(subject))
-                .authorities(new SimpleGrantedAuthority(MapasRutaAuthorities.MAPA_RUTA_ESTUDIANTE_VIEW));
+                .jwt(jwt -> jwt.subject(subject));
     }
 
     @Test
@@ -111,12 +106,10 @@ class ConsultarMapaRutaEstudianteControllerTest {
     }
 
     @Test
-    void debeRetornar400SinInvocarElInteractor_cuandoElSubNoEsUuid() throws Exception {
+    void debeRetornar401SinInvocarElInteractor_cuandoElSubNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(get(RUTA).with(jwtEstudiante("no-es-un-uuid")))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors.length()").value(1))
-                .andExpect(jsonPath("$.fieldErrors[0].field").value(MapasRutaFields.MapaRuta.ESTUDIANTE));
+                .andExpect(status().isUnauthorized());
         verify(interactor, never()).ejecutar(any());
     }
 
@@ -125,17 +118,6 @@ class ConsultarMapaRutaEstudianteControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA))
                 .andExpect(status().isUnauthorized());
-        verify(interactor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debeRetornar403_cuandoSoloTieneElClientRoleDeCrearMapa() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(UtilUUID.generarNuevoUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(MapasRutaAuthorities.MAPA_RUTA_CREATE))))
-                .andExpect(status().isForbidden());
         verify(interactor, never()).ejecutar(any());
     }
 }

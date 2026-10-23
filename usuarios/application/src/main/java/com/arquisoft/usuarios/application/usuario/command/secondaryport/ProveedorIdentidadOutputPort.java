@@ -14,13 +14,13 @@ public interface ProveedorIdentidadOutputPort {
 
     void actualizar(ModificacionIdentidadEntity modificacion);
 
-    void asignarRealmRoles(UUID usuario, List<String> realmRoles);
+    void asignarRoles(UUID usuario, List<String> roles);
 
     UUID registrar(RegistroIdentidadEntity registro);
 
     void eliminar(UUID usuarioId);
 
-    void revocarRealmRole(UUID usuario, String realmRole);
+    void revocarRol(UUID usuario, String rol);
 
     void cambiarHabilitacion(UUID usuario, boolean habilitado);
 }

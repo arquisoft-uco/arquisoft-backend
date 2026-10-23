@@ -2,7 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.query.pr
 
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.query.primaryport.interactor.ConsultarItemsCualitativosJuradoInteractor;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.query.readmodel.ItemCualitativoJuradoReadModel;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -11,10 +10,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -43,7 +40,6 @@ class ConsultarItemsCualitativosJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -125,23 +121,6 @@ class ConsultarItemsCualitativosJuradoControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoJwtSinAuthorities() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void debeRetornar403_cuandoTieneAuthorityDeCreacionPeroNoDeView() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        EvaluacionesAuthorities.ITEM_CUALITATIVO_JURADO_CREATE))))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeDelegarUnaSolaVez_enElInteractor() throws Exception {
         // Arrange
         when(interactor.ejecutar()).thenReturn(List.of());
@@ -155,8 +134,6 @@ class ConsultarItemsCualitativosJuradoControllerTest {
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermisoView() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.ITEM_CUALITATIVO_JURADO_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

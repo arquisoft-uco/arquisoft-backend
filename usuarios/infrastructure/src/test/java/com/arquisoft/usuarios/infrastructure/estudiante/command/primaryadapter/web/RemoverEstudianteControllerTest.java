@@ -7,7 +7,6 @@ import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.usuarios.application.estudiante.command.primaryport.interactor.RemoverEstudianteInteractor;
 import com.arquisoft.usuarios.application.estudiante.command.primaryport.model.RemoverEstudianteCommand;
 import com.arquisoft.usuarios.domain.estudiante.exception.EstudianteNoEncontradoException;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +14,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -41,7 +38,6 @@ class RemoverEstudianteControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -62,8 +58,7 @@ class RemoverEstudianteControllerTest {
     private RemoverEstudianteInteractor removerEstudianteInteractor;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor administrador() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.ESTUDIANTE_DELETE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -90,16 +85,6 @@ class RemoverEstudianteControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/usuarios/{usuarioId}/estudiante", UUID.randomUUID()))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_cuandoFaltaElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete("/usuarios/{usuarioId}/estudiante", UUID.randomUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_CREATE))))
-                .andExpect(status().isForbidden());
-        verify(removerEstudianteInteractor, never()).ejecutar(any());
     }
 
     @Test

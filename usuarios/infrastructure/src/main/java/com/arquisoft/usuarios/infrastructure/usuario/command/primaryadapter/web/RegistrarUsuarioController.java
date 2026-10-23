@@ -4,7 +4,6 @@ import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor
 import com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.dto.RegistrarUsuarioRequestDTO;
 import com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.dto.RegistrarUsuarioResponseDTO;
 import com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.mapper.RegistrarUsuarioRequestMapper;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.UsuariosApiMessages;
@@ -19,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +34,6 @@ public class RegistrarUsuarioController {
     private final RegistrarUsuarioInteractor registrarUsuarioInteractor;
 
     @PostMapping
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_USUARIO_CREATE)
     @Operation(
             summary = UsuariosApiMessages.Usuario.REGISTRAR_SUMMARY,
             description = UsuariosApiMessages.Usuario.REGISTRAR_DESCRIPTION,

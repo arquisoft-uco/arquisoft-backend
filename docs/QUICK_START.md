@@ -244,8 +244,9 @@ public class CrearFichaInteractorImpl implements CrearFichaInteractor {
 public class FichaController {
     private final CrearFichaInteractor crearFichaInteractor; // se inyecta el Interactor, nunca el UseCase
 
+    // La autorización no vive en el controlador: la decide AutorizacionAccesoFilter (seguridad) por recurso.
+    // Si el endpoint necesita al actor, recibe IdentidadActual como parámetro.
     @PostMapping
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ASESOR)
     public ResponseEntity<Void> crear(@Valid @RequestBody CrearFichaRequestDTO dto) {
         UUID id = crearFichaInteractor.ejecutar(CrearFichaRequestMapper.toCommand(dto));
         return ResponseEntity.status(HttpStatus.CREATED).build();

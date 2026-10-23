@@ -28,8 +28,8 @@ public final class UsuariosApiMessages {
 
         public static final String REGISTRAR_SUMMARY = "Registrar información de un nuevo usuario";
         public static final String REGISTRAR_DESCRIPTION =
-                "Registra un nuevo usuario en el proveedor de identidad (Keycloak) y persiste la "
-                        + "información local con el identificador que Keycloak le asigna. Asigna los realm "
+                "Registra un nuevo usuario en el proveedor de identidad y persiste la "
+                        + "información local con el identificador que el proveedor le asigna. Asigna los "
                         + "roles indicados y dispara el correo de establecimiento de contraseña. "
                         + "Exclusivo del rol administrador.";
         public static final String REGISTRAR_RESP_201 = "Usuario registrado — retorna el UUID asignado";
@@ -40,7 +40,7 @@ public final class UsuariosApiMessages {
         public static final String MODIFICAR_SUMMARY = "Modificar información de un usuario existente";
         public static final String MODIFICAR_DESCRIPTION =
                 "Modifica los datos personales enviados de un usuario, cualquiera sea su estado, y sincroniza "
-                        + "el email y el nombre en el proveedor de identidad (Keycloak). Los roles enviados se "
+                        + "el email y el nombre en el proveedor de identidad. Los roles enviados se "
                         + "agregan o, si fueron eliminados lógicamente, se reactivan; un rol ausente de la lista "
                         + "no se revoca. Los nombres y los apellidos se envían juntos o ninguno de los dos; el "
                         + "nombre completo se deriva de ambos. Solo cambian los campos presentes en el body; el estado del usuario no "
@@ -58,7 +58,7 @@ public final class UsuariosApiMessages {
         public static final String ELIMINAR_DESCRIPTION =
                 "Elimina lógicamente un usuario sin roles vigentes: marca la fecha de eliminación y, si estaba "
                         + "activo, lo pasa a inactivo, lo que deshabilita su identidad en el proveedor de identidad "
-                        + "(Keycloak). El usuario se recupera activándolo mediante el cambio de estado. "
+                        + "(proveedor de identidad). El usuario se recupera activándolo mediante el cambio de estado. "
                         + "Exclusivo del rol administrador.";
         public static final String ELIMINAR_RESP_204 = "Usuario eliminado";
         public static final String ELIMINAR_RESP_400 = "Identificador de usuario inválido";
@@ -69,7 +69,7 @@ public final class UsuariosApiMessages {
         public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar la información de estado de un usuario existente";
         public static final String CAMBIAR_ESTADO_DESCRIPTION =
                 "Activa o inactiva un usuario. Inactivar deshabilita su identidad en el proveedor de identidad "
-                        + "(Keycloak); activar la habilita y, si el usuario estaba eliminado, lo restaura. "
+                        + "(proveedor de identidad); activar la habilita y, si el usuario estaba eliminado, lo restaura. "
                         + "Notifica el cambio al usuario por correo. Exclusivo del rol administrador.";
         public static final String CAMBIAR_ESTADO_RESP_204 = "Estado del usuario cambiado";
         public static final String CAMBIAR_ESTADO_RESP_400 = "Identificador de usuario inválido o estado no enviado";
@@ -108,7 +108,7 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_SUMMARY = "Remover información de un estudiante";
         public static final String REMOVER_DESCRIPTION =
                 "Da de baja lógica el rol estudiante de un usuario: marca la fecha de eliminación sin borrar "
-                        + "la fila, revoca el realm role estudiante en Keycloak y notifica a los contextos "
+                        + "la fila, revoca el rol estudiante en el proveedor de identidad y notifica a los contextos "
                         + "que replican al estudiante. El usuario y sus demás roles no cambian. "
                         + "Exclusivo del rol administrador.";
         public static final String REMOVER_RESP_204 = "Estudiante removido";
@@ -133,7 +133,7 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_SUMMARY = "Remover información de un asesor";
         public static final String REMOVER_DESCRIPTION =
                 "Da de baja lógica el rol asesor de un usuario: marca la fecha de eliminación sin borrar "
-                        + "la fila, revoca el realm role asesor en Keycloak y notifica a los contextos "
+                        + "la fila, revoca el rol asesor en el proveedor de identidad y notifica a los contextos "
                         + "que replican al asesor. El usuario y sus demás roles no cambian. "
                         + "Exclusivo del rol administrador.";
         public static final String REMOVER_RESP_204 = "Asesor removido";
@@ -158,7 +158,7 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_SUMMARY = "Remover información de un asesor de ficha";
         public static final String REMOVER_DESCRIPTION =
                 "Da de baja lógica el rol asesor de ficha de un usuario: marca la fecha de eliminación sin "
-                        + "borrar la fila, revoca el realm role asesor-ficha en Keycloak y notifica a los "
+                        + "borrar la fila, revoca el rol asesor-ficha en el proveedor de identidad y notifica a los "
                         + "contextos que replican al asesor de ficha. El usuario y sus demás roles no cambian. "
                         + "Exclusivo del rol administrador.";
         public static final String REMOVER_RESP_204 = "Asesor de ficha removido";
@@ -184,7 +184,7 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_SUMMARY = "Remover información de un coordinador";
         public static final String REMOVER_DESCRIPTION =
                 "Da de baja lógica el rol coordinador de un usuario: marca la fecha de eliminación sin borrar "
-                        + "la fila, revoca el realm role coordinador en Keycloak y notifica a los contextos "
+                        + "la fila, revoca el rol coordinador en el proveedor de identidad y notifica a los contextos "
                         + "que replican al coordinador. El usuario y sus demás roles no cambian. "
                         + "Exclusivo del rol administrador.";
         public static final String REMOVER_RESP_204 = "Coordinador removido";
@@ -209,7 +209,7 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_SUMMARY = "Remover información de un bibliotecario";
         public static final String REMOVER_DESCRIPTION =
                 "Da de baja lógica el rol bibliotecario de un usuario: marca la fecha de eliminación sin borrar "
-                        + "la fila, revoca el realm role bibliotecario en Keycloak y notifica a los contextos "
+                        + "la fila, revoca el rol bibliotecario en el proveedor de identidad y notifica a los contextos "
                         + "que replican al bibliotecario. El usuario y sus demás roles no cambian. "
                         + "Exclusivo del rol administrador.";
         public static final String REMOVER_RESP_204 = "Bibliotecario removido";
@@ -234,7 +234,7 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_SUMMARY = "Remover información de un jurado";
         public static final String REMOVER_DESCRIPTION =
                 "Da de baja lógica el rol jurado de un usuario: marca la fecha de eliminación sin borrar "
-                        + "la fila, revoca el realm role jurado en Keycloak y notifica a los contextos "
+                        + "la fila, revoca el rol jurado en el proveedor de identidad y notifica a los contextos "
                         + "que replican al jurado. El usuario y sus demás roles no cambian. "
                         + "Exclusivo del rol administrador.";
         public static final String REMOVER_RESP_204 = "Jurado removido";
@@ -251,7 +251,7 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_SUMMARY = "Remover información de un representante del comité";
         public static final String REMOVER_DESCRIPTION =
                 "Da de baja lógica el rol representante del comité de un usuario: marca la fecha de eliminación "
-                        + "sin borrar la fila, revoca el realm role representante-comite en Keycloak y notifica a "
+                        + "sin borrar la fila, revoca el rol representante-comite en el proveedor de identidad y notifica a "
                         + "los contextos que replican al representante. El usuario y sus demás roles no cambian. "
                         + "Exclusivo del rol administrador.";
         public static final String REMOVER_RESP_204 = "Representante del comité removido";
@@ -289,7 +289,7 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_SUMMARY = "Remover información de un administrador";
         public static final String REMOVER_DESCRIPTION =
                 "Da de baja lógica el rol administrador de un usuario: marca la fecha de eliminación sin borrar "
-                        + "la fila, revoca el realm role administrador en Keycloak y notifica a los contextos "
+                        + "la fila, revoca el rol administrador en el proveedor de identidad y notifica a los contextos "
                         + "que replican al administrador. El usuario y sus demás roles no cambian. Un "
                         + "administrador no puede removerse a sí mismo ni remover al único administrador "
                         + "vigente. Exclusivo del rol administrador.";

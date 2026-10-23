@@ -10,6 +10,7 @@ import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ConsultarEvaluacionesCualitativasAsesorController.class)
 @Import({
+        IdentidadActualTestConfig.class,
         com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         ConsultarEvaluacionesCualitativasAsesorControllerTest.TestSecurityConfig.class
@@ -123,10 +125,10 @@ class ConsultarEvaluacionesCualitativasAsesorControllerTest {
     }
 
     @Test
-    void debeRetornar400_cuandoElSubDelJwtNoEsUnUuid() throws Exception {
+    void debeRetornar401_cuandoElSubDelJwtNoEsUnUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(get(RUTA).with(jwtDelAsesor("no-es-uuid")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
         verify(interactor, never()).ejecutar(any());
     }
 

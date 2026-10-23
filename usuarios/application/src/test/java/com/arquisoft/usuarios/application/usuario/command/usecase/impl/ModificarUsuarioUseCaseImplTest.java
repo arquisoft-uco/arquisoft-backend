@@ -122,7 +122,7 @@ class ModificarUsuarioUseCaseImplTest {
         // Assert
         verify(usuarioOutputPort, times(1)).actualizar(any());
         verify(eventPublisher, times(1)).publish(any());
-        verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of());
+        verify(proveedorIdentidadOutputPort, times(1)).asignarRoles(usuarioId, List.of());
         verify(proveedorIdentidadOutputPort, times(1)).actualizar(identidadCaptor.capture());
         assertThat(identidadCaptor.getValue().nombres()).isEqualTo("Nombre");
         assertThat(identidadCaptor.getValue().apellidos()).isEqualTo("Nuevo");
@@ -152,7 +152,7 @@ class ModificarUsuarioUseCaseImplTest {
         // Assert
         verify(usuarioOutputPort, times(1)).actualizar(any());
         verify(proveedorIdentidadOutputPort, never()).actualizar(any());
-        verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of());
+        verify(proveedorIdentidadOutputPort, times(1)).asignarRoles(usuarioId, List.of());
     }
 
     @Test
@@ -171,7 +171,7 @@ class ModificarUsuarioUseCaseImplTest {
         verify(agregarAsesorUseCase, never()).ejecutar(any());
         verify(agregarRepresentanteComiteUseCase, never()).ejecutar(any());
         verify(eventPublisher, never()).publish(any());
-        verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of("estudiante"));
+        verify(proveedorIdentidadOutputPort, times(1)).asignarRoles(usuarioId, List.of("estudiante"));
     }
 
     @Test
@@ -194,7 +194,7 @@ class ModificarUsuarioUseCaseImplTest {
         assertThat(captor.getValue().estado()).isEqualTo(EstadoUsuario.INACTIVO.getId());
         verify(agregarEstudianteUseCase, times(1)).ejecutar(usuarioInactivo);
         verify(eventPublisher, times(1)).publish(any());
-        verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of("estudiante"));
+        verify(proveedorIdentidadOutputPort, times(1)).asignarRoles(usuarioId, List.of("estudiante"));
     }
 
     @Test
@@ -249,7 +249,7 @@ class ModificarUsuarioUseCaseImplTest {
         orden.verify(usuarioOutputPort).actualizar(any());
         orden.verify(agregarRepresentanteComiteUseCase, times(1)).ejecutar(usuarioActivo);
         orden.verify(proveedorIdentidadOutputPort)
-                .asignarRealmRoles(usuarioId, List.of("representante-comite"));
+                .asignarRoles(usuarioId, List.of("representante-comite"));
         verify(agregarEstudianteUseCase, never()).ejecutar(any());
         verify(agregarCoordinadorUseCase, never()).ejecutar(any());
         verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
@@ -269,7 +269,7 @@ class ModificarUsuarioUseCaseImplTest {
         var orden = inOrder(usuarioOutputPort, agregarAdministradorUseCase, proveedorIdentidadOutputPort);
         orden.verify(usuarioOutputPort).actualizar(any());
         orden.verify(agregarAdministradorUseCase, times(1)).ejecutar(usuarioActivo);
-        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(usuarioId, List.of("administrador"));
+        orden.verify(proveedorIdentidadOutputPort).asignarRoles(usuarioId, List.of("administrador"));
         verify(agregarEstudianteUseCase, never()).ejecutar(any());
         verify(agregarCoordinadorUseCase, never()).ejecutar(any());
         verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
@@ -291,7 +291,7 @@ class ModificarUsuarioUseCaseImplTest {
         var orden = inOrder(usuarioOutputPort, agregarBibliotecarioUseCase, proveedorIdentidadOutputPort);
         orden.verify(usuarioOutputPort).actualizar(any());
         orden.verify(agregarBibliotecarioUseCase, times(1)).ejecutar(usuarioActivo);
-        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(usuarioId, List.of("bibliotecario"));
+        orden.verify(proveedorIdentidadOutputPort).asignarRoles(usuarioId, List.of("bibliotecario"));
         verify(agregarEstudianteUseCase, never()).ejecutar(any());
         verify(agregarCoordinadorUseCase, never()).ejecutar(any());
         verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
@@ -313,7 +313,7 @@ class ModificarUsuarioUseCaseImplTest {
         var orden = inOrder(usuarioOutputPort, agregarJuradoUseCase, proveedorIdentidadOutputPort);
         orden.verify(usuarioOutputPort).actualizar(any());
         orden.verify(agregarJuradoUseCase, times(1)).ejecutar(usuarioActivo);
-        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(usuarioId, List.of("jurado"));
+        orden.verify(proveedorIdentidadOutputPort).asignarRoles(usuarioId, List.of("jurado"));
         verify(agregarBibliotecarioUseCase, never()).ejecutar(any());
     }
 
@@ -442,7 +442,7 @@ class ModificarUsuarioUseCaseImplTest {
         orden.verify(modificarUsuarioValidator).validar(any(), any(), eq(false), eq(false), eq(false));
         orden.verify(usuarioOutputPort).actualizar(any());
         orden.verify(agregarEstudianteUseCase).ejecutar(any());
-        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(any(), any());
+        orden.verify(proveedorIdentidadOutputPort).asignarRoles(any(), any());
     }
 
     @Test

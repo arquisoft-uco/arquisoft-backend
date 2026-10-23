@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.administrador.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RemoverAdministradorKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
@@ -45,7 +45,7 @@ public class RemoverAdministradorUseCaseImpl implements RemoverAdministradorUseC
 
         administrador.remover(UtilFecha.generarInstanteActual());
         administradorOutputPort.eliminarLogica(administrador.getUsuario(), administrador.getEliminadoEn());
-        proveedorIdentidadOutputPort.revocarRealmRole(administrador.getUsuario(), UsuariosRealmRoles.ADMINISTRADOR);
+        proveedorIdentidadOutputPort.revocarRol(administrador.getUsuario(), UsuariosRoles.ADMINISTRADOR);
 
         eventPublisher.publish(new AdministradorRemovidoEvent(
                 usuario.getId(), usuario.getIdentificador(), usuario.getNombre(), usuario.getEmail()));

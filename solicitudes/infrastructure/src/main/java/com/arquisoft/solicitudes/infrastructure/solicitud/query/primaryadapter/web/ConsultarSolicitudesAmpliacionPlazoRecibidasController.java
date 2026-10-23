@@ -4,14 +4,13 @@ import com.arquisoft.solicitudes.application.solicitud.query.primaryport.interac
 import com.arquisoft.solicitudes.infrastructure.solicitud.query.primaryadapter.web.dto.SolicitudResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.solicitud.query.primaryadapter.web.mapper.ConsultarSolicitudesAmpliacionPlazoRecibidasRequestMapper;
 import com.arquisoft.solicitudes.infrastructure.solicitud.query.primaryadapter.web.mapper.SolicitudResponseMapper;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.SolicitudesApiMessages;
 import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,9 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +38,6 @@ public class ConsultarSolicitudesAmpliacionPlazoRecibidasController {
 
     @PostMapping(
             "${rutas.solicitudes.solicitud.ampliacion-plazo-recibidas:/ampliacion-plazo/recibidas}")
-    @PreAuthorize(SolicitudesAuthorities.Expresiones.HAS_SOLICITUD_AMPLIACION_PLAZO_RECIBIDA_VIEW)
     @Operation(
             summary = SolicitudesApiMessages.Solicitud.CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_SUMMARY,
             description = SolicitudesApiMessages.Solicitud.CONSULTAR_AMPLIACION_PLAZO_RECIBIDAS_DESCRIPTION,
@@ -63,9 +58,9 @@ public class ConsultarSolicitudesAmpliacionPlazoRecibidasController {
     })
     public ResponseEntity<PageResponseDTO<SolicitudResponseDTO>> consultarAmpliacionPlazoRecibidas(
             @RequestBody(required = false) QueryCriteriaRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var coordinadorUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var coordinadorUsuario = identidad.id();
         var resultado = consultarSolicitudesAmpliacionPlazoRecibidasInteractor.ejecutar(
                 ConsultarSolicitudesAmpliacionPlazoRecibidasRequestMapper.toQuery(
                         request, coordinadorUsuario));

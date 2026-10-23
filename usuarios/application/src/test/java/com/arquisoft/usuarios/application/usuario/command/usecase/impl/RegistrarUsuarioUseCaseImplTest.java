@@ -124,7 +124,7 @@ class RegistrarUsuarioUseCaseImplTest {
         assertThat(captor.getValue().email()).isEqualTo("ana@uco.edu.co");
         assertThat(captor.getValue().nombres()).isEqualTo("Ana");
         assertThat(captor.getValue().apellidos()).isEqualTo("Pérez");
-        assertThat(captor.getValue().realmRoles()).isEmpty();
+        assertThat(captor.getValue().roles()).isEmpty();
     }
 
     @Test
@@ -139,7 +139,7 @@ class RegistrarUsuarioUseCaseImplTest {
         // Assert
         var captor = ArgumentCaptor.forClass(RegistroIdentidadEntity.class);
         verify(proveedorIdentidadOutputPort).registrar(captor.capture());
-        assertThat(captor.getValue().realmRoles()).containsExactly("estudiante", "asesor");
+        assertThat(captor.getValue().roles()).containsExactly("estudiante", "asesor");
     }
 
     @Test

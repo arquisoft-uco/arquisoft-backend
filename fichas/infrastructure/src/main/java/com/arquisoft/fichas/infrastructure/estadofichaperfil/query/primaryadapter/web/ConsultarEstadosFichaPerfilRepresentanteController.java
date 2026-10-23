@@ -4,12 +4,11 @@ import com.arquisoft.fichas.application.estadofichaperfil.query.primaryport.inte
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapter.web.dto.EstadoFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapter.web.mapper.ConsultarEstadosFichaPerfilRepresentanteRequestMapper;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapter.web.mapper.EstadoFichaPerfilResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,9 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +38,6 @@ public class ConsultarEstadosFichaPerfilRepresentanteController {
     private final ConsultarEstadosFichaPerfilRepresentanteInteractor consultarEstadosFichaPerfilRepresentanteInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.estados-ficha-representante:/{fichaPerfilId}/estados-ficha/representante}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW)
     @Operation(
             summary = FichasApiMessages.EstadoFichaPerfil.CONSULTAR_REPRESENTANTE_SUMMARY,
             description = FichasApiMessages.EstadoFichaPerfil.CONSULTAR_REPRESENTANTE_DESCRIPTION,
@@ -63,9 +58,9 @@ public class ConsultarEstadosFichaPerfilRepresentanteController {
     })
     public ResponseEntity<List<EstadoFichaPerfilResponseDTO>> consultarEstados(
             @PathVariable UUID fichaPerfilId,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var representanteComite = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var representanteComite = identidad.id();
 
         var estados = consultarEstadosFichaPerfilRepresentanteInteractor.ejecutar(
                 ConsultarEstadosFichaPerfilRepresentanteRequestMapper.toQuery(fichaPerfilId, representanteComite));

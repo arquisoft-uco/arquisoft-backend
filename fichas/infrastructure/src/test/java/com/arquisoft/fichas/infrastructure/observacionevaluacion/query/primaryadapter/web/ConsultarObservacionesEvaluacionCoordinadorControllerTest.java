@@ -3,7 +3,6 @@ package com.arquisoft.fichas.infrastructure.observacionevaluacion.query.primarya
 import com.arquisoft.fichas.application.observacionevaluacion.query.primaryport.interactor.ConsultarObservacionesEvaluacionCoordinadorInteractor;
 import com.arquisoft.fichas.application.observacionevaluacion.query.primaryport.model.ConsultarObservacionesEvaluacionCoordinadorQuery;
 import com.arquisoft.fichas.application.observacionevaluacion.query.readmodel.ObservacionEvaluacionReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
@@ -15,10 +14,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -46,7 +43,6 @@ class ConsultarObservacionesEvaluacionCoordinadorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -66,9 +62,8 @@ class ConsultarObservacionesEvaluacionCoordinadorControllerTest {
     @MockitoBean
     private ConsultarObservacionesEvaluacionCoordinadorInteractor consultarObservacionesEvaluacionCoordinadorInteractor;
 
-    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol(String authority) {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(authority));
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol() {
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -83,7 +78,7 @@ class ConsultarObservacionesEvaluacionCoordinadorControllerTest {
 
         // Act
         mockMvc.perform(get(RUTA, FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.OBSERVACION_EVALUACION_COORDINADOR_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(observacionId.toString()))
@@ -105,7 +100,7 @@ class ConsultarObservacionesEvaluacionCoordinadorControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA, FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.OBSERVACION_EVALUACION_COORDINADOR_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
@@ -114,7 +109,7 @@ class ConsultarObservacionesEvaluacionCoordinadorControllerTest {
     void debeResponder400_cuandoFichaNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(get(RUTA, "no-es-uuid")
-                        .with(jwtConRol(FichasAuthorities.OBSERVACION_EVALUACION_COORDINADOR_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(consultarObservacionesEvaluacionCoordinadorInteractor);
@@ -125,16 +120,6 @@ class ConsultarObservacionesEvaluacionCoordinadorControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA, FICHA_ID))
                 .andExpect(status().isUnauthorized());
-
-        verifyNoInteractions(consultarObservacionesEvaluacionCoordinadorInteractor);
-    }
-
-    @Test
-    void debeResponder403_cuandoTieneSoloElRolDelAsesor() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA, FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.OBSERVACION_EVALUACION_ASESOR_VIEW)))
-                .andExpect(status().isForbidden());
 
         verifyNoInteractions(consultarObservacionesEvaluacionCoordinadorInteractor);
     }

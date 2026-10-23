@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.observacionitemjurado.query.primar
 import com.arquisoft.evaluaciones.application.observacionitemjurado.query.primaryport.model.ConsultarObservacionesItemJuradoQuery;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.query.readmodel.ObservacionItemJuradoReadModel;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionCuantitativaJuradoNoEncontradaException;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.query.FiltroOperador;
@@ -21,10 +20,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -55,7 +52,6 @@ class ConsultarObservacionesItemJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -82,8 +78,7 @@ class ConsultarObservacionesItemJuradoControllerTest {
     private GestorTraza gestorTraza;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermisoView() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(EvaluacionesAuthorities.OBSERVACION_ITEM_JURADO_JURADO_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -165,16 +160,6 @@ class ConsultarObservacionesItemJuradoControllerTest {
         // Act & Assert
         mockMvc.perform(post(RUTA))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeRetornar403_cuandoNoTieneElClientRoleExclusivo() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        EvaluacionesAuthorities.OBSERVACION_ITEM_JURADO_CREATE))))
-                .andExpect(status().isForbidden());
     }
 
     @Test
