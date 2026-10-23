@@ -19,7 +19,6 @@ public record KeycloakFuenteMapeoRolesProperties(
         @DefaultValue("2s") Duration connectTimeout,
         @DefaultValue("3s") Duration readTimeout) {
 
-    // Los consume ValidadorConfiguracionSeguridad en @PostConstruct, antes del catalogo de mensajes: textos literales.
     private static final String FALTA_PROPIEDAD = "falta security.authorization.role-expansion.keycloak.%s";
     private static final String FALTA_CLIENT_UUID =
             "falta security.authorization.role-expansion.keycloak.client-uuid (KEYCLOAK_CLIENT_UUID)";

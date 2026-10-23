@@ -19,6 +19,7 @@ import java.time.Duration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.client.ExpectedCount.once;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
@@ -69,6 +70,7 @@ class KeycloakFuenteMapeoRolesOutputAdapterTest {
     private void esperarComposites(String rol, String json) {
         server.expect(once(), requestTo(URL_COMPOSITES.formatted(rol)))
                 .andExpect(method(HttpMethod.GET))
+                .andExpect(header("Authorization", "Bearer tok-servicio"))
                 .andRespond(withSuccess(json, MediaType.APPLICATION_JSON));
     }
 
@@ -171,15 +173,18 @@ class KeycloakFuenteMapeoRolesOutputAdapterTest {
     @Test
     void debeNoRegistrarElSecreto() throws IOException {
         // Arrange
-        server.expect(once(), requestTo(URL_TOKEN)).andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+        server.expect(once(), requestTo(URL_TOKEN)).andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+                .body("{\"error\":\"invalid_client\",\"client_secret\":\"" + SECRETO + "\"}"));
         var captor = ArgumentCaptor.forClass(Object.class);
 
         // Act
         var resultado = adaptador.obtener();
 
         // Assert
-        verify(logger).error(any(ClaveMensaje.class), any(Throwable.class), captor.capture(), captor.capture());
+        verify(logger).error(any(ClaveMensaje.class), captor.capture(), captor.capture());
+        verify(logger, never()).error(any(ClaveMensaje.class), any(Throwable.class), any(), any());
         assertThat(captor.getAllValues()).noneMatch(valor -> String.valueOf(valor).contains(SECRETO));
         assertThat(resultado.toString()).doesNotContain(SECRETO);
+        assertThat(resultado).isEqualTo(new ObtencionMapeoRoles.NoDisponible("401"));
     }
 }

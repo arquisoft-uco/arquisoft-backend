@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.mapeoroles.command.primaryadapter.scheduler;
 
 import com.arquisoft.seguridad.application.mapeoroles.command.primaryport.interactor.ActualizarMapeoRolesInteractor;
+import com.arquisoft.seguridad.infrastructure.autorizacion.exception.ProveedorAutorizacionNoDisponibleException;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import com.arquisoft.shared.logger.AppLogger;
@@ -27,6 +28,8 @@ public class ActualizarMapeoRolesScheduler {
                 if (usaTablaDeEquivalencias()) {
                     actualizarMapeoRolesInteractor.ejecutar();
                 }
+            } catch (ProveedorAutorizacionNoDisponibleException e) {
+                return;
             } catch (RuntimeException e) {
                 logger.error(MapeoRolesKey.LOG_REFRESCO_INESPERADO, e, e.getMessage());
             }

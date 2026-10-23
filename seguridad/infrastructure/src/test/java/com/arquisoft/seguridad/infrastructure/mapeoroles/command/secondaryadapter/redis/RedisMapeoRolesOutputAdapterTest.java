@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.QueryTimeoutException;
@@ -35,6 +34,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -108,7 +109,7 @@ class RedisMapeoRolesOutputAdapterTest {
                 .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
         assertThatThrownBy(() -> adaptador.rolClienteOtorgadoPor("fichas:ver", roles))
                 .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
-        verify(logger, org.mockito.Mockito.times(2)).error(MapeoRolesKey.LOG_SIN_MAPEO);
+        verify(logger, times(2)).error(MapeoRolesKey.LOG_SIN_MAPEO);
     }
 
     @Test
@@ -159,7 +160,7 @@ class RedisMapeoRolesOutputAdapterTest {
 
         // Assert
         var captorGeneracion = ArgumentCaptor.forClass(String.class);
-        InOrder orden = inOrder(setCommands, keyCommands, valueOperations);
+        var orden = inOrder(setCommands, keyCommands, valueOperations);
         orden.verify(setCommands).sAdd(any(byte[].class), any(byte[][].class));
         orden.verify(keyCommands).expire(any(byte[].class), eq(Duration.ofMinutes(16).toSeconds()));
         orden.verify(valueOperations).set(eq(PUNTERO), captorGeneracion.capture(), eq(Duration.ofMinutes(15)));
@@ -217,6 +218,7 @@ class RedisMapeoRolesOutputAdapterTest {
         assertThatThrownBy(adaptador::estaVigente).isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
         assertThatThrownBy(adaptador::reservarActualizacion).isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
         assertThatThrownBy(() -> adaptador.guardar(mapeo)).isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
-        verify(logger, org.mockito.Mockito.times(4)).error(MapeoRolesKey.LOG_ALMACEN_NO_DISPONIBLE, "redis caido");
+        verify(logger, times(4)).error(MapeoRolesKey.LOG_ALMACEN_NO_DISPONIBLE, "redis caido");
+        verify(valueOperations, never()).set(anyString(), anyString(), any(Duration.class));
     }
 }

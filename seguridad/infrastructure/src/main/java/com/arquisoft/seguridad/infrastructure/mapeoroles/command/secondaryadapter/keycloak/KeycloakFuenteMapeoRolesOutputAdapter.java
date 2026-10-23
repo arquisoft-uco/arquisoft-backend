@@ -122,7 +122,7 @@ public class KeycloakFuenteMapeoRolesOutputAdapter implements FuenteMapeoRolesOu
                 ? String.valueOf(http.getStatusCode().value())
                 : causa.getClass().getSimpleName();
         var detalle = causa instanceof HttpStatusCodeException http ? http.getStatusText() : causa.getMessage();
-        logger.error(MapeoRolesKey.LOG_FUENTE_NO_DISPONIBLE, causa, motivo, detalle);
+        logger.error(MapeoRolesKey.LOG_FUENTE_NO_DISPONIBLE, motivo, detalle);
         return new ObtencionMapeoRoles.NoDisponible(motivo);
     }
 }

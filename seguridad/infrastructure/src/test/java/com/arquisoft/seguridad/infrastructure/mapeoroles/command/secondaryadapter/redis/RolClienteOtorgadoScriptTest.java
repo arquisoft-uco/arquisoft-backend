@@ -2,7 +2,6 @@ package com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapt
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
@@ -35,7 +34,7 @@ class RolClienteOtorgadoScriptTest {
     }
 
     private int ejecutar(String rolCliente, String... rolesRealm) {
-        Globals globals = JsePlatform.standardGlobals();
+        var globals = JsePlatform.standardGlobals();
         globals.set("unpack", globals.get("table").get("unpack"));
         globals.set("redis", redisSimulado());
 

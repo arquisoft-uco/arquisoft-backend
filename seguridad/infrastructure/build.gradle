@@ -39,7 +39,6 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation testFixtures(project(':shared:web'))
-    // LuaJ: RolClienteOtorgadoScriptTest ejecuta el script Lua real de la decision de acceso
     testImplementation "org.luaj:luaj-jse:3.0.1"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

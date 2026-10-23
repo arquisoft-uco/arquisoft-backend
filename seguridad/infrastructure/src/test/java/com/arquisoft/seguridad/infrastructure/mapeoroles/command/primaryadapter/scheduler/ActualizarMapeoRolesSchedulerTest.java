@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.mapeoroles.command.primaryadapter.scheduler;
 
 import com.arquisoft.seguridad.application.mapeoroles.command.primaryport.interactor.ActualizarMapeoRolesInteractor;
+import com.arquisoft.seguridad.infrastructure.autorizacion.exception.ProveedorAutorizacionNoDisponibleException;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
@@ -44,7 +45,11 @@ class ActualizarMapeoRolesSchedulerTest {
     }
 
     private ActualizarMapeoRolesScheduler scheduler(ModoAutorizacion modo) {
-        var emisor = new AutenticacionProperties.Emisor("legado", true, "https://legado", "", List.of(), modo, true,
+        return scheduler(modo, true);
+    }
+
+    private ActualizarMapeoRolesScheduler scheduler(ModoAutorizacion modo, boolean habilitado) {
+        var emisor = new AutenticacionProperties.Emisor("legado", habilitado, "https://legado", "", List.of(), modo, true,
                 new ClaimsIdentidad("sub", "email", "u", "n", "realm_access.roles"));
         return new ActualizarMapeoRolesScheduler(actualizarMapeoRolesInteractor,
                 new AutenticacionProperties(List.of(emisor)), gestorTraza, logger);
@@ -69,6 +74,15 @@ class ActualizarMapeoRolesSchedulerTest {
     }
 
     @Test
+    void debeNoHacerNada_cuandoElEmisorRoleTableEstaDeshabilitado() {
+        // Act
+        scheduler(ModoAutorizacion.ROLE_TABLE, false).actualizar();
+
+        // Assert
+        verifyNoInteractions(actualizarMapeoRolesInteractor);
+    }
+
+    @Test
     void debeCapturarYLoguear_cuandoElInteractorLanza() {
         // Arrange
         var fallo = new IllegalStateException("boom");
@@ -79,6 +93,19 @@ class ActualizarMapeoRolesSchedulerTest {
 
         // Assert
         verify(logger).error(MapeoRolesKey.LOG_REFRESCO_INESPERADO, fallo, "boom");
+    }
+
+    @Test
+    void debeNoVolverALoguear_cuandoElAlmacenNoEstaDisponible() {
+        // Arrange
+        when(actualizarMapeoRolesInteractor.ejecutar())
+                .thenThrow(new ProveedorAutorizacionNoDisponibleException("no disponible"));
+
+        // Act
+        scheduler(ModoAutorizacion.ROLE_TABLE).actualizar();
+
+        // Assert
+        verifyNoInteractions(logger);
     }
 
     @Test

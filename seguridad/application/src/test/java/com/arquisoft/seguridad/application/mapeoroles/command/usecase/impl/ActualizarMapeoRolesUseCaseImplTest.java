@@ -78,6 +78,7 @@ class ActualizarMapeoRolesUseCaseImplTest {
         assertThat(resultado).isInstanceOf(ActualizacionMapeoRolesResult.Vigente.class);
         verifyNoInteractions(fuenteMapeoRolesOutputPort);
         verify(mapeoRolesOutputPort, never()).reservarActualizacion();
+        verify(mapeoRolesOutputPort, never()).guardar(any());
     }
 
     @Test
@@ -92,6 +93,7 @@ class ActualizarMapeoRolesUseCaseImplTest {
         // Assert
         assertThat(resultado).isInstanceOf(ActualizacionMapeoRolesResult.Omitida.class);
         verifyNoInteractions(fuenteMapeoRolesOutputPort);
+        verify(mapeoRolesOutputPort, never()).guardar(any());
         verify(logger).debug(MapeoRolesKey.LOG_ACTUALIZACION_OMITIDA);
     }
 

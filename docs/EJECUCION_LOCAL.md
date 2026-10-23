@@ -52,6 +52,8 @@ Copia `.env.example` a `.env`. Las variables clave son:
 | `DB_SEGURIDAD_URL` | JDBC URL de la BD del contexto seguridad |
 | `RABBITMQ_HOST` / `RABBITMQ_PORT` | Conexión al broker |
 | `KEYCLOAK_URL` / `KEYCLOAK_REALM` | Solo el emisor legado, el login directo y el aprovisionamiento de `usuarios` |
+| `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`, `KEYCLOAK_CLIENT_UUID` | Cuenta de servicio con la que el emisor `role-table` lee de la Admin API qué realm roles otorgan cada client role. Sin `KEYCLOAK_CLIENT_UUID` el arranque aborta si el emisor legado está habilitado en `role-table` (también debe ir en el `ENV_FILE` del CD) |
+| `ROLE_EXPANSION_*` | Opcionales: `REFRESH_INTERVAL` (PT5M), `TTL` (PT15M), `CHECK_INTERVAL` (PT30S), `LOCK_LEASE` (PT60S), `CONNECT_TIMEOUT` (2s), `READ_TIMEOUT` (3s) del índice en Redis |
 | `AUTH_ISSUER_URI`, `AUTH_AUDIENCES` | Emisor principal (Security Baseline). En dev: `http://keycloak.localhost:19090/realms/security-baseline` |
 | `PEP_URL`, `PEP_APPLICATION_NAME`, `PEP_ENVIRONMENT`, `PEP_REGISTRATION_TOKEN` | PEP de Security Baseline (laboratorio: PEP `http://localhost:18081`, PDP `18080`, Keycloak `19090`). `PEP_ALLOW_INSECURE_HTTP=true` por defecto en dev |
 | `AUTH_LEGACY_ENABLED` | `true` por defecto en dev; `false` apaga el emisor Keycloak del realm `arquisoft` |

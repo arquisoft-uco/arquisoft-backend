@@ -8,6 +8,7 @@ import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapte
 import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapter.redis.MapeoRolesProperties;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.message.key.seguridad.AutorizacionKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
@@ -89,7 +90,9 @@ class ValidadorConfiguracionSeguridadTest {
                 pep("cred", false, "https://pep.test"), null, true, "template");
 
         // Act / Assert
-        assertThatThrownBy(validador::validar).isInstanceOf(InfrastructureException.class);
+        assertThatThrownBy(validador::validar).isInstanceOf(InfrastructureException.class)
+                .extracting(fallo -> ((InfrastructureException) fallo).getCodigoError())
+                .isEqualTo(SeguridadCodes.Autorizacion.CONFIGURACION_INSEGURA);
     }
 
     @Test
@@ -141,7 +144,9 @@ class ValidadorConfiguracionSeguridadTest {
 
         // Act / Assert
         assertThat(validador.problemas()).hasSize(1).first().asString().contains("claims.roles");
-        assertThatThrownBy(validador::validar).isInstanceOf(InfrastructureException.class);
+        assertThatThrownBy(validador::validar).isInstanceOf(InfrastructureException.class)
+                .extracting(fallo -> ((InfrastructureException) fallo).getCodigoError())
+                .isEqualTo(SeguridadCodes.Autorizacion.CONFIGURACION_INSEGURA);
     }
 
     @Test
@@ -178,6 +183,18 @@ class ValidadorConfiguracionSeguridadTest {
 
         // Act / Assert
         assertThat(validador.problemas()).hasSize(1).first().asString().contains("ttl");
+    }
+
+    @Test
+    void debeFallar_cuandoRoleTableTieneCheckIntervalMayorQueElIntervalo() {
+        // Arrange
+        var sondeoExcesivo = new MapeoRolesProperties(Duration.ofMinutes(5), Duration.ofMinutes(15),
+                Duration.ofMinutes(6), Duration.ofSeconds(60));
+        var validador = validador(List.of(emisorTabla("realm_access.roles")), pep("", false, ""), sondeoExcesivo,
+                keycloakValido(), null, true, "template");
+
+        // Act / Assert
+        assertThat(validador.problemas()).hasSize(1).first().asString().contains("check-interval");
     }
 
     @Test

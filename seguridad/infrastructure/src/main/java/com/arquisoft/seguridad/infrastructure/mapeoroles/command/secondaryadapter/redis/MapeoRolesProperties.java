@@ -16,7 +16,6 @@ public record MapeoRolesProperties(
 
     private static final int FACTOR_MINIMO_TTL = 2;
 
-    // Los consume ValidadorConfiguracionSeguridad en @PostConstruct, antes del catalogo de mensajes: textos literales.
     private static final String DURACION_NO_POSITIVA = "security.authorization.role-expansion.%s debe ser positiva";
     private static final String TTL_INSUFICIENTE =
             "security.authorization.role-expansion.ttl debe ser al menos %d veces refresh-interval";

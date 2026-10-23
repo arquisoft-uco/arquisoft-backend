@@ -31,7 +31,6 @@ public class ValidadorConfiguracionSeguridad {
     private static final String PERFIL_PRODUCCION = "prod";
     private static final String MODO_TEMPLATE = "template";
 
-    // Corre en @PostConstruct, posiblemente antes de que se instale el catalogo de mensajes: sus textos son literales.
     private static final String ERROR_CONFIGURACION_INSEGURA = "Configuración de seguridad inválida: %s";
     private static final String SEPARADOR_PROBLEMAS = "; ";
     private static final String SIN_EMISORES = "ningun emisor habilitado en security.authentication.issuers";
