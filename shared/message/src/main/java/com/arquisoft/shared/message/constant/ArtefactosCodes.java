@@ -45,6 +45,7 @@ public final class ArtefactosCodes {
         private RevisionAsesor() {}
 
         public static final String ESTUDIANTE_REQUERIDO = "REVISION_ASESOR_ESTUDIANTE_REQUERIDO";
+        public static final String ASESOR_REQUERIDO = "REVISION_ASESOR_ASESOR_REQUERIDO";
     }
 
     public static final class EstudianteArtefacto {

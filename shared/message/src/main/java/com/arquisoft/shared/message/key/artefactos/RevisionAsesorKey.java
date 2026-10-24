@@ -6,7 +6,9 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum RevisionAsesorKey implements ClaveMensaje {
 
     LOG_CONSULTANDO_ESTUDIANTE("artefactos.aplicacion.revisionasesor.log.consultando-estudiante", 2),
-    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("artefactos.aplicacion.revisionasesor.log.consulta-estudiante-completada", 1);
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("artefactos.aplicacion.revisionasesor.log.consulta-estudiante-completada", 1),
+    LOG_CONSULTANDO_ASESOR("artefactos.aplicacion.revisionasesor.log.consultando-asesor", 4),
+    LOG_CONSULTA_ASESOR_COMPLETADA("artefactos.aplicacion.revisionasesor.log.consulta-asesor-completada", 1);
 
     private final String clave;
     private final int parametros;

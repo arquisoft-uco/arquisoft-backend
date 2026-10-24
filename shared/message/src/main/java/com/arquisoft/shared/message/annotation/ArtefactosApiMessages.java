@@ -30,6 +30,18 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de estudiante inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permiso para consultar las revisiones del asesor";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Filtrar las revisiones realizadas por el asesor";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Devuelve, de forma paginada, las revisiones registradas sobre las versiones de los artefactos "
+                        + "a cargo del asesor autenticado. Se puede filtrar por la versión del artefacto "
+                        + "(versionArtefacto) y por el estado de la revisión (estadoRevisionAsesor), y ordenar por "
+                        + "estadoRevisionAsesor. El asesor se toma del token, nunca del cuerpo.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de revisiones realizadas por el asesor";
+        public static final String CONSULTAR_ASESOR_RESP_400 =
+                "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar las revisiones realizadas";
     }
 
     public static final class EstudianteArtefacto {
