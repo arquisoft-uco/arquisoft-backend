@@ -48,6 +48,22 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_RESP_403 = "Sin permisos para consultar los estudiantes del artefacto";
     }
 
+    public static final class Observacion {
+
+        private Observacion() {}
+
+        public static final String TAG_NAME = "Observaciones de revisiones";
+        public static final String TAG_DESCRIPTION = "Consulta de las observaciones realizadas en una revisión del asesor";
+        public static final String CONSULTAR_SUMMARY = "Consultar las observaciones realizadas a una revisión";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve, sin paginar y ordenadas por descripción, las observaciones de la revisión con su "
+                        + "descripción y su estado. Una revisión sin observaciones o inexistente devuelve "
+                        + "una lista vacía.";
+        public static final String CONSULTAR_RESP_200 = "Listado de observaciones de la revisión";
+        public static final String CONSULTAR_RESP_400 = "Identificador de revisión inválido";
+        public static final String CONSULTAR_RESP_403 = "Sin permisos para consultar las observaciones de la revisión";
+    }
+
     public static final class EstadoRevisionAsesor {
 
         private EstadoRevisionAsesor() {}

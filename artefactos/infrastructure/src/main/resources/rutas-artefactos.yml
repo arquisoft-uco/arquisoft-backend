@@ -6,6 +6,9 @@ rutas:
     revisiones-asesor:
       base: /artefactos/revisiones-asesor
       estudiante: /estudiante
+    observaciones:
+      base: /revisiones-asesor
+      listar: /{revisionAsesorId}/observaciones
     artefactos:
       base: /artefactos
       estudiantes: /{artefactoId}/estudiantes
