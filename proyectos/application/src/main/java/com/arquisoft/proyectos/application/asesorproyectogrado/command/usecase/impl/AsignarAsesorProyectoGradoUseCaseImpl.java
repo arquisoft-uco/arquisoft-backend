@@ -54,7 +54,7 @@ public class AsignarAsesorProyectoGradoUseCaseImpl implements AsignarAsesorProye
         asesorProyectoGradoOutputPort.registrar(AsesorProyectoGradoMapper.toEntity(vinculo));
 
         eventPublisher.publish(new AsesorProyectoGradoAsignadoEvent(
-                proyecto.getId(), proyecto.getTituloProyecto(),
+                proyecto.getId(), proyecto.getTituloProyecto(), asesor.getId(),
                 new ContactoAsesor(asesor.getNombre(), asesor.getEmail())));
 
         logger.info(AsesorProyectoGradoKey.LOG_ASIGNADO, entrada.getProyectoGrado(), entrada.getAsesor());

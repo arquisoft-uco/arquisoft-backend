@@ -51,7 +51,7 @@ public class CambiarEstadoAsesorProyectoGradoUseCaseImpl implements CambiarEstad
         asesorProyectoGradoOutputPort.registrar(AsesorProyectoGradoMapper.toEntity(nuevoEstado));
 
         eventPublisher.publish(new AsesorProyectoGradoFinalizadoEvent(
-                proyecto.getId(), proyecto.getTituloProyecto(),
+                proyecto.getId(), proyecto.getTituloProyecto(), asesor.getId(),
                 new ContactoAsesor(asesor.getNombre(), asesor.getEmail())));
 
         logger.info(AsesorProyectoGradoKey.LOG_ESTADO_CAMBIADO,

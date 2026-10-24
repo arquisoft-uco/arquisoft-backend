@@ -46,6 +46,21 @@ public final class VersionRepositorioArtefactoDomain {
         return version;
     }
 
+    public static VersionRepositorioArtefactoDomain reconstruir(
+            UUID id, String nombreDocumento, int versionDocumento, UUID repositorioArtefacto,
+            String nombreRepositorio, DatosArchivo archivo) {
+        var version = new VersionRepositorioArtefactoDomain();
+        version.id = id;
+        version.nombreDocumento = nombreDocumento;
+        version.versionDocumento = versionDocumento;
+        version.repositorioArtefacto = repositorioArtefacto;
+        version.nombreRepositorio = nombreRepositorio;
+        version.nombreArchivo = archivo.nombreArchivo();
+        version.tipoContenido = archivo.tipoContenido();
+        version.tamanoBytes = archivo.tamanoBytes();
+        return version;
+    }
+
     private void setId(UUID id, ValidationResult result) {
         if (!ValidatorObjeto.noNulo(id,
                 ArtefactosFields.VersionRepositorioArtefacto.ID,
