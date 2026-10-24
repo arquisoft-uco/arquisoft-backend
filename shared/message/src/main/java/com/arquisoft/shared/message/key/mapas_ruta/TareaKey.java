@@ -6,6 +6,11 @@ public enum TareaKey implements ClaveMensaje {
 
     ERROR_DUPLICADA("mapas_ruta.dominio.tarea.error.duplicada", 2),
     ERROR_ESTADO_ITEM_NO_ENCONTRADO("mapas_ruta.dominio.tarea.error.estado-item-no-encontrado", 1),
+    ERROR_NO_ENCONTRADA("mapas_ruta.dominio.tarea.error.no-encontrada", 1),
+    ERROR_TRANSICION_ESTADO_ITEM_NO_PERMITIDA("mapas_ruta.dominio.tarea.error.transicion-estado-item-no-permitida", 3),
+    LOG_CAMBIANDO_ESTADO_ITEM("mapas_ruta.aplicacion.tarea.log.cambiando-estado-item", 2),
+    LOG_VERIFICACION_CAMBIAR_ESTADO_ITEM("mapas_ruta.aplicacion.tarea.log.verificacion-cambiar-estado-item", 1),
+    LOG_ESTADO_ITEM_CAMBIADO("mapas_ruta.aplicacion.tarea.log.estado-item-cambiado", 3),
     LOG_ASIGNANDO("mapas_ruta.aplicacion.tarea.log.asignando", 2),
     LOG_VERIFICACION_ASIGNAR("mapas_ruta.aplicacion.tarea.log.verificacion-asignar", 4),
     LOG_ASIGNADA("mapas_ruta.aplicacion.tarea.log.asignada", 2),

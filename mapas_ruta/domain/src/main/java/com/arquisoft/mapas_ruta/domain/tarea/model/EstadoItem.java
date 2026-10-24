@@ -29,6 +29,14 @@ public enum EstadoItem {
         return nombre;
     }
 
+    public boolean puedePasarA(EstadoItem destino) {
+        return switch (this) {
+            case NUEVA -> destino == EN_PROGRESO || destino == FINALIZADA;
+            case EN_PROGRESO -> destino == FINALIZADA;
+            case FINALIZADA, VACIO -> false;
+        };
+    }
+
     public static EstadoItem desde(String id) {
         return delCatalogo(id).orElseThrow(() -> new EstadoItemNoEncontradoException(id));
     }

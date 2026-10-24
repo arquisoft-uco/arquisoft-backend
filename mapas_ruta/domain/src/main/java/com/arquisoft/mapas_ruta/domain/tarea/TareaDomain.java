@@ -15,6 +15,13 @@ import java.util.UUID;
 
 public final class TareaDomain {
 
+    public static final TareaDomain VACIO = new TareaDomain(
+            UtilUUID.obtenerUUIDPorDefecto(),
+            UtilUUID.obtenerUUIDPorDefecto(),
+            UtilTexto.VACIO,
+            UtilUUID.obtenerUUIDPorDefecto(),
+            EstadoItem.VACIO);
+
     private UUID id;
     private UUID mapaRuta;
     private String descripcion;
@@ -22,6 +29,14 @@ public final class TareaDomain {
     private EstadoItem estadoItem;
 
     private TareaDomain() {}
+
+    private TareaDomain(UUID id, UUID mapaRuta, String descripcion, UUID asesor, EstadoItem estadoItem) {
+        this.id = id;
+        this.mapaRuta = mapaRuta;
+        this.descripcion = descripcion;
+        this.asesor = asesor;
+        this.estadoItem = estadoItem;
+    }
 
     public static TareaDomain crear(UUID mapaRuta, String descripcion, UUID asesor) {
         var tarea = new TareaDomain();
@@ -35,6 +50,11 @@ public final class TareaDomain {
 
         result.lanzarSiTieneErrores();
         return tarea;
+    }
+
+    public static TareaDomain reconstruir(UUID id, UUID mapaRuta, String descripcion, UUID asesor,
+                                          EstadoItem estadoItem) {
+        return new TareaDomain(id, mapaRuta, descripcion, asesor, estadoItem);
     }
 
     private void setId() {
@@ -96,5 +116,9 @@ public final class TareaDomain {
 
     public EstadoItem getEstadoItem() {
         return estadoItem;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

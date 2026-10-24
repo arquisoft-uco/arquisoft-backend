@@ -63,6 +63,55 @@ class TareaCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var mapaRuta = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        entityManager.persistAndFlush(TareaJpaEntity.builder().id(id).mapaRutaId(mapaRuta)
+                .descripcion("Redactar capitulo").asesorId(asesor).estadoItemId("EN_PROGRESO").build());
+
+        // Act
+        var tarea = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(tarea).hasValue(new TareaEntity(id, mapaRuta, "Redactar capitulo", asesor, "EN_PROGRESO"));
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeActualizarSoloElEstado_cuandoSeCambia() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var otra = UtilUUID.generarNuevoUUID();
+        var mapaRuta = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        entityManager.persist(TareaJpaEntity.builder().id(id).mapaRutaId(mapaRuta)
+                .descripcion("Redactar capitulo").asesorId(asesor).estadoItemId("NUEVA").build());
+        entityManager.persist(TareaJpaEntity.builder().id(otra).mapaRutaId(mapaRuta)
+                .descripcion("Otra tarea").asesorId(asesor).estadoItemId("NUEVA").build());
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstadoItem(id, "FINALIZADA");
+        entityManager.clear();
+
+        // Assert
+        var actualizada = entityManager.find(TareaJpaEntity.class, id);
+        assertThat(actualizada.getEstadoItemId()).isEqualTo("FINALIZADA");
+        assertThat(actualizada.getDescripcion()).isEqualTo("Redactar capitulo");
+        assertThat(actualizada.getMapaRutaId()).isEqualTo(mapaRuta);
+        assertThat(actualizada.getAsesorId()).isEqualTo(asesor);
+        assertThat(entityManager.find(TareaJpaEntity.class, otra).getEstadoItemId()).isEqualTo("NUEVA");
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
     void debeIndicarExistencia_soloParaLaMismaDescripcionEnElMismoMapa() {
         // Arrange
         var mapaRuta = UtilUUID.generarNuevoUUID();

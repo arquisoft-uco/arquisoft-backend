@@ -87,5 +87,13 @@ public final class MapasRutaApiMessages {
         public static final String CONSULTAR_POR_MAPA_RUTA_RESP_200 = "Página de tareas del mapa de ruta";
         public static final String CONSULTAR_POR_MAPA_RUTA_RESP_400 =
                 "Identificador de mapa de ruta inválido, o filtro u ordenamiento no permitido";
+        public static final String CAMBIAR_ESTADO_ITEM_SUMMARY = "Cambiar el estado de una tarea";
+        public static final String CAMBIAR_ESTADO_ITEM_DESCRIPTION =
+                "Cambia el estado de una tarea de Nueva a En progreso o Finalizada, o de En progreso a Finalizada. "
+                        + "No se vuelve a Nueva, Finalizada es definitiva y repetir el estado actual se rechaza";
+        public static final String CAMBIAR_ESTADO_ITEM_RESP_204 = "Estado de la tarea cambiado";
+        public static final String CAMBIAR_ESTADO_ITEM_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_ESTADO_ITEM_RESP_422 =
+                "Tarea inexistente, estado fuera del catálogo o transición de estado no permitida";
     }
 }
