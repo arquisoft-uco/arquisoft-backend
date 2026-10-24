@@ -48,6 +48,7 @@ import com.arquisoft.shared.message.key.fichas.EstadoRevisionKey;
 import com.arquisoft.shared.message.key.mapas_ruta.AsignacionAsesorKey;
 import com.arquisoft.shared.message.key.mapas_ruta.AsignacionProyectoKey;
 import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
+import com.arquisoft.shared.message.key.mapas_ruta.EstadoItemKey;
 import com.arquisoft.shared.message.key.mapas_ruta.TareaKey;
 import com.arquisoft.shared.message.key.mapas_ruta.ProyectoGradoMapasRutaKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
@@ -224,6 +225,7 @@ public final class ClavesCatalogo {
             AsignacionProyectoKey.class,
             MapaRutaKey.class,
             TareaKey.class,
+            EstadoItemKey.class,
             AsignacionAsesorKey.class,
             ProyectoGradoMapasRutaKey.class
     );
