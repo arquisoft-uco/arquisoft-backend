@@ -100,4 +100,52 @@ class RepositorioArtefactoCommandOutputAdapterTest {
         // Act & Assert
         assertThat(adapter.obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
     }
+
+    @Test
+    void debeActualizarNombreYDescripcion_sinTocarAdministrador() {
+        // Arrange
+        var adapter = new RepositorioArtefactoCommandOutputAdapter(repositorioArtefactoCommandRepository, logger);
+        var administrador = sembrarAdministrador();
+        var id = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new RepositorioArtefactoEntity(id, "Repo", "Descripcion", administrador));
+        adapter.registrar(new RepositorioArtefactoEntity(otro, "Otro", "Descripcion otro", administrador));
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarDatos(id, "Repo Nuevo", "Descripcion nueva");
+        entityManager.clear();
+
+        // Assert
+        var actualizado = repositorioArtefactoCommandRepository.findById(id).orElseThrow();
+        assertThat(actualizado.getNombreRepositorio()).isEqualTo("Repo Nuevo");
+        assertThat(actualizado.getDescripcion()).isEqualTo("Descripcion nueva");
+        assertThat(actualizado.getAdministrador()).isEqualTo(administrador);
+        var intacto = repositorioArtefactoCommandRepository.findById(otro).orElseThrow();
+        assertThat(intacto.getNombreRepositorio()).isEqualTo("Otro");
+        assertThat(intacto.getDescripcion()).isEqualTo("Descripcion otro");
+        verify(logger).debug(RepositorioArtefactoKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debeDistinguirNombreDeOtro_cuandoElNombreEsPropioAjenoOLibre() {
+        // Arrange
+        var adapter = new RepositorioArtefactoCommandOutputAdapter(repositorioArtefactoCommandRepository, logger);
+        var administrador = sembrarAdministrador();
+        var propio = UtilUUID.generarNuevoUUID();
+        var ajeno = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new RepositorioArtefactoEntity(propio, "Repo Propio", "Descripcion", administrador));
+        adapter.registrar(new RepositorioArtefactoEntity(ajeno, "Repo Ajeno", "Descripcion", administrador));
+        entityManager.flush();
+
+        // Act
+        var nombrePropio = adapter.existeOtroConNombreRepositorio("Repo Propio", propio);
+        var nombreAjeno = adapter.existeOtroConNombreRepositorio("Repo Ajeno", propio);
+        var nombreLibre = adapter.existeOtroConNombreRepositorio("Repo Libre", propio);
+
+        // Assert
+        assertThat(nombrePropio).isFalse();
+        assertThat(nombreAjeno).isTrue();
+        assertThat(nombreLibre).isFalse();
+    }
 }

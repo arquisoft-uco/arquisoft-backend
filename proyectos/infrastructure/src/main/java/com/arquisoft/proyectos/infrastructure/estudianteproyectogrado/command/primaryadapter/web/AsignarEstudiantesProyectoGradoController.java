@@ -3,11 +3,10 @@ package com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.command.p
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.primaryport.interactor.AsignarEstudiantesProyectoGradoInteractor;
 import com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.command.primaryadapter.web.dto.AsignarEstudiantesProyectoGradoRequestDTO;
 import com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.command.primaryadapter.web.mapper.AsignarEstudiantesProyectoGradoRequestMapper;
-import com.arquisoft.proyectos.infrastructure.security.ProyectosAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ProyectosApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,9 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,7 +32,6 @@ public class AsignarEstudiantesProyectoGradoController {
     private final AsignarEstudiantesProyectoGradoInteractor asignarEstudiantesProyectoGradoInteractor;
 
     @PostMapping("${rutas.proyectos.proyectos-grado.estudiantes:/{proyectoGradoId}/estudiantes}")
-    @PreAuthorize(ProyectosAuthorities.Expresiones.HAS_ESTUDIANTE_PROYECTO_GRADO_CREATE)
     @Operation(
             summary = ProyectosApiMessages.EstudianteProyectoGrado.ASIGNAR_SUMMARY,
             description = ProyectosApiMessages.EstudianteProyectoGrado.ASIGNAR_DESCRIPTION,
@@ -57,9 +52,9 @@ public class AsignarEstudiantesProyectoGradoController {
     public ResponseEntity<Void> asignarEstudiantes(
             @PathVariable UUID proyectoGradoId,
             @RequestBody AsignarEstudiantesProyectoGradoRequestDTO dto,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var coordinador = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var coordinador = identidad.id();
 
         asignarEstudiantesProyectoGradoInteractor.ejecutar(
                 AsignarEstudiantesProyectoGradoRequestMapper.toCommand(dto, proyectoGradoId, coordinador));

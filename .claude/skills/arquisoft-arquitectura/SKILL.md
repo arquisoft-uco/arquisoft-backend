@@ -16,14 +16,14 @@ contexto completo y el patrón a copiar—. Ábrelo con `Read` cuando necesites 
 
 | Contexto | Referencia de | Límite (no se copia) |
 |---|---|---|
-| `seguridad` | `command/result/` (+`mapper/`), excepciones por capa dentro del slice, controllers por acción, `RequestDTO` `record` + `RequestMapper`, `AppLogger` | Sin BD (Keycloak + Redis): no hay `JpaEntity`, Flyway ni `@Transactional`. Sus cuatro `*ResponseDTO` son clases Lombok, no `record` |
+| `seguridad` | `command/result/` (+`mapper/`), excepciones por capa dentro del slice, controllers por acción, `RequestDTO` `record` + `RequestMapper`, `AppLogger` | Sin BD (identidad externa + Redis): no hay `JpaEntity`, Flyway ni `@Transactional`. Referencia de autorización: `AutorizacionAccesoFilter` + `DecisionAccesoOutputPort` con un adaptador por emisor (`secondaryadapter/{pep,equivalencias,none}`) e `IdentidadActual`; `mapeoroles/` refresca en Redis el índice client role → realm roles que usa `equivalencias`. Sus cuatro `*ResponseDTO` son clases Lombok, no `record` |
 | `notificaciones` | `Consumer` AMQP; comando **sin `Validator`** (su única consulta es un corte de idempotencia con `Finder` + `if/return`, no una `Rule`) | — |
-| `usuarios` | Lado **dueño** de una réplica y adaptador hacia proveedor externo: `RegistrarUsuarioUseCaseImpl` persiste, da de alta en Keycloak (`secondaryadapter/keycloak/KeycloakProveedorIdentidadOutputAdapter`) y encadena `Agregar{Estudiante,Coordinador,Asesor,AsesorFicha}` desde el orquestador; cada uno publica su `*Agregado`. `RemoverEstudianteUseCaseImpl` es la baja lógica con `*Removido` | Sin lado `query/` |
-| `evaluaciones` | Molde de un **contexto que arranca** (`itemcualitativojurado`): `Controller` → `RequestMapper` → `Command.crear` → `Interactor` → `UseCase` → `Finder` → `Validator` → `Rule` → `OutputPort` (`Entity`) → `JpaMapper` → `CommandRepository`, migración timestamp y `EvaluacionesAuthorities`. También la **consulta con política de acceso**: `ConsultarEvaluacionesCualitativasJuradoUseCaseImpl` (`arquisoft-estandares` → *Validación en una consulta*) | Un solo consumidor (`jurado`, réplica de `usuarios.jurado.agregado`) y sin eventos propios; sus consultas no paginan ni filtran |
+| `usuarios` | Lado **dueño** de una réplica y adaptador hacia proveedor externo: `RegistrarUsuarioUseCaseImpl` persiste, da de alta en el proveedor de identidad (`secondaryadapter/keycloak/KeycloakProveedorIdentidadOutputAdapter`, seleccionable por `security.identity-provisioning.provider`) y encadena `Agregar{Estudiante,Coordinador,Asesor,AsesorFicha}` desde el orquestador; cada uno publica su `*Agregado`. `RemoverEstudianteUseCaseImpl` es la baja lógica con `*Removido` | Sin lado `query/` |
+| `evaluaciones` | Molde de un **contexto que arranca** (`itemcualitativojurado`): `Controller` → `RequestMapper` → `Command.crear` → `Interactor` → `UseCase` → `Finder` → `Validator` → `Rule` → `OutputPort` (`Entity`) → `JpaMapper` → `CommandRepository` y migración timestamp. También la **consulta con política de acceso**: `ConsultarEvaluacionesCualitativasJuradoUseCaseImpl` (`arquisoft-estandares` → *Validación en una consulta*) | Un solo consumidor (`jurado`, réplica de `usuarios.jurado.agregado`) y sin eventos propios; sus consultas no paginan ni filtran |
 | `proyectos` | Lado **réplica**: consume `*Agregado`/`*Removido` de `usuarios` (`primaryadapter/amqp/usuarios/{entidad}/`) para sus espejos de `asesor`, `coordinador` y `estudiante`. Cada caso de uso devuelve una sellada (`AgregacionAsesorResult` → `Agregada`/`Duplicada`/`Descartada`; `Descartada` = evento más viejo que el `ocurridoEn` guardado) | Sin controllers, `query/` ni eventos propios |
 | `solicitudes` | **Un flujo con variantes por tipo** y camino completo a `notificaciones`. Un `Interactor` por tipo (`EnviarSolicitud{Tipo}`, `EliminarSolicitud{Tipo}`, `ResponderSolicitud{Tipo}`, `ModificarEstadoRespuesta{Tipo}`) converge en un use case por acción; el mapper del interactor fija el tipo esperado en el objeto de acción y `SolicitudEsDelTipoRule` despacha a la regla del tipo, así los códigos de error por tipo no cambian. `EnviarSolicitudUseCase` orquesta `RegistrarRemitente`/`RegistrarDestinatario` (`void`, cada uno con su `Validator` de existencia) y un solo `EnviarSolicitudValidator.validar(...)`. Sus eventos (`SolicitudEnviadaEvent`, `SolicitudRespondidaEvent`, `SolicitudEstadoModificadoEvent`, con `responsableNombre` genérico) derivan tema y tipo de `TipoSolicitud`, y `notificaciones` los consume con un consumidor por tipo (`amqp/solicitudes/{solicitud,respuesta}/`). Réplica de `usuario` + lado `query/` cuyo mapper fuerza el filtro por JWT y tipo | `UsuarioSolicitudesCommandOutputAdapter`/`…CommandRepository` llevan el contexto en el nombre (convención retirada) |
 | `biblioteca` | **Contexto nuevo que nace como réplica** (HU-240): andamiaje completo (módulos Gradle, base, `BibliotecaDataSourceConfig`, Flyway, colas, catálogo) + réplica de `bibliotecario`, calcada de `proyectos/coordinador` | Solo *Agregar*: sin `bibliotecario.removido`, `usuario.modificado`, lápida, controllers ni `query/` |
-| `repositorio_artefactos` | **Réplica de `administrador` completa** (HU-273): `agregado`, `removido` con lápida y `usuario.modificado`, calcada de `proyectos/coordinador`, más el comando `GenerarRepositorioArtefacto` (escritura con client role propio y `Finder` de vigencia del administrador antes del `Validator`) | Sin `query/`. Primer **productor** del contexto (HU-275, `VersionRepositorioArtefactoSubidaEvent`, con su `event_publication`) y primer contexto con adaptadores a MinIO (`secondaryadapter/minio/`, vía `shared:minio`) y Tika (`secondaryadapter/tika/`): el archivo no pasa por el backend, la subida va en dos pasos (formulario firmado + confirmar) y el contenido se valida por magic numbers |
+| `repositorio_artefactos` | **Réplica de `administrador` completa** (HU-273): `agregado`, `removido` con lápida y `usuario.modificado`, calcada de `proyectos/coordinador`, más el comando `GenerarRepositorioArtefacto` (escritura con `Finder` de vigencia del administrador antes del `Validator`) | Sin `query/`. Primer **productor** del contexto (HU-275, `VersionRepositorioArtefactoSubidaEvent`, con su `event_publication`) y primer contexto con adaptadores a MinIO (`secondaryadapter/minio/`, vía `shared:minio`) y Tika (`secondaryadapter/tika/`): el archivo no pasa por el backend, la subida va en dos pasos (formulario firmado + confirmar) y el contenido se valida por magic numbers |
 | `artefactos` | **Réplica de un hecho inmutable de otro contexto** (HU-275): `VersionRepositorioArtefactoSubidaConsumer` + `Payload` local → `Command.crear` → `Interactor` → `UseCase` → `Finder` (`existePorId`) → `OutputPort`, calcada de `biblioteca` con `AgregacionVersionRepositorioArtefactoResult` (`Agregada`/`Duplicada`). Idempotencia por existencia del id, sin `Validator` ni `Rule`; la tabla no lleva `ocurrido_en` ni `eliminado_en` | Solo *Agregar*: sin baja, lápida, controllers ni `query/`; `Command.crear` y `Domain.crear` agrupan `DatosArchivo` por el tope de 7 parámetros |
 
 ## Los planes y reportes de `.workspace/` NO son referencia de convención
@@ -156,8 +156,8 @@ El compuesto se arma de abajo arriba — `RegistrarFichaPerfilMapper` es la refe
 | `command/secondaryadapter/entity/` (+`mapper/`, `repository/`) | JPA + `OutputAdapter` + repo Spring Data | `FichaPerfilJpaEntity.java`, `FichaPerfilJpaMapper.java`, `FichaPerfilCommandOutputAdapter.java`, `FichaPerfilCommandRepository.java` |
 | `query/primaryadapter/web/` (+`dto/`, `mapper/`) | `Controller` de lectura + `{Entidad}ResponseDTO` + `{Entidad}ResponseMapper` + `Consultar{Entidad}[{Rol}]RequestMapper.toQuery(dto[, datoDelJwt])`, que arma el **`Query`**, nunca el `Criteria` | `ConsultarFichasPerfilCoordinadorController.java`, `FichaPerfilResponseMapper.java`, `ConsultarFichasPerfilCoordinadorRequestMapper.java` |
 | `query/secondaryadapter/repository/` (+`mapper/`) | `@Subselect`/`@Immutable`/`@Synchronize`, plana; specification, sort, adapter, repo | `FichaPerfilJpaQueryEntity.java`, `FichaPerfilJpaSpecification.java`, `FichaPerfilSortMapper.java`, `FichaPerfilQueryOutputAdapter.java`, `FichaPerfilQueryRepository.java` |
-| `{feature}/exception/` | Excepciones de infraestructura del feature (→ 503), dentro del slice | `seguridad/infrastructure/auth/exception/ProveedorIdentidadNoDisponibleException.java` |
-| `security/`, `config/`, `filter/` | Transversales del contexto | `FichasAuthorities.java`, `FichasDataSourceConfig.java` |
+| `{feature}/exception/` | Excepciones de infraestructura del feature (→ 503), dentro del slice | `seguridad/infrastructure/autenticacion/exception/ProveedorIdentidadNoDisponibleException.java` |
+| `config/`, `filter/` | Transversales del contexto | `FichasDataSourceConfig.java`, `seguridad/infrastructure/filter/AutorizacionAccesoFilter.java` |
 | `handler/` | El `@RestControllerAdvice`, si lo hay — **nunca en `exception/`** (solo `seguridad` tiene uno) | `SeguridadGlobalExceptionHandler.java` |
 | `src/main/resources/db/migration/{contexto}/` | Migraciones Flyway, subcarpeta propia obligatoria | `V20260504181427__crear_tablas_fichas_perfil.sql` |
 
@@ -275,8 +275,8 @@ No hay `exception/` a nivel de contexto:
 | Fallo real de infraestructura, desde un `OutputAdapter` | `infrastructure/{feature}/exception/` | 503 |
 
 **Toda la jerarquía de un concepto va junta:** `AutenticacionException` y sus subclases
-`CredencialesInvalidasException`/`TokenInvalidoException` viven en `seguridad/application/auth/exception/`;
-`ProveedorIdentidadNoDisponibleException` (Keycloak caído) baja a `infrastructure/auth/exception/`. Una
+`CredencialesInvalidasException`/`TokenInvalidoException` viven en `seguridad/application/autenticacion/exception/`;
+`ProveedorIdentidadNoDisponibleException` (proveedor de identidad caído) baja a `infrastructure/auth/exception/`. Una
 subclase en distinta capa que su padre parte la jerarquía en dos módulos.
 
 ### Un fallo que el negocio registra no es una excepción: es un valor
@@ -431,7 +431,7 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
 | `references/eventos.md` | publica o consume un evento, crea o cambia un estado (⇒ notificación), o mantiene una réplica de otro contexto | *Eventos de dominio — una sola forma* · *El evento se emite donde ocurre el hecho* · *Transición de estado ⇒ notificación* (las ocho piezas) · *La routing key se declara una vez* · *Consumidores: primero el productor* · *Una cola de evento se declara con `ColaEvento`* · *El `nack` distingue fallo transitorio* · *Un efecto externo se reintenta desde la base* · *Replicación entre contextos* (incluye el nombrado de beans por FQN) · *Saga* |
 | `references/consultas-sincronas.md` | necesita verificar al escribir un dato cuyo dueño es otro contexto | *Consultas síncronas entre contextos* |
 
-## Rutas y autorización viven en constantes, no en literales
+## Rutas en placeholders y autorización fuera del controlador
 
 - `@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")` — placeholder con default; **no
   existe `{Contexto}Routes`**. Nunca el prefijo `/api`: ya es el `context-path`.
@@ -441,17 +441,37 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
   se llama como el contexto, repite el nombre (`/repositorio-artefactos/repositorios-artefactos`).
   Lo anidado (`/{id}/estudiantes`, `/coordinador`) cuelga de esa base. `evaluaciones`
   (`/evaluaciones/{recurso}`) no sigue esta forma: no la tomes como molde de rutas.
-- `@PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_CREATE)`, nunca el literal
-  `"hasAuthority('...')"`. `FichasAuthorities` declara el client role crudo (para tests) y su SpEL.
-- **Un client role por endpoint, propio y distinto**, para concederlo o revocarlo por separado en
-  Keycloak. Dos endpoints sobre el mismo recurso se diferencian con un calificador:
-  `fichas:ficha-perfil-coordinador:view` vs `fichas:ficha-perfil-asesor:view`.
-- **Todo client role nuevo se registra en `keycloak/realm-arquisoft.json`**, en dos sitios: su
-  definición en `roles.client.arquisoft-api` (`id` UUID nuevo, `clientRole: true`,
-  `composite: false`, el `containerId` de sus hermanos) y su nombre en
-  `composites.client.arquisoft-api` de cada rol realm que usa el endpoint (si ese rol realm era
-  `composite: false`, pasa a `true` y gana el bloque `composites`). Sin esto todo compila y los tests
-  pasan —`jwt().authorities(...)` inyecta el rol a mano—, pero en un Keycloak importado de cero ningún
-  usuario lo recibe y el endpoint responde 403 a todos. Referencia: el rol realm `asesor`, que compone
-  `proyectos:proyecto-grado-asesor-detalle:view`. Un JSON roto aborta el `--import-realm` entero, y
-  un Keycloak que ya tiene el realm ignora el archivo (`keycloak/README.md`).
+- **La autorización no vive en el controlador.** Ni `@PreAuthorize`, ni `hasAuthority`, ni roles: la
+  decide `AutorizacionAccesoFilter` (`seguridad:infrastructure`) preguntando a `DecisionAccesoOutputPort`
+  por `método + plantilla de ruta` (con `/api`). El adaptador del emisor (`pep`, `role-table` o `none`)
+  se elige por propiedad, así que cambiar de proveedor no toca ningún controlador. Un permiso en el
+  controlador lo ataría a las authorities del token, que no llevan client roles.
+- **Un endpoint nuevo es un recurso nuevo del PDP:** se registra con su método y su plantilla exacta (los
+  nombres de variable cuentan: `{id}` y `{fichaPerfilId}` son recursos distintos) como una fila en
+  `seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml`, el mapa endpoint → client role.
+  `CompletitudEquivalenciasAutorizacionTest` rompe el build si falta la fila o sobra una, y escribe
+  `build/reports/autorizacion/recursos-pdp.csv` con la lista para el equipo de seguridad.
+- **Cada fila de la tabla exige su client role en `keycloak/realm-arquisoft.json`**, en dos sitios: en
+  `roles.client.arquisoft-api` (el rol existe) y en los `composites.client.arquisoft-api` de cada realm
+  role de negocio que usa el endpoint (el rol se otorga). El token del emisor `role-table` lleva solo
+  realm roles: el backend resuelve el client role con un índice que lee de Keycloak qué realm role lo
+  incluye como composite directo. Un client role que solo está en la tabla, o que cuelga de otro rol
+  compuesto, no entra al índice y el endpoint responde 403 a todos sin que nada falle en el build.
+  El client role es uno por controlador, `{contexto}:{recurso}:{acción}` (`fichas:revision-item:create`),
+  nunca el de otro endpoint; si dos roles distintos acceden al mismo recurso, se califica el recurso
+  (`-coordinador` / `-asesor`). La excepción es un flujo partido en dos endpoints que no tiene sentido
+  otorgar a medias (`repositorio-artefactos:version-repositorio-artefacto:upload`).
+- **El controlador recibe `IdentidadActual`** (`shared:web`), nunca `Jwt`, `@AuthenticationPrincipal` ni
+  claims. Los contextos no declaran `starter-security` ni `oauth2-resource-server` en `implementation`;
+  `verificarNeutralidadProveedorIdentidad` (cuelga de `check`) falla si el vocabulario de proveedor
+  (Keycloak, PEP, `realm_access`, `resource_access`) aparece fuera de `seguridad/infrastructure` y de los
+  adaptadores de `usuarios`.
+- **Los roles del token se traducen con `RolesIdentidad.traducir(identidad, mapa)`** (`shared:web`,
+  paquete `identidad`) en el `RequestMapper`, y el `Command`/`Query` recibe roles de negocio ya
+  resueltos. El mapa lo declara el contexto: claves de `UsuariosRoles` (`shared:message`), valores de su
+  `{Contexto}Roles.Negocio`. Aplica cuando la lógica filtra o decide según el rol del llamante, que no es
+  autorizar (eso lo decide el PEP). Leer `identidad.roles()` a mano o repetir los nombres de rol en el
+  contexto multiplica las copias que hay que corregir cuando cambie el proveedor. Además, los roles
+  dependen del emisor (el `principal` puede no emitirlos, `AUTH_CLAIM_ROLES` vacío), así que la lógica
+  debe tolerar una lista vacía y devolver vacío, no fallar. Referencia:
+  `fichas/infrastructure/.../estadoficha/query/primaryadapter/web/mapper/ConsultarEstadosFichaRequestMapper.java`.

@@ -8,7 +8,6 @@ import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.usuarios.application.coordinador.command.primaryport.interactor.RemoverCoordinadorInteractor;
 import com.arquisoft.usuarios.application.coordinador.command.primaryport.model.RemoverCoordinadorCommand;
 import com.arquisoft.usuarios.domain.coordinador.exception.CoordinadorNoEncontradoException;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +39,6 @@ class RemoverCoordinadorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -63,8 +59,7 @@ class RemoverCoordinadorControllerTest {
     private RemoverCoordinadorInteractor removerCoordinadorInteractor;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor administrador() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.COORDINADOR_DELETE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -91,16 +86,6 @@ class RemoverCoordinadorControllerTest {
         // Act & Assert
         mockMvc.perform(delete(RUTA, UtilUUID.generarNuevoUUID()))
                 .andExpect(status().isUnauthorized());
-        verify(removerCoordinadorInteractor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debe403_cuandoSoloTieneElClientRoleDeRemoverAsesor() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA, UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.ASESOR_DELETE))))
-                .andExpect(status().isForbidden());
         verify(removerCoordinadorInteractor, never()).ejecutar(any());
     }
 

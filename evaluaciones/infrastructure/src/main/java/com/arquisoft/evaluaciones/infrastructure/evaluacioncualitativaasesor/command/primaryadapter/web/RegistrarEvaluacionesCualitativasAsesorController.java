@@ -7,6 +7,7 @@ import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,8 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -61,10 +60,10 @@ public class RegistrarEvaluacionesCualitativasAsesorController {
     public ResponseEntity<Void> registrar(
             @PathVariable UUID evaluacionAsesorId,
             @RequestBody RegistrarEvaluacionesCualitativasAsesorRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
         interactor.ejecutar(RegistrarEvaluacionesCualitativasAsesorRequestMapper.toCommand(
-                request, evaluacionAsesorId, jwt.getSubject()));
+                request, evaluacionAsesorId, identidad.id()));
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

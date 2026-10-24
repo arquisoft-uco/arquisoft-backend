@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.comma
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.primaryport.model.OmitirEvaluacionesCuantitativasJuradoCommand;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.EvaluacionesCuantitativasJuradoConObservacionesException;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.OmisionEvaluacionJuradoFinalizadaException;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -16,10 +15,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -55,7 +52,6 @@ class OmitirEvaluacionesCuantitativasJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -144,19 +140,6 @@ class OmitirEvaluacionesCuantitativasJuradoControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoNoTieneElClientRoleDeOmision() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        EvaluacionesAuthorities.EVALUACION_CUANTITATIVA_JURADO_UPDATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-        verify(interactor, never()).ejecutar(any());
-    }
-
-    @Test
     void debeRetornar422_cuandoLaEvaluacionDeJuradoEstaFinalizada() throws Exception {
         // Arrange
         doThrow(new OmisionEvaluacionJuradoFinalizadaException(EVALUACION_JURADO_ID)).when(interactor).ejecutar(any());
@@ -190,8 +173,6 @@ class OmitirEvaluacionesCuantitativasJuradoControllerTest {
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.EVALUACION_CUANTITATIVA_JURADO_DELETE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

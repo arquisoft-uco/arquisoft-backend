@@ -7,7 +7,7 @@ import com.arquisoft.solicitudes.application.solicitud.command.primaryport.inter
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadCoordinadorCommand;
 import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaException;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +16,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -36,13 +34,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(EnviarSolicitudNovedadCoordinadorController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         EnviarSolicitudNovedadCoordinadorControllerTest.TestSecurityConfig.class})
 class EnviarSolicitudNovedadCoordinadorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -63,10 +60,9 @@ class EnviarSolicitudNovedadCoordinadorControllerTest {
     private EnviarSolicitudNovedadCoordinadorInteractor interactor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDe(
-            UUID subject, String authority) {
+            UUID subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(builder -> builder.subject(subject.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(builder -> builder.subject(subject.toString()));
     }
 
     private static String body(String destinatario, String mensaje) {
@@ -85,7 +81,7 @@ class EnviarSolicitudNovedadCoordinadorControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/novedad-coordinador")
-                        .with(jwtDe(remitente, SolicitudesAuthorities.SOLICITUD_CREATE))
+                        .with(jwtDe(remitente))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(destinatario.toString(), "Necesito reportar una novedad")))
                 .andExpect(status().isCreated())
@@ -103,7 +99,7 @@ class EnviarSolicitudNovedadCoordinadorControllerTest {
     void debe400_cuandoElMensajeEstaEnBlanco() throws Exception {
         // Act & Assert
         mockMvc.perform(post("/solicitudes/novedad-coordinador")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "")))
                 .andExpect(status().isBadRequest());
@@ -113,7 +109,7 @@ class EnviarSolicitudNovedadCoordinadorControllerTest {
     void debe400_cuandoElDestinatarioNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(post("/solicitudes/novedad-coordinador")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body("no-es-uuid", "mensaje valido")))
                 .andExpect(status().isBadRequest());
@@ -127,7 +123,7 @@ class EnviarSolicitudNovedadCoordinadorControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/novedad-coordinador")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "mensaje valido")))
                 .andExpect(status().isUnprocessableEntity());
@@ -140,7 +136,7 @@ class EnviarSolicitudNovedadCoordinadorControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/novedad-coordinador")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "mensaje valido")))
                 .andExpect(status().isUnprocessableEntity());
@@ -153,15 +149,5 @@ class EnviarSolicitudNovedadCoordinadorControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "mensaje valido")))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_cuandoElTokenNoTieneElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post("/solicitudes/novedad-coordinador")
-                        .with(jwtDe(UUID.randomUUID(), "solicitudes:solicitud:read"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body(UUID.randomUUID().toString(), "mensaje valido")))
-                .andExpect(status().isForbidden());
     }
 }

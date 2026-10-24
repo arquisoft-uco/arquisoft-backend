@@ -7,7 +7,7 @@ import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.ModificarEstadoRespuestaCambioAsesorInteractor;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ModificarEstadoRespuestaCambioAsesorCommand;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisionException;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +16,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -35,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ModificarEstadoRespuestaCambioAsesorController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ModificarEstadoRespuestaCambioAsesorControllerTest.TestSecurityConfig.class})
 class ModificarEstadoRespuestaCambioAsesorControllerTest {
 
@@ -43,7 +41,6 @@ class ModificarEstadoRespuestaCambioAsesorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -64,10 +61,9 @@ class ModificarEstadoRespuestaCambioAsesorControllerTest {
     private ModificarEstadoRespuestaCambioAsesorInteractor interactor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDe(
-            UUID subject, String authority) {
+            UUID subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(builder -> builder.subject(subject.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(builder -> builder.subject(subject.toString()));
     }
 
     @Test
@@ -80,7 +76,7 @@ class ModificarEstadoRespuestaCambioAsesorControllerTest {
         mockMvc.perform(patch(RUTA.formatted(solicitud))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nuevoEstado\":\"APROBADA\"}")
-                        .with(jwtDe(coordinador, SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_UPDATE)))
+                        .with(jwtDe(coordinador)))
                 .andExpect(status().isNoContent());
 
         var captor = ArgumentCaptor.forClass(ModificarEstadoRespuestaCambioAsesorCommand.class);
@@ -96,8 +92,7 @@ class ModificarEstadoRespuestaCambioAsesorControllerTest {
         mockMvc.perform(patch(RUTA.formatted(UtilUUID.generarNuevoUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nuevoEstado\":\"  \"}")
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_UPDATE)))
+                        .with(jwtDe(UtilUUID.generarNuevoUUID())))
                 .andExpect(status().isBadRequest());
     }
 
@@ -107,8 +102,7 @@ class ModificarEstadoRespuestaCambioAsesorControllerTest {
         mockMvc.perform(patch("/solicitudes/cambio-asesor/no-es-uuid/respuesta/estado")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nuevoEstado\":\"APROBADA\"}")
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_UPDATE)))
+                        .with(jwtDe(UtilUUID.generarNuevoUUID())))
                 .andExpect(status().isBadRequest());
     }
 
@@ -122,17 +116,6 @@ class ModificarEstadoRespuestaCambioAsesorControllerTest {
     }
 
     @Test
-    void debeResponder403_cuandoFaltaElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(patch(RUTA.formatted(UtilUUID.generarNuevoUUID()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nuevoEstado\":\"APROBADA\"}")
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_CREATE)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeResponder422_cuandoElInteractorLanzaDomainException() throws Exception {
         // Arrange
         doThrow(new RespuestaNoEnRevisionException()).when(interactor).ejecutar(any());
@@ -141,8 +124,7 @@ class ModificarEstadoRespuestaCambioAsesorControllerTest {
         mockMvc.perform(patch(RUTA.formatted(UtilUUID.generarNuevoUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nuevoEstado\":\"APROBADA\"}")
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_UPDATE)))
+                        .with(jwtDe(UtilUUID.generarNuevoUUID())))
                 .andExpect(status().isUnprocessableEntity());
     }
 }

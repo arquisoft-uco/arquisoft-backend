@@ -5,17 +5,14 @@ import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConf
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.ConsultarTiposSolicitudInteractor;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -40,7 +37,6 @@ class ConsultarTiposSolicitudControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -73,8 +69,7 @@ class ConsultarTiposSolicitudControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(SolicitudesAuthorities.TIPO_SOLICITUD_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("NOVEDAD_PARA_EL_COORDINADOR"))
@@ -90,8 +85,7 @@ class ConsultarTiposSolicitudControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(SolicitudesAuthorities.TIPO_SOLICITUD_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
@@ -112,8 +106,7 @@ class ConsultarTiposSolicitudControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(SolicitudesAuthorities.TIPO_SOLICITUD_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(3))
                 .andExpect(jsonPath("$[0].id").value("NOVEDAD_PARA_EL_ASESOR"))
@@ -129,23 +122,13 @@ class ConsultarTiposSolicitudControllerTest {
     }
 
     @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(SolicitudesAuthorities.SOLICITUD_CREATE))))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeInvocarInteractor_cuandoEndpointEsLlamado() throws Exception {
         // Arrange
         when(consultarTiposSolicitudInteractor.ejecutar()).thenReturn(List.of());
 
         // Act
         mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(SolicitudesAuthorities.TIPO_SOLICITUD_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk());
 
         // Assert

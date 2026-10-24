@@ -10,20 +10,18 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.mode
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.RemoverItemFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.infrastructure.FichasInfrastructureTestApplication;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = RemoverItemFichaPerfilController.class)
-@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+@Import({IdentidadActualTestConfig.class, com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         RemoverItemFichaPerfilControllerTest.TestSecurityConfig.class,
         FichasInfrastructureTestApplication.class
@@ -48,7 +46,6 @@ class RemoverItemFichaPerfilControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -76,8 +73,7 @@ class RemoverItemFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId)
                         .with(jwt()
-                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
+                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isNoContent());
     }
 
@@ -91,8 +87,7 @@ class RemoverItemFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId)
                         .with(jwt()
-                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
+                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.ItemFichaPerfil.ITEM_NO_ENCONTRADO));
     }
@@ -110,8 +105,7 @@ class RemoverItemFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId)
                         .with(jwt()
-                                .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
+                                .jwt(jwt -> jwt.subject(estudianteId.toString()))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO));
     }
@@ -133,8 +127,7 @@ class RemoverItemFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId)
                         .with(jwt()
-                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
+                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.fieldErrors[0].field")
                         .value(FichasFields.ItemFichaPerfil.REVISIONES));
@@ -148,18 +141,5 @@ class RemoverItemFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        // Arrange
-        UUID itemId = UUID.randomUUID();
-
-        // Act & Assert
-        mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId)
-                        .with(jwt()
-                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("otro:rol:read"))))
-                .andExpect(status().isForbidden());
     }
 }

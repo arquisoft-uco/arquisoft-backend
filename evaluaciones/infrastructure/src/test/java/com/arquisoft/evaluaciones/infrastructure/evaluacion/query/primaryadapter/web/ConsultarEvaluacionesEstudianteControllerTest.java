@@ -9,6 +9,7 @@ import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ConsultarEvaluacionesEstudianteController.class)
 @Import({
+        IdentidadActualTestConfig.class,
         AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         ConsultarEvaluacionesEstudianteControllerTest.TestSecurityConfig.class
@@ -149,10 +151,10 @@ class ConsultarEvaluacionesEstudianteControllerTest {
     }
 
     @Test
-    void debeRetornar400SinInvocarAlInteractor_cuandoElSubNoEsUnUuid() throws Exception {
+    void debeRetornar401SinInvocarAlInteractor_cuandoElSubNoEsUnUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(post(RUTA).with(jwtDelEstudiante("no-es-un-uuid")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
 
         verify(interactor, never()).ejecutar(any());
     }

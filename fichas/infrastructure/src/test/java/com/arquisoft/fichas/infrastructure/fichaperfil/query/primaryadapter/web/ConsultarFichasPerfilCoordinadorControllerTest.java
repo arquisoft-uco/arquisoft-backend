@@ -5,7 +5,6 @@ import com.arquisoft.fichas.application.asesorficha.query.readmodel.AsesorFichaR
 import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.EstadoFichaPerfilReadModel;
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilCoordinadorInteractor;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
@@ -17,10 +16,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -43,7 +40,6 @@ class ConsultarFichasPerfilCoordinadorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -70,8 +66,7 @@ class ConsultarFichasPerfilCoordinadorControllerTest {
 
         mockMvc.perform(post("/fichas-perfil/coordinador")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(0));
@@ -100,8 +95,7 @@ class ConsultarFichasPerfilCoordinadorControllerTest {
         mockMvc.perform(post("/fichas-perfil/coordinador")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
-                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")))
                 .andExpect(status().isBadRequest());
     }
 
@@ -126,8 +120,7 @@ class ConsultarFichasPerfilCoordinadorControllerTest {
         mockMvc.perform(post("/fichas-perfil/coordinador")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
-                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")))
                 .andExpect(status().isOk());
     }
 
@@ -155,8 +148,7 @@ class ConsultarFichasPerfilCoordinadorControllerTest {
         mockMvc.perform(post("/fichas-perfil/coordinador")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
-                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")))
                 .andExpect(status().isOk());
     }
 
@@ -190,8 +182,7 @@ class ConsultarFichasPerfilCoordinadorControllerTest {
         mockMvc.perform(post("/fichas-perfil/coordinador")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
-                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(idFicha.toString()))
                 .andExpect(jsonPath("$.content[0].estado.id").value("APROBADA"))
@@ -204,14 +195,5 @@ class ConsultarFichasPerfilCoordinadorControllerTest {
         mockMvc.perform(post("/fichas-perfil/coordinador")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_cuandoAuthorityInsuficiente() throws Exception {
-        mockMvc.perform(post("/fichas-perfil/coordinador")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.user("estudiante")
-                                .authorities(new SimpleGrantedAuthority("estudiante"))))
-                .andExpect(status().isForbidden());
     }
 }

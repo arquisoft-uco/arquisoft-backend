@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.observacionitemjurado.query.primar
 import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.query.primaryadapter.web.dto.ObservacionItemJuradoResponseDTO;
 import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.query.primaryadapter.web.mapper.ConsultarObservacionesItemJuradoRequestMapper;
 import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.query.primaryadapter.web.mapper.ObservacionItemJuradoResponseMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -21,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,7 +39,6 @@ public class ConsultarObservacionesItemJuradoController {
     private final ConsultarObservacionesItemJuradoInteractor consultarObservacionesItemJuradoInteractor;
 
     @PostMapping("${rutas.evaluaciones.evaluaciones-cuantitativas-jurado.observaciones-jurado:/{id}/observaciones/jurado}")
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_OBSERVACION_ITEM_JURADO_JURADO_VIEW)
     @Operation(
             summary = EvaluacionesApiMessages.ObservacionItemJurado.CONSULTAR_SUMMARY,
             description = EvaluacionesApiMessages.ObservacionItemJurado.CONSULTAR_DESCRIPTION,

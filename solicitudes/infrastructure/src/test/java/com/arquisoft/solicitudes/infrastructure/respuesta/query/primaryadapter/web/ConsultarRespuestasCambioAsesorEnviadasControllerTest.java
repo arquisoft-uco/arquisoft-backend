@@ -11,7 +11,7 @@ import com.arquisoft.solicitudes.application.respuesta.query.primaryport.interac
 import com.arquisoft.solicitudes.application.respuesta.query.primaryport.model.ConsultarRespuestasCambioAsesorEnviadasQuery;
 import com.arquisoft.solicitudes.application.respuesta.query.readmodel.RespuestaReadModel;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +20,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarRespuestasCambioAsesorEnviadasController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarRespuestasCambioAsesorEnviadasControllerTest.TestSecurityConfig.class})
 class ConsultarRespuestasCambioAsesorEnviadasControllerTest {
 
@@ -50,7 +48,6 @@ class ConsultarRespuestasCambioAsesorEnviadasControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -71,10 +68,9 @@ class ConsultarRespuestasCambioAsesorEnviadasControllerTest {
     private ConsultarRespuestasCambioAsesorEnviadasInteractor interactor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDe(
-            UUID subject, String authority) {
+            UUID subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(builder -> builder.subject(subject.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(builder -> builder.subject(subject.toString()));
     }
 
     @Test
@@ -86,8 +82,7 @@ class ConsultarRespuestasCambioAsesorEnviadasControllerTest {
         // Act & Assert
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .with(jwtDe(UUID.randomUUID(),
-                                SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_ENVIADA_VIEW)))
+                        .with(jwtDe(UUID.randomUUID())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(0));
@@ -112,8 +107,7 @@ class ConsultarRespuestasCambioAsesorEnviadasControllerTest {
         // Act
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .with(jwtDe(coordinador,
-                                SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_ENVIADA_VIEW)))
+                        .with(jwtDe(coordinador)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(respuesta.id().toString()))
                 .andExpect(jsonPath("$.content[0].contenido").value("contenido de la respuesta"))
@@ -155,8 +149,7 @@ class ConsultarRespuestasCambioAsesorEnviadasControllerTest {
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
-                        .with(jwtDe(UUID.randomUUID(),
-                                SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_ENVIADA_VIEW)))
+                        .with(jwtDe(UUID.randomUUID())))
                 .andExpect(status().isBadRequest());
     }
 
@@ -168,24 +161,12 @@ class ConsultarRespuestasCambioAsesorEnviadasControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoElTokenNoTieneElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(jwtDe(UUID.randomUUID(),
-                                SolicitudesAuthorities.RESPUESTA_NOVEDAD_COORDINADOR_ENVIADA_VIEW)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void debeRetornar400_cuandoElSubjectDelJwtNoEsUuid() throws Exception {
+    void debeRetornar401_cuandoElSubjectDelJwtNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(builder -> builder.subject("no-es-uuid"))
-                                .authorities(new SimpleGrantedAuthority(
-                                        SolicitudesAuthorities.RESPUESTA_CAMBIO_ASESOR_ENVIADA_VIEW))))
-                .andExpect(status().isBadRequest());
+                                .jwt(builder -> builder.subject("no-es-uuid"))))
+                .andExpect(status().isUnauthorized());
     }
 }

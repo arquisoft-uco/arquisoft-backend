@@ -4,11 +4,11 @@ import com.arquisoft.proyectos.application.estadoproyecto.query.readmodel.Estado
 import com.arquisoft.proyectos.application.proyectogrado.query.primaryport.interactor.ConsultarProyectosGradoEstudianteInteractor;
 import com.arquisoft.proyectos.application.proyectogrado.query.primaryport.model.ConsultarProyectosGradoEstudianteQuery;
 import com.arquisoft.proyectos.application.proyectogrado.query.readmodel.ProyectoGradoReadModel;
-import com.arquisoft.proyectos.infrastructure.security.ProyectosAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +16,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -40,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarProyectosGradoEstudianteController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarProyectosGradoEstudianteControllerTest.TestSecurityConfig.class})
 class ConsultarProyectosGradoEstudianteControllerTest {
 
@@ -49,7 +47,6 @@ class ConsultarProyectosGradoEstudianteControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -72,9 +69,7 @@ class ConsultarProyectosGradoEstudianteControllerTest {
     private ResultActions consultar(String subject) throws Exception {
         return mockMvc.perform(get(RUTA)
                 .with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .jwt(jwt -> jwt.subject(subject))
-                        .authorities(new SimpleGrantedAuthority(
-                                ProyectosAuthorities.PROYECTO_GRADO_ESTUDIANTE_VIEW))));
+                        .jwt(jwt -> jwt.subject(subject))));
     }
 
     @Test
@@ -112,9 +107,9 @@ class ConsultarProyectosGradoEstudianteControllerTest {
     }
 
     @Test
-    void debeRetornar400_cuandoSubjectNoEsUuid() throws Exception {
+    void debeRetornar401_cuandoSubjectNoEsUuid() throws Exception {
         // Act & Assert
-        consultar("no-es-uuid").andExpect(status().isBadRequest());
+        consultar("no-es-uuid").andExpect(status().isUnauthorized());
         verify(interactor, never()).ejecutar(any());
     }
 
@@ -122,17 +117,5 @@ class ConsultarProyectosGradoEstudianteControllerTest {
     void debeRetornar401_cuandoSinToken() throws Exception {
         // Act & Assert
         mockMvc.perform(get(RUTA)).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeRetornar403_cuandoSinAuthority() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(ESTUDIANTE.toString()))
-                                .authorities(new SimpleGrantedAuthority(
-                                        ProyectosAuthorities.PROYECTO_GRADO_COORDINADOR_VIEW))))
-                .andExpect(status().isForbidden());
-        verify(interactor, never()).ejecutar(any());
     }
 }

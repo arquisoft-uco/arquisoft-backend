@@ -57,7 +57,7 @@ Un solo bloqueante = RECHAZADO, sin importar el score.
 > del Score/Compilación/Tests de arriba. Un dato ausente es una casilla que no podrá marcar.
 
 **Mensaje:** {tipo}({contexto}): {descripción corta}
-**Cuerpo:** {bullets: qué se implementó, capas afectadas, eventos emitidos, client roles en Keycloak, migración}
+**Cuerpo:** {bullets: qué se implementó, capas afectadas, eventos emitidos, recursos PDP y client roles, migración}
 **Rama:** `feature/{HU|HT}-{ID}-{descripcion}`
 **Archivos a incluir:** {solo código, tests, migraciones y recursos — el plan y este reporte NO
 van al repositorio de backend, los publica `@4c-commit` en `arquisoft-docs`}
@@ -70,8 +70,9 @@ D  ruta/eliminada.java
 
 **Endpoints documentados:** {Sí / N/A — la HU no expone endpoints}
 
-**Keycloak:** {una línea por client role nuevo: `{role}` → compuesto en `{rol realm}`, `{rol realm}`
-en `keycloak/realm-arquisoft.json` / N/A — la HU no crea client roles}
+**Autorización:** {una línea por endpoint nuevo: recurso PDP (`{MÉTODO} /api/{plantilla}`) + client role de
+`autorizacion-equivalencias.yml` + realm roles que lo otorgan en `realm-arquisoft.json` / N/A — la HU
+no crea endpoints}
 
 ## Próximos pasos
 

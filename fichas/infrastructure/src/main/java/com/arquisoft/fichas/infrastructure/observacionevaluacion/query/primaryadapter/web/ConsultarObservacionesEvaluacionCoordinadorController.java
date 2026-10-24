@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.observacionevaluacion.query.primaryport.
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.query.primaryadapter.web.dto.ObservacionEvaluacionResponseDTO;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.query.primaryadapter.web.mapper.ConsultarObservacionesEvaluacionCoordinadorRequestMapper;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.query.primaryadapter.web.mapper.ObservacionEvaluacionResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +38,6 @@ public class ConsultarObservacionesEvaluacionCoordinadorController {
 
     @GetMapping("${rutas.fichas.fichas-perfil.observaciones-evaluacion-coordinador:"
             + "/{fichaPerfilId}/observaciones-evaluacion/coordinador}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_OBSERVACION_EVALUACION_COORDINADOR_VIEW)
     @Operation(
             summary = FichasApiMessages.ObservacionEvaluacion.CONSULTAR_COORDINADOR_SUMMARY,
             description = FichasApiMessages.ObservacionEvaluacion.CONSULTAR_COORDINADOR_DESCRIPTION,

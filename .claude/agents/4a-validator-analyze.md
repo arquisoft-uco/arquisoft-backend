@@ -62,7 +62,6 @@ La pertenencia la decide el plan, no la carpeta: lo que nombra es de la historia
 | Nombres de clase/interfaz y métodos de los puertos coinciden con el plan | ❌ |
 | Cada criterio de aceptación tiene evidencia en el código | ❌ |
 | Endpoints con la ruta/método del plan, sin prefijo `/api` (ya es el `context-path`); PATCH/PUT/DELETE con el `id` en `@PathVariable`, nunca en el body | ❌ |
-| Client role de un endpoint anidado nombra la **entidad afectada**, no el primer segmento (`fichas:estudiante-ficha-perfil:delete` en `DELETE /fichas-perfil/{id}/estudiantes/{eid}`) | ❌ |
 | `Controller` con `@Tag`/`@Operation`/`@ApiResponses`, y `@SecurityRequirement` si no es público (ADR-011) | ❌ |
 | Migración en `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` (suelta en `db/migration/` la aplica el Flyway de otro contexto), nombrada `V{yyyyMMddHHmmss}__{snake_case}.sql` (numeración secuencial = convención retirada) | ❌ |
 | Timestamp anterior al de una migración ya aplicada del contexto (con `baselineOnMigrate=false` rompe el arranque), o migración aplicada editada/renombrada en vez de agregar una nueva | ❌ |
@@ -194,7 +193,7 @@ Fuente: `arquisoft-estandares` → *Identificadores y DTOs*; `arquisoft-arquitec
 | `Command` `record` en `command/primaryport/model/`; `ReadModel` `record` en `query/readmodel/`; ninguno con Lombok/Jackson | ❌ |
 | Campos en español iguales al domain y con nombre objetual (`asesorFicha`, no `asesorFichaId`) | ❌ |
 | `Command.crear(...)` o `{Consulta}{Entidad}Query.crear(...)` con un parámetro del cliente que no pasa por ningún `Validator*` (obligatoriedad, longitud de `{Contexto}Limits`, formato), aunque el dominio lo valide después. Recorre los parámetros uno por uno | ❌ |
-| Identificador del body tipado `UUID`, o validado con Jakarta en vez de `ValidatorUUID.uuidValido(...)` en `Command.crear(...)` | ❌ |
+| Identificador del body tipado `UUID`, o validado con Jakarta en vez de `ValidatorUUID.uuidValido(...)` en `Command.crear(...)`; o un `@PathVariable`/`IdentidadActual.id()` pasado como `String` (`toString()`) para re-parsearlo | ❌ |
 | `RequestDTO` con cualquier anotación o lógica (única excepción: `toString()` que enmascara un secreto, `IniciarSesionRequestDTO`), o sin `{Accion}{Entidad}RequestMapper` (`final`, constructor privado, `static toCommand`) | ❌ |
 | `Command` construido con `new` en vez de `crear(...)` | ❌ |
 | `Controller` que serializa el `ReadModel` o el `Result` directo en vez de su `ResponseMapper` → `ResponseDTO`; paginado sin `PageResponseDTO.from(resultado.map(...::toResponse))` | ❌ |
@@ -236,18 +235,19 @@ entrada*.
 | Consulta con política (sección 3) que reutiliza `Validator`/`Finder`/`OutputPort` de `command/`, que llama al `QueryOutputPort` **antes** de `validar`, que no valida la política declarada o valida una no declarada (o "solo lo mío" con `Rule` en vez de filtro forzado) — *Validación en una consulta* | ❌ |
 | `Optional` como parámetro de un `Validator` o campo de un record de `Rule` | ❌ |
 
-### Nivel 2.7 — Autorización (Keycloak)
+### Nivel 2.7 — Autorización (puerto externo)
 
-Fuente: `arquisoft-arquitectura` → *Rutas y autorización viven en constantes, no en literales*.
+Fuente: `arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*.
 
 | Check | Sev |
 |---|:---:|
-| Endpoint no público sin exactamente un `@PreAuthorize`, o con varios `hasAuthority` combinados | ❌ |
-| `@PreAuthorize` con cadena literal en vez de `{Contexto}Authorities.Expresiones.HAS_*`, o rol no declarado en `{Contexto}Authorities` (crudo + SpEL) | ❌ |
-| Client role fuera de kebab-case `{contexto}:{recurso}:{accion}`, o distinto del de la sección 9 del plan | ❌ |
-| Client role **ya asociado a otro endpoint** en `{Contexto}Authorities` (cada endpoint lleva el suyo, diferenciado por calificador: `-coordinador`/`-asesor`) | ❌ |
-| `hasRole(...)` o roles realm directos | ❌ |
-| Client role nuevo sin definición en `roles.client.arquisoft-api` de `keycloak/realm-arquisoft.json`, ausente de los `composites` de un rol realm que la sección 9 le asigna (o compuesto en uno que no le asigna), o el archivo deja de ser JSON válido | ❌ |
+| Controlador con `@PreAuthorize`, `hasAuthority`, `hasRole`, `Jwt` o `@AuthenticationPrincipal`: la identidad llega como `IdentidadActual` y la autorización no vive ahí | ❌ |
+| `identidad.roles()` leído a mano o nombres de rol de identidad repetidos en el contexto, en vez de `RolesIdentidad.traducir` con claves de `UsuariosRoles`; o roles de identidad (no de negocio) llegando al `Command`/`Query` | ❌ |
+| Endpoint nuevo sin fila en `autorizacion-equivalencias.yml` (y sin estar en rutas públicas o exentas), o `CompletitudEquivalenciasAutorizacionTest` en rojo | ❌ |
+| Recurso PDP (método + plantilla con `/api`) o client role distinto del de la sección 9 del plan | ❌ |
+| Client role de la fila nueva ausente de `roles.client.arquisoft-api` en `keycloak/realm-arquisoft.json`, o sin composite directo en los realm roles de la sección 9 (responde 403 a todos y el build no lo detecta) | ❌ |
+| Client role reutilizado de otro endpoint sin la justificación de flujo partido | ⚠️ |
+| `verificarNeutralidadProveedorIdentidad` en rojo, o vocabulario de proveedor (Keycloak, PEP, `realm_access`, `resource_access`) fuera de `seguridad:infrastructure` y de los adaptadores de `usuarios` | ❌ |
 | Ruta literal en vez de placeholder (`"${rutas.{contexto}.{recurso}.base:/{recurso}}"`), o clase `{Contexto}Routes` | ❌ |
 | Base de la ruta con el nombre del contexto delante del recurso (`/{contexto}/{recurso}`) en vez del recurso solo, aunque el plan la pida así | ❌ |
 
@@ -377,7 +377,7 @@ Lee `.claude/templates/VALIDATOR.md` en esta fase —no la reconstruyas de memor
 reporte con sus encabezados `##` exactos y en orden. Los hallazgos van en `## Errores Bloqueantes` /
 `## Errores Menores` con su `[Nivel X.Y]`. Es un contrato: `@4c-commit` saca de campos fijos
 (`**Mensaje:**`, `**Rama:**`, `**Archivos a incluir:**`, `**Compilación:**`, `**Endpoints
-documentados:**`, `**Keycloak:**`, Score, Tests, bloqueantes) lo que el usuario confirma y la evidencia del checklist
+documentados:**`, `**Autorización:**`, Score, Tests, bloqueantes) lo que el usuario confirma y la evidencia del checklist
 del PR.
 
 - **`Autor`** se copia literal del plan. Si no lo trae, `git config user.name`/`user.email`, y
@@ -385,8 +385,9 @@ del PR.
 - **El `Cuerpo` se escribe desde el código:** cada identificador (rol, routing key, ruta, clase,
   tabla) se copia del archivo donde vive, sin fundir dos distintos en una frase. Va literal al commit
   y al PR.
-- **`Keycloak`** se lee de `keycloak/realm-arquisoft.json`, no del plan: cada client role nuevo con
-  los roles realm que de verdad lo componen en el archivo.
+- **`Autorización`** se lee de `autorizacion-equivalencias.yml`, `keycloak/realm-arquisoft.json` y la
+  sección 9 del plan: por cada endpoint nuevo, su recurso PDP, el client role de la fila que de verdad existe
+  y los realm roles que lo tienen como composite en el JSON.
 - Una sección sin hallazgos dice "Ninguno": nunca se borra.
 - `Archivos a incluir` es la lista explícita, una ruta por línea con su estado de
   `git status -s -uall` — nunca "ver `git status`". Solo código, tests, migraciones y recursos: el

@@ -8,8 +8,8 @@ import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
 import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,8 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,9 +61,9 @@ public class ConsultarEvaluacionesEstudianteController {
     })
     public ResponseEntity<PageResponseDTO<EvaluacionResponseDTO>> consultarEvaluacionesEstudiante(
             @RequestBody(required = false) QueryCriteriaRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var estudiante = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var estudiante = identidad.id();
         var resultado = consultarEvaluacionesEstudianteInteractor.ejecutar(
                 ConsultarEvaluacionesEstudianteRequestMapper.toQuery(request, estudiante));
 

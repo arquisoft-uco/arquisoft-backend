@@ -4,7 +4,6 @@ import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefa
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.primaryport.model.SolicitarCargaVersionRepositorioArtefactoCommand;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.CargaVersionRepositorioArtefactoResult;
 import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.exception.RepositorioArtefactoNoEncontradoException;
-import com.arquisoft.repositorio_artefactos.infrastructure.security.RepositorioArtefactosAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.constant.RepositorioArtefactosCodes;
@@ -12,6 +11,7 @@ import com.arquisoft.shared.minio.exception.MinioOperationException;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +20,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -43,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(SolicitarCargaVersionRepositorioArtefactoController.class)
-@Import({
+@Import({IdentidadActualTestConfig.class,
         AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         SolicitarCargaVersionRepositorioArtefactoControllerTest.TestSecurityConfig.class
@@ -56,7 +54,6 @@ class SolicitarCargaVersionRepositorioArtefactoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -88,9 +85,7 @@ class SolicitarCargaVersionRepositorioArtefactoControllerTest {
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso(String subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(subject))
-                .authorities(new SimpleGrantedAuthority(
-                        RepositorioArtefactosAuthorities.CARGA_VERSION_REPOSITORIO_ARTEFACTO_CREATE));
+                .jwt(jwt -> jwt.subject(subject));
     }
 
     @Test
@@ -142,20 +137,6 @@ class SolicitarCargaVersionRepositorioArtefactoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeResponder403_cuandoSinRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(ruta(UtilUUID.generarNuevoUUID()))
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(UtilUUID.generarNuevoUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(
-                                        RepositorioArtefactosAuthorities.VERSION_REPOSITORIO_ARTEFACTO_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-        verifyNoInteractions(interactor);
     }
 
     @Test

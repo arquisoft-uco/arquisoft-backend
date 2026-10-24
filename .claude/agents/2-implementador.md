@@ -88,10 +88,10 @@ escrituras) → `OutputPort` + `entity/` + `secondaryport/mapper/` → `Finder`(
 **infrastructure:** DTOs + `RequestMapper` → `Controller` (uno por acción; con "Endpoint
 EXISTENTE" modifica el existente) → `JpaEntity` + mapper + `CommandOutputAdapter`/`CommandRepository`
 → si es lectura, la cadena de `query/` de `arquisoft-arquitectura` → *infrastructure* → `Consumer`
-AMQP si el contexto consume eventos → `{Contexto}Authorities` (client role nuevo + su expresión) →
-`keycloak/realm-arquisoft.json` (definición del role + composite en cada rol realm de la sección 9;
-`arquisoft-arquitectura` → *Rutas y autorización viven en constantes, no en literales*),
-comprobando que el archivo sigue siendo JSON válido → migración Flyway.
+AMQP si el contexto consume eventos → fila en `autorizacion-equivalencias.yml` y su client role en
+`keycloak/realm-arquisoft.json` (rol de `arquisoft-api` + composite en los realm roles de la sección 9)
+si el endpoint es nuevo (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*); el
+controlador recibe `IdentidadActual` y no lleva anotaciones de autorización → migración Flyway.
 
 ### Señales de que el plan está mal — repórtalas como ambigüedad, no las arregles
 
@@ -232,5 +232,6 @@ Nunca resuelvas por tu cuenta — espera instrucción.
 5. FASE 5 (verificación final) es obligatoria antes de actualizar trazabilidad.
 6. Ambigüedad = pausa, nunca la resuelves solo.
 7. Sin git — ni commits, ni ramas, ni stage.
-8. `domain/` sin imports de Spring/JPA/Lombok/Jackson/Security/Keycloak — Java puro.
+8. `domain/` sin imports de Spring/JPA/Lombok/Jackson/Security/Keycloak — Java puro; `application/` y
+   los controladores, sin imports de proveedor de identidad (`verificarNeutralidadProveedorIdentidad`).
 9. Siempre `./gradlew`, nunca `mvn`/`javac` directo.

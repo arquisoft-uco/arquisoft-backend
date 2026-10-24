@@ -4,13 +4,13 @@ import com.arquisoft.proyectos.application.asesorproyectogrado.command.primarypo
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.primaryport.model.CambiarEstadoAsesorProyectoGradoCommand;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.exception.TransicionEstadoAsesorInvalidaException;
 import com.arquisoft.proyectos.domain.estadoasesor.EstadoAsesor;
-import com.arquisoft.proyectos.infrastructure.security.ProyectosAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.ProyectosCodes;
 import com.arquisoft.shared.message.constant.ProyectosFields;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +19,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CambiarEstadoAsesorProyectoGradoController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         CambiarEstadoAsesorProyectoGradoControllerTest.TestSecurityConfig.class})
 class CambiarEstadoAsesorProyectoGradoControllerTest {
 
@@ -51,7 +49,6 @@ class CambiarEstadoAsesorProyectoGradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -78,9 +75,7 @@ class CambiarEstadoAsesorProyectoGradoControllerTest {
     private ResultActions enviar(UUID proyectoGradoId, UUID asesorId, String body) throws Exception {
         return mockMvc.perform(patch(RUTA, proyectoGradoId, asesorId)
                 .with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .jwt(jwt -> jwt.subject(COORDINADOR.toString()))
-                        .authorities(new SimpleGrantedAuthority(
-                                ProyectosAuthorities.ASESOR_PROYECTO_GRADO_UPDATE_ESTADO)))
+                        .jwt(jwt -> jwt.subject(COORDINADOR.toString())))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body));
     }
@@ -123,17 +118,6 @@ class CambiarEstadoAsesorProyectoGradoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(cuerpo("FINALIZADO")))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_sinClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(patch(RUTA, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("proyectos:otra-autoridad")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(cuerpo("FINALIZADO")))
-                .andExpect(status().isForbidden());
     }
 
     @Test

@@ -100,6 +100,9 @@ dependencies {
     // controllers de cada contexto.
     implementation project(':shared:message')
 
+    // shared:web: OpenApiConfig oculta IdentidadActual del contrato OpenAPI.
+    implementation project(':shared:web')
+
     // Catálogo de mensajes sobre Redis (ADR-013). Se declara aquí y en ningún contexto: el catálogo
     // es nuclear y no puede depender de que un contexto siga arrastrándolo.
     implementation project(':shared:redis')
@@ -371,6 +374,55 @@ def tareaVerificacion = tasks.register('verificarCapasHexagonales') {
     }
 }
 
+// ==================== NEUTRALIDAD DEL PROVEEDOR DE IDENTIDAD ====================
+// Ningun controlador, caso de uso, dominio ni modulo compartido puede nombrar al proveedor de
+// identidad ni al de autorizacion. Solo viven en seguridad:infrastructure y en los adaptadores
+// secundarios (y config) de usuarios:infrastructure.
+def tareaNeutralidad = tasks.register('verificarNeutralidadProveedorIdentidad') {
+    group = 'verification'
+    description = 'Falla si codigo fuera de los adaptadores nombra al proveedor de identidad o de autorizacion.'
+
+    doLast {
+        def terminos = [
+                ~/org\.springframework\.security\.oauth2/,
+                ~/AuthenticationPrincipal/,
+                ~/PreAuthorize/,
+                ~/hasAuthority/,
+                ~/(?i)keycloak/,
+                ~/realm_access/,
+                ~/resource_access/,
+                ~/Pep[A-Z]/,
+                ~/\bPEP\b/
+        ]
+        def zonaPermitida = { String ruta ->
+            ruta.startsWith('seguridad/infrastructure/') ||
+                    (ruta.startsWith('usuarios/infrastructure/') &&
+                            (ruta.contains('/secondaryadapter/') || ruta.contains('/config/')))
+        }
+        def raiz = rootProject.projectDir.toPath()
+        def violaciones = []
+
+        fileTree(dir: rootProject.projectDir, include: '**/src/main/java/**/*.java',
+                exclude: ['**/build/**']).each { archivo ->
+            def ruta = raiz.relativize(archivo.toPath()).toString().replace('\\', '/')
+            if (zonaPermitida(ruta)) {
+                return
+            }
+            def texto = archivo.getText('UTF-8')
+            terminos.each { termino ->
+                if (texto =~ termino) {
+                    violaciones << "${ruta} contiene ${termino.pattern()}".toString()
+                }
+            }
+        }
+
+        if (!violaciones.isEmpty()) {
+            throw new GradleException(
+                    "Acoplamiento al proveedor de identidad fuera de los adaptadores:\n  - " + violaciones.join('\n  - '))
+        }
+    }
+}
+
 tasks.named('check') {
-    dependsOn tareaVerificacion
+    dependsOn tareaVerificacion, tareaNeutralidad
 }

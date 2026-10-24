@@ -9,7 +9,6 @@ import com.arquisoft.usuarios.application.usuario.query.primaryport.interactor.C
 import com.arquisoft.usuarios.application.usuario.query.primaryport.model.ConsultarIdentidadUsuarioQuery;
 import com.arquisoft.usuarios.application.usuario.query.readmodel.IdentidadUsuarioReadModel;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioNoEncontradoException;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +16,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -43,7 +40,6 @@ class ConsultarIdentidadUsuarioControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -64,8 +60,7 @@ class ConsultarIdentidadUsuarioControllerTest {
     private ConsultarIdentidadUsuarioInteractor consultarIdentidadUsuarioInteractor;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor administrador() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_IDENTIDAD_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -96,16 +91,6 @@ class ConsultarIdentidadUsuarioControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA, UtilUUID.generarNuevoUUID()))
                 .andExpect(status().isUnauthorized());
-        verify(consultarIdentidadUsuarioInteractor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debe403_cuandoSoloTieneElClientRoleDeUsuarioAdministradorView() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA, UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_ADMINISTRADOR_VIEW))))
-                .andExpect(status().isForbidden());
         verify(consultarIdentidadUsuarioInteractor, never()).ejecutar(any());
     }
 

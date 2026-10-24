@@ -5,9 +5,9 @@ import com.arquisoft.fichas.application.estadoficha.query.primaryport.interactor
 import com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.mapper.ConsultarEstadosFichaRequestMapper;
 import com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.dto.EstadoFichaResponseDTO;
 import com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.mapper.EstadoFichaResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,9 +17,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +32,6 @@ public class ConsultarEstadosFichaController {
     private final ConsultarEstadosFichaInteractor consultarEstadosFichaInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.estados-ficha:/estados-ficha}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_VIEW)
     @Operation(
             summary = FichasApiMessages.EstadoFicha.CONSULTAR_SUMMARY,
             description = FichasApiMessages.EstadoFicha.CONSULTAR_DESCRIPTION,
@@ -55,8 +51,8 @@ public class ConsultarEstadosFichaController {
                     description = FichasApiMessages.EstadoFicha.CONSULTAR_RESP_403,
                     content = @Content)
     })
-    public ResponseEntity<List<EstadoFichaResponseDTO>> consultarEstadosFicha(@AuthenticationPrincipal Jwt jwt) {
-        var estados = consultarEstadosFichaInteractor.ejecutar(ConsultarEstadosFichaRequestMapper.toQuery(jwt));
+    public ResponseEntity<List<EstadoFichaResponseDTO>> consultarEstadosFicha(IdentidadActual identidad) {
+        var estados = consultarEstadosFichaInteractor.ejecutar(ConsultarEstadosFichaRequestMapper.toQuery(identidad));
 
         return ResponseEntity.ok(estados.stream()
                 .map(EstadoFichaResponseMapper::toResponse)

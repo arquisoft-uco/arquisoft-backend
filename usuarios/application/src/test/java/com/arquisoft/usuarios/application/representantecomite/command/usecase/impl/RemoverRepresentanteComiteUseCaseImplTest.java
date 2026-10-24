@@ -2,7 +2,7 @@ package com.arquisoft.usuarios.application.representantecomite.command.usecase.i
 
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
@@ -92,7 +92,7 @@ class RemoverRepresentanteComiteUseCaseImplTest {
         var captorEvento = ArgumentCaptor.forClass(RepresentanteComiteRemovidoEvent.class);
         orden.verify(removerRepresentanteComiteValidator).validar(id, vigente);
         orden.verify(representanteComiteOutputPort).eliminarLogica(eq(id), captorInstante.capture());
-        orden.verify(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.REPRESENTANTE_COMITE);
+        orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.REPRESENTANTE_COMITE);
         orden.verify(eventPublisher).publish(captorEvento.capture());
 
         assertThat(captorInstante.getValue()).isNotEqualTo(UtilFecha.VACIO);
@@ -116,7 +116,7 @@ class RemoverRepresentanteComiteUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(RepresentanteComiteDomain.crear(id)))
                 .isInstanceOf(RepresentanteComiteNoEncontradoException.class);
         verify(representanteComiteOutputPort, never()).eliminarLogica(any(), any());
-        verify(proveedorIdentidadOutputPort, never()).revocarRealmRole(any(), anyString());
+        verify(proveedorIdentidadOutputPort, never()).revocarRol(any(), anyString());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -134,7 +134,7 @@ class RemoverRepresentanteComiteUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(RepresentanteComiteDomain.crear(id)))
                 .isInstanceOf(RepresentanteComiteNoEncontradoException.class);
         verify(representanteComiteOutputPort, never()).eliminarLogica(any(), any());
-        verify(proveedorIdentidadOutputPort, never()).revocarRealmRole(any(), anyString());
+        verify(proveedorIdentidadOutputPort, never()).revocarRol(any(), anyString());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -146,7 +146,7 @@ class RemoverRepresentanteComiteUseCaseImplTest {
         when(usuarioPorIdFinder.obtener(id)).thenReturn(usuario(id));
         var fallo = new InfrastructureException("Proveedor de identidad caido", "PROVEEDOR_NO_DISPONIBLE");
         doThrow(fallo).when(proveedorIdentidadOutputPort)
-                .revocarRealmRole(id, UsuariosRealmRoles.REPRESENTANTE_COMITE);
+                .revocarRol(id, UsuariosRoles.REPRESENTANTE_COMITE);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(RepresentanteComiteDomain.crear(id))).isSameAs(fallo);

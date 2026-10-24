@@ -4,13 +4,11 @@ import com.arquisoft.shared.message.constant.RepositorioArtefactosCodes;
 import com.arquisoft.shared.message.constant.RepositorioArtefactosFields;
 import com.arquisoft.shared.message.constant.RepositorioArtefactosLimits;
 import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorNumero;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
-import com.arquisoft.shared.validation.ValidatorUUID;
 
 import java.util.UUID;
 
@@ -27,7 +25,7 @@ public record SolicitarCargaVersionRepositorioArtefactoCommand(
     }
 
     public static SolicitarCargaVersionRepositorioArtefactoCommand crear(
-            UUID repositorio, String solicitante, String nombreArchivo, String tipoContenido, Long tamanoBytes) {
+            UUID repositorio, UUID solicitante, String nombreArchivo, String tipoContenido, Long tamanoBytes) {
         var result = new ValidationResult();
         var nombreRecortado = UtilTexto.aplicarTrim(nombreArchivo);
         var tipoRecortado = UtilTexto.aplicarTrim(tipoContenido);
@@ -36,7 +34,7 @@ public record SolicitarCargaVersionRepositorioArtefactoCommand(
                 RepositorioArtefactosFields.VersionRepositorioArtefacto.REPOSITORIO,
                 RepositorioArtefactosCodes.VersionRepositorioArtefacto.REPOSITORIO_REQUERIDO, result);
 
-        ValidatorUUID.uuidValido(solicitante,
+        ValidatorObjeto.noNulo(solicitante,
                 RepositorioArtefactosFields.VersionRepositorioArtefacto.SOLICITANTE,
                 RepositorioArtefactosCodes.VersionRepositorioArtefacto.SOLICITANTE_REQUERIDO, result);
 
@@ -69,6 +67,6 @@ public record SolicitarCargaVersionRepositorioArtefactoCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new SolicitarCargaVersionRepositorioArtefactoCommand(
-                repositorio, UtilUUID.generarUUIDDesdeTexto(solicitante), nombreRecortado, tipoRecortado, tamanoBytes);
+                repositorio, solicitante, nombreRecortado, tipoRecortado, tamanoBytes);
     }
 }

@@ -2,7 +2,7 @@ package com.arquisoft.usuarios.application.bibliotecario.command.usecase.impl;
 
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
@@ -92,7 +92,7 @@ class RemoverBibliotecarioUseCaseImplTest {
         var captorEvento = ArgumentCaptor.forClass(BibliotecarioRemovidoEvent.class);
         orden.verify(removerBibliotecarioValidator).validar(id, vigente);
         orden.verify(bibliotecarioOutputPort).eliminarLogica(eq(id), captorInstante.capture());
-        orden.verify(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.BIBLIOTECARIO);
+        orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.BIBLIOTECARIO);
         orden.verify(eventPublisher).publish(captorEvento.capture());
 
         assertThat(captorInstante.getValue()).isNotEqualTo(UtilFecha.VACIO);
@@ -116,7 +116,7 @@ class RemoverBibliotecarioUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(BibliotecarioDomain.crear(id)))
                 .isInstanceOf(BibliotecarioNoEncontradoException.class);
         verify(bibliotecarioOutputPort, never()).eliminarLogica(any(), any());
-        verify(proveedorIdentidadOutputPort, never()).revocarRealmRole(any(), anyString());
+        verify(proveedorIdentidadOutputPort, never()).revocarRol(any(), anyString());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -127,7 +127,7 @@ class RemoverBibliotecarioUseCaseImplTest {
         when(bibliotecarioPorUsuarioFinder.obtener(id)).thenReturn(BibliotecarioDomain.crear(id));
         when(usuarioPorIdFinder.obtener(id)).thenReturn(usuario(id));
         var fallo = new InfrastructureException("Proveedor de identidad caido", "PROVEEDOR_NO_DISPONIBLE");
-        doThrow(fallo).when(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.BIBLIOTECARIO);
+        doThrow(fallo).when(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.BIBLIOTECARIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(BibliotecarioDomain.crear(id))).isSameAs(fallo);

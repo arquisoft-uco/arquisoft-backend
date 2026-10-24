@@ -4,12 +4,11 @@ import com.arquisoft.proyectos.application.estadoproyectogrado.query.primaryport
 import com.arquisoft.proyectos.infrastructure.estadoproyectogrado.query.primaryadapter.web.dto.EstadoProyectoGradoResponseDTO;
 import com.arquisoft.proyectos.infrastructure.estadoproyectogrado.query.primaryadapter.web.mapper.ConsultarEstadosProyectoGradoEstudianteRequestMapper;
 import com.arquisoft.proyectos.infrastructure.estadoproyectogrado.query.primaryadapter.web.mapper.EstadoProyectoGradoResponseMapper;
-import com.arquisoft.proyectos.infrastructure.security.ProyectosAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ProyectosApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,9 +18,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +36,6 @@ public class ConsultarEstadosProyectoGradoEstudianteController {
     private final ConsultarEstadosProyectoGradoEstudianteInteractor interactor;
 
     @GetMapping("${rutas.proyectos.proyectos-grado.estados:/{proyectoGradoId}/estados}")
-    @PreAuthorize(ProyectosAuthorities.Expresiones.HAS_ESTADO_PROYECTO_GRADO_ESTUDIANTE_VIEW)
     @Operation(
             summary = ProyectosApiMessages.ConsultaEstadoProyectoGrado.CONSULTAR_SUMMARY,
             description = ProyectosApiMessages.ConsultaEstadoProyectoGrado.CONSULTAR_DESCRIPTION,
@@ -63,9 +58,9 @@ public class ConsultarEstadosProyectoGradoEstudianteController {
     })
     public ResponseEntity<List<EstadoProyectoGradoResponseDTO>> consultarEstados(
             @PathVariable UUID proyectoGradoId,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var estudiante = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var estudiante = identidad.id();
 
         var query = ConsultarEstadosProyectoGradoEstudianteRequestMapper.toQuery(proyectoGradoId, estudiante);
 

@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.usuarios.application.administrador.command.finder.AdministradorPorUsuarioFinder;
@@ -202,7 +202,7 @@ class EliminarUsuarioUseCaseImplTest {
         when(administradorPorUsuarioFinder.obtener(id)).thenReturn(AdministradorDomain.VACIO);
         when(bibliotecarioPorUsuarioFinder.obtener(id)).thenReturn(bibliotecario);
         when(juradoPorUsuarioFinder.obtener(id)).thenReturn(JuradoDomain.VACIO);
-        var rechazo = new UsuarioRolesVigentesException(id, UsuariosRealmRoles.BIBLIOTECARIO);
+        var rechazo = new UsuarioRolesVigentesException(id, UsuariosRoles.BIBLIOTECARIO);
         doThrow(rechazo).when(eliminarUsuarioValidator).validar(id, encontrado, new RolesUsuario(id,
                 EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
                 RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO, bibliotecario, JuradoDomain.VACIO));
@@ -222,7 +222,7 @@ class EliminarUsuarioUseCaseImplTest {
         stubRolesAusentes(id);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(encontrado);
         when(juradoPorUsuarioFinder.obtener(id)).thenReturn(jurado);
-        var rechazo = new UsuarioRolesVigentesException(id, UsuariosRealmRoles.JURADO);
+        var rechazo = new UsuarioRolesVigentesException(id, UsuariosRoles.JURADO);
         doThrow(rechazo).when(eliminarUsuarioValidator).validar(id, encontrado, new RolesUsuario(id,
                 EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
                 RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO, BibliotecarioDomain.VACIO, jurado));
@@ -248,7 +248,7 @@ class EliminarUsuarioUseCaseImplTest {
         when(administradorPorUsuarioFinder.obtener(id)).thenReturn(administrador);
         when(bibliotecarioPorUsuarioFinder.obtener(id)).thenReturn(BibliotecarioDomain.VACIO);
         when(juradoPorUsuarioFinder.obtener(id)).thenReturn(JuradoDomain.VACIO);
-        var rechazo = new UsuarioRolesVigentesException(id, UsuariosRealmRoles.ADMINISTRADOR);
+        var rechazo = new UsuarioRolesVigentesException(id, UsuariosRoles.ADMINISTRADOR);
         doThrow(rechazo).when(eliminarUsuarioValidator).validar(id, encontrado, new RolesUsuario(id,
                 EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
                 RepresentanteComiteDomain.VACIO, administrador, BibliotecarioDomain.VACIO, JuradoDomain.VACIO));
@@ -274,7 +274,7 @@ class EliminarUsuarioUseCaseImplTest {
         when(administradorPorUsuarioFinder.obtener(id)).thenReturn(AdministradorDomain.VACIO);
         when(bibliotecarioPorUsuarioFinder.obtener(id)).thenReturn(BibliotecarioDomain.VACIO);
         when(juradoPorUsuarioFinder.obtener(id)).thenReturn(JuradoDomain.VACIO);
-        var rechazo = new UsuarioRolesVigentesException(id, UsuariosRealmRoles.REPRESENTANTE_COMITE);
+        var rechazo = new UsuarioRolesVigentesException(id, UsuariosRoles.REPRESENTANTE_COMITE);
         doThrow(rechazo).when(eliminarUsuarioValidator).validar(id, encontrado, new RolesUsuario(id,
                 EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
                 representanteComite, AdministradorDomain.VACIO, BibliotecarioDomain.VACIO, JuradoDomain.VACIO));

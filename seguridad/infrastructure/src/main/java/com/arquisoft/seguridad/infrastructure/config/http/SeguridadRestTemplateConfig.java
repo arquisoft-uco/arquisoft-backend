@@ -31,7 +31,7 @@ public class SeguridadRestTemplateConfig {
 
     @Bean
     @Primary
-    public RestTemplate restTemplate() {
+    public RestTemplate seguridadRestTemplate() {
         var factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(connectTimeout);
         factory.setReadTimeout(readTimeout);

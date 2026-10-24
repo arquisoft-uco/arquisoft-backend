@@ -10,7 +10,6 @@ import com.arquisoft.usuarios.application.estudiante.query.primaryport.interacto
 import com.arquisoft.usuarios.infrastructure.estudiante.query.primaryadapter.web.dto.EstudianteVigenteResponseDTO;
 import com.arquisoft.usuarios.infrastructure.estudiante.query.primaryadapter.web.mapper.ConsultarEstudiantesVigentesRequestMapper;
 import com.arquisoft.usuarios.infrastructure.estudiante.query.primaryadapter.web.mapper.EstudianteVigenteResponseMapper;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +34,6 @@ public class ConsultarEstudiantesVigentesController {
     private final ConsultarEstudiantesVigentesInteractor consultarEstudiantesVigentesInteractor;
 
     @PostMapping("${rutas.usuarios.usuarios.estudiantes-vigentes:/estudiantes/vigentes}")
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_ESTUDIANTE_VIGENTE_VIEW)
     @Operation(
             summary = UsuariosApiMessages.Estudiante.CONSULTAR_VIGENTES_SUMMARY,
             description = UsuariosApiMessages.Estudiante.CONSULTAR_VIGENTES_DESCRIPTION,

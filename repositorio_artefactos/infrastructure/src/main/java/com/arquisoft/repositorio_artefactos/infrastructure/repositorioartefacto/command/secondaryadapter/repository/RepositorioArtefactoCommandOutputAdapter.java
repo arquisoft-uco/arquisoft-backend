@@ -33,4 +33,15 @@ public class RepositorioArtefactoCommandOutputAdapter implements RepositorioArte
     public boolean existePorNombreRepositorio(String nombreRepositorio) {
         return repositorioArtefactoCommandRepository.existsByNombreRepositorio(nombreRepositorio);
     }
+
+    @Override
+    public boolean existeOtroConNombreRepositorio(String nombreRepositorio, UUID repositorio) {
+        return repositorioArtefactoCommandRepository.existsByNombreRepositorioAndIdNot(nombreRepositorio, repositorio);
+    }
+
+    @Override
+    public void actualizarDatos(UUID repositorio, String nombreRepositorio, String descripcion) {
+        repositorioArtefactoCommandRepository.actualizarDatos(repositorio, nombreRepositorio, descripcion);
+        logger.debug(RepositorioArtefactoKey.LOG_ACTUALIZADO, repositorio);
+    }
 }

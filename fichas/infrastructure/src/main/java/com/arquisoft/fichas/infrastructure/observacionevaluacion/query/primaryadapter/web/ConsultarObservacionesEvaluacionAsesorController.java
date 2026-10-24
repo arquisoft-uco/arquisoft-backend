@@ -4,12 +4,11 @@ import com.arquisoft.fichas.application.observacionevaluacion.query.primaryport.
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.query.primaryadapter.web.dto.ObservacionEvaluacionResponseDTO;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.query.primaryadapter.web.mapper.ConsultarObservacionesEvaluacionAsesorRequestMapper;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.query.primaryadapter.web.mapper.ObservacionEvaluacionResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,9 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,7 +39,6 @@ public class ConsultarObservacionesEvaluacionAsesorController {
 
     @GetMapping("${rutas.fichas.fichas-perfil.evaluacion-observaciones-asesor:"
             + "/evaluaciones/{evaluacionFichaPerfilId}/observaciones/asesor}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_OBSERVACION_EVALUACION_ASESOR_VIEW)
     @Operation(
             summary = FichasApiMessages.ObservacionEvaluacion.CONSULTAR_ASESOR_SUMMARY,
             description = FichasApiMessages.ObservacionEvaluacion.CONSULTAR_ASESOR_DESCRIPTION,
@@ -64,9 +59,9 @@ public class ConsultarObservacionesEvaluacionAsesorController {
     })
     public ResponseEntity<List<ObservacionEvaluacionResponseDTO>> consultarElaboradas(
             @PathVariable UUID evaluacionFichaPerfilId,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var asesorFicha = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var asesorFicha = identidad.id();
         var resultado = consultarObservacionesEvaluacionAsesorInteractor.ejecutar(
                 ConsultarObservacionesEvaluacionAsesorRequestMapper.toQuery(evaluacionFichaPerfilId, asesorFicha));
 

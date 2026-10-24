@@ -7,7 +7,7 @@ import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.EliminarRespuestaAmpliacionPlazoInteractor;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.EliminarRespuestaAmpliacionPlazoCommand;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAmpliacionPlazoException;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -34,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(EliminarRespuestaAmpliacionPlazoController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         EliminarRespuestaAmpliacionPlazoControllerTest.TestSecurityConfig.class})
 class EliminarRespuestaAmpliacionPlazoControllerTest {
 
@@ -42,7 +40,6 @@ class EliminarRespuestaAmpliacionPlazoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -63,10 +60,9 @@ class EliminarRespuestaAmpliacionPlazoControllerTest {
     private EliminarRespuestaAmpliacionPlazoInteractor interactor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDe(
-            UUID subject, String authority) {
+            UUID subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(builder -> builder.subject(subject.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(builder -> builder.subject(subject.toString()));
     }
 
     @Test
@@ -77,7 +73,7 @@ class EliminarRespuestaAmpliacionPlazoControllerTest {
 
         // Act & Assert
         mockMvc.perform(delete(RUTA.formatted(solicitud))
-                        .with(jwtDe(coordinador, SolicitudesAuthorities.RESPUESTA_AMPLIACION_PLAZO_DELETE)))
+                        .with(jwtDe(coordinador)))
                 .andExpect(status().isNoContent());
 
         var captor = ArgumentCaptor.forClass(EliminarRespuestaAmpliacionPlazoCommand.class);
@@ -90,8 +86,7 @@ class EliminarRespuestaAmpliacionPlazoControllerTest {
     void debe400_cuandoElIdDeLaSolicitudNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(delete(RUTA.formatted("no-es-uuid"))
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.RESPUESTA_AMPLIACION_PLAZO_DELETE)))
+                        .with(jwtDe(UtilUUID.generarNuevoUUID())))
                 .andExpect(status().isBadRequest());
     }
 
@@ -103,23 +98,13 @@ class EliminarRespuestaAmpliacionPlazoControllerTest {
     }
 
     @Test
-    void debe403_cuandoElTokenNoTieneElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA.formatted(UtilUUID.generarNuevoUUID()))
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.RESPUESTA_AMPLIACION_PLAZO_CREATE)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debe422_cuandoElInteractorRechazaPorReglaDeNegocio() throws Exception {
         // Arrange
         doThrow(new SolicitudTipoNoCoincideAmpliacionPlazoException()).when(interactor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(delete(RUTA.formatted(UtilUUID.generarNuevoUUID()))
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.RESPUESTA_AMPLIACION_PLAZO_DELETE)))
+                        .with(jwtDe(UtilUUID.generarNuevoUUID())))
                 .andExpect(status().isUnprocessableEntity());
     }
 }

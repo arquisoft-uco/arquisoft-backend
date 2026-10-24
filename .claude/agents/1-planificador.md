@@ -68,16 +68,19 @@ presenta lo hallado con rutas y ofrece A) todo nuevo · B) modificar · C) ambos
 **2. Tipo de use case:** A) Escritura · B) Consulta (nunca emite eventos) · C) Mixta (si dudas,
 separa en dos).
 
-**3. Client role y roles realm.** Formato `{contexto}:{recurso-kebab}:{accion}`, minúsculas con
-guiones. Roles realm: `coordinador`, `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`,
-`representante-comite`, `estudiante`, `administrador`. **Un client role por endpoint, propio y
-distinto**, para concederlo o revocarlo sin tocar a otros: `grep` en `{Contexto}Authorities` y en
-`keycloak/realm-arquisoft.json` que no esté declarado ya. Los roles realm que se respondan aquí son
-los que lo componen en el realm (sección 9 y fila de Keycloak en la sección 6). Mismo recurso con
-otro actor o alcance → calificador en el segmento de recurso
-(`fichas:ficha-perfil-asesor:view` vs `fichas:ficha-perfil-coordinador:view`). En recurso anidado,
-el recurso es la entidad afectada (`POST /fichas-perfil/{id}/estudiantes` →
-`fichas:estudiante-ficha-perfil:create`).
+**3. Autorización del endpoint.** El controlador no autoriza: la decisión de acceso es externa
+(`DecisionAccesoOutputPort`) y se identifica por `método + plantilla de ruta` con `/api` (los nombres
+de variable cuentan). Pregunta qué roles o perfiles del PDP usan el endpoint y qué realm roles otorgan
+su client role —para el recurso del anexo y la sección 9— y recuerda que el endpoint nuevo exige una fila con su client role en
+`seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml`
+(`CompletitudEquivalenciasAutorizacionTest` lo comprueba), y ese client role en
+`keycloak/realm-arquisoft.json`, como composite de los realm roles que respondió el usuario: sin eso
+el endpoint da 403 a todos (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera
+del controlador*). El controlador recibe
+`IdentidadActual`, nunca `Jwt` ni `@PreAuthorize`; si la lógica depende del rol del llamante, el plan lo
+traduce en el `RequestMapper` con `RolesIdentidad` (misma sección). Roles de negocio actuales: `coordinador`,
+`asesor`, `asesor-ficha`, `jurado`, `bibliotecario`, `representante-comite`, `estudiante`,
+`administrador`.
 
 **4. ¿Reglas de negocio implícitas?**
 
@@ -118,7 +121,7 @@ y cada resultado que la escritura o el evento leen tiene su `Rule` en la lista d
 (`arquisoft-estandares` → *Validator, Rule, Finder*). Un `Finder` "después de validar" o "sin `Rule`
 porque la FK lo garantiza" es un plan que deja pasar un `VACIO` en silencio.
 
-**9. ¿Sistema externo** (Keycloak, SMTP, MinIO, HTTP)? Puerto en `command/secondaryport/`, adaptador
+**9. ¿Sistema externo** (proveedor de identidad, PEP, SMTP, MinIO, HTTP)? Puerto en `command/secondaryport/`, adaptador
 en `command/secondaryadapter/{tecnologia}/`, sin lógica de negocio.
 
 **10. ¿Endpoint nuevo o existente?** Nuevo → `{Accion}{Entidad}Controller`. Existente → ruta exacta
@@ -130,8 +133,8 @@ justificado. Decide la forma: desenlace único = `record`; varios excluyentes = 
 con un `record` por variante y una fábrica por variante en el mapper. Nunca `Domain`, `Entity` ni
 `ReadModel`. Referencias: `notificaciones/notificacion`, `seguridad/auth`.
 
-**12. ¿Recurso existente con dueño?** `@PreAuthorize` autoriza por rol, no por instancia. El
-`Controller` saca `actorId` del JWT, el use case trae la propiedad con un `Finder` y la decide
+**12. ¿Recurso existente con dueño?** La decisión de acceso autoriza por recurso, no por instancia. El
+`Controller` saca `actorId` de `IdentidadActual`, el use case trae la propiedad con un `Finder` y la decide
 `{Actor}Propietario{Entidad}Rule` → 422. Existencia primero, propiedad después. Referencia:
 `EstudiantePropietarioFichaRule` + `PropiedadFicha`.
 
@@ -188,19 +191,19 @@ Desde la sección 4 el plan es condicional:
 ### {contexto}/application — `…/application/{feature}/`
 ### {contexto}/infrastructure — `…/infrastructure/{feature}/`
 ### shared:message y catálogo
-### Keycloak — `keycloak/`
-| ✏️ | `realm-arquisoft.json` | Define `{contexto}:{recurso}:{accion}` en `arquisoft-api` y lo compone en `{rol realm}` |
+### Autorización — `seguridad/infrastructure/src/main/resources/`
+| ✏️ | `autorizacion-equivalencias.yml` | Fila `{MÉTODO} /api/{plantilla}` → client role, solo si el endpoint es nuevo |
+| ✏️ | `keycloak/realm-arquisoft.json` | Client role en `arquisoft-api` + composite en cada realm role de la sección 9 |
 ### Migración
 
 ## 7. Notas de implementación           ← solo lo que no se deduce de la sección 6
 - `{Clase}`: {firma o decisión no obvia, máx. 2 líneas}
 
 ## 8. Endpoints
-| Método | Ruta (sin /api) | Clave de propiedad | Request | Response | HTTP | Client role |
+| Método | Ruta (sin /api) | Clave de propiedad | Request | Response | HTTP | Roles PDP |
 
 ## 9. Seguridad
-| Client role | Roles realm que lo componen en `realm-arquisoft.json` | Endpoint |
-{Si hay otro endpoint sobre el mismo recurso: una línea con el role que NO se reutiliza.}
+| Recurso PDP (método + plantilla con /api) | Roles PDP que lo usan | Client role (fila en `autorizacion-equivalencias.yml`) | Realm roles que lo otorgan en `realm-arquisoft.json` |
 
 ## 10. Eventos RabbitMQ                 ← solo si 5 = A/B
 | Dirección | Routing key | Payload | Receptor |
@@ -225,7 +228,7 @@ Un grupo por módulo; el encabezado lleva el prefijo común (`{contexto}/applica
 abreviado con `…`) y cada fila solo la ruta desde ahí. Marca **➕** si el archivo no existe y **✏️**
 si existe y cambia (verificado abriéndolo). Un archivo que se usa pero no cambia no va en la tabla
 ni lleva marca, tampoco en la sección 4: allí se nombra sin ➕/✏️. La columna *Qué* es una frase: para ➕ su responsabilidad, para
-✏️ **exactamente qué cambia** ("añade `HAS_CERRAR_FICHA`", "nuevo método `existePorItem(UUID)`").
+✏️ **exactamente qué cambia** ("añade la constante `CERRADO`", "nuevo método `existePorItem(UUID)`").
 Interfaz + `impl` van en una sola fila (`usecase/CerrarFichaUseCase(+Impl).java`). `{feature}` va en
 minúsculas sin separadores.
 
@@ -234,7 +237,7 @@ Paquetes y sufijos exactos: `arquisoft-arquitectura`. Lo que suele faltar en el 
 | Caso | Filas |
 |---|---|
 | Escritura | `Command`, `primaryport/mapper/` (siempre), `Interactor`, `UseCase` (recibe dominio), `Finder`s, `secondaryport/` (`OutputPort` + `entity/` + `mapper/`), `Controller` + `dto/` + `mapper/`, `secondaryadapter/` (`JpaEntity`, `JpaMapper`, `CommandOutputAdapter`, `CommandRepository`) |
-| Endpoint nuevo (escritura o consulta) | ✏️ `{Contexto}Authorities` (role crudo + SpEL) y ✏️ `keycloak/realm-arquisoft.json` (definición + composite en cada rol realm de la sección 9; `arquisoft-arquitectura` → *Rutas y autorización viven en constantes, no en literales*) |
+| Endpoint nuevo (escritura o consulta) | Recurso nuevo en el PDP (sección 9), ✏️ fila en `autorizacion-equivalencias.yml`, ✏️ client role en `realm-arquisoft.json` y `IdentidadActual` en el controlador (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*) |
 | `Validator` | solo si la sección 3 tiene alguna `Rule` |
 | `result/` + `ResponseMapper` | solo si la pregunta 11 fue C |
 | `event/` | solo si la pregunta 5 fue A/B |
@@ -295,9 +298,9 @@ Presupuesto: pequeña 15-25 · mediana 25-50 · grande 50-80 · más de 80, revi
 capa, una línea cada uno (`debeX_cuandoY`). Escritura: domain (`crear` válido + un test de
 `fieldErrors[]` acumulados, cada `Rule`) → application (`UseCase`: éxito con orden y **un** rechazo
 con el `Validator` mockeado, no uno por `Rule`, que el use case no los distingue; `Validator` con
-`Rule`s reales, un caso por regla y su prioridad) → infrastructure (`@DataJpaTest`, `@WebMvcTest` 201/400/401/403/422). Consulta:
+`Rule`s reales, un caso por regla y su prioridad) → infrastructure (`@DataJpaTest`, `@WebMvcTest` 201/400/401/422). Consulta:
 `UseCase`, `SortMapperTest` si hay orden, `QueryOutputAdapter` siempre con `@DataJpaTest`
-(Mockito no ejecuta el `@Subselect`), `Controller` 200/400/401/403.
+(Mockito no ejecuta el `@Subselect`), `Controller` 200/400/401.
 
 ### Sección 13 — Checklist de Implementación
 
@@ -305,7 +308,7 @@ Solo decisiones de **esta** historia con nombres reales: si un ítem se leería 
 va. Un ítem por decisión tomada en la FASE 3: eventos (o "ninguno"), razón de un estado sin
 notificación, presupuesto de I/O y cascadas justificadas, `Rule`s del `Validator` en orden o "sin
 `Validator`", política de acceso o "ninguna", cortes sin excepción, objeto de acción, retorno y
-entrada, encadenamiento, client role nuevo con los roles realm que lo componen y el que no se reutiliza, réplica o consulta síncrona,
+entrada, encadenamiento, recurso PDP y roles PDP que lo usan con su client role y los realm roles que lo otorgan, réplica o consulta síncrona,
 vigencia (`eliminado_en`) de cada consulta a réplica, migración y constantes del MER, y el commit
 sugerido `feat({contexto}): {descripción}`.
 

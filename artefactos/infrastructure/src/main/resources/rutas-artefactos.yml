@@ -4,7 +4,15 @@
 rutas:
   artefactos:
     revisiones-asesor:
-      base: /artefactos/revisiones-asesor
+      base: /revisiones-asesor
       estudiante: /estudiante
+      asesor: /asesor
+    observaciones:
+      base: /revisiones-asesor
+      listar: /{revisionAsesorId}/observaciones
+      listar-estudiante: /{revisionAsesorId}/observaciones/estudiante
+    artefactos:
+      base: /artefactos
+      estudiantes: /{artefactoId}/estudiantes
     estados-revision-asesor:
       base: /estados-revision-asesor

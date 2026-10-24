@@ -10,7 +10,7 @@ public final class CambiarPuntajeEvaluacionCuantitativaJuradoRequestMapper {
     private CambiarPuntajeEvaluacionCuantitativaJuradoRequestMapper() {}
 
     public static CambiarPuntajeEvaluacionCuantitativaJuradoCommand toCommand(
-            CambiarPuntajeEvaluacionCuantitativaJuradoRequestDTO dto, UUID id, String juradoSubject) {
-        return CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(id, dto.puntaje(), juradoSubject);
+            CambiarPuntajeEvaluacionCuantitativaJuradoRequestDTO dto, UUID id, UUID jurado) {
+        return CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(id, dto.puntaje(), jurado);
     }
 }

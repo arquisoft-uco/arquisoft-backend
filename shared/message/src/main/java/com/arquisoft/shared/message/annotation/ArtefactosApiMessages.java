@@ -30,6 +30,60 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de estudiante inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permiso para consultar las revisiones del asesor";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Filtrar las revisiones realizadas por el asesor";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Devuelve, de forma paginada, las revisiones registradas sobre las versiones de los artefactos "
+                        + "a cargo del asesor autenticado. Se puede filtrar por la versión del artefacto "
+                        + "(versionArtefacto) y por el estado de la revisión (estadoRevisionAsesor), y ordenar por "
+                        + "estadoRevisionAsesor. El asesor se toma del token, nunca del cuerpo.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de revisiones realizadas por el asesor";
+        public static final String CONSULTAR_ASESOR_RESP_400 =
+                "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar las revisiones realizadas";
+    }
+
+    public static final class EstudianteArtefacto {
+
+        private EstudianteArtefacto() {}
+
+        public static final String TAG_NAME = "Estudiantes de artefactos";
+        public static final String TAG_DESCRIPTION = "Consulta de los estudiantes vinculados a un artefacto";
+        public static final String CONSULTAR_SUMMARY = "Consultar los estudiantes vinculados a un artefacto";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve, sin paginar y ordenados por nombre, los estudiantes vinculados al artefacto con su "
+                        + "nombre, correo y si siguen vigentes. Un artefacto sin vínculos o inexistente devuelve "
+                        + "una lista vacía.";
+        public static final String CONSULTAR_RESP_200 = "Listado de estudiantes vinculados al artefacto";
+        public static final String CONSULTAR_RESP_400 = "Identificador de artefacto inválido";
+        public static final String CONSULTAR_RESP_403 = "Sin permisos para consultar los estudiantes del artefacto";
+    }
+
+    public static final class Observacion {
+
+        private Observacion() {}
+
+        public static final String TAG_NAME = "Observaciones de revisiones";
+        public static final String TAG_DESCRIPTION = "Consulta de las observaciones realizadas en una revisión del asesor";
+        public static final String CONSULTAR_SUMMARY = "Consultar las observaciones realizadas a una revisión";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve, sin paginar y ordenadas por descripción, las observaciones de la revisión con su "
+                        + "descripción y su estado. Una revisión sin observaciones o inexistente devuelve "
+                        + "una lista vacía.";
+        public static final String CONSULTAR_RESP_200 = "Listado de observaciones de la revisión";
+        public static final String CONSULTAR_RESP_400 = "Identificador de revisión inválido";
+        public static final String CONSULTAR_RESP_403 = "Sin permisos para consultar las observaciones de la revisión";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
+                "Consultar las observaciones realizadas a una revisión del asesor sobre el artefacto";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Devuelve, sin paginar y ordenadas por descripción, las observaciones de la revisión con su "
+                        + "descripción y su estado. Una revisión sin observaciones o inexistente devuelve "
+                        + "una lista vacía.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Listado de observaciones de la revisión";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador de revisión inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
+                "Sin permisos para consultar las observaciones de la revisión como estudiante";
     }
 
     public static final class EstadoRevisionAsesor {

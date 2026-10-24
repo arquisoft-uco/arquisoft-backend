@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.observacionitemjurado.command.prim
 import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.command.primaryadapter.web.dto.RegistrarObservacionItemJuradoRequestDTO;
 import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.command.primaryadapter.web.dto.RegistrarObservacionItemJuradoResponseDTO;
 import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.command.primaryadapter.web.mapper.RegistrarObservacionItemJuradoRequestMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -19,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,7 +37,6 @@ public class RegistrarObservacionItemJuradoController {
     private final RegistrarObservacionItemJuradoInteractor interactor;
 
     @PostMapping("${rutas.evaluaciones.evaluaciones-cuantitativas-jurado.observaciones:/{id}/observaciones}")
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_OBSERVACION_ITEM_JURADO_CREATE)
     @Operation(
             summary = EvaluacionesApiMessages.ObservacionItemJurado.REGISTRAR_SUMMARY,
             description = EvaluacionesApiMessages.ObservacionItemJurado.REGISTRAR_DESCRIPTION,

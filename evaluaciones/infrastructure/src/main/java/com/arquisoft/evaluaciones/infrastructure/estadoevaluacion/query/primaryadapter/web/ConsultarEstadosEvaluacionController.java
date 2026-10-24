@@ -3,7 +3,6 @@ package com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.primary
 import com.arquisoft.evaluaciones.application.estadoevaluacion.query.primaryport.interactor.ConsultarEstadosEvaluacionInteractor;
 import com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.primaryadapter.web.dto.EstadoEvaluacionResponseDTO;
 import com.arquisoft.evaluaciones.infrastructure.estadoevaluacion.query.primaryadapter.web.mapper.EstadoEvaluacionResponseMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -17,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +33,6 @@ public class ConsultarEstadosEvaluacionController {
     private final ConsultarEstadosEvaluacionInteractor interactor;
 
     @GetMapping
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_ESTADO_EVALUACION_VIEW)
     @Operation(
             summary = EvaluacionesApiMessages.EstadoEvaluacion.CONSULTAR_SUMMARY,
             description = EvaluacionesApiMessages.EstadoEvaluacion.CONSULTAR_DESCRIPTION,

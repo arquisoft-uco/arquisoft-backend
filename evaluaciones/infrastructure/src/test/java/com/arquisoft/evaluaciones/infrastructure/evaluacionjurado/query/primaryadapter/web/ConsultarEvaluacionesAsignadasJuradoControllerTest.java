@@ -4,10 +4,10 @@ import com.arquisoft.evaluaciones.application.evaluacionjurado.query.primaryport
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.primaryport.model.ConsultarEvaluacionesAsignadasJuradoQuery;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.readmodel.EvaluacionAsignadaJuradoReadModel;
 import com.arquisoft.evaluaciones.domain.jurado.exception.JuradoNoEncontradoException;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -37,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEvaluacionesAsignadasJuradoController.class)
-@Import({
+@Import({IdentidadActualTestConfig.class,
         com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         ConsultarEvaluacionesAsignadasJuradoControllerTest.TestSecurityConfig.class
@@ -48,7 +46,6 @@ class ConsultarEvaluacionesAsignadasJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -76,8 +73,7 @@ class ConsultarEvaluacionesAsignadasJuradoControllerTest {
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDelJurado(String subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(token -> token.subject(subject))
-                .authorities(new SimpleGrantedAuthority(EvaluacionesAuthorities.EVALUACION_JURADO_JURADO_VIEW));
+                .jwt(token -> token.subject(subject));
     }
 
     @Test
@@ -129,21 +125,6 @@ class ConsultarEvaluacionesAsignadasJuradoControllerTest {
     }
 
     @Test
-    void debeResponder403_sinClientRole() throws Exception {
-        // Arrange
-        var soloEstudiante = SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(token -> token.subject(UtilUUID.generarNuevoUUID().toString()))
-                .authorities(new SimpleGrantedAuthority(EvaluacionesAuthorities.EVALUACION_JURADO_ESTUDIANTE_VIEW));
-
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()))
-                .andExpect(status().isForbidden());
-        mockMvc.perform(get(RUTA).with(soloEstudiante))
-                .andExpect(status().isForbidden());
-        verify(interactor, never()).ejecutar(any());
-    }
-
-    @Test
     void debeResponder422_cuandoElJuradoNoExiste() throws Exception {
         // Arrange
         var jurado = UtilUUID.generarNuevoUUID();
@@ -155,10 +136,10 @@ class ConsultarEvaluacionesAsignadasJuradoControllerTest {
     }
 
     @Test
-    void debeResponder400_cuandoElSubjectNoEsUUID() throws Exception {
+    void debeResponder401_cuandoElSubjectNoEsUUID() throws Exception {
         // Act & Assert
         mockMvc.perform(get(RUTA).with(jwtDelJurado("no-es-uuid")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
         verify(interactor, never()).ejecutar(any());
     }
 }

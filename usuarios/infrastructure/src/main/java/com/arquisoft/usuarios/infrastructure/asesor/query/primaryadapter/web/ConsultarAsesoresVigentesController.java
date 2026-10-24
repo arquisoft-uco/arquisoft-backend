@@ -10,7 +10,6 @@ import com.arquisoft.usuarios.application.asesor.query.primaryport.interactor.Co
 import com.arquisoft.usuarios.infrastructure.asesor.query.primaryadapter.web.dto.AsesorVigenteResponseDTO;
 import com.arquisoft.usuarios.infrastructure.asesor.query.primaryadapter.web.mapper.ConsultarAsesoresVigentesRequestMapper;
 import com.arquisoft.usuarios.infrastructure.asesor.query.primaryadapter.web.mapper.AsesorVigenteResponseMapper;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +34,6 @@ public class ConsultarAsesoresVigentesController {
     private final ConsultarAsesoresVigentesInteractor consultarAsesoresVigentesInteractor;
 
     @PostMapping("${rutas.usuarios.usuarios.asesores-vigentes:/asesores/vigentes}")
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_ASESOR_VIGENTE_VIEW)
     @Operation(
             summary = UsuariosApiMessages.Asesor.CONSULTAR_VIGENTES_SUMMARY,
             description = UsuariosApiMessages.Asesor.CONSULTAR_VIGENTES_DESCRIPTION,

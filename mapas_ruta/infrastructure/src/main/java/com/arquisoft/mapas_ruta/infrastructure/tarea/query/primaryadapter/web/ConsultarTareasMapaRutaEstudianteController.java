@@ -1,7 +1,6 @@
 package com.arquisoft.mapas_ruta.infrastructure.tarea.query.primaryadapter.web;
 
 import com.arquisoft.mapas_ruta.application.tarea.query.primaryport.interactor.ConsultarTareasMapaRutaEstudianteInteractor;
-import com.arquisoft.mapas_ruta.infrastructure.security.MapasRutaAuthorities;
 import com.arquisoft.mapas_ruta.infrastructure.tarea.query.primaryadapter.web.dto.TareaResponseDTO;
 import com.arquisoft.mapas_ruta.infrastructure.tarea.query.primaryadapter.web.mapper.ConsultarTareasMapaRutaEstudianteRequestMapper;
 import com.arquisoft.mapas_ruta.infrastructure.tarea.query.primaryadapter.web.mapper.TareaResponseMapper;
@@ -21,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,7 +37,6 @@ public class ConsultarTareasMapaRutaEstudianteController {
     private final ConsultarTareasMapaRutaEstudianteInteractor consultarTareasMapaRutaEstudianteInteractor;
 
     @PostMapping("${rutas.mapas-ruta.mapas-ruta.tareas-estudiante:/{mapaRutaId}/tareas/estudiante}")
-    @PreAuthorize(MapasRutaAuthorities.Expresiones.HAS_TAREA_MAPA_RUTA_ESTUDIANTE_VIEW)
     @Operation(
             summary = MapasRutaApiMessages.Tarea.CONSULTAR_POR_MAPA_RUTA_SUMMARY,
             description = MapasRutaApiMessages.Tarea.CONSULTAR_POR_MAPA_RUTA_DESCRIPTION,

@@ -134,7 +134,7 @@ genérico no admite primitivos) y el unboxing es seguro porque el `Finder` nunca
 
 ### Validación en una consulta: política de acceso por instancia
 
-`@PreAuthorize` autoriza el endpoint, no la instancia pedida. Cuando la HU pone una condición sobre
+La decisión de acceso (`DecisionAccesoOutputPort`) autoriza el endpoint, no la instancia pedida. Cuando la HU pone una condición sobre
 la instancia —que exista, que el solicitante pertenezca, que su estado permita verla—, la consulta
 lleva su propio `Finder` → `Validator` → `Rule` y valida **antes** de leer; sin eso responde 200 vacío
 para un id inexistente o entrega datos ajenos. Referencia:
@@ -197,9 +197,13 @@ llega sin validar al repositorio. Compila y pasa los tests igual. La señal es m
 parámetro de `crear` pasa por algún `Validator*` (un opcional, solo si llega). Ver
 `RegistrarFichaPerfilCommand.java` y `ConsultarCategoriasItemCuantitativoJuradoQuery.java`.
 
-Los IDs del body HTTP llegan como `String` y se validan ahí con `ValidatorUUID.uuidValido(...)`,
-convirtiendo con `UtilUUID.generarUUIDDesdeTexto` — **nunca con una anotación Jakarta**. El `Command`
-y los `@PathVariable` sí van tipados `UUID`.
+Un identificador se tipa según su origen. Los del body HTTP llegan como `String` y se validan ahí con
+`ValidatorUUID.uuidValido(...)`, convirtiendo con `UtilUUID.generarUUIDDesdeTexto` — **nunca con una
+anotación Jakarta**. Los que ya llegan parseados, el `@PathVariable` y la identidad del llamante
+(`IdentidadActual.id()`), pasan como `UUID` hasta `crear(...)`, que solo comprueba
+`ValidatorObjeto.noNulo`: un `toString()` para re-parsearlos añade una validación de formato que nunca
+falla y un código de error muerto (`ConsultarEstadosFichaQuery.java`). Los campos del `Command` van
+siempre tipados `UUID`.
 
 El `RequestDTO` es un `record` **sin ninguna anotación**, y un `{Accion}{Entidad}RequestMapper`
 (`final`, constructor privado, `static toCommand`) llama a `Command.crear(...)`
@@ -225,7 +229,6 @@ Nombres objetuales en contratos: `asesorFicha`, no `asesorFichaId`; `estudiantes
 | Límites de negocio | `constant/{Contexto}Limits.java` |
 | Textos de Swagger | `annotation/{Contexto}ApiMessages.java` |
 | Códigos HTTP de `@ApiResponse`, esquema de seguridad | `annotation/ApiCodes.java`, `ApiSecurity.BEARER_AUTH` |
-| Client roles y su SpEL | `{contexto}/infrastructure/security/{Contexto}Authorities.java` |
 
 Swagger se queda embebido porque un valor de anotación debe ser constante. Un identificador usado
 solo dentro de una clase se queda `private static final` ahí; se promueve con un segundo lector.
@@ -341,9 +344,15 @@ JUnit 6 + Mockito + AssertJ, AAA con marcadores `// Arrange / // Act / // Assert
 - **Controller:** `@WebMvcTest` (`org.springframework.boot.webmvc.test.autoconfigure`) con
   `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
   {Test}.TestSecurityConfig.class})` — sin el handler todo sale 500, sin `AppLoggerConfig` falta
-  `AppLogger`. `@MockitoBean` (nunca `@MockBean`); auth con
-  `jwt().authorities(new SimpleGrantedAuthority({Contexto}Authorities.X))`, nunca `@WithMockUser`
-  (prefija `ROLE_`). Ver `RegistrarFichaPerfilControllerTest.java`.
+  `AppLogger`. `@MockitoBean` (nunca `@MockBean`); auth con `jwt().jwt(j -> j.subject(id))`, sin
+  `.authorities(...)`, nunca `@WithMockUser` (prefija `ROLE_`); se importa `IdentidadActualTestConfig`
+  (`testFixtures` de `shared:web`) para resolver `IdentidadActual`. No se escriben tests 403 por rol en
+  un controlador: la autorización no vive ahí y se prueba en `AutorizacionAccesoFilterTest`. Ver
+  `RegistrarFichaPerfilControllerTest.java`.
+- **Vocabulario de proveedor:** Keycloak, PEP y los claims (`realm_access`, `resource_access`) solo
+  aparecen en adaptadores de `seguridad:infrastructure` y `usuarios/.../secondaryadapter`; en cualquier
+  otro sitio un cambio de proveedor obligaría a tocarlo, y `verificarNeutralidadProveedorIdentidad` lo
+  impide.
 - **Mensajes:** el catálogo de prueba se instala solo (`InstaladorCatalogoPrueba` vía
   `ServiceLoader`, con `testImplementation testFixtures(project(':shared:message'))`) y lanza ante
   una aridad mal declarada. Compara contra la constante de `{Contexto}Codes`/`Fields`, no el literal.

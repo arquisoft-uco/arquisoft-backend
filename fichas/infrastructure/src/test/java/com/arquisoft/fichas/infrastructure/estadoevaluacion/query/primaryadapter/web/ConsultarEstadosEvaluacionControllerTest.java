@@ -2,7 +2,6 @@ package com.arquisoft.fichas.infrastructure.estadoevaluacion.query.primaryadapte
 
 import com.arquisoft.fichas.application.estadoevaluacion.query.primaryport.interactor.ConsultarEstadosEvaluacionInteractor;
 import com.arquisoft.fichas.application.estadoevaluacion.query.readmodel.EstadoEvaluacionReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -11,10 +10,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -37,7 +34,6 @@ class ConsultarEstadosEvaluacionControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -77,8 +73,7 @@ class ConsultarEstadosEvaluacionControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(5))
                 .andExpect(jsonPath("$[0].id").value("EN_EVALUACION"))
@@ -93,8 +88,7 @@ class ConsultarEstadosEvaluacionControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
@@ -110,8 +104,7 @@ class ConsultarEstadosEvaluacionControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("DESCARTADA"))
@@ -128,23 +121,13 @@ class ConsultarEstadosEvaluacionControllerTest {
     }
 
     @Test
-    void debe403_cuandoClientRoleInsuficiente() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("otro-permiso"))))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeInvocarInteractorUnaVez_cuandoEndpointEsLlamado() throws Exception {
         // Arrange
         when(consultarEstadosEvaluacionInteractor.ejecutar()).thenReturn(catalogoCompleto());
 
         // Act
         mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk());
 
         // Assert

@@ -4,7 +4,6 @@ import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.primary
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.interactor.AsignarEstudiantesFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.primaryadapter.web.dto.AsignarEstudiantesFichaPerfilRequestDTO;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +13,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,7 +31,6 @@ public class AsignarEstudiantesFichaPerfilController {
     private final AsignarEstudiantesFichaPerfilInteractor asignarEstudiantesFichaPerfilInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.estudiantes:/{fichaPerfilId}/estudiantes}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTUDIANTE_FICHA_PERFIL_CREATE)
     @Operation(
             summary = FichasApiMessages.EstudianteFichaPerfil.ASIGNAR_SUMMARY,
             description = FichasApiMessages.EstudianteFichaPerfil.ASIGNAR_DESCRIPTION,

@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.jurado.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
@@ -89,7 +89,7 @@ class RemoverJuradoUseCaseImplTest {
         var captorEvento = ArgumentCaptor.forClass(JuradoRemovidoEvent.class);
         orden.verify(removerJuradoValidator).validar(id, usuario, vigente);
         orden.verify(juradoOutputPort).eliminarLogica(eq(id), captorInstante.capture());
-        orden.verify(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.JURADO);
+        orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.JURADO);
         orden.verify(eventPublisher).publish(captorEvento.capture());
 
         assertThat(captorInstante.getValue()).isNotEqualTo(UtilFecha.VACIO);
@@ -112,7 +112,7 @@ class RemoverJuradoUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(JuradoDomain.crear(id)))
                 .isInstanceOf(JuradoNoEncontradoException.class);
         verify(juradoOutputPort, never()).eliminarLogica(any(), any());
-        verify(proveedorIdentidadOutputPort, never()).revocarRealmRole(any(), anyString());
+        verify(proveedorIdentidadOutputPort, never()).revocarRol(any(), anyString());
         verify(eventPublisher, never()).publish(any());
     }
 }

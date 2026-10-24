@@ -6,7 +6,7 @@ import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.EliminarSolicitudNovedadAsesorInteractor;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EliminarSolicitudNovedadAsesorCommand;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +14,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -33,7 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(EliminarSolicitudNovedadAsesorController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         EliminarSolicitudNovedadAsesorControllerTest.TestSecurityConfig.class})
 class EliminarSolicitudNovedadAsesorControllerTest {
 
@@ -41,7 +39,6 @@ class EliminarSolicitudNovedadAsesorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -62,10 +59,9 @@ class EliminarSolicitudNovedadAsesorControllerTest {
     private EliminarSolicitudNovedadAsesorInteractor interactor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDe(
-            UUID subject, String authority) {
+            UUID subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(builder -> builder.subject(subject.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(builder -> builder.subject(subject.toString()));
     }
 
     @Test
@@ -76,7 +72,7 @@ class EliminarSolicitudNovedadAsesorControllerTest {
 
         // Act & Assert
         mockMvc.perform(delete(RUTA + solicitud)
-                        .with(jwtDe(remitente, SolicitudesAuthorities.SOLICITUD_NOVEDAD_ASESOR_DELETE)))
+                        .with(jwtDe(remitente)))
                 .andExpect(status().isNoContent());
 
         var captor = ArgumentCaptor.forClass(EliminarSolicitudNovedadAsesorCommand.class);
@@ -89,8 +85,7 @@ class EliminarSolicitudNovedadAsesorControllerTest {
     void debe400_cuandoElIdDeLaSolicitudNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(delete(RUTA + "no-es-uuid")
-                        .with(jwtDe(UUID.randomUUID(),
-                                SolicitudesAuthorities.SOLICITUD_NOVEDAD_ASESOR_DELETE)))
+                        .with(jwtDe(UUID.randomUUID())))
                 .andExpect(status().isBadRequest());
     }
 
@@ -102,15 +97,6 @@ class EliminarSolicitudNovedadAsesorControllerTest {
     }
 
     @Test
-    void debe403_cuandoElTokenTieneElRolDeCoordinadorYNoElDeAsesor() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA + UUID.randomUUID())
-                        .with(jwtDe(UUID.randomUUID(),
-                                SolicitudesAuthorities.SOLICITUD_NOVEDAD_COORDINADOR_DELETE)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debe422_cuandoElInteractorRechazaPorReglaDeNegocio() throws Exception {
         // Arrange
         doThrow(new SolicitudTipoNoCoincideAsesorException())
@@ -118,8 +104,7 @@ class EliminarSolicitudNovedadAsesorControllerTest {
 
         // Act & Assert
         mockMvc.perform(delete(RUTA + UUID.randomUUID())
-                        .with(jwtDe(UUID.randomUUID(),
-                                SolicitudesAuthorities.SOLICITUD_NOVEDAD_ASESOR_DELETE)))
+                        .with(jwtDe(UUID.randomUUID())))
                 .andExpect(status().isUnprocessableEntity());
     }
 }

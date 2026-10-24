@@ -4,13 +4,13 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.query.primaryport.
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.primaryport.model.ConsultarEvaluacionesFichaPerfilAsesorQuery;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.readmodel.EvaluacionFichaPerfilAsesorReadModel;
 import com.arquisoft.fichas.application.representantecomite.query.readmodel.RepresentanteComiteReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +19,14 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,13 +40,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEvaluacionesFichaPerfilAsesorController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarEvaluacionesFichaPerfilAsesorControllerTest.TestSecurityConfig.class})
 class ConsultarEvaluacionesFichaPerfilAsesorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -74,12 +70,9 @@ class ConsultarEvaluacionesFichaPerfilAsesorControllerTest {
     private ConsultarEvaluacionesFichaPerfilAsesorInteractor consultarEvaluacionesFichaPerfilAsesorInteractor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRoles(
-            String subject, String... authorities) {
-        var concedidas = Arrays.stream(authorities).map(SimpleGrantedAuthority::new)
-                .toArray(SimpleGrantedAuthority[]::new);
+            String subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject(subject))
-                .authorities(concedidas);
+                .jwt(j -> j.subject(subject));
     }
 
     @Test
@@ -98,8 +91,7 @@ class ConsultarEvaluacionesFichaPerfilAsesorControllerTest {
         // Act & Assert
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .with(jwtConRoles(ASESOR_ID.toString(),
-                                FichasAuthorities.EVALUACION_FICHA_PERFIL_ASESOR_VIEW)))
+                        .with(jwtConRoles(ASESOR_ID.toString())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(1))
@@ -136,8 +128,7 @@ class ConsultarEvaluacionesFichaPerfilAsesorControllerTest {
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
-                        .with(jwtConRoles(ASESOR_ID.toString(),
-                                FichasAuthorities.EVALUACION_FICHA_PERFIL_ASESOR_VIEW)))
+                        .with(jwtConRoles(ASESOR_ID.toString())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isEmpty())
                 .andExpect(jsonPath("$.totalElements").value(0));
@@ -172,19 +163,17 @@ class ConsultarEvaluacionesFichaPerfilAsesorControllerTest {
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
-                        .with(jwtConRoles(ASESOR_ID.toString(),
-                                FichasAuthorities.EVALUACION_FICHA_PERFIL_ASESOR_VIEW)))
+                        .with(jwtConRoles(ASESOR_ID.toString())))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void debeRetornar400SinInvocarAlInteractor_cuandoElSubjectDelJwtNoEsUnUuid() throws Exception {
+    void debeRetornar401SinInvocarAlInteractor_cuandoElSubjectDelJwtNoEsUnUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .with(jwtConRoles("no-es-un-uuid",
-                                FichasAuthorities.EVALUACION_FICHA_PERFIL_ASESOR_VIEW)))
-                .andExpect(status().isBadRequest());
+                        .with(jwtConRoles("no-es-un-uuid")))
+                .andExpect(status().isUnauthorized());
 
         verify(consultarEvaluacionesFichaPerfilAsesorInteractor, never())
                 .ejecutar(any(ConsultarEvaluacionesFichaPerfilAsesorQuery.class));
@@ -196,19 +185,5 @@ class ConsultarEvaluacionesFichaPerfilAsesorControllerTest {
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeRetornar403_cuandoSoloTieneElClientRoleDeRepresentanteOEstudiante() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(jwtConRoles(ASESOR_ID.toString(),
-                                FichasAuthorities.EVALUACION_FICHA_PERFIL_REPRESENTANTE_VIEW,
-                                FichasAuthorities.EVALUACION_FICHA_PERFIL_ESTUDIANTE_VIEW)))
-                .andExpect(status().isForbidden());
-
-        verify(consultarEvaluacionesFichaPerfilAsesorInteractor, never())
-                .ejecutar(any(ConsultarEvaluacionesFichaPerfilAsesorQuery.class));
     }
 }

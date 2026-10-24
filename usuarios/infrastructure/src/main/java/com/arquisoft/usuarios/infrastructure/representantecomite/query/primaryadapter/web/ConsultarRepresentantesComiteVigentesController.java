@@ -10,7 +10,6 @@ import com.arquisoft.usuarios.application.representantecomite.query.primaryport.
 import com.arquisoft.usuarios.infrastructure.representantecomite.query.primaryadapter.web.dto.RepresentanteComiteVigenteResponseDTO;
 import com.arquisoft.usuarios.infrastructure.representantecomite.query.primaryadapter.web.mapper.ConsultarRepresentantesComiteVigentesRequestMapper;
 import com.arquisoft.usuarios.infrastructure.representantecomite.query.primaryadapter.web.mapper.RepresentanteComiteVigenteResponseMapper;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +34,6 @@ public class ConsultarRepresentantesComiteVigentesController {
     private final ConsultarRepresentantesComiteVigentesInteractor consultarRepresentantesComiteVigentesInteractor;
 
     @PostMapping("${rutas.usuarios.usuarios.representantes-comite-vigentes:/representantes-comite/vigentes}")
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_REPRESENTANTE_COMITE_VIGENTE_VIEW)
     @Operation(
             summary = UsuariosApiMessages.RepresentanteComite.CONSULTAR_VIGENTES_SUMMARY,
             description = UsuariosApiMessages.RepresentanteComite.CONSULTAR_VIGENTES_DESCRIPTION,

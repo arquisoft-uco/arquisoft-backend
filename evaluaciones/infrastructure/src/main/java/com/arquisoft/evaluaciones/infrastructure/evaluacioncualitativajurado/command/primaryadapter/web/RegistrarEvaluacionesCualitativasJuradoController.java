@@ -3,7 +3,6 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativajurado.co
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.primaryport.interactor.RegistrarEvaluacionesCualitativasJuradoInteractor;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativajurado.command.primaryadapter.web.dto.RegistrarEvaluacionesCualitativasJuradoRequestDTO;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativajurado.command.primaryadapter.web.mapper.RegistrarEvaluacionesCualitativasJuradoRequestMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +36,6 @@ public class RegistrarEvaluacionesCualitativasJuradoController {
     private final RegistrarEvaluacionesCualitativasJuradoInteractor interactor;
 
     @PostMapping("${rutas.evaluaciones.registro-cualitativas-jurado.registrar:/{evaluacionJuradoId}/evaluaciones-cualitativas}")
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_EVALUACION_CUALITATIVA_JURADO_CREATE)
     @Operation(
             summary = EvaluacionesApiMessages.EvaluacionCualitativaJurado.REGISTRAR_SUMMARY,
             description = EvaluacionesApiMessages.EvaluacionCualitativaJurado.REGISTRAR_DESCRIPTION,

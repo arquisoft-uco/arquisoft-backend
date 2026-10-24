@@ -4,7 +4,6 @@ import com.arquisoft.mapas_ruta.application.tarea.query.primaryport.interactor.C
 import com.arquisoft.mapas_ruta.infrastructure.tarea.query.primaryadapter.web.dto.TareaResponseDTO;
 import com.arquisoft.mapas_ruta.infrastructure.tarea.query.primaryadapter.web.mapper.ConsultarInformacionTareaRequestMapper;
 import com.arquisoft.mapas_ruta.infrastructure.tarea.query.primaryadapter.web.mapper.TareaResponseMapper;
-import com.arquisoft.mapas_ruta.infrastructure.security.MapasRutaAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.MapasRutaApiMessages;
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +35,6 @@ public class ConsultarInformacionTareaController {
     private final ConsultarInformacionTareaInteractor consultarInformacionTareaInteractor;
 
     @GetMapping("${rutas.mapas-ruta.tareas.por-id:/{tareaId}}")
-    @PreAuthorize(MapasRutaAuthorities.Expresiones.HAS_TAREA_VIEW)
     @Operation(
             summary = MapasRutaApiMessages.Tarea.CONSULTAR_INFORMACION_SUMMARY,
             description = MapasRutaApiMessages.Tarea.CONSULTAR_INFORMACION_DESCRIPTION,

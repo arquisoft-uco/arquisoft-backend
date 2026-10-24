@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.representantecomite.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RemoverRepresentanteComiteKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
@@ -41,7 +41,7 @@ public class RemoverRepresentanteComiteUseCaseImpl implements RemoverRepresentan
 
         representanteComite.remover(UtilFecha.generarInstanteActual());
         representanteComiteOutputPort.eliminarLogica(representanteComite.getUsuario(), representanteComite.getEliminadoEn());
-        proveedorIdentidadOutputPort.revocarRealmRole(representanteComite.getUsuario(), UsuariosRealmRoles.REPRESENTANTE_COMITE);
+        proveedorIdentidadOutputPort.revocarRol(representanteComite.getUsuario(), UsuariosRoles.REPRESENTANTE_COMITE);
 
         eventPublisher.publish(new RepresentanteComiteRemovidoEvent(
                 usuario.getId(), usuario.getIdentificador(), usuario.getNombre(), usuario.getEmail()));

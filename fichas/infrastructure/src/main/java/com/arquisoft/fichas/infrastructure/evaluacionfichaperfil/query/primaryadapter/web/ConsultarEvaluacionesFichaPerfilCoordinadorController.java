@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.query.primaryport.
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.primaryadapter.web.dto.EvaluacionFichaPerfilCoordinadorResponseDTO;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.primaryadapter.web.mapper.ConsultarEvaluacionesFichaPerfilCoordinadorRequestMapper;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.primaryadapter.web.mapper.EvaluacionFichaPerfilCoordinadorResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +37,6 @@ public class ConsultarEvaluacionesFichaPerfilCoordinadorController {
     private final ConsultarEvaluacionesFichaPerfilCoordinadorInteractor consultarEvaluacionesFichaPerfilCoordinadorInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.evaluaciones-coordinador:/{fichaPerfilId}/evaluaciones/coordinador}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_EVALUACION_FICHA_PERFIL_COORDINADOR_VIEW)
     @Operation(
             summary = FichasApiMessages.EvaluacionFichaPerfil.CONSULTAR_COORDINADOR_SUMMARY,
             description = FichasApiMessages.EvaluacionFichaPerfil.CONSULTAR_COORDINADOR_DESCRIPTION,

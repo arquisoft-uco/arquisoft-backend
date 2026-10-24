@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.ModificarUsuarioKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilObjeto;
@@ -92,42 +92,42 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
                     modificacion.getApellidos()));
         }
 
-        proveedorIdentidadOutputPort.asignarRealmRoles(modificacion.getUsuario(), modificacion.getRoles());
+        proveedorIdentidadOutputPort.asignarRoles(modificacion.getUsuario(), modificacion.getRoles());
 
         logger.info(ModificarUsuarioKey.LOG_MODIFICADO, modificacion.getUsuario(),
                 modificacion.getRoles().size());
     }
 
     private void agregarRoles(ModificacionUsuarioDomain modificacion, UsuarioDomain usuario) {
-        if (modificacion.contieneRol(UsuariosRealmRoles.ESTUDIANTE)) {
+        if (modificacion.contieneRol(UsuariosRoles.ESTUDIANTE)) {
             agregarEstudianteUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.COORDINADOR)) {
+        if (modificacion.contieneRol(UsuariosRoles.COORDINADOR)) {
             agregarCoordinadorUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.ASESOR_FICHA)) {
+        if (modificacion.contieneRol(UsuariosRoles.ASESOR_FICHA)) {
             agregarAsesorFichaUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.ASESOR)) {
+        if (modificacion.contieneRol(UsuariosRoles.ASESOR)) {
             agregarAsesorUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.REPRESENTANTE_COMITE)) {
+        if (modificacion.contieneRol(UsuariosRoles.REPRESENTANTE_COMITE)) {
             agregarRepresentanteComiteUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.ADMINISTRADOR)) {
+        if (modificacion.contieneRol(UsuariosRoles.ADMINISTRADOR)) {
             agregarAdministradorUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.BIBLIOTECARIO)) {
+        if (modificacion.contieneRol(UsuariosRoles.BIBLIOTECARIO)) {
             agregarBibliotecarioUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.JURADO)) {
+        if (modificacion.contieneRol(UsuariosRoles.JURADO)) {
             agregarJuradoUseCase.ejecutar(usuario);
         }
     }

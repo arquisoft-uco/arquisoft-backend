@@ -26,5 +26,20 @@ public final class ArtefactosFields {
         private RevisionAsesor() {}
 
         public static final String ESTUDIANTE = "estudiante";
+        public static final String ASESOR = "asesor";
+    }
+
+    public static final class EstudianteArtefacto {
+
+        private EstudianteArtefacto() {}
+
+        public static final String ARTEFACTO = "artefacto";
+    }
+
+    public static final class Observacion {
+
+        private Observacion() {}
+
+        public static final String REVISION_ASESOR = "revisionAsesor";
     }
 }

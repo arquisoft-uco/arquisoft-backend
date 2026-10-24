@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.pri
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.primaryport.model.RemoverItemCuantitativoJuradoCommand;
 import com.arquisoft.evaluaciones.domain.itemcuantitativojurado.exception.ItemCuantitativoJuradoEnUsoException;
 import com.arquisoft.evaluaciones.domain.itemcuantitativojurado.exception.ItemCuantitativoJuradoNoEncontradoException;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -14,10 +13,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -45,7 +42,6 @@ class RemoverItemCuantitativoJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -133,23 +129,7 @@ class RemoverItemCuantitativoJuradoControllerTest {
         verify(interactor, never()).ejecutar(any());
     }
 
-    @Test
-    void debeRetornar403_cuandoSoloTienePermisoDeModificar() throws Exception {
-        // Arrange
-        var itemId = UUID.randomUUID();
-
-        // Act & Assert
-        mockMvc.perform(delete(RUTA, itemId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        EvaluacionesAuthorities.ITEM_CUANTITATIVO_JURADO_UPDATE))))
-                .andExpect(status().isForbidden());
-        verify(interactor, never()).ejecutar(any());
-    }
-
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.ITEM_CUANTITATIVO_JURADO_DELETE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

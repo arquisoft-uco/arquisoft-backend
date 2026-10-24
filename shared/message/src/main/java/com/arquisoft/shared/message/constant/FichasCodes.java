@@ -159,6 +159,7 @@ public final class FichasCodes {
 
         public static final String NO_ENCONTRADO = "ESTADO_FICHA_NO_ENCONTRADO";
         public static final String ROLES_REQUERIDO = "ESTADO_FICHA_ROLES_REQUERIDO";
+        public static final String ACTOR_REQUERIDO = "ESTADO_FICHA_ACTOR_REQUERIDO";
     }
 
     public static final class EvaluacionFichaPerfil {

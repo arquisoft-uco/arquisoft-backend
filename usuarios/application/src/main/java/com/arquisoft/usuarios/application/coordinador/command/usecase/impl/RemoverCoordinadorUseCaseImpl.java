@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.coordinador.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RemoverCoordinadorKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
@@ -41,7 +41,7 @@ public class RemoverCoordinadorUseCaseImpl implements RemoverCoordinadorUseCase 
 
         coordinador.remover(UtilFecha.generarInstanteActual());
         coordinadorOutputPort.eliminarLogica(coordinador.getUsuario(), coordinador.getEliminadoEn());
-        proveedorIdentidadOutputPort.revocarRealmRole(coordinador.getUsuario(), UsuariosRealmRoles.COORDINADOR);
+        proveedorIdentidadOutputPort.revocarRol(coordinador.getUsuario(), UsuariosRoles.COORDINADOR);
 
         eventPublisher.publish(new CoordinadorRemovidoEvent(
                 usuario.getId(), usuario.getIdentificador(), usuario.getNombre(), usuario.getEmail()));

@@ -1,7 +1,6 @@
 package com.arquisoft.mapas_ruta.infrastructure.tarea.command.primaryadapter.web;
 
 import com.arquisoft.mapas_ruta.application.tarea.command.primaryport.interactor.AsignarTareaInteractor;
-import com.arquisoft.mapas_ruta.infrastructure.security.MapasRutaAuthorities;
 import com.arquisoft.mapas_ruta.infrastructure.tarea.command.primaryadapter.web.dto.AsignarTareaRequestDTO;
 import com.arquisoft.mapas_ruta.infrastructure.tarea.command.primaryadapter.web.dto.AsignarTareaResponseDTO;
 import com.arquisoft.mapas_ruta.infrastructure.tarea.command.primaryadapter.web.mapper.AsignarTareaRequestMapper;
@@ -19,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,7 +37,6 @@ public class AsignarTareaController {
     private final AsignarTareaInteractor interactor;
 
     @PostMapping("${rutas.mapas-ruta.mapas-ruta.tareas:/{mapaRutaId}/tareas}")
-    @PreAuthorize(MapasRutaAuthorities.Expresiones.HAS_TAREA_CREATE)
     @Operation(
             summary = MapasRutaApiMessages.Tarea.ASIGNAR_SUMMARY,
             description = MapasRutaApiMessages.Tarea.ASIGNAR_DESCRIPTION,

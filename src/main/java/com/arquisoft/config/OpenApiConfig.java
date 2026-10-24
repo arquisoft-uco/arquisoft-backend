@@ -1,6 +1,7 @@
 package com.arquisoft.config;
 
 import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +22,7 @@ import org.springframework.context.annotation.Configuration;
         title = "Arquisoft API",
         version = "1.0.0",
         description = "API REST del sistema de gestion de proyectos de grado — Universidad Cooperativa de Colombia. "
-            + "Autenticacion via Keycloak (OAuth2/OIDC). "
+            + "Autenticacion via proveedor de identidad OIDC (JWT Bearer). "
             + "Contextos: Seguridad, Usuarios, Fichas de Perfil, Proyectos de Grado, "
             + "Artefactos, Repositorio de Artefactos, Entregables, Evaluaciones y Mapas de Ruta.",
         contact = @Contact(
@@ -46,10 +48,15 @@ import org.springframework.context.annotation.Configuration;
     scheme = "bearer",
     bearerFormat = "JWT",
     in = SecuritySchemeIn.HEADER,
-    description = "Token JWT obtenido desde Keycloak via POST /api/auth/login. "
+    description = "Token JWT emitido por el proveedor de identidad configurado. "
         + "Formato: Authorization: Bearer <token>"
 )
 public class OpenApiConfig {
+
+    // Sin esto IdentidadActual aparecería en el contrato OpenAPI como cuerpo o parámetro de cada endpoint.
+    static {
+        SpringDocUtils.getConfig().addRequestWrapperToIgnore(IdentidadActual.class);
+    }
 
     @Value("${rutas.seguridad.auth.base:/auth}")
     private String authBasePath;

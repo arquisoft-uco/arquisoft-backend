@@ -5,7 +5,6 @@ import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor
 import com.arquisoft.shared.message.constant.UsuariosCodes;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEliminadoException;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEmailDuplicadoException;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +13,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,7 +36,6 @@ class ModificarUsuarioControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -70,8 +66,7 @@ class ModificarUsuarioControllerTest {
     void debe204_cuandoPeticionValida() throws Exception {
         // Act & Assert
         mockMvc.perform(patch("/usuarios/{usuarioId}", UUID.randomUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_UPDATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isNoContent());
@@ -81,8 +76,7 @@ class ModificarUsuarioControllerTest {
     void debe400_cuandoElUsuarioIdNoEsUnUuidValido() throws Exception {
         // Act & Assert
         mockMvc.perform(patch("/usuarios/{usuarioId}", "no-es-un-uuid")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_UPDATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isBadRequest());
@@ -92,8 +86,7 @@ class ModificarUsuarioControllerTest {
     void debe400_cuandoElBodyNoTraeNingunDatoNiRol() throws Exception {
         // Act & Assert
         mockMvc.perform(patch("/usuarios/{usuarioId}", UUID.randomUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_UPDATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -109,17 +102,6 @@ class ModificarUsuarioControllerTest {
     }
 
     @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        // Act & Assert
-        mockMvc.perform(patch("/usuarios/{usuarioId}", UUID.randomUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("estudiante:perfil:read")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debe422_cuandoEmailDuplicado() throws Exception {
         // Arrange
         doThrow(new UsuarioEmailDuplicadoException("otro@uco.edu.co"))
@@ -127,8 +109,7 @@ class ModificarUsuarioControllerTest {
 
         // Act & Assert
         mockMvc.perform(patch("/usuarios/{usuarioId}", UUID.randomUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_UPDATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -146,8 +127,7 @@ class ModificarUsuarioControllerTest {
 
         // Act & Assert
         mockMvc.perform(patch("/usuarios/{usuarioId}", usuario)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_UPDATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {

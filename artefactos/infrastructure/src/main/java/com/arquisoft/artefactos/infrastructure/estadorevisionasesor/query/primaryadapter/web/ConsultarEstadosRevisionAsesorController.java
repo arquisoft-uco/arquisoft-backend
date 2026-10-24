@@ -1,7 +1,6 @@
 package com.arquisoft.artefactos.infrastructure.estadorevisionasesor.query.primaryadapter.web;
 
 import com.arquisoft.artefactos.application.estadorevisionasesor.query.primaryport.interactor.ConsultarEstadosRevisionAsesorInteractor;
-import com.arquisoft.artefactos.infrastructure.security.ArtefactosAuthorities;
 import com.arquisoft.artefactos.infrastructure.estadorevisionasesor.query.primaryadapter.web.dto.EstadoRevisionAsesorResponseDTO;
 import com.arquisoft.artefactos.infrastructure.estadorevisionasesor.query.primaryadapter.web.mapper.EstadoRevisionAsesorResponseMapper;
 import com.arquisoft.shared.message.annotation.ApiCodes;
@@ -17,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +33,6 @@ public class ConsultarEstadosRevisionAsesorController {
     private final ConsultarEstadosRevisionAsesorInteractor interactor;
 
     @GetMapping
-    @PreAuthorize(ArtefactosAuthorities.Expresiones.HAS_ESTADO_REVISION_ASESOR_VIEW)
     @Operation(
             summary = ArtefactosApiMessages.EstadoRevisionAsesor.CONSULTAR_SUMMARY,
             description = ArtefactosApiMessages.EstadoRevisionAsesor.CONSULTAR_DESCRIPTION,

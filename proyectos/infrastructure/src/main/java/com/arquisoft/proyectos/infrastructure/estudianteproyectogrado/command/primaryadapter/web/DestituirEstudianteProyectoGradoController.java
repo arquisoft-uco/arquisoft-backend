@@ -2,11 +2,10 @@ package com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.command.p
 
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.primaryport.interactor.DestituirEstudianteProyectoGradoInteractor;
 import com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.command.primaryadapter.web.mapper.DestituirEstudianteProyectoGradoRequestMapper;
-import com.arquisoft.proyectos.infrastructure.security.ProyectosAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ProyectosApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,9 +13,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +30,6 @@ public class DestituirEstudianteProyectoGradoController {
     private final DestituirEstudianteProyectoGradoInteractor destituirEstudianteProyectoGradoInteractor;
 
     @DeleteMapping("${rutas.proyectos.proyectos-grado.estudiante:/{proyectoGradoId}/estudiantes/{estudianteId}}")
-    @PreAuthorize(ProyectosAuthorities.Expresiones.HAS_ESTUDIANTE_PROYECTO_GRADO_DELETE)
     @Operation(
             summary = ProyectosApiMessages.EstudianteProyectoGrado.DESTITUIR_SUMMARY,
             description = ProyectosApiMessages.EstudianteProyectoGrado.DESTITUIR_DESCRIPTION,
@@ -55,9 +50,9 @@ public class DestituirEstudianteProyectoGradoController {
     public ResponseEntity<Void> destituirEstudiante(
             @PathVariable UUID proyectoGradoId,
             @PathVariable UUID estudianteId,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var coordinador = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var coordinador = identidad.id();
 
         destituirEstudianteProyectoGradoInteractor.ejecutar(
                 DestituirEstudianteProyectoGradoRequestMapper.toCommand(proyectoGradoId, estudianteId, coordinador));

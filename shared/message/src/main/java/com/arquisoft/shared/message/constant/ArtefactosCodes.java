@@ -45,5 +45,20 @@ public final class ArtefactosCodes {
         private RevisionAsesor() {}
 
         public static final String ESTUDIANTE_REQUERIDO = "REVISION_ASESOR_ESTUDIANTE_REQUERIDO";
+        public static final String ASESOR_REQUERIDO = "REVISION_ASESOR_ASESOR_REQUERIDO";
+    }
+
+    public static final class EstudianteArtefacto {
+
+        private EstudianteArtefacto() {}
+
+        public static final String ARTEFACTO_ID_REQUERIDO = "ESTUDIANTE_ARTEFACTO_ARTEFACTO_ID_REQUERIDO";
+    }
+
+    public static final class Observacion {
+
+        private Observacion() {}
+
+        public static final String REVISION_ASESOR_ID_REQUERIDO = "OBSERVACION_REVISION_ASESOR_ID_REQUERIDO";
     }
 }

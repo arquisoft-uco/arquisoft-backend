@@ -61,6 +61,10 @@ public final class EvaluacionesCodes {
 
         public static final String EVALUACION_JURADO_REQUERIDO =
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
+        public static final String JURADO_REQUERIDO =
+                "EVALUACION_CUALITATIVA_JURADO_JURADO_REQUERIDO";
+        public static final String NO_PERTENECE_JURADO =
+                "EVALUACION_CUALITATIVA_JURADO_NO_PERTENECE_JURADO";
         public static final String ITEM_REQUERIDO =
                 "EVALUACION_CUALITATIVA_JURADO_ITEM_REQUERIDO";
         public static final String CRITERIO_REQUERIDO =
