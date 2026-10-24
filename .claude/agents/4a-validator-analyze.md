@@ -193,7 +193,7 @@ Fuente: `arquisoft-estandares` → *Identificadores y DTOs*; `arquisoft-arquitec
 | `Command` `record` en `command/primaryport/model/`; `ReadModel` `record` en `query/readmodel/`; ninguno con Lombok/Jackson | ❌ |
 | Campos en español iguales al domain y con nombre objetual (`asesorFicha`, no `asesorFichaId`) | ❌ |
 | `Command.crear(...)` o `{Consulta}{Entidad}Query.crear(...)` con un parámetro del cliente que no pasa por ningún `Validator*` (obligatoriedad, longitud de `{Contexto}Limits`, formato), aunque el dominio lo valide después. Recorre los parámetros uno por uno | ❌ |
-| Identificador del body tipado `UUID`, o validado con Jakarta en vez de `ValidatorUUID.uuidValido(...)` en `Command.crear(...)` | ❌ |
+| Identificador del body tipado `UUID`, o validado con Jakarta en vez de `ValidatorUUID.uuidValido(...)` en `Command.crear(...)`; o un `@PathVariable`/`IdentidadActual.id()` pasado como `String` (`toString()`) para re-parsearlo | ❌ |
 | `RequestDTO` con cualquier anotación o lógica (única excepción: `toString()` que enmascara un secreto, `IniciarSesionRequestDTO`), o sin `{Accion}{Entidad}RequestMapper` (`final`, constructor privado, `static toCommand`) | ❌ |
 | `Command` construido con `new` en vez de `crear(...)` | ❌ |
 | `Controller` que serializa el `ReadModel` o el `Result` directo en vez de su `ResponseMapper` → `ResponseDTO`; paginado sin `PageResponseDTO.from(resultado.map(...::toResponse))` | ❌ |
@@ -242,6 +242,7 @@ Fuente: `arquisoft-arquitectura` → *Rutas en placeholders y autorización fuer
 | Check | Sev |
 |---|:---:|
 | Controlador con `@PreAuthorize`, `hasAuthority`, `hasRole`, `Jwt` o `@AuthenticationPrincipal`: la identidad llega como `IdentidadActual` y la autorización no vive ahí | ❌ |
+| `identidad.roles()` leído a mano o nombres de rol de identidad repetidos en el contexto, en vez de `RolesIdentidad.traducir` con claves de `UsuariosRoles`; o roles de identidad (no de negocio) llegando al `Command`/`Query` | ❌ |
 | Endpoint nuevo sin fila en `autorizacion-equivalencias.yml` (y sin estar en rutas públicas o exentas), o `CompletitudEquivalenciasAutorizacionTest` en rojo | ❌ |
 | Recurso PDP (método + plantilla con `/api`) o client role distinto del de la sección 9 del plan | ❌ |
 | Client role de la fila nueva ausente de `roles.client.arquisoft-api` en `keycloak/realm-arquisoft.json`, o sin composite directo en los realm roles de la sección 9 (responde 403 a todos y el build no lo detecta) | ❌ |

@@ -64,7 +64,7 @@ public class GenerarRepositorioArtefactoController {
             @RequestBody GenerarRepositorioArtefactoRequestDTO request,
             IdentidadActual identidad) {
         var id = interactor.ejecutar(
-                GenerarRepositorioArtefactoRequestMapper.toCommand(request, identidad.id().toString()));
+                GenerarRepositorioArtefactoRequestMapper.toCommand(request, identidad.id()));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new GenerarRepositorioArtefactoResponseDTO(id));
     }

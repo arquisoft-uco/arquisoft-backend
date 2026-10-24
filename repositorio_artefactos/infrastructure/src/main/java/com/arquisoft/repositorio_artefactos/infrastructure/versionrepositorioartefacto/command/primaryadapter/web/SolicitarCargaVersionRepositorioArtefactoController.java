@@ -74,7 +74,7 @@ public class SolicitarCargaVersionRepositorioArtefactoController {
             @RequestBody SolicitarCargaVersionRepositorioArtefactoRequestDTO request,
             IdentidadActual identidad) {
         var result = interactor.ejecutar(SolicitarCargaVersionRepositorioArtefactoRequestMapper.toCommand(
-                request, repositorioId, identidad.id().toString()));
+                request, repositorioId, identidad.id()));
         return ResponseEntity.ok(SolicitarCargaVersionRepositorioArtefactoResponseMapper.toResponse(result));
     }
 }

@@ -37,7 +37,7 @@ class InteractorsVersionRepositorioArtefactoTest {
         var repositorio = UtilUUID.generarNuevoUUID();
         var solicitante = UtilUUID.generarNuevoUUID();
         var command = SolicitarCargaVersionRepositorioArtefactoCommand.crear(
-                repositorio, solicitante.toString(), "formato.pdf", "application/pdf", 2048L);
+                repositorio, solicitante, "formato.pdf", "application/pdf", 2048L);
         var esperado = new CargaVersionRepositorioArtefactoResult(
                 UtilUUID.generarNuevoUUID(), "http://minio/b", Map.of(), Instant.now());
         when(solicitarUseCase.ejecutar(any(SolicitudCargaVersionRepositorioArtefactoDomain.class)))
@@ -63,7 +63,7 @@ class InteractorsVersionRepositorioArtefactoTest {
         var repositorio = UtilUUID.generarNuevoUUID();
         var solicitante = UtilUUID.generarNuevoUUID();
         var command = SubirVersionRepositorioArtefactoCommand.crear(
-                carga.toString(), repositorio, solicitante.toString(), "Formato A", true);
+                carga.toString(), repositorio, solicitante, "Formato A", true);
         var esperado = new VersionRepositorioArtefactoSubidaResult(UtilUUID.generarNuevoUUID(), 1);
         when(subirUseCase.ejecutar(any(SubidaVersionRepositorioArtefactoDomain.class))).thenReturn(esperado);
 

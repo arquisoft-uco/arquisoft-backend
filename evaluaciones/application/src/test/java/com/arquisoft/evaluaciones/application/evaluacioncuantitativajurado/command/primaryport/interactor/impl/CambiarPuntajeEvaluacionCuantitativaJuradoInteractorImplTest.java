@@ -30,7 +30,7 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoInteractorImplTest {
         UUID evaluacionCuantitativaJurado = UUID.randomUUID();
         UUID jurado = UUID.randomUUID();
         var command = CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
-                evaluacionCuantitativaJurado, 400, jurado.toString());
+                evaluacionCuantitativaJurado, 400, jurado);
 
         // Act
         interactor.ejecutar(command);

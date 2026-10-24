@@ -9,4 +9,6 @@ public interface VersionRepositorioArtefactoOutputPort {
     void guardar(VersionRepositorioArtefactoEntity version);
 
     boolean existePorId(UUID id);
+
+    void actualizarNombreRepositorio(UUID repositorioArtefacto, String nombreRepositorio);
 }

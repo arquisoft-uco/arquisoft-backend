@@ -4,15 +4,6 @@ public final class FichasRoles {
 
     private FichasRoles() {}
 
-    public static final class Identidad {
-
-        private Identidad() {}
-
-        public static final String ASESOR_FICHA = "asesor-ficha";
-        public static final String COORDINADOR = "coordinador";
-        public static final String REPRESENTANTE_COMITE = "representante-comite";
-    }
-
     public static final class Negocio {
 
         private Negocio() {}

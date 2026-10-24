@@ -12,12 +12,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class GenerarRepositorioArtefactoCommandTest {
 
     @Test
-    void debeCrearRecortandoTextos_cuandoElAdministradorEsUuidValido() {
+    void debeCrearRecortandoTextos_cuandoDatosValidos() {
         // Arrange
         var administrador = UtilUUID.generarNuevoUUID();
 
         // Act
-        var command = GenerarRepositorioArtefactoCommand.crear("  Repo  ", "  Descripcion  ", administrador.toString());
+        var command = GenerarRepositorioArtefactoCommand.crear("  Repo  ", "  Descripcion  ", administrador);
 
         // Assert
         assertThat(command.nombreRepositorio()).isEqualTo("Repo");
@@ -26,12 +26,12 @@ class GenerarRepositorioArtefactoCommandTest {
     }
 
     @Test
-    void debeAcumularFieldErrors_cuandoNombreVacioDescripcionLargaYAdministradorInvalido() {
+    void debeAcumularFieldErrors_cuandoNombreVacioDescripcionLargaYAdministradorNulo() {
         // Arrange
         var descripcionLarga = "d".repeat(301);
 
         // Act & Assert
-        assertThatThrownBy(() -> GenerarRepositorioArtefactoCommand.crear("   ", descripcionLarga, "no-es-uuid"))
+        assertThatThrownBy(() -> GenerarRepositorioArtefactoCommand.crear("   ", descripcionLarga, null))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> {
                     var errores = ((ApplicationValidationException) ex).getValidationResult().getErrores();
@@ -47,15 +47,19 @@ class GenerarRepositorioArtefactoCommandTest {
                         assertThat(error.codigoError())
                                 .isEqualTo(RepositorioArtefactosCodes.RepositorioArtefacto.DESCRIPCION_DEMASIADO_LARGA);
                     });
-                    assertThat(errores).anySatisfy(error -> assertThat(error.campo())
-                            .isEqualTo(RepositorioArtefactosFields.RepositorioArtefacto.ADMINISTRADOR));
+                    assertThat(errores).anySatisfy(error -> {
+                        assertThat(error.campo())
+                                .isEqualTo(RepositorioArtefactosFields.RepositorioArtefacto.ADMINISTRADOR);
+                        assertThat(error.codigoError())
+                                .isEqualTo(RepositorioArtefactosCodes.RepositorioArtefacto.ADMINISTRADOR_REQUERIDO);
+                    });
                 });
     }
 
     @Test
     void debeRespetarLosLimites_cuandoNombreEs100YDescripcionEs300PeroNombre101Falla() {
         // Arrange
-        var administrador = UtilUUID.generarNuevoUUID().toString();
+        var administrador = UtilUUID.generarNuevoUUID();
 
         // Act
         var command = GenerarRepositorioArtefactoCommand.crear("n".repeat(100), "d".repeat(300), administrador);

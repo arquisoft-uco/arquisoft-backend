@@ -137,7 +137,11 @@ Lo que hay que saber de cada uno para no romper el grafo:
 crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
 prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
 tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Aún
-no existe (lo trae una HT aparte).
+no existe (lo trae una HT aparte). Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
+(`shared:web`, paquete `identidad`) traduce `IdentidadActual.roles()` a los roles de negocio de un
+contexto con un mapa que declara el propio contexto (claves de `UsuariosRoles`, valores en su
+`{Contexto}Roles`). Hoy su único consumidor es `estados-ficha`; el segundo previsto es el filtro de
+tipos de solicitud por rol (HU-101).
 
 ### Consultas síncronas entre contextos
 

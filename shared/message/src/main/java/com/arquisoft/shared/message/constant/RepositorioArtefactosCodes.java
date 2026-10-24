@@ -22,6 +22,7 @@ public final class RepositorioArtefactosCodes {
 
         private RepositorioArtefacto() {}
 
+        public static final String ID_REQUERIDO = "REPOSITORIO_ARTEFACTO_ID_REQUERIDO";
         public static final String NOMBRE_REQUERIDO = "REPOSITORIO_ARTEFACTO_NOMBRE_REQUERIDO";
         public static final String NOMBRE_DEMASIADO_LARGO = "REPOSITORIO_ARTEFACTO_NOMBRE_DEMASIADO_LARGO";
         public static final String DESCRIPCION_REQUERIDA = "REPOSITORIO_ARTEFACTO_DESCRIPCION_REQUERIDA";

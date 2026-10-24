@@ -63,7 +63,7 @@ public class RegistrarEvaluacionesCualitativasAsesorController {
             IdentidadActual identidad) {
 
         interactor.ejecutar(RegistrarEvaluacionesCualitativasAsesorRequestMapper.toCommand(
-                request, evaluacionAsesorId, identidad.id().toString()));
+                request, evaluacionAsesorId, identidad.id()));
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

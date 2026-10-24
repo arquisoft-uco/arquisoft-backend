@@ -25,7 +25,7 @@ public record SubirVersionRepositorioArtefactoCommand(
     }
 
     public static SubirVersionRepositorioArtefactoCommand crear(
-            String carga, UUID repositorio, String solicitante, String nombreDocumento, Boolean nuevoDocumento) {
+            String carga, UUID repositorio, UUID solicitante, String nombreDocumento, Boolean nuevoDocumento) {
         var result = new ValidationResult();
         var documentoRecortado = UtilTexto.aplicarTrim(nombreDocumento);
 
@@ -37,7 +37,7 @@ public record SubirVersionRepositorioArtefactoCommand(
                 RepositorioArtefactosFields.VersionRepositorioArtefacto.REPOSITORIO,
                 RepositorioArtefactosCodes.VersionRepositorioArtefacto.REPOSITORIO_REQUERIDO, result);
 
-        ValidatorUUID.uuidValido(solicitante,
+        ValidatorObjeto.noNulo(solicitante,
                 RepositorioArtefactosFields.VersionRepositorioArtefacto.SOLICITANTE,
                 RepositorioArtefactosCodes.VersionRepositorioArtefacto.SOLICITANTE_REQUERIDO, result);
 
@@ -57,7 +57,6 @@ public record SubirVersionRepositorioArtefactoCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new SubirVersionRepositorioArtefactoCommand(
-                UtilUUID.generarUUIDDesdeTexto(carga), repositorio, UtilUUID.generarUUIDDesdeTexto(solicitante),
-                documentoRecortado, nuevoDocumento);
+                UtilUUID.generarUUIDDesdeTexto(carga), repositorio, solicitante, documentoRecortado, nuevoDocumento);
     }
 }

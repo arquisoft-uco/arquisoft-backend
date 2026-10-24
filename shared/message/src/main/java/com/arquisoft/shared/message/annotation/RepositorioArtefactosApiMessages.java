@@ -25,6 +25,14 @@ public final class RepositorioArtefactosApiMessages {
         public static final String GENERAR_RESP_400 = "Datos de entrada inválidos";
         public static final String GENERAR_RESP_422 =
                 "Datos inválidos, administrador no vigente o repositorio duplicado";
+        public static final String MODIFICAR_SUMMARY = "Modificar repositorio de artefactos";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica el nombre y la descripción de un repositorio de artefactos existente";
+        public static final String MODIFICAR_RESP_204 = "Repositorio de artefactos modificado";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 =
+                "Administrador no vigente, repositorio inexistente o nombre ya usado por otro repositorio";
+        public static final String PARAM_REPOSITORIO = "Identificador del repositorio de artefactos";
     }
 
     public static final class VersionRepositorioArtefacto {

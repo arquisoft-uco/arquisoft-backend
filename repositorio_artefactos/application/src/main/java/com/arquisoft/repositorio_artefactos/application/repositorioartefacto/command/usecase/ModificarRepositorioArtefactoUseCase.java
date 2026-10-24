@@ -1,0 +1,7 @@
+package com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.usecase;
+
+import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.ModificacionRepositorioArtefactoDomain;
+import com.arquisoft.shared.usecase.VoidUseCase;
+
+public interface ModificarRepositorioArtefactoUseCase extends VoidUseCase<ModificacionRepositorioArtefactoDomain> {
+}

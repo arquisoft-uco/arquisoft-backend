@@ -5,6 +5,7 @@ import com.arquisoft.fichas.application.estadoficha.query.primaryport.interactor
 import com.arquisoft.fichas.application.estadoficha.query.primaryport.model.ConsultarEstadosFichaQuery;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
@@ -73,7 +74,7 @@ class ConsultarEstadosFichaControllerTest {
         var queryCaptor = ArgumentCaptor.forClass(ConsultarEstadosFichaQuery.class);
 
         // Act
-        mockMvc.perform(get(RUTA).with(conRoles(FichasRoles.Identidad.ASESOR_FICHA)))
+        mockMvc.perform(get(RUTA).with(conRoles(UsuariosRoles.ASESOR_FICHA)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("DISPONIBLE_PARA_EVALUACION"))

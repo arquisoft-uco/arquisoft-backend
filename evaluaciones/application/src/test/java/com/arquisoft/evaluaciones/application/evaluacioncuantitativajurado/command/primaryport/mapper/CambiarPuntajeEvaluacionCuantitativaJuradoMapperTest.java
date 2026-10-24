@@ -15,7 +15,7 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoMapperTest {
         UUID evaluacionCuantitativaJurado = UUID.randomUUID();
         UUID jurado = UUID.randomUUID();
         var command = CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
-                evaluacionCuantitativaJurado, 275, jurado.toString());
+                evaluacionCuantitativaJurado, 275, jurado);
 
         // Act
         var cambio = CambiarPuntajeEvaluacionCuantitativaJuradoMapper.toDomain(command);

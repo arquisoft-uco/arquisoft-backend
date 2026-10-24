@@ -25,8 +25,7 @@ class RegistrarEvaluacionesCualitativasAsesorCommandTest {
 
         // Act
         var command = RegistrarEvaluacionesCualitativasAsesorCommand.crear(
-                evaluacionAsesor.toString(), asesor.toString(),
-                List.of(new Par<>(item.toString(), criterio.toString())));
+                evaluacionAsesor, asesor, List.of(new Par<>(item.toString(), criterio.toString())));
 
         // Assert
         assertThat(command.evaluacionAsesor()).isEqualTo(evaluacionAsesor);
@@ -39,8 +38,8 @@ class RegistrarEvaluacionesCualitativasAsesorCommandTest {
     @Test
     void debeRechazar_cuandoLoteVacio() {
         // Arrange
-        var evaluacionAsesor = UtilUUID.generarNuevoUUID().toString();
-        var asesor = UtilUUID.generarNuevoUUID().toString();
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var pares = List.<Par<String>>of();
 
         // Act & Assert
@@ -54,8 +53,8 @@ class RegistrarEvaluacionesCualitativasAsesorCommandTest {
     @Test
     void debeAcumularErroresIndexados_cuandoItemYCriterioEstanEnBlancoOSonInvalidos() {
         // Arrange
-        var evaluacionAsesor = UtilUUID.generarNuevoUUID().toString();
-        var asesor = UtilUUID.generarNuevoUUID().toString();
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var pares = List.of(new Par<>("", ""), new Par<>(" ", "no-es-un-uuid"));
 
         // Act & Assert
@@ -77,8 +76,8 @@ class RegistrarEvaluacionesCualitativasAsesorCommandTest {
     @Test
     void debeRechazar_cuandoItemTieneFormatoUuidInvalido() {
         // Arrange
-        var evaluacionAsesor = UtilUUID.generarNuevoUUID().toString();
-        var asesor = UtilUUID.generarNuevoUUID().toString();
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var pares = List.of(new Par<>("no-es-un-uuid", UtilUUID.generarNuevoUUID().toString()));
 
         // Act & Assert
@@ -91,16 +90,20 @@ class RegistrarEvaluacionesCualitativasAsesorCommandTest {
     }
 
     @Test
-    void debeAcumularErrores_cuandoEvaluacionAsesorYAsesorSonInvalidos() {
+    void debeAcumularErrores_cuandoEvaluacionAsesorYAsesorSonNulos() {
         // Arrange
         var pares = List.of(new Par<>(UtilUUID.generarNuevoUUID().toString(), UtilUUID.generarNuevoUUID().toString()));
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasAsesorCommand.crear("no-uuid", " ", pares))
+        assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasAsesorCommand.crear(null, null, pares))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
-                                .extracting(error -> error.campo())
-                                .contains(EvaluacionesFields.EvaluacionCualitativaAsesor.EVALUACION_ASESOR,
-                                        EvaluacionesFields.EvaluacionCualitativaAsesor.ASESOR));
+                                .extracting(error -> error.campo(), error -> error.codigoError())
+                                .containsExactlyInAnyOrder(
+                                        tuple(EvaluacionesFields.EvaluacionCualitativaAsesor.EVALUACION_ASESOR,
+                                                EvaluacionesCodes.EvaluacionCualitativaAsesor
+                                                        .EVALUACION_ASESOR_REQUERIDO),
+                                        tuple(EvaluacionesFields.EvaluacionCualitativaAsesor.ASESOR,
+                                                EvaluacionesCodes.EvaluacionCualitativaAsesor.ASESOR_REQUERIDO)));
     }
 }

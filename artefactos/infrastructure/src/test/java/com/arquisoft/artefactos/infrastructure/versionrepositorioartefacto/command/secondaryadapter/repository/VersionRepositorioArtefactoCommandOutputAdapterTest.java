@@ -4,6 +4,7 @@ import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.
 import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.entity.VersionRepositorioArtefactoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
+import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,9 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -101,5 +104,63 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
 
         // Assert
         assertThat(versionRepositorioArtefactoCommandRepository.count()).isEqualTo(1L);
+    }
+
+    @Test
+    void debeActualizarNombreDeTodasLasVersionesDelRepositorio() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var primera = UtilUUID.generarNuevoUUID();
+        var segunda = UtilUUID.generarNuevoUUID();
+        var tercera = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadDeRepositorio(primera, repositorio, "Doc uno"));
+        adapter.guardar(entidadDeRepositorio(segunda, repositorio, "Doc dos"));
+        adapter.guardar(entidadDeRepositorio(tercera, repositorio, "Doc tres"));
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarNombreRepositorio(repositorio, "Repositorio nuevo");
+        entityManager.clear();
+
+        // Assert
+        for (var id : List.of(primera, segunda, tercera)) {
+            var version = entityManager.find(VersionRepositorioArtefactoJpaEntity.class, id);
+            assertThat(version.getNombreRepositorio()).isEqualTo("Repositorio nuevo");
+        }
+        verify(logger).debug(CambiarNombreRepositorioVersionRepositorioArtefactoKey.LOG_NOMBRE_ACTUALIZADO,
+                repositorio);
+    }
+
+    @Test
+    void debeNoTocarOtrosRepositorios() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var otroRepositorio = UtilUUID.generarNuevoUUID();
+        var propia = UtilUUID.generarNuevoUUID();
+        var ajena = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadDeRepositorio(propia, repositorio, "Doc uno"));
+        adapter.guardar(entidadDeRepositorio(ajena, otroRepositorio, "Doc dos"));
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarNombreRepositorio(repositorio, "Repositorio nuevo");
+        entityManager.clear();
+
+        // Assert
+        var intacta = entityManager.find(VersionRepositorioArtefactoJpaEntity.class, ajena);
+        assertThat(intacta.getNombreRepositorio()).isEqualTo("Repositorio");
+    }
+
+    @Test
+    void debeNoFallar_cuandoNoHayVersiones() {
+        // Act & Assert
+        assertThatCode(() -> adapter.actualizarNombreRepositorio(UtilUUID.generarNuevoUUID(), "Repositorio nuevo"))
+                .doesNotThrowAnyException();
+        assertThat(versionRepositorioArtefactoCommandRepository.count()).isZero();
+    }
+
+    private VersionRepositorioArtefactoEntity entidadDeRepositorio(UUID id, UUID repositorio, String nombreDocumento) {
+        return new VersionRepositorioArtefactoEntity(
+                id, nombreDocumento, 1, repositorio, "Repositorio", "plantilla.pdf", "application/pdf", 2048L);
     }
 }
