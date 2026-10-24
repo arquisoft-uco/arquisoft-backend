@@ -9,3 +9,4 @@ rutas:
       por-id: /{repositorioId}
       cargas-version: /{repositorioId}/versiones/cargas
       versiones: /{repositorioId}/versiones
+      versiones-asesor: /versiones/asesor
