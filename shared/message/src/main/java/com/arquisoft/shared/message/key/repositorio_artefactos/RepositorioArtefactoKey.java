@@ -17,7 +17,10 @@ public enum RepositorioArtefactoKey implements ClaveMensaje {
     LOG_VERIFICACION_MODIFICAR(
             "repositorio_artefactos.aplicacion.repositorioartefacto.log.verificacion-modificar", 3),
     LOG_MODIFICADO("repositorio_artefactos.aplicacion.repositorioartefacto.log.modificado", 1),
-    LOG_ACTUALIZADO("repositorio_artefactos.infraestructura.repositorioartefacto.log.actualizado", 1);
+    LOG_ACTUALIZADO("repositorio_artefactos.infraestructura.repositorioartefacto.log.actualizado", 1),
+    LOG_CONSULTANDO("repositorio_artefactos.aplicacion.repositorioartefacto.log.consultando", 4),
+    LOG_CONSULTA_COMPLETADA(
+            "repositorio_artefactos.aplicacion.repositorioartefacto.log.consulta-completada", 3);
 
     private final String clave;
     private final int parametros;
