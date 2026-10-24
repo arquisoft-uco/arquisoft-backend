@@ -26,6 +26,7 @@ public final class ArtefactosFields {
         private RevisionAsesor() {}
 
         public static final String ESTUDIANTE = "estudiante";
+        public static final String ASESOR = "asesor";
     }
 
     public static final class EstudianteArtefacto {

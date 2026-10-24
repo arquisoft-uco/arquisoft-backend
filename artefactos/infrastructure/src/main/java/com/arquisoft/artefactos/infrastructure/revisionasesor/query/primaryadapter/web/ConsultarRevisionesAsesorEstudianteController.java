@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("${rutas.artefactos.revisiones-asesor.base:/artefactos/revisiones-asesor}")
+@RequestMapping("${rutas.artefactos.revisiones-asesor.base:/revisiones-asesor}")
 @RequiredArgsConstructor
 @Tag(name = ArtefactosApiMessages.RevisionAsesor.TAG_NAME, description = ArtefactosApiMessages.RevisionAsesor.TAG_DESCRIPTION)
 public class ConsultarRevisionesAsesorEstudianteController {

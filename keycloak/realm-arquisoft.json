@@ -338,7 +338,8 @@
               "evaluaciones:evaluacion-asesor:view",
               "evaluaciones:evaluacion-cualitativa-asesor:create",
               "artefactos:estudiante-artefacto:view",
-              "artefactos:observacion-revision:view"
+              "artefactos:observacion-revision:view",
+              "artefactos:revision-asesor-asesor:view"
             ]
           }
         },
@@ -1259,6 +1260,15 @@
         {
           "id": "9a5395ad-5e88-4f8c-ac4d-346814dc7e33",
           "name": "artefactos:revision-asesor-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8d93f7c0-db50-4615-a805-0e8e132b2792",
+          "name": "artefactos:revision-asesor-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,

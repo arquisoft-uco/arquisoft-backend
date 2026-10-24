@@ -35,6 +35,9 @@ class RevisionAsesorQueryOutputAdapterTest {
     @Autowired
     private RevisionAsesorEstudianteQueryRepository repository;
 
+    @Autowired
+    private RevisionAsesorAsesorQueryRepository asesorRepository;
+
     private RevisionAsesorQueryOutputAdapter adapter;
 
     private final UUID estudianteA = UUID.randomUUID();
@@ -53,7 +56,8 @@ class RevisionAsesorQueryOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new RevisionAsesorQueryOutputAdapter(repository, new RevisionAsesorEstudianteJpaSpecification());
+        adapter = new RevisionAsesorQueryOutputAdapter(repository, new RevisionAsesorEstudianteJpaSpecification(),
+                asesorRepository, new RevisionAsesorAsesorJpaSpecification());
     }
 
     private void sembrarCatalogo() {
