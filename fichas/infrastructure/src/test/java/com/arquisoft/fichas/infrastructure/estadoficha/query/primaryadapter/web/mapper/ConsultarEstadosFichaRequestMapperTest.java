@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.mapper;
 
 import com.arquisoft.fichas.infrastructure.security.FichasRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.web.identidad.IdentidadActual;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,9 +18,9 @@ class ConsultarEstadosFichaRequestMapperTest {
 
     @ParameterizedTest
     @CsvSource({
-            FichasRoles.Identidad.ASESOR_FICHA + "," + FichasRoles.Negocio.ASESOR_FICHA,
-            FichasRoles.Identidad.COORDINADOR + "," + FichasRoles.Negocio.COORDINADOR,
-            FichasRoles.Identidad.REPRESENTANTE_COMITE + "," + FichasRoles.Negocio.REPRESENTANTE_COMITE
+            UsuariosRoles.ASESOR_FICHA + "," + FichasRoles.Negocio.ASESOR_FICHA,
+            UsuariosRoles.COORDINADOR + "," + FichasRoles.Negocio.COORDINADOR,
+            UsuariosRoles.REPRESENTANTE_COMITE + "," + FichasRoles.Negocio.REPRESENTANTE_COMITE
     })
     void debeTraducirAlRolDeNegocio_cuandoElRolDeIdentidadEstaEnLaWhitelist(String rolIdentidad, String rolNegocio) {
         // Arrange
@@ -37,9 +38,9 @@ class ConsultarEstadosFichaRequestMapperTest {
     void debeUnirLosRolesSinDuplicados_cuandoElLlamanteTieneVariosRoles() {
         // Arrange
         var identidad = identidadConRoles(List.of(
-                FichasRoles.Identidad.COORDINADOR,
-                FichasRoles.Identidad.REPRESENTANTE_COMITE,
-                FichasRoles.Identidad.COORDINADOR));
+                UsuariosRoles.COORDINADOR,
+                UsuariosRoles.REPRESENTANTE_COMITE,
+                UsuariosRoles.COORDINADOR));
 
         // Act
         var query = ConsultarEstadosFichaRequestMapper.toQuery(identidad);
@@ -53,7 +54,7 @@ class ConsultarEstadosFichaRequestMapperTest {
     void debeDescartarLosRolesDesconocidos_cuandoNoEstanEnLaWhitelist() {
         // Arrange
         var identidad = identidadConRoles(List.of(
-                "estudiante", "administrador", "offline_access", FichasRoles.Identidad.ASESOR_FICHA));
+                "estudiante", "administrador", "offline_access", UsuariosRoles.ASESOR_FICHA));
 
         // Act
         var query = ConsultarEstadosFichaRequestMapper.toQuery(identidad);
