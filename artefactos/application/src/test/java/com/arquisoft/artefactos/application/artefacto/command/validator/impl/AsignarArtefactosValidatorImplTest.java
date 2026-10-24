@@ -88,6 +88,18 @@ class AsignarArtefactosValidatorImplTest {
     }
 
     @Test
+    void debeLanzarAsesorNoAsignado_antesQueLasVersiones_cuandoElVinculoEstaFinalizado() {
+        // Arrange
+        var finalizado = AsesorProyectoGradoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), asesorId, proyecto, Instant.now(), Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                asignacion, true, asesorVigente, finalizado, List.of(), List.of()))
+                .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
+    }
+
+    @Test
     void debeLanzarVersionNoEncontrada_antesQueElRepositorio_cuandoFaltaUnaVersion() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(

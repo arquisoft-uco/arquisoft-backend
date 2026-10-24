@@ -7,7 +7,7 @@ public enum AsesorProyectoGradoKey implements ClaveMensaje {
 
     LOG_ASIGNADO_RECIBIDO("artefactos.infraestructura.asesorproyectogrado.log.asignado-recibido", 4),
     LOG_FINALIZADO_RECIBIDO("artefactos.infraestructura.asesorproyectogrado.log.finalizado-recibido", 4),
-    LOG_VERIFICACION_AGREGAR("artefactos.aplicacion.asesorproyectogrado.log.verificacion-agregar", 3),
+    LOG_VERIFICACION_AGREGAR("artefactos.aplicacion.asesorproyectogrado.log.verificacion-agregar", 4),
     LOG_VERIFICACION_FINALIZAR("artefactos.aplicacion.asesorproyectogrado.log.verificacion-finalizar", 3),
     LOG_AGREGADO("artefactos.aplicacion.asesorproyectogrado.log.agregado", 2),
     LOG_REACTIVADO("artefactos.aplicacion.asesorproyectogrado.log.reactivado", 2),

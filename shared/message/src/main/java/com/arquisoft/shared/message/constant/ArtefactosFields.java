@@ -81,5 +81,7 @@ public final class ArtefactosFields {
         public static final String ASESOR = "asesor";
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String OCURRIDO_EN = "ocurridoEn";
+        public static final String VINCULO = "vinculo";
+        public static final String TRASPASO = "traspaso";
     }
 }

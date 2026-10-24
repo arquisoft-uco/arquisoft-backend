@@ -3,7 +3,7 @@ package com.arquisoft.artefactos.application.asesorproyectogrado.command.primary
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.primaryport.model.AgregarAsesorProyectoGradoCommand;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.result.AgregacionAsesorProyectoGradoResult;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.usecase.AgregarAsesorProyectoGradoUseCase;
-import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.asesorproyectogrado.AgregacionAsesorProyectoGradoDomain;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,10 +43,10 @@ class AgregarAsesorProyectoGradoInteractorImplTest {
 
         // Assert
         assertThat(resultado).isSameAs(esperado);
-        var captor = ArgumentCaptor.forClass(AsesorProyectoGradoDomain.class);
+        var captor = ArgumentCaptor.forClass(AgregacionAsesorProyectoGradoDomain.class);
         verify(agregarAsesorProyectoGradoUseCase).ejecutar(captor.capture());
-        assertThat(captor.getValue().getAsesor()).isEqualTo(asesor);
-        assertThat(captor.getValue().getProyectoGrado()).isEqualTo(proyecto);
-        assertThat(captor.getValue().getOcurridoEn()).isEqualTo(ocurridoEn);
+        assertThat(captor.getValue().getVinculo().getAsesor()).isEqualTo(asesor);
+        assertThat(captor.getValue().getVinculo().getProyectoGrado()).isEqualTo(proyecto);
+        assertThat(captor.getValue().getVinculo().getOcurridoEn()).isEqualTo(ocurridoEn);
     }
 }

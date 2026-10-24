@@ -105,6 +105,30 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeDevolverElMaximoOcurridoEnDelProyecto_cuandoHayVinculosDeVariosAsesores() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var masReciente = FINALIZADO_EN.plusSeconds(60);
+        adapter.guardar(new AsesorProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), proyecto, OCURRIDO_EN, FINALIZADO_EN));
+        adapter.guardar(new AsesorProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), proyecto, masReciente, UtilFecha.VACIO));
+        adapter.guardar(new AsesorProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                masReciente.plusSeconds(3600), UtilFecha.VACIO));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var ultimo = adapter.obtenerUltimoOcurridoEnPorProyectoGrado(proyecto);
+        var sinVinculos = adapter.obtenerUltimoOcurridoEnPorProyectoGrado(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(ultimo).contains(masReciente);
+        assertThat(sinVinculos).isEmpty();
+    }
+
+    @Test
     void debeRechazarElParRepetido_cuandoSeGuardaElMismoAsesorEnElMismoProyecto() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();

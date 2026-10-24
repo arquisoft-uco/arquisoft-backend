@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.artefactos.AsesorProyectoGradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,11 @@ public class AsesorProyectoGradoCommandOutputAdapter implements AsesorProyectoGr
     public Optional<AsesorProyectoGradoEntity> obtenerPorAsesorYProyectoGrado(UUID asesor, UUID proyectoGrado) {
         return asesorProyectoGradoCommandRepository.findByAsesorIdAndProyectoGradoId(asesor, proyectoGrado)
                 .map(AsesorProyectoGradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public Optional<Instant> obtenerUltimoOcurridoEnPorProyectoGrado(UUID proyectoGrado) {
+        return asesorProyectoGradoCommandRepository.findUltimoOcurridoEnByProyectoGradoId(proyectoGrado);
     }
 
     @Override

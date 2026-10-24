@@ -8,7 +8,9 @@ public enum ArtefactoKey implements ClaveMensaje {
     LOG_ASIGNANDO("artefactos.aplicacion.artefacto.log.asignando", 2),
     LOG_VERIFICACION_ASIGNAR("artefactos.aplicacion.artefacto.log.verificacion-asignar", 5),
     LOG_ASIGNADOS("artefactos.aplicacion.artefacto.log.asignados", 2),
+    LOG_TRASPASANDO("artefactos.aplicacion.artefacto.log.traspasando", 2),
     LOG_GUARDADOS("artefactos.infraestructura.artefacto.log.guardados", 1),
+    LOG_TRASPASADOS("artefactos.infraestructura.artefacto.log.traspasados", 1),
     ERROR_REPOSITORIO_YA_ASIGNADO("artefactos.dominio.artefacto.error.repositorio-ya-asignado", 1);
 
     private final String clave;
