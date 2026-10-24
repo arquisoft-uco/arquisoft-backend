@@ -267,6 +267,7 @@
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "solicitudes:solicitud-novedad-asesor-enviada:view",
               "usuarios:coordinador-vigente:view",
+              "mapas-ruta:estado-item:view",
               "mapas-ruta:tarea:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
               "solicitudes:solicitud-novedad-asesor:create",
@@ -1026,6 +1027,15 @@
         {
           "id": "62de902b-7e68-462d-bf78-285f621dc432",
           "name": "evaluaciones:item-cualitativo-jurado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "db0205d7-e733-4380-9692-6046cf72a09b",
+          "name": "mapas-ruta:estado-item:view",
           "description": "",
           "composite": false,
           "clientRole": true,
