@@ -35,6 +35,9 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
     LOG_VERIFICACION_SUBIR(
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.verificacion-subir", 6),
     LOG_SUBIDA("repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.subida", 3),
+    LOG_CONSULTANDO("repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.consultando", 1),
+    LOG_CONSULTA_COMPLETADA(
+            "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.consulta-completada", 1),
     LOG_GUARDADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.guardada", 1),
     LOG_CARGA_COPIADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-copiada", 2),
     LOG_CARGA_ELIMINADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-eliminada", 1);

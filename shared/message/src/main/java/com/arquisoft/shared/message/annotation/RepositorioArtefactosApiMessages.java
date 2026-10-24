@@ -65,5 +65,10 @@ public final class RepositorioArtefactosApiMessages {
                 "Carga inexistente o ajena, archivo inválido o incoherencia con el documento declarado";
         public static final String SUBIR_RESP_503 = "Almacenamiento de objetos no disponible";
         public static final String PARAM_REPOSITORIO = "Identificador del repositorio de artefactos";
+        public static final String CONSULTAR_SUMMARY = "Consultar las versiones de un repositorio de artefactos";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Lista todas las versiones de los documentos del repositorio, la de mayor número primero";
+        public static final String CONSULTAR_RESP_200 = "Versiones obtenidas exitosamente (lista vacía si no hay)";
+        public static final String CONSULTAR_RESP_400 = "Identificador de repositorio inválido";
     }
 }
