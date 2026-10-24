@@ -16,4 +16,13 @@ public final class TareaJpaMapper {
                 .estadoItemId(entity.estadoItem())
                 .build();
     }
+
+    public static TareaEntity toEntity(TareaJpaEntity jpaEntity) {
+        return new TareaEntity(
+                jpaEntity.getId(),
+                jpaEntity.getMapaRutaId(),
+                jpaEntity.getDescripcion(),
+                jpaEntity.getAsesorId(),
+                jpaEntity.getEstadoItemId());
+    }
 }

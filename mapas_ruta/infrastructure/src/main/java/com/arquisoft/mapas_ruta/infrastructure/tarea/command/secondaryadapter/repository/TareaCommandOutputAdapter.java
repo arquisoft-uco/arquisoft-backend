@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.mapas_ruta.TareaKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -21,6 +22,17 @@ public class TareaCommandOutputAdapter implements TareaOutputPort {
     public void registrar(TareaEntity entity) {
         repository.save(TareaJpaMapper.toJpaEntity(entity));
         logger.debug(TareaKey.LOG_GUARDADA, entity.id());
+    }
+
+    @Override
+    public Optional<TareaEntity> obtenerPorId(UUID tarea) {
+        return repository.findById(tarea).map(TareaJpaMapper::toEntity);
+    }
+
+    @Override
+    public void actualizarEstadoItem(UUID tarea, String estadoItem) {
+        repository.actualizarEstadoItem(tarea, estadoItem);
+        logger.debug(TareaKey.LOG_GUARDADA, tarea);
     }
 
     @Override
