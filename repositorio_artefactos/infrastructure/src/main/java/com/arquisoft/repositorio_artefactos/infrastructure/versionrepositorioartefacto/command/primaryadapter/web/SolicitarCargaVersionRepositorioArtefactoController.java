@@ -1,7 +1,6 @@
 package com.arquisoft.repositorio_artefactos.infrastructure.versionrepositorioartefacto.command.primaryadapter.web;
 
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.primaryport.interactor.SolicitarCargaVersionRepositorioArtefactoInteractor;
-import com.arquisoft.repositorio_artefactos.infrastructure.security.RepositorioArtefactosAuthorities;
 import com.arquisoft.repositorio_artefactos.infrastructure.versionrepositorioartefacto.command.primaryadapter.web.dto.SolicitarCargaVersionRepositorioArtefactoRequestDTO;
 import com.arquisoft.repositorio_artefactos.infrastructure.versionrepositorioartefacto.command.primaryadapter.web.dto.SolicitarCargaVersionRepositorioArtefactoResponseDTO;
 import com.arquisoft.repositorio_artefactos.infrastructure.versionrepositorioartefacto.command.primaryadapter.web.mapper.SolicitarCargaVersionRepositorioArtefactoRequestMapper;
@@ -10,6 +9,7 @@ import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.RepositorioArtefactosApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,9 +20,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,7 +39,6 @@ public class SolicitarCargaVersionRepositorioArtefactoController {
     private final SolicitarCargaVersionRepositorioArtefactoInteractor interactor;
 
     @PostMapping("${rutas.repositorio-artefactos.repositorio-artefactos.cargas-version:/{repositorioId}/versiones/cargas}")
-    @PreAuthorize(RepositorioArtefactosAuthorities.Expresiones.HAS_CARGA_VERSION_REPOSITORIO_ARTEFACTO_CREATE)
     @Operation(
             summary = RepositorioArtefactosApiMessages.VersionRepositorioArtefacto.SOLICITAR_CARGA_SUMMARY,
             description = RepositorioArtefactosApiMessages.VersionRepositorioArtefacto.SOLICITAR_CARGA_DESCRIPTION,
@@ -76,9 +72,9 @@ public class SolicitarCargaVersionRepositorioArtefactoController {
             @Parameter(description = RepositorioArtefactosApiMessages.VersionRepositorioArtefacto.PARAM_REPOSITORIO)
             @PathVariable UUID repositorioId,
             @RequestBody SolicitarCargaVersionRepositorioArtefactoRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
         var result = interactor.ejecutar(SolicitarCargaVersionRepositorioArtefactoRequestMapper.toCommand(
-                request, repositorioId, jwt.getSubject()));
+                request, repositorioId, identidad.id().toString()));
         return ResponseEntity.ok(SolicitarCargaVersionRepositorioArtefactoResponseMapper.toResponse(result));
     }
 }

@@ -3,7 +3,6 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.c
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.primaryport.interactor.OmitirEvaluacionesCuantitativasJuradoInteractor;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.primaryadapter.web.dto.OmitirEvaluacionesCuantitativasJuradoRequestDTO;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.primaryadapter.web.mapper.OmitirEvaluacionesCuantitativasJuradoRequestMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +36,6 @@ public class OmitirEvaluacionesCuantitativasJuradoController {
     private final OmitirEvaluacionesCuantitativasJuradoInteractor interactor;
 
     @DeleteMapping("${rutas.evaluaciones.evaluaciones-jurado.cuantitativas:/{evaluacionJuradoId}/cuantitativas}")
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_EVALUACION_CUANTITATIVA_JURADO_DELETE)
     @Operation(
             summary = EvaluacionesApiMessages.EvaluacionCuantitativaJurado.OMITIR_SUMMARY,
             description = EvaluacionesApiMessages.EvaluacionCuantitativaJurado.OMITIR_DESCRIPTION,

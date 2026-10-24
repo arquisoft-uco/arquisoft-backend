@@ -5,13 +5,12 @@ import com.arquisoft.fichas.application.revisionitem.command.primaryport.model.R
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorException;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemCerradaException;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemNoEncontradoException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
-import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +18,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -41,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RemoverRevisionItemController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         RemoverRevisionItemControllerTest.TestSecurityConfig.class})
 class RemoverRevisionItemControllerTest {
 
@@ -49,7 +46,6 @@ class RemoverRevisionItemControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -74,8 +70,7 @@ class RemoverRevisionItemControllerTest {
 
     private RequestPostProcessor asesorAutorizado() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject(asesorId.toString()))
-                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_DELETE));
+                .jwt(j -> j.subject(asesorId.toString()));
     }
 
     @Test
@@ -100,14 +95,12 @@ class RemoverRevisionItemControllerTest {
     }
 
     @Test
-    void debe400ConFieldErrors_cuandoElSubjectNoEsUuid() throws Exception {
+    void debe401ConFieldErrors_cuandoElSubjectNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(delete(RUTA, revisionItemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject("no-es-un-uuid"))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_DELETE))))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.RevisionItem.ASESOR_FICHA));
+                                .jwt(j -> j.subject("no-es-un-uuid"))))
+                .andExpect(status().isUnauthorized());
         verify(removerRevisionItemInteractor, never()).ejecutar(any());
     }
 
@@ -116,17 +109,6 @@ class RemoverRevisionItemControllerTest {
         // Act & Assert
         mockMvc.perform(delete(RUTA, revisionItemId))
                 .andExpect(status().isUnauthorized());
-        verify(removerRevisionItemInteractor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debe403_cuandoFaltaElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA, revisionItemId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(asesorId.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE))))
-                .andExpect(status().isForbidden());
         verify(removerRevisionItemInteractor, never()).ejecutar(any());
     }
 

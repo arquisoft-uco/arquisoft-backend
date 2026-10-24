@@ -2,7 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativojurad
 
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.primaryport.interactor.ConsultarCategoriasItemCuantitativoJuradoInteractor;
 import com.arquisoft.evaluaciones.application.categoriaitemcuantitativojurado.query.readmodel.CategoriaItemCuantitativoJuradoReadModel;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -13,10 +12,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -47,7 +44,6 @@ class ConsultarCategoriasItemCuantitativoJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -140,13 +136,6 @@ class ConsultarCategoriasItemCuantitativoJuradoControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoJwtSinAuthorities() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeDelegarUnaSolaVez_enElInteractor() throws Exception {
         // Arrange
         when(interactor.ejecutar(any())).thenReturn(List.of());
@@ -160,8 +149,6 @@ class ConsultarCategoriasItemCuantitativoJuradoControllerTest {
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermisoView() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.CATEGORIA_ITEM_CUANTITATIVO_JURADO_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

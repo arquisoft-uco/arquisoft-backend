@@ -5,10 +5,10 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.primarypor
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -16,10 +16,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -34,14 +32,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AgregarEstadoEvaluacionFichaController.class)
-@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+@Import({IdentidadActualTestConfig.class, com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         AgregarEstadoEvaluacionFichaControllerTest.TestSecurityConfig.class})
 class AgregarEstadoEvaluacionFichaControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -76,8 +73,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(resultadoId.toString()));
     }
@@ -91,8 +87,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestInvalido)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -111,8 +106,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -131,8 +125,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -155,8 +148,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -191,25 +183,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
+                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))))
                 .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        // Arrange
-        UUID evaluacionId = UUID.randomUUID();
-        String requestBody = String.format(
-                "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
-                evaluacionId);
-
-        // Act & Assert
-        mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:otro-permiso"))))
-                .andExpect(status().isForbidden());
     }
 }

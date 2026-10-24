@@ -5,19 +5,17 @@ import com.arquisoft.fichas.application.revisionitem.command.primaryport.interac
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemYaExisteException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -32,14 +30,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AgregarRevisionItemController.class)
-@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+@Import({IdentidadActualTestConfig.class, com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         AgregarRevisionItemControllerTest.TestSecurityConfig.class})
 class AgregarRevisionItemControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -71,8 +68,7 @@ class AgregarRevisionItemControllerTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(revisionId.toString()));
     }
@@ -85,16 +81,6 @@ class AgregarRevisionItemControllerTest {
     }
 
     @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("estudiante:perfil:read"))))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debe422_cuandoItemNoEncontrado() throws Exception {
         // Arrange
         when(agregarRevisionItemInteractor.ejecutar(any()))
@@ -103,8 +89,7 @@ class AgregarRevisionItemControllerTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.ItemFichaPerfil.ITEM_NO_ENCONTRADO));
     }
@@ -118,8 +103,7 @@ class AgregarRevisionItemControllerTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.FichaPerfil.FICHA_NO_PERTENECE_ASESOR));
     }
@@ -133,8 +117,7 @@ class AgregarRevisionItemControllerTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE))))
+                                .jwt(j -> j.subject(ASESOR_ID.toString()))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.RevisionItem.YA_EXISTE));
     }

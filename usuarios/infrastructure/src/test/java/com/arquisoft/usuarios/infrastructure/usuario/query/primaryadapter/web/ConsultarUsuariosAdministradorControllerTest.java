@@ -11,7 +11,6 @@ import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.usuarios.application.usuario.query.primaryport.interactor.ConsultarUsuariosAdministradorInteractor;
 import com.arquisoft.usuarios.application.usuario.query.readmodel.UsuarioReadModel;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +19,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -49,7 +46,6 @@ class ConsultarUsuariosAdministradorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -70,8 +66,7 @@ class ConsultarUsuariosAdministradorControllerTest {
     private ConsultarUsuariosAdministradorInteractor consultarUsuariosAdministradorInteractor;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor administrador() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_ADMINISTRADOR_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -199,18 +194,6 @@ class ConsultarUsuariosAdministradorControllerTest {
 
         // Assert
         respuesta.andExpect(status().isUnauthorized());
-        verify(consultarUsuariosAdministradorInteractor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debeRetornar403_cuandoSinClientRole() throws Exception {
-        // Act
-        var respuesta = mockMvc.perform(post(RUTA)
-                .with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.ESTUDIANTE_VIGENTE_VIEW))));
-
-        // Assert
-        respuesta.andExpect(status().isForbidden());
         verify(consultarUsuariosAdministradorInteractor, never()).ejecutar(any());
     }
 }

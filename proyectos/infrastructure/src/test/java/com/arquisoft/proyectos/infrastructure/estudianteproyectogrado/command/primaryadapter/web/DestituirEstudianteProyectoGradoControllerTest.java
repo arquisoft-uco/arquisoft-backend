@@ -3,13 +3,12 @@ package com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.command.p
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.primaryport.interactor.DestituirEstudianteProyectoGradoInteractor;
 import com.arquisoft.proyectos.application.estudianteproyectogrado.command.primaryport.model.DestituirEstudianteProyectoGradoCommand;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.exception.EstudianteNoVinculadoException;
-import com.arquisoft.proyectos.infrastructure.security.ProyectosAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.ProyectosCodes;
-import com.arquisoft.shared.message.constant.ProyectosFields;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +16,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DestituirEstudianteProyectoGradoController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         DestituirEstudianteProyectoGradoControllerTest.TestSecurityConfig.class})
 class DestituirEstudianteProyectoGradoControllerTest {
 
@@ -48,7 +45,6 @@ class DestituirEstudianteProyectoGradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -71,9 +67,7 @@ class DestituirEstudianteProyectoGradoControllerTest {
     private ResultActions enviar(UUID proyectoGradoId, UUID estudianteId, String subject) throws Exception {
         return mockMvc.perform(delete(RUTA, proyectoGradoId, estudianteId)
                 .with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .jwt(jwt -> jwt.subject(subject))
-                        .authorities(new SimpleGrantedAuthority(
-                                ProyectosAuthorities.ESTUDIANTE_PROYECTO_GRADO_DELETE))));
+                        .jwt(jwt -> jwt.subject(subject))));
     }
 
     @Test
@@ -94,12 +88,11 @@ class DestituirEstudianteProyectoGradoControllerTest {
     }
 
     @Test
-    void debeResponder400_cuandoElSubjectDelJwtNoEsUuid() throws Exception {
+    void debeResponder401_cuandoElSubjectDelJwtNoEsUuid() throws Exception {
         // Act & Assert
         enviar(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "no-es-uuid")
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors[0].field")
-                        .value(ProyectosFields.EstudianteProyectoGrado.COORDINADOR));
+                .andExpect(status().isUnauthorized());
+
         verify(destituirEstudianteProyectoGradoInteractor, never()).ejecutar(any());
     }
 
@@ -108,16 +101,6 @@ class DestituirEstudianteProyectoGradoControllerTest {
         // Act & Assert
         mockMvc.perform(delete(RUTA, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID()))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeResponder403_cuandoSinAuthority() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("proyectos:otra-autoridad"))))
-                .andExpect(status().isForbidden());
-        verify(destituirEstudianteProyectoGradoInteractor, never()).ejecutar(any());
     }
 
     @Test

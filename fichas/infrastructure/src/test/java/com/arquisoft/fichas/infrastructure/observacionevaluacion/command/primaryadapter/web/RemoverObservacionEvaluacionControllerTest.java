@@ -3,23 +3,20 @@ package com.arquisoft.fichas.infrastructure.observacionevaluacion.command.primar
 import com.arquisoft.fichas.application.observacionevaluacion.command.primaryport.interactor.RemoverObservacionEvaluacionInteractor;
 import com.arquisoft.fichas.application.observacionevaluacion.command.primaryport.model.RemoverObservacionEvaluacionCommand;
 import com.arquisoft.fichas.domain.observacionevaluacion.exception.ObservacionEvaluacionNoEncontradaException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
-import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -38,13 +35,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RemoverObservacionEvaluacionController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         RemoverObservacionEvaluacionControllerTest.TestSecurityConfig.class})
 class RemoverObservacionEvaluacionControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -72,8 +68,7 @@ class RemoverObservacionEvaluacionControllerTest {
     void debeRetornar204SinCuerpoConActorDelJwt_cuandoRemocionExitosa() throws Exception {
         // Act & Assert
         mockMvc.perform(delete(RUTA, OBSERVACION_EVALUACION_ID)
-                        .with(jwtConAuthority(REPRESENTANTE_COMITE_ID.toString(),
-                                FichasAuthorities.OBSERVACION_EVALUACION_DELETE)))
+                        .with(jwtConAuthority(REPRESENTANTE_COMITE_ID.toString())))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
@@ -85,21 +80,18 @@ class RemoverObservacionEvaluacionControllerTest {
     void debeRetornar400_cuandoPathNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(delete(RUTA, "no-es-uuid")
-                        .with(jwtConAuthority(REPRESENTANTE_COMITE_ID.toString(),
-                                FichasAuthorities.OBSERVACION_EVALUACION_DELETE)))
+                        .with(jwtConAuthority(REPRESENTANTE_COMITE_ID.toString())))
                 .andExpect(status().isBadRequest());
 
         verify(removerObservacionEvaluacionInteractor, never()).ejecutar(any());
     }
 
     @Test
-    void debeRetornar400ConFieldError_cuandoSubjectDelJwtNoEsUuid() throws Exception {
+    void debeRetornar401ConFieldError_cuandoSubjectDelJwtNoEsUuid() throws Exception {
         // Act & Assert — Command.crear rechaza el actor nulo antes de llegar al interactor
         mockMvc.perform(delete(RUTA, OBSERVACION_EVALUACION_ID)
-                        .with(jwtConAuthority("no-es-uuid", FichasAuthorities.OBSERVACION_EVALUACION_DELETE)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors[0].field")
-                        .value(FichasFields.ObservacionEvaluacion.REPRESENTANTE_COMITE));
+                        .with(jwtConAuthority("no-es-uuid")))
+                .andExpect(status().isUnauthorized());
 
         verify(removerObservacionEvaluacionInteractor, never()).ejecutar(any());
     }
@@ -114,17 +106,6 @@ class RemoverObservacionEvaluacionControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoAuthorityDeModificarEnVezDeRemover() throws Exception {
-        // Act & Assert — el client role de modificar observaciones no habilita removerlas
-        mockMvc.perform(delete(RUTA, OBSERVACION_EVALUACION_ID)
-                        .with(jwtConAuthority(REPRESENTANTE_COMITE_ID.toString(),
-                                FichasAuthorities.OBSERVACION_EVALUACION_UPDATE)))
-                .andExpect(status().isForbidden());
-
-        verify(removerObservacionEvaluacionInteractor, never()).ejecutar(any());
-    }
-
-    @Test
     void debeRetornar422_cuandoLaObservacionNoExiste() throws Exception {
         // Arrange
         doThrow(new ObservacionEvaluacionNoEncontradaException(OBSERVACION_EVALUACION_ID))
@@ -132,16 +113,14 @@ class RemoverObservacionEvaluacionControllerTest {
 
         // Act & Assert
         mockMvc.perform(delete(RUTA, OBSERVACION_EVALUACION_ID)
-                        .with(jwtConAuthority(REPRESENTANTE_COMITE_ID.toString(),
-                                FichasAuthorities.OBSERVACION_EVALUACION_DELETE)))
+                        .with(jwtConAuthority(REPRESENTANTE_COMITE_ID.toString())))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode")
                         .value(FichasCodes.ObservacionEvaluacion.OBSERVACION_EVALUACION_NO_ENCONTRADA));
     }
 
-    private RequestPostProcessor jwtConAuthority(String subject, String authority) {
+    private RequestPostProcessor jwtConAuthority(String subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject(subject))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(j -> j.subject(subject));
     }
 }

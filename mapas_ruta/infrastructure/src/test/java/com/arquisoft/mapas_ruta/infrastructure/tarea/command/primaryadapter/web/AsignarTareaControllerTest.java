@@ -3,12 +3,12 @@ package com.arquisoft.mapas_ruta.infrastructure.tarea.command.primaryadapter.web
 import com.arquisoft.mapas_ruta.application.tarea.command.primaryport.interactor.AsignarTareaInteractor;
 import com.arquisoft.mapas_ruta.application.tarea.command.primaryport.model.AsignarTareaCommand;
 import com.arquisoft.mapas_ruta.domain.tarea.exception.TareaDuplicadaException;
-import com.arquisoft.mapas_ruta.infrastructure.security.MapasRutaAuthorities;
 import com.arquisoft.shared.message.constant.MapasRutaCodes;
 import com.arquisoft.shared.message.constant.MapasRutaFields;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -37,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AsignarTareaController.class)
-@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+@Import({IdentidadActualTestConfig.class, com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         AsignarTareaControllerTest.TestSecurityConfig.class})
 class AsignarTareaControllerTest {
@@ -46,7 +44,6 @@ class AsignarTareaControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -77,8 +74,7 @@ class AsignarTareaControllerTest {
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtEstudiante() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(MapasRutaAuthorities.TAREA_CREATE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -142,16 +138,5 @@ class AsignarTareaControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body("Tarea", UtilUUID.generarNuevoUUID().toString())))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeRetornar403_cuandoNoTieneElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA, UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(MapasRutaAuthorities.MAPA_RUTA_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body("Tarea", UtilUUID.generarNuevoUUID().toString())))
-                .andExpect(status().isForbidden());
     }
 }

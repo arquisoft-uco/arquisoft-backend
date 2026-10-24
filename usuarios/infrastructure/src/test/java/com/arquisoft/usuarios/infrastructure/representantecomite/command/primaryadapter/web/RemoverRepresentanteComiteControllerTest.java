@@ -8,7 +8,6 @@ import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.usuarios.application.representantecomite.command.primaryport.interactor.RemoverRepresentanteComiteInteractor;
 import com.arquisoft.usuarios.application.representantecomite.command.primaryport.model.RemoverRepresentanteComiteCommand;
 import com.arquisoft.usuarios.domain.representantecomite.exception.RepresentanteComiteNoEncontradoException;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +39,6 @@ class RemoverRepresentanteComiteControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -63,8 +59,7 @@ class RemoverRepresentanteComiteControllerTest {
     private RemoverRepresentanteComiteInteractor removerRepresentanteComiteInteractor;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor administrador() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.REPRESENTANTE_COMITE_DELETE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -91,16 +86,6 @@ class RemoverRepresentanteComiteControllerTest {
         // Act & Assert
         mockMvc.perform(delete(RUTA, UtilUUID.generarNuevoUUID()))
                 .andExpect(status().isUnauthorized());
-        verify(removerRepresentanteComiteInteractor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debe403_cuandoSoloTieneElClientRoleDeRemoverCoordinador() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA, UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.COORDINADOR_DELETE))))
-                .andExpect(status().isForbidden());
         verify(removerRepresentanteComiteInteractor, never()).ejecutar(any());
     }
 

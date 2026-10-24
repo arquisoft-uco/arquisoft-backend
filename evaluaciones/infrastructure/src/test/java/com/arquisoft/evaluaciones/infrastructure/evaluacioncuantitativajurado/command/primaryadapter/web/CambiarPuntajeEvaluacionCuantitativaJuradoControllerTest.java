@@ -5,9 +5,9 @@ import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.EvaluacionCuantitativaJuradoNoPerteneceJuradoException;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.EvaluacionJuradoFinalizadaException;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.PuntajeEvaluacionCuantitativaJuradoExcedeValorItemException;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -15,10 +15,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -33,7 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CambiarPuntajeEvaluacionCuantitativaJuradoController.class)
-@Import({
+@Import({IdentidadActualTestConfig.class,
         com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         CambiarPuntajeEvaluacionCuantitativaJuradoControllerTest.TestSecurityConfig.class
@@ -48,7 +46,6 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -127,18 +124,6 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoNoTienePermiso() throws Exception {
-        // Act & Assert
-        mockMvc.perform(patch(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeRetornar422_cuandoLaEvaluacionNoExiste() throws Exception {
         // Arrange
         doThrow(new EvaluacionCuantitativaJuradoNoEncontradaException(ID)).when(interactor).ejecutar(any());
@@ -193,8 +178,6 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoControllerTest {
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.EVALUACION_CUANTITATIVA_JURADO_UPDATE));
+                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()));
     }
 }

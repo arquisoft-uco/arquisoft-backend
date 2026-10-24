@@ -38,5 +38,7 @@ dependencies {
     // Testing — Spring Boot 4.x: @WebMvcTest requiere modulo separado
     testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
     testImplementation "org.springframework.security:spring-security-test"
+    testImplementation testFixtures(project(':shared:web'))
+    testImplementation "org.luaj:luaj-jse:3.0.1"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

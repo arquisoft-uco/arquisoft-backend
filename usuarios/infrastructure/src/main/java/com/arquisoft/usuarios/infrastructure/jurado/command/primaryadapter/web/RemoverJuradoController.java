@@ -6,7 +6,6 @@ import com.arquisoft.shared.message.annotation.UsuariosApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.usuarios.application.jurado.command.primaryport.interactor.RemoverJuradoInteractor;
 import com.arquisoft.usuarios.infrastructure.jurado.command.primaryadapter.web.mapper.RemoverJuradoRequestMapper;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +31,6 @@ public class RemoverJuradoController {
     private final RemoverJuradoInteractor removerJuradoInteractor;
 
     @DeleteMapping("${rutas.usuarios.usuarios.jurado:/{usuarioId}/jurado}")
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_JURADO_DELETE)
     @Operation(
             summary = UsuariosApiMessages.Jurado.REMOVER_SUMMARY,
             description = UsuariosApiMessages.Jurado.REMOVER_DESCRIPTION,

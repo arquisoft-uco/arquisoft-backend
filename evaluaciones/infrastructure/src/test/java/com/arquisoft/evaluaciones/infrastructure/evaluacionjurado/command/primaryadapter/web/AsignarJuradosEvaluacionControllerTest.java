@@ -3,7 +3,6 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.prima
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.primaryport.interactor.AsignarJuradosEvaluacionInteractor;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.primaryport.model.AsignarJuradosEvaluacionCommand;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.exception.JuradosYaAsignadosException;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
@@ -15,10 +14,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -53,7 +50,6 @@ class AsignarJuradosEvaluacionControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -131,18 +127,6 @@ class AsignarJuradosEvaluacionControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoNoTieneElClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        EvaluacionesAuthorities.EVALUACION_CUALITATIVA_JURADO_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeRetornar422_cuandoElInteractorLanzaUnaReglaDeDominio() throws Exception {
         // Arrange
         when(interactor.ejecutar(any(AsignarJuradosEvaluacionCommand.class)))
@@ -158,7 +142,6 @@ class AsignarJuradosEvaluacionControllerTest {
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(EvaluacionesAuthorities.EVALUACION_JURADO_CREATE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

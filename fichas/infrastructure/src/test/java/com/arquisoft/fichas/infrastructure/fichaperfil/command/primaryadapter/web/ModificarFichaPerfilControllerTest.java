@@ -5,8 +5,8 @@ import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interact
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -14,10 +14,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -31,14 +29,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ModificarFichaPerfilController.class)
-@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+@Import({IdentidadActualTestConfig.class, com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ModificarFichaPerfilControllerTest.TestSecurityConfig.class})
 class ModificarFichaPerfilControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -76,8 +73,7 @@ class ModificarFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isNoContent());
@@ -97,8 +93,7 @@ class ModificarFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyInvalido))
                 .andExpect(status().isBadRequest());
@@ -116,8 +111,7 @@ class ModificarFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnprocessableEntity());
@@ -135,8 +129,7 @@ class ModificarFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnprocessableEntity());
@@ -154,8 +147,7 @@ class ModificarFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnprocessableEntity());
@@ -172,21 +164,5 @@ class ModificarFichaPerfilControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnauthorized());
-    }
-
-    // ── 7. Sin permisos ──
-
-    @Test
-    void debeRetornar403_cuandoSinPermisos() throws Exception {
-        // Arrange
-
-        // Act & Assert
-        mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("otro:permiso")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
     }
 }

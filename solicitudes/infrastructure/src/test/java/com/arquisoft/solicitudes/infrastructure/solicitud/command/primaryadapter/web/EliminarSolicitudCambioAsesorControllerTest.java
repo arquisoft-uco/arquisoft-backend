@@ -6,8 +6,8 @@ import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.EliminarSolicitudCambioAsesorInteractor;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EliminarSolicitudCambioAsesorCommand;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -35,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(EliminarSolicitudCambioAsesorController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         EliminarSolicitudCambioAsesorControllerTest.TestSecurityConfig.class})
 class EliminarSolicitudCambioAsesorControllerTest {
 
@@ -43,7 +41,6 @@ class EliminarSolicitudCambioAsesorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -64,10 +61,9 @@ class EliminarSolicitudCambioAsesorControllerTest {
     private EliminarSolicitudCambioAsesorInteractor interactor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDe(
-            UUID subject, String authority) {
+            UUID subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(builder -> builder.subject(subject.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(builder -> builder.subject(subject.toString()));
     }
 
     @Test
@@ -78,7 +74,7 @@ class EliminarSolicitudCambioAsesorControllerTest {
 
         // Act & Assert
         mockMvc.perform(delete(RUTA + solicitud)
-                        .with(jwtDe(remitente, SolicitudesAuthorities.SOLICITUD_CAMBIO_ASESOR_DELETE)))
+                        .with(jwtDe(remitente)))
                 .andExpect(status().isNoContent());
 
         var captor = ArgumentCaptor.forClass(EliminarSolicitudCambioAsesorCommand.class);
@@ -91,8 +87,7 @@ class EliminarSolicitudCambioAsesorControllerTest {
     void debe400_cuandoElIdDeLaSolicitudNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(delete(RUTA + "no-es-uuid")
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.SOLICITUD_CAMBIO_ASESOR_DELETE)))
+                        .with(jwtDe(UtilUUID.generarNuevoUUID())))
                 .andExpect(status().isBadRequest());
     }
 
@@ -104,15 +99,6 @@ class EliminarSolicitudCambioAsesorControllerTest {
     }
 
     @Test
-    void debe403_cuandoElTokenTieneOtroClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA + UtilUUID.generarNuevoUUID())
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.SOLICITUD_NOVEDAD_ASESOR_DELETE)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debe422_cuandoElInteractorRechazaPorReglaDeNegocio() throws Exception {
         // Arrange
         doThrow(new SolicitudTipoNoCoincideCambioAsesorException())
@@ -120,8 +106,7 @@ class EliminarSolicitudCambioAsesorControllerTest {
 
         // Act & Assert
         mockMvc.perform(delete(RUTA + UtilUUID.generarNuevoUUID())
-                        .with(jwtDe(UtilUUID.generarNuevoUUID(),
-                                SolicitudesAuthorities.SOLICITUD_CAMBIO_ASESOR_DELETE)))
+                        .with(jwtDe(UtilUUID.generarNuevoUUID())))
                 .andExpect(status().isUnprocessableEntity());
     }
 }

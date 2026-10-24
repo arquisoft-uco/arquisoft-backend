@@ -28,6 +28,7 @@ public class CorsConfig {
     private static final String CABECERA_TOTAL_ELEMENTOS = "X-Total-Count";
     private static final String CABECERA_NUMERO_PAGINA = "X-Page-Number";
     private static final String CABECERA_TAMANIO_PAGINA = "X-Page-Size";
+    private static final String CABECERA_ID_DECISION = "X-Decision-Id";
 
     private static final String PATRON_TODAS_LAS_RUTAS = "/**";
 
@@ -41,16 +42,16 @@ public class CorsConfig {
     @Value("${security.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS,PATCH}")
     private String allowedMethods;
     
-    // La SPA autentica con Bearer token (header Authorization), NO con cookies:
-    // solo se necesitan estos headers en las requests entrantes. Evitamos "*".
-    @Value("${security.cors.allowed-headers:Authorization,Content-Type}")
+    // La SPA autentica con Bearer token (header Authorization); si el borde convierte una cookie en
+    // Bearer es asunto del borde. Solo se aceptan estos headers en las requests entrantes. Evitamos "*".
+    @Value("${security.cors.allowed-headers:Authorization,Content-Type,X-Correlation-Id}")
     private String allowedHeaders;
 
     @Value("${security.cors.max-age:3600}")
     private long maxAge;
 
-    // Bearer (no cookies) ⇒ credentials=false. Evita el modo credentialed de CORS
-    // y su restricción de no combinar con orígenes comodín.
+    // Credenciales configurables: con true el navegador acepta cookies del borde, y CORS exige
+    // orígenes explícitos (nunca comodín).
     @Value("${security.cors.allow-credentials:false}")
     private boolean allowCredentials;
 
@@ -73,7 +74,8 @@ public class CorsConfig {
                 CABECERA_NUMERO_PAGINA,
                 CABECERA_TAMANIO_PAGINA,
                 TrazaHeaders.X_CORRELATION_ID,
-                TrazaHeaders.X_TRANSACTION_ID
+                TrazaHeaders.X_TRANSACTION_ID,
+                CABECERA_ID_DECISION
         ));
         
         configuration.setAllowCredentials(allowCredentials);

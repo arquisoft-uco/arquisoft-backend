@@ -9,17 +9,14 @@ import com.arquisoft.usuarios.application.jurado.command.primaryport.interactor.
 import com.arquisoft.usuarios.application.jurado.command.primaryport.model.RemoverJuradoCommand;
 import com.arquisoft.usuarios.domain.jurado.exception.JuradoNoEncontradoException;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioNoEncontradoException;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +39,6 @@ class RemoverJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -63,8 +59,7 @@ class RemoverJuradoControllerTest {
     private RemoverJuradoInteractor removerJuradoInteractor;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor administrador() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.JURADO_DELETE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -91,16 +86,6 @@ class RemoverJuradoControllerTest {
         // Act & Assert
         mockMvc.perform(delete(RUTA, UtilUUID.generarNuevoUUID()))
                 .andExpect(status().isUnauthorized());
-        verify(removerJuradoInteractor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debeResponder403_cuandoSoloTieneElClientRoleDeRemoverBibliotecario() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA, UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.BIBLIOTECARIO_DELETE))))
-                .andExpect(status().isForbidden());
         verify(removerJuradoInteractor, never()).ejecutar(any());
     }
 

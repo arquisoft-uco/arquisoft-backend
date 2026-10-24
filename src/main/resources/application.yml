@@ -26,6 +26,8 @@ spring:
       - "classpath:rutas-artefactos.yml"
       - "classpath:rutas-repositorio-artefactos.yml"
       - "classpath:rutas-mapas-ruta.yml"
+      # Tabla de equivalencias del adaptador role-table (emisor legado); se borra junto con el.
+      - "classpath:autorizacion-equivalencias.yml"
   banner:
     location: classpath:banner.txt
   application:
@@ -122,36 +124,6 @@ spring:
           max-active: 10
           max-idle: 5
           min-idle: 0
-
-  # ==================== OAUTH2 / KEYCLOAK (Spring Boot 3.x+) ====================
-  # En tu SecurityConfig debes usar: http.oauth2ResourceServer(oauth2 -> oauth2.jwt(...))
-  spring:
-    security:
-      oauth2:
-        # ── Resource Server ──────────────────────────────────────────────
-        # Valida los tokens JWT que llegan en los requests entrantes.
-        # Keycloak expone automáticamente el JWKS en el issuer-uri/.well-known/openid-configuration
-        resourceserver:
-          jwt:
-            issuer-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}
-            jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/certs
-
-        # ── Client ───────────────────────────────────────────────────────
-        # Permite al backend llamar al endpoint /token de Keycloak
-        # para login, refresh y validación directa.
-        client:
-          provider:
-            keycloak:
-              issuer-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}
-              token-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/token
-              jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/certs
-          registration:
-            keycloak:
-              provider: keycloak
-              client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
-              client-secret: ${KEYCLOAK_CLIENT_SECRET}
-              authorization-grant-type: password
-              scope: openid, profile, email
 
 # ==================== NOTIFICACIONES (envío de correos) ====================
 # 'proveedor' decide qué implementación de NotificationSender queda activa:
@@ -341,10 +313,6 @@ datasource:
       connection-timeout: 20000
       pool-name: HikariPool-MapasRuta
 
-# ==================== KEYCLOAK ====================
-# Propiedades propias para KeycloakAuthAdapter y SecurityConfig.
-# No se usa el adapter keycloak-spring-boot-adapter (removido en SB3+).
-# La validación JWT usa Spring Security OAuth2 Resource Server de forma nativa.
 arquisoft:
   # Trazabilidad (shared:tracing). Claves MDC emitidas como campos JSON de primer nivel en
   # perfil prod: correlacionId, transaccionId, origen, usuarioId, clienteIp, metodoHttp,
@@ -354,13 +322,6 @@ arquisoft:
     # de la API). Activar para anonimizar el ultimo octeto IPv4 / truncar IPv6 a /48.
     anonimizar-ip: ${TRAZAS_ANONIMIZAR_IP:false}
     rutas-excluidas-auditoria: /api/actuator/,/api/swagger-ui,/api/v3/api-docs,/api/swagger-resources
-
-  keycloak:
-    server-url: ${KEYCLOAK_URL:http://localhost:8081}
-    realm: ${KEYCLOAK_REALM:arquisoft}
-    client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
-    client-secret: ${KEYCLOAK_CLIENT_SECRET:}
-    expected-audience: ${KEYCLOAK_EXPECTED_AUDIENCE:arquisoft-api}
 
   events:
     # Intervalo entre reintentos de eventos con estado FAILED.
@@ -386,10 +347,95 @@ arquisoft:
 # application-dev.yml / application-prod.yml, que si las declaran en la raiz, y estos
 # supuestos "valores base" no eran base de nada.
 security:
+  # false: el filtro de autorizacion no se instala (equivale al modo none para todos los emisores);
+  # la autenticacion del Bearer sigue exigida. Prohibido en el perfil prod.
+  enabled: ${SECURITY_ENABLED:true}
+  # Defaults por perfil de los valores que viven dentro de la lista de emisores (un perfil no
+  # puede sobrescribir un elemento de una lista, pero si estos escalares).
+  defaults:
+    legacy-enabled: false
+    issuer-uri: ""
+  # Resource server multi-emisor. Cada emisor valida sus JWT por JWKS y se autoriza con el
+  # adaptador de su campo 'authorization' (pep | role-table | none). Ningun permiso viaja en el token.
+  authentication:
+    issuers:
+      - id: principal
+        enabled: true
+        issuer: ${AUTH_ISSUER_URI:${security.defaults.issuer-uri}}
+        jwks-uri: ${AUTH_JWKS_URI:}
+        audiences: ${AUTH_AUDIENCES:}
+        authorization: ${AUTH_AUTHORIZATION:pep}
+        blacklist: false
+        claims:
+          id: sub
+          correo: email
+          nombre-usuario: preferred_username
+          nombre: name
+          roles: ${AUTH_CLAIM_ROLES:}
+      # Emisor actual, solo mientras dure la transicion: se apaga con AUTH_LEGACY_ENABLED=false.
+      - id: legado
+        enabled: ${AUTH_LEGACY_ENABLED:${security.defaults.legacy-enabled}}
+        issuer: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}
+        audiences: ${KEYCLOAK_EXPECTED_AUDIENCE:arquisoft-api}
+        authorization: role-table
+        blacklist: true
+        claims:
+          id: sub
+          correo: email
+          nombre-usuario: preferred_username
+          nombre: name
+          roles: realm_access.roles
+  authorization:
+    public-paths: ${SECURITY_PUBLIC_PATHS:/actuator/health/**,/actuator/prometheus,/swagger-ui/**,/v3/api-docs/**,/swagger-resources/**}
+    authenticated-paths: ${SECURITY_AUTHENTICATED_PATHS:/auth/logout}
+    resource:
+      path-mode: ${AUTHORIZATION_PATH_MODE:template}
+      path-prefix: ${AUTHORIZATION_PATH_PREFIX:${server.servlet.context-path:}}
+    pep:
+      url: ${PEP_URL:}
+      application-name: ${PEP_APPLICATION_NAME:}
+      environment: ${PEP_ENVIRONMENT:}
+      credential: ${PEP_REGISTRATION_TOKEN:}
+      allow-insecure-http: ${PEP_ALLOW_INSECURE_HTTP:false}
+      connect-timeout: ${PEP_CONNECT_TIMEOUT:1s}
+      read-timeout: ${PEP_READ_TIMEOUT:3s}
+      max-retries: ${PEP_MAX_RETRIES:0}
+      retry-backoff: ${PEP_RETRY_BACKOFF:200ms}
+    # Resolucion de client roles del emisor role-table: el token lleva solo realm roles y el backend
+    # consulta en Redis un indice client role -> realm roles que lo otorgan, refrescado desde la
+    # Admin API del proveedor. Sin emisor role-table habilitado no hace nada y client-uuid no se exige.
+    role-expansion:
+      refresh-interval: ${ROLE_EXPANSION_REFRESH_INTERVAL:PT5M}
+      ttl: ${ROLE_EXPANSION_TTL:PT15M}
+      check-interval: ${ROLE_EXPANSION_CHECK_INTERVAL:PT30S}
+      lock-lease: ${ROLE_EXPANSION_LOCK_LEASE:PT60S}
+      keycloak:
+        server-url: ${KEYCLOAK_URL:http://localhost:8081}
+        realm: ${KEYCLOAK_REALM:arquisoft}
+        client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
+        client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+        client-uuid: ${KEYCLOAK_CLIENT_UUID:}
+        connect-timeout: ${ROLE_EXPANSION_CONNECT_TIMEOUT:2s}
+        read-timeout: ${ROLE_EXPANSION_READ_TIMEOUT:3s}
+  # Login directo y aprovisionamiento de usuarios contra el proveedor actual (keycloak | none).
+  direct-login:
+    provider: ${DIRECT_LOGIN_PROVIDER:keycloak}
+    keycloak:
+      server-url: ${KEYCLOAK_URL:http://localhost:8081}
+      realm: ${KEYCLOAK_REALM:arquisoft}
+      client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
+      client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+  identity-provisioning:
+    provider: ${IDENTITY_PROVISIONING_PROVIDER:keycloak}
+    keycloak:
+      server-url: ${KEYCLOAK_URL:http://localhost:8081}
+      realm: ${KEYCLOAK_REALM:arquisoft}
+      client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
+      client-secret: ${KEYCLOAK_CLIENT_SECRET:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173}
     allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
-    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type,X-Correlation-Id}
     max-age: ${CORS_MAX_AGE:3600}
     allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
   rate-limit:

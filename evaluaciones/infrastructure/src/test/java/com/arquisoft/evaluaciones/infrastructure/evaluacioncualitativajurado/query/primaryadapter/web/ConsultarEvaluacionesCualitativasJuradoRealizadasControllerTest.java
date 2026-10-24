@@ -7,11 +7,11 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.query.readmodel.ItemCualitativoJuradoReadModel;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoPerteneceJuradoException;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +19,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEvaluacionesCualitativasJuradoRealizadasController.class)
-@Import({
+@Import({IdentidadActualTestConfig.class,
         com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         ConsultarEvaluacionesCualitativasJuradoRealizadasControllerTest.TestSecurityConfig.class
@@ -56,7 +54,6 @@ class ConsultarEvaluacionesCualitativasJuradoRealizadasControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -84,9 +81,7 @@ class ConsultarEvaluacionesCualitativasJuradoRealizadasControllerTest {
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtJuradoConPermiso() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(token -> token.subject(JURADO_ID.toString()))
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.EVALUACION_CUALITATIVA_JURADO_JURADO_VIEW));
+                .jwt(token -> token.subject(JURADO_ID.toString()));
     }
 
     @Test
@@ -140,15 +135,6 @@ class ConsultarEvaluacionesCualitativasJuradoRealizadasControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeResponder403_sinAuthority() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .authorities(new SimpleGrantedAuthority(
-                                EvaluacionesAuthorities.EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW))))
-                .andExpect(status().isForbidden());
     }
 
     @Test

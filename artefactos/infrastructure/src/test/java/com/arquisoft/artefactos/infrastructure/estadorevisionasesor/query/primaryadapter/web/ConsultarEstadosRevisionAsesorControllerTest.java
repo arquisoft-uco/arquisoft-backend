@@ -2,20 +2,18 @@ package com.arquisoft.artefactos.infrastructure.estadorevisionasesor.query.prima
 
 import com.arquisoft.artefactos.application.estadorevisionasesor.query.primaryport.interactor.ConsultarEstadosRevisionAsesorInteractor;
 import com.arquisoft.artefactos.application.estadorevisionasesor.query.readmodel.EstadoRevisionAsesorReadModel;
-import com.arquisoft.artefactos.infrastructure.security.ArtefactosAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -32,15 +30,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEstadosRevisionAsesorController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
-        ConsultarEstadosRevisionAsesorControllerTest.TestSecurityConfig.class})
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class,
+        TrazabilidadConfig.class, ConsultarEstadosRevisionAsesorControllerTest.TestSecurityConfig.class})
 class ConsultarEstadosRevisionAsesorControllerTest {
 
     private static final String RUTA = "/estados-revision-asesor";
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -61,7 +58,7 @@ class ConsultarEstadosRevisionAsesorControllerTest {
     private ConsultarEstadosRevisionAsesorInteractor interactor;
 
     @Test
-    void debe200ConLaLista_cuandoTieneElClientRole() throws Exception {
+    void debe200ConLaLista_cuandoElTokenEsValido() throws Exception {
         // Arrange
         when(interactor.ejecutar()).thenReturn(List.of(
                 new EstadoRevisionAsesorReadModel("PENDIENTE", "Pendiente", "Nueva"),
@@ -69,7 +66,7 @@ class ConsultarEstadosRevisionAsesorControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .authorities(new SimpleGrantedAuthority(ArtefactosAuthorities.ESTADO_REVISION_ASESOR_VIEW))))
+                        .jwt(j -> j.subject("usuario"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("PENDIENTE"))
@@ -85,7 +82,7 @@ class ConsultarEstadosRevisionAsesorControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .authorities(new SimpleGrantedAuthority(ArtefactosAuthorities.ESTADO_REVISION_ASESOR_VIEW))))
+                        .jwt(j -> j.subject("usuario"))))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
@@ -95,16 +92,6 @@ class ConsultarEstadosRevisionAsesorControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA))
                 .andExpect(status().isUnauthorized());
-
-        verify(interactor, never()).ejecutar();
-    }
-
-    @Test
-    void debe403_cuandoClientRoleInsuficiente() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .authorities(new SimpleGrantedAuthority("otro-permiso"))))
-                .andExpect(status().isForbidden());
 
         verify(interactor, never()).ejecutar();
     }

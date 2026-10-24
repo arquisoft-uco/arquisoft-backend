@@ -155,7 +155,8 @@ se publica y el correo sale vacío.
   que se excluya o salga con `vigente = false` (`EstudianteFichaPerfilQueryOutputAdapterTest`).
 - **`Controller`:** `@WebMvcTest` con el `@Import` y la autenticación de `arquisoft-estandares` →
   *Testing*. Casos: 200/201 válido, 400 request inválido (`Command.crear` lanza
-  `ApplicationValidationException`), 401, 403 y 422 regla de dominio. En un contexto sin ancla
+  `ApplicationValidationException`), 401 y 422 regla de dominio. Sin 403 por rol: la autorización
+  no vive en el controlador. En un contexto sin ancla
   `{Contexto}InfrastructureTestApplication`, créala.
 - **`{Entidad}SortMapperTest`** (consulta con orden): la whitelist del `Criteria` y las claves de
   `traducir(...)` no divergen.

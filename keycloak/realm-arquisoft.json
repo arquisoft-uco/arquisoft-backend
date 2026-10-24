@@ -103,7 +103,9 @@
               "fichas:estudiante-ficha-perfil:delete",
               "evaluaciones:item-cuantitativo-jurado:delete",
               "fichas:estado-ficha-perfil-coordinador:view",
-              "proyectos:estudiante-proyecto-grado:create"
+              "proyectos:estudiante-proyecto-grado:create",
+              "mapas-ruta:tarea:create",
+              "solicitudes:respuesta-cambio-asesor:create"
             ]
           }
         },
@@ -171,7 +173,10 @@
               "evaluaciones:categoria-item-cuantitativo-asesor:view",
               "usuarios:estudiante-vigente:view",
               "fichas:estado-ficha-perfil-asesor:view",
-              "fichas:estado-ficha-perfil-asesor:create"
+              "fichas:estado-ficha-perfil-asesor:create",
+              "fichas:revision-item:create",
+              "fichas:revision-item:delete",
+              "fichas:observacion-item:create"
             ]
           }
         },
@@ -197,8 +202,6 @@
               "evaluaciones:item-cuantitativo-jurado:view",
               "evaluaciones:item-cualitativo-jurado:create",
               "repositorio-artefactos:repositorio-artefacto:create",
-              "repositorio-artefactos:carga-version-repositorio-artefacto:create",
-              "repositorio-artefactos:version-repositorio-artefacto:create",
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
@@ -218,7 +221,8 @@
               "usuarios:jurado:delete",
               "evaluaciones:item-cuantitativo-jurado:delete",
               "evaluaciones:criterio-item-cualitativo-jurado:view",
-              "usuarios:coordinador:delete"
+              "usuarios:coordinador:delete",
+              "repositorio-artefactos:version-repositorio-artefacto:upload"
             ]
           }
         },
@@ -294,7 +298,8 @@
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create",
-              "fichas:estudiante-ficha-perfil-estudiante:view"
+              "fichas:estudiante-ficha-perfil-estudiante:view",
+              "evaluaciones:evaluacion-estudiante:view"
             ]
           }
         },
@@ -328,7 +333,9 @@
               "solicitudes:tipo-solicitud:view",
               "proyectos:proyecto-grado-asesor-detalle:view",
               "artefactos:estado-revision-asesor:view",
-              "evaluaciones:evaluacion-asesor:view"
+              "evaluaciones:evaluacion-asesor:view",
+              "evaluaciones:evaluacion-cualitativa-asesor:create",
+              "artefactos:estudiante-artefacto:view"
             ]
           }
         },
@@ -743,17 +750,8 @@
           "attributes": {}
         },
         {
-          "id": "d5f669d1-a5b6-4813-afc3-94d121a5d46b",
-          "name": "repositorio-artefactos:carga-version-repositorio-artefacto:create",
-          "description": "",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
-          "attributes": {}
-        },
-        {
           "id": "62753e6b-9f3a-4381-93bb-c2a539f63b44",
-          "name": "repositorio-artefactos:version-repositorio-artefacto:create",
+          "name": "repositorio-artefactos:version-repositorio-artefacto:upload",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2077,6 +2075,51 @@
         {
           "id": "9f75b098-2782-4c32-8704-607797cad42f",
           "name": "solicitudes:respuesta-ampliacion-plazo:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "4ffa532d-4605-4d3d-96fa-069b8ad6039a",
+          "name": "evaluaciones:evaluacion-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "ab35936a-facd-471e-8ea1-d4bed30f4dd5",
+          "name": "evaluaciones:evaluacion-cualitativa-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "1aa11b4f-cf13-4077-8399-30a240c06523",
+          "name": "artefactos:estudiante-artefacto:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "aa51e8e0-9375-43af-8a21-d0250088eb9f",
+          "name": "mapas-ruta:tarea:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "f52bb47d-a31f-42b3-9f01-ebc19228f717",
+          "name": "solicitudes:respuesta-cambio-asesor:create",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -3414,21 +3457,6 @@
             "introspection.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "realm_access.roles",
-            "jsonType.label": "String",
-            "multivalued": "true"
-          }
-        },
-        {
-          "id": "5c55f50f-7db5-4e37-92f0-02d324273663",
-          "name": "client roles",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-client-role-mapper",
-          "consentRequired": false,
-          "config": {
-            "user.attribute": "foo",
-            "introspection.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "resource_access.${client_id}.roles",
             "jsonType.label": "String",
             "multivalued": "true"
           }

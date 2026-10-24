@@ -3,12 +3,12 @@ package com.arquisoft.artefactos.infrastructure.revisionasesor.query.primaryadap
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.interactor.ConsultarRevisionesAsesorEstudianteInteractor;
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.model.ConsultarRevisionesAsesorEstudianteQuery;
 import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorReadModel;
-import com.arquisoft.artefactos.infrastructure.security.ArtefactosAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarRevisionesAsesorEstudianteController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarRevisionesAsesorEstudianteControllerTest.TestSecurityConfig.class})
 class ConsultarRevisionesAsesorEstudianteControllerTest {
 
@@ -47,7 +45,6 @@ class ConsultarRevisionesAsesorEstudianteControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -71,8 +68,7 @@ class ConsultarRevisionesAsesorEstudianteControllerTest {
 
     private static org.springframework.test.web.servlet.request.RequestPostProcessor tokenEstudiante(String sub) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject(sub))
-                .authorities(new SimpleGrantedAuthority(ArtefactosAuthorities.REVISION_ASESOR_ESTUDIANTE_VIEW));
+                .jwt(j -> j.subject(sub));
     }
 
     @Test
@@ -150,12 +146,12 @@ class ConsultarRevisionesAsesorEstudianteControllerTest {
     }
 
     @Test
-    void debeRetornar400YNoConsultar_cuandoElSubDelTokenNoEsUuid() throws Exception {
+    void debeRetornar401YNoConsultar_cuandoElSubDelTokenNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(tokenEstudiante("no-es-un-uuid")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
 
         verify(consultarRevisionesAsesorEstudianteInteractor, never())
                 .ejecutar(any(ConsultarRevisionesAsesorEstudianteQuery.class));
@@ -166,16 +162,5 @@ class ConsultarRevisionesAsesorEstudianteControllerTest {
         // Act & Assert
         mockMvc.perform(post(RUTA).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeRetornar403_cuandoSinClientRoleRevisionAsesorEstudianteView() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("otro:permiso"))))
-                .andExpect(status().isForbidden());
     }
 }

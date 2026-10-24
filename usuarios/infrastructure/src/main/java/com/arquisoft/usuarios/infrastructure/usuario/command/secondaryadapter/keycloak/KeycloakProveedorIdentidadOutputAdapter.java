@@ -14,6 +14,7 @@ import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
+@ConditionalOnProperty(name = "security.identity-provisioning.provider", havingValue = "keycloak", matchIfMissing = true)
 public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentidadOutputPort {
 
     private static final ParameterizedTypeReference<Map<String, Object>> MAPA_JSON =
@@ -73,16 +75,16 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
         this.restTemplate = restTemplate;
     }
 
-    @Value("${arquisoft.keycloak.server-url}")
+    @Value("${security.identity-provisioning.keycloak.server-url}")
     private String serverUrl;
 
-    @Value("${arquisoft.keycloak.realm}")
+    @Value("${security.identity-provisioning.keycloak.realm}")
     private String realm;
 
-    @Value("${arquisoft.keycloak.client-id}")
+    @Value("${security.identity-provisioning.keycloak.client-id}")
     private String clientId;
 
-    @Value("${arquisoft.keycloak.client-secret:#{null}}")
+    @Value("${security.identity-provisioning.keycloak.client-secret:#{null}}")
     private String clientSecret;
 
     @Override
@@ -141,12 +143,12 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
     }
 
     @Override
-    public void asignarRealmRoles(UUID usuario, List<String> realmRoles) {
-        if (realmRoles.isEmpty()) {
+    public void asignarRoles(UUID usuario, List<String> roles) {
+        if (roles.isEmpty()) {
             return;
         }
         try {
-            asignarRealmRoles(obtenerTokenServicio(), usuario.toString(), realmRoles);
+            asignarRoles(obtenerTokenServicio(), usuario.toString(), roles);
         } catch (RestClientResponseException e) {
             logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, e.getStatusCode(), detalleDe(e));
             throw noDisponible();
@@ -210,7 +212,7 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
         try {
             var token = obtenerTokenServicio();
             var identidadId = crearUsuario(token, registro);
-            asignarRealmRoles(token, identidadId, registro.realmRoles());
+            asignarRoles(token, identidadId, registro.roles());
             enviarAccionesEmail(token, identidadId);
             return UUID.fromString(identidadId);
         } catch (RestClientResponseException e) {
@@ -228,7 +230,7 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
     }
 
     @Override
-    public void revocarRealmRole(UUID usuario, String realmRole) {
+    public void revocarRol(UUID usuario, String realmRole) {
         try {
             var token = obtenerTokenServicio();
             var representacion = obtenerRealmRole(token, realmRole);
@@ -366,11 +368,11 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
         });
     }
 
-    private void asignarRealmRoles(String token, String usuarioId, List<String> realmRoles) {
-        if (realmRoles.isEmpty()) {
+    private void asignarRoles(String token, String usuarioId, List<String> roles) {
+        if (roles.isEmpty()) {
             return;
         }
-        var representaciones = realmRoles.stream()
+        var representaciones = roles.stream()
                 .map(nombre -> obtenerRealmRole(token, nombre))
                 .toList();
         restTemplate.exchange(urlAdmin("/users/" + usuarioId + "/role-mappings/realm"),

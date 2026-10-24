@@ -6,13 +6,13 @@ import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorE
 import com.arquisoft.fichas.domain.observacionitem.exception.ObservacionItemDuplicadaException;
 import com.arquisoft.fichas.domain.observacionitem.exception.ObservacionItemNoEncontradaException;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemCerradaException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -23,10 +23,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -45,13 +43,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ModificarObservacionItemController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ModificarObservacionItemControllerTest.TestSecurityConfig.class})
 class ModificarObservacionItemControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -96,8 +93,7 @@ class ModificarObservacionItemControllerTest {
         // Act
         mockMvc.perform(patch(RUTA, OBSERVACION_ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_UPDATE)))
+                                .jwt(j -> j.subject(ASESOR_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"observacion": "  El objetivo general no cumple el formato  "}
@@ -117,8 +113,7 @@ class ModificarObservacionItemControllerTest {
         // Act & Assert — Command.crear() rechaza antes de llegar al dominio: 400, no 422
         mockMvc.perform(patch(RUTA, OBSERVACION_ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_UPDATE)))
+                                .jwt(j -> j.subject(ASESOR_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"observacion": "   "}
@@ -129,15 +124,14 @@ class ModificarObservacionItemControllerTest {
     }
 
     @Test
-    void debe400_cuandoElSubjectDelJwtNoEsUuid() throws Exception {
+    void debe401_cuandoElSubjectDelJwtNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(patch(RUTA, OBSERVACION_ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject("no-es-un-uuid"))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_UPDATE)))
+                                .jwt(j -> j.subject("no-es-un-uuid")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(CUERPO_VALIDO))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
 
         verify(modificarObservacionItemInteractor, never()).ejecutar(any());
     }
@@ -151,20 +145,6 @@ class ModificarObservacionItemControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    void debe403_cuandoElClientRoleEsElDeOtroEndpoint() throws Exception {
-        // Act & Assert — OBSERVACION_ITEM_CREATE protege agregar, no modificar
-        mockMvc.perform(patch(RUTA, OBSERVACION_ITEM_ID)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(CUERPO_VALIDO))
-                .andExpect(status().isForbidden());
-
-        verify(modificarObservacionItemInteractor, never()).ejecutar(any());
-    }
-
     @ParameterizedTest
     @MethodSource("reglasDeDominioQueRechazan")
     void debe422ConSuCodigo_cuandoUnaReglaDeDominioRechaza(DomainException excepcion, String codigoEsperado)
@@ -175,8 +155,7 @@ class ModificarObservacionItemControllerTest {
         // Act & Assert
         mockMvc.perform(patch(RUTA, OBSERVACION_ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_UPDATE)))
+                                .jwt(j -> j.subject(ASESOR_ID.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(CUERPO_VALIDO))
                 .andExpect(status().isUnprocessableEntity())
