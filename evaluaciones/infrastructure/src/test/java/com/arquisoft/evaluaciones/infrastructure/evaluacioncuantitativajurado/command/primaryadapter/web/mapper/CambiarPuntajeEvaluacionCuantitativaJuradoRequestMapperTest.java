@@ -18,7 +18,7 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoRequestMapperTest {
 
         // Act
         var command = CambiarPuntajeEvaluacionCuantitativaJuradoRequestMapper.toCommand(
-                dto, id, jurado.toString());
+                dto, id, jurado);
 
         // Assert
         assertThat(command.evaluacionCuantitativaJurado()).isEqualTo(id);

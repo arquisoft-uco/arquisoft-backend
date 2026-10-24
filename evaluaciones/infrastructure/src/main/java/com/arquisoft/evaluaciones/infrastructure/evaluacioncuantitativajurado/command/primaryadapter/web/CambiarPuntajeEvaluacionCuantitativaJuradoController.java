@@ -64,7 +64,7 @@ public class CambiarPuntajeEvaluacionCuantitativaJuradoController {
             @RequestBody CambiarPuntajeEvaluacionCuantitativaJuradoRequestDTO request,
             IdentidadActual identidad) {
         interactor.ejecutar(
-                CambiarPuntajeEvaluacionCuantitativaJuradoRequestMapper.toCommand(request, id, identidad.id().toString()));
+                CambiarPuntajeEvaluacionCuantitativaJuradoRequestMapper.toCommand(request, id, identidad.id()));
         return ResponseEntity.noContent().build();
     }
 }

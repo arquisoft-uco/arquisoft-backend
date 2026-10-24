@@ -19,7 +19,7 @@ class RegistrarEvaluacionesCualitativasAsesorRequestMapperTest {
         // Arrange
         var dto = new RegistrarEvaluacionesCualitativasAsesorRequestDTO(null);
         var evaluacionAsesor = UtilUUID.generarNuevoUUID();
-        var asesor = UtilUUID.generarNuevoUUID().toString();
+        var asesor = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasAsesorRequestMapper.toCommand(
@@ -36,7 +36,7 @@ class RegistrarEvaluacionesCualitativasAsesorRequestMapperTest {
         var dto = new RegistrarEvaluacionesCualitativasAsesorRequestDTO(Arrays.asList((
                 RegistrarEvaluacionesCualitativasAsesorRequestDTO.ParDTO) null));
         var evaluacionAsesor = UtilUUID.generarNuevoUUID();
-        var asesor = UtilUUID.generarNuevoUUID().toString();
+        var asesor = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasAsesorRequestMapper.toCommand(

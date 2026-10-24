@@ -14,7 +14,7 @@ class ModificarRepositorioArtefactoMapperTest {
         var repositorio = UtilUUID.generarNuevoUUID();
         var administrador = UtilUUID.generarNuevoUUID();
         var command = ModificarRepositorioArtefactoCommand.crear(
-                repositorio, "Repo", "Descripcion", administrador.toString());
+                repositorio, "Repo", "Descripcion", administrador);
 
         // Act
         var domain = ModificarRepositorioArtefactoMapper.toDomain(command);

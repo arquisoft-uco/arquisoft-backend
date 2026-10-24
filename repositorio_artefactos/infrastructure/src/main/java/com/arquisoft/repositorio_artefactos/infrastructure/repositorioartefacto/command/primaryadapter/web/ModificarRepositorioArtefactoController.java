@@ -66,7 +66,7 @@ public class ModificarRepositorioArtefactoController {
             @RequestBody ModificarRepositorioArtefactoRequestDTO request,
             IdentidadActual identidad) {
         interactor.ejecutar(ModificarRepositorioArtefactoRequestMapper.toCommand(
-                request, repositorioId, identidad.id().toString()));
+                request, repositorioId, identidad.id()));
         return ResponseEntity.noContent().build();
     }
 }

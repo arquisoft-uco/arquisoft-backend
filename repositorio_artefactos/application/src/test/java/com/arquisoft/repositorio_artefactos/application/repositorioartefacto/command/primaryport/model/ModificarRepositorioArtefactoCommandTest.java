@@ -19,7 +19,7 @@ class ModificarRepositorioArtefactoCommandTest {
 
         // Act
         var command = ModificarRepositorioArtefactoCommand.crear(
-                repositorio, "  Repo  ", "  Descripcion  ", administrador.toString());
+                repositorio, "  Repo  ", "  Descripcion  ", administrador);
 
         // Assert
         assertThat(command.repositorio()).isEqualTo(repositorio);
@@ -31,7 +31,7 @@ class ModificarRepositorioArtefactoCommandTest {
     @Test
     void debeAcumularFieldErrors_cuandoNombreYDescripcionVacios() {
         // Arrange
-        var administrador = UtilUUID.generarNuevoUUID().toString();
+        var administrador = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> ModificarRepositorioArtefactoCommand.crear(null, "   ", "", administrador))
@@ -51,23 +51,27 @@ class ModificarRepositorioArtefactoCommandTest {
     }
 
     @Test
-    void debeRechazar_cuandoAdministradorNoEsUuid() {
+    void debeRechazar_cuandoAdministradorEsNulo() {
         // Arrange
         var repositorio = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> ModificarRepositorioArtefactoCommand.crear(repositorio, "Repo", "Desc", "no-es-uuid"))
+        assertThatThrownBy(() -> ModificarRepositorioArtefactoCommand.crear(repositorio, "Repo", "Desc", null))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
-                        .anySatisfy(error -> assertThat(error.campo())
-                                .isEqualTo(RepositorioArtefactosFields.RepositorioArtefacto.ADMINISTRADOR)));
+                        .anySatisfy(error -> {
+                            assertThat(error.campo())
+                                    .isEqualTo(RepositorioArtefactosFields.RepositorioArtefacto.ADMINISTRADOR);
+                            assertThat(error.codigoError())
+                                    .isEqualTo(RepositorioArtefactosCodes.RepositorioArtefacto.ADMINISTRADOR_REQUERIDO);
+                        }));
     }
 
     @Test
     void debeRechazar_cuandoNombreYDescripcionSuperanElMaximo() {
         // Arrange
         var repositorio = UtilUUID.generarNuevoUUID();
-        var administrador = UtilUUID.generarNuevoUUID().toString();
+        var administrador = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> ModificarRepositorioArtefactoCommand.crear(

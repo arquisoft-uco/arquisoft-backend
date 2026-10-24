@@ -10,8 +10,8 @@ public final class SolicitarCargaVersionRepositorioArtefactoRequestMapper {
     private SolicitarCargaVersionRepositorioArtefactoRequestMapper() {}
 
     public static SolicitarCargaVersionRepositorioArtefactoCommand toCommand(
-            SolicitarCargaVersionRepositorioArtefactoRequestDTO dto, UUID repositorioId, String solicitanteSubject) {
+            SolicitarCargaVersionRepositorioArtefactoRequestDTO dto, UUID repositorioId, UUID solicitante) {
         return SolicitarCargaVersionRepositorioArtefactoCommand.crear(
-                repositorioId, solicitanteSubject, dto.nombreArchivo(), dto.tipoContenido(), dto.tamanoBytes());
+                repositorioId, solicitante, dto.nombreArchivo(), dto.tipoContenido(), dto.tamanoBytes());
     }
 }

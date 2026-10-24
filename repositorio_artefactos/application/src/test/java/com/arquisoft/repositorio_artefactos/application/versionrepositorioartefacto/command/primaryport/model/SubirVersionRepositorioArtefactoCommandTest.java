@@ -20,7 +20,7 @@ class SubirVersionRepositorioArtefactoCommandTest {
 
         // Act
         var command = SubirVersionRepositorioArtefactoCommand.crear(
-                carga.toString(), repositorio, solicitante.toString(), "  Formato A ", true);
+                carga.toString(), repositorio, solicitante, "  Formato A ", true);
 
         // Assert
         assertThat(command.carga()).isEqualTo(carga);
@@ -51,7 +51,7 @@ class SubirVersionRepositorioArtefactoCommandTest {
         // Act & Assert
         assertThatThrownBy(() -> SubirVersionRepositorioArtefactoCommand.crear(
                 UtilUUID.generarNuevoUUID().toString(), UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID().toString(), "Formato", null))
+                UtilUUID.generarNuevoUUID(), "Formato", null))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .extracting("codigoError")
@@ -63,7 +63,7 @@ class SubirVersionRepositorioArtefactoCommandTest {
         // Act & Assert
         assertThatThrownBy(() -> SubirVersionRepositorioArtefactoCommand.crear(
                 UtilUUID.generarNuevoUUID().toString(), UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID().toString(), "n".repeat(101), false))
+                UtilUUID.generarNuevoUUID(), "n".repeat(101), false))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .extracting("codigoError")

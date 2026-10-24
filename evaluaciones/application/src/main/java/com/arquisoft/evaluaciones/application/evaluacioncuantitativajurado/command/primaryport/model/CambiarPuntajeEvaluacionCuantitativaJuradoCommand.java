@@ -6,12 +6,9 @@ import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.constant.EvaluacionesLimits;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
 import com.arquisoft.shared.util.UtilNumero;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorNumero;
 import com.arquisoft.shared.validation.ValidatorObjeto;
-import com.arquisoft.shared.validation.ValidatorTexto;
-import com.arquisoft.shared.validation.ValidatorUUID;
 
 import java.util.UUID;
 
@@ -19,7 +16,7 @@ public record CambiarPuntajeEvaluacionCuantitativaJuradoCommand(
         UUID evaluacionCuantitativaJurado, Integer nuevoPuntaje, UUID jurado) {
 
     public static CambiarPuntajeEvaluacionCuantitativaJuradoCommand crear(
-            UUID evaluacionCuantitativaJurado, Number nuevoPuntaje, String juradoSubject) {
+            UUID evaluacionCuantitativaJurado, Number nuevoPuntaje, UUID jurado) {
         var result = new ValidationResult();
 
         ValidatorObjeto.noNulo(evaluacionCuantitativaJurado,
@@ -32,18 +29,14 @@ public record CambiarPuntajeEvaluacionCuantitativaJuradoCommand(
             validarPuntajeEntero(nuevoPuntaje, result);
         }
 
-        if (ValidatorTexto.noEnBlanco(juradoSubject,
+        ValidatorObjeto.noNulo(jurado,
                 EvaluacionesFields.EvaluacionCuantitativaJurado.JURADO,
-                EvaluacionesCodes.EvaluacionCuantitativaJurado.JURADO_REQUERIDO, result)) {
-            ValidatorUUID.uuidValido(juradoSubject,
-                    EvaluacionesFields.EvaluacionCuantitativaJurado.JURADO,
-                    EvaluacionesCodes.EvaluacionCuantitativaJurado.JURADO_REQUERIDO, result);
-        }
+                EvaluacionesCodes.EvaluacionCuantitativaJurado.JURADO_REQUERIDO, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
         return new CambiarPuntajeEvaluacionCuantitativaJuradoCommand(
-                evaluacionCuantitativaJurado, nuevoPuntaje.intValue(), UtilUUID.generarUUIDDesdeTexto(juradoSubject));
+                evaluacionCuantitativaJurado, nuevoPuntaje.intValue(), jurado);
     }
 
     private static void validarPuntajeEntero(Number nuevoPuntaje, ValidationResult result) {

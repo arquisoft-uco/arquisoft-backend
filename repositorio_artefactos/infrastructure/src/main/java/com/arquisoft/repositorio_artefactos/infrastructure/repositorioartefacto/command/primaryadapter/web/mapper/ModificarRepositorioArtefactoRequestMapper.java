@@ -10,8 +10,8 @@ public final class ModificarRepositorioArtefactoRequestMapper {
     private ModificarRepositorioArtefactoRequestMapper() {}
 
     public static ModificarRepositorioArtefactoCommand toCommand(
-            ModificarRepositorioArtefactoRequestDTO dto, UUID repositorioId, String administradorSubject) {
+            ModificarRepositorioArtefactoRequestDTO dto, UUID repositorioId, UUID administrador) {
         return ModificarRepositorioArtefactoCommand.crear(
-                repositorioId, dto.nombreRepositorio(), dto.descripcion(), administradorSubject);
+                repositorioId, dto.nombreRepositorio(), dto.descripcion(), administrador);
     }
 }

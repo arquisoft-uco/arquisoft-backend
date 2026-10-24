@@ -19,7 +19,7 @@ class SolicitarCargaVersionRepositorioArtefactoCommandTest {
 
         // Act
         var command = SolicitarCargaVersionRepositorioArtefactoCommand.crear(
-                repositorio, solicitante.toString(), "  formato.pdf ", " application/pdf ", 2048L);
+                repositorio, solicitante, "  formato.pdf ", " application/pdf ", 2048L);
 
         // Assert
         assertThat(command.repositorio()).isEqualTo(repositorio);
@@ -33,7 +33,7 @@ class SolicitarCargaVersionRepositorioArtefactoCommandTest {
     void debeAcumularErrores_cuandoFaltanDatos() {
         // Act & Assert
         assertThatThrownBy(() -> SolicitarCargaVersionRepositorioArtefactoCommand.crear(
-                null, "no-es-uuid", " ", " ", null))
+                null, null, " ", " ", null))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .extracting("campo")
@@ -49,7 +49,7 @@ class SolicitarCargaVersionRepositorioArtefactoCommandTest {
     void debeRechazar_cuandoTamanoNoEsPositivo() {
         // Act & Assert
         assertThatThrownBy(() -> SolicitarCargaVersionRepositorioArtefactoCommand.crear(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID().toString(),
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                 "formato.pdf", "application/pdf", 0L))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
@@ -61,7 +61,7 @@ class SolicitarCargaVersionRepositorioArtefactoCommandTest {
     void debeRechazar_cuandoLongitudesSuperanElMaximo() {
         // Act & Assert
         assertThatThrownBy(() -> SolicitarCargaVersionRepositorioArtefactoCommand.crear(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID().toString(),
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                 "a".repeat(256), "t".repeat(101), 10L))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
