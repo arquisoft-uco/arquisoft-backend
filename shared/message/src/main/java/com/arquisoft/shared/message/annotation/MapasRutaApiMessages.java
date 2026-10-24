@@ -79,6 +79,14 @@ public final class MapasRutaApiMessages {
         public static final String CONSULTAR_INFORMACION_RESP_200 = "Información de la tarea";
         public static final String CONSULTAR_INFORMACION_RESP_400 = "Identificador de tarea inválido";
         public static final String CONSULTAR_INFORMACION_RESP_404 = "La tarea no existe";
+        public static final String CONSULTAR_POR_MAPA_RUTA_SUMMARY = "Consultar las tareas de un mapa de ruta";
+        public static final String CONSULTAR_POR_MAPA_RUTA_DESCRIPTION =
+                "Devuelve, paginadas, filtradas y ordenadas, las tareas de un mapa de ruta. Filtros por descripción, "
+                        + "estado y asesor; sin orden se ordena por descripción ascendente. Si el mapa no tiene "
+                        + "tareas la página llega vacía";
+        public static final String CONSULTAR_POR_MAPA_RUTA_RESP_200 = "Página de tareas del mapa de ruta";
+        public static final String CONSULTAR_POR_MAPA_RUTA_RESP_400 =
+                "Identificador de mapa de ruta inválido, o filtro u ordenamiento no permitido";
     }
 
     public static final class EstadoItem {

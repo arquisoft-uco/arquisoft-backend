@@ -11,6 +11,7 @@ rutas:
       coordinador: /coordinador
       fecha-fin: /{id}/fecha-fin
       tareas: /{mapaRutaId}/tareas
+      tareas-estudiante: /{mapaRutaId}/tareas/estudiante
     tareas:
       base: /tareas
       por-id: /{tareaId}

@@ -203,6 +203,7 @@
               "evaluaciones:item-cualitativo-jurado:create",
               "repositorio-artefactos:repositorio-artefacto:create",
               "repositorio-artefactos:repositorio-artefacto:update",
+              "repositorio-artefactos:repositorio-artefacto:view",
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
@@ -223,7 +224,8 @@
               "evaluaciones:item-cuantitativo-jurado:delete",
               "evaluaciones:criterio-item-cualitativo-jurado:view",
               "usuarios:coordinador:delete",
-              "repositorio-artefactos:version-repositorio-artefacto:upload"
+              "repositorio-artefactos:version-repositorio-artefacto:upload",
+              "repositorio-artefactos:version-repositorio-artefacto:view"
             ]
           }
         },
@@ -269,6 +271,7 @@
               "usuarios:coordinador-vigente:view",
               "mapas-ruta:estado-item:view",
               "mapas-ruta:tarea:view",
+              "mapas-ruta:tarea-mapa-ruta-estudiante:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
               "solicitudes:solicitud-novedad-asesor:create",
               "solicitudes:solicitud:create",
@@ -764,8 +767,26 @@
           "attributes": {}
         },
         {
+          "id": "b7d2f4a1-6c3e-4f58-9a0d-2e81c5f7a396",
+          "name": "repositorio-artefactos:repositorio-artefacto:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "62753e6b-9f3a-4381-93bb-c2a539f63b44",
           "name": "repositorio-artefactos:version-repositorio-artefacto:upload",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "701398b0-99bf-410d-8488-66d00661d2cc",
+          "name": "repositorio-artefactos:version-repositorio-artefacto:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1045,6 +1066,15 @@
         {
           "id": "35fe0366-a963-4efb-a707-c61e86241bc5",
           "name": "mapas-ruta:tarea:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8d3f6a2e-5c41-4b7a-9e20-1f6b7c3a4d95",
+          "name": "mapas-ruta:tarea-mapa-ruta-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,

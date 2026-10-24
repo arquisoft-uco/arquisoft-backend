@@ -5,6 +5,7 @@ rutas:
   repositorio-artefactos:
     repositorio-artefactos:
       base: /repositorio-artefactos
+      administrador: /administrador
       por-id: /{repositorioId}
       cargas-version: /{repositorioId}/versiones/cargas
       versiones: /{repositorioId}/versiones

@@ -11,7 +11,9 @@ public enum TareaKey implements ClaveMensaje {
     LOG_ASIGNADA("mapas_ruta.aplicacion.tarea.log.asignada", 2),
     LOG_GUARDADA("mapas_ruta.infraestructura.tarea.log.guardada", 1),
     LOG_CONSULTANDO_INFORMACION("mapas_ruta.aplicacion.tarea.log.consultando-informacion", 1),
-    LOG_CONSULTA_INFORMACION_COMPLETADA("mapas_ruta.aplicacion.tarea.log.consulta-informacion-completada", 1);
+    LOG_CONSULTA_INFORMACION_COMPLETADA("mapas_ruta.aplicacion.tarea.log.consulta-informacion-completada", 1),
+    LOG_CONSULTANDO_POR_MAPA_RUTA("mapas_ruta.aplicacion.tarea.log.consultando-por-mapa-ruta", 5),
+    LOG_CONSULTA_POR_MAPA_RUTA_COMPLETADA("mapas_ruta.aplicacion.tarea.log.consulta-por-mapa-ruta-completada", 3);
 
     private final String clave;
     private final int parametros;
