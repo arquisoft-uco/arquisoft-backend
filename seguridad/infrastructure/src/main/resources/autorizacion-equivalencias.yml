@@ -166,6 +166,7 @@ security:
         - {method: POST, path: "/api/repositorio-artefactos", role: "repositorio-artefactos:repositorio-artefacto:create"}
         - {method: POST, path: "/api/repositorio-artefactos/administrador", role: "repositorio-artefactos:repositorio-artefacto:view"}
         - {method: PATCH, path: "/api/repositorio-artefactos/{repositorioId}", role: "repositorio-artefactos:repositorio-artefacto:update"}
+        - {method: GET, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:view"}
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones/cargas", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
         # artefactos

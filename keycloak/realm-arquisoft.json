@@ -224,7 +224,8 @@
               "evaluaciones:item-cuantitativo-jurado:delete",
               "evaluaciones:criterio-item-cualitativo-jurado:view",
               "usuarios:coordinador:delete",
-              "repositorio-artefactos:version-repositorio-artefacto:upload"
+              "repositorio-artefactos:version-repositorio-artefacto:upload",
+              "repositorio-artefactos:version-repositorio-artefacto:view"
             ]
           }
         },
@@ -776,6 +777,15 @@
         {
           "id": "62753e6b-9f3a-4381-93bb-c2a539f63b44",
           "name": "repositorio-artefactos:version-repositorio-artefacto:upload",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "701398b0-99bf-410d-8488-66d00661d2cc",
+          "name": "repositorio-artefactos:version-repositorio-artefacto:view",
           "description": "",
           "composite": false,
           "clientRole": true,
