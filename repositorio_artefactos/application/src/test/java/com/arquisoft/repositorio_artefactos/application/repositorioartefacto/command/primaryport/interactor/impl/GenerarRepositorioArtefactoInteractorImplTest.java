@@ -29,7 +29,7 @@ class GenerarRepositorioArtefactoInteractorImplTest {
     void debeDelegarAlUseCaseConElDomainDelMapper() {
         // Arrange
         var administrador = UtilUUID.generarNuevoUUID();
-        var command = GenerarRepositorioArtefactoCommand.crear("Repo", "Descripcion", administrador.toString());
+        var command = GenerarRepositorioArtefactoCommand.crear("Repo", "Descripcion", administrador);
         var esperado = UtilUUID.generarNuevoUUID();
         when(useCase.ejecutar(any(RepositorioArtefactoDomain.class))).thenReturn(esperado);
 

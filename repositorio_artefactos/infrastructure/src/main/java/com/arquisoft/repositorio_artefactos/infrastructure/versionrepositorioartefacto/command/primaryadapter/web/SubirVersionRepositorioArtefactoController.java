@@ -75,7 +75,7 @@ public class SubirVersionRepositorioArtefactoController {
             @RequestBody SubirVersionRepositorioArtefactoRequestDTO request,
             IdentidadActual identidad) {
         var result = interactor.ejecutar(
-                SubirVersionRepositorioArtefactoRequestMapper.toCommand(request, repositorioId, identidad.id().toString()));
+                SubirVersionRepositorioArtefactoRequestMapper.toCommand(request, repositorioId, identidad.id()));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(SubirVersionRepositorioArtefactoResponseMapper.toResponse(result));
     }

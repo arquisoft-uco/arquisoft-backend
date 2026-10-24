@@ -23,7 +23,7 @@ class MappersWebVersionRepositorioArtefactoTest {
 
         // Act
         var command = SolicitarCargaVersionRepositorioArtefactoRequestMapper.toCommand(
-                dto, repositorio, solicitante.toString());
+                dto, repositorio, solicitante);
 
         // Assert
         assertThat(command.repositorio()).isEqualTo(repositorio);
@@ -42,7 +42,7 @@ class MappersWebVersionRepositorioArtefactoTest {
         var dto = new SubirVersionRepositorioArtefactoRequestDTO(carga.toString(), "Formato A", true);
 
         // Act
-        var command = SubirVersionRepositorioArtefactoRequestMapper.toCommand(dto, repositorio, solicitante.toString());
+        var command = SubirVersionRepositorioArtefactoRequestMapper.toCommand(dto, repositorio, solicitante);
 
         // Assert
         assertThat(command.carga()).isEqualTo(carga);

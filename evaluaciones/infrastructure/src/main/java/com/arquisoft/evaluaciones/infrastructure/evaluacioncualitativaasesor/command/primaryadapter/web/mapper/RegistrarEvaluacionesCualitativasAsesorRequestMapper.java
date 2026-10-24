@@ -16,12 +16,12 @@ public final class RegistrarEvaluacionesCualitativasAsesorRequestMapper {
     private RegistrarEvaluacionesCualitativasAsesorRequestMapper() {}
 
     public static RegistrarEvaluacionesCualitativasAsesorCommand toCommand(
-            RegistrarEvaluacionesCualitativasAsesorRequestDTO dto, UUID evaluacionAsesor, String asesor) {
+            RegistrarEvaluacionesCualitativasAsesorRequestDTO dto, UUID evaluacionAsesor, UUID asesor) {
         var pares = UtilColeccion.aplicarPorDefecto(dto.evaluaciones()).stream()
                 .map(RegistrarEvaluacionesCualitativasAsesorRequestMapper::toPar)
                 .toList();
 
-        return RegistrarEvaluacionesCualitativasAsesorCommand.crear(evaluacionAsesor.toString(), asesor, pares);
+        return RegistrarEvaluacionesCualitativasAsesorCommand.crear(evaluacionAsesor, asesor, pares);
     }
 
     private static Par<String> toPar(ParDTO par) {

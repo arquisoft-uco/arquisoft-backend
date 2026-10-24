@@ -5,6 +5,7 @@ import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.
 import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.mapper.VersionRepositorioArtefactoJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
+import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersionRepositorioArtefactoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,5 +27,13 @@ public class VersionRepositorioArtefactoCommandOutputAdapter implements VersionR
     @Override
     public boolean existePorId(UUID id) {
         return versionRepositorioArtefactoCommandRepository.existsById(id);
+    }
+
+    @Override
+    public void actualizarNombreRepositorio(UUID repositorioArtefacto, String nombreRepositorio) {
+        versionRepositorioArtefactoCommandRepository.actualizarNombreRepositorio(
+                repositorioArtefacto, nombreRepositorio);
+        logger.debug(CambiarNombreRepositorioVersionRepositorioArtefactoKey.LOG_NOMBRE_ACTUALIZADO,
+                repositorioArtefacto);
     }
 }

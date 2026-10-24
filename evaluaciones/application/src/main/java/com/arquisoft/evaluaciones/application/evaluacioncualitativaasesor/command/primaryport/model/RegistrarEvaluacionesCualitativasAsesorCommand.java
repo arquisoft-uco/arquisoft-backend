@@ -6,6 +6,7 @@ import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 import com.arquisoft.shared.validation.ValidatorUUID;
 
@@ -21,20 +22,14 @@ public record RegistrarEvaluacionesCualitativasAsesorCommand(
     public record Par<T>(T item, T criterio) {}
 
     public static RegistrarEvaluacionesCualitativasAsesorCommand crear(
-            String evaluacionAsesor, String asesor, List<Par<String>> pares) {
+            UUID evaluacionAsesor, UUID asesor, List<Par<String>> pares) {
         var result = new ValidationResult();
 
-        ValidatorTexto.noEnBlanco(evaluacionAsesor,
-                EvaluacionesFields.EvaluacionCualitativaAsesor.EVALUACION_ASESOR,
-                EvaluacionesCodes.EvaluacionCualitativaAsesor.EVALUACION_ASESOR_REQUERIDO, result);
-        ValidatorUUID.uuidValido(evaluacionAsesor,
+        ValidatorObjeto.noNulo(evaluacionAsesor,
                 EvaluacionesFields.EvaluacionCualitativaAsesor.EVALUACION_ASESOR,
                 EvaluacionesCodes.EvaluacionCualitativaAsesor.EVALUACION_ASESOR_REQUERIDO, result);
 
-        ValidatorTexto.noEnBlanco(asesor,
-                EvaluacionesFields.EvaluacionCualitativaAsesor.ASESOR,
-                EvaluacionesCodes.EvaluacionCualitativaAsesor.ASESOR_REQUERIDO, result);
-        ValidatorUUID.uuidValido(asesor,
+        ValidatorObjeto.noNulo(asesor,
                 EvaluacionesFields.EvaluacionCualitativaAsesor.ASESOR,
                 EvaluacionesCodes.EvaluacionCualitativaAsesor.ASESOR_REQUERIDO, result);
 
@@ -42,10 +37,7 @@ public record RegistrarEvaluacionesCualitativasAsesorCommand(
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new RegistrarEvaluacionesCualitativasAsesorCommand(
-                UtilUUID.generarUUIDDesdeTexto(evaluacionAsesor),
-                UtilUUID.generarUUIDDesdeTexto(asesor),
-                evaluaciones);
+        return new RegistrarEvaluacionesCualitativasAsesorCommand(evaluacionAsesor, asesor, evaluaciones);
     }
 
     private static List<Par<UUID>> validarLote(List<Par<String>> pares, ValidationResult result) {

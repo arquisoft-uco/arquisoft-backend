@@ -1,0 +1,8 @@
+package com.arquisoft.artefactos.application.versionrepositorioartefacto.command.primaryport.interactor;
+
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.primaryport.model.CambiarNombreRepositorioVersionRepositorioArtefactoCommand;
+import com.arquisoft.shared.interactor.VoidInteractor;
+
+public interface CambiarNombreRepositorioVersionRepositorioArtefactoInteractor
+        extends VoidInteractor<CambiarNombreRepositorioVersionRepositorioArtefactoCommand> {
+}

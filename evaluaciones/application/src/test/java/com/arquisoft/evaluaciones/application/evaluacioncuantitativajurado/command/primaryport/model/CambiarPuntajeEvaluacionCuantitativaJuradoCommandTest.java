@@ -19,7 +19,7 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoCommandTest {
 
         // Act
         var command = CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
-                evaluacionCuantitativaJurado, 350, jurado.toString());
+                evaluacionCuantitativaJurado, 350, jurado);
 
         // Assert
         assertThat(command.evaluacionCuantitativaJurado()).isEqualTo(evaluacionCuantitativaJurado);
@@ -30,7 +30,7 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoCommandTest {
     @Test
     void debeAcumularErroresDeEntrada_cuandoCamposRequeridosSonInvalidos() {
         // Act & Assert
-        assertThatThrownBy(() -> CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(null, null, " "))
+        assertThatThrownBy(() -> CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(null, null, null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
@@ -44,7 +44,7 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoCommandTest {
     void debeAceptarPuntaje_cuandoLlegaComoDecimalSinParteFraccionaria() {
         // Act
         var command = CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
-                UUID.randomUUID(), 350.0, UUID.randomUUID().toString());
+                UUID.randomUUID(), 350.0, UUID.randomUUID());
 
         // Assert
         assertThat(command.nuevoPuntaje()).isEqualTo(350);
@@ -54,7 +54,7 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoCommandTest {
     void debeRechazarPuntaje_cuandoTieneParteDecimal() {
         // Act & Assert
         assertThatThrownBy(() -> CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
-                UUID.randomUUID(), 320.7, UUID.randomUUID().toString()))
+                UUID.randomUUID(), 320.7, UUID.randomUUID()))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
@@ -66,23 +66,11 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoCommandTest {
     void debeRechazarPuntaje_cuandoDesbordaElRangoEntero() {
         // Act & Assert
         assertThatThrownBy(() -> CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
-                UUID.randomUUID(), 99_999_999_999L, UUID.randomUUID().toString()))
+                UUID.randomUUID(), 99_999_999_999L, UUID.randomUUID()))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
                                 .containsExactly(
                                         EvaluacionesCodes.EvaluacionCuantitativaJurado.PUNTAJE_FUERA_DE_RANGO));
-    }
-
-    @Test
-    void debeAcumularErrorJurado_cuandoSubjectNoEsUuidValido() {
-        // Act & Assert
-        assertThatThrownBy(() -> CambiarPuntajeEvaluacionCuantitativaJuradoCommand.crear(
-                UUID.randomUUID(), 100, "no-es-un-uuid"))
-                .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
-                        assertThat(exception.getValidationResult().getErrores())
-                                .extracting(error -> error.codigoError())
-                                .containsExactly(
-                                        EvaluacionesCodes.EvaluacionCuantitativaJurado.JURADO_REQUERIDO));
     }
 }

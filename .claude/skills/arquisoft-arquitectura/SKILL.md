@@ -466,3 +466,12 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
   `verificarNeutralidadProveedorIdentidad` (cuelga de `check`) falla si el vocabulario de proveedor
   (Keycloak, PEP, `realm_access`, `resource_access`) aparece fuera de `seguridad/infrastructure` y de los
   adaptadores de `usuarios`.
+- **Los roles del token se traducen con `RolesIdentidad.traducir(identidad, mapa)`** (`shared:web`,
+  paquete `identidad`) en el `RequestMapper`, y el `Command`/`Query` recibe roles de negocio ya
+  resueltos. El mapa lo declara el contexto: claves de `UsuariosRoles` (`shared:message`), valores de su
+  `{Contexto}Roles.Negocio`. Aplica cuando la lógica filtra o decide según el rol del llamante, que no es
+  autorizar (eso lo decide el PEP). Leer `identidad.roles()` a mano o repetir los nombres de rol en el
+  contexto multiplica las copias que hay que corregir cuando cambie el proveedor. Además, los roles
+  dependen del emisor (el `principal` puede no emitirlos, `AUTH_CLAIM_ROLES` vacío), así que la lógica
+  debe tolerar una lista vacía y devolver vacío, no fallar. Referencia:
+  `fichas/infrastructure/.../estadoficha/query/primaryadapter/web/mapper/ConsultarEstadosFichaRequestMapper.java`.

@@ -10,8 +10,8 @@ public final class SubirVersionRepositorioArtefactoRequestMapper {
     private SubirVersionRepositorioArtefactoRequestMapper() {}
 
     public static SubirVersionRepositorioArtefactoCommand toCommand(
-            SubirVersionRepositorioArtefactoRequestDTO dto, UUID repositorioId, String solicitanteSubject) {
+            SubirVersionRepositorioArtefactoRequestDTO dto, UUID repositorioId, UUID solicitante) {
         return SubirVersionRepositorioArtefactoCommand.crear(
-                dto.carga(), repositorioId, solicitanteSubject, dto.nombreDocumento(), dto.nuevoDocumento());
+                dto.carga(), repositorioId, solicitante, dto.nombreDocumento(), dto.nuevoDocumento());
     }
 }

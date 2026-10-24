@@ -197,9 +197,13 @@ llega sin validar al repositorio. Compila y pasa los tests igual. La señal es m
 parámetro de `crear` pasa por algún `Validator*` (un opcional, solo si llega). Ver
 `RegistrarFichaPerfilCommand.java` y `ConsultarCategoriasItemCuantitativoJuradoQuery.java`.
 
-Los IDs del body HTTP llegan como `String` y se validan ahí con `ValidatorUUID.uuidValido(...)`,
-convirtiendo con `UtilUUID.generarUUIDDesdeTexto` — **nunca con una anotación Jakarta**. El `Command`
-y los `@PathVariable` sí van tipados `UUID`.
+Un identificador se tipa según su origen. Los del body HTTP llegan como `String` y se validan ahí con
+`ValidatorUUID.uuidValido(...)`, convirtiendo con `UtilUUID.generarUUIDDesdeTexto` — **nunca con una
+anotación Jakarta**. Los que ya llegan parseados, el `@PathVariable` y la identidad del llamante
+(`IdentidadActual.id()`), pasan como `UUID` hasta `crear(...)`, que solo comprueba
+`ValidatorObjeto.noNulo`: un `toString()` para re-parsearlos añade una validación de formato que nunca
+falla y un código de error muerto (`ConsultarEstadosFichaQuery.java`). Los campos del `Command` van
+siempre tipados `UUID`.
 
 El `RequestDTO` es un `record` **sin ninguna anotación**, y un `{Accion}{Entidad}RequestMapper`
 (`final`, constructor privado, `static toCommand`) llama a `Command.crear(...)`

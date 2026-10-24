@@ -4,11 +4,10 @@ import com.arquisoft.shared.message.constant.RepositorioArtefactosCodes;
 import com.arquisoft.shared.message.constant.RepositorioArtefactosFields;
 import com.arquisoft.shared.message.constant.RepositorioArtefactosLimits;
 import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
-import com.arquisoft.shared.validation.ValidatorUUID;
 
 import java.util.UUID;
 
@@ -23,7 +22,7 @@ public record GenerarRepositorioArtefactoCommand(
     }
 
     public static GenerarRepositorioArtefactoCommand crear(
-            String nombreRepositorio, String descripcion, String administrador) {
+            String nombreRepositorio, String descripcion, UUID administrador) {
         var result = new ValidationResult();
         var nombreRecortado = UtilTexto.aplicarTrim(nombreRepositorio);
         var descripcionRecortada = UtilTexto.aplicarTrim(descripcion);
@@ -46,13 +45,13 @@ public record GenerarRepositorioArtefactoCommand(
                     RepositorioArtefactosCodes.RepositorioArtefacto.DESCRIPCION_DEMASIADO_LARGA, result);
         }
 
-        ValidatorUUID.uuidValido(administrador,
+        ValidatorObjeto.noNulo(administrador,
                 RepositorioArtefactosFields.RepositorioArtefacto.ADMINISTRADOR,
                 RepositorioArtefactosCodes.RepositorioArtefacto.ADMINISTRADOR_REQUERIDO, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
         return new GenerarRepositorioArtefactoCommand(
-                nombreRecortado, descripcionRecortada, UtilUUID.generarUUIDDesdeTexto(administrador));
+                nombreRecortado, descripcionRecortada, administrador);
     }
 }
