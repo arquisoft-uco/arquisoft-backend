@@ -180,4 +180,5 @@ security:
         - {method: GET, path: "/api/mapas-ruta/estudiante", role: "mapas-ruta:mapa-ruta-estudiante:view"}
         - {method: PATCH, path: "/api/mapas-ruta/{id}/fecha-fin", role: "mapas-ruta:mapa-ruta:update-fecha-fin"}
         - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas", role: "mapas-ruta:tarea:create"}
+        - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas/estudiante", role: "mapas-ruta:tarea-mapa-ruta-estudiante:view"}
         - {method: GET, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:view"}
