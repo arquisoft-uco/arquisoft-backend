@@ -203,6 +203,7 @@
               "evaluaciones:item-cualitativo-jurado:create",
               "repositorio-artefactos:repositorio-artefacto:create",
               "repositorio-artefactos:repositorio-artefacto:update",
+              "repositorio-artefactos:repositorio-artefacto:view",
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
@@ -757,6 +758,15 @@
         {
           "id": "4a9b78ba-5c0c-4e17-ad43-fd90fab08eb1",
           "name": "repositorio-artefactos:repositorio-artefacto:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b7d2f4a1-6c3e-4f58-9a0d-2e81c5f7a396",
+          "name": "repositorio-artefactos:repositorio-artefacto:view",
           "description": "",
           "composite": false,
           "clientRole": true,
