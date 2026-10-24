@@ -95,6 +95,15 @@ public final class MapasRutaApiMessages {
         public static final String CAMBIAR_ESTADO_ITEM_RESP_400 = "Datos de entrada inválidos";
         public static final String CAMBIAR_ESTADO_ITEM_RESP_422 =
                 "Tarea inexistente, estado fuera del catálogo o transición de estado no permitida";
+        public static final String MODIFICAR_INFORMACION_SUMMARY = "Modificar la información de una tarea";
+        public static final String MODIFICAR_INFORMACION_DESCRIPTION =
+                "Modifica la descripción y el asesor de una tarea existente. El mapa de ruta y el estado de la "
+                        + "tarea no cambian, y repetir los valores actuales se acepta";
+        public static final String MODIFICAR_INFORMACION_RESP_204 = "Información de la tarea modificada";
+        public static final String MODIFICAR_INFORMACION_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_INFORMACION_RESP_422 =
+                "Tarea o mapa de ruta inexistente, descripción ya usada por otra tarea del mapa de ruta "
+                        + "o asesor no asignado al proyecto de grado";
     }
 
     public static final class EstadoItem {

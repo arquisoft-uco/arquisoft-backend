@@ -13,5 +13,9 @@ public interface TareaOutputPort {
 
     void actualizarEstadoItem(UUID tarea, String estadoItem);
 
+    void actualizarInformacion(UUID tarea, String descripcion, UUID asesor);
+
     boolean existePorMapaRutaYDescripcion(UUID mapaRuta, String descripcion);
+
+    boolean existeOtraPorMapaRutaYDescripcion(UUID mapaRuta, String descripcion, UUID tarea);
 }

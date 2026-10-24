@@ -36,7 +36,18 @@ public class TareaCommandOutputAdapter implements TareaOutputPort {
     }
 
     @Override
+    public void actualizarInformacion(UUID tarea, String descripcion, UUID asesor) {
+        repository.actualizarInformacion(tarea, descripcion, asesor);
+        logger.debug(TareaKey.LOG_GUARDADA, tarea);
+    }
+
+    @Override
     public boolean existePorMapaRutaYDescripcion(UUID mapaRuta, String descripcion) {
         return repository.existsByMapaRutaIdAndDescripcion(mapaRuta, descripcion);
+    }
+
+    @Override
+    public boolean existeOtraPorMapaRutaYDescripcion(UUID mapaRuta, String descripcion, UUID tarea) {
+        return repository.existsByMapaRutaIdAndDescripcionAndIdNot(mapaRuta, descripcion, tarea);
     }
 }

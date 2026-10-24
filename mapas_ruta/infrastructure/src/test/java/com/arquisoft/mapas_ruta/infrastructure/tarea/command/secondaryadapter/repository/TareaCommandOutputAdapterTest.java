@@ -112,6 +112,51 @@ class TareaCommandOutputAdapterTest {
     }
 
     @Test
+    void debeActualizarDescripcionYAsesor_cuandoTareaExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var otra = UtilUUID.generarNuevoUUID();
+        var mapaRuta = UtilUUID.generarNuevoUUID();
+        var nuevoAsesor = UtilUUID.generarNuevoUUID();
+        entityManager.persist(TareaJpaEntity.builder().id(id).mapaRutaId(mapaRuta)
+                .descripcion("Anterior").asesorId(UtilUUID.generarNuevoUUID()).estadoItemId("EN_PROGRESO").build());
+        entityManager.persist(TareaJpaEntity.builder().id(otra).mapaRutaId(mapaRuta)
+                .descripcion("Otra tarea").asesorId(UtilUUID.generarNuevoUUID()).estadoItemId("NUEVA").build());
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarInformacion(id, "Redactar capitulo", nuevoAsesor);
+        entityManager.clear();
+
+        // Assert
+        var actualizada = entityManager.find(TareaJpaEntity.class, id);
+        assertThat(actualizada.getDescripcion()).isEqualTo("Redactar capitulo");
+        assertThat(actualizada.getAsesorId()).isEqualTo(nuevoAsesor);
+        assertThat(actualizada.getMapaRutaId()).isEqualTo(mapaRuta);
+        assertThat(actualizada.getEstadoItemId()).isEqualTo("EN_PROGRESO");
+        assertThat(entityManager.find(TareaJpaEntity.class, otra).getDescripcion()).isEqualTo("Otra tarea");
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeDetectarOtraTarea_soloSiOtraDelMismoMapaTieneLaDescripcion() {
+        // Arrange
+        var mapaRuta = UtilUUID.generarNuevoUUID();
+        var propia = UtilUUID.generarNuevoUUID();
+        entityManager.persist(TareaJpaEntity.builder().id(propia).mapaRutaId(mapaRuta)
+                .descripcion("Redactar capitulo").asesorId(UtilUUID.generarNuevoUUID()).estadoItemId("NUEVA").build());
+        sembrar(mapaRuta, "Otra tarea");
+        sembrar(UtilUUID.generarNuevoUUID(), "Descripcion de otro mapa");
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.existeOtraPorMapaRutaYDescripcion(mapaRuta, "Otra tarea", propia)).isTrue();
+        assertThat(adapter.existeOtraPorMapaRutaYDescripcion(mapaRuta, "Redactar capitulo", propia)).isFalse();
+        assertThat(adapter.existeOtraPorMapaRutaYDescripcion(mapaRuta, "Descripcion de otro mapa", propia))
+                .isFalse();
+    }
+
+    @Test
     void debeIndicarExistencia_soloParaLaMismaDescripcionEnElMismoMapa() {
         // Arrange
         var mapaRuta = UtilUUID.generarNuevoUUID();

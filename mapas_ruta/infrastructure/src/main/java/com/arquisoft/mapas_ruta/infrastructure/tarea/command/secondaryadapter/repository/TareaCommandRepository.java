@@ -12,6 +12,15 @@ public interface TareaCommandRepository extends JpaRepository<TareaJpaEntity, UU
 
     boolean existsByMapaRutaIdAndDescripcion(UUID mapaRutaId, String descripcion);
 
+    boolean existsByMapaRutaIdAndDescripcionAndIdNot(UUID mapaRutaId, String descripcion, UUID id);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE TareaJpaEntity t SET t.descripcion = :descripcion, t.asesorId = :asesorId WHERE t.id = :id")
+    int actualizarInformacion(
+            @Param("id") UUID id,
+            @Param("descripcion") String descripcion,
+            @Param("asesorId") UUID asesorId);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE TareaJpaEntity t SET t.estadoItemId = :estadoItem WHERE t.id = :id")
     int actualizarEstadoItem(@Param("id") UUID id, @Param("estadoItem") String estadoItem);
