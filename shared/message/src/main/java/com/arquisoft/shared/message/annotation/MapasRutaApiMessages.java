@@ -96,4 +96,17 @@ public final class MapasRutaApiMessages {
         public static final String CAMBIAR_ESTADO_ITEM_RESP_422 =
                 "Tarea inexistente, estado fuera del catálogo o transición de estado no permitida";
     }
+
+    public static final class EstadoItem {
+
+        private EstadoItem() {}
+
+        public static final String TAG_NAME = "Estados de ítem";
+        public static final String TAG_DESCRIPTION = "Catálogo de estados que puede tener un ítem de tarea";
+        public static final String CONSULTAR_SUMMARY = "Consultar los estados de ítem";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve el catálogo completo de estados de ítem (Nueva, En progreso, Finalizada) "
+                        + "con su identificador, nombre y descripción";
+        public static final String CONSULTAR_RESP_200 = "Catálogo de estados de ítem";
+    }
 }
