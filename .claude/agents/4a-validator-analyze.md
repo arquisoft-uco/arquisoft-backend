@@ -242,6 +242,7 @@ Fuente: `arquisoft-arquitectura` → *Rutas en placeholders y autorización fuer
 | Check | Sev |
 |---|:---:|
 | Controlador con `@PreAuthorize`, `hasAuthority`, `hasRole`, `Jwt` o `@AuthenticationPrincipal`: la identidad llega como `IdentidadActual` y la autorización no vive ahí | ❌ |
+| `identidad.roles()` leído a mano o nombres de rol de identidad repetidos en el contexto, en vez de `RolesIdentidad.traducir` con claves de `UsuariosRoles`; o roles de identidad (no de negocio) llegando al `Command`/`Query` | ❌ |
 | Endpoint nuevo sin fila en `autorizacion-equivalencias.yml` (y sin estar en rutas públicas o exentas), o `CompletitudEquivalenciasAutorizacionTest` en rojo | ❌ |
 | Recurso PDP (método + plantilla con `/api`) o client role distinto del de la sección 9 del plan | ❌ |
 | Client role de la fila nueva ausente de `roles.client.arquisoft-api` en `keycloak/realm-arquisoft.json`, o sin composite directo en los realm roles de la sección 9 (responde 403 a todos y el build no lo detecta) | ❌ |

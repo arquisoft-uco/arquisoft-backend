@@ -77,7 +77,8 @@ su client role —para el recurso del anexo y la sección 9— y recuerda que el
 `keycloak/realm-arquisoft.json`, como composite de los realm roles que respondió el usuario: sin eso
 el endpoint da 403 a todos (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera
 del controlador*). El controlador recibe
-`IdentidadActual`, nunca `Jwt` ni `@PreAuthorize`. Mapeo de los roles de negocio actuales: `coordinador`,
+`IdentidadActual`, nunca `Jwt` ni `@PreAuthorize`; si la lógica depende del rol del llamante, el plan lo
+traduce en el `RequestMapper` con `RolesIdentidad` (misma sección). Roles de negocio actuales: `coordinador`,
 `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`, `representante-comite`, `estudiante`,
 `administrador`.
 
