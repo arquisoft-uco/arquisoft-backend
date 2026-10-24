@@ -42,7 +42,7 @@ class ConsultarRevisionesAsesorAsesorInteractorImplTest {
         var asesor = UtilUUID.generarNuevoUUID();
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
         var query = ConsultarRevisionesAsesorAsesorQuery.crear(asesor, criterio);
-        PaginatedResult<RevisionAsesorReadModel> resultadoEsperado = PaginatedResult.of(List.of(), 0, 10, 0L);
+        var resultadoEsperado = PaginatedResult.<RevisionAsesorReadModel>of(List.of(), 0, 10, 0L);
         when(consultarRevisionesAsesorAsesorUseCase.ejecutar(any(RevisionAsesorAsesorCriteria.class)))
                 .thenReturn(resultadoEsperado);
 

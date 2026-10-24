@@ -20,7 +20,7 @@ public class ConsultarRevisionesAsesorAsesorUseCaseImpl implements ConsultarRevi
     @Override
     public PaginatedResult<RevisionAsesorReadModel> ejecutar(RevisionAsesorAsesorCriteria entrada) {
         logger.debug(RevisionAsesorKey.LOG_CONSULTANDO_ASESOR,
-                entrada.tieneFiltros(), entrada.tieneOrden());
+                entrada.getPagina(), entrada.getTamanio(), entrada.tieneFiltros(), entrada.tieneOrden());
 
         var resultado = revisionAsesorQueryOutputPort.consultarTodasAsesor(entrada);
 

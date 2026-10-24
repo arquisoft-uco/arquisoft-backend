@@ -50,6 +50,7 @@ class ConsultarRevisionesAsesorAsesorUseCaseImplTest {
         assertThat(resultado).isSameAs(resultadoEsperado);
         verify(revisionAsesorQueryOutputPort, times(1)).consultarTodasAsesor(criteria);
         verify(logger).debug(eq(RevisionAsesorKey.LOG_CONSULTANDO_ASESOR),
+                eq(criteria.getPagina()), eq(criteria.getTamanio()),
                 eq(criteria.tieneFiltros()), eq(criteria.tieneOrden()));
         verify(logger).debug(eq(RevisionAsesorKey.LOG_CONSULTA_ASESOR_COMPLETADA),
                 eq(resultadoEsperado.getTotalElements()));

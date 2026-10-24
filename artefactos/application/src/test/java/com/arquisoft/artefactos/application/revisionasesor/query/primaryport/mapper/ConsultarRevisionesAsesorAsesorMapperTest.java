@@ -71,4 +71,21 @@ class ConsultarRevisionesAsesorAsesorMapperTest {
         assertThat(criteria.getOrdenamiento().get(0).getCampo()).isEqualTo("estadoRevisionAsesor");
         assertThat(criteria.getOrdenamiento().get(0).getDireccion()).isEqualTo(SortDirection.DESC);
     }
+
+    @Test
+    void debeAplicarOrdenPorEstadoAscendente_cuandoElCriterioNoTraeOrden() {
+        // Arrange
+        var asesor = UtilUUID.generarNuevoUUID();
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
+        var query = ConsultarRevisionesAsesorAsesorQuery.crear(asesor, criterio);
+
+        // Act
+        var criteria = ConsultarRevisionesAsesorAsesorMapper.toCriteria(query);
+
+        // Assert
+        assertThat(criteria.getOrdenamiento()).hasSize(1);
+        assertThat(criteria.getOrdenamiento().get(0).getCampo())
+                .isEqualTo(RevisionAsesorAsesorCriteria.Campo.ESTADO_REVISION_ASESOR.getClave());
+        assertThat(criteria.getOrdenamiento().get(0).getDireccion()).isEqualTo(SortDirection.ASC);
+    }
 }
