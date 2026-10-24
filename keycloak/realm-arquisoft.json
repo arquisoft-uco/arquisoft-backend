@@ -271,6 +271,8 @@
               "usuarios:coordinador-vigente:view",
               "mapas-ruta:estado-item:view",
               "mapas-ruta:tarea:view",
+              "mapas-ruta:tarea:update-estado-item",
+              "mapas-ruta:tarea:update",
               "mapas-ruta:tarea-mapa-ruta-estudiante:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
               "solicitudes:solicitud-novedad-asesor:create",
@@ -2191,6 +2193,24 @@
         {
           "id": "aa51e8e0-9375-43af-8a21-d0250088eb9f",
           "name": "mapas-ruta:tarea:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c4e7a9d1-3b62-4f58-8a0d-6e1b9f2c7d34",
+          "name": "mapas-ruta:tarea:update-estado-item",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8d3f2a6e-5b17-4c94-a0e8-72f1c9b4d035",
+          "name": "mapas-ruta:tarea:update",
           "description": "",
           "composite": false,
           "clientRole": true,
