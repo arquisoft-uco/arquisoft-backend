@@ -130,6 +130,23 @@ class VersionRepositorioArtefactoDomainTest {
     }
 
     @Test
+    void debeReconstruirSinValidar_cuandoLosDatosVienenDePersistencia() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var repositorio = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var version = VersionRepositorioArtefactoDomain.reconstruir(
+                id, " ", 0, repositorio, " ", new DatosArchivo("a.pdf", TIPO_PDF, 0L));
+
+        // Assert
+        assertThat(version.getId()).isEqualTo(id);
+        assertThat(version.getRepositorioArtefacto()).isEqualTo(repositorio);
+        assertThat(version.getNombreDocumento()).isEqualTo(" ");
+        assertThat(version.getNombreArchivo()).isEqualTo("a.pdf");
+    }
+
+    @Test
     void debeRechazar_tamanoBytesNoPositivo() {
         // Arrange
         var archivo = new DatosArchivo("plantilla.pdf", TIPO_PDF, 0L);

@@ -70,5 +70,12 @@ public final class RepositorioArtefactosApiMessages {
                 "Lista todas las versiones de los documentos del repositorio, la de mayor número primero";
         public static final String CONSULTAR_RESP_200 = "Versiones obtenidas exitosamente (lista vacía si no hay)";
         public static final String CONSULTAR_RESP_400 = "Identificador de repositorio inválido";
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Consultar las versiones de todos los repositorios de artefactos para asignar";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Lista paginada, con filtros y orden, de las versiones de todos los repositorios "
+                        + "junto con el repositorio al que pertenecen";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Listado obtenido exitosamente";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "Filtro, operador, campo o valor inválido";
     }
 }

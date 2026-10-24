@@ -169,6 +169,7 @@ security:
         - {method: GET, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:view"}
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones/cargas", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
+        - {method: POST, path: "/api/repositorio-artefactos/versiones/asesor", role: "repositorio-artefactos:version-repositorio-artefacto:view-asesor"}
         # artefactos
         - {method: GET, path: "/api/estados-revision-asesor", role: "artefactos:estado-revision-asesor:view"}
         - {method: POST, path: "/api/revisiones-asesor/estudiante", role: "artefactos:revision-asesor-estudiante:view"}
@@ -176,6 +177,7 @@ security:
         - {method: GET, path: "/api/artefactos/{artefactoId}/estudiantes", role: "artefactos:estudiante-artefacto:view"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones", role: "artefactos:observacion-revision:view"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones/estudiante", role: "artefactos:observacion-revision-estudiante:view"}
+        - {method: POST, path: "/api/artefactos", role: "artefactos:artefacto:create"}
         # mapas_ruta
         - {method: POST, path: "/api/mapas-ruta", role: "mapas-ruta:mapa-ruta:create"}
         - {method: POST, path: "/api/mapas-ruta/coordinador", role: "mapas-ruta:mapa-ruta-coordinador:view"}
