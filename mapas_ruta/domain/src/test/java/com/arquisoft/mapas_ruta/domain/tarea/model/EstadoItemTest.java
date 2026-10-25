@@ -46,6 +46,15 @@ class EstadoItemTest {
     }
 
     @Test
+    void debePermitirRemocionSoloEnNuevaYEnProgreso_yNegarEnFinalizadaOVacio() {
+        // Act & Assert
+        assertThat(EstadoItem.NUEVA.permiteRemocion()).isTrue();
+        assertThat(EstadoItem.EN_PROGRESO.permiteRemocion()).isTrue();
+        assertThat(EstadoItem.FINALIZADA.permiteRemocion()).isFalse();
+        assertThat(EstadoItem.VACIO.permiteRemocion()).isFalse();
+    }
+
+    @Test
     void debeValidarElId_cuandoSeConsultaEsValido() {
         // Act & Assert
         assertThat(EstadoItem.esValido("EN_PROGRESO")).isTrue();

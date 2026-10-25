@@ -186,4 +186,5 @@ security:
         - {method: GET, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:view"}
         - {method: PATCH, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:update"}
         - {method: PATCH, path: "/api/tareas/{tareaId}/estado-item", role: "mapas-ruta:tarea:update-estado-item"}
+        - {method: DELETE, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:delete"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}

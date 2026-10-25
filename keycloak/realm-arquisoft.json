@@ -273,6 +273,7 @@
               "mapas-ruta:tarea:view",
               "mapas-ruta:tarea:update-estado-item",
               "mapas-ruta:tarea:update",
+              "mapas-ruta:tarea:delete",
               "mapas-ruta:tarea-mapa-ruta-estudiante:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
               "solicitudes:solicitud-novedad-asesor:create",
@@ -2211,6 +2212,15 @@
         {
           "id": "8d3f2a6e-5b17-4c94-a0e8-72f1c9b4d035",
           "name": "mapas-ruta:tarea:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b7a4e1c9-2d58-4f36-9e0a-5c8d1f3b6a42",
+          "name": "mapas-ruta:tarea:delete",
           "description": "",
           "composite": false,
           "clientRole": true,
