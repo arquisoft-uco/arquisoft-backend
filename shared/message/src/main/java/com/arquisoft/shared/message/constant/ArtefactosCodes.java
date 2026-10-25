@@ -46,6 +46,28 @@ public final class ArtefactosCodes {
 
         public static final String ESTUDIANTE_REQUERIDO = "REVISION_ASESOR_ESTUDIANTE_REQUERIDO";
         public static final String ASESOR_REQUERIDO = "REVISION_ASESOR_ASESOR_REQUERIDO";
+        public static final String ID_REQUERIDO = "REVISION_ASESOR_ID_REQUERIDO";
+        public static final String ESTADO_REQUERIDO = "REVISION_ASESOR_ESTADO_REQUERIDO";
+        public static final String ESTADO_INVALIDO = "REVISION_ASESOR_ESTADO_INVALIDO";
+        public static final String NO_ENCONTRADA = "REVISION_ASESOR_NO_ENCONTRADA";
+        public static final String CERRADA = "REVISION_ASESOR_CERRADA";
+        public static final String ESTADO_DESTINO_NO_PERMITIDO = "REVISION_ASESOR_ESTADO_DESTINO_NO_PERMITIDO";
+        public static final String ESTUDIANTE_NO_PARTICIPA_ARTEFACTO =
+                "REVISION_ASESOR_ESTUDIANTE_NO_PARTICIPA_ARTEFACTO";
+    }
+
+    public static final class Asesor {
+
+        private Asesor() {}
+
+        public static final String DE_REVISION_NO_ENCONTRADO = "ASESOR_DE_REVISION_NO_ENCONTRADO";
+    }
+
+    public static final class Estudiante {
+
+        private Estudiante() {}
+
+        public static final String NO_ENCONTRADO = "ESTUDIANTE_NO_ENCONTRADO";
     }
 
     public static final class EstudianteArtefacto {

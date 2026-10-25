@@ -4,6 +4,14 @@ public final class EventTopics {
 
     private EventTopics() {}
 
+    public static final class Artefactos {
+
+        private Artefactos() {}
+
+        public static final String REVISION_ASESOR_ESTADO_CAMBIADO =
+                "artefactos.revision_asesor.estado_cambiado";
+    }
+
     public static final class Fichas {
 
         private Fichas() {}

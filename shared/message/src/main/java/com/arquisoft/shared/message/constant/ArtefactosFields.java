@@ -27,6 +27,8 @@ public final class ArtefactosFields {
 
         public static final String ESTUDIANTE = "estudiante";
         public static final String ASESOR = "asesor";
+        public static final String ID = "revisionAsesor";
+        public static final String ESTADO = "estado";
     }
 
     public static final class EstudianteArtefacto {
