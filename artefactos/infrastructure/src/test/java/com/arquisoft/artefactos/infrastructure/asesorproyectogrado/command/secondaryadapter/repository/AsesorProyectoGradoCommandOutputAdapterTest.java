@@ -129,6 +129,65 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeDevolverSoloElVinculoConElMaximoOcurridoEn_cuandoHayVariosAsesores() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var masReciente = new AsesorProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), proyecto,
+                OCURRIDO_EN.plusSeconds(60), UtilFecha.VACIO);
+        adapter.guardar(new AsesorProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), proyecto, OCURRIDO_EN, UtilFecha.VACIO));
+        adapter.guardar(masReciente);
+        adapter.guardar(new AsesorProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                OCURRIDO_EN.plusSeconds(3600), UtilFecha.VACIO));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var vinculos = adapter.obtenerMasRecientesPorProyectoGrado(proyecto);
+
+        // Assert
+        assertThat(vinculos).containsExactly(masReciente);
+    }
+
+    @Test
+    void debeDevolverAmbosVinculos_cuandoEmpatanEnElMaximo() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var primero = new AsesorProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), proyecto, OCURRIDO_EN, UtilFecha.VACIO);
+        var segundo = new AsesorProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), proyecto, OCURRIDO_EN, UtilFecha.VACIO);
+        adapter.guardar(primero);
+        adapter.guardar(segundo);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var vinculos = adapter.obtenerMasRecientesPorProyectoGrado(proyecto);
+
+        // Assert
+        assertThat(vinculos).containsExactlyInAnyOrder(primero, segundo);
+    }
+
+    @Test
+    void debeDevolverListaVacia_cuandoElProyectoNoTieneVinculos() {
+        // Arrange
+        adapter.guardar(new AsesorProyectoGradoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                OCURRIDO_EN, UtilFecha.VACIO));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var vinculos = adapter.obtenerMasRecientesPorProyectoGrado(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(vinculos).isEmpty();
+    }
+
+    @Test
     void debeRechazarElParRepetido_cuandoSeGuardaElMismoAsesorEnElMismoProyecto() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();

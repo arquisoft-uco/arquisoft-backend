@@ -14,7 +14,7 @@ public interface AsignarArtefactosValidator {
             AsignacionArtefactosDomain asignacion,
             boolean proyectoExiste,
             AsesorDomain asesor,
-            AsesorProyectoGradoDomain vinculo,
+            List<AsesorProyectoGradoDomain> vinculosMasRecientes,
             List<VersionRepositorioArtefactoDomain> versiones,
             List<UUID> repositoriosAsignados);
 }

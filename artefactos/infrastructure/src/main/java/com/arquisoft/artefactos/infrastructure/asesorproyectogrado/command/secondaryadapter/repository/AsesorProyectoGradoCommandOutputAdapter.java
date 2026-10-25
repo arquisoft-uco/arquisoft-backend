@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,6 +29,13 @@ public class AsesorProyectoGradoCommandOutputAdapter implements AsesorProyectoGr
     @Override
     public Optional<Instant> obtenerUltimoOcurridoEnPorProyectoGrado(UUID proyectoGrado) {
         return asesorProyectoGradoCommandRepository.findUltimoOcurridoEnByProyectoGradoId(proyectoGrado);
+    }
+
+    @Override
+    public List<AsesorProyectoGradoEntity> obtenerMasRecientesPorProyectoGrado(UUID proyectoGrado) {
+        return asesorProyectoGradoCommandRepository.findMasRecientesByProyectoGradoId(proyectoGrado).stream()
+                .map(AsesorProyectoGradoJpaMapper::toEntity)
+                .toList();
     }
 
     @Override

@@ -8,8 +8,7 @@ import com.arquisoft.artefactos.application.artefacto.command.secondaryport.mapp
 import com.arquisoft.artefactos.application.artefacto.command.usecase.AsignarArtefactosUseCase;
 import com.arquisoft.artefactos.application.artefacto.command.validator.AsignarArtefactosValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
-import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.AsesorProyectoGradoPorVinculoFinder;
-import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.model.VinculoAsesorProyectoGrado;
+import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoExisteFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactosDomain;
@@ -24,7 +23,7 @@ public class AsignarArtefactosUseCaseImpl implements AsignarArtefactosUseCase {
 
     private final ProyectoGradoExisteFinder proyectoGradoExisteFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
-    private final AsesorProyectoGradoPorVinculoFinder asesorProyectoGradoPorVinculoFinder;
+    private final VinculosMasRecientesProyectoGradoFinder vinculosMasRecientesProyectoGradoFinder;
     private final VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
     private final RepositoriosAsignadosProyectoFinder repositoriosAsignadosProyectoFinder;
     private final AsignarArtefactosValidator asignarArtefactosValidator;
@@ -37,17 +36,16 @@ public class AsignarArtefactosUseCaseImpl implements AsignarArtefactosUseCase {
 
         var proyectoExiste = proyectoGradoExisteFinder.obtener(asignacion.getProyectoGrado());
         var asesor = asesorPorIdFinder.obtener(asignacion.getAsesor());
-        var vinculo = asesorProyectoGradoPorVinculoFinder.obtener(
-                new VinculoAsesorProyectoGrado(asignacion.getAsesor(), asignacion.getProyectoGrado()));
+        var vinculosMasRecientes = vinculosMasRecientesProyectoGradoFinder.obtener(asignacion.getProyectoGrado());
         var versiones = versionesRepositorioArtefactoPorIdsFinder.obtener(
                 asignacion.getVersionesRepositorioArtefacto());
         var repositoriosAsignados = repositoriosAsignadosProyectoFinder.obtener(asignacion.getProyectoGrado());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_ASIGNAR,
                 proyectoExiste, !asesor.esVacio() && !asesor.estaEliminado(),
-                !vinculo.esVacio() && !vinculo.estaFinalizado(), versiones.size(), repositoriosAsignados.size());
+                vinculosMasRecientes.size(), versiones.size(), repositoriosAsignados.size());
 
         asignarArtefactosValidator.validar(
-                asignacion, proyectoExiste, asesor, vinculo, versiones, repositoriosAsignados);
+                asignacion, proyectoExiste, asesor, vinculosMasRecientes, versiones, repositoriosAsignados);
 
         artefactoOutputPort.registrarTodos(asignacion.getArtefactos().stream()
                 .map(ArtefactoMapper::toEntity)

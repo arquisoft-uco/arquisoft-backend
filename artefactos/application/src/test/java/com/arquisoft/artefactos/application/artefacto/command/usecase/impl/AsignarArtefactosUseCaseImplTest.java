@@ -5,8 +5,7 @@ import com.arquisoft.artefactos.application.artefacto.command.secondaryport.Arte
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 import com.arquisoft.artefactos.application.artefacto.command.validator.AsignarArtefactosValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
-import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.AsesorProyectoGradoPorVinculoFinder;
-import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.model.VinculoAsesorProyectoGrado;
+import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoExisteFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
@@ -26,6 +25,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,7 +49,7 @@ class AsignarArtefactosUseCaseImplTest {
     @Mock
     private AsesorPorIdFinder asesorPorIdFinder;
     @Mock
-    private AsesorProyectoGradoPorVinculoFinder asesorProyectoGradoPorVinculoFinder;
+    private VinculosMasRecientesProyectoGradoFinder vinculosMasRecientesProyectoGradoFinder;
     @Mock
     private VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
     @Mock
@@ -69,7 +69,7 @@ class AsignarArtefactosUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new AsignarArtefactosUseCaseImpl(
-                proyectoGradoExisteFinder, asesorPorIdFinder, asesorProyectoGradoPorVinculoFinder,
+                proyectoGradoExisteFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
                 versionesRepositorioArtefactoPorIdsFinder, repositoriosAsignadosProyectoFinder,
                 asignarArtefactosValidator, artefactoOutputPort, logger);
     }
@@ -88,12 +88,13 @@ class AsignarArtefactosUseCaseImplTest {
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
         var asignacion = asignacion(proyecto, asesor, versiones);
         var asesorDomain = AsesorDomain.VACIO;
-        var vinculo = AsesorProyectoGradoDomain.VACIO;
+        var vinculos = List.of(AsesorProyectoGradoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), asesor, proyecto, Instant.now(), null));
         var repositoriosAsignados = List.of(UtilUUID.generarNuevoUUID());
         when(proyectoGradoExisteFinder.obtener(proyecto)).thenReturn(true);
         when(asesorPorIdFinder.obtener(asesor)).thenReturn(asesorDomain);
-        when(asesorProyectoGradoPorVinculoFinder.obtener(new VinculoAsesorProyectoGrado(asesor, proyecto)))
-                .thenReturn(vinculo);
+        when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto))
+                .thenReturn(vinculos);
         when(versionesRepositorioArtefactoPorIdsFinder.obtener(versiones)).thenReturn(List.of());
         when(repositoriosAsignadosProyectoFinder.obtener(proyecto)).thenReturn(repositoriosAsignados);
 
@@ -104,16 +105,16 @@ class AsignarArtefactosUseCaseImplTest {
         assertThat(resultado.artefactos())
                 .containsExactlyElementsOf(asignacion.getArtefactos().stream().map(ArtefactoDomain::getId).toList());
         var orden = inOrder(
-                proyectoGradoExisteFinder, asesorPorIdFinder, asesorProyectoGradoPorVinculoFinder,
+                proyectoGradoExisteFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
                 versionesRepositorioArtefactoPorIdsFinder, repositoriosAsignadosProyectoFinder,
                 asignarArtefactosValidator, artefactoOutputPort);
         orden.verify(proyectoGradoExisteFinder).obtener(proyecto);
         orden.verify(asesorPorIdFinder).obtener(asesor);
-        orden.verify(asesorProyectoGradoPorVinculoFinder).obtener(any());
+        orden.verify(vinculosMasRecientesProyectoGradoFinder).obtener(proyecto);
         orden.verify(versionesRepositorioArtefactoPorIdsFinder).obtener(versiones);
         orden.verify(repositoriosAsignadosProyectoFinder).obtener(proyecto);
         orden.verify(asignarArtefactosValidator)
-                .validar(asignacion, true, asesorDomain, vinculo, List.of(), repositoriosAsignados);
+                .validar(asignacion, true, asesorDomain, vinculos, List.of(), repositoriosAsignados);
         orden.verify(artefactoOutputPort).registrarTodos(anyList());
         verify(versionesRepositorioArtefactoPorIdsFinder, times(1)).obtener(anyList());
         verify(artefactoOutputPort, times(1)).registrarTodos(anyList());
@@ -133,7 +134,7 @@ class AsignarArtefactosUseCaseImplTest {
         var asignacion = asignacion(proyecto, asesor, List.of(UtilUUID.generarNuevoUUID()));
         when(proyectoGradoExisteFinder.obtener(proyecto)).thenReturn(false);
         when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
-        when(asesorProyectoGradoPorVinculoFinder.obtener(any())).thenReturn(AsesorProyectoGradoDomain.VACIO);
+        when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
         when(versionesRepositorioArtefactoPorIdsFinder.obtener(anyList())).thenReturn(List.of());
         when(repositoriosAsignadosProyectoFinder.obtener(proyecto)).thenReturn(List.of());
         doThrow(new ProyectoGradoNoEncontradoException(proyecto)).when(asignarArtefactosValidator)

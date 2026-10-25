@@ -8,8 +8,12 @@ public class AsesorAsignadoProyectoGradoRuleImpl implements AsesorAsignadoProyec
 
     @Override
     public void validar(VigenciaAsesorProyectoGrado vigencia) {
-        var encontrado = vigencia.encontrado();
-        if (encontrado.esVacio() || encontrado.estaFinalizado()) {
+        var masRecientes = vigencia.masRecientes();
+        if (masRecientes.size() != 1) {
+            throw new AsesorNoAsignadoProyectoGradoException(vigencia.asesor(), vigencia.proyectoGrado());
+        }
+        var masReciente = masRecientes.get(0);
+        if (!masReciente.getAsesor().equals(vigencia.asesor()) || masReciente.estaFinalizado()) {
             throw new AsesorNoAsignadoProyectoGradoException(vigencia.asesor(), vigencia.proyectoGrado());
         }
     }
