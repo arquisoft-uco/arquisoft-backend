@@ -41,8 +41,7 @@ class AsignarArtefactosValidatorImplTest {
         asesorId = UtilUUID.generarNuevoUUID();
         versionId = UtilUUID.generarNuevoUUID();
         repositorio = UtilUUID.generarNuevoUUID();
-        asignacion = AsignacionArtefactosDomain.crear(
-                proyecto, asesorId, List.of(ArtefactoDomain.crear(proyecto, versionId, asesorId)));
+        asignacion = AsignacionArtefactosDomain.crear(ArtefactoDomain.crear(proyecto, asesorId, List.of(versionId)));
         asesorVigente = AsesorDomain.reconstruir(
                 asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
         vinculoVigente = AsesorProyectoGradoDomain.reconstruir(

@@ -75,8 +75,8 @@ class AsignarArtefactosUseCaseImplTest {
     }
 
     private static AsignacionArtefactosDomain asignacion(UUID proyecto, UUID asesor, List<UUID> versiones) {
-        var artefactos = versiones.stream().map(version -> ArtefactoDomain.crear(proyecto, version, asesor)).toList();
-        return AsignacionArtefactosDomain.crear(proyecto, asesor, artefactos);
+        var artefactos = ArtefactoDomain.crear(proyecto, asesor, versiones);
+        return AsignacionArtefactosDomain.crear(artefactos);
     }
 
     @Test

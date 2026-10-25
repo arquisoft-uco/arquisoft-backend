@@ -5,46 +5,22 @@ import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilColeccion;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorColeccion;
-import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.List;
 import java.util.UUID;
 
 public final class AsignacionArtefactosDomain {
 
-    private UUID proyectoGrado;
-    private UUID asesor;
     private List<ArtefactoDomain> artefactos;
 
     private AsignacionArtefactosDomain() {}
 
-    public static AsignacionArtefactosDomain crear(
-            UUID proyectoGrado, UUID asesor, List<ArtefactoDomain> artefactos) {
+    public static AsignacionArtefactosDomain crear(List<ArtefactoDomain> artefactos) {
         var asignacion = new AsignacionArtefactosDomain();
         var result = new ValidationResult();
-        asignacion.setProyectoGrado(proyectoGrado, result);
-        asignacion.setAsesor(asesor, result);
         asignacion.setArtefactos(artefactos, result);
         result.lanzarSiTieneErrores();
         return asignacion;
-    }
-
-    private void setProyectoGrado(UUID proyectoGrado, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(proyectoGrado,
-                ArtefactosFields.Artefacto.PROYECTO_GRADO,
-                ArtefactosCodes.Artefacto.PROYECTO_GRADO_REQUERIDO, result)) {
-            return;
-        }
-        this.proyectoGrado = proyectoGrado;
-    }
-
-    private void setAsesor(UUID asesor, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(asesor,
-                ArtefactosFields.Artefacto.ASESOR,
-                ArtefactosCodes.Artefacto.ASESOR_REQUERIDO, result)) {
-            return;
-        }
-        this.asesor = asesor;
     }
 
     private void setArtefactos(List<ArtefactoDomain> artefactos, ValidationResult result) {
@@ -62,11 +38,11 @@ public final class AsignacionArtefactosDomain {
     }
 
     public UUID getProyectoGrado() {
-        return proyectoGrado;
+        return artefactos.getFirst().getProyectoGrado();
     }
 
     public UUID getAsesor() {
-        return asesor;
+        return artefactos.getFirst().getAsesor();
     }
 
     public List<ArtefactoDomain> getArtefactos() {

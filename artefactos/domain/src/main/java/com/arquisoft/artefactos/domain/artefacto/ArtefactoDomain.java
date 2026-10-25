@@ -4,8 +4,10 @@ import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorColeccion;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 
+import java.util.List;
 import java.util.UUID;
 
 public final class ArtefactoDomain {
@@ -17,7 +19,7 @@ public final class ArtefactoDomain {
 
     private ArtefactoDomain() {}
 
-    public static ArtefactoDomain crear(UUID proyectoGrado, UUID versionRepositorioArtefacto, UUID asesor) {
+    private static ArtefactoDomain crear(UUID proyectoGrado, UUID asesor, UUID versionRepositorioArtefacto) {
         var artefacto = new ArtefactoDomain();
         var result = new ValidationResult();
         artefacto.setId();
@@ -26,6 +28,21 @@ public final class ArtefactoDomain {
         artefacto.setAsesor(asesor, result);
         result.lanzarSiTieneErrores();
         return artefacto;
+    }
+
+    public static List<ArtefactoDomain> crear(
+            UUID proyectoGrado, UUID asesor, List<UUID> versionesRepositorioArtefacto) {
+        var result = new ValidationResult();
+
+        ValidatorColeccion.noVacia(versionesRepositorioArtefacto,
+                ArtefactosFields.Artefacto.VERSIONES_REPOSITORIO_ARTEFACTO,
+                ArtefactosCodes.Artefacto.VERSIONES_REQUERIDAS, result);
+
+        result.lanzarSiTieneErrores();
+
+        return versionesRepositorioArtefacto.stream()
+                .map(version -> crear(proyectoGrado, asesor, version))
+                .toList();
     }
 
     public static ArtefactoDomain reconstruir(
