@@ -1,13 +1,8 @@
 dependencies {
-    implementation project(':shared:domain')
-
     implementation "org.springframework.boot:spring-boot-starter"
 
     implementation "org.apache.tika:tika-core:${tikaVersion}"
     implementation "org.apache.tika:tika-parser-microsoft-module:${tikaVersion}"
-
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     testImplementation "org.assertj:assertj-core"
     testImplementation "org.mockito:mockito-core"
