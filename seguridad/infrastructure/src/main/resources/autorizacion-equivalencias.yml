@@ -169,6 +169,7 @@ security:
         - {method: GET, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:view"}
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones/cargas", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
+        - {method: POST, path: "/api/repositorio-artefactos/versiones/asesor", role: "repositorio-artefactos:version-repositorio-artefacto:view-asesor"}
         # artefactos
         - {method: GET, path: "/api/estados-revision-asesor", role: "artefactos:estado-revision-asesor:view"}
         - {method: POST, path: "/api/revisiones-asesor/estudiante", role: "artefactos:revision-asesor-estudiante:view"}
