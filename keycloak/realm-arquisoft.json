@@ -346,7 +346,8 @@
               "artefactos:revision-asesor-asesor:view",
               "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
               "artefactos:artefacto:create",
-              "artefactos:version-artefacto-asesor:view"
+              "artefactos:version-artefacto-asesor:view",
+              "artefactos:artefacto-asesor:view"
             ]
           }
         },
@@ -2212,6 +2213,15 @@
         {
           "id": "7fcf85d3-9f30-48ed-9248-ef3a3e2b6854",
           "name": "artefactos:version-artefacto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3b9c1e5a-6d24-4f87-a1c3-9e2d7b405f18",
+          "name": "artefactos:artefacto-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
