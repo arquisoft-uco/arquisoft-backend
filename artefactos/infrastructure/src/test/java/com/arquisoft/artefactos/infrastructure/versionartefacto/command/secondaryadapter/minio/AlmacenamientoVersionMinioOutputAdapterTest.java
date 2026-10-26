@@ -16,8 +16,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Map;
 
@@ -70,7 +68,7 @@ class AlmacenamientoVersionMinioOutputAdapterTest {
         assertThat(enviada.metadatos())
                 .containsEntry("solicitante", solicitud.solicitante().toString())
                 .containsEntry("artefacto", solicitud.artefacto().toString())
-                .containsEntry("nombre-archivo", URLEncoder.encode("Guía final.pdf", StandardCharsets.UTF_8));
+                .containsEntry("nombre-archivo", "Guía final.pdf");
         assertThat(formulario.url()).isEqualTo("http://minio/bucket");
         assertThat(formulario.campos()).containsEntry("k", "v");
         assertThat(formulario.expiraEn()).isEqualTo(expiraEn);
@@ -85,7 +83,7 @@ class AlmacenamientoVersionMinioOutputAdapterTest {
         var metadatos = Map.of(
                 "solicitante", solicitante.toString(),
                 "artefacto", artefacto.toString(),
-                "nombre-archivo", URLEncoder.encode("Guía final.pdf", StandardCharsets.UTF_8));
+                "nombre-archivo", "Guía final.pdf");
         when(almacenamientoObjetos.consultarMetadatos(BUCKET, "pendientes/" + carga))
                 .thenReturn(new MetadatosObjeto(2048L, "application/pdf", "etag-1", metadatos));
 

@@ -92,6 +92,25 @@ class MinioAlmacenamientoObjetosTest {
     }
 
     @Test
+    void debeCodificarMetadatosNoAscii_enPolicyYCampos() throws Exception {
+        // Arrange
+        when(minioClient.getPresignedPostFormData(any(PostPolicy.class))).thenReturn(Map.of());
+        var solicitud = new SolicitudFormularioCarga(BUCKET, "pendientes/c-1", "application/pdf", 10L,
+                Map.of("nombre-archivo", "Guía final.pdf"));
+
+        // Act
+        var formulario = almacenamiento.generarFormularioCarga(solicitud);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(PostPolicy.class);
+        verify(minioClient).getPresignedPostFormData(captor.capture());
+        var datos = captor.getValue().formData(new Credentials("ak", "sk", null, null), "us-east-1");
+        var json = new String(Base64.getDecoder().decode(datos.get("policy")), StandardCharsets.UTF_8);
+        assertThat(json).contains("[\"eq\",\"$x-amz-meta-nombre-archivo\",\"Gu%C3%ADa+final.pdf\"]");
+        assertThat(formulario.campos()).containsEntry("x-amz-meta-nombre-archivo", "Gu%C3%ADa+final.pdf");
+    }
+
+    @Test
     void debeUsarEndpointPublicoEnLaUrl() throws Exception {
         // Arrange
         when(minioClient.getPresignedPostFormData(any(PostPolicy.class))).thenReturn(Map.of());
@@ -139,6 +158,25 @@ class MinioAlmacenamientoObjetosTest {
         assertThat(metadatos.metadatos())
                 .containsEntry("solicitante", "u-1")
                 .containsEntry("nombre-archivo", "guia.pdf");
+    }
+
+    @Test
+    void debeDecodificarMetadatos_cuandoConsulta() throws Exception {
+        // Arrange
+        var cabeceras = Headers.of(
+                "ETag", "\"abc123\"",
+                "Content-Length", "10",
+                "Content-Type", "application/pdf",
+                "Last-Modified", "Thu, 15 Oct 2026 10:00:00 GMT",
+                "X-Amz-Meta-Nombre-Archivo", "Gu%C3%ADa+final.pdf");
+        var respuesta = new StatObjectResponse(cabeceras, BUCKET, "us-east-1", "pendientes/c-1");
+        when(minioClient.statObject(any(StatObjectArgs.class))).thenReturn(respuesta);
+
+        // Act
+        var metadatos = almacenamiento.consultarMetadatos(BUCKET, "pendientes/c-1");
+
+        // Assert
+        assertThat(metadatos.metadatos()).containsEntry("nombre-archivo", "Guía final.pdf");
     }
 
     @Test

@@ -21,6 +21,9 @@ import io.minio.errors.ErrorResponseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
@@ -54,7 +57,8 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             var camposExactos = new LinkedHashMap<String, String>();
             camposExactos.put(CAMPO_KEY, solicitud.key());
             camposExactos.put(CAMPO_TIPO_CONTENIDO, solicitud.tipoContenido());
-            solicitud.metadatos().forEach((nombre, valor) -> camposExactos.put(PREFIJO_METADATO + nombre, valor));
+            solicitud.metadatos().forEach((nombre, valor) ->
+                    camposExactos.put(PREFIJO_METADATO + nombre, URLEncoder.encode(valor, StandardCharsets.UTF_8)));
 
             camposExactos.forEach(politica::addEqualsCondition);
             politica.addContentLengthRangeCondition(TAMANO_MINIMO_BYTES, solicitud.tamanoMaximoBytes());
@@ -144,7 +148,7 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             var minuscula = nombre.toLowerCase(Locale.ROOT);
             normalizados.put(
                     minuscula.startsWith(PREFIJO_METADATO) ? minuscula.substring(PREFIJO_METADATO.length()) : minuscula,
-                    valor);
+                    URLDecoder.decode(valor, StandardCharsets.UTF_8));
         });
         return normalizados;
     }

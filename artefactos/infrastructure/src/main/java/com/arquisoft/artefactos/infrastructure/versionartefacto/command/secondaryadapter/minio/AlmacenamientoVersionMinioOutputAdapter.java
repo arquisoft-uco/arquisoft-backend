@@ -16,9 +16,6 @@ import com.arquisoft.shared.util.UtilUUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +37,7 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
         var metadatos = new LinkedHashMap<String, String>();
         metadatos.put(METADATO_SOLICITANTE, solicitud.solicitante().toString());
         metadatos.put(METADATO_ARTEFACTO, solicitud.artefacto().toString());
-        metadatos.put(METADATO_NOMBRE_ARCHIVO, URLEncoder.encode(solicitud.nombreArchivo(), StandardCharsets.UTF_8));
+        metadatos.put(METADATO_NOMBRE_ARCHIVO, solicitud.nombreArchivo());
 
         var formulario = almacenamientoObjetos.generarFormularioCarga(new SolicitudFormularioCarga(
                 propiedades.getBucket(),
@@ -62,7 +59,7 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
                 carga,
                 uuidODefecto(metadatos.get(METADATO_ARTEFACTO)),
                 uuidODefecto(metadatos.get(METADATO_SOLICITANTE)),
-                decodificar(metadatos.get(METADATO_NOMBRE_ARCHIVO)),
+                metadatos.getOrDefault(METADATO_NOMBRE_ARCHIVO, UtilTexto.VACIO),
                 objeto.tipoContenido(),
                 objeto.tamano(),
                 objeto.etag()));
@@ -91,9 +88,5 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
 
     private static UUID uuidODefecto(String texto) {
         return UtilObjeto.aplicarPorDefecto(UtilUUID.generarUUIDDesdeTexto(texto), UtilUUID.obtenerUUIDPorDefecto());
-    }
-
-    private static String decodificar(String texto) {
-        return UtilObjeto.esNulo(texto) ? UtilTexto.VACIO : URLDecoder.decode(texto, StandardCharsets.UTF_8);
     }
 }
