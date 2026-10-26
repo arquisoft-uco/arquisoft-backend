@@ -30,6 +30,7 @@ rutas:
     evaluaciones-asesor:
       base: /evaluaciones-asesor
       cualitativas: /{evaluacionAsesorId}/cualitativas
+      cuantitativas: /{evaluacionAsesorId}/cuantitativas
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
       por-id: /{itemId}

@@ -341,6 +341,7 @@
               "artefactos:estado-revision-asesor:view",
               "evaluaciones:evaluacion-asesor:view",
               "evaluaciones:evaluacion-cualitativa-asesor:create",
+              "evaluaciones:evaluacion-cuantitativa-asesor:create",
               "artefactos:estudiante-artefacto:view",
               "artefactos:observacion-revision:view",
               "artefactos:revision-asesor-asesor:view",
@@ -2168,6 +2169,15 @@
         {
           "id": "ab35936a-facd-471e-8ea1-d4bed30f4dd5",
           "name": "evaluaciones:evaluacion-cualitativa-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "6f1c2d4e-8a3b-4c57-9e10-b2a7d5c3f814",
+          "name": "evaluaciones:evaluacion-cuantitativa-asesor:create",
           "description": "",
           "composite": false,
           "clientRole": true,
