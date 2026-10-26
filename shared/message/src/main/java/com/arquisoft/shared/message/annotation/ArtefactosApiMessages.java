@@ -112,7 +112,7 @@ public final class ArtefactosApiMessages {
         private Artefacto() {}
 
         public static final String TAG_NAME = "Artefactos";
-        public static final String TAG_DESCRIPTION = "Asignación de artefactos a los proyectos de grado";
+        public static final String TAG_DESCRIPTION = "Asignación de artefactos a los proyectos de grado y consulta de los asignados al asesor";
         public static final String ASIGNAR_SUMMARY = "Asignar artefactos a un proyecto de grado";
         public static final String ASIGNAR_DESCRIPTION =
                 "Vincula al proyecto de grado una o varias versiones de repositorios de artefactos como "
@@ -123,6 +123,18 @@ public final class ArtefactosApiMessages {
         public static final String ASIGNAR_RESP_201 = "Artefactos asignados al proyecto de grado";
         public static final String ASIGNAR_RESP_400 =
                 "Datos mal formados: identificador inválido, lista vacía o versión repetida";
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar los artefactos asignados al asesor";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Devuelve, de forma paginada, los artefactos a cargo del asesor autenticado con su proyecto "
+                        + "de grado y la versión del repositorio usada como base. Se puede filtrar por proyectoGrado, "
+                        + "nombreProyecto, versionRepositorioArtefacto, nombreDocumento, versionDocumento y "
+                        + "nombreRepositorio, y ordenar por nombreProyecto, nombreDocumento, versionDocumento y "
+                        + "nombreRepositorio; por defecto, nombreProyecto y nombreDocumento ascendentes. "
+                        + "El asesor se toma del token, nunca del cuerpo.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de artefactos asignados al asesor";
+        public static final String CONSULTAR_ASESOR_RESP_400 =
+                "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar los artefactos del asesor";
         public static final String ASIGNAR_RESP_422 =
                 "El proyecto, el asesor o alguna versión no existe, el asesor no está asignado al proyecto "
                         + "o el repositorio ya está asignado";
