@@ -11,6 +11,7 @@ dependencies {
     implementation project(':shared:jpa')
     implementation project(':shared:amqp')
     implementation project(':shared:minio')
+    implementation project(':shared:tika')
 
     // shared:tracing — el consumidor AMQP recibe el GestorTraza por constructor.
     // shared:amqp lo declara con 'implementation', asi que no llega transitivamente.
@@ -29,9 +30,6 @@ dependencies {
     runtimeOnly "org.postgresql:postgresql"
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
-
-    implementation "org.apache.tika:tika-core:${tikaVersion}"
-    implementation "org.apache.tika:tika-parser-microsoft-module:${tikaVersion}"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.boot:spring-boot-test-autoconfigure"

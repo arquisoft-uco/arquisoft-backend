@@ -19,10 +19,10 @@ Todo fallo es `MinioOperationException` (503). El módulo no registra logs: logu
 
 No crea buckets, no comprueba que existan y no lista objetos (`makeBucket`, `bucketExists`, `listObjects`):
 en la nube la cuenta del backend solo tiene `GetObject`, `PutObject`, `DeleteObject` y `GetBucketLocation`
-sobre `repositorio-artefactos/*`. Un objeto ausente responde 404 `NoSuchKey` y se mapea a vacío. El bucket
+sobre `repositorio-artefactos/*` y `artefactos/*`. Un objeto ausente responde 404 `NoSuchKey` y se mapea a vacío. El bucket
 y su ciclo de vida los configura `minio/configurar.sh`. TLS siempre se valida: no hay modo *trust-all*.
 
-## Layout del bucket `repositorio-artefactos`
+## Layout de los buckets `repositorio-artefactos` y `artefactos` (ambos igual)
 
 ```
 pendientes/{carga}      # destino del formulario firmado; ILM lo expira a 1 día

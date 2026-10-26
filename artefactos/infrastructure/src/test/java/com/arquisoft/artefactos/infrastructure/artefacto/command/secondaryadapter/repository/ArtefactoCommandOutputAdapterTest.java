@@ -104,6 +104,31 @@ class ArtefactoCommandOutputAdapterTest {
         verify(logger, times(2)).debug(ArtefactoKey.LOG_TRASPASADOS, 0);
     }
 
+    @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var id = sembrar(proyecto, asesor);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().id()).isEqualTo(id);
+        assertThat(resultado.get().proyectoGrado()).isEqualTo(proyecto);
+        assertThat(resultado.get().asesor()).isEqualTo(asesor);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElArtefactoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
     private UUID sembrar(UUID proyecto, UUID asesor) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(ArtefactoJpaEntity.builder()

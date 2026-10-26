@@ -100,6 +100,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.estado-ficha-perfil-agregado", 2),
     CUERPO_ESTADO_FICHA_PERFIL_AGREGADO(
             "notificaciones.aplicacion.plantilla.cuerpo.estado-ficha-perfil-agregado", 3),
+    ASUNTO_VERSION_ARTEFACTO_GENERADA(
+            "notificaciones.aplicacion.plantilla.asunto.version-artefacto-generada", 2),
+    CUERPO_VERSION_ARTEFACTO_GENERADA(
+            "notificaciones.aplicacion.plantilla.cuerpo.version-artefacto-generada", 3),
     PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -28,5 +29,10 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     public void traspasarAsesorDeProyecto(UUID proyectoGrado, UUID asesor) {
         var traspasados = artefactoCommandRepository.traspasarAsesorDeProyecto(proyectoGrado, asesor);
         logger.debug(ArtefactoKey.LOG_TRASPASADOS, traspasados);
+    }
+
+    @Override
+    public Optional<ArtefactoEntity> obtenerPorId(UUID id) {
+        return artefactoCommandRepository.findById(id).map(ArtefactoJpaMapper::toEntity);
     }
 }

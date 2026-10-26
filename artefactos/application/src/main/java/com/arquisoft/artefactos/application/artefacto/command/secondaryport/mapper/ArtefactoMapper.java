@@ -14,4 +14,12 @@ public final class ArtefactoMapper {
                 artefacto.getVersionRepositorioArtefacto(),
                 artefacto.getAsesor());
     }
+
+    public static ArtefactoDomain toDomain(ArtefactoEntity entity) {
+        return ArtefactoDomain.reconstruir(
+                entity.id(),
+                entity.proyectoGrado(),
+                entity.versionRepositorioArtefacto(),
+                entity.asesor());
+    }
 }

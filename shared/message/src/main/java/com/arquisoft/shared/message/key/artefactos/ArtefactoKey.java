@@ -13,7 +13,9 @@ public enum ArtefactoKey implements ClaveMensaje {
     LOG_CONSULTA_ASESOR_COMPLETADA("artefactos.aplicacion.artefacto.log.consulta-asesor-completada", 1),
     LOG_GUARDADOS("artefactos.infraestructura.artefacto.log.guardados", 1),
     LOG_TRASPASADOS("artefactos.infraestructura.artefacto.log.traspasados", 1),
-    ERROR_REPOSITORIO_YA_ASIGNADO("artefactos.dominio.artefacto.error.repositorio-ya-asignado", 1);
+    ERROR_REPOSITORIO_YA_ASIGNADO("artefactos.dominio.artefacto.error.repositorio-ya-asignado", 1),
+    ERROR_NO_ENCONTRADO("artefactos.dominio.artefacto.error.no-encontrado", 1),
+    ERROR_ESTUDIANTE_NO_PROPIETARIO("artefactos.dominio.artefacto.error.estudiante-no-propietario", 2);
 
     private final String clave;
     private final int parametros;

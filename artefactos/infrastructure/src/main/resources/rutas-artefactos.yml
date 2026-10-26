@@ -17,6 +17,8 @@ rutas:
     artefactos:
       base: /artefactos
       estudiantes: /{artefactoId}/estudiantes
+      cargas-version: /{artefactoId}/versiones/cargas
+      versiones: /{artefactoId}/versiones
       asesor: /asesor
     estados-revision-asesor:
       base: /estados-revision-asesor

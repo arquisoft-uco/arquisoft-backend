@@ -259,6 +259,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "artefactos:version-artefacto:upload",
               "solicitudes:respuesta-cambio-asesor-recibida:view",
               "solicitudes:respuesta-ampliacion-plazo-recibida:view",
               "solicitudes:solicitud-novedad-asesor:delete",
@@ -2213,6 +2214,15 @@
         {
           "id": "7fcf85d3-9f30-48ed-9248-ef3a3e2b6854",
           "name": "artefactos:version-artefacto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "30c64d84-2b43-480e-893e-3eaff3a80240",
+          "name": "artefactos:version-artefacto:upload",
           "description": "",
           "composite": false,
           "clientRole": true,
