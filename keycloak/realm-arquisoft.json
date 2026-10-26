@@ -344,7 +344,8 @@
               "artefactos:estudiante-artefacto:view",
               "artefactos:observacion-revision:view",
               "artefactos:revision-asesor-asesor:view",
-              "repositorio-artefactos:version-repositorio-artefacto:view-asesor"
+              "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
+              "artefactos:artefacto:create"
             ]
           }
         },
@@ -2192,6 +2193,15 @@
         {
           "id": "7dea4ffe-193f-4284-a20d-936f11a7d3ec",
           "name": "artefactos:observacion-revision-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "be5ff5a9-2981-4547-8fcd-aea2b71ac8b2",
+          "name": "artefactos:artefacto:create",
           "description": "",
           "composite": false,
           "clientRole": true,

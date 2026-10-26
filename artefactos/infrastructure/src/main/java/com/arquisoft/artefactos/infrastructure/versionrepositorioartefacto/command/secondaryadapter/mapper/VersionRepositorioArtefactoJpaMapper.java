@@ -7,6 +7,18 @@ public final class VersionRepositorioArtefactoJpaMapper {
 
     private VersionRepositorioArtefactoJpaMapper() {}
 
+    public static VersionRepositorioArtefactoEntity toEntity(VersionRepositorioArtefactoJpaEntity jpaEntity) {
+        return new VersionRepositorioArtefactoEntity(
+                jpaEntity.getId(),
+                jpaEntity.getNombreDocumento(),
+                jpaEntity.getVersionDocumento(),
+                jpaEntity.getRepositorioArtefacto(),
+                jpaEntity.getNombreRepositorio(),
+                jpaEntity.getNombreArchivo(),
+                jpaEntity.getTipoContenido(),
+                jpaEntity.getTamanoBytes());
+    }
+
     public static VersionRepositorioArtefactoJpaEntity toJpaEntity(VersionRepositorioArtefactoEntity entity) {
         return VersionRepositorioArtefactoJpaEntity.builder()
                 .id(entity.id())

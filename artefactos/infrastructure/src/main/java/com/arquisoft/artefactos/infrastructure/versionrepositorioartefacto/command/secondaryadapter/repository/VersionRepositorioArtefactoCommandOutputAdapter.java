@@ -9,6 +9,7 @@ import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersi
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -27,6 +28,18 @@ public class VersionRepositorioArtefactoCommandOutputAdapter implements VersionR
     @Override
     public boolean existePorId(UUID id) {
         return versionRepositorioArtefactoCommandRepository.existsById(id);
+    }
+
+    @Override
+    public List<VersionRepositorioArtefactoEntity> consultarPorIds(List<UUID> ids) {
+        return versionRepositorioArtefactoCommandRepository.findAllById(ids).stream()
+                .map(VersionRepositorioArtefactoJpaMapper::toEntity)
+                .toList();
+    }
+
+    @Override
+    public List<UUID> consultarRepositoriosAsignados(UUID proyectoGrado) {
+        return versionRepositorioArtefactoCommandRepository.consultarRepositoriosAsignados(proyectoGrado);
     }
 
     @Override
