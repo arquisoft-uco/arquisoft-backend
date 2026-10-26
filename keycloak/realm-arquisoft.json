@@ -345,7 +345,8 @@
               "artefactos:observacion-revision:view",
               "artefactos:revision-asesor-asesor:view",
               "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
-              "artefactos:artefacto:create"
+              "artefactos:artefacto:create",
+              "artefactos:version-artefacto-asesor:view"
             ]
           }
         },
@@ -2202,6 +2203,15 @@
         {
           "id": "be5ff5a9-2981-4547-8fcd-aea2b71ac8b2",
           "name": "artefactos:artefacto:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7fcf85d3-9f30-48ed-9248-ef3a3e2b6854",
+          "name": "artefactos:version-artefacto-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,

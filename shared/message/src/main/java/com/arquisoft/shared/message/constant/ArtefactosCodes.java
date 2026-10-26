@@ -100,6 +100,13 @@ public final class ArtefactosCodes {
         public static final String ASESOR_REQUERIDO = "REVISION_ASESOR_ASESOR_REQUERIDO";
     }
 
+    public static final class VersionArtefacto {
+
+        private VersionArtefacto() {}
+
+        public static final String ASESOR_REQUERIDO = "VERSION_ARTEFACTO_ASESOR_REQUERIDO";
+    }
+
     public static final class EstudianteArtefacto {
 
         private EstudianteArtefacto() {}
