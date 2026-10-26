@@ -77,7 +77,7 @@ public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefac
         versionArtefactoOutputPort.registrar(VersionArtefactoMapper.toEntity(version));
         eventPublisher.publish(new VersionArtefactoGeneradaEvent(
                 version,
-                versionesRepositorio.get(0).getNombreDocumento(),
+                versionesRepositorio.getFirst().getNombreDocumento(),
                 new ContactoAsesor(asesor.getNombre(), asesor.getEmail())));
         almacenamientoVersionOutputPort.eliminarCarga(carga.getCarga());
 
