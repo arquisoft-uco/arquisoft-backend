@@ -29,6 +29,13 @@ public final class ArtefactosFields {
         public static final String ASESOR = "asesor";
     }
 
+    public static final class VersionArtefacto {
+
+        private VersionArtefacto() {}
+
+        public static final String ASESOR = "asesor";
+    }
+
     public static final class EstudianteArtefacto {
 
         private EstudianteArtefacto() {}

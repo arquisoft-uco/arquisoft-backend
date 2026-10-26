@@ -44,6 +44,27 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar las revisiones realizadas";
     }
 
+    public static final class VersionArtefacto {
+
+        private VersionArtefacto() {}
+
+        public static final String TAG_NAME = "Versiones de artefactos";
+        public static final String TAG_DESCRIPTION = "Consulta de las versiones de los artefactos asignados al asesor";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Filtrar las versiones de los artefactos asignados al asesor";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Devuelve, de forma paginada, las versiones de los artefactos a cargo del asesor autenticado. "
+                        + "Se puede filtrar por el artefacto (artefacto), la versión (version) y la fecha de "
+                        + "creación (fechaCreacion), y ordenar por version y fechaCreacion; por defecto, la más "
+                        + "reciente primero. El asesor se toma del token, nunca del cuerpo.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de versiones de los artefactos del asesor";
+        public static final String CONSULTAR_ASESOR_RESP_400 =
+                "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 =
+                "Sin permiso para consultar las versiones de los artefactos";
+    }
+
     public static final class EstudianteArtefacto {
 
         private EstudianteArtefacto() {}
