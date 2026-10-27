@@ -15,11 +15,11 @@ public enum EstadoFichaPerfilKey implements ClaveMensaje {
     LOG_CONSULTA_ASESOR_COMPLETADA("fichas.aplicacion.estadofichaperfil.log.consulta-asesor-completada", 3),
     LOG_GUARDADO("fichas.infraestructura.estadofichaperfil.log.guardado", 2),
     ERROR_NO_DISPONIBLE_PARA_EVALUACION("fichas.dominio.estadofichaperfil.error.no-disponible-para-evaluacion", 1),
-    ERROR_SIN_EVALUACION_FINALIZADA("fichas.dominio.estadofichaperfil.error.sin-evaluacion-finalizada", 0),
+    ERROR_SIN_EVALUACION_FINALIZADA("fichas.dominio.estadofichaperfil.error.sin-evaluacion-finalizada", 1),
     ERROR_SIN_EVALUACION_FINALIZADA_DETALLE(
             "fichas.dominio.estadofichaperfil.error.sin-evaluacion-finalizada-detalle", 1),
     ERROR_APROBACION_SIN_EVALUACION_APROBATORIA(
-            "fichas.dominio.estadofichaperfil.error.aprobacion-sin-evaluacion-aprobatoria", 0),
+            "fichas.dominio.estadofichaperfil.error.aprobacion-sin-evaluacion-aprobatoria", 1),
     ERROR_APROBACION_SIN_EVALUACION_APROBATORIA_DETALLE(
             "fichas.dominio.estadofichaperfil.error.aprobacion-sin-evaluacion-aprobatoria-detalle", 1),
     ERROR_SIN_ESTUDIANTES_VIGENTES("fichas.dominio.estadofichaperfil.error.sin-estudiantes-vigentes", 1),
