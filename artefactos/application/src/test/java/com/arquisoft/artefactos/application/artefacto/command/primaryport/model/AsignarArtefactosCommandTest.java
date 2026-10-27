@@ -24,7 +24,7 @@ class AsignarArtefactosCommandTest {
 
         // Act
         var command = AsignarArtefactosCommand.crear(
-                proyecto.toString(), asesor, List.of(primera.toString(), segunda.toString()));
+                proyecto.toString(), asesor, List.of(primera.toString(), segunda.toString()), null);
 
         // Assert
         assertThat(command.proyectoGrado()).isEqualTo(proyecto);
@@ -38,7 +38,7 @@ class AsignarArtefactosCommandTest {
         var asesor = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> AsignarArtefactosCommand.crear("no-es-uuid", asesor, null))
+        assertThatThrownBy(() -> AsignarArtefactosCommand.crear("no-es-uuid", asesor, null, null))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> {
                     var errores = ((ApplicationValidationException) ex).getValidationResult().getErrores();
@@ -58,7 +58,7 @@ class AsignarArtefactosCommandTest {
         var asesor = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> AsignarArtefactosCommand.crear(proyecto, asesor, new ArrayList<>()))
+        assertThatThrownBy(() -> AsignarArtefactosCommand.crear(proyecto, asesor, new ArrayList<>(), null))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .singleElement()
@@ -74,7 +74,7 @@ class AsignarArtefactosCommandTest {
         var versiones = List.of(UtilUUID.generarNuevoUUID().toString(), "no-es-uuid");
 
         // Act & Assert
-        assertThatThrownBy(() -> AsignarArtefactosCommand.crear(proyecto, asesor, versiones))
+        assertThatThrownBy(() -> AsignarArtefactosCommand.crear(proyecto, asesor, versiones, null))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .singleElement()
@@ -90,11 +90,65 @@ class AsignarArtefactosCommandTest {
         var version = UtilUUID.generarNuevoUUID().toString();
 
         // Act & Assert
-        assertThatThrownBy(() -> AsignarArtefactosCommand.crear(proyecto, asesor, List.of(version, version)))
+        assertThatThrownBy(() -> AsignarArtefactosCommand.crear(proyecto, asesor, List.of(version, version), null))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .singleElement()
                         .satisfies(error -> assertThat(error.codigoError())
                                 .isEqualTo(ArtefactosCodes.Artefacto.VERSIONES_DUPLICADAS)));
+    }
+
+    @Test
+    void debeConservarEstudiantesEnOrden_cuandoLlegan() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID().toString();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var versiones = List.of(UtilUUID.generarNuevoUUID().toString());
+        var primero = UtilUUID.generarNuevoUUID();
+        var segundo = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var command = AsignarArtefactosCommand.crear(
+                proyecto, asesor, versiones, List.of(primero.toString(), segundo.toString()));
+
+        // Assert
+        assertThat(command.estudiantes()).containsExactly(primero, segundo);
+    }
+
+    @Test
+    void debeRechazar_cuandoUnEstudianteNoEsUuid() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID().toString();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var versiones = List.of(UtilUUID.generarNuevoUUID().toString());
+
+        // Act & Assert
+        assertThatThrownBy(() -> AsignarArtefactosCommand.crear(proyecto, asesor, versiones, List.of("no-es-uuid")))
+                .isInstanceOf(ApplicationValidationException.class)
+                .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
+                        .singleElement()
+                        .satisfies(error -> {
+                            assertThat(error.campo()).isEqualTo(ArtefactosFields.EstudianteArtefacto.ESTUDIANTES);
+                            assertThat(error.codigoError())
+                                    .isEqualTo(ArtefactosCodes.EstudianteArtefacto.ESTUDIANTE_ID_REQUERIDO);
+                        }));
+    }
+
+    @Test
+    void debeRechazar_cuandoUnEstudianteSeRepite() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID().toString();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var versiones = List.of(UtilUUID.generarNuevoUUID().toString());
+        var estudiante = UtilUUID.generarNuevoUUID().toString();
+
+        // Act & Assert
+        assertThatThrownBy(() -> AsignarArtefactosCommand.crear(
+                proyecto, asesor, versiones, List.of(estudiante, estudiante)))
+                .isInstanceOf(ApplicationValidationException.class)
+                .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
+                        .singleElement()
+                        .satisfies(error -> assertThat(error.codigoError())
+                                .isEqualTo(ArtefactosCodes.Artefacto.ESTUDIANTES_DUPLICADOS)));
     }
 }

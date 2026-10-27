@@ -176,6 +176,7 @@ security:
         - {method: POST, path: "/api/revisiones-asesor/estudiante", role: "artefactos:revision-asesor-estudiante:view"}
         - {method: POST, path: "/api/revisiones-asesor/asesor", role: "artefactos:revision-asesor-asesor:view"}
         - {method: GET, path: "/api/artefactos/{artefactoId}/estudiantes", role: "artefactos:estudiante-artefacto:view"}
+        - {method: POST, path: "/api/artefactos/{artefactoId}/estudiantes", role: "artefactos:estudiante-artefacto:create"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones", role: "artefactos:observacion-revision:view"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones/estudiante", role: "artefactos:observacion-revision-estudiante:view"}
         - {method: POST, path: "/api/artefactos", role: "artefactos:artefacto:create"}

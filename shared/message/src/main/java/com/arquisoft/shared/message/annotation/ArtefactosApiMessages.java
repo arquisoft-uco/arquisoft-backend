@@ -99,6 +99,18 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado de estudiantes vinculados al artefacto";
         public static final String CONSULTAR_RESP_400 = "Identificador de artefacto inválido";
         public static final String CONSULTAR_RESP_403 = "Sin permisos para consultar los estudiantes del artefacto";
+        public static final String ASIGNAR_SUMMARY = "Vincular estudiantes a un artefacto";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Vincula uno o varios estudiantes vigentes del proyecto de grado a un artefacto del asesor "
+                        + "autenticado, todo o nada. Cada estudiante recibe un correo. Ningún estudiante puede "
+                        + "estar ya vinculado al artefacto ni repetirse en la solicitud.";
+        public static final String ASIGNAR_RESP_201 = "Estudiantes vinculados al artefacto";
+        public static final String ASIGNAR_RESP_400 =
+                "Datos mal formados: lista vacía, identificador inválido o estudiante repetido";
+        public static final String ASIGNAR_RESP_422 =
+                "El artefacto o algún estudiante no existe, el asesor no es el responsable del artefacto, "
+                        + "algún estudiante está dado de baja, no pertenece al proyecto de grado o ya está "
+                        + "vinculado al artefacto";
     }
 
     public static final class Observacion {
@@ -139,7 +151,8 @@ public final class ArtefactosApiMessages {
                         + "artefactos suyos, todo o nada. El asesor del artefacto es el del token y debe tener "
                         + "asignado el proyecto. El proyecto no puede tener ya un artefacto de ninguno de los "
                         + "repositorios, ni repetir un repositorio dentro del lote. Responde con los ids de los "
-                        + "artefactos creados, en el orden enviado.";
+                        + "artefactos creados, en el orden enviado. Opcionalmente vincula a todos los artefactos "
+                        + "creados los estudiantes indicados, que deben ser vigentes del proyecto.";
         public static final String ASIGNAR_RESP_201 = "Artefactos asignados al proyecto de grado";
         public static final String ASIGNAR_RESP_400 =
                 "Datos mal formados: identificador inválido, lista vacía o versión repetida";

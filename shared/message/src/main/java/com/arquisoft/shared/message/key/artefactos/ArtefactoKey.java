@@ -22,7 +22,9 @@ public enum ArtefactoKey implements ClaveMensaje {
     ERROR_REPOSITORIO_YA_ASIGNADO("artefactos.dominio.artefacto.error.repositorio-ya-asignado", 1),
     ERROR_REPOSITORIO_YA_ASIGNADO_DETALLE("artefactos.dominio.artefacto.error.repositorio-ya-asignado-detalle", 1),
     ERROR_ESTUDIANTE_NO_PROPIETARIO("artefactos.dominio.artefacto.error.estudiante-no-propietario", 0),
-    ERROR_ESTUDIANTE_NO_PROPIETARIO_DETALLE("artefactos.dominio.artefacto.error.estudiante-no-propietario-detalle", 2);
+    ERROR_ESTUDIANTE_NO_PROPIETARIO_DETALLE("artefactos.dominio.artefacto.error.estudiante-no-propietario-detalle", 2),
+    ERROR_ASESOR_NO_PROPIETARIO("artefactos.dominio.artefacto.error.asesor-no-propietario", 0),
+    ERROR_ASESOR_NO_PROPIETARIO_DETALLE("artefactos.dominio.artefacto.error.asesor-no-propietario-detalle", 2);
 
     private final String clave;
     private final int parametros;

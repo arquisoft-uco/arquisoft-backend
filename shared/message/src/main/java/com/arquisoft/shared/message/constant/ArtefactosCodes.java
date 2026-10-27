@@ -57,6 +57,8 @@ public final class ArtefactosCodes {
         public static final String REPOSITORIO_YA_ASIGNADO = "ARTEFACTOS_ARTEFACTO_REPOSITORIO_YA_ASIGNADO";
         public static final String NO_ENCONTRADO = "ARTEFACTOS_ARTEFACTO_NO_ENCONTRADO";
         public static final String ESTUDIANTE_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ESTUDIANTE_NO_PROPIETARIO";
+        public static final String ESTUDIANTES_DUPLICADOS = "ARTEFACTOS_ARTEFACTO_ESTUDIANTES_DUPLICADOS";
+        public static final String ASESOR_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ASESOR_NO_PROPIETARIO";
     }
 
     public static final class ProyectoGrado {
@@ -137,6 +139,22 @@ public final class ArtefactosCodes {
         private EstudianteArtefacto() {}
 
         public static final String ARTEFACTO_ID_REQUERIDO = "ESTUDIANTE_ARTEFACTO_ARTEFACTO_ID_REQUERIDO";
+        public static final String ASESOR_REQUERIDO = "ESTUDIANTE_ARTEFACTO_ASESOR_REQUERIDO";
+        public static final String ESTUDIANTES_REQUERIDOS = "ESTUDIANTE_ARTEFACTO_ESTUDIANTES_REQUERIDOS";
+        public static final String ESTUDIANTE_ID_REQUERIDO = "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_ID_REQUERIDO";
+        public static final String ESTUDIANTES_DUPLICADOS = "ESTUDIANTE_ARTEFACTO_ESTUDIANTES_DUPLICADOS";
+        public static final String ARTEFACTOS_DUPLICADOS = "ESTUDIANTE_ARTEFACTO_ARTEFACTOS_DUPLICADOS";
+        public static final String ESTUDIANTE_YA_VINCULADO = "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_YA_VINCULADO";
+        public static final String ESTUDIANTE_NO_VINCULADO_PROYECTO_GRADO =
+                "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_NO_VINCULADO_PROYECTO_GRADO";
+    }
+
+    public static final class Estudiante {
+
+        private Estudiante() {}
+
+        public static final String NO_ENCONTRADO = "ARTEFACTOS_ESTUDIANTE_NO_ENCONTRADO";
+        public static final String NO_VIGENTE = "ARTEFACTOS_ESTUDIANTE_NO_VIGENTE";
     }
 
     public static final class Observacion {

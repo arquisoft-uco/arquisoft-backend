@@ -18,7 +18,7 @@ class AsignarArtefactosRequestMapperTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var version = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
-        var dto = new AsignarArtefactosRequestDTO(proyecto.toString(), List.of(version.toString()));
+        var dto = new AsignarArtefactosRequestDTO(proyecto.toString(), List.of(version.toString()), null);
 
         // Act
         var command = AsignarArtefactosRequestMapper.toCommand(dto, asesor);
@@ -32,7 +32,7 @@ class AsignarArtefactosRequestMapperTest {
     @Test
     void debeLanzarValidacion_cuandoElDtoNoTraeDatos() {
         // Arrange
-        var dto = new AsignarArtefactosRequestDTO(null, null);
+        var dto = new AsignarArtefactosRequestDTO(null, null, null);
         var asesor = UtilUUID.generarNuevoUUID();
 
         // Act & Assert

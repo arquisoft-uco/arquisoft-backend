@@ -209,6 +209,7 @@ public final class ClavesCatalogo {
             ArtefactoKey.class,
             com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey.class,
             com.arquisoft.shared.message.key.artefactos.AsesorKey.class,
+            com.arquisoft.shared.message.key.artefactos.EstudianteKey.class,
             com.arquisoft.shared.message.key.artefactos.AsesorProyectoGradoKey.class,
             AgregarJuradoKey.class,
             RemoverJuradoKey.class,

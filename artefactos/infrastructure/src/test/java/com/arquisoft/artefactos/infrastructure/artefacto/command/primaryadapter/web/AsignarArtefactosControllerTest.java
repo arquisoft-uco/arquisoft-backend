@@ -106,6 +106,57 @@ class AsignarArtefactosControllerTest {
     }
 
     @Test
+    void debeRetornar201YPasarLosEstudiantesAlComando_cuandoElBodyLosTrae() throws Exception {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var version = UtilUUID.generarNuevoUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
+        when(asignarArtefactosInteractor.ejecutar(any()))
+                .thenReturn(new ArtefactosAsignadosResult(List.of(UtilUUID.generarNuevoUUID())));
+        var body = """
+                {
+                  "proyectoGrado": "%s",
+                  "versionesRepositorioArtefacto": ["%s"],
+                  "estudiantes": ["%s"]
+                }
+                """.formatted(proyecto, version, estudiante);
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .with(tokenAsesor()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.ids").isArray());
+
+        var captor = ArgumentCaptor.forClass(AsignarArtefactosCommand.class);
+        verify(asignarArtefactosInteractor).ejecutar(captor.capture());
+        assertThat(captor.getValue().estudiantes()).containsExactly(estudiante);
+    }
+
+    @Test
+    void debeRetornar400_yNoInvocarElInteractor_cuandoUnEstudianteNoEsUuid() throws Exception {
+        // Arrange
+        var body = """
+                {
+                  "proyectoGrado": "%s",
+                  "versionesRepositorioArtefacto": ["%s"],
+                  "estudiantes": ["no-es-uuid"]
+                }
+                """.formatted(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .with(tokenAsesor()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == '%s')]",
+                        ArtefactosFields.EstudianteArtefacto.ESTUDIANTES).exists());
+        verify(asignarArtefactosInteractor, never()).ejecutar(any());
+    }
+
+    @Test
     void debeRetornar400ConFieldErrors_yNoInvocarElInteractor_cuandoElBodyEsInvalido() throws Exception {
         // Arrange
         var body = """

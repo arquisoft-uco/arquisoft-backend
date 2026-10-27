@@ -159,6 +159,28 @@ class ArtefactoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerSoloLosArtefactosPedidos_cuandoHayOtrosEnLaBase() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var primero = sembrar(proyecto, asesor);
+        var segundo = sembrar(proyecto, asesor);
+        sembrar(proyecto, asesor);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorIds(List.of(primero, segundo, UtilUUID.generarNuevoUUID()));
+
+        // Assert
+        assertThat(resultado).extracting(ArtefactoEntity::id).containsExactlyInAnyOrder(primero, segundo);
+        assertThat(resultado).allSatisfy(entity -> {
+            assertThat(entity.proyectoGrado()).isEqualTo(proyecto);
+            assertThat(entity.asesor()).isEqualTo(asesor);
+        });
+    }
+
+    @Test
     void debeDevolverVacio_cuandoElArtefactoNoExiste() {
         // Act
         var resultado = adapter.obtenerPorId(UtilUUID.generarNuevoUUID());

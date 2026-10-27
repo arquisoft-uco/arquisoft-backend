@@ -16,14 +16,17 @@ import java.util.UUID;
 public record AsignarArtefactosCommand(
         UUID proyectoGrado,
         UUID asesor,
-        List<UUID> versionesRepositorioArtefacto
+        List<UUID> versionesRepositorioArtefacto,
+        List<UUID> estudiantes
 ) {
 
     public AsignarArtefactosCommand {
         versionesRepositorioArtefacto = UtilColeccion.aplicarPorDefecto(versionesRepositorioArtefacto);
+        estudiantes = UtilColeccion.aplicarPorDefecto(estudiantes);
     }
 
-    public static AsignarArtefactosCommand crear(String proyectoGrado, UUID asesor, List<String> versiones) {
+    public static AsignarArtefactosCommand crear(
+            String proyectoGrado, UUID asesor, List<String> versiones, List<String> estudiantes) {
         var result = new ValidationResult();
 
         ValidatorUUID.uuidValido(proyectoGrado,
@@ -33,11 +36,34 @@ public record AsignarArtefactosCommand(
                 ArtefactosFields.Artefacto.ASESOR,
                 ArtefactosCodes.Artefacto.ASESOR_REQUERIDO, result);
         var versionesConvertidas = validarVersiones(versiones, result);
+        var estudiantesConvertidos = validarEstudiantes(estudiantes, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
         return new AsignarArtefactosCommand(
-                UtilUUID.generarUUIDDesdeTexto(proyectoGrado), asesor, versionesConvertidas);
+                UtilUUID.generarUUIDDesdeTexto(proyectoGrado), asesor, versionesConvertidas,
+                estudiantesConvertidos);
+    }
+
+    private static List<UUID> validarEstudiantes(List<String> estudiantes, ValidationResult result) {
+        var convertidos = new ArrayList<UUID>();
+        var lista = UtilColeccion.aplicarPorDefecto(estudiantes);
+        var todosValidos = true;
+        for (var estudiante : lista) {
+            if (ValidatorUUID.uuidValido(estudiante,
+                    ArtefactosFields.EstudianteArtefacto.ESTUDIANTES,
+                    ArtefactosCodes.EstudianteArtefacto.ESTUDIANTE_ID_REQUERIDO, result)) {
+                convertidos.add(UtilUUID.generarUUIDDesdeTexto(estudiante));
+            } else {
+                todosValidos = false;
+            }
+        }
+        if (todosValidos) {
+            ValidatorColeccion.sinDuplicados(convertidos,
+                    ArtefactosFields.EstudianteArtefacto.ESTUDIANTES,
+                    ArtefactosCodes.Artefacto.ESTUDIANTES_DUPLICADOS, result);
+        }
+        return convertidos;
     }
 
     private static List<UUID> validarVersiones(List<String> versiones, ValidationResult result) {

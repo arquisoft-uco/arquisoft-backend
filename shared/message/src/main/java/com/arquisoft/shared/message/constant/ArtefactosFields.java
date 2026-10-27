@@ -48,6 +48,10 @@ public final class ArtefactosFields {
         private EstudianteArtefacto() {}
 
         public static final String ARTEFACTO = "artefacto";
+        public static final String ARTEFACTOS = "artefactos";
+        public static final String ESTUDIANTES = "estudiantes";
+        public static final String ESTUDIANTE = "estudiante";
+        public static final String ASESOR = "asesor";
     }
 
     public static final class Observacion {

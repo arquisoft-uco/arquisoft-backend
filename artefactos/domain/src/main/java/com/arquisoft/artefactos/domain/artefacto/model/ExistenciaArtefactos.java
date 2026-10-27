@@ -1,0 +1,8 @@
+package com.arquisoft.artefactos.domain.artefacto.model;
+
+import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
+
+import java.util.List;
+import java.util.UUID;
+
+public record ExistenciaArtefactos(List<UUID> solicitados, List<ArtefactoDomain> encontrados) {}

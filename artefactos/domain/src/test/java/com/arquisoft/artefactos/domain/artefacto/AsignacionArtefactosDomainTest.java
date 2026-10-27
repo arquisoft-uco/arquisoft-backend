@@ -1,5 +1,6 @@
 package com.arquisoft.artefactos.domain.artefacto;
 
+import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilUUID;
@@ -26,7 +27,7 @@ class AsignacionArtefactosDomainTest {
                 ArtefactoDomain.crear(proyecto, asesor, List.of(segunda)).getFirst());
 
         // Act
-        var asignacion = AsignacionArtefactosDomain.crear(artefactos);
+        var asignacion = AsignacionArtefactosDomain.crear(artefactos, AgregacionEstudiantesArtefactoDomain.VACIO);
 
         // Assert
         assertThat(asignacion.getProyectoGrado()).isEqualTo(proyecto);
@@ -43,7 +44,7 @@ class AsignacionArtefactosDomainTest {
 
         // Act & Assert
         for (var artefactos : Arrays.asList(null, vacia)) {
-            assertThatThrownBy(() -> AsignacionArtefactosDomain.crear(artefactos))
+            assertThatThrownBy(() -> AsignacionArtefactosDomain.crear(artefactos, AgregacionEstudiantesArtefactoDomain.VACIO))
                     .isInstanceOf(DomainValidationException.class)
                     .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                             .singleElement()

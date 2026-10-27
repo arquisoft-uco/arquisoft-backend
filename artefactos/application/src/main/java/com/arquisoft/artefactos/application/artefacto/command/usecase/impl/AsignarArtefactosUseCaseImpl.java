@@ -9,6 +9,7 @@ import com.arquisoft.artefactos.application.artefacto.command.usecase.AsignarArt
 import com.arquisoft.artefactos.application.artefacto.command.validator.AsignarArtefactosValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
+import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
 import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoExisteFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactosDomain;
@@ -27,6 +28,7 @@ public class AsignarArtefactosUseCaseImpl implements AsignarArtefactosUseCase {
     private final VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
     private final RepositoriosAsignadosProyectoFinder repositoriosAsignadosProyectoFinder;
     private final AsignarArtefactosValidator asignarArtefactosValidator;
+    private final AsignarEstudiantesArtefactoUseCase asignarEstudiantesArtefactoUseCase;
     private final ArtefactoOutputPort artefactoOutputPort;
     private final AppLogger logger;
 
@@ -50,6 +52,10 @@ public class AsignarArtefactosUseCaseImpl implements AsignarArtefactosUseCase {
         artefactoOutputPort.registrarTodos(asignacion.getArtefactos().stream()
                 .map(ArtefactoMapper::toEntity)
                 .toList());
+
+        if (!asignacion.getEstudiantes().esVacio()) {
+            asignarEstudiantesArtefactoUseCase.ejecutar(asignacion.getEstudiantes());
+        }
 
         logger.info(ArtefactoKey.LOG_ASIGNADOS, asignacion.getProyectoGrado(), asignacion.getArtefactos().size());
         return ArtefactosAsignadosResultMapper.toResult(asignacion);
