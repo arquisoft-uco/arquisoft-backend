@@ -9,11 +9,11 @@ public enum RevisionAsesorKey implements ClaveMensaje {
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("artefactos.aplicacion.revisionasesor.log.consulta-estudiante-completada", 1),
     LOG_CONSULTANDO_ASESOR("artefactos.aplicacion.revisionasesor.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("artefactos.aplicacion.revisionasesor.log.consulta-asesor-completada", 1),
-    ERROR_NO_ENCONTRADA("artefactos.dominio.revisionasesor.error.no-encontrada", 1),
-    ERROR_CERRADA("artefactos.dominio.revisionasesor.error.cerrada", 1),
-    ERROR_ESTADO_DESTINO_NO_PERMITIDO("artefactos.dominio.revisionasesor.error.estado-destino-no-permitido", 2),
+    ERROR_NO_ENCONTRADA("artefactos.dominio.revisionasesor.error.no-encontrada", 0),
+    ERROR_CERRADA("artefactos.dominio.revisionasesor.error.cerrada", 0),
+    ERROR_ESTADO_DESTINO_NO_PERMITIDO("artefactos.dominio.revisionasesor.error.estado-destino-no-permitido", 1),
     ERROR_ESTADO_INVALIDO("artefactos.dominio.revisionasesor.error.estado-invalido", 1),
-    ERROR_ESTUDIANTE_NO_PARTICIPA("artefactos.dominio.revisionasesor.error.estudiante-no-participa", 2);
+    ERROR_ESTUDIANTE_NO_PARTICIPA("artefactos.dominio.revisionasesor.error.estudiante-no-participa", 0);
 
     private final String clave;
     private final int parametros;

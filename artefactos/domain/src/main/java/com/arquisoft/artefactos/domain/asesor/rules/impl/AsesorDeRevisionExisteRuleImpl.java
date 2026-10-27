@@ -9,7 +9,7 @@ public class AsesorDeRevisionExisteRuleImpl implements AsesorDeRevisionExisteRul
     @Override
     public void validar(ExistenciaAsesorDeRevision entrada) {
         if (!entrada.existe()) {
-            throw new AsesorDeRevisionNoEncontradoException(entrada.revisionAsesor());
+            throw new AsesorDeRevisionNoEncontradoException();
         }
     }
 }

@@ -5,13 +5,11 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
 
-import java.util.UUID;
-
 public final class RevisionAsesorNoEncontradaException extends DomainException {
 
-    public RevisionAsesorNoEncontradaException(UUID revisionAsesor) {
+    public RevisionAsesorNoEncontradaException() {
         super(
-                Mensajes.formatear(RevisionAsesorKey.ERROR_NO_ENCONTRADA, revisionAsesor),
+                Mensajes.obtener(RevisionAsesorKey.ERROR_NO_ENCONTRADA),
                 ArtefactosCodes.RevisionAsesor.NO_ENCONTRADA
         );
     }

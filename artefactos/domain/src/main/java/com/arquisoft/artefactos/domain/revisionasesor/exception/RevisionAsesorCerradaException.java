@@ -5,13 +5,11 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
 
-import java.util.UUID;
-
 public final class RevisionAsesorCerradaException extends DomainException {
 
-    public RevisionAsesorCerradaException(UUID revisionAsesor) {
+    public RevisionAsesorCerradaException() {
         super(
-                Mensajes.formatear(RevisionAsesorKey.ERROR_CERRADA, revisionAsesor),
+                Mensajes.obtener(RevisionAsesorKey.ERROR_CERRADA),
                 ArtefactosCodes.RevisionAsesor.CERRADA
         );
     }

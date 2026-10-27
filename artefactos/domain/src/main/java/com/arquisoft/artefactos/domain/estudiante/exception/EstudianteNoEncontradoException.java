@@ -5,13 +5,11 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.key.artefactos.EstudianteKey;
 
-import java.util.UUID;
-
 public final class EstudianteNoEncontradoException extends DomainException {
 
-    public EstudianteNoEncontradoException(UUID estudiante) {
+    public EstudianteNoEncontradoException() {
         super(
-                Mensajes.formatear(EstudianteKey.ERROR_NO_ENCONTRADO, estudiante),
+                Mensajes.obtener(EstudianteKey.ERROR_NO_ENCONTRADO),
                 ArtefactosCodes.Estudiante.NO_ENCONTRADO
         );
     }

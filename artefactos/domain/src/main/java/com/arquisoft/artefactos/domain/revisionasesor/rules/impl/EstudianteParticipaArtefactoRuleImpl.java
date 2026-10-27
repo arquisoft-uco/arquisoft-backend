@@ -9,7 +9,7 @@ public class EstudianteParticipaArtefactoRuleImpl implements EstudianteParticipa
     @Override
     public void validar(ParticipacionEstudianteArtefacto entrada) {
         if (!entrada.participa()) {
-            throw new EstudianteNoParticipaArtefactoException(entrada.estudiante(), entrada.revisionAsesor());
+            throw new EstudianteNoParticipaArtefactoException();
         }
     }
 }

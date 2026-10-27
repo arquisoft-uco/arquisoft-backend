@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum EstudianteKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("artefactos.dominio.estudiante.error.no-encontrado", 1);
+    ERROR_NO_ENCONTRADO("artefactos.dominio.estudiante.error.no-encontrado", 0);
 
     private final String clave;
     private final int parametros;
