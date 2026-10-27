@@ -18,16 +18,6 @@ class TipoArchivoCoincideRuleImplTest {
     }
 
     @Test
-    void debePasar_cuandoDetectadoConParametros() {
-        // Arrange
-        var coincidencia = new CoincidenciaTipoArchivo("a.pdf", "application/pdf",
-                analisis("application/pdf; version=1.4"));
-
-        // Act & Assert
-        assertThatCode(() -> regla.validar(coincidencia)).doesNotThrowAnyException();
-    }
-
-    @Test
     void debePasar_cuandoMarkdownSeDetectaComoTextoPlano() {
         // Arrange
         var coincidencia = new CoincidenciaTipoArchivo("leeme.md", "text/markdown", analisis("text/plain"));

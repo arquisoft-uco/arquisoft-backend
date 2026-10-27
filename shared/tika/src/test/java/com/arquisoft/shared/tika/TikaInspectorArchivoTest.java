@@ -1,5 +1,7 @@
 package com.arquisoft.shared.tika;
 
+import org.apache.tika.detect.Detector;
+import org.apache.tika.mime.MediaType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +26,9 @@ import java.util.zip.ZipOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TikaInspectorArchivoTest {
 
@@ -74,6 +79,21 @@ class TikaInspectorArchivoTest {
 
         // Assert
         assertThat(resultado.tipo()).isEqualTo(esperado);
+    }
+
+    @Test
+    void debeDevolverTipoBase_cuandoElDetectorAgregaParametros() throws IOException {
+        // Arrange
+        var detector = mock(Detector.class);
+        when(detector.detect(any(), any())).thenReturn(MediaType.parse("application/pdf; version=1.4"));
+        var inspectorConParametros = new TikaInspectorArchivo(detector);
+
+        // Act
+        var inspeccion = inspectorConParametros.inspeccionar(
+                new ByteArrayInputStream("%PDF-1.4".getBytes(StandardCharsets.US_ASCII)), TAMANO_MAXIMO);
+
+        // Assert
+        assertThat(inspeccion.tipoDetectado()).isEqualTo("application/pdf");
     }
 
     @Test
