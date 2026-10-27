@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.domain.itemcuantitativojurado.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
@@ -10,10 +11,10 @@ import java.util.UUID;
 public final class CategoriaItemCuantitativoJuradoNoEncontradaException extends DomainException {
 
     public CategoriaItemCuantitativoJuradoNoEncontradaException(UUID categoria) {
-        super(
-                Mensajes.formatear(
-                        ItemCuantitativoJuradoKey.ERROR_CATEGORIA_NO_ENCONTRADA,
-                        categoria),
-                EvaluacionesCodes.ItemCuantitativoJurado.CATEGORIA_NO_ENCONTRADA);
+        super(BaseError.conDetalle(
+                EvaluacionesCodes.ItemCuantitativoJurado.CATEGORIA_NO_ENCONTRADA,
+                Mensajes.formatear(ItemCuantitativoJuradoKey.ERROR_CATEGORIA_NO_ENCONTRADA),
+                Mensajes.formatear(ItemCuantitativoJuradoKey.ERROR_CATEGORIA_NO_ENCONTRADA_DETALLE, categoria)
+        ));
     }
 }

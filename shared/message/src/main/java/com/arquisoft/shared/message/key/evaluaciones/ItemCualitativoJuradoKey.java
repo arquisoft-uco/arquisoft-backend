@@ -5,8 +5,10 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum ItemCualitativoJuradoKey implements ClaveMensaje {
 
     ERROR_NOMBRE_DUPLICADO("evaluaciones.dominio.itemcualitativojurado.error.nombre-duplicado", 1),
-    ERROR_NO_ENCONTRADO("evaluaciones.dominio.itemcualitativojurado.error.no-encontrado", 1),
-    ERROR_EN_USO("evaluaciones.dominio.itemcualitativojurado.error.en-uso", 1),
+    ERROR_NO_ENCONTRADO("evaluaciones.dominio.itemcualitativojurado.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("evaluaciones.dominio.itemcualitativojurado.error.no-encontrado-detalle", 1),
+    ERROR_EN_USO("evaluaciones.dominio.itemcualitativojurado.error.en-uso", 0),
+    ERROR_EN_USO_DETALLE("evaluaciones.dominio.itemcualitativojurado.error.en-uso-detalle", 1),
     LOG_REGISTRANDO("evaluaciones.aplicacion.itemcualitativojurado.log.registrando", 1),
     LOG_VERIFICACION_REGISTRAR("evaluaciones.aplicacion.itemcualitativojurado.log.verificacion-registrar", 1),
     LOG_REGISTRADO("evaluaciones.aplicacion.itemcualitativojurado.log.registrado", 1),
