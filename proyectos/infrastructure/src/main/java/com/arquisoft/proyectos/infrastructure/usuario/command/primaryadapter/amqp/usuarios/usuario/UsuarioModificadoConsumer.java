@@ -40,7 +40,7 @@ public class UsuarioModificadoConsumer extends AbstractEventConsumer {
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
-        super(objectMapper, gestorTraza);
+        super(objectMapper, gestorTraza, logger);
         this.actualizarEstudianteInteractor = actualizarEstudianteInteractor;
         this.actualizarAsesorInteractor = actualizarAsesorInteractor;
         this.actualizarCoordinadorInteractor = actualizarCoordinadorInteractor;

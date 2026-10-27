@@ -384,11 +384,20 @@ El gate real es `check` (tests + checkstyle + cobertura), no `test`.
 
 `@RequiredArgsConstructor`, nunca `@Autowired`; use cases y adaptadores son `@Component`, nunca
 `@Service`; se inyectan interfaces. Logging por el puerto `AppLogger` (`shared:logger`), nunca
-`@Slf4j`. `warn` para 4xx, `error` para 5xx.
+`@Slf4j` ni `LoggerFactory`: solo `Slf4jAppLogger`/`AppLoggerConfig` (la implementación del puerto)
+y `MdcContextoDiagnosticoOutputAdapter` (dueño del MDC) importan SLF4J. `warn` para 4xx, `error`
+para 5xx.
+
+**Si la superclase ya hereda un `logger`, el campo se llama `appLogger`.** `GenericFilterBean`
+(todo `OncePerRequestFilter`) y `ResponseEntityExceptionHandler` traen un `protected Log logger` de
+commons-logging: un `logger.warn(...)` ahí compila contra ese campo y se salta `AppLogger` y el
+catálogo sin avisar. Referencias: `TrazabilidadFilter`, `GlobalAppExceptionHandler`.
 
 **Nunca loguear desde un `@Bean` ni un `@PostConstruct`:** `Mensajes.instalar(...)` ocurre dentro de
 un `@Bean`, y antes de eso se resuelve la clave cruda y SLF4J descarta los argumentos. Un log de
-arranque va en un `@EventListener(ApplicationReadyEvent.class)`.
+arranque va en un `@EventListener(ApplicationReadyEvent.class)`. Un callback que el `@Bean` solo
+*registra* y que corre después sí loguea: recibe el `AppLogger` como parámetro del método `@Bean`
+(`RabbitMQConfig#rabbitTemplate`).
 
 ### Estructura de logs de un flujo de escritura
 

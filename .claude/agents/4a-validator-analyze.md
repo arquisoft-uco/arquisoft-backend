@@ -314,6 +314,7 @@ escritura/lectura/evento*, *Datos sensibles en logs*. **No existe ninguna clase
 
 | Check | Sev |
 |---|:---:|
+| `@Slf4j`, `LoggerFactory` o el `logger` de commons-logging heredado de un filtro/`ResponseEntityExceptionHandler` en vez del `AppLogger` inyectado (`arquisoft-estandares` → *Inyección y logging*) | ❌ |
 | Log con texto literal, o con `Mensajes.obtener(clave)` en vez de la clave directa (paga un GET a Redis aunque el nivel esté apagado) | ❌ |
 | Excepción con `super("literal", "CODIGO")` en vez de `Mensajes.formatear(...)`, o `Mensajes.obtener(clave).formatted(args)` | ❌ |
 | Texto de cliente de una excepción o de un error de `ValidationResult` que interpola un UUID, un "id", un tipo MIME o bytes en vez del nombre legible, o identificadores de diagnóstico que no van a `BaseError.conDetalle` (`arquisoft-estandares` → *Excepciones*) | ❌ |

@@ -28,7 +28,7 @@ public class AsesorProyectoGradoFinalizadoConsumer extends AbstractEventConsumer
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
-        super(objectMapper, gestorTraza);
+        super(objectMapper, gestorTraza, logger);
         this.finalizarAsesorProyectoGradoInteractor = finalizarAsesorProyectoGradoInteractor;
         this.logger = logger;
     }

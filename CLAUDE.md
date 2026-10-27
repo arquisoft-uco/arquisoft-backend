@@ -364,7 +364,10 @@ barre `<contexto>.*`. Ver [plantillas/README.md](plantillas/README.md).
 ## Logging y correlación
 
 **Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j`, del que
-no queda ninguno en ningún contexto. `warn` para 4xx, `error` para 5xx. La estructura
+no queda ninguno en el repo: solo importan SLF4J la implementación del puerto (`Slf4jAppLogger`,
+`AppLoggerConfig`) y `MdcContextoDiagnosticoOutputAdapter`. Si la superclase ya hereda un `logger`
+(filtros, `ResponseEntityExceptionHandler`), el campo se llama `appLogger`: el heredado es
+commons-logging y compila en silencio. `warn` para 4xx, `error` para 5xx. La estructura
 exacta por tipo de flujo (escritura: tres líneas; lectura: dos `debug`; evento: dos `INFO` que pone
 el adaptador) está en `arquisoft-estandares`.
 
