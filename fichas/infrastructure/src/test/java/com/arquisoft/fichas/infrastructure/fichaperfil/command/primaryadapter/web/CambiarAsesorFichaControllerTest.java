@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web;
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
+import com.arquisoft.shared.message.key.app.HttpKey;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.constant.AppCodes;
@@ -106,7 +107,7 @@ class CambiarAsesorFichaControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Error de validación en los datos enviados"))
+                .andExpect(jsonPath("$.message").value(Mensajes.obtener(HttpKey.MENSAJE_VALIDACION_DATOS)))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
                 .andExpect(jsonPath("$.fieldErrors[0].message")
                         .value(Mensajes.obtener(ValidadorKey.NO_EN_BLANCO)));
