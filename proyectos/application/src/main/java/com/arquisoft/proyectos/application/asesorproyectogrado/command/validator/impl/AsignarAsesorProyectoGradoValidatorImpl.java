@@ -2,6 +2,9 @@ package com.arquisoft.proyectos.application.asesorproyectogrado.command.validato
 
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.validator.AsignarAsesorProyectoGradoValidator;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
+import com.arquisoft.proyectos.domain.asesor.model.ExistenciaAsesor;
+import com.arquisoft.proyectos.domain.asesor.rules.AsesorExisteRule;
+import com.arquisoft.proyectos.domain.asesor.rules.impl.AsesorExisteRuleImpl;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsignacionAsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.AsignacionVigenteAsesor;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.CupoAsesoresProyectoGrado;
@@ -34,6 +37,7 @@ public class AsignarAsesorProyectoGradoValidatorImpl implements AsignarAsesorPro
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
     private final EstadoProyectoGradoExisteRule estadoProyectoGradoExisteRule;
     private final CoordinadorProyectoGradoPropietarioRule coordinadorPropietarioRule;
+    private final AsesorExisteRule asesorExisteRule;
     private final AsesorVigenteProyectoGradoRule asesorVigenteRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
     private final AsesorNoAsignadoProyectoGradoRule asesorNoAsignadoRule;
@@ -43,6 +47,7 @@ public class AsignarAsesorProyectoGradoValidatorImpl implements AsignarAsesorPro
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.estadoProyectoGradoExisteRule = new EstadoProyectoGradoExisteRuleImpl();
         this.coordinadorPropietarioRule = new CoordinadorProyectoGradoPropietarioRuleImpl();
+        this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.asesorVigenteRule = new AsesorVigenteProyectoGradoRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
         this.asesorNoAsignadoRule = new AsesorNoAsignadoProyectoGradoRuleImpl();
@@ -58,8 +63,9 @@ public class AsignarAsesorProyectoGradoValidatorImpl implements AsignarAsesorPro
                 new ExistenciaEstadoProyectoGrado(entrada.getProyectoGrado(), !estadoActual.esVacio()));
         coordinadorPropietarioRule.validar(new PropiedadCoordinadorProyectoGrado(
                 entrada.getProyectoGrado(), proyecto.getCoordinador(), entrada.getCoordinador()));
+        asesorExisteRule.validar(new ExistenciaAsesor(entrada.getAsesor(), !asesor.esVacio()));
         asesorVigenteRule.validar(new VigenciaAsesorProyectoGrado(
-                entrada.getAsesor(), !asesor.esVacio(), asesor.estaEliminado()));
+                entrada.getAsesor(), asesor.getNombre(), asesor.estaEliminado()));
         proyectoGradoNoFinalizadoRule.validar(
                 new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getTituloProyecto(),
                         estadoActual.getEstadoProyecto()));

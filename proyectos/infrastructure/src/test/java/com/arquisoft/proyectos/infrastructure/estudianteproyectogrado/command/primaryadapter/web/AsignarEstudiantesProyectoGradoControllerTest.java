@@ -32,6 +32,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.stream.Stream;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -186,7 +187,7 @@ class AsignarEstudiantesProyectoGradoControllerTest {
     @Test
     void debe422_cuandoEstudianteYaVinculado() throws Exception {
         // Arrange
-        doThrow(new EstudianteYaVinculadoException(UtilUUID.generarNuevoUUID()))
+        doThrow(new EstudianteYaVinculadoException(UtilUUID.generarNuevoUUID(), List.of("Ana Pérez")))
                 .when(asignarEstudiantesProyectoGradoInteractor).ejecutar(any());
 
         // Act & Assert

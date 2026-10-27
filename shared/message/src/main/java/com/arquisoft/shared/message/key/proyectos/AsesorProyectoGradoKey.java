@@ -15,7 +15,7 @@ public enum AsesorProyectoGradoKey implements ClaveMensaje {
     LOG_VERIFICACION_CAMBIO_ESTADO("proyectos.aplicacion.asesorproyectogrado.log.verificacion-cambio-estado", 4),
     LOG_ESTADO_CAMBIADO("proyectos.aplicacion.asesorproyectogrado.log.estado-cambiado", 3),
     LOG_GUARDADO("proyectos.infraestructura.asesorproyectogrado.log.guardado", 2),
-    ERROR_ASESOR_NO_VIGENTE("proyectos.dominio.asesorproyectogrado.error.asesor-no-vigente", 0),
+    ERROR_ASESOR_NO_VIGENTE("proyectos.dominio.asesorproyectogrado.error.asesor-no-vigente", 1),
     ERROR_ASESOR_NO_VIGENTE_DETALLE("proyectos.dominio.asesorproyectogrado.error.asesor-no-vigente-detalle", 1),
     ERROR_YA_ASIGNADO("proyectos.dominio.asesorproyectogrado.error.ya-asignado", 1),
     ERROR_YA_ASIGNADO_DETALLE("proyectos.dominio.asesorproyectogrado.error.ya-asignado-detalle", 1),

@@ -73,7 +73,11 @@ public class AsignarEstudiantesProyectoGradoValidatorImpl implements AsignarEstu
                 new HashSet<>(entrada.getEstudiantes()),
                 estudiantesVigentes.stream().map(EstudianteDomain::getId).collect(Collectors.toSet())));
 
-        estudiantesNoVinculadosRule.validar(new VinculosEstudiantesProyectoGrado(yaVinculados));
+        estudiantesNoVinculadosRule.validar(new VinculosEstudiantesProyectoGrado(yaVinculados,
+                estudiantesVigentes.stream()
+                        .filter(estudiante -> yaVinculados.contains(estudiante.getId()))
+                        .map(EstudianteDomain::getNombre)
+                        .toList()));
         proyectoGradoNoFinalizadoRule.validar(
                 new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getTituloProyecto(),
                         estadoActual.getEstadoProyecto()));
