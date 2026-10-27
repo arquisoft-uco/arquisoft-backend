@@ -55,6 +55,7 @@ public final class ArtefactosCodes {
         public static final String VERSIONES_DUPLICADAS = "ARTEFACTOS_ARTEFACTO_VERSIONES_DUPLICADAS";
         public static final String ARTEFACTOS_REQUERIDOS = "ARTEFACTOS_ARTEFACTO_ARTEFACTOS_REQUERIDOS";
         public static final String REPOSITORIO_YA_ASIGNADO = "ARTEFACTOS_ARTEFACTO_REPOSITORIO_YA_ASIGNADO";
+        public static final String NO_ENCONTRADO = "ARTEFACTOS_ARTEFACTO_NO_ENCONTRADO";
     }
 
     public static final class ProyectoGrado {

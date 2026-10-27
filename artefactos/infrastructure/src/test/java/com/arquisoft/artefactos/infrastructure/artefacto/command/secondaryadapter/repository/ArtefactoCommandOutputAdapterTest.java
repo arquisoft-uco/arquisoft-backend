@@ -115,4 +115,52 @@ class ArtefactoCommandOutputAdapterTest {
         return id;
     }
 
+    @Test
+    void debeObtenerPorId_cuandoElArtefactoExiste() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var id = sembrar(proyecto, asesor);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().id()).isEqualTo(id);
+        assertThat(resultado.get().proyectoGrado()).isEqualTo(proyecto);
+        assertThat(resultado.get().asesor()).isEqualTo(asesor);
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoElArtefactoNoExiste() {
+        // Act
+        var resultado = adapter.obtenerPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeCambiarElAsesorSoloDelArtefactoIndicado_cuandoHayOtrosDelMismoProyecto() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var anterior = UtilUUID.generarNuevoUUID();
+        var nuevo = UtilUUID.generarNuevoUUID();
+        var objetivo = sembrar(proyecto, anterior);
+        var hermano = sembrar(proyecto, anterior);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.cambiarAsesor(objetivo, nuevo);
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ArtefactoJpaEntity.class, objetivo).getAsesor()).isEqualTo(nuevo);
+        assertThat(entityManager.find(ArtefactoJpaEntity.class, hermano).getAsesor()).isEqualTo(anterior);
+        verify(logger).debug(ArtefactoKey.LOG_ASESOR_ACTUALIZADO, objetivo);
+    }
 }

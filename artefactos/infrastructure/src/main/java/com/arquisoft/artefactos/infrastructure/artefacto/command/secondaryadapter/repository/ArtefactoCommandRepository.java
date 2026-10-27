@@ -14,4 +14,8 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
     @Query("UPDATE ArtefactoJpaEntity a SET a.asesor = :asesor "
             + "WHERE a.proyectoGrado = :proyectoGrado AND a.asesor <> :asesor")
     int traspasarAsesorDeProyecto(@Param("proyectoGrado") UUID proyectoGrado, @Param("asesor") UUID asesor);
+
+    @Modifying
+    @Query("UPDATE ArtefactoJpaEntity a SET a.asesor = :asesor WHERE a.id = :id")
+    int cambiarAsesor(@Param("id") UUID id, @Param("asesor") UUID asesor);
 }
