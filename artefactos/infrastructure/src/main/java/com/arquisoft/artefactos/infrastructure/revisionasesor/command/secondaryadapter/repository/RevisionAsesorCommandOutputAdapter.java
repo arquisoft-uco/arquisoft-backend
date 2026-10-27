@@ -20,7 +20,7 @@ public class RevisionAsesorCommandOutputAdapter implements RevisionAsesorOutputP
 
     @Override
     public Optional<RevisionAsesorEntity> obtenerPorId(UUID id) {
-        return revisionAsesorCommandRepository.findById(id).map(RevisionAsesorJpaMapper::toEntity);
+        return revisionAsesorCommandRepository.buscarBloqueadaPorId(id).map(RevisionAsesorJpaMapper::toEntity);
     }
 
     @Override
