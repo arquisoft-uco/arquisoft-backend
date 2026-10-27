@@ -28,10 +28,10 @@ public enum HttpKey implements ClaveMensaje {
     ARCHIVO_DEMASIADO_GRANDE_DETALLE("app.infraestructura.http.error.archivo-demasiado-grande-detalle", 0),
     ERROR_PETICION_DETALLE("app.infraestructura.http.error.peticion-detalle", 0),
     VALIDACION_DATOS_DETALLE("app.infraestructura.http.error.validacion-datos-detalle", 0),
-    PARAMETRO_FALTANTE_DETALLE("app.infraestructura.http.error.parametro-faltante-detalle", 1),
+    PARAMETRO_FALTANTE_DETALLE("app.infraestructura.http.error.parametro-faltante-detalle", 0),
     CUERPO_MAL_FORMADO_DETALLE("app.infraestructura.http.error.cuerpo-mal-formado-detalle", 0),
     PETICION_INVALIDA_DETALLE("app.infraestructura.http.error.peticion-invalida-detalle", 0),
-    CAMPO_FORMATO_INVALIDO_DETALLE("app.infraestructura.http.error.campo-formato-invalido-detalle", 1),
+    CAMPO_FORMATO_INVALIDO_DETALLE("app.infraestructura.http.error.campo-formato-invalido-detalle", 0),
 
     // Logs — GlobalAppExceptionHandler
     LOG_VALIDACION_DOMINIO_FALLIDA("app.infraestructura.http.log.validacion-dominio-fallida", 3),

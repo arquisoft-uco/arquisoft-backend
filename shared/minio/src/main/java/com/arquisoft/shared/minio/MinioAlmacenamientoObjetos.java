@@ -99,9 +99,9 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             if (esObjetoInexistente(e)) {
                 return Optional.empty();
             }
-            throw fallo(AlmacenamientoKey.ERROR_LECTURA, AppCodes.Minio.LECTURA_FALLIDA, e);
+            throw falloLectura(e);
         } catch (Exception e) {
-            throw fallo(AlmacenamientoKey.ERROR_LECTURA, AppCodes.Minio.LECTURA_FALLIDA, e);
+            throw falloLectura(e);
         }
     }
 
@@ -154,9 +154,18 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
     }
 
     private static MinioOperationException fallo(AlmacenamientoKey clave, String codigo, Exception causa) {
+        restaurarInterrupcion(causa);
+        return new MinioOperationException(Mensajes.obtener(clave), codigo, causa);
+    }
+
+    private static MinioOperationException falloLectura(Exception causa) {
+        restaurarInterrupcion(causa);
+        return MinioOperationException.lecturaFallida(causa);
+    }
+
+    private static void restaurarInterrupcion(Exception causa) {
         if (causa instanceof InterruptedException) {
             Thread.currentThread().interrupt();
         }
-        return new MinioOperationException(Mensajes.obtener(clave), codigo, causa);
     }
 }

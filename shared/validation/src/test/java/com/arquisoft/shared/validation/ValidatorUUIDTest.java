@@ -25,7 +25,7 @@ class ValidatorUUIDTest {
         assertThat(valido).isFalse();
         assertThat(result.tieneErrores()).isTrue();
         assertThat(result.getErrores().get(0).mensaje())
-                .isEqualTo(Mensajes.formatear(ValidadorKey.UUID_INVALIDO, CAMPO));
+                .isEqualTo(Mensajes.obtener(ValidadorKey.UUID_INVALIDO));
     }
 
     @Test

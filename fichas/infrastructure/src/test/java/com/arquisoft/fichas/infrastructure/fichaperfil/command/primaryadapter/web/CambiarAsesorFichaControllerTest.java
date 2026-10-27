@@ -109,8 +109,7 @@ class CambiarAsesorFichaControllerTest {
                 .andExpect(jsonPath("$.message").value("Error de validación en los datos enviados"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
                 .andExpect(jsonPath("$.fieldErrors[0].message")
-                        .value(Mensajes.formatear(
-                                ValidadorKey.NO_EN_BLANCO, FichasFields.FichaPerfil.ASESOR_FICHA)));
+                        .value(Mensajes.obtener(ValidadorKey.NO_EN_BLANCO)));
     }
 
     @Test

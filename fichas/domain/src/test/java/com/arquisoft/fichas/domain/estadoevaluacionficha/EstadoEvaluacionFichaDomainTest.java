@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha;
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -74,7 +75,7 @@ class EstadoEvaluacionFichaDomainTest {
         // Act & Assert
         assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crear(evaluacionId))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("no puede ser nulo");
+                .hasMessageContaining(FichasCodes.EstadoEvaluacionFicha.EVALUACION_REQUERIDA);
     }
 
     @Test
@@ -86,7 +87,7 @@ class EstadoEvaluacionFichaDomainTest {
         // Act & Assert
         assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crearConEstado(evaluacionId, estadoEvaluacion))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("no puede ser nulo");
+                .hasMessageContaining(FichasCodes.EstadoEvaluacionFicha.EVALUACION_REQUERIDA);
     }
 
     @Test
@@ -98,7 +99,7 @@ class EstadoEvaluacionFichaDomainTest {
         // Act & Assert
         assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crearConEstado(evaluacionId, estadoEvaluacion))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("no puede ser");
+                .hasMessageContaining(FichasCodes.EstadoEvaluacionFicha.ESTADO_REQUERIDO);
     }
 
     @Test
