@@ -5,7 +5,7 @@ import com.arquisoft.artefactos.domain.artefacto.model.DisponibilidadRepositorio
 import com.arquisoft.artefactos.domain.artefacto.rules.RepositorioArtefactoUnicoEnProyectoRule;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 public class RepositorioArtefactoUnicoEnProyectoRuleImpl implements RepositorioArtefactoUnicoEnProyectoRule {
@@ -13,14 +13,15 @@ public class RepositorioArtefactoUnicoEnProyectoRuleImpl implements RepositorioA
     @Override
     public void validar(DisponibilidadRepositoriosProyecto disponibilidad) {
         var vistos = new HashSet<UUID>(disponibilidad.repositoriosAsignados());
-        var conflictos = new LinkedHashSet<UUID>();
+        var conflictos = new LinkedHashMap<UUID, String>();
         for (var version : disponibilidad.versiones()) {
             if (!vistos.add(version.getRepositorioArtefacto())) {
-                conflictos.add(version.getRepositorioArtefacto());
+                conflictos.putIfAbsent(version.getRepositorioArtefacto(), version.getNombreRepositorio());
             }
         }
         if (!conflictos.isEmpty()) {
-            throw new RepositorioArtefactoYaAsignadoException(conflictos.stream().toList());
+            throw new RepositorioArtefactoYaAsignadoException(
+                    conflictos.keySet().stream().toList(), conflictos.values().stream().toList());
         }
     }
 }

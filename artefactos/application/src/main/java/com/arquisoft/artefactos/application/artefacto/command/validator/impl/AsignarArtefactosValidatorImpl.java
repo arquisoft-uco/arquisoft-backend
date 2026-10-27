@@ -53,7 +53,7 @@ public class AsignarArtefactosValidatorImpl implements AsignarArtefactosValidato
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(asignacion.getProyectoGrado(), proyectoExiste));
         asesorVigenteRule.validar(new VigenciaAsesor(asignacion.getAsesor(), asesor));
         asesorAsignadoProyectoGradoRule.validar(new VigenciaAsesorProyectoGrado(
-                asignacion.getAsesor(), asignacion.getProyectoGrado(), vinculosMasRecientes));
+                asignacion.getAsesor(), asesor.getNombre(), asignacion.getProyectoGrado(), vinculosMasRecientes));
         versionesRepositorioArtefactoExistenRule.validar(new ExistenciaVersionesRepositorioArtefacto(
                 asignacion.getVersionesRepositorioArtefacto(), versiones));
         repositorioArtefactoUnicoEnProyectoRule.validar(
