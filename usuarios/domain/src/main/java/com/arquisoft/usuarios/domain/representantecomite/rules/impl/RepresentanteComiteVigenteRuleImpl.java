@@ -10,7 +10,7 @@ public class RepresentanteComiteVigenteRuleImpl implements RepresentanteComiteVi
     public void validar(ExistenciaRepresentanteComite existencia) {
         var representanteComite = existencia.representanteComite();
         if (representanteComite.esVacio() || representanteComite.estaEliminado()) {
-            throw new RepresentanteComiteNoEncontradoException(existencia.usuario());
+            throw new RepresentanteComiteNoEncontradoException(existencia.usuario(), existencia.nombre());
         }
     }
 }

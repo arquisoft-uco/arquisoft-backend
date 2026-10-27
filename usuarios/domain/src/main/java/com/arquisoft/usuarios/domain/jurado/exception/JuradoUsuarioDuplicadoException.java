@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class JuradoUsuarioDuplicadoException extends DomainException {
 
-    public JuradoUsuarioDuplicadoException(UUID usuario) {
+    public JuradoUsuarioDuplicadoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.Jurado.USUARIO_DUPLICADO,
-                Mensajes.formatear(AgregarJuradoKey.ERROR_USUARIO_DUPLICADO),
+                Mensajes.formatear(AgregarJuradoKey.ERROR_USUARIO_DUPLICADO, nombre),
                 Mensajes.formatear(AgregarJuradoKey.ERROR_USUARIO_DUPLICADO_DETALLE, usuario)
         ));
     }

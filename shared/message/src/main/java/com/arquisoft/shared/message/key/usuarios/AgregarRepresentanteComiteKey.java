@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de AgregarRepresentanteComite. */
 public enum AgregarRepresentanteComiteKey implements ClaveMensaje {
 
-    ERROR_USUARIO_DUPLICADO("usuarios.dominio.representantecomite.error.usuario-duplicado", 0),
+    ERROR_USUARIO_DUPLICADO("usuarios.dominio.representantecomite.error.usuario-duplicado", 1),
     ERROR_USUARIO_DUPLICADO_DETALLE("usuarios.dominio.representantecomite.error.usuario-duplicado-detalle", 1),
     LOG_VERIFICACION_AGREGAR("usuarios.aplicacion.representantecomite.log.verificacion-agregar", 3),
     LOG_REACTIVADO("usuarios.aplicacion.representantecomite.log.reactivado", 1),

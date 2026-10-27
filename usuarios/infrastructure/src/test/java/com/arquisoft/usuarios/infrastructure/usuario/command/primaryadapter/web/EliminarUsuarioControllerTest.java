@@ -22,6 +22,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -93,7 +95,7 @@ class EliminarUsuarioControllerTest {
     void debe422ConSuCodigo_cuandoElUsuarioTieneRolesVigentes() throws Exception {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        doThrow(new UsuarioRolesVigentesException(usuario, "estudiante"))
+        doThrow(new UsuarioRolesVigentesException(usuario, "Ana Pérez", List.of("estudiante")))
                 .when(eliminarUsuarioInteractor).ejecutar(any());
 
         // Act & Assert

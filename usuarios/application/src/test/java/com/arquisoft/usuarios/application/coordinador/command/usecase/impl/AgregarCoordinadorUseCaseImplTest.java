@@ -1,5 +1,7 @@
 package com.arquisoft.usuarios.application.coordinador.command.usecase.impl;
 
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.coordinador.command.finder.CoordinadorPorUsuarioFinder;
 import com.arquisoft.usuarios.application.coordinador.command.secondaryport.CoordinadorOutputPort;
@@ -10,8 +12,6 @@ import com.arquisoft.usuarios.domain.coordinador.event.CoordinadorAgregadoEvent;
 import com.arquisoft.usuarios.domain.coordinador.exception.CoordinadorUsuarioDuplicadoException;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
-import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.publisher.EventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -99,7 +99,7 @@ class AgregarCoordinadorUseCaseImplTest {
         InOrder orden = inOrder(coordinadorPorUsuarioFinder, agregarCoordinadorValidator,
                 coordinadorOutputPort, eventPublisher);
         orden.verify(coordinadorPorUsuarioFinder).obtener(usuario.getId());
-        orden.verify(agregarCoordinadorValidator).validar(usuario.getId(), CoordinadorDomain.VACIO);
+        orden.verify(agregarCoordinadorValidator).validar(usuario, CoordinadorDomain.VACIO);
         orden.verify(coordinadorOutputPort).guardar(any());
         orden.verify(eventPublisher).publish(any());
     }
@@ -109,7 +109,7 @@ class AgregarCoordinadorUseCaseImplTest {
         // Arrange
         var usuario = usuario();
         when(coordinadorPorUsuarioFinder.obtener(any())).thenReturn(CoordinadorDomain.crear(usuario.getId()));
-        doThrow(new CoordinadorUsuarioDuplicadoException(usuario.getId()))
+        doThrow(new CoordinadorUsuarioDuplicadoException(usuario.getId(), usuario.getNombre()))
                 .when(agregarCoordinadorValidator).validar(any(), any(CoordinadorDomain.class));
 
         // Act & Assert
@@ -131,7 +131,7 @@ class AgregarCoordinadorUseCaseImplTest {
 
         // Assert
         verify(coordinadorPorUsuarioFinder, times(1)).obtener(usuario.getId());
-        verify(agregarCoordinadorValidator).validar(usuario.getId(), removido);
+        verify(agregarCoordinadorValidator).validar(usuario, removido);
         verify(coordinadorOutputPort, times(1)).reactivar(usuario.getId());
         verify(coordinadorOutputPort, never()).guardar(any());
         assertThat(removido.estaEliminado()).isFalse();

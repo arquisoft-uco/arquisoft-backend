@@ -93,7 +93,7 @@ class RemoverCoordinadorControllerTest {
     void debe422ConSuCodigo_cuandoCoordinadorNoEstaVigente() throws Exception {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        doThrow(new CoordinadorNoEncontradoException(usuario)).when(removerCoordinadorInteractor).ejecutar(any());
+        doThrow(new CoordinadorNoEncontradoException(usuario, "Ana Pérez")).when(removerCoordinadorInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(delete(RUTA, usuario).with(administrador()))

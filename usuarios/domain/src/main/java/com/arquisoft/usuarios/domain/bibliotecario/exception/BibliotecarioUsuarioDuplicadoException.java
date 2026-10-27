@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class BibliotecarioUsuarioDuplicadoException extends DomainException {
 
-    public BibliotecarioUsuarioDuplicadoException(UUID usuario) {
+    public BibliotecarioUsuarioDuplicadoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.Bibliotecario.USUARIO_DUPLICADO,
-                Mensajes.formatear(AgregarBibliotecarioKey.ERROR_USUARIO_DUPLICADO),
+                Mensajes.formatear(AgregarBibliotecarioKey.ERROR_USUARIO_DUPLICADO, nombre),
                 Mensajes.formatear(AgregarBibliotecarioKey.ERROR_USUARIO_DUPLICADO_DETALLE, usuario)
         ));
     }

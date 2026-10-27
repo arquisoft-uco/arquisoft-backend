@@ -10,7 +10,7 @@ public class AsesorFichaVigenteRuleImpl implements AsesorFichaVigenteRule {
     public void validar(ExistenciaAsesorFicha existencia) {
         var asesorFicha = existencia.asesorFicha();
         if (asesorFicha.esVacio() || asesorFicha.estaEliminado()) {
-            throw new AsesorFichaNoEncontradoException(existencia.usuario());
+            throw new AsesorFichaNoEncontradoException(existencia.usuario(), existencia.nombre());
         }
     }
 }

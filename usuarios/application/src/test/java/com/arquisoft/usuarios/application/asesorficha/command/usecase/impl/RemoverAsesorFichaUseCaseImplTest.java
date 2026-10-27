@@ -90,7 +90,7 @@ class RemoverAsesorFichaUseCaseImplTest {
                 eventPublisher);
         var captorInstante = ArgumentCaptor.forClass(Instant.class);
         var captorEvento = ArgumentCaptor.forClass(AsesorFichaRemovidoEvent.class);
-        orden.verify(removerAsesorFichaValidator).validar(id, vigente);
+        orden.verify(removerAsesorFichaValidator).validar(id, usuario, vigente);
         orden.verify(asesorFichaOutputPort).eliminarLogica(eq(id), captorInstante.capture());
         orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.ASESOR_FICHA);
         orden.verify(eventPublisher).publish(captorEvento.capture());
@@ -109,8 +109,8 @@ class RemoverAsesorFichaUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         when(asesorFichaPorUsuarioFinder.obtener(id)).thenReturn(AsesorFichaDomain.VACIO);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new AsesorFichaNoEncontradoException(id))
-                .when(removerAsesorFichaValidator).validar(id, AsesorFichaDomain.VACIO);
+        doThrow(new AsesorFichaNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerAsesorFichaValidator).validar(id, UsuarioDomain.VACIO, AsesorFichaDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(AsesorFichaDomain.crear(id)))

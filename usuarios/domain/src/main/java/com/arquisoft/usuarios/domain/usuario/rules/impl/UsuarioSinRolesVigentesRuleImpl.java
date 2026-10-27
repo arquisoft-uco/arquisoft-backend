@@ -9,8 +9,6 @@ import java.util.ArrayList;
 
 public class UsuarioSinRolesVigentesRuleImpl implements UsuarioSinRolesVigentesRule {
 
-    private static final String SEPARADOR = ", ";
-
     @Override
     public void validar(RolesUsuario roles) {
         var vigentes = new ArrayList<String>();
@@ -41,7 +39,7 @@ public class UsuarioSinRolesVigentesRuleImpl implements UsuarioSinRolesVigentesR
         }
 
         if (!vigentes.isEmpty()) {
-            throw new UsuarioRolesVigentesException(roles.usuario(), String.join(SEPARADOR, vigentes));
+            throw new UsuarioRolesVigentesException(roles.usuario(), roles.nombre(), vigentes);
         }
     }
 

@@ -9,17 +9,20 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RepresentanteComiteVigenteRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final RepresentanteComiteVigenteRuleImpl rule = new RepresentanteComiteVigenteRuleImpl();
 
     @Test
     void debeLanzarNoEncontradoConSuCodigo_cuandoRepresentanteComiteNoExiste() {
         // Arrange
-        var existencia = new ExistenciaRepresentanteComite(UtilUUID.generarNuevoUUID(),
+        var existencia = new ExistenciaRepresentanteComite(UtilUUID.generarNuevoUUID(), NOMBRE,
                 RepresentanteComiteDomain.VACIO);
 
         // Act & Assert
@@ -34,7 +37,7 @@ class RepresentanteComiteVigenteRuleImplTest {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
         var eliminado = RepresentanteComiteDomain.reconstruir(usuario, Instant.parse("2026-09-24T10:00:00Z"));
-        var existencia = new ExistenciaRepresentanteComite(usuario, eliminado);
+        var existencia = new ExistenciaRepresentanteComite(usuario, NOMBRE, eliminado);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(existencia))
@@ -46,9 +49,22 @@ class RepresentanteComiteVigenteRuleImplTest {
     void noDebeLanzar_cuandoRepresentanteComiteEstaVigente() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var existencia = new ExistenciaRepresentanteComite(usuario, RepresentanteComiteDomain.crear(usuario));
+        var existencia = new ExistenciaRepresentanteComite(usuario, NOMBRE, RepresentanteComiteDomain.crear(usuario));
 
         // Act & Assert
         assertThatCode(() -> rule.validar(existencia)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoNoTieneElRolVigente() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var entrada = new ExistenciaRepresentanteComite(usuario, NOMBRE, RepresentanteComiteDomain.VACIO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(RepresentanteComiteNoEncontradoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

@@ -37,7 +37,7 @@ public class RemoverBibliotecarioUseCaseImpl implements RemoverBibliotecarioUseC
         logger.debug(RemoverBibliotecarioKey.LOG_VERIFICACION_REMOVER,
                 entrada.getUsuario(), !bibliotecario.esVacio(), bibliotecario.estaEliminado());
 
-        removerBibliotecarioValidator.validar(entrada.getUsuario(), bibliotecario);
+        removerBibliotecarioValidator.validar(entrada.getUsuario(), usuario, bibliotecario);
 
         bibliotecario.remover(UtilFecha.generarInstanteActual());
         bibliotecarioOutputPort.eliminarLogica(bibliotecario.getUsuario(), bibliotecario.getEliminadoEn());

@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class RepresentanteComiteNoEncontradoException extends DomainException {
 
-    public RepresentanteComiteNoEncontradoException(UUID usuario) {
+    public RepresentanteComiteNoEncontradoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.RepresentanteComite.REPRESENTANTE_COMITE_NO_ENCONTRADO,
-                Mensajes.formatear(RemoverRepresentanteComiteKey.ERROR_NO_ENCONTRADO),
+                Mensajes.formatear(RemoverRepresentanteComiteKey.ERROR_NO_ENCONTRADO, nombre),
                 Mensajes.formatear(RemoverRepresentanteComiteKey.ERROR_NO_ENCONTRADO_DETALLE, usuario)
         ));
     }

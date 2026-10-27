@@ -1,5 +1,6 @@
 package com.arquisoft.shared.message.constant;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,4 +29,18 @@ public final class UsuariosRoles {
     public static final Set<String> CONOCIDOS = Set.of(
             ESTUDIANTE, ASESOR, ASESOR_FICHA, COORDINADOR,
             JURADO, BIBLIOTECARIO, REPRESENTANTE_COMITE, ADMINISTRADOR);
+
+    public static final Map<String, String> ETIQUETAS = Map.of(
+            ESTUDIANTE, "Estudiante",
+            ASESOR, "Asesor",
+            ASESOR_FICHA, "Asesor de ficha",
+            COORDINADOR, "Coordinador",
+            JURADO, "Jurado",
+            BIBLIOTECARIO, "Bibliotecario",
+            REPRESENTANTE_COMITE, "Representante del comité",
+            ADMINISTRADOR, "Administrador");
+
+    public static String etiqueta(String rol) {
+        return ETIQUETAS.getOrDefault(rol, rol);
+    }
 }

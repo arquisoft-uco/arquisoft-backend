@@ -30,7 +30,7 @@ public class AgregarBibliotecarioUseCaseImpl implements AgregarBibliotecarioUseC
         logger.debug(AgregarBibliotecarioKey.LOG_VERIFICACION_AGREGAR,
                 usuario.getId(), !bibliotecario.esVacio(), bibliotecario.estaEliminado());
 
-        agregarBibliotecarioValidator.validar(usuario.getId(), bibliotecario);
+        agregarBibliotecarioValidator.validar(usuario, bibliotecario);
 
         if (bibliotecario.esVacio()) {
             bibliotecarioOutputPort.guardar(

@@ -10,7 +10,7 @@ public class BibliotecarioUsuarioUnicoRuleImpl implements BibliotecarioUsuarioUn
     public void validar(DisponibilidadBibliotecarioUsuario disponibilidad) {
         var bibliotecario = disponibilidad.bibliotecario();
         if (!bibliotecario.esVacio() && !bibliotecario.estaEliminado()) {
-            throw new BibliotecarioUsuarioDuplicadoException(disponibilidad.usuario());
+            throw new BibliotecarioUsuarioDuplicadoException(disponibilidad.usuario(), disponibilidad.nombre());
         }
     }
 }

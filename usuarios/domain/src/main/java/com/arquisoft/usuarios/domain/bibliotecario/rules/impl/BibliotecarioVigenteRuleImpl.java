@@ -10,7 +10,7 @@ public class BibliotecarioVigenteRuleImpl implements BibliotecarioVigenteRule {
     public void validar(ExistenciaBibliotecario existencia) {
         var bibliotecario = existencia.bibliotecario();
         if (bibliotecario.esVacio() || bibliotecario.estaEliminado()) {
-            throw new BibliotecarioNoEncontradoException(existencia.usuario());
+            throw new BibliotecarioNoEncontradoException(existencia.usuario(), existencia.nombre());
         }
     }
 }

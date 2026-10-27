@@ -5,9 +5,8 @@ import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
 import com.arquisoft.usuarios.domain.estudiante.model.DisponibilidadEstudianteUsuario;
 import com.arquisoft.usuarios.domain.estudiante.rules.EstudianteUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.estudiante.rules.impl.EstudianteUsuarioUnicoRuleImpl;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class AgregarEstudianteValidatorImpl implements AgregarEstudianteValidator {
@@ -19,7 +18,8 @@ public class AgregarEstudianteValidatorImpl implements AgregarEstudianteValidato
     }
 
     @Override
-    public void validar(UUID usuario, EstudianteDomain estudiante) {
-        estudianteUsuarioUnicoRule.validar(new DisponibilidadEstudianteUsuario(usuario, estudiante));
+    public void validar(UsuarioDomain usuario, EstudianteDomain estudiante) {
+        estudianteUsuarioUnicoRule.validar(
+                new DisponibilidadEstudianteUsuario(usuario.getId(), usuario.getNombre(), estudiante));
     }
 }

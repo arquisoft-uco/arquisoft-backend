@@ -30,7 +30,7 @@ public class AgregarJuradoUseCaseImpl implements AgregarJuradoUseCase {
         logger.debug(AgregarJuradoKey.LOG_VERIFICACION_AGREGAR,
                 usuario.getId(), !jurado.esVacio(), jurado.estaEliminado());
 
-        agregarJuradoValidator.validar(usuario.getId(), jurado);
+        agregarJuradoValidator.validar(usuario, jurado);
 
         if (jurado.esVacio()) {
             juradoOutputPort.guardar(

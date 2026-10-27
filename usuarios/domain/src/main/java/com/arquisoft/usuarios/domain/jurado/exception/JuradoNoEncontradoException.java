@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class JuradoNoEncontradoException extends DomainException {
 
-    public JuradoNoEncontradoException(UUID usuario) {
+    public JuradoNoEncontradoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.Jurado.JURADO_NO_ENCONTRADO,
-                Mensajes.formatear(RemoverJuradoKey.ERROR_NO_ENCONTRADO),
+                Mensajes.formatear(RemoverJuradoKey.ERROR_NO_ENCONTRADO, nombre),
                 Mensajes.formatear(RemoverJuradoKey.ERROR_NO_ENCONTRADO_DETALLE, usuario)
         ));
     }

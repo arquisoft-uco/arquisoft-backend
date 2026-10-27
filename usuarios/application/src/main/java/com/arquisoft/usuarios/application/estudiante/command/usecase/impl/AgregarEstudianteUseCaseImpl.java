@@ -30,7 +30,7 @@ public class AgregarEstudianteUseCaseImpl implements AgregarEstudianteUseCase {
         logger.debug(AgregarEstudianteKey.LOG_VERIFICACION_AGREGAR,
                 usuario.getId(), !estudiante.esVacio(), estudiante.estaEliminado());
 
-        agregarEstudianteValidator.validar(usuario.getId(), estudiante);
+        agregarEstudianteValidator.validar(usuario, estudiante);
 
         if (estudiante.esVacio()) {
             estudianteOutputPort.guardar(EstudianteMapper.toEntity(EstudianteDomain.crear(usuario.getId())));
