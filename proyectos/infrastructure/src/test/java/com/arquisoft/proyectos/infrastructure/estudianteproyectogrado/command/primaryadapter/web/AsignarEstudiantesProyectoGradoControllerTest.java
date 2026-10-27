@@ -200,7 +200,7 @@ class AsignarEstudiantesProyectoGradoControllerTest {
     void debe422_cuandoProyectoFinalizado() throws Exception {
         // Arrange
         var proyectoGradoId = UtilUUID.generarNuevoUUID();
-        doThrow(new ProyectoGradoFinalizadoException(proyectoGradoId))
+        doThrow(new ProyectoGradoFinalizadoException(proyectoGradoId, "Proyecto de prueba"))
                 .when(asignarEstudiantesProyectoGradoInteractor).ejecutar(any());
 
         // Act & Assert

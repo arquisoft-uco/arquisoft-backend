@@ -21,11 +21,16 @@ public enum EstudianteProyectoGradoKey implements ClaveMensaje {
     LOG_DESTITUIDO("proyectos.aplicacion.estudianteproyectogrado.log.destituido", 2),
     LOG_GUARDADOS("proyectos.infraestructura.estudianteproyectogrado.log.guardados", 2),
     LOG_ELIMINADO("proyectos.infraestructura.estudianteproyectogrado.log.eliminado", 2),
-    ERROR_ESTUDIANTES_NO_VIGENTES("proyectos.dominio.estudianteproyectogrado.error.estudiantes-no-vigentes", 1),
-    ERROR_DUPLICADO("proyectos.dominio.estudianteproyectogrado.error.duplicado", 1),
+    ERROR_ESTUDIANTES_NO_VIGENTES("proyectos.dominio.estudianteproyectogrado.error.estudiantes-no-vigentes", 0),
+    ERROR_ESTUDIANTES_NO_VIGENTES_DETALLE(
+            "proyectos.dominio.estudianteproyectogrado.error.estudiantes-no-vigentes-detalle", 1),
+    ERROR_DUPLICADO("proyectos.dominio.estudianteproyectogrado.error.duplicado", 0),
+    ERROR_DUPLICADO_DETALLE("proyectos.dominio.estudianteproyectogrado.error.duplicado-detalle", 1),
     ERROR_CUPO_EXCEDIDO("proyectos.dominio.estudianteproyectogrado.error.cupo-excedido", 1),
-    ERROR_YA_VINCULADO("proyectos.dominio.estudianteproyectogrado.error.ya-vinculado", 1),
-    ERROR_NO_VINCULADO("proyectos.dominio.estudianteproyectogrado.error.no-vinculado", 2);
+    ERROR_YA_VINCULADO("proyectos.dominio.estudianteproyectogrado.error.ya-vinculado", 0),
+    ERROR_YA_VINCULADO_DETALLE("proyectos.dominio.estudianteproyectogrado.error.ya-vinculado-detalle", 1),
+    ERROR_NO_VINCULADO("proyectos.dominio.estudianteproyectogrado.error.no-vinculado", 0),
+    ERROR_NO_VINCULADO_DETALLE("proyectos.dominio.estudianteproyectogrado.error.no-vinculado-detalle", 2);
 
     private final String clave;
     private final int parametros;

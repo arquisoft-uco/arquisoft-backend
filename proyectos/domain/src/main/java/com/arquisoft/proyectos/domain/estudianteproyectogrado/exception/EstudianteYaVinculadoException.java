@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.domain.estudianteproyectogrado.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ProyectosCodes;
@@ -10,9 +11,10 @@ import java.util.UUID;
 public final class EstudianteYaVinculadoException extends DomainException {
 
     public EstudianteYaVinculadoException(UUID estudiante) {
-        super(
-                Mensajes.formatear(EstudianteProyectoGradoKey.ERROR_YA_VINCULADO, estudiante),
-                ProyectosCodes.EstudianteProyectoGrado.ESTUDIANTE_YA_VINCULADO
-        );
+        super(BaseError.conDetalle(
+                ProyectosCodes.EstudianteProyectoGrado.ESTUDIANTE_YA_VINCULADO,
+                Mensajes.formatear(EstudianteProyectoGradoKey.ERROR_YA_VINCULADO),
+                Mensajes.formatear(EstudianteProyectoGradoKey.ERROR_YA_VINCULADO_DETALLE, estudiante)
+        ));
     }
 }

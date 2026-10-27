@@ -9,7 +9,7 @@ public class AsesorNoAsignadoProyectoGradoRuleImpl implements AsesorNoAsignadoPr
     @Override
     public void validar(AsignacionVigenteAsesor asignacion) {
         if (asignacion.yaAsignado()) {
-            throw new AsesorYaAsignadoException(asignacion.asesor());
+            throw new AsesorYaAsignadoException(asignacion.asesor(), asignacion.nombreAsesor());
         }
     }
 }
