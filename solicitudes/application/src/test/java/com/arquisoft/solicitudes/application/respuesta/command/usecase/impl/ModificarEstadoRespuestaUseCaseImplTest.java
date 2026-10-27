@@ -182,7 +182,7 @@ class ModificarEstadoRespuestaUseCaseImplTest {
                 new SolicitudNoEsDestinatarioException(),
                 new RespuestaNoEncontradaException(),
                 new RespuestaNoEnRevisionException(),
-                new EstadoRespuestaNoResolutivoException("EN_REVISION"));
+                new EstadoRespuestaNoResolutivoException(EstadoRespuesta.EN_REVISION));
     }
 
     @ParameterizedTest
