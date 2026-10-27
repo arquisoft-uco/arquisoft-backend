@@ -26,7 +26,7 @@ public class ModificarItemCualitativoJuradoUseCaseImpl
                 ItemCualitativoJuradoKey.LOG_MODIFICANDO,
                 modificacion.getItemCualitativoJurado());
 
-        boolean existe = itemCualitativoJuradoExisteFinder.obtener(
+        var existe = itemCualitativoJuradoExisteFinder.obtener(
                 modificacion.getItemCualitativoJurado());
 
         logger.debug(ItemCualitativoJuradoKey.LOG_VERIFICACION_MODIFICAR, existe);
