@@ -90,6 +90,10 @@ public final class ArtefactoDomain {
         this.asesor = asesor;
     }
 
+    public boolean esVacio() {
+        return this == VACIO;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -104,9 +108,5 @@ public final class ArtefactoDomain {
 
     public UUID getAsesor() {
         return asesor;
-    }
-
-    public boolean esVacio() {
-        return this == VACIO;
     }
 }

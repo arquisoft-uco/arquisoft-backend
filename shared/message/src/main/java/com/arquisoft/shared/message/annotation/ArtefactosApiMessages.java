@@ -143,6 +143,17 @@ public final class ArtefactosApiMessages {
         public static final String ASIGNAR_RESP_201 = "Artefactos asignados al proyecto de grado";
         public static final String ASIGNAR_RESP_400 =
                 "Datos mal formados: identificador inválido, lista vacía o versión repetida";
+        public static final String CAMBIAR_ASESOR_SUMMARY = "Cambiar el responsable de un artefacto";
+        public static final String CAMBIAR_ASESOR_DESCRIPTION =
+                "Designa a otro asesor como responsable de un artefacto ya asignado. El nuevo asesor debe "
+                        + "existir, estar vigente y estar asignado al proyecto de grado del artefacto. Designar "
+                        + "al asesor que ya es responsable no produce error. Solo cambia el responsable del "
+                        + "artefacto; no reasigna revisiones en curso.";
+        public static final String CAMBIAR_ASESOR_RESP_204 = "Responsable del artefacto cambiado";
+        public static final String CAMBIAR_ASESOR_RESP_400 = "Identificador del asesor ausente o inválido";
+        public static final String CAMBIAR_ASESOR_RESP_422 =
+                "El artefacto no existe, o el asesor no existe, está dado de baja o no está asignado "
+                        + "al proyecto de grado del artefacto";
         public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar los artefactos asignados al asesor";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Devuelve, de forma paginada, los artefactos a cargo del asesor autenticado con su proyecto "

@@ -20,5 +20,6 @@ rutas:
       cargas-version: /{artefactoId}/versiones/cargas
       versiones: /{artefactoId}/versiones
       asesor: /asesor
+      cambiar-asesor: /{artefactoId}/asesor
     estados-revision-asesor:
       base: /estados-revision-asesor

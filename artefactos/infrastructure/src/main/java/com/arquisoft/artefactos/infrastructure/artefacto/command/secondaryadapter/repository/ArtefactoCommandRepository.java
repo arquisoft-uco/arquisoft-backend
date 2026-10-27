@@ -21,4 +21,8 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM ArtefactoJpaEntity a WHERE a.id = :id")
     Optional<ArtefactoJpaEntity> bloquearPorId(@Param("id") UUID id);
+
+    @Modifying
+    @Query("UPDATE ArtefactoJpaEntity a SET a.asesor = :asesor WHERE a.id = :id")
+    int cambiarAsesor(@Param("id") UUID id, @Param("asesor") UUID asesor);
 }
