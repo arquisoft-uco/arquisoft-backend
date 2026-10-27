@@ -40,6 +40,6 @@ public class CambiarAsesorArtefactoValidatorImpl implements CambiarAsesorArtefac
         artefactoExisteRule.validar(new ExistenciaArtefacto(cambio.getArtefacto(), artefacto));
         asesorVigenteRule.validar(new VigenciaAsesor(cambio.getAsesor(), asesor));
         asesorAsignadoProyectoGradoRule.validar(new VigenciaAsesorProyectoGrado(
-                cambio.getAsesor(), artefacto.getProyectoGrado(), vinculosMasRecientes));
+                cambio.getAsesor(), asesor.getNombre(), artefacto.getProyectoGrado(), vinculosMasRecientes));
     }
 }

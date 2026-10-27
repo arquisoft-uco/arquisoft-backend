@@ -10,7 +10,8 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     LOG_AGREGADO("artefactos.aplicacion.proyectogrado.log.agregado", 1),
     LOG_DUPLICADO("artefactos.aplicacion.proyectogrado.log.duplicado", 1),
     LOG_GUARDADO("artefactos.infraestructura.proyectogrado.log.guardado", 1),
-    ERROR_NO_ENCONTRADO("artefactos.dominio.proyectogrado.error.no-encontrado", 1);
+    ERROR_NO_ENCONTRADO("artefactos.dominio.proyectogrado.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("artefactos.dominio.proyectogrado.error.no-encontrado-detalle", 1);
 
     private final String clave;
     private final int parametros;

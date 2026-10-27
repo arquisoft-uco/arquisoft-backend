@@ -17,7 +17,8 @@ public enum AsesorProyectoGradoKey implements ClaveMensaje {
     LOG_LAPIDA("artefactos.aplicacion.asesorproyectogrado.log.lapida", 2),
     LOG_FINALIZACION_DESCARTADA("artefactos.aplicacion.asesorproyectogrado.log.finalizacion-descartada", 3),
     LOG_GUARDADO("artefactos.infraestructura.asesorproyectogrado.log.guardado", 1),
-    ERROR_NO_ASIGNADO("artefactos.dominio.asesorproyectogrado.error.no-asignado", 2);
+    ERROR_NO_ASIGNADO("artefactos.dominio.asesorproyectogrado.error.no-asignado", 1),
+    ERROR_NO_ASIGNADO_DETALLE("artefactos.dominio.asesorproyectogrado.error.no-asignado-detalle", 2);
 
     private final String clave;
     private final int parametros;
