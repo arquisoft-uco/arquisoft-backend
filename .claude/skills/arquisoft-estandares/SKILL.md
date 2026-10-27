@@ -327,8 +327,9 @@ objeto no existe, va una frase genérica: "El artefacto solicitado no existe". L
 que sirven para diagnosticar van al detalle: `super(BaseError.conDetalle(codigo, mensaje, detalle))`,
 con una segunda clave `{clave}-detalle` (`{CONSTANTE}_DETALLE`) que guarda el texto técnico.
 `getMessage()` devuelve el detalle, que es lo que loguean los handlers (consola y Grafana), y el DTO
-entrega el mensaje. Falla en silencio: en los tests unitarios `Mensajes` devuelve un texto de
-respaldo, así que nada rompe. La señal es un constructor de excepción que recibe un `UUID` o un valor
+entrega el mensaje. Falla en silencio: los tests asertan el código de error, así que un UUID en el
+texto de cliente compila y pasa; para fijarlo, `doesNotContain(uuid.toString())`, nunca un literal
+copiado del catálogo. La señal es un constructor de excepción que recibe un `UUID` o un valor
 técnico destinado a un `%s` del mensaje. Si la `Rule` no tiene el nombre, el `record` de entrada lo
 trae del dato que el use case ya cargó; no se consulta la BD solo para redactar el mensaje. Lo mismo
 vale para el texto de un error de `ValidationResult`, que no tiene detalle: ahí el valor técnico
@@ -370,8 +371,10 @@ JUnit 6 + Mockito + AssertJ, AAA con marcadores `// Arrange / // Act / // Assert
   otro sitio un cambio de proveedor obligaría a tocarlo, y `verificarNeutralidadProveedorIdentidad` lo
   impide.
 - **Mensajes:** el catálogo de prueba se instala solo (`InstaladorCatalogoPrueba` vía
-  `ServiceLoader`, con `testImplementation testFixtures(project(':shared:message'))`) y lanza ante
-  una aridad mal declarada. Compara contra la constante de `{Contexto}Codes`/`Fields`, no el literal.
+  `ServiceLoader`, con `testImplementation testFixtures(project(':shared:message'))`), resuelve contra
+  los mismos `catalogo/*.properties` que se suben a Redis (no hay texto de respaldo: una clave sin
+  texto sale `??clave??`) y lanza ante una aridad mal declarada. Compara contra la constante de
+  `{Contexto}Codes`/`Fields`, no el literal: un literal del catálogo rompe al cambiar la redacción.
 - **Cobertura mínima 75%** en `check`. Excluidos: `*DTO`, `*Command`, `*ReadModel`, `*Application`,
   `*Entity` y `config/**`. **`*Domain` sí cuenta.** `shared:*` no aplica JaCoCo.
 
