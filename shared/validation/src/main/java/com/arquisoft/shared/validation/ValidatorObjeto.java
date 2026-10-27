@@ -11,7 +11,7 @@ public final class ValidatorObjeto {
     public static boolean noNulo(Object valor, String campo, String codigoError, ValidationResult resultado) {
         if (UtilObjeto.esNulo(valor)) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.NO_NULO, campo));
+                    Mensajes.obtener(ValidadorKey.NO_NULO));
             return false;
         }
         return true;

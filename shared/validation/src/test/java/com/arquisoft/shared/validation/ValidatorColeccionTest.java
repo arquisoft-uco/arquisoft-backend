@@ -38,7 +38,7 @@ class ValidatorColeccionTest {
         // Assert
         assertThat(valido).isFalse();
         assertThat(result.getErrores().get(0).mensaje())
-                .isEqualTo(Mensajes.formatear(ValidadorKey.TAMANIO_MAXIMO, CAMPO, 2));
+                .isEqualTo(Mensajes.formatear(ValidadorKey.TAMANIO_MAXIMO, 2));
     }
 
     @Test
@@ -65,7 +65,7 @@ class ValidatorColeccionTest {
         // Assert
         assertThat(valido).isFalse();
         assertThat(result.getErrores().get(0).mensaje())
-                .isEqualTo(Mensajes.formatear(ValidadorKey.SIN_DUPLICADOS, CAMPO, "a"));
+                .isEqualTo(Mensajes.obtener(ValidadorKey.SIN_DUPLICADOS));
     }
 
     @Test

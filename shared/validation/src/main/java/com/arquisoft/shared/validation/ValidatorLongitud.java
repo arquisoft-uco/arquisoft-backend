@@ -12,7 +12,7 @@ public final class ValidatorLongitud {
             String valor, int max, String campo, String codigoError, ValidationResult resultado) {
         if (UtilTexto.aplicarTrim(valor).length() > max) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.LONGITUD_MAXIMA, campo, max));
+                    Mensajes.formatear(ValidadorKey.LONGITUD_MAXIMA, max));
             return false;
         }
         return true;
@@ -22,7 +22,7 @@ public final class ValidatorLongitud {
             String valor, int min, String campo, String codigoError, ValidationResult resultado) {
         if (UtilTexto.aplicarTrim(valor).length() < min) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.LONGITUD_MINIMA, campo, min));
+                    Mensajes.formatear(ValidadorKey.LONGITUD_MINIMA, min));
             return false;
         }
         return true;
@@ -33,7 +33,7 @@ public final class ValidatorLongitud {
         int longitud = UtilTexto.aplicarTrim(valor).length();
         if (longitud < min || longitud > max) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.LONGITUD_ENTRE, campo, min, max));
+                    Mensajes.formatear(ValidadorKey.LONGITUD_ENTRE, min, max));
             return false;
         }
         return true;

@@ -50,8 +50,7 @@ public record RegistrarEvaluacionesCuantitativasAsesorCommand(
             result.agregarError(
                     EvaluacionesFields.RegistroEvaluacionesCuantitativasAsesor.EVALUACIONES,
                     EvaluacionesCodes.RegistroEvaluacionesCuantitativasAsesor.LOTE_VACIO,
-                    Mensajes.formatear(ValidadorKey.COLECCION_VACIA,
-                            EvaluacionesFields.RegistroEvaluacionesCuantitativasAsesor.EVALUACIONES));
+                    Mensajes.obtener(ValidadorKey.COLECCION_VACIA));
             return List.of();
         }
 

@@ -14,6 +14,7 @@ import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -208,12 +209,15 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(
             ConstraintViolationException ex,
             HttpServletRequest request) {
-        // ex.getMessage() expone propertyPath, nombre de clase y valor rechazado de la
-        // implementación interna (Hibernate Validator). Se extraen solo los mensajes
-        // interpolados para evitar filtración de detalles de infraestructura (OWASP A05).
-        String safeMessage = ex.getConstraintViolations().stream()
-                .map(cv -> cv.getPropertyPath().toString() + ": " + cv.getMessage())
-                .collect(Collectors.joining("; "));
+        // ex.getMessage() y getPropertyPath() exponen el método, el parámetro y el valor rechazado
+        // de la implementación interna (Hibernate Validator; OWASP A05). Al cliente solo le llega
+        // el último nodo de la ruta, como campo, y el mensaje interpolado.
+        List<ErrorResponseDTO.FieldErrorDTO> fieldErrors = ex.getConstraintViolations().stream()
+                .map(cv -> ErrorResponseDTO.FieldErrorDTO.builder()
+                        .field(ultimoNodo(cv.getPropertyPath()))
+                        .message(cv.getMessage())
+                        .build())
+                .collect(Collectors.toList());
 
         log.warn(Mensajes.obtener(HttpKey.LOG_VIOLACION_RESTRICCION), request.getRequestURI(),
                 ex.getConstraintViolations().size());
@@ -222,7 +226,8 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(ErrorResponseDTO.builder()
                         .error(Mensajes.obtener(HttpKey.PARAMETROS_INVALIDOS))
                         .errorCode(AppCodes.Http.PARAMETRO_INVALIDO)
-                        .message(safeMessage)
+                        .message(Mensajes.obtener(HttpKey.VALIDACION_DATOS_DETALLE))
+                        .fieldErrors(fieldErrors)
                         .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
@@ -328,12 +333,12 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
         return switch (ex) {
             case org.springframework.web.bind.MethodArgumentNotValidException ignored ->
                     Mensajes.obtener(HttpKey.VALIDACION_DATOS_DETALLE);
-            case org.springframework.web.bind.MissingServletRequestParameterException m ->
-                    Mensajes.formatear(HttpKey.PARAMETRO_FALTANTE_DETALLE, m.getParameterName());
+            case org.springframework.web.bind.MissingServletRequestParameterException ignored ->
+                    Mensajes.obtener(HttpKey.PARAMETRO_FALTANTE_DETALLE);
             case org.springframework.http.converter.HttpMessageNotReadableException notReadable ->
                     extractUnreadableBodyMessage(notReadable);
-            case org.springframework.web.method.annotation.MethodArgumentTypeMismatchException m ->
-                    Mensajes.formatear(HttpKey.CAMPO_FORMATO_INVALIDO_DETALLE, m.getName());
+            case org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ignored ->
+                    Mensajes.obtener(HttpKey.CAMPO_FORMATO_INVALIDO_DETALLE);
             default -> Mensajes.obtener(HttpKey.PETICION_INVALIDA_DETALLE);
         };
     }
@@ -344,7 +349,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             if (cause instanceof tools.jackson.core.JacksonException jacksonEx) {
                 String campo = describirPathJackson(jacksonEx);
                 if (campo != null && !campo.isBlank()) {
-                    return Mensajes.formatear(HttpKey.CAMPO_FORMATO_INVALIDO_DETALLE, campo);
+                    return Mensajes.obtener(HttpKey.CAMPO_FORMATO_INVALIDO_DETALLE);
                 }
             }
             cause = cause.getCause();
@@ -365,6 +370,14 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             }
         }
         return ruta.toString();
+    }
+
+    private String ultimoNodo(Path ruta) {
+        String nombre = null;
+        for (var nodo : ruta) {
+            nombre = nodo.getName();
+        }
+        return nombre;
     }
 
     private String currentTraceId() {

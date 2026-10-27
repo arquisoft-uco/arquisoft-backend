@@ -6,7 +6,6 @@ import com.arquisoft.shared.util.UtilColeccion;
 import com.arquisoft.shared.util.UtilObjeto;
 
 import java.util.Collection;
-import java.util.Optional;
 
 public final class ValidatorColeccion {
 
@@ -15,7 +14,7 @@ public final class ValidatorColeccion {
     public static boolean noVacia(Collection<?> valor, String campo, String codigoError, ValidationResult resultado) {
         if (UtilColeccion.esVaciaONula(valor)) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.COLECCION_VACIA, campo));
+                    Mensajes.obtener(ValidadorKey.COLECCION_VACIA));
             return false;
         }
         return true;
@@ -25,7 +24,7 @@ public final class ValidatorColeccion {
             Collection<?> valor, int max, String campo, String codigoError, ValidationResult resultado) {
         if (!UtilObjeto.esNulo(valor) && valor.size() > max) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.TAMANIO_MAXIMO, campo, max));
+                    Mensajes.formatear(ValidadorKey.TAMANIO_MAXIMO, max));
             return false;
         }
         return true;
@@ -33,10 +32,9 @@ public final class ValidatorColeccion {
 
     public static boolean sinDuplicados(
             Collection<?> valor, String campo, String codigoError, ValidationResult resultado) {
-        Optional<?> duplicado = UtilColeccion.primerDuplicado(valor);
-        if (duplicado.isPresent()) {
+        if (UtilColeccion.primerDuplicado(valor).isPresent()) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.SIN_DUPLICADOS, campo, duplicado.get()));
+                    Mensajes.obtener(ValidadorKey.SIN_DUPLICADOS));
             return false;
         }
         return true;
