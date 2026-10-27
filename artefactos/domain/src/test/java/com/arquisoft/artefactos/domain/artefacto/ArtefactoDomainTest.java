@@ -105,4 +105,16 @@ class ArtefactoDomainTest {
         assertThat(artefacto.getId()).isEqualTo(id);
         assertThat(artefacto.getProyectoGrado()).isNull();
     }
+
+    @Test
+    void debeSerVacioSoloElCentinela_cuandoSeConsultaEsVacio() {
+        // Arrange
+        var reconstruido = ArtefactoDomain.reconstruir(
+                UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
+                UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto());
+
+        // Act & Assert
+        assertThat(ArtefactoDomain.VACIO.esVacio()).isTrue();
+        assertThat(reconstruido.esVacio()).isFalse();
+    }
 }

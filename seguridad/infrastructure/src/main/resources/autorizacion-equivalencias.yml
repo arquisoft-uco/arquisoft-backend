@@ -180,6 +180,7 @@ security:
         - {method: POST, path: "/api/artefactos", role: "artefactos:artefacto:create"}
         - {method: POST, path: "/api/artefactos/asesor", role: "artefactos:artefacto-asesor:view"}
         - {method: POST, path: "/api/versiones-artefacto/asesor", role: "artefactos:version-artefacto-asesor:view"}
+        - {method: PATCH, path: "/api/artefactos/{artefactoId}/asesor", role: "artefactos:artefacto:update-asesor"}
         # mapas_ruta
         - {method: POST, path: "/api/mapas-ruta", role: "mapas-ruta:mapa-ruta:create"}
         - {method: POST, path: "/api/mapas-ruta/coordinador", role: "mapas-ruta:mapa-ruta-coordinador:view"}

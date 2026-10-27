@@ -12,6 +12,10 @@ import java.util.UUID;
 
 public final class ArtefactoDomain {
 
+    public static final ArtefactoDomain VACIO = ArtefactoDomain.reconstruir(
+            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
+            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto());
+
     private UUID id;
     private UUID proyectoGrado;
     private UUID versionRepositorioArtefacto;
@@ -84,6 +88,10 @@ public final class ArtefactoDomain {
             return;
         }
         this.asesor = asesor;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 
     public UUID getId() {

@@ -15,4 +15,12 @@ public final class ArtefactoJpaMapper {
                 .asesor(entity.asesor())
                 .build();
     }
+
+    public static ArtefactoEntity toEntity(ArtefactoJpaEntity jpaEntity) {
+        return new ArtefactoEntity(
+                jpaEntity.getId(),
+                jpaEntity.getProyectoGrado(),
+                jpaEntity.getVersionRepositorioArtefacto(),
+                jpaEntity.getAsesor());
+    }
 }
