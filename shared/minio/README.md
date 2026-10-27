@@ -7,8 +7,8 @@ un formulario `POST` con política y el navegador sube directo a MinIO.
 
 | Método | Qué hace |
 |---|---|
-| `generarFormularioCarga` | `PostPolicy` con `key` exacta, `Content-Type` exacto, `content-length-range` `[1, máximo]` y un `eq` por metadato `x-amz-meta-*`. Devuelve `url` (`minio.endpoint-publico` + bucket), `campos` (firma + `key`, `Content-Type` y metadatos, que el cliente debe reenviar con el `file` al final) y `expiraEn` |
-| `consultarMetadatos` | `statObject`. Tamaño, tipo, `etag` sin comillas y metadatos de usuario (en minúsculas, sin el prefijo `x-amz-meta-`). Objeto ausente → `MetadatosObjeto.VACIO` |
+| `generarFormularioCarga` | `PostPolicy` con `key` exacta, `Content-Type` exacto, `content-length-range` `[1, máximo]` y un `eq` por metadato `x-amz-meta-*`, con el valor codificado en URL (UTF-8): S3 solo admite ASCII en los metadatos de usuario, así que el llamante pasa el valor tal cual y nunca lo codifica. Devuelve `url` (`minio.endpoint-publico` + bucket), `campos` (firma + `key`, `Content-Type` y metadatos, que el cliente debe reenviar con el `file` al final) y `expiraEn` |
+| `consultarMetadatos` | `statObject`. Tamaño, tipo, `etag` sin comillas y metadatos de usuario (en minúsculas, sin el prefijo `x-amz-meta-` y ya decodificados). Objeto ausente → `MetadatosObjeto.VACIO` |
 | `abrirLectura` | `getObject` en streaming y el `etag` del GET. Objeto ausente → `Optional.empty()`. El llamador cierra la `LecturaObjeto` |
 | `copiar` | `copyObject` condicionado al ETag (`x-amz-copy-source-if-match`): si el origen cambió, MinIO responde 412 y sale `MinioOperationException` |
 | `eliminar` | `removeObject` |
@@ -19,10 +19,10 @@ Todo fallo es `MinioOperationException` (503). El módulo no registra logs: logu
 
 No crea buckets, no comprueba que existan y no lista objetos (`makeBucket`, `bucketExists`, `listObjects`):
 en la nube la cuenta del backend solo tiene `GetObject`, `PutObject`, `DeleteObject` y `GetBucketLocation`
-sobre `repositorio-artefactos/*`. Un objeto ausente responde 404 `NoSuchKey` y se mapea a vacío. El bucket
+sobre `repositorio-artefactos/*` y `artefactos/*`. Un objeto ausente responde 404 `NoSuchKey` y se mapea a vacío. El bucket
 y su ciclo de vida los configura `minio/configurar.sh`. TLS siempre se valida: no hay modo *trust-all*.
 
-## Layout del bucket `repositorio-artefactos`
+## Layout de los buckets `repositorio-artefactos` y `artefactos` (ambos igual)
 
 ```
 pendientes/{carga}      # destino del formulario firmado; ILM lo expira a 1 día

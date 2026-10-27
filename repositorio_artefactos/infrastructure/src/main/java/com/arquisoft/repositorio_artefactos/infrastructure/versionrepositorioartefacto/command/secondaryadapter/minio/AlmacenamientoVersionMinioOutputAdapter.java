@@ -10,15 +10,11 @@ import com.arquisoft.shared.message.constant.RepositorioArtefactosAlmacenamiento
 import com.arquisoft.shared.message.key.repositorio_artefactos.VersionRepositorioArtefactoKey;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
 import com.arquisoft.shared.minio.model.SolicitudFormularioCarga;
-import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +36,7 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
         var metadatos = new LinkedHashMap<String, String>();
         metadatos.put(METADATO_SOLICITANTE, solicitud.solicitante().toString());
         metadatos.put(METADATO_REPOSITORIO, solicitud.repositorio().toString());
-        metadatos.put(METADATO_NOMBRE_ARCHIVO, URLEncoder.encode(solicitud.nombreArchivo(), StandardCharsets.UTF_8));
+        metadatos.put(METADATO_NOMBRE_ARCHIVO, solicitud.nombreArchivo());
 
         var formulario = almacenamientoObjetos.generarFormularioCarga(new SolicitudFormularioCarga(
                 propiedades.getBucket(),
@@ -60,9 +56,9 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
         var metadatos = objeto.metadatos();
         return Optional.of(new CargaPendienteEntity(
                 carga,
-                uuidODefecto(metadatos.get(METADATO_REPOSITORIO)),
-                uuidODefecto(metadatos.get(METADATO_SOLICITANTE)),
-                decodificar(metadatos.get(METADATO_NOMBRE_ARCHIVO)),
+                UtilUUID.generarUUIDDesdeTextoOPorDefecto(metadatos.get(METADATO_REPOSITORIO)),
+                UtilUUID.generarUUIDDesdeTextoOPorDefecto(metadatos.get(METADATO_SOLICITANTE)),
+                metadatos.getOrDefault(METADATO_NOMBRE_ARCHIVO, UtilTexto.VACIO),
                 objeto.tipoContenido(),
                 objeto.tamano(),
                 objeto.etag()));
@@ -87,13 +83,5 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
 
     private static String keyPendiente(UUID carga) {
         return RepositorioArtefactosAlmacenamiento.PREFIJO_PENDIENTES + carga;
-    }
-
-    private static UUID uuidODefecto(String texto) {
-        return UtilObjeto.aplicarPorDefecto(UtilUUID.generarUUIDDesdeTexto(texto), UtilUUID.obtenerUUIDPorDefecto());
-    }
-
-    private static String decodificar(String texto) {
-        return UtilObjeto.esNulo(texto) ? UtilTexto.VACIO : URLDecoder.decode(texto, StandardCharsets.UTF_8);
     }
 }

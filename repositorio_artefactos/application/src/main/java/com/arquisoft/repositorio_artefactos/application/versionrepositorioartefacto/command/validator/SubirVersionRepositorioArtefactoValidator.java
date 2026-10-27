@@ -8,7 +8,10 @@ import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.S
 
 public interface SubirVersionRepositorioArtefactoValidator {
 
-    void validar(SubidaVersionRepositorioArtefactoDomain subida, AdministradorDomain administrador,
-                 RepositorioArtefactoDomain repositorio, CargaPendienteDomain carga,
-                 AnalisisArchivoDomain analisis, long tamanoMaximoBytes, int ultimoNumeroVersion);
+    void validarCarga(SubidaVersionRepositorioArtefactoDomain subida, AdministradorDomain administrador,
+                      RepositorioArtefactoDomain repositorio, CargaPendienteDomain carga,
+                      long tamanoMaximoBytes, int ultimoNumeroVersion);
+
+    void validarContenido(SubidaVersionRepositorioArtefactoDomain subida, CargaPendienteDomain carga,
+                          AnalisisArchivoDomain analisis);
 }

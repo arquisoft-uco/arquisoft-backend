@@ -36,6 +36,13 @@ public final class ArtefactosFields {
         private VersionArtefacto() {}
 
         public static final String ASESOR = "asesor";
+        public static final String ARTEFACTO = "artefacto";
+        public static final String SOLICITANTE = "solicitante";
+        public static final String CARGA = "carga";
+        public static final String NUMERO_VERSION = "version";
+        public static final String NOMBRE_ARCHIVO = "nombreArchivo";
+        public static final String TIPO_CONTENIDO = "tipoContenido";
+        public static final String TAMANO_BYTES = "tamanoBytes";
     }
 
     public static final class EstudianteArtefacto {

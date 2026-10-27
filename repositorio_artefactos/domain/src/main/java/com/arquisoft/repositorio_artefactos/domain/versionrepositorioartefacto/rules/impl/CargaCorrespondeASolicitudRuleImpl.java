@@ -11,7 +11,7 @@ public class CargaCorrespondeASolicitudRuleImpl implements CargaCorrespondeASoli
         var carga = correspondencia.carga();
         if (!carga.getSolicitante().equals(correspondencia.solicitante())
                 || !carga.getRepositorio().equals(correspondencia.repositorio())) {
-            throw new CargaNoCorrespondeException(carga.getCarga());
+            throw new CargaNoCorrespondeException(carga.getCarga(), carga.getNombreArchivo());
         }
     }
 }

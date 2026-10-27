@@ -56,6 +56,7 @@ public final class ArtefactosCodes {
         public static final String ARTEFACTOS_REQUERIDOS = "ARTEFACTOS_ARTEFACTO_ARTEFACTOS_REQUERIDOS";
         public static final String REPOSITORIO_YA_ASIGNADO = "ARTEFACTOS_ARTEFACTO_REPOSITORIO_YA_ASIGNADO";
         public static final String NO_ENCONTRADO = "ARTEFACTOS_ARTEFACTO_NO_ENCONTRADO";
+        public static final String ESTUDIANTE_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ESTUDIANTE_NO_PROPIETARIO";
     }
 
     public static final class ProyectoGrado {
@@ -122,6 +123,28 @@ public final class ArtefactosCodes {
         private VersionArtefacto() {}
 
         public static final String ASESOR_REQUERIDO = "VERSION_ARTEFACTO_ASESOR_REQUERIDO";
+        public static final String ARTEFACTO_REQUERIDO = "VERSION_ARTEFACTO_ARTEFACTO_REQUERIDO";
+        public static final String SOLICITANTE_REQUERIDO = "VERSION_ARTEFACTO_SOLICITANTE_REQUERIDO";
+        public static final String CARGA_REQUERIDA = "VERSION_ARTEFACTO_CARGA_REQUERIDA";
+        public static final String NUMERO_VERSION_INVALIDO = "VERSION_ARTEFACTO_NUMERO_VERSION_INVALIDO";
+        public static final String NOMBRE_ARCHIVO_REQUERIDO = "VERSION_ARTEFACTO_NOMBRE_ARCHIVO_REQUERIDO";
+        public static final String NOMBRE_ARCHIVO_DEMASIADO_LARGO =
+                "VERSION_ARTEFACTO_NOMBRE_ARCHIVO_DEMASIADO_LARGO";
+        public static final String NOMBRE_ARCHIVO_INVALIDO = "VERSION_ARTEFACTO_NOMBRE_ARCHIVO_INVALIDO";
+        public static final String TIPO_CONTENIDO_REQUERIDO = "VERSION_ARTEFACTO_TIPO_CONTENIDO_REQUERIDO";
+        public static final String TIPO_CONTENIDO_DEMASIADO_LARGO =
+                "VERSION_ARTEFACTO_TIPO_CONTENIDO_DEMASIADO_LARGO";
+        public static final String TIPO_CONTENIDO_NO_COINCIDE_EXTENSION =
+                "VERSION_ARTEFACTO_TIPO_CONTENIDO_NO_COINCIDE_EXTENSION";
+        public static final String TIPO_NO_PERMITIDO = "VERSION_ARTEFACTO_TIPO_NO_PERMITIDO";
+        public static final String TAMANO_BYTES_REQUERIDO = "VERSION_ARTEFACTO_TAMANO_BYTES_REQUERIDO";
+        public static final String TAMANO_BYTES_INVALIDO = "VERSION_ARTEFACTO_TAMANO_BYTES_INVALIDO";
+
+        public static final String CARGA_NO_ENCONTRADA = "VERSION_ARTEFACTO_CARGA_NO_ENCONTRADA";
+        public static final String CARGA_NO_CORRESPONDE = "VERSION_ARTEFACTO_CARGA_NO_CORRESPONDE";
+        public static final String CARGA_MODIFICADA = "VERSION_ARTEFACTO_CARGA_MODIFICADA";
+        public static final String TAMANO_ARCHIVO_EXCEDIDO = "VERSION_ARTEFACTO_TAMANO_ARCHIVO_EXCEDIDO";
+        public static final String TIPO_ARCHIVO_NO_COINCIDE = "VERSION_ARTEFACTO_TIPO_ARCHIVO_NO_COINCIDE";
     }
 
     public static final class EstudianteArtefacto {

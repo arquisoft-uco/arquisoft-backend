@@ -104,6 +104,30 @@ class ArtefactoCommandOutputAdapterTest {
         verify(logger, times(2)).debug(ArtefactoKey.LOG_TRASPASADOS, 0);
     }
 
+    @Test
+    void debeObtenerBloqueadoPorId_cuandoExiste() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var id = sembrar(proyecto, asesor);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerBloqueadoPorId(id);
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().id()).isEqualTo(id);
+        assertThat(resultado.get().asesor()).isEqualTo(asesor);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElArtefactoBloqueadoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerBloqueadoPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
     private UUID sembrar(UUID proyecto, UUID asesor) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(ArtefactoJpaEntity.builder()

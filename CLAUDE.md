@@ -313,6 +313,9 @@ el enunciado, para reconocer una desviación de un vistazo.
   `DomainValidationException` (422 + `fieldErrors[]`), `ApplicationException` (400),
   `InfrastructureException` (503). Nunca `RuntimeException` directa. Constructor
   `super(message, errorCode)` — invertirlos compila y produce un bug silencioso.
+- El `message` lo ve el usuario en el front: nombre legible, sin UUID ni términos técnicos. Lo que
+  sirve para diagnosticar va en `BaseError.conDetalle(codigo, mensaje, detalle)`: el detalle es el
+  `getMessage()` que se loguea (`arquisoft-estandares` → *Excepciones*).
 - Viven **dentro del slice vertical del feature**, en la capa de su clase base. No hay `exception/` a
   nivel de contexto, y una subclase nunca va en distinta capa que su padre.
 - `GlobalAppExceptionHandler` (`shared:web`) resuelve el status recorriendo la jerarquía; un contexto

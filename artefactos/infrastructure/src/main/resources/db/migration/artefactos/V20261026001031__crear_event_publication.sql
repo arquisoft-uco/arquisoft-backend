@@ -1,7 +1,7 @@
--- Outbox de Spring Modulith para el contexto artefactos (HU-023: primer evento que publica).
+-- Outbox de Spring Modulith para el contexto artefactos (HU-043: primer evento que publica).
 -- ContextAwareEventPublicationRepository detecta esta tabla al arrancar y enruta hacia ella
 -- los eventos publicados dentro de una transaccion de artefactosTransactionManager.
--- Estructura identica a fichas/usuarios/solicitudes/proyectos: la define Spring Modulith, no el negocio.
+-- Estructura identica a fichas/usuarios/solicitudes/proyectos/repositorio_artefactos: la define Spring Modulith.
 
 CREATE TABLE event_publication (
     id                     UUID        NOT NULL,

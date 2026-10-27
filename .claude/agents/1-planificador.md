@@ -272,6 +272,10 @@ acción necesita*). Sin ese caso, el mapper devuelve el domain directo.
 - **Logs y catálogo:** cada punto de log es entregable de la sección 6 (nivel, clave con aridad,
   línea de catálogo); la estructura por flujo está en `arquisoft-estandares`. Un correo en un log va
   enmascarado y se dice. Sin textos nuevos: "Sin cambios al catálogo de mensajes".
+- **Mensajes de error:** el texto de cliente de cada excepción y de cada error de campo nombra el
+  objeto por su nombre legible, sin UUID ni términos técnicos; los identificadores van a una clave
+  `-detalle` (`arquisoft-estandares` → *Excepciones*). Si la `Rule` necesita el nombre, el plan dice
+  qué campo del `record` de entrada lo trae.
 - **Enums de catálogo:** `desde`/`esValido`/`getId()`; ubicación según la que ya use el contexto
   (decisión abierta). Constantes copiadas de `mer/data/{NN}_data_{contexto}.sql` listando `id`,
   `nombre`, `descripcion`; ni una de más. Ancho de columna copiado de `{NN}_tablas_{contexto}.sql`

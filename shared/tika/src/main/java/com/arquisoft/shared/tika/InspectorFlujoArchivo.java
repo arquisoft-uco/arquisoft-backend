@@ -1,4 +1,4 @@
-package com.arquisoft.repositorio_artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.tika;
+package com.arquisoft.shared.tika;
 
 import java.io.FilterInputStream;
 import java.io.IOException;

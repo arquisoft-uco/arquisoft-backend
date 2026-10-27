@@ -4,14 +4,6 @@ public final class EventTopics {
 
     private EventTopics() {}
 
-    public static final class Artefactos {
-
-        private Artefactos() {}
-
-        public static final String REVISION_ASESOR_ESTADO_CAMBIADO =
-                "artefactos.revision_asesor.estado_cambiado";
-    }
-
     public static final class Fichas {
 
         private Fichas() {}
@@ -164,6 +156,16 @@ public final class EventTopics {
                 "repositorio_artefactos.version_repositorio_artefacto.subida";
         public static final String REPOSITORIO_ARTEFACTO_MODIFICADO =
                 "repositorio_artefactos.repositorio_artefacto.modificado";
+    }
+
+    public static final class Artefactos {
+
+        private Artefactos() {}
+
+        public static final String VERSION_ARTEFACTO_GENERADA =
+                "artefactos.version_artefacto.generada";
+        public static final String REVISION_ASESOR_ESTADO_CAMBIADO =
+                "artefactos.revision_asesor.estado_cambiado";
     }
 
     public static final class MapasRuta {
