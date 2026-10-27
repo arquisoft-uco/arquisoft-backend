@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de AgregarAsesorFicha. */
 public enum AgregarAsesorFichaKey implements ClaveMensaje {
 
-    ERROR_USUARIO_DUPLICADO("usuarios.dominio.asesorficha.error.usuario-duplicado", 1),
+    ERROR_USUARIO_DUPLICADO("usuarios.dominio.asesorficha.error.usuario-duplicado", 0),
+    ERROR_USUARIO_DUPLICADO_DETALLE("usuarios.dominio.asesorficha.error.usuario-duplicado-detalle", 1),
     LOG_VERIFICACION_AGREGAR("usuarios.aplicacion.asesorficha.log.verificacion-agregar", 3),
     LOG_REACTIVADO("usuarios.aplicacion.asesorficha.log.reactivado", 1),
     LOG_GUARDADO("usuarios.infraestructura.asesorficha.log.guardado", 1),

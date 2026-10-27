@@ -76,6 +76,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
                             .contains(": " + UsuariosRoles.ASESOR + ".")
                             .doesNotContain(UsuariosRoles.ESTUDIANTE)
                             .doesNotContain(UsuariosRoles.COORDINADOR);
+                    assertThat(ex.getError().getMessage()).doesNotContain(usuario.toString());
                 });
     }
 
