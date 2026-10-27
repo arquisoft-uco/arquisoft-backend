@@ -65,7 +65,7 @@ public final class ModificacionEstadoRespuestaDomain {
             result.agregarError(
                     SolicitudesFields.Respuesta.ESTADO,
                     SolicitudesCodes.EstadoRespuesta.ESTADO_NO_ENCONTRADO,
-                    Mensajes.formatear(EstadoRespuestaKey.ERROR_ESTADO_RESPUESTA_NO_ENCONTRADO, recortado));
+                    Mensajes.formatear(EstadoRespuestaKey.ERROR_ESTADO_RESPUESTA_NO_ENCONTRADO));
             return;
         }
         this.nuevoEstado = EstadoRespuesta.desde(recortado);
