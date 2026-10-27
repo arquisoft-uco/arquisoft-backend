@@ -132,7 +132,7 @@ class AgregarMapaRutaControllerTest {
     void debeRetornar422_cuandoElInteractorLanzaUnaReglaDeNegocio() throws Exception {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        when(interactor.ejecutar(any())).thenThrow(new MapaRutaDuplicadoException(proyectoGrado));
+        when(interactor.ejecutar(any())).thenThrow(new MapaRutaDuplicadoException(proyectoGrado, "Sistema de gestión académica"));
 
         // Act & Assert
         mockMvc.perform(post(RUTA)

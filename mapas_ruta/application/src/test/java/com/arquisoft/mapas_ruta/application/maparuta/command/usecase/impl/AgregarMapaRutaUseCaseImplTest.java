@@ -132,7 +132,7 @@ class AgregarMapaRutaUseCaseImplTest {
         var proyecto = proyecto(agregacion);
         when(proyectoGradoPorIdFinder.obtener(mapaRuta.getProyectoGrado())).thenReturn(proyecto);
         when(mapaRutaDeProyectoExisteFinder.obtener(mapaRuta.getProyectoGrado())).thenReturn(true);
-        doThrow(new MapaRutaDuplicadoException(mapaRuta.getProyectoGrado()))
+        doThrow(new MapaRutaDuplicadoException(mapaRuta.getProyectoGrado(), proyecto.getTituloProyecto()))
                 .when(validator).validar(agregacion, proyecto, true);
 
         // Act & Assert

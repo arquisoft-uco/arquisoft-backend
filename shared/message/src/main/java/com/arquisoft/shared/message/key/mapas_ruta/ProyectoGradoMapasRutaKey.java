@@ -4,10 +4,14 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum ProyectoGradoMapasRutaKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("mapas_ruta.dominio.proyectogrado.error.no-encontrado", 1),
+    ERROR_NO_ENCONTRADO("mapas_ruta.dominio.proyectogrado.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("mapas_ruta.dominio.proyectogrado.error.no-encontrado-detalle", 1),
     ERROR_NO_PROPIETARIO("mapas_ruta.dominio.proyectogrado.error.no-propietario", 1),
+    ERROR_NO_PROPIETARIO_DETALLE("mapas_ruta.dominio.proyectogrado.error.no-propietario-detalle", 1),
     ERROR_NO_EN_PROCESO("mapas_ruta.dominio.proyectogrado.error.no-en-proceso", 2),
-    ERROR_ESTADO_NO_ENCONTRADO("mapas_ruta.dominio.proyectogrado.error.estado-no-encontrado", 1);
+    ERROR_NO_EN_PROCESO_DETALLE("mapas_ruta.dominio.proyectogrado.error.no-en-proceso-detalle", 2),
+    ERROR_ESTADO_NO_ENCONTRADO("mapas_ruta.dominio.proyectogrado.error.estado-no-encontrado", 0),
+    ERROR_ESTADO_NO_ENCONTRADO_DETALLE("mapas_ruta.dominio.proyectogrado.error.estado-no-encontrado-detalle", 1);
 
     private final String clave;
     private final int parametros;
