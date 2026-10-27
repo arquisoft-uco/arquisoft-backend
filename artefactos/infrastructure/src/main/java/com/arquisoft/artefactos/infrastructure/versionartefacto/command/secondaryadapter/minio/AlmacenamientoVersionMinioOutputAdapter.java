@@ -10,7 +10,6 @@ import com.arquisoft.shared.message.constant.ArtefactosAlmacenamiento;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
 import com.arquisoft.shared.minio.model.SolicitudFormularioCarga;
-import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import lombok.RequiredArgsConstructor;
@@ -57,8 +56,8 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
         var metadatos = objeto.metadatos();
         return Optional.of(new CargaPendienteEntity(
                 carga,
-                uuidODefecto(metadatos.get(METADATO_ARTEFACTO)),
-                uuidODefecto(metadatos.get(METADATO_SOLICITANTE)),
+                UtilUUID.generarUUIDDesdeTextoOPorDefecto(metadatos.get(METADATO_ARTEFACTO)),
+                UtilUUID.generarUUIDDesdeTextoOPorDefecto(metadatos.get(METADATO_SOLICITANTE)),
                 metadatos.getOrDefault(METADATO_NOMBRE_ARCHIVO, UtilTexto.VACIO),
                 objeto.tipoContenido(),
                 objeto.tamano(),
@@ -84,9 +83,5 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
 
     private static String keyPendiente(UUID carga) {
         return ArtefactosAlmacenamiento.PREFIJO_PENDIENTES + carga;
-    }
-
-    private static UUID uuidODefecto(String texto) {
-        return UtilObjeto.aplicarPorDefecto(UtilUUID.generarUUIDDesdeTexto(texto), UtilUUID.obtenerUUIDPorDefecto());
     }
 }

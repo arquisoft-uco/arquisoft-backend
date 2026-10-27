@@ -34,4 +34,8 @@ public final class UtilUUID {
     public static UUID generarUUIDDesdeTexto(final String uuid) {
         return uuidValido(uuid) ? UUID.fromString(uuid) : null;
     }
+
+    public static UUID generarUUIDDesdeTextoOPorDefecto(final String uuid) {
+        return uuidValido(uuid) ? UUID.fromString(uuid) : obtenerUUIDPorDefecto();
+    }
 }
