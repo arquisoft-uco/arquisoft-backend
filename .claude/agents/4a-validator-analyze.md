@@ -316,6 +316,7 @@ escritura/lectura/evento*, *Datos sensibles en logs*. **No existe ninguna clase
 |---|:---:|
 | Log con texto literal, o con `Mensajes.obtener(clave)` en vez de la clave directa (paga un GET a Redis aunque el nivel esté apagado) | ❌ |
 | Excepción con `super("literal", "CODIGO")` en vez de `Mensajes.formatear(...)`, o `Mensajes.obtener(clave).formatted(args)` | ❌ |
+| Texto de cliente de una excepción o de un error de `ValidationResult` que interpola un UUID, un "id", un tipo MIME o bytes en vez del nombre legible, o identificadores de diagnóstico que no van a `BaseError.conDetalle` (`arquisoft-estandares` → *Excepciones*) | ❌ |
 | Clave nueva sin enum `{Feature}Key`, sin registrar en `ClavesCatalogo` o sin línea en `catalogo/{contexto}.properties`; `parametros()` que no casa con los marcadores (`%s` cliente, `{}` logs) | ❌ |
 | Escritura: `UseCaseImpl` sin `info` de entrada como primera línea o sin `debug` de verificación antes de `validar`; más de tres líneas de log; `info` de cierre que no es la última sentencia | ⚠️ |
 | `InteractorImpl`, `ValidatorImpl` o `Rule` que inyecta `AppLogger`; log en `Command.crear`, mapper, DTO o `Validator*`/`Util*`; `try/catch` solo para loguear | ❌ |

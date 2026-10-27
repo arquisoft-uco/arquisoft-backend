@@ -10,7 +10,8 @@ public enum AgregarVersionRepositorioArtefactoKey implements ClaveMensaje {
     LOG_AGREGADA("artefactos.aplicacion.versionrepositorioartefacto.log.agregada", 1),
     LOG_DUPLICADA("artefactos.aplicacion.versionrepositorioartefacto.log.duplicada", 1),
     LOG_GUARDADA("artefactos.infraestructura.versionrepositorioartefacto.log.guardada", 1),
-    ERROR_NO_ENCONTRADAS("artefactos.dominio.versionrepositorioartefacto.error.no-encontradas", 1);
+    ERROR_NO_ENCONTRADAS("artefactos.dominio.versionrepositorioartefacto.error.no-encontradas", 0),
+    ERROR_NO_ENCONTRADAS_DETALLE("artefactos.dominio.versionrepositorioartefacto.error.no-encontradas-detalle", 1);
 
     private final String clave;
     private final int parametros;

@@ -63,6 +63,26 @@ public final class ArtefactosApiMessages {
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 =
                 "Sin permiso para consultar las versiones de los artefactos";
+        public static final String SOLICITAR_CARGA_SUMMARY = "Solicitar la carga de una versión del artefacto";
+        public static final String SOLICITAR_CARGA_DESCRIPTION =
+                "Entrega un formulario firmado para subir el archivo de la nueva versión directamente al "
+                        + "almacenamiento de objetos. El estudiante debe estar vinculado al artefacto.";
+        public static final String SOLICITAR_CARGA_RESP_200 = "Formulario de carga generado";
+        public static final String SOLICITAR_CARGA_RESP_400 = "Datos de entrada inválidos";
+        public static final String SOLICITAR_CARGA_RESP_422 =
+                "Artefacto inexistente, estudiante no vinculado, tipo o tamaño de archivo no permitido";
+        public static final String SOLICITAR_CARGA_RESP_503 = "Almacenamiento de objetos no disponible";
+        public static final String GENERAR_SUMMARY = "Confirmar la carga de una nueva versión del artefacto";
+        public static final String GENERAR_DESCRIPTION =
+                "Valida el archivo subido, registra la versión con el siguiente número y avisa por correo "
+                        + "al asesor del artefacto";
+        public static final String GENERAR_RESP_201 = "Versión del artefacto registrada";
+        public static final String GENERAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String GENERAR_RESP_422 =
+                "Artefacto inexistente, estudiante no vinculado, asesor dado de baja, carga inexistente o ajena, "
+                        + "o archivo inválido";
+        public static final String GENERAR_RESP_503 = "Almacenamiento de objetos no disponible";
+        public static final String PARAM_ARTEFACTO = "Identificador del artefacto";
     }
 
     public static final class EstudianteArtefacto {

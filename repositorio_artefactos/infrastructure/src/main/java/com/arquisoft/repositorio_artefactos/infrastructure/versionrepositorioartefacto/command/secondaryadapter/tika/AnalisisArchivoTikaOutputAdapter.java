@@ -10,11 +10,8 @@ import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
 import com.arquisoft.shared.minio.exception.MinioOperationException;
 import com.arquisoft.shared.minio.model.LecturaObjeto;
+import com.arquisoft.shared.tika.InspectorArchivo;
 import lombok.RequiredArgsConstructor;
-import org.apache.tika.detect.DefaultDetector;
-import org.apache.tika.detect.Detector;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -27,7 +24,7 @@ public class AnalisisArchivoTikaOutputAdapter implements AnalisisArchivoOutputPo
 
     private final AlmacenamientoObjetos almacenamientoObjetos;
     private final RepositorioArtefactosAlmacenamientoProperties propiedades;
-    private final Detector detector = new DefaultDetector();
+    private final InspectorArchivo inspectorArchivo;
 
     @Override
     public Optional<AnalisisArchivoEntity> analizarCarga(UUID carga) {
@@ -38,13 +35,8 @@ public class AnalisisArchivoTikaOutputAdapter implements AnalisisArchivoOutputPo
 
     private AnalisisArchivoEntity analizar(LecturaObjeto lectura) {
         try (lectura) {
-            var inspector = new InspectorFlujoArchivo(lectura.contenido(), propiedades.getTamanoMaximoBytes());
-            String tipoDetectado;
-            try (var flujo = TikaInputStream.get(inspector)) {
-                tipoDetectado = detector.detect(flujo, new Metadata()).toString();
-                inspector.drenar();
-            }
-            return new AnalisisArchivoEntity(tipoDetectado, inspector.hashHexadecimal(), lectura.etag());
+            var inspeccion = inspectorArchivo.inspeccionar(lectura.contenido(), propiedades.getTamanoMaximoBytes());
+            return new AnalisisArchivoEntity(inspeccion.tipoDetectado(), inspeccion.hashSha256(), lectura.etag());
         } catch (IOException e) {
             throw new MinioOperationException(
                     Mensajes.obtener(AlmacenamientoKey.ERROR_LECTURA), AppCodes.Minio.LECTURA_FALLIDA, e);

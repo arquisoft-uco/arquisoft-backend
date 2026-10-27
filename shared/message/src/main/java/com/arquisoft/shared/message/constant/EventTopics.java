@@ -158,6 +158,14 @@ public final class EventTopics {
                 "repositorio_artefactos.repositorio_artefacto.modificado";
     }
 
+    public static final class Artefactos {
+
+        private Artefactos() {}
+
+        public static final String VERSION_ARTEFACTO_GENERADA =
+                "artefactos.version_artefacto.generada";
+    }
+
     public static final class MapasRuta {
 
         private MapasRuta() {}

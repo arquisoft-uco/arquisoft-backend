@@ -43,6 +43,18 @@ class UtilUUIDTest {
     }
 
     @Test
+    void debeConvertirTexto_cuandoGeneraUUIDOPorDefectoConFormatoValido() {
+        var esperado = UUID.randomUUID();
+        assertThat(UtilUUID.generarUUIDDesdeTextoOPorDefecto(esperado.toString())).isEqualTo(esperado);
+    }
+
+    @Test
+    void debeRetornarPorDefecto_cuandoGeneraUUIDOPorDefectoConTextoInvalidoONulo() {
+        assertThat(UtilUUID.esPorDefecto(UtilUUID.generarUUIDDesdeTextoOPorDefecto("no-es-uuid"))).isTrue();
+        assertThat(UtilUUID.esPorDefecto(UtilUUID.generarUUIDDesdeTextoOPorDefecto(null))).isTrue();
+    }
+
+    @Test
     void debeReconocerPorDefecto_cuandoEsElUUIDGenerico() {
         assertThat(UtilUUID.esPorDefecto(UtilUUID.obtenerUUIDPorDefecto())).isTrue();
     }

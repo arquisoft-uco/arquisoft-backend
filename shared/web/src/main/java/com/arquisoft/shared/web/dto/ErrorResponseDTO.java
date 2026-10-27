@@ -41,7 +41,7 @@ public class ErrorResponseDTO {
         return ErrorResponseDTO.builder()
                 .error(error)
                 .errorCode(ex.getCodigoError())
-                .message(ex.getMessage())
+                .message(ex.getError().getMessage())
                 .status(status.value())
                 .path(path)
                 .build();

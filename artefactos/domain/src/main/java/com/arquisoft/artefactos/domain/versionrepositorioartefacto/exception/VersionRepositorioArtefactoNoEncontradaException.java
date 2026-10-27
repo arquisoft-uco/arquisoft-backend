@@ -1,5 +1,6 @@
 package com.arquisoft.artefactos.domain.versionrepositorioartefacto.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
@@ -11,9 +12,10 @@ import java.util.UUID;
 public final class VersionRepositorioArtefactoNoEncontradaException extends DomainException {
 
     public VersionRepositorioArtefactoNoEncontradaException(List<UUID> versiones) {
-        super(
-                Mensajes.formatear(AgregarVersionRepositorioArtefactoKey.ERROR_NO_ENCONTRADAS, versiones),
-                ArtefactosCodes.VersionRepositorioArtefacto.VERSIONES_NO_ENCONTRADAS
-        );
+        super(BaseError.conDetalle(
+                ArtefactosCodes.VersionRepositorioArtefacto.VERSIONES_NO_ENCONTRADAS,
+                Mensajes.obtener(AgregarVersionRepositorioArtefactoKey.ERROR_NO_ENCONTRADAS),
+                Mensajes.formatear(AgregarVersionRepositorioArtefactoKey.ERROR_NO_ENCONTRADAS_DETALLE, versiones)
+        ));
     }
 }

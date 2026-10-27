@@ -319,6 +319,22 @@ status por jerarquía; ningún contexto define handler propio salvo `seguridad`.
 jerarquía y del handler: `arquisoft-arquitectura` → *Dónde vive cada excepción* y *Convención de
 sufijos*.
 
+**El mensaje lo lee el usuario del front; el detalle, quien diagnostica.** El front pinta
+`ErrorResponseDTO.message` tal cual, así que el texto de cliente de una excepción nombra el objeto
+por lo que la persona reconoce (el nombre del archivo, el título, el nombre del documento) y no lleva
+UUIDs, la palabra "id", nombres de campo del API, tipos MIME ni bytes. Si no hay nombre porque el
+objeto no existe, va una frase genérica: "El artefacto solicitado no existe". Los identificadores
+que sirven para diagnosticar van al detalle: `super(BaseError.conDetalle(codigo, mensaje, detalle))`,
+con una segunda clave `{clave}-detalle` (`{CONSTANTE}_DETALLE`) que guarda el texto técnico.
+`getMessage()` devuelve el detalle, que es lo que loguean los handlers (consola y Grafana), y el DTO
+entrega el mensaje. Falla en silencio: en los tests unitarios `Mensajes` devuelve un texto de
+respaldo, así que nada rompe. La señal es un constructor de excepción que recibe un `UUID` o un valor
+técnico destinado a un `%s` del mensaje. Si la `Rule` no tiene el nombre, el `record` de entrada lo
+trae del dato que el use case ya cargó; no se consulta la BD solo para redactar el mensaje. Lo mismo
+vale para el texto de un error de `ValidationResult`, que no tiene detalle: ahí el valor técnico
+simplemente no va. Referencia:
+`repositorio_artefactos/domain/…/versionrepositorioartefacto/exception/CargaNoCorrespondeException.java`.
+
 ## Checkstyle (obligatorio en CI — `config/checkstyle/checkstyle.xml`)
 
 Línea máx. 150 · archivo máx. 500 líneas · método máx. 60 líneas · máx. 7 parámetros · sin tabs ·
