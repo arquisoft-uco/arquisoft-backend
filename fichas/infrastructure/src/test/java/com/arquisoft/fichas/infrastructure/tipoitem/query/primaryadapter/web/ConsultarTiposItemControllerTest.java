@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.tipoitem.query.primaryadapter.web;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.fichas.application.tipoitem.query.primaryport.interactor.ConsultarTiposItemInteractor;
 import com.arquisoft.fichas.application.tipoitem.query.readmodel.TipoItemReadModel;
+import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarTiposItemController.class)
-@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarTiposItemControllerTest.TestSecurityConfig.class})
 class ConsultarTiposItemControllerTest {
 
