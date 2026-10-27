@@ -5,12 +5,17 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de ItemFichaPerfil. */
 public enum ItemFichaPerfilKey implements ClaveMensaje {
 
-    ERROR_TIPO_INVALIDO("fichas.dominio.itemfichaperfil.error.tipo-invalido", 1),
+    ERROR_TIPO_INVALIDO("fichas.dominio.itemfichaperfil.error.tipo-invalido", 0),
+    ERROR_TIPO_INVALIDO_DETALLE("fichas.dominio.itemfichaperfil.error.tipo-invalido-detalle", 1),
     ERROR_TIPO_DUPLICADO("fichas.dominio.itemfichaperfil.error.tipo-duplicado", 1),
-    ERROR_FICHA_NO_AUTORIZADA("fichas.dominio.itemfichaperfil.error.ficha-no-autorizada", 1),
-    ERROR_NO_ENCONTRADO("fichas.dominio.itemfichaperfil.error.no-encontrado", 1),
+    ERROR_TIPO_DUPLICADO_DETALLE("fichas.dominio.itemfichaperfil.error.tipo-duplicado-detalle", 1),
+    ERROR_FICHA_NO_AUTORIZADA("fichas.dominio.itemfichaperfil.error.ficha-no-autorizada", 0),
+    ERROR_FICHA_NO_AUTORIZADA_DETALLE("fichas.dominio.itemfichaperfil.error.ficha-no-autorizada-detalle", 1),
+    ERROR_NO_ENCONTRADO("fichas.dominio.itemfichaperfil.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("fichas.dominio.itemfichaperfil.error.no-encontrado-detalle", 1),
     ERROR_ESTADO_FICHA_NO_MODIFICABLE("fichas.dominio.itemfichaperfil.error.estado-ficha-no-modificable", 1),
-    ERROR_CON_REVISIONES("fichas.dominio.itemfichaperfil.error.con-revisiones", 1),
+    ERROR_CON_REVISIONES("fichas.dominio.itemfichaperfil.error.con-revisiones", 0),
+    ERROR_CON_REVISIONES_DETALLE("fichas.dominio.itemfichaperfil.error.con-revisiones-detalle", 1),
     LOG_AGREGANDO("fichas.aplicacion.itemfichaperfil.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.itemfichaperfil.log.verificacion-agregar", 3),
     LOG_AGREGADO("fichas.aplicacion.itemfichaperfil.log.agregado", 3),

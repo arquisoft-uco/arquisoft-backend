@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de RepresentanteComite. */
 public enum RepresentanteComiteKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("fichas.dominio.representantecomite.error.no-encontrado", 1),
+    ERROR_NO_ENCONTRADO("fichas.dominio.representantecomite.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("fichas.dominio.representantecomite.error.no-encontrado-detalle", 1),
     LOG_AGREGADO_RECIBIDO("fichas.infraestructura.representantecomite.log.agregado-recibido", 3),
     LOG_AGREGADO("fichas.infraestructura.representantecomite.log.agregado", 1),
     LOG_REACTIVADO("fichas.infraestructura.representantecomite.log.reactivado", 1),

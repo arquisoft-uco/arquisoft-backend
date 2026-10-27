@@ -72,7 +72,7 @@ public final class ItemFichaPerfilDomain {
             result.agregarError(
                     FichasFields.ItemFichaPerfil.TIPO_ITEM,
                     FichasCodes.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
-                    Mensajes.formatear(ItemFichaPerfilKey.ERROR_TIPO_INVALIDO, tipoItem));
+                    Mensajes.formatear(ItemFichaPerfilKey.ERROR_TIPO_INVALIDO));
             return;
         }
         this.tipoItem = TipoItem.desde(tipoItem);
