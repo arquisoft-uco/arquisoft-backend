@@ -58,6 +58,6 @@ public class AgregarEstadoAprobacionFichaPerfilValidatorImpl implements AgregarE
         estadoDisponibleParaEvaluacionRule.validar(new EstadoActualFicha(fichaPerfil, estadoActual.getEstadoFicha()));
         evaluacionFinalizadaRule.validar(resumen);
         aprobacionRespaldadaRule.validar(new RespaldoAprobacionFicha(decision.isAcepta(), resumen));
-        estudiantesVigentesRule.validar(new IntegrantesVigentesFicha(fichaPerfil, integrantes.size()));
+        estudiantesVigentesRule.validar(new IntegrantesVigentesFicha(fichaPerfil, ficha.getTituloProyecto(), integrantes.size()));
     }
 }

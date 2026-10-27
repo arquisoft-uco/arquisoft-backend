@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.primar
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.primaryport.interactor.AgregarEstadoEvaluacionFichaInteractor;
+import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
@@ -119,7 +120,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
                 evaluacionId);
 
         when(agregarEstadoEvaluacionFichaInteractor.ejecutar(any()))
-                .thenThrow(new EstadoEvaluacionDuplicadoException(evaluacionId, "APROBADA"));
+                .thenThrow(new EstadoEvaluacionDuplicadoException(evaluacionId, EstadoEvaluacion.APROBADA));
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")

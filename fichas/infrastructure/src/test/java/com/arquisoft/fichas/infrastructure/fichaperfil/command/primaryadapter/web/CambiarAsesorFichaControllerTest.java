@@ -179,7 +179,7 @@ class CambiarAsesorFichaControllerTest {
         result.agregarError(
                 FichasFields.FichaPerfil.ASESOR_FICHA,
                 FichasCodes.FichaPerfil.MISMO_ASESOR,
-                Mensajes.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR, asesorId)
+                Mensajes.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR)
         );
 
         doThrow(new DomainValidationException(result))
@@ -194,7 +194,7 @@ class CambiarAsesorFichaControllerTest {
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value(AppCodes.Validacion.DOMINIO))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
-                .andExpect(jsonPath("$.fieldErrors[0].message").value(Mensajes.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR, asesorId)));
+                .andExpect(jsonPath("$.fieldErrors[0].message").value(Mensajes.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR)));
     }
 
     @Test
