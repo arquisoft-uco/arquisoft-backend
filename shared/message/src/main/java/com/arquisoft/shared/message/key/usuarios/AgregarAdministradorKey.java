@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de AgregarAdministrador. */
 public enum AgregarAdministradorKey implements ClaveMensaje {
 
-    ERROR_USUARIO_DUPLICADO("usuarios.dominio.administrador.error.usuario-duplicado", 1),
+    ERROR_USUARIO_DUPLICADO("usuarios.dominio.administrador.error.usuario-duplicado", 0),
+    ERROR_USUARIO_DUPLICADO_DETALLE("usuarios.dominio.administrador.error.usuario-duplicado-detalle", 1),
     LOG_VERIFICACION_AGREGAR("usuarios.aplicacion.administrador.log.verificacion-agregar", 3),
     LOG_REACTIVADO("usuarios.aplicacion.administrador.log.reactivado", 1),
     LOG_GUARDADO("usuarios.infraestructura.administrador.log.guardado", 1),

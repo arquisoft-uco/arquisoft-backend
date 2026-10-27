@@ -399,7 +399,7 @@ class ModificarUsuarioUseCaseImplTest {
                 "original@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO, Instant.parse("2026-09-25T10:15:30Z"));
         var modificacion = modificacionConRol("estudiante");
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioEliminado);
-        doThrow(new UsuarioEliminadoException(usuarioId)).when(modificarUsuarioValidator)
+        doThrow(new UsuarioEliminadoException(usuarioId, "Nombre Original")).when(modificarUsuarioValidator)
                 .validar(any(), eq(usuarioEliminado), eq(false), eq(false), eq(false));
 
         // Act & Assert

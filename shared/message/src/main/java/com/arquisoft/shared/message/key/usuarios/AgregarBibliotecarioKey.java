@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de AgregarBibliotecario. */
 public enum AgregarBibliotecarioKey implements ClaveMensaje {
 
-    ERROR_USUARIO_DUPLICADO("usuarios.dominio.bibliotecario.error.usuario-duplicado", 1),
+    ERROR_USUARIO_DUPLICADO("usuarios.dominio.bibliotecario.error.usuario-duplicado", 0),
+    ERROR_USUARIO_DUPLICADO_DETALLE("usuarios.dominio.bibliotecario.error.usuario-duplicado-detalle", 1),
     LOG_VERIFICACION_AGREGAR("usuarios.aplicacion.bibliotecario.log.verificacion-agregar", 3),
     LOG_REACTIVADO("usuarios.aplicacion.bibliotecario.log.reactivado", 1),
     LOG_GUARDADO("usuarios.infraestructura.bibliotecario.log.guardado", 1),

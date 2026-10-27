@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.domain.representantecomite.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.UsuariosCodes;
@@ -10,9 +11,10 @@ import java.util.UUID;
 public final class RepresentanteComiteUsuarioDuplicadoException extends DomainException {
 
     public RepresentanteComiteUsuarioDuplicadoException(UUID usuario) {
-        super(
-                Mensajes.formatear(AgregarRepresentanteComiteKey.ERROR_USUARIO_DUPLICADO, usuario),
-                UsuariosCodes.RepresentanteComite.USUARIO_DUPLICADO
-        );
+        super(BaseError.conDetalle(
+                UsuariosCodes.RepresentanteComite.USUARIO_DUPLICADO,
+                Mensajes.formatear(AgregarRepresentanteComiteKey.ERROR_USUARIO_DUPLICADO),
+                Mensajes.formatear(AgregarRepresentanteComiteKey.ERROR_USUARIO_DUPLICADO_DETALLE, usuario)
+        ));
     }
 }
