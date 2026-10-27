@@ -4,11 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
+import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.EstadoRevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.ObservacionKey;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.CambiarEstadoRevisionAsesorKey;
+import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
@@ -196,8 +198,8 @@ public final class ClavesCatalogo {
             EstadoRevisionAsesorKey.class,
             RevisionAsesorKey.class,
             CambiarEstadoRevisionAsesorKey.class,
-            com.arquisoft.shared.message.key.artefactos.AsesorKey.class,
             com.arquisoft.shared.message.key.artefactos.EstudianteKey.class,
+            VersionArtefactoKey.class,
             EstudianteArtefactoKey.class,
             ObservacionKey.class,
             AdministradorKey.class,
@@ -205,6 +207,10 @@ public final class ClavesCatalogo {
             VersionRepositorioArtefactoKey.class,
             AgregarVersionRepositorioArtefactoKey.class,
             CambiarNombreRepositorioVersionRepositorioArtefactoKey.class,
+            ArtefactoKey.class,
+            com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.artefactos.AsesorKey.class,
+            com.arquisoft.shared.message.key.artefactos.AsesorProyectoGradoKey.class,
             AgregarJuradoKey.class,
             RemoverJuradoKey.class,
             JuradoKey.class,

@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.time.Instant;
 
 class CambiarEstadoRevisionAsesorValidatorImplTest {
 
@@ -25,7 +26,8 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
 
     private final UUID revisionId = UtilUUID.generarNuevoUUID();
     private final UUID estudianteId = UtilUUID.generarNuevoUUID();
-    private final AsesorDomain asesor = AsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co");
+    private final AsesorDomain asesor = AsesorDomain.reconstruir(
+            UtilUUID.generarNuevoUUID(), "20161020123", "Ana", "ana@uco.edu.co", Instant.now(), null);
     private final EstudianteDomain estudiante = EstudianteDomain.reconstruir(estudianteId, "Luis", "luis@uco.edu.co");
 
     private RevisionAsesorDomain revision(EstadoRevisionAsesor estado) {

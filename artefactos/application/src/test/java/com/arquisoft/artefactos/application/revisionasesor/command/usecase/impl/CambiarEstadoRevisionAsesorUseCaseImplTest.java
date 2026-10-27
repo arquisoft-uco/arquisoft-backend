@@ -35,6 +35,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import java.time.Instant;
 
 @ExtendWith(MockitoExtension.class)
 class CambiarEstadoRevisionAsesorUseCaseImplTest {
@@ -68,7 +69,8 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
     void prepararReplicas() {
         revisionId = UtilUUID.generarNuevoUUID();
         estudianteId = UtilUUID.generarNuevoUUID();
-        asesor = AsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co");
+        asesor = AsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), "20161020123", "Ana", "ana@uco.edu.co",
+                Instant.now(), null);
         estudiante = EstudianteDomain.reconstruir(estudianteId, "Luis", "luis@uco.edu.co");
     }
 

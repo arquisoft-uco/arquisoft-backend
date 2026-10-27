@@ -56,6 +56,27 @@ public final class ArtefactosApiMessages {
                         + "está cerrada, el estado es desconocido o el estado destino no está permitido";
     }
 
+    public static final class VersionArtefacto {
+
+        private VersionArtefacto() {}
+
+        public static final String TAG_NAME = "Versiones de artefactos";
+        public static final String TAG_DESCRIPTION = "Consulta de las versiones de los artefactos asignados al asesor";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Filtrar las versiones de los artefactos asignados al asesor";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Devuelve, de forma paginada, las versiones de los artefactos a cargo del asesor autenticado. "
+                        + "Se puede filtrar por el artefacto (artefacto), la versión (version) y la fecha de "
+                        + "creación (fechaCreacion), y ordenar por version y fechaCreacion; por defecto, la más "
+                        + "reciente primero. El asesor se toma del token, nunca del cuerpo.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de versiones de los artefactos del asesor";
+        public static final String CONSULTAR_ASESOR_RESP_400 =
+                "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 =
+                "Sin permiso para consultar las versiones de los artefactos";
+    }
+
     public static final class EstudianteArtefacto {
 
         private EstudianteArtefacto() {}
@@ -96,6 +117,50 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador de revisión inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "Sin permisos para consultar las observaciones de la revisión como estudiante";
+    }
+
+    public static final class Artefacto {
+
+        private Artefacto() {}
+
+        public static final String TAG_NAME = "Artefactos";
+        public static final String TAG_DESCRIPTION = "Asignación de artefactos a los proyectos de grado y consulta de los asignados al asesor";
+        public static final String ASIGNAR_SUMMARY = "Asignar artefactos a un proyecto de grado";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Vincula al proyecto de grado una o varias versiones de repositorios de artefactos como "
+                        + "artefactos suyos, todo o nada. El asesor del artefacto es el del token y debe tener "
+                        + "asignado el proyecto. El proyecto no puede tener ya un artefacto de ninguno de los "
+                        + "repositorios, ni repetir un repositorio dentro del lote. Responde con los ids de los "
+                        + "artefactos creados, en el orden enviado.";
+        public static final String ASIGNAR_RESP_201 = "Artefactos asignados al proyecto de grado";
+        public static final String ASIGNAR_RESP_400 =
+                "Datos mal formados: identificador inválido, lista vacía o versión repetida";
+        public static final String CAMBIAR_ASESOR_SUMMARY = "Cambiar el responsable de un artefacto";
+        public static final String CAMBIAR_ASESOR_DESCRIPTION =
+                "Designa a otro asesor como responsable de un artefacto ya asignado. El nuevo asesor debe "
+                        + "existir, estar vigente y estar asignado al proyecto de grado del artefacto. Designar "
+                        + "al asesor que ya es responsable no produce error. Solo cambia el responsable del "
+                        + "artefacto; no reasigna revisiones en curso.";
+        public static final String CAMBIAR_ASESOR_RESP_204 = "Responsable del artefacto cambiado";
+        public static final String CAMBIAR_ASESOR_RESP_400 = "Identificador del asesor ausente o inválido";
+        public static final String CAMBIAR_ASESOR_RESP_422 =
+                "El artefacto no existe, o el asesor no existe, está dado de baja o no está asignado "
+                        + "al proyecto de grado del artefacto";
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar los artefactos asignados al asesor";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Devuelve, de forma paginada, los artefactos a cargo del asesor autenticado con su proyecto "
+                        + "de grado y la versión del repositorio usada como base. Se puede filtrar por proyectoGrado, "
+                        + "nombreProyecto, versionRepositorioArtefacto, nombreDocumento, versionDocumento y "
+                        + "nombreRepositorio, y ordenar por nombreProyecto, nombreDocumento, versionDocumento y "
+                        + "nombreRepositorio; por defecto, nombreProyecto y nombreDocumento ascendentes. "
+                        + "El asesor se toma del token, nunca del cuerpo.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de artefactos asignados al asesor";
+        public static final String CONSULTAR_ASESOR_RESP_400 =
+                "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar los artefactos del asesor";
+        public static final String ASIGNAR_RESP_422 =
+                "El proyecto, el asesor o alguna versión no existe, el asesor no está asignado al proyecto "
+                        + "o el repositorio ya está asignado";
     }
 
     public static final class EstadoRevisionAsesor {

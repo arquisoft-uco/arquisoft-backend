@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import java.time.Instant;
 
 @ExtendWith(MockitoExtension.class)
 class AsesorDeRevisionAsesorFinderImplTest {
@@ -30,7 +31,7 @@ class AsesorDeRevisionAsesorFinderImplTest {
         var revision = UtilUUID.generarNuevoUUID();
         var id = UtilUUID.generarNuevoUUID();
         when(outputPort.obtenerPorRevisionAsesor(revision))
-                .thenReturn(Optional.of(new AsesorEntity(id, "Ana", "ana@uco.edu.co")));
+                .thenReturn(Optional.of(new AsesorEntity(id, "20161020123", "Ana", "ana@uco.edu.co", Instant.now(), null)));
 
         // Act
         var resultado = finder.obtener(revision);

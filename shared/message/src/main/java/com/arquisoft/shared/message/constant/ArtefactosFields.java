@@ -31,6 +31,13 @@ public final class ArtefactosFields {
         public static final String ESTADO = "estado";
     }
 
+    public static final class VersionArtefacto {
+
+        private VersionArtefacto() {}
+
+        public static final String ASESOR = "asesor";
+    }
+
     public static final class EstudianteArtefacto {
 
         private EstudianteArtefacto() {}
@@ -43,5 +50,47 @@ public final class ArtefactosFields {
         private Observacion() {}
 
         public static final String REVISION_ASESOR = "revisionAsesor";
+    }
+
+    public static final class Artefacto {
+
+        private Artefacto() {}
+
+        public static final String ID = "id";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String ASESOR = "asesor";
+        public static final String VERSION_REPOSITORIO_ARTEFACTO = "versionRepositorioArtefacto";
+        public static final String VERSIONES_REPOSITORIO_ARTEFACTO = "versionesRepositorioArtefacto";
+        public static final String ARTEFACTOS = "artefactos";
+    }
+
+    public static final class ProyectoGrado {
+
+        private ProyectoGrado() {}
+
+        public static final String ID = "id";
+        public static final String NOMBRE = "nombre";
+    }
+
+    public static final class Asesor {
+
+        private Asesor() {}
+
+        public static final String ID = "id";
+        public static final String IDENTIFICADOR = "identificador";
+        public static final String NOMBRE = "nombre";
+        public static final String EMAIL = "email";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
+    public static final class AsesorProyectoGrado {
+
+        private AsesorProyectoGrado() {}
+
+        public static final String ASESOR = "asesor";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+        public static final String VINCULO = "vinculo";
+        public static final String TRASPASO = "traspaso";
     }
 }

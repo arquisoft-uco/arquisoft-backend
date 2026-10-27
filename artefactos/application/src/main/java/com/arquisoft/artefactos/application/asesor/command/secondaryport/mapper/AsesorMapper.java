@@ -8,6 +8,22 @@ public final class AsesorMapper {
     private AsesorMapper() {}
 
     public static AsesorDomain toDomain(AsesorEntity entity) {
-        return AsesorDomain.reconstruir(entity.id(), entity.nombre(), entity.email());
+        return AsesorDomain.reconstruir(
+                entity.id(),
+                entity.identificador(),
+                entity.nombre(),
+                entity.email(),
+                entity.ocurridoEn(),
+                entity.eliminadoEn());
+    }
+
+    public static AsesorEntity toEntity(AsesorDomain asesor) {
+        return new AsesorEntity(
+                asesor.getId(),
+                asesor.getIdentificador(),
+                asesor.getNombre(),
+                asesor.getEmail(),
+                asesor.getOcurridoEn(),
+                asesor.getEliminadoEn());
     }
 }

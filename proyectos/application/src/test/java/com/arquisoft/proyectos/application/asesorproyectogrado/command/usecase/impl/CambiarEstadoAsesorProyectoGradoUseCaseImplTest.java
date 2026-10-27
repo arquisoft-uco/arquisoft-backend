@@ -112,6 +112,7 @@ class CambiarEstadoAsesorProyectoGradoUseCaseImplTest {
         assertThat(evento.getValue()).isInstanceOfSatisfying(AsesorProyectoGradoFinalizadoEvent.class, publicado -> {
             assertThat(publicado.getProyectoGradoId()).isEqualTo(proyecto.getId());
             assertThat(publicado.getTituloProyecto()).isEqualTo("Sistema de gestión");
+            assertThat(publicado.getAsesorId()).isEqualTo(asesor.getId());
             assertThat(publicado.getAsesor()).isEqualTo(new ContactoAsesor("Luis Diaz", "luis.diaz@soyuco.edu.co"));
         });
 

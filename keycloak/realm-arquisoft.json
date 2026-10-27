@@ -344,7 +344,12 @@
               "evaluaciones:evaluacion-cualitativa-asesor:create",
               "artefactos:estudiante-artefacto:view",
               "artefactos:observacion-revision:view",
-              "artefactos:revision-asesor-asesor:view"
+              "artefactos:revision-asesor-asesor:view",
+              "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
+              "artefactos:artefacto:create",
+              "artefactos:version-artefacto-asesor:view",
+              "artefactos:artefacto-asesor:view",
+              "artefactos:artefacto:update-asesor"
             ]
           }
         },
@@ -788,6 +793,15 @@
         {
           "id": "701398b0-99bf-410d-8488-66d00661d2cc",
           "name": "repositorio-artefactos:version-repositorio-artefacto:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "26e3ba74-1b09-4ff0-9b67-2cfe2490df57",
+          "name": "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2192,6 +2206,42 @@
         {
           "id": "65fbc180-d917-4e23-8812-09066e3caa26",
           "name": "artefactos:revision-asesor-estado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "be5ff5a9-2981-4547-8fcd-aea2b71ac8b2",
+          "name": "artefactos:artefacto:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7fcf85d3-9f30-48ed-9248-ef3a3e2b6854",
+          "name": "artefactos:version-artefacto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3b9c1e5a-6d24-4f87-a1c3-9e2d7b405f18",
+          "name": "artefactos:artefacto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c47d2a96-3e18-4b5f-9a0d-7f1e6b83d2c5",
+          "name": "artefactos:artefacto:update-asesor",
           "description": "",
           "composite": false,
           "clientRole": true,
