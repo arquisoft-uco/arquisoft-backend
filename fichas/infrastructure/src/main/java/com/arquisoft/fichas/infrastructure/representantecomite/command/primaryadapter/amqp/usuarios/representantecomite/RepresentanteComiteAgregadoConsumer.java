@@ -29,7 +29,7 @@ public class RepresentanteComiteAgregadoConsumer extends AbstractEventConsumer {
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
-        super(objectMapper, gestorTraza);
+        super(objectMapper, gestorTraza, logger);
         this.agregarRepresentanteComiteInteractor = agregarRepresentanteComiteInteractor;
         this.logger = logger;
     }

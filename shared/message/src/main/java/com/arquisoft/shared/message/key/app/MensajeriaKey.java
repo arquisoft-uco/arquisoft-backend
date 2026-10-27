@@ -16,6 +16,10 @@ public enum MensajeriaKey implements ClaveMensaje {
     LOG_EVENTO_A_DLQ("app.infraestructura.mensajeria.log.evento-a-dlq", 2),
     LOG_EVENTO_REENCOLADO("app.infraestructura.mensajeria.log.evento-reencolado", 2),
     LOG_EVENTO_A_DLQ_TRAS_REINTENTO("app.infraestructura.mensajeria.log.evento-a-dlq-tras-reintento", 2),
+    LOG_OUTBOX_HABILITADO("app.infraestructura.mensajeria.log.outbox-habilitado", 1),
+    LOG_OUTBOX_SIN_TABLA("app.infraestructura.mensajeria.log.outbox-sin-tabla", 0),
+    LOG_OUTBOX_TIPO_DESCONOCIDO("app.infraestructura.mensajeria.log.outbox-tipo-desconocido", 2),
+    LOG_OUTBOX_REINTENTO_FALLIDOS("app.infraestructura.mensajeria.log.outbox-reintento-fallidos", 1),
 
     VALOR_CORRELACION_DESCONOCIDA("app.infraestructura.mensajeria.valor.correlacion-desconocida", 0);
 

@@ -17,7 +17,7 @@ public abstract class AbstractNotificacionConsumer extends AbstractEventConsumer
 
     protected AbstractNotificacionConsumer(
             ObjectMapper objectMapper, GestorTraza gestorTraza, AppLogger logger) {
-        super(objectMapper, gestorTraza);
+        super(objectMapper, gestorTraza, logger);
         this.logger = logger;
     }
 
