@@ -13,6 +13,8 @@ import com.rabbitmq.client.Channel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,16 +59,21 @@ class RevisionAsesorEstadoCambiadoConsumerTest {
     }
 
     private Message mensajeCon(String idEvento, String revisionAsesorId, long deliveryTag, boolean reentregado) {
+        return mensajeCon(idEvento, revisionAsesorId, "RESUELTA", deliveryTag, reentregado);
+    }
+
+    private Message mensajeCon(String idEvento, String revisionAsesorId, String estado, long deliveryTag,
+                               boolean reentregado) {
         var payloadJson = """
                 {
                     "idEvento": "%s",
                     "revisionAsesorId": "%s",
-                    "estado": "RESUELTA",
+                    "estado": "%s",
                     "asesorNombre": "Ana Gomez",
                     "asesorEmail": "ana@uco.edu.co",
                     "estudianteNombre": "Luis Perez"
                 }
-                """.formatted(idEvento, revisionAsesorId);
+                """.formatted(idEvento, revisionAsesorId, estado);
 
         var props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
@@ -99,6 +107,22 @@ class RevisionAsesorEstadoCambiadoConsumerTest {
         verify(logger).info(eq(ConsumidorKey.LOG_REVISION_ASESOR_ESTADO_CAMBIADO_RECIBIDO), eq(revision),
                 eq("a***@uco.edu.co"));
         verify(channel).basicAck(1L, false);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PENDIENTE", "EN_PROGRESO", "CERRADA"})
+    void debeIgnorar_cuandoElEstadoNoEsResuelta(String estado) throws Exception {
+        // Arrange
+        var revision = UtilUUID.generarNuevoUUID().toString();
+        var mensaje = mensajeCon(UtilUUID.generarNuevoUUID().toString(), revision, estado, 5L, false);
+
+        // Act
+        consumer.onRevisionAsesorEstadoCambiado(mensaje, channel);
+
+        // Assert
+        verify(enviarNotificacionInteractor, never()).ejecutar(any());
+        verify(logger).info(ConsumidorKey.LOG_REVISION_ASESOR_ESTADO_CAMBIADO_IGNORADO, revision, estado);
+        verify(channel).basicAck(5L, false);
     }
 
     @Test

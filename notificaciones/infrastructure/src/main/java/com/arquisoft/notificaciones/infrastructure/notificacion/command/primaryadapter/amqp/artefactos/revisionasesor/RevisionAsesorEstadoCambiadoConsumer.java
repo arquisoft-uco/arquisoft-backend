@@ -22,6 +22,8 @@ import java.io.IOException;
 @Component
 public class RevisionAsesorEstadoCambiadoConsumer extends AbstractNotificacionConsumer {
 
+    private static final String ESTADO_RESUELTA = "RESUELTA";
+
     private final EnviarNotificacionInteractor enviarNotificacionInteractor;
 
     public RevisionAsesorEstadoCambiadoConsumer(
@@ -41,6 +43,12 @@ public class RevisionAsesorEstadoCambiadoConsumer extends AbstractNotificacionCo
             logger.info(ConsumidorKey.LOG_REVISION_ASESOR_ESTADO_CAMBIADO_RECIBIDO,
                     payload.revisionAsesorId(),
                     UtilTexto.enmascararCorreo(payload.asesorEmail()));
+
+            if (!ESTADO_RESUELTA.equals(payload.estado())) {
+                logger.info(ConsumidorKey.LOG_REVISION_ASESOR_ESTADO_CAMBIADO_IGNORADO,
+                        payload.revisionAsesorId(), payload.estado());
+                return;
+            }
 
             registrar(enviarNotificacionInteractor.ejecutar(EnviarNotificacionCommand.crear(
                     payload.idEvento(),
