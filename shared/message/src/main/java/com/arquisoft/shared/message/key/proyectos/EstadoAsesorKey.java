@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de EstadoAsesor. */
 public enum EstadoAsesorKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("proyectos.dominio.estadoasesor.error.no-encontrado", 1);
+    ERROR_NO_ENCONTRADO("proyectos.dominio.estadoasesor.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("proyectos.dominio.estadoasesor.error.no-encontrado-detalle", 1);
 
     private final String clave;
     private final int parametros;

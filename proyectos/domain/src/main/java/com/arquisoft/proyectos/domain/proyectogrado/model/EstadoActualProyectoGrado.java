@@ -4,4 +4,4 @@ import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 
 import java.util.UUID;
 
-public record EstadoActualProyectoGrado(UUID proyectoGrado, EstadoProyecto estadoActual) {}
+public record EstadoActualProyectoGrado(UUID proyectoGrado, String tituloProyecto, EstadoProyecto estadoActual) {}

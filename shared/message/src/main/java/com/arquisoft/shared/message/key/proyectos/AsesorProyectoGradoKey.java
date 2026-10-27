@@ -15,11 +15,15 @@ public enum AsesorProyectoGradoKey implements ClaveMensaje {
     LOG_VERIFICACION_CAMBIO_ESTADO("proyectos.aplicacion.asesorproyectogrado.log.verificacion-cambio-estado", 4),
     LOG_ESTADO_CAMBIADO("proyectos.aplicacion.asesorproyectogrado.log.estado-cambiado", 3),
     LOG_GUARDADO("proyectos.infraestructura.asesorproyectogrado.log.guardado", 2),
-    ERROR_ASESOR_NO_VIGENTE("proyectos.dominio.asesorproyectogrado.error.asesor-no-vigente", 1),
+    ERROR_ASESOR_NO_VIGENTE("proyectos.dominio.asesorproyectogrado.error.asesor-no-vigente", 0),
+    ERROR_ASESOR_NO_VIGENTE_DETALLE("proyectos.dominio.asesorproyectogrado.error.asesor-no-vigente-detalle", 1),
     ERROR_YA_ASIGNADO("proyectos.dominio.asesorproyectogrado.error.ya-asignado", 1),
+    ERROR_YA_ASIGNADO_DETALLE("proyectos.dominio.asesorproyectogrado.error.ya-asignado-detalle", 1),
     ERROR_CUPO_EXCEDIDO("proyectos.dominio.asesorproyectogrado.error.cupo-excedido", 1),
-    ERROR_NO_ENCONTRADO("proyectos.dominio.asesorproyectogrado.error.no-encontrado", 2),
-    ERROR_TRANSICION_INVALIDA("proyectos.dominio.asesorproyectogrado.error.transicion-invalida", 2);
+    ERROR_NO_ENCONTRADO("proyectos.dominio.asesorproyectogrado.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("proyectos.dominio.asesorproyectogrado.error.no-encontrado-detalle", 2),
+    ERROR_TRANSICION_INVALIDA("proyectos.dominio.asesorproyectogrado.error.transicion-invalida", 2),
+    ERROR_TRANSICION_INVALIDA_DETALLE("proyectos.dominio.asesorproyectogrado.error.transicion-invalida-detalle", 2);
 
     private final String clave;
     private final int parametros;

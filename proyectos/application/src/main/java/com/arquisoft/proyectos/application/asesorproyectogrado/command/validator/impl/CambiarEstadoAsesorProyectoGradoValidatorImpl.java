@@ -60,7 +60,8 @@ public class CambiarEstadoAsesorProyectoGradoValidatorImpl implements CambiarEst
         coordinadorPropietarioRule.validar(new PropiedadCoordinadorProyectoGrado(
                 entrada.getProyectoGrado(), proyecto.getCoordinador(), entrada.getCoordinador()));
         proyectoGradoNoFinalizadoRule.validar(
-                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), estadoActual.getEstadoProyecto()));
+                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getTituloProyecto(),
+                        estadoActual.getEstadoProyecto()));
         asesorExisteRule.validar(new ExistenciaAsesor(entrada.getAsesor(), !asesor.esVacio()));
         asesorProyectoGradoExisteRule.validar(new ExistenciaAsesorProyectoGrado(
                 entrada.getAsesor(), entrada.getProyectoGrado(), !vigente.esVacio()));

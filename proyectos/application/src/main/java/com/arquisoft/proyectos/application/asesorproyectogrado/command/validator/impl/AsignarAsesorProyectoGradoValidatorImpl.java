@@ -61,9 +61,10 @@ public class AsignarAsesorProyectoGradoValidatorImpl implements AsignarAsesorPro
         asesorVigenteRule.validar(new VigenciaAsesorProyectoGrado(
                 entrada.getAsesor(), !asesor.esVacio(), asesor.estaEliminado()));
         proyectoGradoNoFinalizadoRule.validar(
-                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), estadoActual.getEstadoProyecto()));
+                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getTituloProyecto(),
+                        estadoActual.getEstadoProyecto()));
         asesorNoAsignadoRule.validar(
-                new AsignacionVigenteAsesor(entrada.getAsesor(), entrada.getProyectoGrado(), yaAsignado));
+                new AsignacionVigenteAsesor(entrada.getAsesor(), asesor.getNombre(), entrada.getProyectoGrado(), yaAsignado));
         cupoDisponibleRule.validar(new CupoAsesoresProyectoGrado(asignadosActuales));
     }
 }

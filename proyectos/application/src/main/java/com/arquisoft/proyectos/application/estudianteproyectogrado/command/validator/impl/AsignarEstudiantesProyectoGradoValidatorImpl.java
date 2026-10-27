@@ -75,7 +75,8 @@ public class AsignarEstudiantesProyectoGradoValidatorImpl implements AsignarEstu
 
         estudiantesNoVinculadosRule.validar(new VinculosEstudiantesProyectoGrado(yaVinculados));
         proyectoGradoNoFinalizadoRule.validar(
-                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), estadoActual.getEstadoProyecto()));
+                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getTituloProyecto(),
+                        estadoActual.getEstadoProyecto()));
         cupoDisponibleRule.validar(new CupoEstudiantesProyectoGrado(vinculadosActuales, entrada.getCantidad()));
     }
 }
