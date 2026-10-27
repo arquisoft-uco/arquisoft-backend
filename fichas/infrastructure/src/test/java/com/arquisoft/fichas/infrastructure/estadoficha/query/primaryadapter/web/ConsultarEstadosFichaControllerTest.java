@@ -6,6 +6,7 @@ import com.arquisoft.fichas.application.estadoficha.query.primaryport.model.Cons
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasRoles;
 import com.arquisoft.shared.message.constant.UsuariosRoles;
+import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEstadosFichaController.class)
-@Import({IdentidadActualTestConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({AppLoggerConfig.class, IdentidadActualTestConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarEstadosFichaControllerTest.TestSecurityConfig.class})
 class ConsultarEstadosFichaControllerTest {
 

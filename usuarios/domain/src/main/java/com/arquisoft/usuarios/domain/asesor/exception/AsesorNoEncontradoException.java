@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class AsesorNoEncontradoException extends DomainException {
 
-    public AsesorNoEncontradoException(UUID usuario) {
+    public AsesorNoEncontradoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.Asesor.ASESOR_NO_ENCONTRADO,
-                Mensajes.formatear(RemoverAsesorKey.ERROR_NO_ENCONTRADO),
+                Mensajes.formatear(RemoverAsesorKey.ERROR_NO_ENCONTRADO, nombre),
                 Mensajes.formatear(RemoverAsesorKey.ERROR_NO_ENCONTRADO_DETALLE, usuario)
         ));
     }

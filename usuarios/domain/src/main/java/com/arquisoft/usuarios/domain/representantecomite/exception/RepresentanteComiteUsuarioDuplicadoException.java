@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class RepresentanteComiteUsuarioDuplicadoException extends DomainException {
 
-    public RepresentanteComiteUsuarioDuplicadoException(UUID usuario) {
+    public RepresentanteComiteUsuarioDuplicadoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.RepresentanteComite.USUARIO_DUPLICADO,
-                Mensajes.formatear(AgregarRepresentanteComiteKey.ERROR_USUARIO_DUPLICADO),
+                Mensajes.formatear(AgregarRepresentanteComiteKey.ERROR_USUARIO_DUPLICADO, nombre),
                 Mensajes.formatear(AgregarRepresentanteComiteKey.ERROR_USUARIO_DUPLICADO_DETALLE, usuario)
         ));
     }

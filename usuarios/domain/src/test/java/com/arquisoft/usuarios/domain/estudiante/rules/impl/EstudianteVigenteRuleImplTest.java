@@ -9,17 +9,20 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EstudianteVigenteRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final EstudianteVigenteRuleImpl rule = new EstudianteVigenteRuleImpl();
 
     @Test
     void debeLanzarNoEncontradoConSuCodigo_cuandoEstudianteNoExiste() {
         // Arrange
-        var existencia = new ExistenciaEstudiante(UUID.randomUUID(), EstudianteDomain.VACIO);
+        var existencia = new ExistenciaEstudiante(UUID.randomUUID(), NOMBRE, EstudianteDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(existencia))
@@ -33,7 +36,7 @@ class EstudianteVigenteRuleImplTest {
         // Arrange
         var usuario = UUID.randomUUID();
         var eliminado = EstudianteDomain.reconstruir(usuario, Instant.parse("2026-09-16T10:00:00Z"));
-        var existencia = new ExistenciaEstudiante(usuario, eliminado);
+        var existencia = new ExistenciaEstudiante(usuario, NOMBRE, eliminado);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(existencia))
@@ -44,9 +47,22 @@ class EstudianteVigenteRuleImplTest {
     void noDebeLanzar_cuandoEstudianteEstaVigente() {
         // Arrange
         var usuario = UUID.randomUUID();
-        var existencia = new ExistenciaEstudiante(usuario, EstudianteDomain.crear(usuario));
+        var existencia = new ExistenciaEstudiante(usuario, NOMBRE, EstudianteDomain.crear(usuario));
 
         // Act & Assert
         assertThatCode(() -> rule.validar(existencia)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoNoTieneElRolVigente() {
+        // Arrange
+        var usuario = UUID.randomUUID();
+        var entrada = new ExistenciaEstudiante(usuario, NOMBRE, EstudianteDomain.VACIO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(EstudianteNoEncontradoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

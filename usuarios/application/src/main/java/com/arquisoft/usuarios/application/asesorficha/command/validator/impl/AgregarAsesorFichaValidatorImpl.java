@@ -5,9 +5,8 @@ import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.usuarios.domain.asesorficha.model.DisponibilidadAsesorFichaUsuario;
 import com.arquisoft.usuarios.domain.asesorficha.rules.AsesorFichaUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.asesorficha.rules.impl.AsesorFichaUsuarioUnicoRuleImpl;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class AgregarAsesorFichaValidatorImpl implements AgregarAsesorFichaValidator {
@@ -19,7 +18,8 @@ public class AgregarAsesorFichaValidatorImpl implements AgregarAsesorFichaValida
     }
 
     @Override
-    public void validar(UUID usuario, AsesorFichaDomain asesorFicha) {
-        asesorFichaUsuarioUnicoRule.validar(new DisponibilidadAsesorFichaUsuario(usuario, asesorFicha));
+    public void validar(UsuarioDomain usuario, AsesorFichaDomain asesorFicha) {
+        asesorFichaUsuarioUnicoRule.validar(
+                new DisponibilidadAsesorFichaUsuario(usuario.getId(), usuario.getNombre(), asesorFicha));
     }
 }

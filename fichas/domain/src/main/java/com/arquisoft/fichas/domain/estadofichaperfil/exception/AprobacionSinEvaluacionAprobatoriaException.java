@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class AprobacionSinEvaluacionAprobatoriaException extends DomainException {
 
-    public AprobacionSinEvaluacionAprobatoriaException(UUID fichaPerfil) {
+    public AprobacionSinEvaluacionAprobatoriaException(UUID fichaPerfil, String tituloProyecto) {
         super(BaseError.conDetalle(
                 FichasCodes.EstadoFichaPerfil.APROBACION_SIN_EVALUACION_APROBATORIA,
-                Mensajes.formatear(EstadoFichaPerfilKey.ERROR_APROBACION_SIN_EVALUACION_APROBATORIA),
+                Mensajes.formatear(EstadoFichaPerfilKey.ERROR_APROBACION_SIN_EVALUACION_APROBATORIA, tituloProyecto),
                 Mensajes.formatear(EstadoFichaPerfilKey.ERROR_APROBACION_SIN_EVALUACION_APROBATORIA_DETALLE, fichaPerfil)
         ));
     }

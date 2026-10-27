@@ -158,7 +158,7 @@ class SolicitarCargaVersionRepositorioArtefactoControllerTest {
     @Test
     void debeResponder503_cuandoMinioFalla() throws Exception {
         // Arrange
-        doThrow(new MinioOperationException("falla", AppCodes.Minio.FORMULARIO_CARGA_FALLIDO, new RuntimeException()))
+        doThrow(MinioOperationException.formularioCargaFallido(new RuntimeException()))
                 .when(interactor).ejecutar(any());
 
         // Act & Assert
@@ -166,6 +166,7 @@ class SolicitarCargaVersionRepositorioArtefactoControllerTest {
                         .with(jwtConPermiso(UtilUUID.generarNuevoUUID().toString()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
-                .andExpect(status().isServiceUnavailable());
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.errorCode").value(AppCodes.Minio.FORMULARIO_CARGA_FALLIDO));
     }
 }

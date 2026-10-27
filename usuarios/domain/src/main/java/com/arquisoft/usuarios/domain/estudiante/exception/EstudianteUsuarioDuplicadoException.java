@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class EstudianteUsuarioDuplicadoException extends DomainException {
 
-    public EstudianteUsuarioDuplicadoException(UUID usuario) {
+    public EstudianteUsuarioDuplicadoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.Estudiante.USUARIO_DUPLICADO,
-                Mensajes.formatear(AgregarEstudianteKey.ERROR_USUARIO_DUPLICADO),
+                Mensajes.formatear(AgregarEstudianteKey.ERROR_USUARIO_DUPLICADO, nombre),
                 Mensajes.formatear(AgregarEstudianteKey.ERROR_USUARIO_DUPLICADO_DETALLE, usuario)
         ));
     }

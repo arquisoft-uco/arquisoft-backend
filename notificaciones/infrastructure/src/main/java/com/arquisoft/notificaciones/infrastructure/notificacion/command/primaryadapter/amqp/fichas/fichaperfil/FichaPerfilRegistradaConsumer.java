@@ -6,7 +6,6 @@ import com.arquisoft.notificaciones.infrastructure.config.NotificacionesFichasQu
 import com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.AbstractNotificacionConsumer;
 import com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.TipoNotificacionEvento;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -40,7 +39,7 @@ public class FichaPerfilRegistradaConsumer extends AbstractNotificacionConsumer 
                     deserialize(message, FichaPerfilRegistradaPayload.class);
 
             logger.info(
-                    Mensajes.obtener(ConsumidorKey.LOG_FICHA_REGISTRADA_RECIBIDO),
+                    ConsumidorKey.LOG_FICHA_REGISTRADA_RECIBIDO,
                     payload.fichaPerfilId());
 
             registrar(enviarNotificacionInteractor.ejecutar(EnviarNotificacionCommand.crear(

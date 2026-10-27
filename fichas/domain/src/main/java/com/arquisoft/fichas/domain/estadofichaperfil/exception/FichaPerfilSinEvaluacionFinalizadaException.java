@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class FichaPerfilSinEvaluacionFinalizadaException extends DomainException {
 
-    public FichaPerfilSinEvaluacionFinalizadaException(UUID fichaPerfil) {
+    public FichaPerfilSinEvaluacionFinalizadaException(UUID fichaPerfil, String tituloProyecto) {
         super(BaseError.conDetalle(
                 FichasCodes.EstadoFichaPerfil.SIN_EVALUACION_FINALIZADA,
-                Mensajes.formatear(EstadoFichaPerfilKey.ERROR_SIN_EVALUACION_FINALIZADA),
+                Mensajes.formatear(EstadoFichaPerfilKey.ERROR_SIN_EVALUACION_FINALIZADA, tituloProyecto),
                 Mensajes.formatear(EstadoFichaPerfilKey.ERROR_SIN_EVALUACION_FINALIZADA_DETALLE, fichaPerfil)
         ));
     }

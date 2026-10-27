@@ -7,6 +7,7 @@ import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.DecisionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EvaluacionesFinalizadasFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.IntegrantesVigentesFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.RespaldoAprobacionFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.AprobacionRespaldadaPorEvaluacionRule;
@@ -56,8 +57,9 @@ public class AgregarEstadoAprobacionFichaPerfilValidatorImpl implements AgregarE
         fichaPerfilExisteRule.validar(new ExistenciaFichaPerfil(fichaPerfil, !ficha.esVacio()));
         asesorFichaExisteRule.validar(new ExistenciaAsesorFicha(ficha.getAsesorFicha(), !asesor.esVacio()));
         estadoDisponibleParaEvaluacionRule.validar(new EstadoActualFicha(fichaPerfil, estadoActual.getEstadoFicha()));
-        evaluacionFinalizadaRule.validar(resumen);
-        aprobacionRespaldadaRule.validar(new RespaldoAprobacionFicha(decision.isAcepta(), resumen));
+        evaluacionFinalizadaRule.validar(new EvaluacionesFinalizadasFicha(ficha.getTituloProyecto(), resumen));
+        aprobacionRespaldadaRule.validar(
+                new RespaldoAprobacionFicha(decision.isAcepta(), ficha.getTituloProyecto(), resumen));
         estudiantesVigentesRule.validar(new IntegrantesVigentesFicha(fichaPerfil, ficha.getTituloProyecto(), integrantes.size()));
     }
 }

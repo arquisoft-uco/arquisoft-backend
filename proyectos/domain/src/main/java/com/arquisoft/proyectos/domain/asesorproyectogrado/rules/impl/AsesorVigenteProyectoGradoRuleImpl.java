@@ -8,8 +8,8 @@ public class AsesorVigenteProyectoGradoRuleImpl implements AsesorVigenteProyecto
 
     @Override
     public void validar(VigenciaAsesorProyectoGrado vigencia) {
-        if (!vigencia.existe() || vigencia.eliminado()) {
-            throw new AsesorNoVigenteException(vigencia.asesor());
+        if (vigencia.eliminado()) {
+            throw new AsesorNoVigenteException(vigencia.asesor(), vigencia.nombreAsesor());
         }
     }
 }

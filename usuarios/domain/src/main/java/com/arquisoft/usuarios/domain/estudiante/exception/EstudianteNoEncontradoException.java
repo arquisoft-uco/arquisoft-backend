@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class EstudianteNoEncontradoException extends DomainException {
 
-    public EstudianteNoEncontradoException(UUID usuario) {
+    public EstudianteNoEncontradoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.Estudiante.ESTUDIANTE_NO_ENCONTRADO,
-                Mensajes.formatear(RemoverEstudianteKey.ERROR_NO_ENCONTRADO),
+                Mensajes.formatear(RemoverEstudianteKey.ERROR_NO_ENCONTRADO, nombre),
                 Mensajes.formatear(RemoverEstudianteKey.ERROR_NO_ENCONTRADO_DETALLE, usuario)
         ));
     }

@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class AdministradorNoEncontradoException extends DomainException {
 
-    public AdministradorNoEncontradoException(UUID usuario) {
+    public AdministradorNoEncontradoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.Administrador.ADMINISTRADOR_NO_ENCONTRADO,
-                Mensajes.formatear(RemoverAdministradorKey.ERROR_NO_ENCONTRADO),
+                Mensajes.formatear(RemoverAdministradorKey.ERROR_NO_ENCONTRADO, nombre),
                 Mensajes.formatear(RemoverAdministradorKey.ERROR_NO_ENCONTRADO_DETALLE, usuario)
         ));
     }

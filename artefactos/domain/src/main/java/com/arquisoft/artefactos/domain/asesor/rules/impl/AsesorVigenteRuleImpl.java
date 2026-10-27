@@ -9,8 +9,8 @@ public class AsesorVigenteRuleImpl implements AsesorVigenteRule {
     @Override
     public void validar(VigenciaAsesor vigencia) {
         var encontrado = vigencia.encontrado();
-        if (encontrado.esVacio() || encontrado.estaEliminado()) {
-            throw new AsesorNoVigenteException(vigencia.asesor());
+        if (encontrado.estaEliminado()) {
+            throw new AsesorNoVigenteException(vigencia.asesor(), encontrado.getNombre());
         }
     }
 }

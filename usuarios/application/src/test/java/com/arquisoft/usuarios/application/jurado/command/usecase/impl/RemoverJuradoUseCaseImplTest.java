@@ -106,7 +106,8 @@ class RemoverJuradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         when(juradoPorUsuarioFinder.obtener(id)).thenReturn(JuradoDomain.VACIO);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new JuradoNoEncontradoException(id)).when(removerJuradoValidator).validar(id, UsuarioDomain.VACIO, JuradoDomain.VACIO);
+        doThrow(new JuradoNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerJuradoValidator).validar(id, UsuarioDomain.VACIO, JuradoDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(JuradoDomain.crear(id)))

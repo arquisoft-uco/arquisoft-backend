@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.estadorevision.query.primaryadapter.
 import com.arquisoft.fichas.application.estadorevision.query.primaryport.interactor.ConsultarEstadosRevisionInteractor;
 import com.arquisoft.fichas.application.estadorevision.query.readmodel.EstadoRevisionReadModel;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
+import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEstadosRevisionController.class)
-@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarEstadosRevisionControllerTest.TestSecurityConfig.class})
 class ConsultarEstadosRevisionControllerTest {
 

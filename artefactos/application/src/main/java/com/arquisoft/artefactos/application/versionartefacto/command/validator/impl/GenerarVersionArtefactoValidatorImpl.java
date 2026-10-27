@@ -9,8 +9,11 @@ import com.arquisoft.artefactos.domain.artefacto.rules.EstudiantePropietarioArte
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoExisteRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.EstudiantePropietarioArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
+import com.arquisoft.artefactos.domain.asesor.model.ExistenciaAsesor;
 import com.arquisoft.artefactos.domain.asesor.model.VigenciaAsesor;
+import com.arquisoft.artefactos.domain.asesor.rules.AsesorExisteRule;
 import com.arquisoft.artefactos.domain.asesor.rules.AsesorVigenteRule;
+import com.arquisoft.artefactos.domain.asesor.rules.impl.AsesorExisteRuleImpl;
 import com.arquisoft.artefactos.domain.asesor.rules.impl.AsesorVigenteRuleImpl;
 import com.arquisoft.artefactos.domain.versionartefacto.CargaPendienteDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.GeneracionVersionArtefactoDomain;
@@ -43,6 +46,7 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
 
     private final ArtefactoExisteRule artefactoExisteRule;
     private final EstudiantePropietarioArtefactoRule estudiantePropietarioArtefactoRule;
+    private final AsesorExisteRule asesorExisteRule;
     private final AsesorVigenteRule asesorVigenteRule;
     private final VersionesRepositorioArtefactoExistenRule versionesRepositorioArtefactoExistenRule;
     private final CargaPendienteExistenteRule cargaPendienteExistenteRule;
@@ -54,6 +58,7 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
     public GenerarVersionArtefactoValidatorImpl() {
         this.artefactoExisteRule = new ArtefactoExisteRuleImpl();
         this.estudiantePropietarioArtefactoRule = new EstudiantePropietarioArtefactoRuleImpl();
+        this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.asesorVigenteRule = new AsesorVigenteRuleImpl();
         this.versionesRepositorioArtefactoExistenRule = new VersionesRepositorioArtefactoExistenRuleImpl();
         this.cargaPendienteExistenteRule = new CargaPendienteExistenteRuleImpl();
@@ -71,6 +76,7 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
         artefactoExisteRule.validar(new ExistenciaArtefacto(generacion.getArtefacto(), artefacto));
         estudiantePropietarioArtefactoRule.validar(
                 new PropiedadArtefacto(generacion.getSolicitante(), generacion.getArtefacto(), estudianteVinculado));
+        asesorExisteRule.validar(new ExistenciaAsesor(artefacto.getAsesor(), asesor));
         asesorVigenteRule.validar(new VigenciaAsesor(artefacto.getAsesor(), asesor));
         versionesRepositorioArtefactoExistenRule.validar(new ExistenciaVersionesRepositorioArtefacto(
                 List.of(artefacto.getVersionRepositorioArtefacto()), versionesRepositorio));

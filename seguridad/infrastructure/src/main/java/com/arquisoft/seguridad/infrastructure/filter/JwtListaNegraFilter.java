@@ -72,7 +72,7 @@ public class JwtListaNegraFilter extends OncePerRequestFilter {
                         writeErrorResponse(response, request,
                                 HttpStatus.UNAUTHORIZED,
                                 Mensajes.obtener(TokenInvalidadoKey.ERROR_HTTP_401),
-                                Mensajes.obtener(TokenInvalidadoKey.ERROR_HTTP_401_DETALLE));
+                                Mensajes.obtener(TokenInvalidadoKey.MENSAJE_HTTP_401));
                         return;
                     }
                 } catch (Exception e) {

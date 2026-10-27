@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class AsesorUsuarioDuplicadoException extends DomainException {
 
-    public AsesorUsuarioDuplicadoException(UUID usuario) {
+    public AsesorUsuarioDuplicadoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.Asesor.USUARIO_DUPLICADO,
-                Mensajes.formatear(AgregarAsesorKey.ERROR_USUARIO_DUPLICADO),
+                Mensajes.formatear(AgregarAsesorKey.ERROR_USUARIO_DUPLICADO, nombre),
                 Mensajes.formatear(AgregarAsesorKey.ERROR_USUARIO_DUPLICADO_DETALLE, usuario)
         ));
     }

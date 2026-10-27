@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de RemoverAsesor. */
 public enum RemoverAsesorKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("usuarios.dominio.asesor.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO("usuarios.dominio.asesor.error.no-encontrado", 1),
     ERROR_NO_ENCONTRADO_DETALLE("usuarios.dominio.asesor.error.no-encontrado-detalle", 1),
     LOG_REMOVIENDO("usuarios.aplicacion.asesor.log.removiendo", 1),
     LOG_VERIFICACION_REMOVER("usuarios.aplicacion.asesor.log.verificacion-remover", 3),

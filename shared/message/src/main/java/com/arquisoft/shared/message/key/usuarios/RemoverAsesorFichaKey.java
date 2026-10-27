@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de RemoverAsesorFicha. */
 public enum RemoverAsesorFichaKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("usuarios.dominio.asesorficha.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO("usuarios.dominio.asesorficha.error.no-encontrado", 1),
     ERROR_NO_ENCONTRADO_DETALLE("usuarios.dominio.asesorficha.error.no-encontrado-detalle", 1),
     LOG_REMOVIENDO("usuarios.aplicacion.asesorficha.log.removiendo", 1),
     LOG_VERIFICACION_REMOVER("usuarios.aplicacion.asesorficha.log.verificacion-remover", 3),

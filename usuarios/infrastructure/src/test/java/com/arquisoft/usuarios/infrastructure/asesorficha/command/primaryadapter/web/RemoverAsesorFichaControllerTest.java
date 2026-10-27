@@ -93,7 +93,7 @@ class RemoverAsesorFichaControllerTest {
     void debe422ConSuCodigo_cuandoAsesorFichaNoEstaVigente() throws Exception {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        doThrow(new AsesorFichaNoEncontradoException(usuario)).when(removerAsesorFichaInteractor).ejecutar(any());
+        doThrow(new AsesorFichaNoEncontradoException(usuario, "Ana Pérez")).when(removerAsesorFichaInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(delete(RUTA, usuario).with(administrador()))

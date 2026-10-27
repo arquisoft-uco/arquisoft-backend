@@ -4,4 +4,4 @@ import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 
 import java.util.UUID;
 
-public record ExistenciaCoordinador(UUID usuario, CoordinadorDomain coordinador) {}
+public record ExistenciaCoordinador(UUID usuario, String nombre, CoordinadorDomain coordinador) {}

@@ -5,9 +5,8 @@ import com.arquisoft.usuarios.domain.representantecomite.RepresentanteComiteDoma
 import com.arquisoft.usuarios.domain.representantecomite.model.DisponibilidadRepresentanteComiteUsuario;
 import com.arquisoft.usuarios.domain.representantecomite.rules.RepresentanteComiteUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.representantecomite.rules.impl.RepresentanteComiteUsuarioUnicoRuleImpl;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class AgregarRepresentanteComiteValidatorImpl implements AgregarRepresentanteComiteValidator {
@@ -19,8 +18,8 @@ public class AgregarRepresentanteComiteValidatorImpl implements AgregarRepresent
     }
 
     @Override
-    public void validar(UUID usuario, RepresentanteComiteDomain representanteComite) {
+    public void validar(UsuarioDomain usuario, RepresentanteComiteDomain representanteComite) {
         representanteComiteUsuarioUnicoRule.validar(
-                new DisponibilidadRepresentanteComiteUsuario(usuario, representanteComite));
+                new DisponibilidadRepresentanteComiteUsuario(usuario.getId(), usuario.getNombre(), representanteComite));
     }
 }

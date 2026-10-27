@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de RemoverAdministrador. */
 public enum RemoverAdministradorKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("usuarios.dominio.administrador.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO("usuarios.dominio.administrador.error.no-encontrado", 1),
     ERROR_NO_ENCONTRADO_DETALLE("usuarios.dominio.administrador.error.no-encontrado-detalle", 1),
     ERROR_AUTOELIMINACION("usuarios.dominio.administrador.error.autoeliminacion", 0),
     ERROR_AUTOELIMINACION_DETALLE("usuarios.dominio.administrador.error.autoeliminacion-detalle", 1),

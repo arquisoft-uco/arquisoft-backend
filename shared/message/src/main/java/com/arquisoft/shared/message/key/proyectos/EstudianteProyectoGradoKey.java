@@ -27,7 +27,7 @@ public enum EstudianteProyectoGradoKey implements ClaveMensaje {
     ERROR_DUPLICADO("proyectos.dominio.estudianteproyectogrado.error.duplicado", 0),
     ERROR_DUPLICADO_DETALLE("proyectos.dominio.estudianteproyectogrado.error.duplicado-detalle", 1),
     ERROR_CUPO_EXCEDIDO("proyectos.dominio.estudianteproyectogrado.error.cupo-excedido", 1),
-    ERROR_YA_VINCULADO("proyectos.dominio.estudianteproyectogrado.error.ya-vinculado", 0),
+    ERROR_YA_VINCULADO("proyectos.dominio.estudianteproyectogrado.error.ya-vinculado", 1),
     ERROR_YA_VINCULADO_DETALLE("proyectos.dominio.estudianteproyectogrado.error.ya-vinculado-detalle", 1),
     ERROR_NO_VINCULADO("proyectos.dominio.estudianteproyectogrado.error.no-vinculado", 0),
     ERROR_NO_VINCULADO_DETALLE("proyectos.dominio.estudianteproyectogrado.error.no-vinculado-detalle", 2);

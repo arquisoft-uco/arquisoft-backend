@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class CoordinadorNoEncontradoException extends DomainException {
 
-    public CoordinadorNoEncontradoException(UUID usuario) {
+    public CoordinadorNoEncontradoException(UUID usuario, String nombre) {
         super(BaseError.conDetalle(
                 UsuariosCodes.Coordinador.COORDINADOR_NO_ENCONTRADO,
-                Mensajes.formatear(RemoverCoordinadorKey.ERROR_NO_ENCONTRADO),
+                Mensajes.formatear(RemoverCoordinadorKey.ERROR_NO_ENCONTRADO, nombre),
                 Mensajes.formatear(RemoverCoordinadorKey.ERROR_NO_ENCONTRADO_DETALLE, usuario)
         ));
     }

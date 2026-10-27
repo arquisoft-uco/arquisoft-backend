@@ -75,7 +75,7 @@ class AgregarAdministradorUseCaseImplTest {
         var orden = inOrder(administradorPorUsuarioFinder, agregarAdministradorValidator,
                 administradorOutputPort, eventPublisher);
         orden.verify(administradorPorUsuarioFinder).obtener(usuario.getId());
-        orden.verify(agregarAdministradorValidator).validar(usuario.getId(), AdministradorDomain.VACIO);
+        orden.verify(agregarAdministradorValidator).validar(usuario, AdministradorDomain.VACIO);
         orden.verify(administradorOutputPort).guardar(any());
         orden.verify(eventPublisher).publish(any());
 
@@ -107,7 +107,7 @@ class AgregarAdministradorUseCaseImplTest {
 
         // Assert
         var orden = inOrder(agregarAdministradorValidator, administradorOutputPort, eventPublisher);
-        orden.verify(agregarAdministradorValidator).validar(usuario.getId(), eliminado);
+        orden.verify(agregarAdministradorValidator).validar(usuario, eliminado);
         orden.verify(administradorOutputPort).reactivar(usuario.getId());
         orden.verify(eventPublisher).publish(any(AdministradorAgregadoEvent.class));
         verify(administradorOutputPort, never()).guardar(any());
@@ -121,8 +121,8 @@ class AgregarAdministradorUseCaseImplTest {
         var usuario = usuario();
         var vigente = AdministradorDomain.crear(usuario.getId());
         when(administradorPorUsuarioFinder.obtener(usuario.getId())).thenReturn(vigente);
-        doThrow(new AdministradorUsuarioDuplicadoException(usuario.getId()))
-                .when(agregarAdministradorValidator).validar(usuario.getId(), vigente);
+        doThrow(new AdministradorUsuarioDuplicadoException(usuario.getId(), usuario.getNombre()))
+                .when(agregarAdministradorValidator).validar(usuario, vigente);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(usuario))

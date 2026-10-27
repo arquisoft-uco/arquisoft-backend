@@ -4,4 +4,4 @@ import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 
 import java.util.UUID;
 
-public record DisponibilidadAsesorFichaUsuario(UUID usuario, AsesorFichaDomain asesorFicha) {}
+public record DisponibilidadAsesorFichaUsuario(UUID usuario, String nombre, AsesorFichaDomain asesorFicha) {}

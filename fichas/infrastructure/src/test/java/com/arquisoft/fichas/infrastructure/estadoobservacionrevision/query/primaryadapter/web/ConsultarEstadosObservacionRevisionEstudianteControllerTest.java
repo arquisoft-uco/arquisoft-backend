@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.estadoobservacionrevision.query.prim
 import com.arquisoft.fichas.application.estadoobservacionrevision.query.primaryport.interactor.ConsultarEstadosObservacionRevisionInteractor;
 import com.arquisoft.fichas.application.estadoobservacionrevision.query.readmodel.EstadoObservacionRevisionReadModel;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
+import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEstadosObservacionRevisionEstudianteController.class)
-@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarEstadosObservacionRevisionEstudianteControllerTest.TestSecurityConfig.class})
 class ConsultarEstadosObservacionRevisionEstudianteControllerTest {
 
