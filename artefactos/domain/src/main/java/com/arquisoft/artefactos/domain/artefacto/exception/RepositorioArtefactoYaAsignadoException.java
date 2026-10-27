@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public final class RepositorioArtefactoYaAsignadoException extends DomainException {
 
-    private static final String SEPARADOR_NOMBRES = ", ";
+    private static final String SEPARADOR_NOMBRES = "», «";
 
     public RepositorioArtefactoYaAsignadoException(List<UUID> repositorios, List<String> nombresRepositorios) {
         super(BaseError.conDetalle(
