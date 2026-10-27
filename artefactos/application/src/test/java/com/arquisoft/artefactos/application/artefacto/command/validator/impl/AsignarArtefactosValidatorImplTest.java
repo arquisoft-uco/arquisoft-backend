@@ -5,7 +5,6 @@ import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantes
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactosDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.RepositorioArtefactoYaAsignadoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
-import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoVigenteException;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.exception.AsesorNoAsignadoProyectoGradoException;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
@@ -66,18 +65,6 @@ class AsignarArtefactosValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(
                 asignacion, false, AsesorDomain.VACIO, List.of(), List.of(), List.of(repositorio)))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
-    }
-
-    @Test
-    void debeLanzarAsesorNoVigente_antesQueElVinculo_cuandoElAsesorEstaDadoDeBaja() {
-        // Arrange
-        var eliminado = AsesorDomain.reconstruir(
-                asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), Instant.now());
-
-        // Act & Assert
-        assertThatThrownBy(() -> validator.validar(
-                asignacion, true, eliminado, List.of(), List.of(), List.of()))
-                .isInstanceOf(AsesorNoVigenteException.class);
     }
 
     @Test
