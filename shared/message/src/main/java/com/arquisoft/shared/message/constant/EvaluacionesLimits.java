@@ -44,6 +44,14 @@ public final class EvaluacionesLimits {
         public static final int VALOR_MAX = 500;
     }
 
+    public static final class EvaluacionCuantitativaAsesor {
+
+        private EvaluacionCuantitativaAsesor() {}
+
+        public static final int PUNTAJE_MIN = 0;
+        public static final int PUNTAJE_MAX = 500;
+    }
+
     public static final class ObservacionItemJurado {
 
         private ObservacionItemJurado() {}
