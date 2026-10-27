@@ -1,7 +1,7 @@
 package com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.usecase.impl;
 
 import com.arquisoft.repositorio_artefactos.application.administrador.command.finder.AdministradorPorIdFinder;
-import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.RepositorioArtefactoPorIdFinder;
+import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.RepositorioArtefactoBloqueadoPorIdFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.AnalisisCargaFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.CargaPendienteFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.TamanoMaximoArchivoFinder;
@@ -16,6 +16,7 @@ import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.A
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.CargaPendienteDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.event.VersionRepositorioArtefactoSubidaEvent;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.TamanoArchivoExcedidoException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.TipoArchivoNoCoincideException;
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.exception.InfrastructureException;
@@ -57,7 +58,7 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     @Mock
     private AdministradorPorIdFinder administradorPorIdFinder;
     @Mock
-    private RepositorioArtefactoPorIdFinder repositorioArtefactoPorIdFinder;
+    private RepositorioArtefactoBloqueadoPorIdFinder repositorioArtefactoBloqueadoPorIdFinder;
     @Mock
     private CargaPendienteFinder cargaPendienteFinder;
     @Mock
@@ -88,7 +89,7 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new SubirVersionRepositorioArtefactoUseCaseImpl(administradorPorIdFinder,
-                repositorioArtefactoPorIdFinder, cargaPendienteFinder, analisisCargaFinder,
+                repositorioArtefactoBloqueadoPorIdFinder, cargaPendienteFinder, analisisCargaFinder,
                 ultimoNumeroVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator, almacenamiento,
                 versionOutputPort, eventPublisher, logger);
         subida = SubidaVersionRepositorioArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
@@ -102,13 +103,17 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
         analisis = AnalisisArchivoDomain.reconstruir(TIPO, HASH, ETAG);
     }
 
-    private void prepararFinders(int ultimoNumero) {
+    private void prepararFindersDeCarga(int ultimoNumero) {
         when(administradorPorIdFinder.obtener(subida.getSolicitante())).thenReturn(administrador);
-        when(repositorioArtefactoPorIdFinder.obtener(subida.getRepositorio())).thenReturn(repositorio);
+        when(repositorioArtefactoBloqueadoPorIdFinder.obtener(subida.getRepositorio())).thenReturn(repositorio);
         when(cargaPendienteFinder.obtener(subida.getCarga())).thenReturn(carga);
-        when(analisisCargaFinder.obtener(subida.getCarga())).thenReturn(analisis);
         when(ultimoNumeroVersionDocumentoFinder.obtener(subida)).thenReturn(ultimoNumero);
         when(tamanoMaximoArchivoFinder.obtener()).thenReturn(MAXIMO);
+    }
+
+    private void prepararFinders(int ultimoNumero) {
+        prepararFindersDeCarga(ultimoNumero);
+        when(analisisCargaFinder.obtener(subida.getCarga())).thenReturn(analisis);
     }
 
     @Test
@@ -121,17 +126,19 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
 
         // Assert
         var captorVersion = ArgumentCaptor.forClass(VersionRepositorioArtefactoEntity.class);
-        var ordenFinders = inOrder(administradorPorIdFinder, repositorioArtefactoPorIdFinder, cargaPendienteFinder,
-                analisisCargaFinder, ultimoNumeroVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator);
+        var ordenFinders = inOrder(administradorPorIdFinder, repositorioArtefactoBloqueadoPorIdFinder,
+                cargaPendienteFinder, ultimoNumeroVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator,
+                analisisCargaFinder);
         ordenFinders.verify(administradorPorIdFinder).obtener(subida.getSolicitante());
-        ordenFinders.verify(repositorioArtefactoPorIdFinder).obtener(subida.getRepositorio());
+        ordenFinders.verify(repositorioArtefactoBloqueadoPorIdFinder).obtener(subida.getRepositorio());
         ordenFinders.verify(cargaPendienteFinder).obtener(subida.getCarga());
-        ordenFinders.verify(analisisCargaFinder).obtener(subida.getCarga());
         ordenFinders.verify(ultimoNumeroVersionDocumentoFinder).obtener(subida);
         ordenFinders.verify(tamanoMaximoArchivoFinder).obtener();
-        ordenFinders.verify(validator).validar(subida, administrador, repositorio, carga, analisis, MAXIMO, 4);
+        ordenFinders.verify(validator).validarCarga(subida, administrador, repositorio, carga, MAXIMO, 4);
+        ordenFinders.verify(analisisCargaFinder).obtener(subida.getCarga());
+        ordenFinders.verify(validator).validarContenido(subida, carga, analisis);
         verify(administradorPorIdFinder, times(1)).obtener(any());
-        verify(repositorioArtefactoPorIdFinder, times(1)).obtener(any());
+        verify(repositorioArtefactoBloqueadoPorIdFinder, times(1)).obtener(any());
         verify(cargaPendienteFinder, times(1)).obtener(any());
         verify(analisisCargaFinder, times(1)).obtener(any());
         verify(ultimoNumeroVersionDocumentoFinder, times(1)).obtener(any());
@@ -146,11 +153,24 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     }
 
     @Test
-    void debeNoCopiar_cuandoValidatorRechaza() {
+    void debeNoAnalizarElArchivo_cuandoLaCargaSeRechaza() {
+        // Arrange
+        prepararFindersDeCarga(0);
+        doThrow(new TamanoArchivoExcedidoException(MAXIMO + 1, MAXIMO))
+                .when(validator).validarCarga(any(), any(), any(), any(), anyLong(), anyInt());
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(subida)).isInstanceOf(TamanoArchivoExcedidoException.class);
+        verifyNoInteractions(analisisCargaFinder, almacenamiento, versionOutputPort, eventPublisher);
+        verify(validator, never()).validarContenido(any(), any(), any());
+    }
+
+    @Test
+    void debeNoCopiar_cuandoElContenidoSeRechaza() {
         // Arrange
         prepararFinders(0);
         doThrow(new TipoArchivoNoCoincideException("a", "b"))
-                .when(validator).validar(any(), any(), any(), any(), any(), anyLong(), anyInt());
+                .when(validator).validarContenido(any(), any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(subida)).isInstanceOf(TipoArchivoNoCoincideException.class);

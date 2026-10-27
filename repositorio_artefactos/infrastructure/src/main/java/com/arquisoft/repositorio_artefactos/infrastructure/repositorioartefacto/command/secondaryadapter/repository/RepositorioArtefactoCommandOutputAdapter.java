@@ -30,6 +30,11 @@ public class RepositorioArtefactoCommandOutputAdapter implements RepositorioArte
     }
 
     @Override
+    public Optional<RepositorioArtefactoEntity> obtenerBloqueadoPorId(UUID id) {
+        return repositorioArtefactoCommandRepository.bloquearPorId(id).map(RepositorioArtefactoJpaMapper::toEntity);
+    }
+
+    @Override
     public boolean existePorNombreRepositorio(String nombreRepositorio) {
         return repositorioArtefactoCommandRepository.existsByNombreRepositorio(nombreRepositorio);
     }

@@ -33,7 +33,7 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.carga-solicitada", 2),
     LOG_SUBIENDO("repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.subiendo", 3),
     LOG_VERIFICACION_SUBIR(
-            "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.verificacion-subir", 6),
+            "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.verificacion-subir", 5),
     LOG_SUBIDA("repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.subida", 3),
     LOG_CONSULTANDO("repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA(

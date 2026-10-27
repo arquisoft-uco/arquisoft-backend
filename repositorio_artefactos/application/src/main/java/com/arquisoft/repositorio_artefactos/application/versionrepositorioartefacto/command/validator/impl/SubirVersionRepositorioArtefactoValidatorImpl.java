@@ -60,9 +60,9 @@ public class SubirVersionRepositorioArtefactoValidatorImpl implements SubirVersi
     }
 
     @Override
-    public void validar(SubidaVersionRepositorioArtefactoDomain subida, AdministradorDomain administrador,
-                        RepositorioArtefactoDomain repositorio, CargaPendienteDomain carga,
-                        AnalisisArchivoDomain analisis, long tamanoMaximoBytes, int ultimoNumeroVersion) {
+    public void validarCarga(SubidaVersionRepositorioArtefactoDomain subida, AdministradorDomain administrador,
+                             RepositorioArtefactoDomain repositorio, CargaPendienteDomain carga,
+                             long tamanoMaximoBytes, int ultimoNumeroVersion) {
         var existenciaDocumento = new ExistenciaDocumento(
                 subida.getNombreDocumento(), subida.isNuevoDocumento(), ultimoNumeroVersion);
 
@@ -72,11 +72,16 @@ public class SubirVersionRepositorioArtefactoValidatorImpl implements SubirVersi
         cargaPendienteExistenteRule.validar(new ExistenciaCargaPendiente(subida.getCarga(), carga));
         cargaCorrespondeASolicitudRule.validar(
                 new CorrespondenciaCarga(carga, subida.getSolicitante(), subida.getRepositorio()));
-        cargaSinModificarRule.validar(new ConsistenciaCarga(subida.getCarga(), carga.getEtag(), analisis.getEtag()));
         tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(carga.getTamanoBytes(), tamanoMaximoBytes));
-        tipoArchivoCoincideRule.validar(
-                new CoincidenciaTipoArchivo(carga.getNombreArchivo(), carga.getTipoContenido(), analisis));
         nuevoDocumentoDisponibleRule.validar(existenciaDocumento);
         documentoPreviamenteCreadoRule.validar(existenciaDocumento);
+    }
+
+    @Override
+    public void validarContenido(SubidaVersionRepositorioArtefactoDomain subida, CargaPendienteDomain carga,
+                                 AnalisisArchivoDomain analisis) {
+        cargaSinModificarRule.validar(new ConsistenciaCarga(subida.getCarga(), carga.getEtag(), analisis.getEtag()));
+        tipoArchivoCoincideRule.validar(
+                new CoincidenciaTipoArchivo(carga.getNombreArchivo(), carga.getTipoContenido(), analisis));
     }
 }
