@@ -1,7 +1,6 @@
 package com.arquisoft.shared.query;
 
 import com.arquisoft.shared.query.exception.FiltroException;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.util.UtilTexto;
@@ -60,7 +59,8 @@ public enum FiltroOperador {
 
     private static FiltroException invalido(String valor) {
         return new FiltroException(
-                Mensajes.formatear(ConsultaKey.ERROR_OPERADOR_INVALIDO, valor, OPCIONES),
-                AppCodes.Consulta.FILTRO_OPERADOR_INVALIDO);
+                AppCodes.Consulta.FILTRO_OPERADOR_INVALIDO,
+                ConsultaKey.ERROR_OPERADOR_INVALIDO, ConsultaKey.ERROR_OPERADOR_INVALIDO_DETALLE,
+                valor, OPCIONES);
     }
 }

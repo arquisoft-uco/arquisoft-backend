@@ -1,11 +1,10 @@
 package com.arquisoft.shared.query.dto;
 
-import com.arquisoft.shared.exception.ApplicationException;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.NodoFiltro;
+import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.util.UtilColeccion;
 import com.arquisoft.shared.util.UtilTexto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -27,9 +26,9 @@ public class GrupoFiltroDTO implements NodoFiltroDTO {
     @Override
     public NodoFiltro toDomain() {
         if (UtilTexto.esVacioONulo(conector)) {
-            throw new ApplicationException(
-                    Mensajes.obtener(ConsultaKey.ERROR_CONECTOR_REQUERIDO),
-                    AppCodes.Consulta.CONECTOR_REQUERIDO);
+            throw new FiltroException(
+                    AppCodes.Consulta.CONECTOR_REQUERIDO,
+                    ConsultaKey.ERROR_CONECTOR_REQUERIDO, ConsultaKey.ERROR_CONECTOR_REQUERIDO_DETALLE);
         }
         return NodoFiltro.grupo(
                 FiltroConector.parse(conector),
