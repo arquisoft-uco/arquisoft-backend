@@ -15,7 +15,7 @@ class TamanoArchivoPermitidoRuleImplTest {
     @Test
     void debeLanzar_cuandoExcede() {
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(new LimiteTamanoArchivo(5_242_881L, 5_242_880L)))
+        assertThatThrownBy(() -> regla.validar(new LimiteTamanoArchivo("plantilla.docx", 5_242_881L, 5_242_880L)))
                 .isInstanceOf(TamanoArchivoExcedidoException.class)
                 .extracting("codigoError")
                 .isEqualTo(ArtefactosCodes.VersionArtefacto.TAMANO_ARCHIVO_EXCEDIDO);
@@ -24,7 +24,7 @@ class TamanoArchivoPermitidoRuleImplTest {
     @Test
     void debePasar_cuandoIgualAlMaximo() {
         // Act & Assert
-        assertThatCode(() -> regla.validar(new LimiteTamanoArchivo(5_242_880L, 5_242_880L)))
+        assertThatCode(() -> regla.validar(new LimiteTamanoArchivo("plantilla.docx", 5_242_880L, 5_242_880L)))
                 .doesNotThrowAnyException();
     }
 }

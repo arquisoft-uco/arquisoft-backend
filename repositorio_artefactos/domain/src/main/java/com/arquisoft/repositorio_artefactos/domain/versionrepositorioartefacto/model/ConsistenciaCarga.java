@@ -2,4 +2,4 @@ package com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.
 
 import java.util.UUID;
 
-public record ConsistenciaCarga(UUID carga, String etagConsultado, String etagAnalizado) {}
+public record ConsistenciaCarga(UUID carga, String nombreArchivo, String etagConsultado, String etagAnalizado) {}

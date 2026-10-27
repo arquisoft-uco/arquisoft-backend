@@ -192,7 +192,7 @@ class GenerarVersionArtefactoUseCaseImplTest {
     void debeNoAnalizarElArchivo_cuandoLaCargaSeRechaza() {
         // Arrange
         prepararFindersDeCarga();
-        doThrow(new CargaNoCorrespondeException(generacion.getCarga()))
+        doThrow(new CargaNoCorrespondeException(generacion.getCarga(), "plantilla.docx"))
                 .when(validator).validarCarga(any(), any(), anyBoolean(), any(), anyList(), any(), anyLong());
 
         // Act & Assert
@@ -207,7 +207,7 @@ class GenerarVersionArtefactoUseCaseImplTest {
         // Arrange
         prepararFindersDeCarga();
         when(analisisCargaFinder.obtener(generacion.getCarga())).thenReturn(analisis);
-        doThrow(new CargaModificadaException(generacion.getCarga()))
+        doThrow(new CargaModificadaException(generacion.getCarga(), "plantilla.docx"))
                 .when(validator).validarContenido(any(), any());
 
         // Act & Assert

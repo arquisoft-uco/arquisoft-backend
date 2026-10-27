@@ -4,15 +4,20 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum VersionArtefactoKey implements ClaveMensaje {
 
-    ERROR_CARGA_NO_ENCONTRADA("artefactos.dominio.versionartefacto.error.carga-no-encontrada", 1),
+    ERROR_CARGA_NO_ENCONTRADA("artefactos.dominio.versionartefacto.error.carga-no-encontrada", 0),
+    ERROR_CARGA_NO_ENCONTRADA_DETALLE("artefactos.dominio.versionartefacto.error.carga-no-encontrada-detalle", 1),
     ERROR_CARGA_NO_CORRESPONDE("artefactos.dominio.versionartefacto.error.carga-no-corresponde", 1),
+    ERROR_CARGA_NO_CORRESPONDE_DETALLE("artefactos.dominio.versionartefacto.error.carga-no-corresponde-detalle", 1),
     ERROR_CARGA_MODIFICADA("artefactos.dominio.versionartefacto.error.carga-modificada", 1),
+    ERROR_CARGA_MODIFICADA_DETALLE("artefactos.dominio.versionartefacto.error.carga-modificada-detalle", 1),
     ERROR_TAMANO_EXCEDIDO("artefactos.dominio.versionartefacto.error.tamano-excedido", 2),
-    ERROR_TIPO_NO_COINCIDE("artefactos.dominio.versionartefacto.error.tipo-no-coincide", 2),
+    ERROR_TAMANO_EXCEDIDO_DETALLE("artefactos.dominio.versionartefacto.error.tamano-excedido-detalle", 2),
+    ERROR_TIPO_NO_COINCIDE("artefactos.dominio.versionartefacto.error.tipo-no-coincide", 1),
+    ERROR_TIPO_NO_COINCIDE_DETALLE("artefactos.dominio.versionartefacto.error.tipo-no-coincide-detalle", 2),
     ERROR_NOMBRE_ARCHIVO_INVALIDO("artefactos.dominio.versionartefacto.error.nombre-archivo-invalido", 1),
     ERROR_TIPO_NO_PERMITIDO("artefactos.dominio.versionartefacto.error.tipo-no-permitido", 1),
     ERROR_TIPO_CONTENIDO_NO_COINCIDE_EXTENSION(
-            "artefactos.dominio.versionartefacto.error.tipo-contenido-no-coincide-extension", 2),
+            "artefactos.dominio.versionartefacto.error.tipo-contenido-no-coincide-extension", 1),
     LOG_SOLICITANDO_CARGA("artefactos.aplicacion.versionartefacto.log.solicitando-carga", 2),
     LOG_VERIFICACION_SOLICITAR_CARGA("artefactos.aplicacion.versionartefacto.log.verificacion-solicitar-carga", 2),
     LOG_CARGA_SOLICITADA("artefactos.aplicacion.versionartefacto.log.carga-solicitada", 2),

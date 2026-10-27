@@ -1,5 +1,6 @@
 package com.arquisoft.artefactos.domain.versionartefacto.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
@@ -9,10 +10,11 @@ import java.util.UUID;
 
 public final class CargaModificadaException extends DomainException {
 
-    public CargaModificadaException(UUID carga) {
-        super(
-                Mensajes.formatear(VersionArtefactoKey.ERROR_CARGA_MODIFICADA, carga),
-                ArtefactosCodes.VersionArtefacto.CARGA_MODIFICADA
-        );
+    public CargaModificadaException(UUID carga, String nombreArchivo) {
+        super(BaseError.conDetalle(
+                ArtefactosCodes.VersionArtefacto.CARGA_MODIFICADA,
+                Mensajes.formatear(VersionArtefactoKey.ERROR_CARGA_MODIFICADA, nombreArchivo),
+                Mensajes.formatear(VersionArtefactoKey.ERROR_CARGA_MODIFICADA_DETALLE, carga)
+        ));
     }
 }

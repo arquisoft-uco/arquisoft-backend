@@ -126,7 +126,7 @@ public final class SolicitudCargaVersionArtefactoDomain {
                     ArtefactosCodes.VersionArtefacto.TIPO_CONTENIDO_NO_COINCIDE_EXTENSION,
                     Mensajes.formatear(
                             VersionArtefactoKey.ERROR_TIPO_CONTENIDO_NO_COINCIDE_EXTENSION,
-                            tipoContenido, nombreArchivo));
+                            nombreArchivo));
         }
     }
 

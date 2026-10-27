@@ -15,7 +15,7 @@ public class TipoArchivoCoincideRuleImpl implements TipoArchivoCoincideRule {
                 && plantilla.getTipoContenido().equals(coincidencia.tipoAlmacenado())
                 && plantilla.getTipoDetectado().equals(tipoDetectado);
         if (!coincide) {
-            throw new TipoArchivoNoCoincideException(coincidencia.tipoAlmacenado(), tipoDetectado);
+            throw new TipoArchivoNoCoincideException(coincidencia.nombreArchivo(), coincidencia.tipoAlmacenado(), tipoDetectado);
         }
     }
 }

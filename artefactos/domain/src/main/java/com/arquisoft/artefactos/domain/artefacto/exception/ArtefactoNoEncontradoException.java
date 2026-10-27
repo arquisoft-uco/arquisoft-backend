@@ -1,5 +1,6 @@
 package com.arquisoft.artefactos.domain.artefacto.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
@@ -10,9 +11,10 @@ import java.util.UUID;
 public final class ArtefactoNoEncontradoException extends DomainException {
 
     public ArtefactoNoEncontradoException(UUID artefacto) {
-        super(
-                Mensajes.formatear(ArtefactoKey.ERROR_NO_ENCONTRADO, artefacto),
-                ArtefactosCodes.Artefacto.NO_ENCONTRADO
-        );
+        super(BaseError.conDetalle(
+                ArtefactosCodes.Artefacto.NO_ENCONTRADO,
+                Mensajes.obtener(ArtefactoKey.ERROR_NO_ENCONTRADO),
+                Mensajes.formatear(ArtefactoKey.ERROR_NO_ENCONTRADO_DETALLE, artefacto)
+        ));
     }
 }

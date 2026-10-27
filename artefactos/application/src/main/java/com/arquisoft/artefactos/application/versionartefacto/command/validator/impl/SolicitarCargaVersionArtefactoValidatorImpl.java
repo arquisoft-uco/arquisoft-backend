@@ -33,6 +33,7 @@ public class SolicitarCargaVersionArtefactoValidatorImpl implements SolicitarCar
         artefactoExisteRule.validar(new ExistenciaArtefacto(solicitud.getArtefacto(), artefacto));
         estudiantePropietarioArtefactoRule.validar(
                 new PropiedadArtefacto(solicitud.getSolicitante(), solicitud.getArtefacto(), estudianteVinculado));
-        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(solicitud.getTamanoBytes(), tamanoMaximoBytes));
+        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(
+                solicitud.getNombreArchivo(), solicitud.getTamanoBytes(), tamanoMaximoBytes));
     }
 }

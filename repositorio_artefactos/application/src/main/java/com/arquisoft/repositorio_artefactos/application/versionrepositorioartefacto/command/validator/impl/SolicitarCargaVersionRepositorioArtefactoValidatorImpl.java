@@ -35,6 +35,7 @@ public class SolicitarCargaVersionRepositorioArtefactoValidatorImpl
         administradorVigenteRule.validar(new VigenciaAdministrador(solicitud.getSolicitante(), administrador));
         repositorioArtefactoExistenteRule.validar(
                 new ExistenciaRepositorioArtefacto(solicitud.getRepositorio(), repositorio));
-        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(solicitud.getTamanoBytes(), tamanoMaximoBytes));
+        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(
+                solicitud.getNombreArchivo(), solicitud.getTamanoBytes(), tamanoMaximoBytes));
     }
 }

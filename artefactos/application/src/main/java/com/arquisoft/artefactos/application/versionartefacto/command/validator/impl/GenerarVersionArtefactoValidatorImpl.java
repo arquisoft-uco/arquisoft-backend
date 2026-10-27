@@ -77,7 +77,8 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
         cargaPendienteExistenteRule.validar(new ExistenciaCargaPendiente(generacion.getCarga(), carga));
         cargaCorrespondeASolicitudRule.validar(
                 new CorrespondenciaCarga(carga, generacion.getSolicitante(), generacion.getArtefacto()));
-        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(carga.getTamanoBytes(), tamanoMaximoBytes));
+        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(
+                carga.getNombreArchivo(), carga.getTamanoBytes(), tamanoMaximoBytes));
     }
 
     @Override
@@ -85,7 +86,8 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
         var carga = cargaAnalizada.carga();
         var analisis = cargaAnalizada.analisis();
         cargaSinModificarRule.validar(
-                new ConsistenciaCarga(generacion.getCarga(), carga.getEtag(), analisis.getEtag()));
+                new ConsistenciaCarga(
+                        generacion.getCarga(), carga.getNombreArchivo(), carga.getEtag(), analisis.getEtag()));
         tipoArchivoCoincideRule.validar(
                 new CoincidenciaTipoArchivo(carga.getNombreArchivo(), carga.getTipoContenido(), analisis));
     }

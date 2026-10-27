@@ -16,14 +16,14 @@ class CargaSinModificarRuleImplTest {
     @Test
     void debePasar_cuandoEtagsIguales() {
         // Act & Assert
-        assertThatCode(() -> regla.validar(new ConsistenciaCarga(UtilUUID.generarNuevoUUID(), "abc", "abc")))
+        assertThatCode(() -> regla.validar(new ConsistenciaCarga(UtilUUID.generarNuevoUUID(), "plantilla.docx", "abc", "abc")))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void debeLanzar_cuandoEtagsDistintos() {
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(new ConsistenciaCarga(UtilUUID.generarNuevoUUID(), "abc", "xyz")))
+        assertThatThrownBy(() -> regla.validar(new ConsistenciaCarga(UtilUUID.generarNuevoUUID(), "plantilla.docx", "abc", "xyz")))
                 .isInstanceOf(CargaModificadaException.class)
                 .extracting("codigoError")
                 .isEqualTo(RepositorioArtefactosCodes.VersionRepositorioArtefacto.CARGA_VERSION_MODIFICADA);
@@ -32,14 +32,14 @@ class CargaSinModificarRuleImplTest {
     @Test
     void debeLanzar_cuandoEtagAnalizadoVacio() {
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(new ConsistenciaCarga(UtilUUID.generarNuevoUUID(), "abc", "")))
+        assertThatThrownBy(() -> regla.validar(new ConsistenciaCarga(UtilUUID.generarNuevoUUID(), "plantilla.docx", "abc", "")))
                 .isInstanceOf(CargaModificadaException.class);
     }
 
     @Test
     void debeLanzar_cuandoEtagConsultadoVacio() {
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(new ConsistenciaCarga(UtilUUID.generarNuevoUUID(), "", "")))
+        assertThatThrownBy(() -> regla.validar(new ConsistenciaCarga(UtilUUID.generarNuevoUUID(), "plantilla.docx", "", "")))
                 .isInstanceOf(CargaModificadaException.class);
     }
 }

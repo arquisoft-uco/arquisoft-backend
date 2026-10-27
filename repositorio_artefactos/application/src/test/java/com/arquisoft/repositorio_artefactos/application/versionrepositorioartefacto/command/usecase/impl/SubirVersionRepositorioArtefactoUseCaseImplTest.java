@@ -156,7 +156,7 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     void debeNoAnalizarElArchivo_cuandoLaCargaSeRechaza() {
         // Arrange
         prepararFindersDeCarga(0);
-        doThrow(new TamanoArchivoExcedidoException(MAXIMO + 1, MAXIMO))
+        doThrow(new TamanoArchivoExcedidoException("plantilla.docx", MAXIMO + 1, MAXIMO))
                 .when(validator).validarCarga(any(), any(), any(), any(), anyLong(), anyInt());
 
         // Act & Assert
@@ -169,7 +169,7 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     void debeNoCopiar_cuandoElContenidoSeRechaza() {
         // Arrange
         prepararFinders(0);
-        doThrow(new TipoArchivoNoCoincideException("a", "b"))
+        doThrow(new TipoArchivoNoCoincideException("plantilla.docx", "a", "b"))
                 .when(validator).validarContenido(any(), any(), any());
 
         // Act & Assert

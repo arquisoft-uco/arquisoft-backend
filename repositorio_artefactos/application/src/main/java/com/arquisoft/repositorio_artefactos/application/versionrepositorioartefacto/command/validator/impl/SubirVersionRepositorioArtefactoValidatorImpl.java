@@ -72,7 +72,8 @@ public class SubirVersionRepositorioArtefactoValidatorImpl implements SubirVersi
         cargaPendienteExistenteRule.validar(new ExistenciaCargaPendiente(subida.getCarga(), carga));
         cargaCorrespondeASolicitudRule.validar(
                 new CorrespondenciaCarga(carga, subida.getSolicitante(), subida.getRepositorio()));
-        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(carga.getTamanoBytes(), tamanoMaximoBytes));
+        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(
+                carga.getNombreArchivo(), carga.getTamanoBytes(), tamanoMaximoBytes));
         nuevoDocumentoDisponibleRule.validar(existenciaDocumento);
         documentoPreviamenteCreadoRule.validar(existenciaDocumento);
     }
@@ -80,7 +81,8 @@ public class SubirVersionRepositorioArtefactoValidatorImpl implements SubirVersi
     @Override
     public void validarContenido(SubidaVersionRepositorioArtefactoDomain subida, CargaPendienteDomain carga,
                                  AnalisisArchivoDomain analisis) {
-        cargaSinModificarRule.validar(new ConsistenciaCarga(subida.getCarga(), carga.getEtag(), analisis.getEtag()));
+        cargaSinModificarRule.validar(new ConsistenciaCarga(
+                subida.getCarga(), carga.getNombreArchivo(), carga.getEtag(), analisis.getEtag()));
         tipoArchivoCoincideRule.validar(
                 new CoincidenciaTipoArchivo(carga.getNombreArchivo(), carga.getTipoContenido(), analisis));
     }

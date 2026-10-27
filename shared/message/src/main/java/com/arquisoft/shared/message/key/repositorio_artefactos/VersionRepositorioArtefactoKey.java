@@ -6,15 +6,25 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
 
     ERROR_CARGA_NO_ENCONTRADA(
-            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.carga-no-encontrada", 1),
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.carga-no-encontrada", 0),
+    ERROR_CARGA_NO_ENCONTRADA_DETALLE(
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.carga-no-encontrada-detalle", 1),
     ERROR_CARGA_NO_CORRESPONDE(
             "repositorio_artefactos.dominio.versionrepositorioartefacto.error.carga-no-corresponde", 1),
+    ERROR_CARGA_NO_CORRESPONDE_DETALLE(
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.carga-no-corresponde-detalle", 1),
     ERROR_CARGA_MODIFICADA(
             "repositorio_artefactos.dominio.versionrepositorioartefacto.error.carga-modificada", 1),
+    ERROR_CARGA_MODIFICADA_DETALLE(
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.carga-modificada-detalle", 1),
     ERROR_TAMANO_EXCEDIDO(
             "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tamano-excedido", 2),
+    ERROR_TAMANO_EXCEDIDO_DETALLE(
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tamano-excedido-detalle", 2),
     ERROR_TIPO_NO_COINCIDE(
-            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tipo-no-coincide", 2),
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tipo-no-coincide", 1),
+    ERROR_TIPO_NO_COINCIDE_DETALLE(
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tipo-no-coincide-detalle", 2),
     ERROR_DOCUMENTO_YA_EXISTE(
             "repositorio_artefactos.dominio.versionrepositorioartefacto.error.documento-ya-existe", 1),
     ERROR_DOCUMENTO_NO_EXISTE(
@@ -24,7 +34,7 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
     ERROR_TIPO_NO_PERMITIDO(
             "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tipo-no-permitido", 1),
     ERROR_TIPO_CONTENIDO_NO_COINCIDE_EXTENSION(
-            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tipo-contenido-no-coincide-extension", 2),
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tipo-contenido-no-coincide-extension", 1),
     LOG_SOLICITANDO_CARGA(
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.solicitando-carga", 2),
     LOG_VERIFICACION_SOLICITAR_CARGA(
