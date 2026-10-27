@@ -40,8 +40,8 @@ public class AsignarTareaValidatorImpl implements AsignarTareaValidator {
         tareaUnicaPorMapaRutaRule.validar(new DisponibilidadTarea(
                 tarea.getMapaRuta(), tarea.getDescripcion(), tareaExiste));
         proyectoGradoEnProcesoRule.validar(new EstadoActualProyectoGrado(
-                mapaRuta.getProyectoGrado(), proyectoGrado.getEstadoProyectoGrado()));
+                mapaRuta.getProyectoGrado(), proyectoGrado.getTituloProyecto(), proyectoGrado.getEstadoProyectoGrado()));
         asesorAsignadoProyectoGradoRule.validar(new AsignacionAsesorProyectoGrado(
-                mapaRuta.getProyectoGrado(), tarea.getAsesor(), asesorAsignado));
+                mapaRuta.getProyectoGrado(), proyectoGrado.getTituloProyecto(), tarea.getAsesor(), asesorAsignado));
     }
 }

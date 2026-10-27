@@ -5,7 +5,9 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum MapaRutaKey implements ClaveMensaje {
 
     ERROR_DUPLICADO("mapas_ruta.dominio.maparuta.error.duplicado", 1),
-    ERROR_NO_ENCONTRADO("mapas_ruta.dominio.maparuta.error.no-encontrado", 1),
+    ERROR_DUPLICADO_DETALLE("mapas_ruta.dominio.maparuta.error.duplicado-detalle", 1),
+    ERROR_NO_ENCONTRADO("mapas_ruta.dominio.maparuta.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("mapas_ruta.dominio.maparuta.error.no-encontrado-detalle", 1),
     ERROR_FECHA_FIN_NO_POSTERIOR("mapas_ruta.dominio.maparuta.error.fecha-fin-no-posterior", 2),
     LOG_AGREGANDO("mapas_ruta.aplicacion.maparuta.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("mapas_ruta.aplicacion.maparuta.log.verificacion-agregar", 2),
