@@ -17,7 +17,7 @@ public enum VersionArtefactoKey implements ClaveMensaje {
     LOG_VERIFICACION_SOLICITAR_CARGA("artefactos.aplicacion.versionartefacto.log.verificacion-solicitar-carga", 2),
     LOG_CARGA_SOLICITADA("artefactos.aplicacion.versionartefacto.log.carga-solicitada", 2),
     LOG_GENERANDO("artefactos.aplicacion.versionartefacto.log.generando", 3),
-    LOG_VERIFICACION_GENERAR("artefactos.aplicacion.versionartefacto.log.verificacion-generar", 7),
+    LOG_VERIFICACION_GENERAR("artefactos.aplicacion.versionartefacto.log.verificacion-generar", 5),
     LOG_GENERADA("artefactos.aplicacion.versionartefacto.log.generada", 3),
     LOG_CONSULTANDO_ASESOR("artefactos.aplicacion.versionartefacto.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("artefactos.aplicacion.versionartefacto.log.consulta-asesor-completada", 1),

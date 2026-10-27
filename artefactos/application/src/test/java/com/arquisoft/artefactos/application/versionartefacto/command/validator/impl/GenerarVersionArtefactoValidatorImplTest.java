@@ -59,32 +59,36 @@ class GenerarVersionArtefactoValidatorImplTest {
         analisis = AnalisisArchivoDomain.reconstruir(TIPO, ETAG);
     }
 
-    private void validar(ArtefactoDomain art, boolean vinculado, AsesorDomain ases,
-                         List<VersionRepositorioArtefactoDomain> vers, CargaPendienteDomain car,
-                         AnalisisArchivoDomain ana, long maximo) {
-        validator.validar(generacion, art, vinculado, ases, vers, new CargaAnalizada(car, ana), maximo);
+    private void validarCarga(ArtefactoDomain art, boolean vinculado, AsesorDomain ases,
+                              List<VersionRepositorioArtefactoDomain> vers, CargaPendienteDomain car, long maximo) {
+        validator.validarCarga(generacion, art, vinculado, ases, vers, car, maximo);
+    }
+
+    private void validarContenido(AnalisisArchivoDomain ana) {
+        validator.validarContenido(generacion, new CargaAnalizada(carga, ana));
     }
 
     @Test
     void debePasar_cuandoTodoValido() {
         // Act & Assert
-        assertThatCode(() -> validar(artefacto, true, asesor, versiones, carga, analisis, MAXIMO))
+        assertThatCode(() -> validarCarga(artefacto, true, asesor, versiones, carga, MAXIMO))
                 .doesNotThrowAnyException();
+        assertThatCode(() -> validarContenido(analisis)).doesNotThrowAnyException();
     }
 
     @Test
     void debeLanzarArtefactoNoEncontrado_antesQueLasDemas() {
         // Act & Assert
-        assertThatThrownBy(() -> validar(ArtefactoDomain.VACIO, false, AsesorDomain.VACIO, List.of(),
-                CargaPendienteDomain.VACIO, AnalisisArchivoDomain.VACIO, 1L))
+        assertThatThrownBy(() -> validarCarga(ArtefactoDomain.VACIO, false, AsesorDomain.VACIO, List.of(),
+                CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(ArtefactoNoEncontradoException.class);
     }
 
     @Test
     void debeLanzarNoPropietario_antesQueElAsesor() {
         // Act & Assert
-        assertThatThrownBy(() -> validar(artefacto, false, AsesorDomain.VACIO, List.of(),
-                CargaPendienteDomain.VACIO, AnalisisArchivoDomain.VACIO, 1L))
+        assertThatThrownBy(() -> validarCarga(artefacto, false, AsesorDomain.VACIO, List.of(),
+                CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(EstudianteNoPropietarioArtefactoException.class);
     }
 
@@ -95,24 +99,24 @@ class GenerarVersionArtefactoValidatorImplTest {
                 "ana@uco.edu.co", Instant.now(), Instant.now());
 
         // Act & Assert
-        assertThatThrownBy(() -> validar(artefacto, true, eliminado, List.of(),
-                CargaPendienteDomain.VACIO, AnalisisArchivoDomain.VACIO, 1L))
+        assertThatThrownBy(() -> validarCarga(artefacto, true, eliminado, List.of(),
+                CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(AsesorNoVigenteException.class);
     }
 
     @Test
     void debeLanzarVersionRepositorioNoEncontrada_antesQueLaCarga() {
         // Act & Assert
-        assertThatThrownBy(() -> validar(artefacto, true, asesor, List.of(),
-                CargaPendienteDomain.VACIO, AnalisisArchivoDomain.VACIO, 1L))
+        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, List.of(),
+                CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(VersionRepositorioArtefactoNoEncontradaException.class);
     }
 
     @Test
     void debeLanzarCargaNoEncontrada() {
         // Act & Assert
-        assertThatThrownBy(() -> validar(artefacto, true, asesor, versiones,
-                CargaPendienteDomain.VACIO, AnalisisArchivoDomain.VACIO, 1L))
+        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, versiones,
+                CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(CargaPendienteNoEncontradaException.class);
     }
 
@@ -123,28 +127,25 @@ class GenerarVersionArtefactoValidatorImplTest {
                 UtilUUID.generarNuevoUUID(), "informe.pdf", TIPO, 2048L, ETAG);
 
         // Act & Assert
-        assertThatThrownBy(() -> validar(artefacto, true, asesor, versiones, ajena, analisis, MAXIMO))
+        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, versiones, ajena, MAXIMO))
                 .isInstanceOf(CargaNoCorrespondeException.class);
     }
 
     @Test
-    void debeLanzarCargaModificada_antesQueTamanoYTipo() {
+    void debeLanzarTamanoExcedido() {
+        // Act & Assert
+        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, versiones, carga, 1024L))
+                .isInstanceOf(TamanoArchivoExcedidoException.class);
+    }
+
+    @Test
+    void debeLanzarCargaModificada_antesQueElTipo() {
         // Arrange
         var otroEtag = AnalisisArchivoDomain.reconstruir("image/png", "otro");
 
         // Act & Assert
-        assertThatThrownBy(() -> validar(artefacto, true, asesor, versiones, carga, otroEtag, 1L))
+        assertThatThrownBy(() -> validarContenido(otroEtag))
                 .isInstanceOf(CargaModificadaException.class);
-    }
-
-    @Test
-    void debeLanzarTamanoExcedido_antesQueElTipo() {
-        // Arrange
-        var otroTipo = AnalisisArchivoDomain.reconstruir("image/png", ETAG);
-
-        // Act & Assert
-        assertThatThrownBy(() -> validar(artefacto, true, asesor, versiones, carga, otroTipo, 1024L))
-                .isInstanceOf(TamanoArchivoExcedidoException.class);
     }
 
     @Test
@@ -153,7 +154,7 @@ class GenerarVersionArtefactoValidatorImplTest {
         var otroTipo = AnalisisArchivoDomain.reconstruir("image/png", ETAG);
 
         // Act & Assert
-        assertThatThrownBy(() -> validar(artefacto, true, asesor, versiones, carga, otroTipo, MAXIMO))
+        assertThatThrownBy(() -> validarContenido(otroTipo))
                 .isInstanceOf(TipoArchivoNoCoincideException.class);
     }
 }

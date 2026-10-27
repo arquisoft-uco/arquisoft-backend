@@ -12,6 +12,7 @@ import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.model.VigenciaAsesor;
 import com.arquisoft.artefactos.domain.asesor.rules.AsesorVigenteRule;
 import com.arquisoft.artefactos.domain.asesor.rules.impl.AsesorVigenteRuleImpl;
+import com.arquisoft.artefactos.domain.versionartefacto.CargaPendienteDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.GeneracionVersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.model.CargaAnalizada;
 import com.arquisoft.artefactos.domain.versionartefacto.model.CoincidenciaTipoArchivo;
@@ -63,12 +64,10 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
     }
 
     @Override
-    public void validar(GeneracionVersionArtefactoDomain generacion, ArtefactoDomain artefacto,
-                        boolean estudianteVinculado, AsesorDomain asesor,
-                        List<VersionRepositorioArtefactoDomain> versionesRepositorio, CargaAnalizada cargaAnalizada,
-                        long tamanoMaximoBytes) {
-        var carga = cargaAnalizada.carga();
-        var analisis = cargaAnalizada.analisis();
+    public void validarCarga(GeneracionVersionArtefactoDomain generacion, ArtefactoDomain artefacto,
+                             boolean estudianteVinculado, AsesorDomain asesor,
+                             List<VersionRepositorioArtefactoDomain> versionesRepositorio, CargaPendienteDomain carga,
+                             long tamanoMaximoBytes) {
         artefactoExisteRule.validar(new ExistenciaArtefacto(generacion.getArtefacto(), artefacto));
         estudiantePropietarioArtefactoRule.validar(
                 new PropiedadArtefacto(generacion.getSolicitante(), generacion.getArtefacto(), estudianteVinculado));
@@ -78,9 +77,15 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
         cargaPendienteExistenteRule.validar(new ExistenciaCargaPendiente(generacion.getCarga(), carga));
         cargaCorrespondeASolicitudRule.validar(
                 new CorrespondenciaCarga(carga, generacion.getSolicitante(), generacion.getArtefacto()));
+        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(carga.getTamanoBytes(), tamanoMaximoBytes));
+    }
+
+    @Override
+    public void validarContenido(GeneracionVersionArtefactoDomain generacion, CargaAnalizada cargaAnalizada) {
+        var carga = cargaAnalizada.carga();
+        var analisis = cargaAnalizada.analisis();
         cargaSinModificarRule.validar(
                 new ConsistenciaCarga(generacion.getCarga(), carga.getEtag(), analisis.getEtag()));
-        tamanoArchivoPermitidoRule.validar(new LimiteTamanoArchivo(carga.getTamanoBytes(), tamanoMaximoBytes));
         tipoArchivoCoincideRule.validar(
                 new CoincidenciaTipoArchivo(carga.getNombreArchivo(), carga.getTipoContenido(), analisis));
     }

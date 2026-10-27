@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.application.versionartefacto.command.usecase.impl;
 
-import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorIdFinder;
+import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBloqueadoPorIdFinder;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.EstudianteArtefactoExisteFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.model.ParticipacionEstudianteArtefacto;
@@ -20,6 +20,7 @@ import com.arquisoft.artefactos.domain.versionartefacto.CargaPendienteDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.GeneracionVersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.event.VersionArtefactoGeneradaEvent;
 import com.arquisoft.artefactos.domain.versionartefacto.exception.CargaModificadaException;
+import com.arquisoft.artefactos.domain.versionartefacto.exception.CargaNoCorrespondeException;
 import com.arquisoft.artefactos.domain.versionartefacto.model.CargaAnalizada;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
@@ -61,7 +62,7 @@ class GenerarVersionArtefactoUseCaseImplTest {
     private static final String ETAG = "etag-1";
 
     @Mock
-    private ArtefactoPorIdFinder artefactoPorIdFinder;
+    private ArtefactoBloqueadoPorIdFinder artefactoBloqueadoPorIdFinder;
     @Mock
     private EstudianteArtefactoExisteFinder estudianteArtefactoExisteFinder;
     @Mock
@@ -97,8 +98,9 @@ class GenerarVersionArtefactoUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new GenerarVersionArtefactoUseCaseImpl(artefactoPorIdFinder, estudianteArtefactoExisteFinder,
-                asesorPorIdFinder, versionesRepositorioArtefactoPorIdsFinder, cargaPendienteFinder,
+        useCase = new GenerarVersionArtefactoUseCaseImpl(artefactoBloqueadoPorIdFinder,
+                estudianteArtefactoExisteFinder, asesorPorIdFinder, versionesRepositorioArtefactoPorIdsFinder,
+                cargaPendienteFinder,
                 analisisCargaFinder, ultimoNumeroVersionArtefactoFinder, tamanoMaximoArchivoFinder, validator,
                 almacenamiento, versionOutputPort, eventPublisher, logger);
         generacion = GeneracionVersionArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
@@ -116,8 +118,8 @@ class GenerarVersionArtefactoUseCaseImplTest {
         analisis = AnalisisArchivoDomain.reconstruir(TIPO, ETAG);
     }
 
-    private void prepararFinders(int ultimoNumero) {
-        when(artefactoPorIdFinder.obtener(generacion.getArtefacto())).thenReturn(artefacto);
+    private void prepararFindersDeCarga() {
+        when(artefactoBloqueadoPorIdFinder.obtener(generacion.getArtefacto())).thenReturn(artefacto);
         when(estudianteArtefactoExisteFinder.obtener(
                 new ParticipacionEstudianteArtefacto(generacion.getSolicitante(), generacion.getArtefacto())))
                 .thenReturn(true);
@@ -125,9 +127,13 @@ class GenerarVersionArtefactoUseCaseImplTest {
         when(versionesRepositorioArtefactoPorIdsFinder.obtener(List.of(artefacto.getVersionRepositorioArtefacto())))
                 .thenReturn(List.of(versionRepositorio));
         when(cargaPendienteFinder.obtener(generacion.getCarga())).thenReturn(carga);
+        when(tamanoMaximoArchivoFinder.obtener()).thenReturn(MAXIMO);
+    }
+
+    private void prepararFinders(int ultimoNumero) {
+        prepararFindersDeCarga();
         when(analisisCargaFinder.obtener(generacion.getCarga())).thenReturn(analisis);
         when(ultimoNumeroVersionArtefactoFinder.obtener(generacion.getArtefacto())).thenReturn(ultimoNumero);
-        when(tamanoMaximoArchivoFinder.obtener()).thenReturn(MAXIMO);
     }
 
     @Test
@@ -139,20 +145,21 @@ class GenerarVersionArtefactoUseCaseImplTest {
         var resultado = useCase.ejecutar(generacion);
 
         // Assert
-        var ordenFinders = inOrder(artefactoPorIdFinder, estudianteArtefactoExisteFinder, asesorPorIdFinder,
-                versionesRepositorioArtefactoPorIdsFinder, cargaPendienteFinder, analisisCargaFinder,
-                ultimoNumeroVersionArtefactoFinder, tamanoMaximoArchivoFinder, validator);
-        ordenFinders.verify(artefactoPorIdFinder).obtener(generacion.getArtefacto());
+        var ordenFinders = inOrder(artefactoBloqueadoPorIdFinder, estudianteArtefactoExisteFinder,
+                asesorPorIdFinder, versionesRepositorioArtefactoPorIdsFinder, cargaPendienteFinder,
+                tamanoMaximoArchivoFinder, validator, analisisCargaFinder, ultimoNumeroVersionArtefactoFinder);
+        ordenFinders.verify(artefactoBloqueadoPorIdFinder).obtener(generacion.getArtefacto());
         ordenFinders.verify(estudianteArtefactoExisteFinder).obtener(any());
         ordenFinders.verify(asesorPorIdFinder).obtener(artefacto.getAsesor());
         ordenFinders.verify(versionesRepositorioArtefactoPorIdsFinder).obtener(anyList());
         ordenFinders.verify(cargaPendienteFinder).obtener(generacion.getCarga());
-        ordenFinders.verify(analisisCargaFinder).obtener(generacion.getCarga());
-        ordenFinders.verify(ultimoNumeroVersionArtefactoFinder).obtener(generacion.getArtefacto());
         ordenFinders.verify(tamanoMaximoArchivoFinder).obtener();
-        ordenFinders.verify(validator).validar(eq(generacion), eq(artefacto), eq(true), eq(asesor),
-                eq(List.of(versionRepositorio)), eq(new CargaAnalizada(carga, analisis)), eq(MAXIMO));
-        verify(artefactoPorIdFinder, times(1)).obtener(any());
+        ordenFinders.verify(validator).validarCarga(eq(generacion), eq(artefacto), eq(true), eq(asesor),
+                eq(List.of(versionRepositorio)), eq(carga), eq(MAXIMO));
+        ordenFinders.verify(analisisCargaFinder).obtener(generacion.getCarga());
+        ordenFinders.verify(validator).validarContenido(generacion, new CargaAnalizada(carga, analisis));
+        ordenFinders.verify(ultimoNumeroVersionArtefactoFinder).obtener(generacion.getArtefacto());
+        verify(artefactoBloqueadoPorIdFinder, times(1)).obtener(any());
         verify(estudianteArtefactoExisteFinder, times(1)).obtener(any());
         verify(asesorPorIdFinder, times(1)).obtener(any());
         verify(versionesRepositorioArtefactoPorIdsFinder, times(1)).obtener(anyList());
@@ -182,15 +189,30 @@ class GenerarVersionArtefactoUseCaseImplTest {
     }
 
     @Test
-    void debeNoTocarNada_cuandoValidatorRechaza() {
+    void debeNoAnalizarElArchivo_cuandoLaCargaSeRechaza() {
         // Arrange
-        prepararFinders(0);
+        prepararFindersDeCarga();
+        doThrow(new CargaNoCorrespondeException(generacion.getCarga()))
+                .when(validator).validarCarga(any(), any(), anyBoolean(), any(), anyList(), any(), anyLong());
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(generacion)).isInstanceOf(CargaNoCorrespondeException.class);
+        verifyNoInteractions(analisisCargaFinder, ultimoNumeroVersionArtefactoFinder,
+                almacenamiento, versionOutputPort, eventPublisher);
+        verify(validator, never()).validarContenido(any(), any());
+    }
+
+    @Test
+    void debeNoTocarNada_cuandoElContenidoSeRechaza() {
+        // Arrange
+        prepararFindersDeCarga();
+        when(analisisCargaFinder.obtener(generacion.getCarga())).thenReturn(analisis);
         doThrow(new CargaModificadaException(generacion.getCarga()))
-                .when(validator).validar(any(), any(), anyBoolean(), any(), anyList(), any(), anyLong());
+                .when(validator).validarContenido(any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(generacion)).isInstanceOf(CargaModificadaException.class);
-        verifyNoInteractions(almacenamiento, versionOutputPort, eventPublisher);
+        verifyNoInteractions(ultimoNumeroVersionArtefactoFinder, almacenamiento, versionOutputPort, eventPublisher);
         verify(logger, never()).info(eq(VersionArtefactoKey.LOG_GENERADA), any(), any(), any());
     }
 }

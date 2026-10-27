@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.application.versionartefacto.command.usecase.impl;
 
-import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorIdFinder;
+import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBloqueadoPorIdFinder;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.EstudianteArtefactoExisteFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.model.ParticipacionEstudianteArtefacto;
@@ -33,7 +33,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefactoUseCase {
 
-    private final ArtefactoPorIdFinder artefactoPorIdFinder;
+    private final ArtefactoBloqueadoPorIdFinder artefactoBloqueadoPorIdFinder;
     private final EstudianteArtefactoExisteFinder estudianteArtefactoExisteFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
     private final VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
@@ -52,25 +52,25 @@ public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefac
         logger.info(VersionArtefactoKey.LOG_GENERANDO,
                 generacion.getArtefacto(), generacion.getCarga(), generacion.getSolicitante());
 
-        var artefacto = artefactoPorIdFinder.obtener(generacion.getArtefacto());
+        var artefacto = artefactoBloqueadoPorIdFinder.obtener(generacion.getArtefacto());
         var estudianteVinculado = estudianteArtefactoExisteFinder.obtener(
                 new ParticipacionEstudianteArtefacto(generacion.getSolicitante(), generacion.getArtefacto()));
         var asesor = asesorPorIdFinder.obtener(artefacto.getAsesor());
         var versionesRepositorio = versionesRepositorioArtefactoPorIdsFinder.obtener(
                 List.of(artefacto.getVersionRepositorioArtefacto()));
         var carga = cargaPendienteFinder.obtener(generacion.getCarga());
-        var analisis = analisisCargaFinder.obtener(generacion.getCarga());
-        var ultimoNumero = ultimoNumeroVersionArtefactoFinder.obtener(generacion.getArtefacto());
         var tamanoMaximo = tamanoMaximoArchivoFinder.obtener();
         logger.debug(VersionArtefactoKey.LOG_VERIFICACION_GENERAR,
                 !artefacto.esVacio(), estudianteVinculado, !asesor.esVacio() && !asesor.estaEliminado(),
-                versionesRepositorio.size(), !carga.esVacio(), analisis.getTipoDetectado(), ultimoNumero);
+                versionesRepositorio.size(), !carga.esVacio());
 
-        generarVersionValidator.validar(
-                generacion, artefacto, estudianteVinculado, asesor, versionesRepositorio,
-                new CargaAnalizada(carga, analisis),
-                tamanoMaximo);
+        generarVersionValidator.validarCarga(
+                generacion, artefacto, estudianteVinculado, asesor, versionesRepositorio, carga, tamanoMaximo);
 
+        var analisis = analisisCargaFinder.obtener(generacion.getCarga());
+        generarVersionValidator.validarContenido(generacion, new CargaAnalizada(carga, analisis));
+
+        var ultimoNumero = ultimoNumeroVersionArtefactoFinder.obtener(generacion.getArtefacto());
         var version = VersionArtefactoDomain.crear(generacion, ultimoNumero);
 
         almacenamientoVersionOutputPort.copiarCargaAUri(carga.getCarga(), carga.getEtag(), version.getUriArchivo());

@@ -13,4 +13,6 @@ public interface ArtefactoOutputPort {
     void traspasarAsesorDeProyecto(UUID proyectoGrado, UUID asesor);
 
     Optional<ArtefactoEntity> obtenerPorId(UUID id);
+
+    Optional<ArtefactoEntity> obtenerBloqueadoPorId(UUID id);
 }

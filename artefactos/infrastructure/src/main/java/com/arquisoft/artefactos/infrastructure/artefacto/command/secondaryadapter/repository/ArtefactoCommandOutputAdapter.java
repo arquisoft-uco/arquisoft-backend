@@ -35,4 +35,9 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     public Optional<ArtefactoEntity> obtenerPorId(UUID id) {
         return artefactoCommandRepository.findById(id).map(ArtefactoJpaMapper::toEntity);
     }
+
+    @Override
+    public Optional<ArtefactoEntity> obtenerBloqueadoPorId(UUID id) {
+        return artefactoCommandRepository.bloquearPorId(id).map(ArtefactoJpaMapper::toEntity);
+    }
 }
