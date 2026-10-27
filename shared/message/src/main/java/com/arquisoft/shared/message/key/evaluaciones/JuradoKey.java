@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de Jurado (réplica local en evaluaciones). */
 public enum JuradoKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("evaluaciones.dominio.jurado.error.no-encontrado", 1),
+    ERROR_NO_ENCONTRADO("evaluaciones.dominio.jurado.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("evaluaciones.dominio.jurado.error.no-encontrado-detalle", 1),
     LOG_AGREGADO_RECIBIDO("evaluaciones.infraestructura.jurado.log.agregado-recibido", 3),
     LOG_VERIFICACION_AGREGAR("evaluaciones.aplicacion.jurado.log.verificacion-agregar", 2),
     LOG_AGREGADO("evaluaciones.aplicacion.jurado.log.agregado", 1),

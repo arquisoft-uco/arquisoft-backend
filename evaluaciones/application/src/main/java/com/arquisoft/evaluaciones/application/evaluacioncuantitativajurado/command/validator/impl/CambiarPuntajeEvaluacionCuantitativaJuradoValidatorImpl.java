@@ -50,6 +50,6 @@ public class CambiarPuntajeEvaluacionCuantitativaJuradoValidatorImpl
         evaluacionJuradoFinalizadaRule.validar(
                 new EstadoEvaluacionJurado(cambio.getEvaluacionCuantitativaJurado(), estado.getEstado()));
         puntajeNoExcedeValorItemRule.validar(
-                new PuntajeVsValorMaximoItem(cambio.getNuevoPuntaje(), item.getValor()));
+                new PuntajeVsValorMaximoItem(cambio.getNuevoPuntaje(), item.getValor(), item.getNombre()));
     }
 }

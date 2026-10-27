@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.domain.evaluacioncuantitativaasesor.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
@@ -11,9 +12,10 @@ import java.util.UUID;
 public final class EvaluacionesCuantitativasAsesorDuplicadasException extends DomainException {
 
     public EvaluacionesCuantitativasAsesorDuplicadasException(Set<UUID> ids) {
-        super(
-                Mensajes.formatear(EvaluacionCuantitativaAsesorKey.ERROR_ITEMS_YA_REGISTRADOS, ids),
-                EvaluacionesCodes.EvaluacionCuantitativaAsesor.ITEMS_YA_REGISTRADOS
-        );
+        super(BaseError.conDetalle(
+                EvaluacionesCodes.EvaluacionCuantitativaAsesor.ITEMS_YA_REGISTRADOS,
+                Mensajes.formatear(EvaluacionCuantitativaAsesorKey.ERROR_ITEMS_YA_REGISTRADOS),
+                Mensajes.formatear(EvaluacionCuantitativaAsesorKey.ERROR_ITEMS_YA_REGISTRADOS_DETALLE, ids)
+        ));
     }
 }

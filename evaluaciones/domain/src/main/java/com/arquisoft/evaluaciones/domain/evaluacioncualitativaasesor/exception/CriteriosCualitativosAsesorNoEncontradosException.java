@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
@@ -11,9 +12,10 @@ import java.util.UUID;
 public final class CriteriosCualitativosAsesorNoEncontradosException extends DomainException {
 
     public CriteriosCualitativosAsesorNoEncontradosException(Set<UUID> ids) {
-        super(
-                Mensajes.formatear(EvaluacionCualitativaAsesorKey.ERROR_CRITERIOS_NO_ENCONTRADOS, ids),
-                EvaluacionesCodes.EvaluacionCualitativaAsesor.CRITERIOS_NO_ENCONTRADOS
-        );
+        super(BaseError.conDetalle(
+                EvaluacionesCodes.EvaluacionCualitativaAsesor.CRITERIOS_NO_ENCONTRADOS,
+                Mensajes.formatear(EvaluacionCualitativaAsesorKey.ERROR_CRITERIOS_NO_ENCONTRADOS),
+                Mensajes.formatear(EvaluacionCualitativaAsesorKey.ERROR_CRITERIOS_NO_ENCONTRADOS_DETALLE, ids)
+        ));
     }
 }
