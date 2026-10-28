@@ -1,9 +1,11 @@
 package com.arquisoft.entregables.infrastructure.entregableproyectogrado.query.secondaryadapter.repository;
 
 import com.arquisoft.entregables.application.entregableproyectogrado.query.criteria.EntregableProyectoGradoCriteria;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.mapper.ConsultarEntregablesProyectoGradoJuradoMapper;
 import com.arquisoft.entregables.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
 import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
+import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
@@ -43,6 +45,7 @@ class EntregableProyectoGradoQueryOutputAdapterTest {
         sembrarEstado("DISPONIBLE_EVALUACION", "Disponible Evaluacion");
         sembrarEstado("APROBADO", "Aprobado");
         sembrarEstado("CERRADO", "Cerrado");
+        sembrarEstado("EN_EVALUACION", "En Evaluacion");
     }
 
     private void sembrarEstado(String id, String nombre) {
@@ -329,6 +332,48 @@ class EntregableProyectoGradoQueryOutputAdapterTest {
         // Act
         var resultado = adapter.consultar(criteria(
                 NodoFiltro.predicado("estadoEntregable", FiltroOperador.ES, "CERRADO")));
+
+        // Assert
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isZero();
+    }
+
+    @Test
+    void debeExcluirEntregablesYaEvaluados_cuandoSeAplicaElFiltroForzadoDelJurado() {
+        // Arrange
+        var proyecto = sembrarProyecto("A");
+        var asesor = sembrarAsesor("Ana", null);
+        var disponible = sembrarEntregable(proyecto, 1, asesor, "DISPONIBLE_EVALUACION");
+        var enEvaluacion = sembrarEntregable(proyecto, 2, asesor, "EN_EVALUACION");
+        sembrarEntregable(proyecto, 3, asesor, "APROBADO");
+        sembrarEntregable(proyecto, 4, asesor, "CERRADO");
+        confirmar();
+        var raizCliente = NodoFiltro.grupo(FiltroConector.OR, List.of(
+                NodoFiltro.predicado("estadoEntregable", FiltroOperador.ES, "APROBADO"),
+                NodoFiltro.predicado("asesorId", FiltroOperador.ES, asesor.toString())));
+        var criteriaJurado = ConsultarEntregablesProyectoGradoJuradoMapper.toCriteria(
+                ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente));
+
+        // Act
+        var resultado = adapter.consultar(criteriaJurado);
+
+        // Assert
+        assertThat(resultado.getContent()).extracting("id").containsExactlyInAnyOrder(disponible, enEvaluacion);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElClienteFiltraPorUnEstadoYaEvaluado() {
+        // Arrange
+        var proyecto = sembrarProyecto("A");
+        var asesor = sembrarAsesor("Ana", null);
+        sembrarEntregable(proyecto, 1, asesor, "APROBADO");
+        sembrarEntregable(proyecto, 2, asesor, "EN_EVALUACION");
+        confirmar();
+        var criteriaJurado = ConsultarEntregablesProyectoGradoJuradoMapper.toCriteria(ConsultaCriteriaQuery.crear(
+                0, 10, List.of(), NodoFiltro.predicado("estadoEntregable", FiltroOperador.ES, "APROBADO")));
+
+        // Act
+        var resultado = adapter.consultar(criteriaJurado);
 
         // Assert
         assertThat(resultado.getContent()).isEmpty();
