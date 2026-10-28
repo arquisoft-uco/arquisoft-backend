@@ -21,6 +21,8 @@ public final class EvaluacionAsignadaJuradoResponseMapper {
                 new EvaluacionAsignadaJuradoResponseDTO.EntregableDTO(
                         readModel.entregable().id(),
                         readModel.entregable().proyecto(),
-                        readModel.entregable().version()));
+                        readModel.entregable().version()),
+                readModel.tieneEvaluacionesCualitativas(),
+                readModel.tieneEvaluacionesCuantitativas());
     }
 }

@@ -92,7 +92,8 @@ class ConsultarEvaluacionesAsignadasJuradoControllerTest {
                 new EvaluacionAsignadaJuradoReadModel.Estado("PENDIENTE_POR_EVALUAR", "Pendiente por evaluar"),
                 new EvaluacionAsignadaJuradoReadModel.Evaluacion(evaluacion,
                         new EvaluacionAsignadaJuradoReadModel.Estado("PENDIENTE", "Pendiente")),
-                new EvaluacionAsignadaJuradoReadModel.Entregable(entregable, "Robot seguidor", 2))),
+                new EvaluacionAsignadaJuradoReadModel.Entregable(entregable, "Robot seguidor", 2),
+                true, false)),
                 0, 10, 1));
 
         // Act & Assert
@@ -108,6 +109,8 @@ class ConsultarEvaluacionesAsignadasJuradoControllerTest {
                 .andExpect(jsonPath("$.content[0].entregable.id").value(entregable.toString()))
                 .andExpect(jsonPath("$.content[0].entregable.proyecto").value("Robot seguidor"))
                 .andExpect(jsonPath("$.content[0].entregable.version").value(2))
+                .andExpect(jsonPath("$.content[0].tieneEvaluacionesCualitativas").value(true))
+                .andExpect(jsonPath("$.content[0].tieneEvaluacionesCuantitativas").value(false))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(10))
                 .andExpect(jsonPath("$.totalElements").value(1));

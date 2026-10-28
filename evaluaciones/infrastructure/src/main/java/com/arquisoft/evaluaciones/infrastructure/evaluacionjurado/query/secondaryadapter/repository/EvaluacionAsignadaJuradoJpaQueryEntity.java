@@ -27,14 +27,19 @@ import java.util.UUID;
                ee.orden              AS estado_orden,
                en.id                 AS entregable_id,
                en.proyecto           AS entregable_proyecto,
-               en.version_entregable AS entregable_version
+               en.version_entregable AS entregable_version,
+               EXISTS (SELECT 1 FROM evaluacion_cualitativa_jurado ecj
+                       WHERE ecj.evaluacion_jurado_id = ej.id) AS tiene_evaluaciones_cualitativas,
+               EXISTS (SELECT 1 FROM evaluacion_cuantitativa_jurado eqj
+                       WHERE eqj.evaluacion_jurado_id = ej.id) AS tiene_evaluaciones_cuantitativas
         FROM evaluacion_jurado ej
         JOIN estado_evaluacion_asignada_jurado eej ON eej.id = ej.estado_evaluacion_asignada_jurado_id
         JOIN evaluacion e ON e.id = ej.evaluacion_id
         JOIN estado_evaluacion ee ON ee.id = e.estado_evaluacion_id
         JOIN entregable en ON en.id = e.entregable_id
         """)
-@Synchronize({"evaluacion_jurado", "estado_evaluacion_asignada_jurado", "evaluacion", "estado_evaluacion", "entregable"})
+@Synchronize({"evaluacion_jurado", "estado_evaluacion_asignada_jurado", "evaluacion", "estado_evaluacion", "entregable",
+        "evaluacion_cualitativa_jurado", "evaluacion_cuantitativa_jurado"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -77,4 +82,10 @@ public class EvaluacionAsignadaJuradoJpaQueryEntity {
 
     @Column(name = "entregable_version")
     private Integer entregableVersion;
+
+    @Column(name = "tiene_evaluaciones_cualitativas")
+    private boolean tieneEvaluacionesCualitativas;
+
+    @Column(name = "tiene_evaluaciones_cuantitativas")
+    private boolean tieneEvaluacionesCuantitativas;
 }
