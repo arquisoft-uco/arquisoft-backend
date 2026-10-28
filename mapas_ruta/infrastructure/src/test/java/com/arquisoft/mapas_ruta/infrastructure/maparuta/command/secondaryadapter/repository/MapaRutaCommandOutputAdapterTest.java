@@ -2,6 +2,7 @@ package com.arquisoft.mapas_ruta.infrastructure.maparuta.command.secondaryadapte
 
 import com.arquisoft.mapas_ruta.application.maparuta.command.secondaryport.entity.MapaRutaEntity;
 import com.arquisoft.mapas_ruta.infrastructure.maparuta.command.secondaryadapter.entity.MapaRutaJpaEntity;
+import com.arquisoft.mapas_ruta.infrastructure.tarea.command.secondaryadapter.entity.TareaJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.util.UtilUUID;
@@ -72,6 +73,48 @@ class MapaRutaCommandOutputAdapterTest {
         assertThat(encontrado).contains(new MapaRutaEntity(
                 id, proyectoGrado, LocalDate.of(2026, 10, 1), LocalDate.of(2026, 12, 1)));
         assertThat(ausente).isEmpty();
+    }
+
+    @Test
+    void debeObtenerElMapa_cuandoConsultaPorTarea() {
+        // Arrange
+        var mapaId = UtilUUID.generarNuevoUUID();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var tareaId = UtilUUID.generarNuevoUUID();
+        entityManager.persist(MapaRutaJpaEntity.builder()
+                .id(mapaId)
+                .proyectoGradoId(proyectoGrado)
+                .fechaInicio(LocalDate.of(2026, 10, 1))
+                .fechaFin(LocalDate.of(2026, 12, 1))
+                .build());
+        entityManager.persist(MapaRutaJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .proyectoGradoId(UtilUUID.generarNuevoUUID())
+                .fechaInicio(LocalDate.of(2026, 11, 1))
+                .fechaFin(LocalDate.of(2027, 1, 1))
+                .build());
+        entityManager.persist(TareaJpaEntity.builder()
+                .id(tareaId)
+                .mapaRutaId(mapaId)
+                .descripcion("Redactar capitulo")
+                .asesorId(UtilUUID.generarNuevoUUID())
+                .estadoItemId("NUEVA")
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorTarea(tareaId);
+
+        // Assert
+        assertThat(encontrado).contains(new MapaRutaEntity(
+                mapaId, proyectoGrado, LocalDate.of(2026, 10, 1), LocalDate.of(2026, 12, 1)));
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaTareaNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerPorTarea(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 
     @Test
