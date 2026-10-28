@@ -37,6 +37,10 @@ public enum EstadoItem {
         };
     }
 
+    public boolean permiteRemocion() {
+        return this == NUEVA || this == EN_PROGRESO;
+    }
+
     public static EstadoItem desde(String id) {
         return delCatalogo(id).orElseThrow(() -> new EstadoItemNoEncontradoException(id));
     }

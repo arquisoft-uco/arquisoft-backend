@@ -104,6 +104,13 @@ public final class MapasRutaApiMessages {
         public static final String MODIFICAR_INFORMACION_RESP_422 =
                 "Tarea o mapa de ruta inexistente, descripción ya usada por otra tarea del mapa de ruta "
                         + "o asesor no asignado al proyecto de grado";
+        public static final String REMOVER_INFORMACION_SUMMARY = "Remover una tarea";
+        public static final String REMOVER_INFORMACION_DESCRIPTION =
+                "Elimina una tarea del mapa de ruta mientras esté Nueva o En progreso. "
+                        + "Una tarea Finalizada no se puede remover";
+        public static final String REMOVER_INFORMACION_RESP_204 = "Tarea removida";
+        public static final String REMOVER_INFORMACION_RESP_422 =
+                "Tarea inexistente o en un estado que no permite removerla";
     }
 
     public static final class EstadoItem {

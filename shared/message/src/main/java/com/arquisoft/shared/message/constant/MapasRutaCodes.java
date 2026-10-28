@@ -48,6 +48,7 @@ public final class MapasRutaCodes {
         public static final String ESTADO_ITEM_INVALIDO = "ESTADO_ITEM_INVALIDO";
         public static final String TAREA_NO_ENCONTRADA = "TAREA_NO_ENCONTRADA";
         public static final String TRANSICION_ESTADO_ITEM_NO_PERMITIDA = "TRANSICION_ESTADO_ITEM_NO_PERMITIDA";
+        public static final String TAREA_NO_REMOVIBLE = "TAREA_NO_REMOVIBLE";
     }
 
     public static final class AsignacionAsesor {

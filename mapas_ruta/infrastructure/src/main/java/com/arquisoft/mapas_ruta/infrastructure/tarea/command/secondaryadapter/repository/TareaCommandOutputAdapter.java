@@ -42,6 +42,12 @@ public class TareaCommandOutputAdapter implements TareaOutputPort {
     }
 
     @Override
+    public void eliminar(UUID tarea) {
+        repository.deleteById(tarea);
+        logger.debug(TareaKey.LOG_ELIMINADA, tarea);
+    }
+
+    @Override
     public boolean existePorMapaRutaYDescripcion(UUID mapaRuta, String descripcion) {
         return repository.existsByMapaRutaIdAndDescripcion(mapaRuta, descripcion);
     }

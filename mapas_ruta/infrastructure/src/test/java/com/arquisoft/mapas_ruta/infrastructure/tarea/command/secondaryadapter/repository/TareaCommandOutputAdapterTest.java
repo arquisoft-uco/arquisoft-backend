@@ -139,6 +139,29 @@ class TareaCommandOutputAdapterTest {
     }
 
     @Test
+    void debeEliminarTarea_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var otra = UtilUUID.generarNuevoUUID();
+        var mapaRuta = UtilUUID.generarNuevoUUID();
+        entityManager.persist(TareaJpaEntity.builder().id(id).mapaRutaId(mapaRuta)
+                .descripcion("Redactar capitulo").asesorId(UtilUUID.generarNuevoUUID()).estadoItemId("NUEVA").build());
+        entityManager.persist(TareaJpaEntity.builder().id(otra).mapaRutaId(mapaRuta)
+                .descripcion("Otra tarea").asesorId(UtilUUID.generarNuevoUUID()).estadoItemId("NUEVA").build());
+        entityManager.flush();
+
+        // Act
+        adapter.eliminar(id);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(TareaJpaEntity.class, id)).isNull();
+        assertThat(entityManager.find(TareaJpaEntity.class, otra)).isNotNull();
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
     void debeDetectarOtraTarea_soloSiOtraDelMismoMapaTieneLaDescripcion() {
         // Arrange
         var mapaRuta = UtilUUID.generarNuevoUUID();
