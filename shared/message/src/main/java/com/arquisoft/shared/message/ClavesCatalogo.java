@@ -14,6 +14,7 @@ import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
+import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
 import com.arquisoft.shared.message.key.entregables.EstadoEntregableKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
@@ -240,6 +241,9 @@ public final class ClavesCatalogo {
             TareaKey.class,
             EstadoItemKey.class,
             EstadoEntregableKey.class,
+            EntregableProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.entregables.ProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.entregables.AsesorKey.class,
             AsignacionAsesorKey.class,
             ProyectoGradoMapasRutaKey.class
     );
