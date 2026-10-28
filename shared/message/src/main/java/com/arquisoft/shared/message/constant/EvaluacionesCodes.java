@@ -190,6 +190,7 @@ public final class EvaluacionesCodes {
 
         private EvaluacionJurado() {}
 
+        public static final String ID_REQUERIDO = "EVALUACION_JURADO_ID_REQUERIDO";
         public static final String EVALUACION_REQUERIDO = "EVALUACION_JURADO_EVALUACION_REQUERIDO";
         public static final String JURADO_REQUERIDO = "EVALUACION_JURADO_JURADO_REQUERIDO";
         public static final String JURADO_INVALIDO = "EVALUACION_JURADO_JURADO_INVALIDO";
