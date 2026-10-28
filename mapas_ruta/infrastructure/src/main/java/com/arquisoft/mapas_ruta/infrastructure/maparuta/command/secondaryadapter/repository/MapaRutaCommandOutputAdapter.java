@@ -36,6 +36,11 @@ public class MapaRutaCommandOutputAdapter implements MapaRutaOutputPort {
     }
 
     @Override
+    public Optional<MapaRutaEntity> obtenerPorTarea(UUID tarea) {
+        return repository.buscarPorTarea(tarea).map(MapaRutaJpaMapper::toEntity);
+    }
+
+    @Override
     public void actualizarFechaFin(UUID mapaRuta, LocalDate fechaFin) {
         repository.actualizarFechaFin(mapaRuta, fechaFin);
         logger.debug(MapaRutaKey.LOG_GUARDADO, mapaRuta);

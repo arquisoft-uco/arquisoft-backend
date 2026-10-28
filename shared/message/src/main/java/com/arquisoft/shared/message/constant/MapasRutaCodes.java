@@ -51,6 +51,19 @@ public final class MapasRutaCodes {
         public static final String TAREA_NO_REMOVIBLE = "TAREA_NO_REMOVIBLE";
     }
 
+    public static final class PlanEstimado {
+
+        private PlanEstimado() {}
+
+        public static final String PLAN_ESTIMADO_TAREA_REQUERIDA = "PLAN_ESTIMADO_TAREA_REQUERIDA";
+        public static final String PLAN_ESTIMADO_TIEMPO_REQUERIDO = "PLAN_ESTIMADO_TIEMPO_REQUERIDO";
+        public static final String PLAN_ESTIMADO_TIEMPO_INVALIDO = "PLAN_ESTIMADO_TIEMPO_INVALIDO";
+        public static final String PLAN_ESTIMADO_DESCRIPCION_DEMASIADO_LARGA =
+                "PLAN_ESTIMADO_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String PLAN_ESTIMADO_DUPLICADO = "PLAN_ESTIMADO_DUPLICADO";
+        public static final String PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO = "PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO";
+    }
+
     public static final class AsignacionAsesor {
 
         private AsignacionAsesor() {}

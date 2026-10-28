@@ -113,6 +113,23 @@ public final class MapasRutaApiMessages {
                 "Tarea inexistente o en un estado que no permite removerla";
     }
 
+    public static final class PlanEstimado {
+
+        private PlanEstimado() {}
+
+        public static final String TAG_NAME = "Planes estimados";
+        public static final String TAG_DESCRIPTION = "Planes estimados de las tareas del mapa de ruta";
+        public static final String AGREGAR_SUMMARY = "Agregar un nuevo plan estimado";
+        public static final String AGREGAR_DESCRIPTION =
+                "Agrega el plan estimado de una tarea: los días que se espera tardar y, opcionalmente, una "
+                        + "descripción. Una tarea solo admite un plan estimado y el tiempo acumulado de los planes "
+                        + "del mapa no puede exceder el plazo del mapa de ruta";
+        public static final String AGREGAR_RESP_201 = "Plan estimado agregado";
+        public static final String AGREGAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String AGREGAR_RESP_422 =
+                "Tarea inexistente, tarea con plan estimado o tiempo acumulado que excede el plazo del mapa de ruta";
+    }
+
     public static final class EstadoItem {
 
         private EstadoItem() {}
