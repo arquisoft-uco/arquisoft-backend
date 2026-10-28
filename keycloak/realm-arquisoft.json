@@ -329,6 +329,7 @@
             "arquisoft-api": [
               "entregables:estado-entregable:view",
               "entregables:entregable-proyecto-grado:create",
+              "entregables:entregable-proyecto-grado-estado:update",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
               "solicitudes:respuesta-novedad-asesor:update",
@@ -1089,6 +1090,15 @@
         {
           "id": "a676e575-ca43-4ae2-9db7-732bf0515f97",
           "name": "entregables:entregable-proyecto-grado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7603af29-f56c-4187-8f21-fedd7159be6c",
+          "name": "entregables:entregable-proyecto-grado-estado:update",
           "description": "",
           "composite": false,
           "clientRole": true,

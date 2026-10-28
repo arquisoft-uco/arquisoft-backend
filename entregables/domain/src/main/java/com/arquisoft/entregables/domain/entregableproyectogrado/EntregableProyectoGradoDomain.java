@@ -4,6 +4,7 @@ import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.message.constant.EntregablesFields;
 import com.arquisoft.shared.message.constant.EntregablesLimits;
+import com.arquisoft.shared.util.UtilNumero;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorNumero;
@@ -13,6 +14,10 @@ import java.util.UUID;
 
 public final class EntregableProyectoGradoDomain {
 
+    public static final EntregableProyectoGradoDomain VACIO = new EntregableProyectoGradoDomain(
+            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilNumero.CERO,
+            UtilUUID.obtenerUUIDPorDefecto(), EstadoEntregable.VACIO);
+
     private UUID id;
     private UUID proyectoGrado;
     private int version;
@@ -20,6 +25,24 @@ public final class EntregableProyectoGradoDomain {
     private EstadoEntregable estadoEntregable;
 
     private EntregableProyectoGradoDomain() {}
+
+    private EntregableProyectoGradoDomain(UUID id, UUID proyectoGrado, int version, UUID asesor,
+                                          EstadoEntregable estadoEntregable) {
+        this.id = id;
+        this.proyectoGrado = proyectoGrado;
+        this.version = version;
+        this.asesor = asesor;
+        this.estadoEntregable = estadoEntregable;
+    }
+
+    public static EntregableProyectoGradoDomain reconstruir(UUID id, UUID proyectoGrado, int version, UUID asesor,
+                                                            EstadoEntregable estadoEntregable) {
+        return new EntregableProyectoGradoDomain(id, proyectoGrado, version, asesor, estadoEntregable);
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
+    }
 
     public static EntregableProyectoGradoDomain crear(UUID proyectoGrado, int ultimaVersion, UUID asesor) {
         var entregable = new EntregableProyectoGradoDomain();

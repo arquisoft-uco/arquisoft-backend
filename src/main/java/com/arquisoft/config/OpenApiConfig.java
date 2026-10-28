@@ -82,6 +82,9 @@ public class OpenApiConfig {
     @Value("${rutas.entregables.proyectos-grado.base:/proyectos-grado}")
     private String entregablesProyectosGradoBasePath;
 
+    @Value("${rutas.entregables.entregables-proyecto-grado.base:/entregables-proyecto-grado}")
+    private String entregablesProyectoGradoBasePath;
+
     @Bean
     public GroupedOpenApi allApi() {
         return GroupedOpenApi.builder()
@@ -151,7 +154,8 @@ public class OpenApiConfig {
             .group("07-entregables")
             .displayName("Entregables")
             .pathsToMatch("/entregables/**", estadosEntregableBasePath + "/**",
-                entregablesProyectosGradoBasePath + "/*/entregables")
+                entregablesProyectosGradoBasePath + "/*/entregables",
+                entregablesProyectoGradoBasePath + "/**")
             .build();
     }
 

@@ -91,4 +91,65 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         // Assert
         assertThat(version).isEqualTo(3);
     }
+
+    @Test
+    void debeObtenerPorId_cuandoElEntregableExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(id, proyecto, 2, asesor, "APROBADO"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var entity = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(entity).isPresent();
+        assertThat(entity.get().proyectoGrado()).isEqualTo(proyecto);
+        assertThat(entity.get().version()).isEqualTo(2);
+        assertThat(entity.get().asesor()).isEqualTo(asesor);
+        assertThat(entity.get().estadoEntregable()).isEqualTo("APROBADO");
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElEntregableNoExiste() {
+        // Arrange
+        sembrar(UtilUUID.generarNuevoUUID(), 1);
+        entityManager.flush();
+
+        // Act
+        var entity = adapter.obtenerPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(entity).isEmpty();
+    }
+
+    @Test
+    void debeActualizarSoloElEstadoDelEntregable_sinAfectarOtros() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(id, proyecto, 3, asesor, "APROBADO"));
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(otro, proyecto, 4, asesor, "APROBADO"));
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(id, "CERRADO");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var actualizado = entityManager.find(EntregableProyectoGradoJpaEntity.class, id);
+        assertThat(actualizado.getEstadoEntregable()).isEqualTo("CERRADO");
+        assertThat(actualizado.getVersion()).isEqualTo(3);
+        assertThat(actualizado.getProyectoGrado()).isEqualTo(proyecto);
+        assertThat(actualizado.getAsesor()).isEqualTo(asesor);
+        assertThat(entityManager.find(EntregableProyectoGradoJpaEntity.class, otro).getEstadoEntregable())
+                .isEqualTo("APROBADO");
+        verify(logger).debug(EntregableProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, id);
+    }
 }

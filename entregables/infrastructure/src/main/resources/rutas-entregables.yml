@@ -10,3 +10,6 @@ rutas:
     proyectos-grado:
       base: /proyectos-grado
       entregables: /{proyectoGradoId}/entregables
+    entregables-proyecto-grado:
+      base: /entregables-proyecto-grado
+      estado: /{entregableProyectoGradoId}/estado
