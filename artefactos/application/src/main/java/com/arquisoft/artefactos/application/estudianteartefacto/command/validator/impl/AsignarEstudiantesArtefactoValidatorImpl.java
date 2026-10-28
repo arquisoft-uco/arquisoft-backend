@@ -27,9 +27,9 @@ import com.arquisoft.artefactos.domain.estudianteartefacto.rules.EstudiantesVinc
 import com.arquisoft.artefactos.domain.estudianteartefacto.rules.impl.EstudiantesNoVinculadosArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.estudianteartefacto.rules.impl.EstudiantesVinculadosProyectoGradoRuleImpl;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
-import com.arquisoft.artefactos.domain.versionrepositorioartefacto.model.ExistenciaVersionesRepositorioArtefacto;
-import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.VersionesRepositorioArtefactoExistenRule;
-import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.impl.VersionesRepositorioArtefactoExistenRuleImpl;
+import com.arquisoft.artefactos.domain.versionrepositorioartefacto.model.ExistenciaVersionRepositorioArtefacto;
+import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.VersionRepositorioArtefactoExisteRule;
+import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.impl.VersionRepositorioArtefactoExisteRuleImpl;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public class AsignarEstudiantesArtefactoValidatorImpl implements AsignarEstudian
 
     private final ArtefactoExisteRule artefactoExisteRule;
     private final AsesorExisteRule asesorExisteRule;
-    private final VersionesRepositorioArtefactoExistenRule versionesRepositorioArtefactoExistenRule;
+    private final VersionRepositorioArtefactoExisteRule versionRepositorioArtefactoExisteRule;
     private final EstudiantesExistenRule estudiantesExistenRule;
     private final AsesorPropietarioArtefactoRule asesorPropietarioArtefactoRule;
     private final EstudiantesVigentesRule estudiantesVigentesRule;
@@ -50,7 +50,7 @@ public class AsignarEstudiantesArtefactoValidatorImpl implements AsignarEstudian
     public AsignarEstudiantesArtefactoValidatorImpl() {
         this.artefactoExisteRule = new ArtefactoExisteRuleImpl();
         this.asesorExisteRule = new AsesorExisteRuleImpl();
-        this.versionesRepositorioArtefactoExistenRule = new VersionesRepositorioArtefactoExistenRuleImpl();
+        this.versionRepositorioArtefactoExisteRule = new VersionRepositorioArtefactoExisteRuleImpl();
         this.estudiantesExistenRule = new EstudiantesExistenRuleImpl();
         this.asesorPropietarioArtefactoRule = new AsesorPropietarioArtefactoRuleImpl();
         this.estudiantesVigentesRule = new EstudiantesVigentesRuleImpl();
@@ -63,14 +63,14 @@ public class AsignarEstudiantesArtefactoValidatorImpl implements AsignarEstudian
             AgregacionEstudiantesArtefactoDomain entrada,
             ArtefactoDomain artefacto,
             AsesorDomain asesor,
-            List<VersionRepositorioArtefactoDomain> versiones,
+            VersionRepositorioArtefactoDomain versionRepositorio,
             List<EstudianteDomain> estudiantes,
             List<UUID> pertenencias,
             List<UUID> yaVinculados) {
         artefactoExisteRule.validar(new ExistenciaArtefacto(entrada.getArtefacto(), artefacto));
         asesorExisteRule.validar(new ExistenciaAsesor(entrada.getAsesor(), asesor));
-        versionesRepositorioArtefactoExistenRule.validar(new ExistenciaVersionesRepositorioArtefacto(
-                List.of(artefacto.getVersionRepositorioArtefacto()), versiones));
+        versionRepositorioArtefactoExisteRule.validar(new ExistenciaVersionRepositorioArtefacto(
+                artefacto.getVersionRepositorioArtefacto(), versionRepositorio));
         estudiantesExistenRule.validar(new ExistenciaEstudiantes(entrada.getEstudiantes(), estudiantes));
         asesorPropietarioArtefactoRule.validar(new PropiedadArtefactoAsesor(entrada.getAsesor(), artefacto));
         estudiantesVigentesRule.validar(new VigenciaEstudiantes(estudiantes));

@@ -63,7 +63,7 @@ class AsignarArtefactoValidatorImplTest {
     void debePasar_cuandoTodoEsValido() {
         // Act & Assert
         assertThatCode(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(vinculoVigente), List.of(version), List.of()))
+                asignacion, true, asesorVigente, List.of(vinculoVigente), version, List.of()))
                 .doesNotThrowAnyException();
     }
 
@@ -71,7 +71,7 @@ class AsignarArtefactoValidatorImplTest {
     void debeLanzarProyectoNoEncontrado_antesQueElAsesor() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, false, AsesorDomain.VACIO, List.of(), List.of(), List.of(repositorio)))
+                asignacion, false, AsesorDomain.VACIO, List.of(), VersionRepositorioArtefactoDomain.VACIO, List.of(repositorio)))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
 
@@ -79,7 +79,7 @@ class AsignarArtefactoValidatorImplTest {
     void debeLanzarAsesorNoEncontrado_cuandoElProyectoExisteYElAsesorNo() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, true, AsesorDomain.VACIO, List.of(), List.of(), List.of()))
+                asignacion, true, AsesorDomain.VACIO, List.of(), VersionRepositorioArtefactoDomain.VACIO, List.of()))
                 .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
@@ -91,7 +91,7 @@ class AsignarArtefactoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(otroAsesor), List.of(), List.of(repositorio)))
+                asignacion, true, asesorVigente, List.of(otroAsesor), VersionRepositorioArtefactoDomain.VACIO, List.of(repositorio)))
                 .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
     }
 
@@ -99,7 +99,7 @@ class AsignarArtefactoValidatorImplTest {
     void debeLanzarVersionNoEncontrada_antesQueElRepositorio() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(vinculoVigente), List.of(), List.of(repositorio)))
+                asignacion, true, asesorVigente, List.of(vinculoVigente), VersionRepositorioArtefactoDomain.VACIO, List.of(repositorio)))
                 .isInstanceOf(VersionRepositorioArtefactoNoEncontradaException.class);
     }
 
@@ -107,7 +107,7 @@ class AsignarArtefactoValidatorImplTest {
     void debeLanzarRepositorioYaAsignado_cuandoElProyectoYaTieneElRepositorio() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(vinculoVigente), List.of(version), List.of(repositorio)))
+                asignacion, true, asesorVigente, List.of(vinculoVigente), version, List.of(repositorio)))
                 .isInstanceOf(RepositorioArtefactoYaAsignadoException.class);
     }
 }

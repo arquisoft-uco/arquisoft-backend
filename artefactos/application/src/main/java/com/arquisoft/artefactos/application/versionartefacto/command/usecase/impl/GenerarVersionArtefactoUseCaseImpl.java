@@ -15,7 +15,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.secondarypo
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.mapper.VersionArtefactoMapper;
 import com.arquisoft.artefactos.application.versionartefacto.command.usecase.GenerarVersionArtefactoUseCase;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoValidator;
-import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.versionartefacto.GeneracionVersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.VersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.event.VersionArtefactoGeneradaEvent;
@@ -27,8 +27,6 @@ import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefactoUseCase {
@@ -36,7 +34,7 @@ public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefac
     private final ArtefactoBloqueadoPorIdFinder artefactoBloqueadoPorIdFinder;
     private final EstudianteArtefactoExisteFinder estudianteArtefactoExisteFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
-    private final VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
+    private final VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
     private final CargaPendienteFinder cargaPendienteFinder;
     private final AnalisisCargaFinder analisisCargaFinder;
     private final UltimoNumeroVersionArtefactoFinder ultimoNumeroVersionArtefactoFinder;
@@ -56,16 +54,16 @@ public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefac
         var estudianteVinculado = estudianteArtefactoExisteFinder.obtener(
                 new ParticipacionEstudianteArtefacto(generacion.getSolicitante(), generacion.getArtefacto()));
         var asesor = asesorPorIdFinder.obtener(artefacto.getAsesor());
-        var versionesRepositorio = versionesRepositorioArtefactoPorIdsFinder.obtener(
-                List.of(artefacto.getVersionRepositorioArtefacto()));
+        var versionRepositorio = versionRepositorioArtefactoPorIdFinder.obtener(
+                artefacto.getVersionRepositorioArtefacto());
         var carga = cargaPendienteFinder.obtener(generacion.getCarga());
         var tamanoMaximo = tamanoMaximoArchivoFinder.obtener();
         logger.debug(VersionArtefactoKey.LOG_VERIFICACION_GENERAR,
                 !artefacto.esVacio(), estudianteVinculado, !asesor.esVacio() && !asesor.estaEliminado(),
-                versionesRepositorio.size(), !carga.esVacio());
+                !versionRepositorio.esVacio(), !carga.esVacio());
 
         generarVersionValidator.validarCarga(
-                generacion, artefacto, estudianteVinculado, asesor, versionesRepositorio, carga, tamanoMaximo);
+                generacion, artefacto, estudianteVinculado, asesor, versionRepositorio, carga, tamanoMaximo);
 
         var analisis = analisisCargaFinder.obtener(generacion.getCarga());
         generarVersionValidator.validarContenido(generacion, new CargaAnalizada(carga, analisis));
@@ -77,7 +75,7 @@ public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefac
         versionArtefactoOutputPort.registrar(VersionArtefactoMapper.toEntity(version));
         eventPublisher.publish(new VersionArtefactoGeneradaEvent(
                 version,
-                versionesRepositorio.getFirst().getNombreDocumento(),
+                versionRepositorio.getNombreDocumento(),
                 new ContactoAsesor(asesor.getNombre(), asesor.getEmail())));
         almacenamientoVersionOutputPort.eliminarCarga(carga.getCarga());
 

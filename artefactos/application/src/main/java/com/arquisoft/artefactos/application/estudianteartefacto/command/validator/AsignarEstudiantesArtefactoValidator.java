@@ -15,7 +15,7 @@ public interface AsignarEstudiantesArtefactoValidator {
             AgregacionEstudiantesArtefactoDomain entrada,
             ArtefactoDomain artefacto,
             AsesorDomain asesor,
-            List<VersionRepositorioArtefactoDomain> versiones,
+            VersionRepositorioArtefactoDomain versionRepositorio,
             List<EstudianteDomain> estudiantes,
             List<UUID> pertenencias,
             List<UUID> yaVinculados);

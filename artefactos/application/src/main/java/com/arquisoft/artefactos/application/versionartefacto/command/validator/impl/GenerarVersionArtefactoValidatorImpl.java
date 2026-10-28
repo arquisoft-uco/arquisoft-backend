@@ -34,12 +34,10 @@ import com.arquisoft.artefactos.domain.versionartefacto.rules.impl.CargaSinModif
 import com.arquisoft.artefactos.domain.versionartefacto.rules.impl.TamanoArchivoPermitidoRuleImpl;
 import com.arquisoft.artefactos.domain.versionartefacto.rules.impl.TipoArchivoCoincideRuleImpl;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
-import com.arquisoft.artefactos.domain.versionrepositorioartefacto.model.ExistenciaVersionesRepositorioArtefacto;
-import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.VersionesRepositorioArtefactoExistenRule;
-import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.impl.VersionesRepositorioArtefactoExistenRuleImpl;
+import com.arquisoft.artefactos.domain.versionrepositorioartefacto.model.ExistenciaVersionRepositorioArtefacto;
+import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.VersionRepositorioArtefactoExisteRule;
+import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.impl.VersionRepositorioArtefactoExisteRuleImpl;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtefactoValidator {
@@ -48,7 +46,7 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
     private final EstudiantePropietarioArtefactoRule estudiantePropietarioArtefactoRule;
     private final AsesorExisteRule asesorExisteRule;
     private final AsesorVigenteRule asesorVigenteRule;
-    private final VersionesRepositorioArtefactoExistenRule versionesRepositorioArtefactoExistenRule;
+    private final VersionRepositorioArtefactoExisteRule versionRepositorioArtefactoExisteRule;
     private final CargaPendienteExistenteRule cargaPendienteExistenteRule;
     private final CargaCorrespondeASolicitudRule cargaCorrespondeASolicitudRule;
     private final CargaSinModificarRule cargaSinModificarRule;
@@ -60,7 +58,7 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
         this.estudiantePropietarioArtefactoRule = new EstudiantePropietarioArtefactoRuleImpl();
         this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.asesorVigenteRule = new AsesorVigenteRuleImpl();
-        this.versionesRepositorioArtefactoExistenRule = new VersionesRepositorioArtefactoExistenRuleImpl();
+        this.versionRepositorioArtefactoExisteRule = new VersionRepositorioArtefactoExisteRuleImpl();
         this.cargaPendienteExistenteRule = new CargaPendienteExistenteRuleImpl();
         this.cargaCorrespondeASolicitudRule = new CargaCorrespondeASolicitudRuleImpl();
         this.cargaSinModificarRule = new CargaSinModificarRuleImpl();
@@ -71,15 +69,15 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
     @Override
     public void validarCarga(GeneracionVersionArtefactoDomain generacion, ArtefactoDomain artefacto,
                              boolean estudianteVinculado, AsesorDomain asesor,
-                             List<VersionRepositorioArtefactoDomain> versionesRepositorio, CargaPendienteDomain carga,
+                             VersionRepositorioArtefactoDomain versionRepositorio, CargaPendienteDomain carga,
                              long tamanoMaximoBytes) {
         artefactoExisteRule.validar(new ExistenciaArtefacto(generacion.getArtefacto(), artefacto));
         estudiantePropietarioArtefactoRule.validar(
                 new PropiedadArtefacto(generacion.getSolicitante(), generacion.getArtefacto(), estudianteVinculado));
         asesorExisteRule.validar(new ExistenciaAsesor(artefacto.getAsesor(), asesor));
         asesorVigenteRule.validar(new VigenciaAsesor(artefacto.getAsesor(), asesor));
-        versionesRepositorioArtefactoExistenRule.validar(new ExistenciaVersionesRepositorioArtefacto(
-                List.of(artefacto.getVersionRepositorioArtefacto()), versionesRepositorio));
+        versionRepositorioArtefactoExisteRule.validar(new ExistenciaVersionRepositorioArtefacto(
+                artefacto.getVersionRepositorioArtefacto(), versionRepositorio));
         cargaPendienteExistenteRule.validar(new ExistenciaCargaPendiente(generacion.getCarga(), carga));
         cargaCorrespondeASolicitudRule.validar(
                 new CorrespondenciaCarga(carga, generacion.getSolicitante(), generacion.getArtefacto()));

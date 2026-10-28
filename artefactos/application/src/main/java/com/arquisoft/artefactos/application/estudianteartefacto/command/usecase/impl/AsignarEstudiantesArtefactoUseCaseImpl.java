@@ -9,7 +9,7 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.secondar
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.mapper.EstudianteArtefactoMapper;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.validator.AsignarEstudiantesArtefactoValidator;
-import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.event.EstudiantesArtefactoAsignadosEvent;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.ContactoAsesor;
@@ -20,15 +20,13 @@ import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class AsignarEstudiantesArtefactoUseCaseImpl implements AsignarEstudiantesArtefactoUseCase {
 
     private final ArtefactoPorIdFinder artefactoPorIdFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
-    private final VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
+    private final VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
     private final EstudiantesPorIdsFinder estudiantesPorIdsFinder;
     private final EstudiantesPertenenciaProyectoGradoFinder estudiantesPertenenciaProyectoGradoFinder;
     private final EstudiantesYaVinculadosArtefactoFinder estudiantesYaVinculadosArtefactoFinder;
@@ -43,24 +41,24 @@ public class AsignarEstudiantesArtefactoUseCaseImpl implements AsignarEstudiante
 
         var artefacto = artefactoPorIdFinder.obtener(entrada.getArtefacto());
         var asesor = asesorPorIdFinder.obtener(entrada.getAsesor());
-        var versiones = versionesRepositorioArtefactoPorIdsFinder.obtener(
-                List.of(artefacto.getVersionRepositorioArtefacto()));
+        var versionRepositorio = versionRepositorioArtefactoPorIdFinder.obtener(
+                artefacto.getVersionRepositorioArtefacto());
         var estudiantes = estudiantesPorIdsFinder.obtener(entrada.getEstudiantes());
         var pertenencias = estudiantesPertenenciaProyectoGradoFinder.obtener(entrada);
         var yaVinculados = estudiantesYaVinculadosArtefactoFinder.obtener(entrada);
         logger.debug(EstudianteArtefactoKey.LOG_VERIFICACION_ASIGNAR,
-                !artefacto.esVacio(), !asesor.esVacio(), versiones.size(), estudiantes.size(),
+                !artefacto.esVacio(), !asesor.esVacio(), !versionRepositorio.esVacio(), estudiantes.size(),
                 pertenencias.size(), yaVinculados.size());
 
         asignarEstudiantesArtefactoValidator.validar(
-                entrada, artefacto, asesor, versiones, estudiantes, pertenencias, yaVinculados);
+                entrada, artefacto, asesor, versionRepositorio, estudiantes, pertenencias, yaVinculados);
 
         estudianteArtefactoOutputPort.vincularTodos(entrada.getRelaciones().stream()
                 .map(EstudianteArtefactoMapper::toEntity)
                 .toList());
 
         eventPublisher.publish(new EstudiantesArtefactoAsignadosEvent(
-                versiones.getFirst().getNombreDocumento(),
+                versionRepositorio.getNombreDocumento(),
                 estudiantes.stream()
                         .map(estudiante -> new ContactoEstudiante(estudiante.getNombre(), estudiante.getEmail()))
                         .toList(),

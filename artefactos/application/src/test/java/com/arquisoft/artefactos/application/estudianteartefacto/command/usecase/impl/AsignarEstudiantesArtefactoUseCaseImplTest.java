@@ -8,7 +8,7 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.E
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.EstudianteArtefactoOutputPort;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.entity.EstudianteArtefactoEntity;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.validator.AsignarEstudiantesArtefactoValidator;
-import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
@@ -55,7 +55,7 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
     @Mock
     private AsesorPorIdFinder asesorPorIdFinder;
     @Mock
-    private VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
+    private VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
     @Mock
     private EstudiantesPorIdsFinder estudiantesPorIdsFinder;
     @Mock
@@ -81,7 +81,7 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new AsignarEstudiantesArtefactoUseCaseImpl(
-                artefactoPorIdFinder, asesorPorIdFinder, versionesRepositorioArtefactoPorIdsFinder,
+                artefactoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 estudiantesPorIdsFinder, estudiantesPertenenciaProyectoGradoFinder,
                 estudiantesYaVinculadosArtefactoFinder, asignarEstudiantesArtefactoValidator,
                 estudianteArtefactoOutputPort, eventPublisher, logger);
@@ -108,10 +108,9 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
         var estudiantes = idsEstudiantes.stream()
                 .map(id -> EstudianteDomain.reconstruir(id, "2", "Est-" + id, id + "@uco.edu.co", Instant.EPOCH, null))
                 .toList();
-        var versiones = List.of(version);
         when(artefactoPorIdFinder.obtener(artefactoId)).thenReturn(artefacto);
         when(asesorPorIdFinder.obtener(asesorId)).thenReturn(asesor);
-        when(versionesRepositorioArtefactoPorIdsFinder.obtener(List.of(version.getId()))).thenReturn(versiones);
+        when(versionRepositorioArtefactoPorIdFinder.obtener(version.getId())).thenReturn(version);
         when(estudiantesPorIdsFinder.obtener(idsEstudiantes)).thenReturn(estudiantes);
         when(estudiantesPertenenciaProyectoGradoFinder.obtener(entrada)).thenReturn(idsEstudiantes);
         when(estudiantesYaVinculadosArtefactoFinder.obtener(entrada)).thenReturn(List.of());
@@ -121,18 +120,18 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
 
         // Assert
         var orden = inOrder(
-                artefactoPorIdFinder, asesorPorIdFinder, versionesRepositorioArtefactoPorIdsFinder,
+                artefactoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 estudiantesPorIdsFinder, estudiantesPertenenciaProyectoGradoFinder,
                 estudiantesYaVinculadosArtefactoFinder, asignarEstudiantesArtefactoValidator,
                 estudianteArtefactoOutputPort, eventPublisher, logger);
         orden.verify(artefactoPorIdFinder).obtener(artefactoId);
         orden.verify(asesorPorIdFinder).obtener(asesorId);
-        orden.verify(versionesRepositorioArtefactoPorIdsFinder).obtener(List.of(version.getId()));
+        orden.verify(versionRepositorioArtefactoPorIdFinder).obtener(version.getId());
         orden.verify(estudiantesPorIdsFinder).obtener(idsEstudiantes);
         orden.verify(estudiantesPertenenciaProyectoGradoFinder).obtener(entrada);
         orden.verify(estudiantesYaVinculadosArtefactoFinder).obtener(entrada);
         orden.verify(asignarEstudiantesArtefactoValidator)
-                .validar(entrada, artefacto, asesor, versiones, estudiantes, idsEstudiantes, List.of());
+                .validar(entrada, artefacto, asesor, version, estudiantes, idsEstudiantes, List.of());
         orden.verify(estudianteArtefactoOutputPort).vincularTodos(entidadesCaptor.capture());
         orden.verify(eventPublisher).publish(eventoCaptor.capture());
         orden.verify(logger).info(EstudianteArtefactoKey.LOG_ASIGNADOS, artefactoId, 2);
@@ -156,13 +155,13 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
                 asesorId, EstudianteArtefactoDomain.crear(artefactoId, List.of(UtilUUID.generarNuevoUUID())));
         when(artefactoPorIdFinder.obtener(artefactoId)).thenReturn(ArtefactoDomain.VACIO);
         when(asesorPorIdFinder.obtener(asesorId)).thenReturn(AsesorDomain.VACIO);
-        when(versionesRepositorioArtefactoPorIdsFinder.obtener(anyList())).thenReturn(List.of());
+        when(versionRepositorioArtefactoPorIdFinder.obtener(any())).thenReturn(VersionRepositorioArtefactoDomain.VACIO);
         when(estudiantesPorIdsFinder.obtener(anyList())).thenReturn(List.of());
         when(estudiantesPertenenciaProyectoGradoFinder.obtener(entrada)).thenReturn(List.of());
         when(estudiantesYaVinculadosArtefactoFinder.obtener(entrada)).thenReturn(List.of());
         doThrow(new AsesorNoPropietarioArtefactoException(asesorId, artefactoId))
                 .when(asignarEstudiantesArtefactoValidator)
-                .validar(any(), any(), any(), anyList(), anyList(), anyList(), anyList());
+                .validar(any(), any(), any(), any(), anyList(), anyList(), anyList());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))

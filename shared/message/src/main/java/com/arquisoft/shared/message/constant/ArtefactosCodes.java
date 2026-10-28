@@ -38,8 +38,8 @@ public final class ArtefactosCodes {
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_TAMANO_BYTES_REQUERIDO";
         public static final String TAMANO_BYTES_INVALIDO =
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_TAMANO_BYTES_INVALIDO";
-        public static final String VERSIONES_NO_ENCONTRADAS =
-                "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_VERSIONES_NO_ENCONTRADAS";
+        public static final String VERSION_NO_ENCONTRADA =
+                "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_VERSION_NO_ENCONTRADA";
     }
 
     public static final class Artefacto {
