@@ -131,6 +131,7 @@ security:
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/enviadas", role: "solicitudes:solicitud-ampliacion-plazo-enviada:view"}
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/recibidas", role: "solicitudes:solicitud-ampliacion-plazo-recibida:view"}
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/respuestas/recibidas", role: "solicitudes:respuesta-ampliacion-plazo-recibida:view"}
+        - {method: POST, path: "/api/solicitudes/ampliacion-plazo/respuestas/enviadas", role: "solicitudes:respuesta-ampliacion-plazo-enviada:view"}
         - {method: DELETE, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}", role: "solicitudes:solicitud-ampliacion-plazo:delete"}
         - {method: DELETE, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}/respuesta", role: "solicitudes:respuesta-ampliacion-plazo:delete"}
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}/respuesta", role: "solicitudes:respuesta-ampliacion-plazo:create"}
