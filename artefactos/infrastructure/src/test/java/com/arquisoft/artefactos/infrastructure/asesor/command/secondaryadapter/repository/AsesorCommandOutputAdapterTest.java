@@ -3,6 +3,9 @@ package com.arquisoft.artefactos.infrastructure.asesor.command.secondaryadapter.
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.artefactos.application.asesor.command.secondaryport.entity.AsesorEntity;
 import com.arquisoft.artefactos.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.command.secondaryadapter.entity.RevisionAsesorJpaEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.ArtefactoTestEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.AsesorKey;
 import com.arquisoft.shared.util.UtilFecha;
@@ -141,5 +144,48 @@ class AsesorCommandOutputAdapterTest {
         assertThat(persistido.getEmail()).isEqualTo("reactivada@uco.edu.co");
         assertThat(persistido.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
         verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debeObtenerAsesorDelArtefactoDeLaRevision_cuandoExiste() {
+        // Arrange
+        var adapter = new AsesorCommandOutputAdapter(asesorCommandRepository, logger);
+        var asesor = UtilUUID.generarNuevoUUID();
+        var otroAsesor = UtilUUID.generarNuevoUUID();
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var version = UtilUUID.generarNuevoUUID();
+        var revision = UtilUUID.generarNuevoUUID();
+        entityManager.persist(AsesorJpaEntity.builder().id(asesor).identificador("20161020123")
+                .nombre("Ana").email("ana@uco.edu.co").ocurridoEn(Instant.now()).build());
+        entityManager.persist(AsesorJpaEntity.builder().id(otroAsesor).identificador("20161020124")
+                .nombre("Otro").email("otro@uco.edu.co").ocurridoEn(Instant.now()).build());
+        entityManager.persist(new ArtefactoTestEntity(artefacto, asesor));
+        entityManager.persist(new VersionArtefactoTestEntity(version, artefacto, 1));
+        entityManager.persist(RevisionAsesorJpaEntity.builder()
+                .id(revision).versionArtefacto(version).estado("PENDIENTE").build());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorRevisionAsesor(revision);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(asesor);
+            assertThat(entity.nombre()).isEqualTo("Ana");
+            assertThat(entity.email()).isEqualTo("ana@uco.edu.co");
+        });
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoLaRevisionNoExiste() {
+        // Arrange
+        var adapter = new AsesorCommandOutputAdapter(asesorCommandRepository, logger);
+
+        // Act
+        var resultado = adapter.obtenerPorRevisionAsesor(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
     }
 }
