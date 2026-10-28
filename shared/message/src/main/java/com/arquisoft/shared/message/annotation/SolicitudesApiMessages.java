@@ -69,6 +69,17 @@ public final class SolicitudesApiMessages {
         public static final String ENVIAR_AMPLIACION_PLAZO_RESP_422 =
                 "Remitente o destinatario no encontrado, o solicitud duplicada";
 
+        public static final String ENVIAR_REGISTRO_MODIFICACION_USUARIOS_SUMMARY =
+                "Enviar solicitud para registro y modificación de usuarios";
+        public static final String ENVIAR_REGISTRO_MODIFICACION_USUARIOS_DESCRIPTION =
+                "Permite a un coordinador enviar una solicitud para registrar o modificar usuarios, "
+                        + "dirigida al usuario que la atenderá.";
+        public static final String ENVIAR_REGISTRO_MODIFICACION_USUARIOS_RESP_201 =
+                "Solicitud enviada — retorna el UUID asignado";
+        public static final String ENVIAR_REGISTRO_MODIFICACION_USUARIOS_RESP_400 = "Datos inválidos";
+        public static final String ENVIAR_REGISTRO_MODIFICACION_USUARIOS_RESP_422 =
+                "Remitente o destinatario no encontrado, o solicitud duplicada";
+
         public static final String ELIMINAR_NOVEDAD_COORDINADOR_SUMMARY =
                 "Eliminar solicitud de novedad para el coordinador";
         public static final String ELIMINAR_NOVEDAD_COORDINADOR_DESCRIPTION =

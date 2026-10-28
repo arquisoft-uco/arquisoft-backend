@@ -21,7 +21,10 @@ public final class SolicitudEnviadaEvent extends DomainEvent {
             TipoSolicitud.CAMBIO_DE_ASESOR, new IdentidadEvento(
                     EventTopics.Solicitudes.CAMBIO_ASESOR_ENVIADA, "SolicitudCambioAsesorEnviadaEvent"),
             TipoSolicitud.AMPLIACION_DE_PLAZO, new IdentidadEvento(
-                    EventTopics.Solicitudes.AMPLIACION_PLAZO_ENVIADA, "SolicitudAmpliacionPlazoEnviadaEvent"));
+                    EventTopics.Solicitudes.AMPLIACION_PLAZO_ENVIADA, "SolicitudAmpliacionPlazoEnviadaEvent"),
+            TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, new IdentidadEvento(
+                    EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_ENVIADA,
+                    "SolicitudRegistroModificacionUsuariosEnviadaEvent"));
 
     private final UUID solicitudId;
     private final String remitenteNombre;

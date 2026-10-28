@@ -164,6 +164,7 @@ security:
         - {method: DELETE, path: "/api/solicitudes/novedad-coordinador/{solicitudId}/respuesta", role: "solicitudes:respuesta-novedad-coordinador:delete"}
         - {method: POST, path: "/api/solicitudes/novedad-coordinador/{solicitudId}/respuesta", role: "solicitudes:respuesta-novedad-coordinador:create"}
         - {method: PATCH, path: "/api/solicitudes/novedad-coordinador/{solicitudId}/respuesta/estado", role: "solicitudes:respuesta-novedad-coordinador:update"}
+        - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios", role: "solicitudes:solicitud-registro-modificacion-usuarios:create"}
         - {method: GET, path: "/api/solicitudes/tipos-solicitud", role: "solicitudes:tipo-solicitud:view"}
         # repositorio_artefactos
         - {method: POST, path: "/api/repositorio-artefactos", role: "repositorio-artefactos:repositorio-artefacto:create"}
