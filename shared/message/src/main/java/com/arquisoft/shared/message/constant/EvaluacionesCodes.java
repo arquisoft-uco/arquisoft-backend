@@ -123,6 +123,38 @@ public final class EvaluacionesCodes {
         public static final String ITEMS_REPETIDOS = "REGISTRO_EVALUACIONES_CUALITATIVAS_ASESOR_ITEMS_REPETIDOS";
     }
 
+    public static final class EvaluacionCuantitativaAsesor {
+
+        private EvaluacionCuantitativaAsesor() {}
+
+        public static final String EVALUACION_ASESOR_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_ASESOR_EVALUACION_ASESOR_REQUERIDO";
+        public static final String ASESOR_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_ASESOR_ASESOR_REQUERIDO";
+        public static final String ITEM_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_ASESOR_ITEM_REQUERIDO";
+        public static final String ITEM_INVALIDO =
+                "EVALUACION_CUANTITATIVA_ASESOR_ITEM_INVALIDO";
+        public static final String PUNTAJE_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_ASESOR_PUNTAJE_REQUERIDO";
+        public static final String PUNTAJE_FUERA_DE_RANGO =
+                "EVALUACION_CUANTITATIVA_ASESOR_PUNTAJE_FUERA_DE_RANGO";
+        public static final String ITEMS_NO_ENCONTRADOS =
+                "EVALUACION_CUANTITATIVA_ASESOR_ITEMS_NO_ENCONTRADOS";
+        public static final String PUNTAJES_EXCEDEN_VALOR_ITEM =
+                "EVALUACION_CUANTITATIVA_ASESOR_PUNTAJES_EXCEDEN_VALOR_ITEM";
+        public static final String ITEMS_YA_REGISTRADOS =
+                "EVALUACION_CUANTITATIVA_ASESOR_ITEMS_YA_REGISTRADOS";
+    }
+
+    public static final class RegistroEvaluacionesCuantitativasAsesor {
+
+        private RegistroEvaluacionesCuantitativasAsesor() {}
+
+        public static final String LOTE_VACIO = "REGISTRO_EVALUACIONES_CUANTITATIVAS_ASESOR_LOTE_VACIO";
+        public static final String ITEMS_REPETIDOS = "REGISTRO_EVALUACIONES_CUANTITATIVAS_ASESOR_ITEMS_REPETIDOS";
+    }
+
     public static final class OmisionEvaluacionesCualitativasJurado {
 
         private OmisionEvaluacionesCualitativasJurado() {}

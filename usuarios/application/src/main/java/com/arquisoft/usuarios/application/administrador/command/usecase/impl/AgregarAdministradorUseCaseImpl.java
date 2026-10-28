@@ -30,7 +30,7 @@ public class AgregarAdministradorUseCaseImpl implements AgregarAdministradorUseC
         logger.debug(AgregarAdministradorKey.LOG_VERIFICACION_AGREGAR,
                 usuario.getId(), !administrador.esVacio(), administrador.estaEliminado());
 
-        agregarAdministradorValidator.validar(usuario.getId(), administrador);
+        agregarAdministradorValidator.validar(usuario, administrador);
 
         if (administrador.esVacio()) {
             administradorOutputPort.guardar(

@@ -46,6 +46,8 @@ public enum RespuestaKey implements ClaveMensaje {
             "solicitudes.aplicacion.respuesta.log.consulta-cambio-asesor-enviadas-completada", 3),
     ERROR_ESTADO_RESPUESTA_NO_RESOLUTIVO(
             "solicitudes.dominio.respuesta.error.estado-no-resolutivo", 1),
+    ERROR_ESTADO_RESPUESTA_NO_RESOLUTIVO_DETALLE(
+            "solicitudes.dominio.respuesta.error.estado-no-resolutivo-detalle", 1),
     LOG_MODIFICANDO_ESTADO("solicitudes.aplicacion.respuesta.log.modificando-estado", 3),
     LOG_VERIFICACION_MODIFICACION_ESTADO(
             "solicitudes.aplicacion.respuesta.log.verificacion-modificacion-estado", 4),

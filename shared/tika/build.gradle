@@ -1,0 +1,11 @@
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    implementation "org.apache.tika:tika-core:${tikaVersion}"
+    implementation "org.apache.tika:tika-parser-microsoft-module:${tikaVersion}"
+
+    testImplementation "org.assertj:assertj-core"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

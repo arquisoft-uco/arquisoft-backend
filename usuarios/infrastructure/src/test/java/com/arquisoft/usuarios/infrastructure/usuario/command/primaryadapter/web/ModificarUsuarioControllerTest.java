@@ -123,7 +123,7 @@ class ModificarUsuarioControllerTest {
     void debe422ConSuCodigo_cuandoElUsuarioEstaEliminado() throws Exception {
         // Arrange
         var usuario = UUID.randomUUID();
-        doThrow(new UsuarioEliminadoException(usuario)).when(modificarUsuarioInteractor).ejecutar(any());
+        doThrow(new UsuarioEliminadoException(usuario, "Ana Corregida")).when(modificarUsuarioInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(patch("/usuarios/{usuarioId}", usuario)

@@ -41,8 +41,7 @@ public record OmitirEvaluacionesCualitativasJuradoCommand(
             result.agregarError(
                     EvaluacionesFields.OmisionEvaluacionesCualitativasJurado.EVALUACIONES,
                     EvaluacionesCodes.OmisionEvaluacionesCualitativasJurado.LOTE_VACIO,
-                    Mensajes.formatear(ValidadorKey.COLECCION_VACIA,
-                            EvaluacionesFields.OmisionEvaluacionesCualitativasJurado.EVALUACIONES));
+                    Mensajes.obtener(ValidadorKey.COLECCION_VACIA));
             return List.of();
         }
 

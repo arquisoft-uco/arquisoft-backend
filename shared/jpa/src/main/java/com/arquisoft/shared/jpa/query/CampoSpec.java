@@ -160,7 +160,8 @@ public sealed interface CampoSpec<E>
             try {
                 return UUID.fromString(v);
             } catch (IllegalArgumentException e) {
-                throw new FiltroInvalidoException(Mensajes.formatear(ConsultaKey.ERROR_UUID_INVALIDO, v));
+                throw new FiltroInvalidoException(
+                        ConsultaKey.ERROR_UUID_INVALIDO, ConsultaKey.ERROR_UUID_INVALIDO_DETALLE, v);
             }
         }
     }
@@ -212,7 +213,8 @@ public sealed interface CampoSpec<E>
             try {
                 return Long.parseLong(v);
             } catch (NumberFormatException e) {
-                throw new FiltroInvalidoException(Mensajes.formatear(ConsultaKey.ERROR_ENTERO_INVALIDO, v));
+                throw new FiltroInvalidoException(
+                        ConsultaKey.ERROR_ENTERO_INVALIDO, ConsultaKey.ERROR_ENTERO_INVALIDO_DETALLE, v);
             }
         }
     }
@@ -264,7 +266,8 @@ public sealed interface CampoSpec<E>
             try {
                 return new BigDecimal(v);
             } catch (NumberFormatException e) {
-                throw new FiltroInvalidoException(Mensajes.formatear(ConsultaKey.ERROR_DECIMAL_INVALIDO, v));
+                throw new FiltroInvalidoException(
+                        ConsultaKey.ERROR_DECIMAL_INVALIDO, ConsultaKey.ERROR_DECIMAL_INVALIDO_DETALLE, v);
             }
         }
     }
@@ -317,7 +320,7 @@ public sealed interface CampoSpec<E>
                 return LocalDate.parse(v);
             } catch (DateTimeParseException e) {
                 throw new FiltroInvalidoException(
-                        Mensajes.formatear(ConsultaKey.ERROR_FECHA_INVALIDA, v));
+                        ConsultaKey.ERROR_FECHA_INVALIDA, ConsultaKey.ERROR_FECHA_INVALIDA_DETALLE, v);
             }
         }
     }
@@ -370,7 +373,7 @@ public sealed interface CampoSpec<E>
                 return LocalDateTime.parse(v);
             } catch (DateTimeParseException e) {
                 throw new FiltroInvalidoException(
-                        Mensajes.formatear(ConsultaKey.ERROR_FECHA_HORA_INVALIDA, v));
+                        ConsultaKey.ERROR_FECHA_HORA_INVALIDA, ConsultaKey.ERROR_FECHA_HORA_INVALIDA_DETALLE, v);
             }
         }
     }
@@ -407,7 +410,8 @@ public sealed interface CampoSpec<E>
             if ("true".equalsIgnoreCase(v) || "false".equalsIgnoreCase(v)) {
                 return Boolean.parseBoolean(v);
             }
-            throw new FiltroInvalidoException(Mensajes.formatear(ConsultaKey.ERROR_BOOLEANO_INVALIDO, v));
+            throw new FiltroInvalidoException(
+                    ConsultaKey.ERROR_BOOLEANO_INVALIDO, ConsultaKey.ERROR_BOOLEANO_INVALIDO_DETALLE, v);
         }
     }
 
@@ -416,9 +420,8 @@ public sealed interface CampoSpec<E>
     private static void validar(FiltroOperador operador, Set<FiltroOperador> validos, ConsultaKey tipo) {
         if (!validos.contains(operador)) {
             throw new FiltroInvalidoException(
-                    Mensajes.formatear(ConsultaKey.ERROR_OPERADOR_NO_APLICABLE,
-                            operador, Mensajes.obtener(tipo), validos)
-            );
+                    ConsultaKey.ERROR_OPERADOR_NO_APLICABLE, ConsultaKey.ERROR_OPERADOR_NO_APLICABLE_DETALLE,
+                    operador, Mensajes.obtener(tipo), validos);
         }
     }
 }

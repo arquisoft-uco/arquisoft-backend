@@ -9,7 +9,7 @@ public class FichaPerfilConEstudiantesVigentesRuleImpl implements FichaPerfilCon
     @Override
     public void validar(IntegrantesVigentesFicha integrantes) {
         if (integrantes.cantidad() == 0) {
-            throw new FichaPerfilSinEstudiantesVigentesException(integrantes.fichaPerfil());
+            throw new FichaPerfilSinEstudiantesVigentesException(integrantes.fichaPerfil(), integrantes.tituloProyecto());
         }
     }
 }

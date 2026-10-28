@@ -9,7 +9,7 @@ public class TamanoArchivoPermitidoRuleImpl implements TamanoArchivoPermitidoRul
     @Override
     public void validar(LimiteTamanoArchivo limite) {
         if (limite.tamanoBytes() <= 0 || limite.tamanoBytes() > limite.maximoBytes()) {
-            throw new TamanoArchivoExcedidoException(limite.tamanoBytes(), limite.maximoBytes());
+            throw new TamanoArchivoExcedidoException(limite.nombreArchivo(), limite.tamanoBytes(), limite.maximoBytes());
         }
     }
 }

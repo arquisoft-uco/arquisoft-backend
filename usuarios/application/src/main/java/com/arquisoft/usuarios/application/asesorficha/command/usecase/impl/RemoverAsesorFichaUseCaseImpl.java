@@ -37,7 +37,7 @@ public class RemoverAsesorFichaUseCaseImpl implements RemoverAsesorFichaUseCase 
         logger.debug(RemoverAsesorFichaKey.LOG_VERIFICACION_REMOVER,
                 entrada.getUsuario(), !asesorFicha.esVacio(), asesorFicha.estaEliminado());
 
-        removerAsesorFichaValidator.validar(entrada.getUsuario(), asesorFicha);
+        removerAsesorFichaValidator.validar(entrada.getUsuario(), usuario, asesorFicha);
 
         asesorFicha.remover(UtilFecha.generarInstanteActual());
         asesorFichaOutputPort.eliminarLogica(asesorFicha.getUsuario(), asesorFicha.getEliminadoEn());

@@ -39,8 +39,7 @@ public record AsignarJuradosEvaluacionCommand(UUID evaluacion, List<UUID> jurado
             result.agregarError(
                     EvaluacionesFields.AsignacionJuradosEvaluacion.JURADOS,
                     EvaluacionesCodes.AsignacionJuradosEvaluacion.LOTE_VACIO,
-                    Mensajes.formatear(ValidadorKey.COLECCION_VACIA,
-                            EvaluacionesFields.AsignacionJuradosEvaluacion.JURADOS));
+                    Mensajes.obtener(ValidadorKey.COLECCION_VACIA));
             return List.of();
         }
         return IntStream.range(0, jurados.size())

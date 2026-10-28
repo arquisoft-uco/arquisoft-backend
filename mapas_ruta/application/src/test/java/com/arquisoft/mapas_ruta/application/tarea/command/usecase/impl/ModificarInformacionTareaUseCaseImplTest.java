@@ -3,12 +3,15 @@ package com.arquisoft.mapas_ruta.application.tarea.command.usecase.impl;
 import com.arquisoft.mapas_ruta.application.asignacionasesor.command.finder.AsesorAsignadoProyectoGradoFinder;
 import com.arquisoft.mapas_ruta.application.asignacionasesor.command.finder.model.AsesorEnProyectoGrado;
 import com.arquisoft.mapas_ruta.application.maparuta.command.finder.MapaRutaPorIdFinder;
+import com.arquisoft.mapas_ruta.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.mapas_ruta.application.tarea.command.finder.DescripcionTareaEnUsoFinder;
 import com.arquisoft.mapas_ruta.application.tarea.command.finder.TareaPorIdFinder;
 import com.arquisoft.mapas_ruta.application.tarea.command.finder.model.DescripcionTareaEnMapaRuta;
 import com.arquisoft.mapas_ruta.application.tarea.command.secondaryport.TareaOutputPort;
 import com.arquisoft.mapas_ruta.application.tarea.command.validator.ModificarInformacionTareaValidator;
 import com.arquisoft.mapas_ruta.domain.maparuta.MapaRutaDomain;
+import com.arquisoft.mapas_ruta.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.mapas_ruta.domain.proyectogrado.model.EstadoProyectoGrado;
 import com.arquisoft.mapas_ruta.domain.tarea.ModificacionTareaDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.TareaDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.exception.TareaNoEncontradaException;
@@ -47,6 +50,9 @@ class ModificarInformacionTareaUseCaseImplTest {
     private MapaRutaPorIdFinder mapaRutaPorIdFinder;
 
     @Mock
+    private ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+
+    @Mock
     private DescripcionTareaEnUsoFinder descripcionTareaEnUsoFinder;
 
     @Mock
@@ -73,7 +79,10 @@ class ModificarInformacionTareaUseCaseImplTest {
         var descripcionEnMapa = new DescripcionTareaEnMapaRuta(tarea.getId(), mapa.getId(), "Redactar capitulo");
         var asesorEnProyecto = new AsesorEnProyectoGrado(mapa.getProyectoGrado(), modificacion.getAsesor());
         when(tareaPorIdFinder.obtener(tarea.getId())).thenReturn(tarea);
+        var proyecto = ProyectoGradoDomain.reconstruir(mapa.getProyectoGrado(), EstadoProyectoGrado.EN_PROCESO,
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Titulo");
         when(mapaRutaPorIdFinder.obtener(mapa.getId())).thenReturn(mapa);
+        when(proyectoGradoPorIdFinder.obtener(mapa.getProyectoGrado())).thenReturn(proyecto);
         when(descripcionTareaEnUsoFinder.obtener(descripcionEnMapa)).thenReturn(false);
         when(asesorAsignadoProyectoGradoFinder.obtener(asesorEnProyecto)).thenReturn(true);
 
@@ -87,7 +96,7 @@ class ModificarInformacionTareaUseCaseImplTest {
         orden.verify(mapaRutaPorIdFinder).obtener(mapa.getId());
         orden.verify(descripcionTareaEnUsoFinder).obtener(descripcionEnMapa);
         orden.verify(asesorAsignadoProyectoGradoFinder).obtener(asesorEnProyecto);
-        orden.verify(validator).validar(modificacion, tarea, mapa, false, true);
+        orden.verify(validator).validar(modificacion, tarea, mapa, proyecto, false, true);
         orden.verify(tareaOutputPort).actualizarInformacion(
                 tarea.getId(), "Redactar capitulo", modificacion.getAsesor());
         verify(tareaPorIdFinder, times(1)).obtener(any());
@@ -105,7 +114,7 @@ class ModificarInformacionTareaUseCaseImplTest {
         when(tareaPorIdFinder.obtener(modificacion.getTarea())).thenReturn(TareaDomain.VACIO);
         when(mapaRutaPorIdFinder.obtener(TareaDomain.VACIO.getMapaRuta())).thenReturn(MapaRutaDomain.VACIO);
         doThrow(new TareaNoEncontradaException(modificacion.getTarea())).when(validator)
-                .validar(modificacion, TareaDomain.VACIO, MapaRutaDomain.VACIO, false, false);
+                .validar(modificacion, TareaDomain.VACIO, MapaRutaDomain.VACIO, ProyectoGradoDomain.VACIO, false, false);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(modificacion)).isInstanceOf(TareaNoEncontradaException.class);

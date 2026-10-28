@@ -7,10 +7,10 @@ import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJurad
 
 public final class PuntajeEvaluacionCuantitativaJuradoExcedeValorItemException extends DomainException {
 
-    public PuntajeEvaluacionCuantitativaJuradoExcedeValorItemException(Integer puntaje, Integer valorMaximoItem) {
+    public PuntajeEvaluacionCuantitativaJuradoExcedeValorItemException(Integer puntaje, Integer valorMaximoItem, String nombreItem) {
         super(
                 Mensajes.formatear(
-                        EvaluacionCuantitativaJuradoKey.ERROR_PUNTAJE_EXCEDE_VALOR_ITEM, puntaje, valorMaximoItem),
+                        EvaluacionCuantitativaJuradoKey.ERROR_PUNTAJE_EXCEDE_VALOR_ITEM, puntaje, valorMaximoItem, nombreItem),
                 EvaluacionesCodes.EvaluacionCuantitativaJurado.PUNTAJE_EXCEDE_VALOR_ITEM
         );
     }

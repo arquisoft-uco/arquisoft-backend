@@ -20,10 +20,14 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     LOG_CONSULTA_DETALLE_ASESOR_COMPLETADA("proyectos.aplicacion.proyectogrado.log.consulta-detalle-asesor-completada", 1),
     LOG_DUPLICADO("proyectos.infraestructura.proyectogrado.log.duplicado", 1),
     LOG_GUARDADO("proyectos.infraestructura.proyectogrado.log.guardado", 2),
-    ERROR_COORDINADOR_NO_VIGENTE("proyectos.dominio.proyectogrado.error.coordinador-no-vigente", 1),
-    ERROR_NO_ENCONTRADO("proyectos.dominio.proyectogrado.error.no-encontrado", 1),
+    ERROR_COORDINADOR_NO_VIGENTE("proyectos.dominio.proyectogrado.error.coordinador-no-vigente", 0),
+    ERROR_COORDINADOR_NO_VIGENTE_DETALLE("proyectos.dominio.proyectogrado.error.coordinador-no-vigente-detalle", 1),
+    ERROR_NO_ENCONTRADO("proyectos.dominio.proyectogrado.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("proyectos.dominio.proyectogrado.error.no-encontrado-detalle", 1),
     ERROR_FINALIZADO("proyectos.dominio.proyectogrado.error.finalizado", 1),
-    ERROR_NO_PERTENECE_COORDINADOR("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador", 2);
+    ERROR_FINALIZADO_DETALLE("proyectos.dominio.proyectogrado.error.finalizado-detalle", 1),
+    ERROR_NO_PERTENECE_COORDINADOR("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador", 0),
+    ERROR_NO_PERTENECE_COORDINADOR_DETALLE("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador-detalle", 2);
 
     private final String clave;
     private final int parametros;

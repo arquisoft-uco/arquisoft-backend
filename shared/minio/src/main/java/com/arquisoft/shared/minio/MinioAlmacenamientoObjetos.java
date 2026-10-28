@@ -1,8 +1,5 @@
 package com.arquisoft.shared.minio;
 
-import com.arquisoft.shared.message.Mensajes;
-import com.arquisoft.shared.message.constant.AppCodes;
-import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
 import com.arquisoft.shared.minio.config.MinioProperties;
 import com.arquisoft.shared.minio.exception.MinioOperationException;
 import com.arquisoft.shared.minio.model.FormularioCarga;
@@ -21,12 +18,16 @@ import io.minio.errors.ErrorResponseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
@@ -54,7 +55,8 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             var camposExactos = new LinkedHashMap<String, String>();
             camposExactos.put(CAMPO_KEY, solicitud.key());
             camposExactos.put(CAMPO_TIPO_CONTENIDO, solicitud.tipoContenido());
-            solicitud.metadatos().forEach((nombre, valor) -> camposExactos.put(PREFIJO_METADATO + nombre, valor));
+            solicitud.metadatos().forEach((nombre, valor) ->
+                    camposExactos.put(PREFIJO_METADATO + nombre, URLEncoder.encode(valor, StandardCharsets.UTF_8)));
 
             camposExactos.forEach(politica::addEqualsCondition);
             politica.addContentLengthRangeCondition(TAMANO_MINIMO_BYTES, solicitud.tamanoMaximoBytes());
@@ -63,7 +65,7 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             campos.putAll(camposExactos);
             return new FormularioCarga(urlPublica(solicitud.bucket()), campos, expiraEn.toInstant());
         } catch (Exception e) {
-            throw fallo(AlmacenamientoKey.ERROR_FORMULARIO_CARGA, AppCodes.Minio.FORMULARIO_CARGA_FALLIDO, e);
+            throw fallo(MinioOperationException::formularioCargaFallido, e);
         }
     }
 
@@ -80,9 +82,9 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             if (esObjetoInexistente(e)) {
                 return MetadatosObjeto.VACIO;
             }
-            throw fallo(AlmacenamientoKey.ERROR_CONSULTA, AppCodes.Minio.CONSULTA_FALLIDA, e);
+            throw fallo(MinioOperationException::consultaFallida, e);
         } catch (Exception e) {
-            throw fallo(AlmacenamientoKey.ERROR_CONSULTA, AppCodes.Minio.CONSULTA_FALLIDA, e);
+            throw fallo(MinioOperationException::consultaFallida, e);
         }
     }
 
@@ -95,9 +97,9 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             if (esObjetoInexistente(e)) {
                 return Optional.empty();
             }
-            throw fallo(AlmacenamientoKey.ERROR_LECTURA, AppCodes.Minio.LECTURA_FALLIDA, e);
+            throw fallo(MinioOperationException::lecturaFallida, e);
         } catch (Exception e) {
-            throw fallo(AlmacenamientoKey.ERROR_LECTURA, AppCodes.Minio.LECTURA_FALLIDA, e);
+            throw fallo(MinioOperationException::lecturaFallida, e);
         }
     }
 
@@ -111,7 +113,7 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
                     .build();
             minioClient.copyObject(CopyObjectArgs.builder().bucket(bucket).object(keyDestino).source(origen).build());
         } catch (Exception e) {
-            throw fallo(AlmacenamientoKey.ERROR_COPIA, AppCodes.Minio.COPIA_FALLIDA, e);
+            throw fallo(MinioOperationException::copiaFallida, e);
         }
     }
 
@@ -120,7 +122,7 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
         try {
             minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(key).build());
         } catch (Exception e) {
-            throw fallo(AlmacenamientoKey.ERROR_ELIMINACION, AppCodes.Minio.ELIMINACION_FALLIDA, e);
+            throw fallo(MinioOperationException::eliminacionFallida, e);
         }
     }
 
@@ -144,15 +146,19 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             var minuscula = nombre.toLowerCase(Locale.ROOT);
             normalizados.put(
                     minuscula.startsWith(PREFIJO_METADATO) ? minuscula.substring(PREFIJO_METADATO.length()) : minuscula,
-                    valor);
+                    URLDecoder.decode(valor, StandardCharsets.UTF_8));
         });
         return normalizados;
     }
 
-    private static MinioOperationException fallo(AlmacenamientoKey clave, String codigo, Exception causa) {
+    private static MinioOperationException fallo(Function<Exception, MinioOperationException> fabrica, Exception causa) {
+        restaurarInterrupcion(causa);
+        return fabrica.apply(causa);
+    }
+
+    private static void restaurarInterrupcion(Exception causa) {
         if (causa instanceof InterruptedException) {
             Thread.currentThread().interrupt();
         }
-        return new MinioOperationException(Mensajes.obtener(clave), codigo, causa);
     }
 }

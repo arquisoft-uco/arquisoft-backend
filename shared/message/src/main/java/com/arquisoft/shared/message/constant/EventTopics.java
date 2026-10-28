@@ -108,6 +108,8 @@ public final class EventTopics {
                 "evaluaciones.evaluacion_cualitativa_jurado.registradas";
         public static final String EVALUACIONES_CUALITATIVAS_ASESOR_REGISTRADAS =
                 "evaluaciones.evaluacion_cualitativa_asesor.registradas";
+        public static final String EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS =
+                "evaluaciones.evaluacion_cuantitativa_asesor.registradas";
     }
 
     public static final class Solicitudes {
@@ -156,6 +158,14 @@ public final class EventTopics {
                 "repositorio_artefactos.version_repositorio_artefacto.subida";
         public static final String REPOSITORIO_ARTEFACTO_MODIFICADO =
                 "repositorio_artefactos.repositorio_artefacto.modificado";
+    }
+
+    public static final class Artefactos {
+
+        private Artefactos() {}
+
+        public static final String VERSION_ARTEFACTO_GENERADA =
+                "artefactos.version_artefacto.generada";
     }
 
     public static final class MapasRuta {

@@ -37,9 +37,9 @@ public class CambiarFechaFinMapaRutaValidatorImpl implements CambiarFechaFinMapa
     public void validar(CambioFechaFinMapaRutaDomain cambio, MapaRutaDomain mapaRuta, ProyectoGradoDomain proyectoGrado) {
         mapaRutaExisteRule.validar(new ExistenciaMapaRuta(cambio.getMapaRuta(), !mapaRuta.esVacio()));
         coordinadorPropietarioProyectoGradoRule.validar(new PropiedadProyectoGrado(
-                mapaRuta.getProyectoGrado(), cambio.getCoordinador(), proyectoGrado.getCoordinador()));
+                mapaRuta.getProyectoGrado(), proyectoGrado.getTituloProyecto(), cambio.getCoordinador(), proyectoGrado.getCoordinador()));
         proyectoGradoEnProcesoRule.validar(new EstadoActualProyectoGrado(
-                mapaRuta.getProyectoGrado(), proyectoGrado.getEstadoProyectoGrado()));
+                mapaRuta.getProyectoGrado(), proyectoGrado.getTituloProyecto(), proyectoGrado.getEstadoProyectoGrado()));
         fechaFinPosteriorAInicioRule.validar(new RangoFechasMapaRuta(
                 mapaRuta.getId(), mapaRuta.getFechaInicio(), cambio.getFechaFin()));
     }

@@ -10,7 +10,7 @@ public class JuradoUsuarioUnicoRuleImpl implements JuradoUsuarioUnicoRule {
     public void validar(DisponibilidadJuradoUsuario disponibilidad) {
         var jurado = disponibilidad.jurado();
         if (!jurado.esVacio() && !jurado.estaEliminado()) {
-            throw new JuradoUsuarioDuplicadoException(disponibilidad.usuario());
+            throw new JuradoUsuarioDuplicadoException(disponibilidad.usuario(), disponibilidad.nombre());
         }
     }
 }

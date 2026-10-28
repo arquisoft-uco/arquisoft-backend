@@ -1,6 +1,7 @@
 package com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.secondaryport.entity.VersionRepositorioArtefactoEntity;
+import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.entity.VersionRepositorioArtefactoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
@@ -152,11 +153,74 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeConsultarSoloLasVersionesExistentes_cuandoAlgunaIdNoExiste() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var primera = UtilUUID.generarNuevoUUID();
+        var segunda = UtilUUID.generarNuevoUUID();
+        var ajena = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadDeRepositorio(primera, repositorio, "Doc uno"));
+        adapter.guardar(entidadDeRepositorio(segunda, repositorio, "Doc dos"));
+        adapter.guardar(entidadDeRepositorio(ajena, UtilUUID.generarNuevoUUID(), "Doc tres"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontradas = adapter.consultarPorIds(List.of(primera, segunda, UtilUUID.generarNuevoUUID()));
+
+        // Assert
+        assertThat(encontradas).extracting(VersionRepositorioArtefactoEntity::id)
+                .containsExactlyInAnyOrder(primera, segunda);
+        assertThat(encontradas).allSatisfy(version -> {
+            assertThat(version.repositorioArtefacto()).isEqualTo(repositorio);
+            assertThat(version.nombreArchivo()).isEqualTo("plantilla.pdf");
+        });
+    }
+
+    @Test
     void debeNoFallar_cuandoNoHayVersiones() {
         // Act & Assert
         assertThatCode(() -> adapter.actualizarNombreRepositorio(UtilUUID.generarNuevoUUID(), "Repositorio nuevo"))
                 .doesNotThrowAnyException();
         assertThat(versionRepositorioArtefactoCommandRepository.count()).isZero();
+    }
+
+    @Test
+    void debeConsultarSoloLosRepositoriosDelProyecto_cuandoHayVersionesDeVariosRepositorios() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var otroProyecto = UtilUUID.generarNuevoUUID();
+        var repositorioUno = UtilUUID.generarNuevoUUID();
+        var repositorioDos = UtilUUID.generarNuevoUUID();
+        var repositorioAjeno = UtilUUID.generarNuevoUUID();
+        var versionUno = UtilUUID.generarNuevoUUID();
+        var versionDos = UtilUUID.generarNuevoUUID();
+        var versionAjena = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadDeRepositorio(versionUno, repositorioUno, "Uno"));
+        adapter.guardar(entidadDeRepositorio(versionDos, repositorioDos, "Dos"));
+        adapter.guardar(entidadDeRepositorio(versionAjena, repositorioAjeno, "Ajena"));
+        sembrarArtefacto(proyecto, versionUno);
+        sembrarArtefacto(proyecto, versionDos);
+        sembrarArtefacto(otroProyecto, versionAjena);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var repositorios = adapter.consultarRepositoriosAsignados(proyecto);
+        var sinArtefactos = adapter.consultarRepositoriosAsignados(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(repositorios).containsExactlyInAnyOrder(repositorioUno, repositorioDos);
+        assertThat(sinArtefactos).isEmpty();
+    }
+
+    private void sembrarArtefacto(UUID proyecto, UUID version) {
+        entityManager.persist(ArtefactoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .proyectoGrado(proyecto)
+                .versionRepositorioArtefacto(version)
+                .asesor(UtilUUID.generarNuevoUUID())
+                .build());
     }
 
     private VersionRepositorioArtefactoEntity entidadDeRepositorio(UUID id, UUID repositorio, String nombreDocumento) {

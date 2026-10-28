@@ -9,7 +9,7 @@ public class ItemTipoNoDuplicadoRuleImpl implements ItemTipoNoDuplicadoRule {
     @Override
     public void validar(DisponibilidadTipoItem disponibilidad) {
         if (disponibilidad.yaExiste()) {
-            throw new ItemTipoDuplicadoException(disponibilidad.tipoItem().getId());
+            throw new ItemTipoDuplicadoException(disponibilidad.tipoItem());
         }
     }
 }

@@ -1,7 +1,8 @@
 package com.arquisoft.config.outbox;
 
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import jakarta.persistence.EntityManagerFactory;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -29,7 +30,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 public class ContextAwareEventPublicationRepository implements EventPublicationRepository, SmartInitializingSingleton {
 
@@ -42,21 +42,21 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
     private final EventSerializer serializer;
     private final CompletionMode completionMode;
     private final ClassLoader classLoader;
-    private final Map<DataSource, String> dataSourceNames;
+    private final AppLogger logger;
     private volatile List<OutboxEntry> entries = List.of();
 
     public ContextAwareEventPublicationRepository(
             Map<String, DataSource> allDataSources,
             Map<String, EntityManagerFactory> allEntityManagerFactories,
             EventSerializer serializer,
-            Environment environment) {
+            Environment environment,
+            AppLogger logger) {
 
         this.allDataSources = allDataSources;
         this.serializer = serializer;
         this.completionMode = CompletionMode.from(environment);
         this.classLoader = ClassUtils.getDefaultClassLoader();
-        this.dataSourceNames = allDataSources.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (a, b) -> a));
+        this.logger = logger;
         this.dsToEmf = allEntityManagerFactories.values().stream()
                 .filter(emf -> emf instanceof EntityManagerFactoryInfo)
                 .collect(Collectors.toMap(
@@ -69,15 +69,13 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
     public void afterSingletonsInstantiated() {
         this.entries = allDataSources.entrySet().stream()
                 .filter(e -> hasEventPublicationTable(e.getValue()))
+                .peek(e -> logger.info(MensajeriaKey.LOG_OUTBOX_HABILITADO, e.getKey()))
                 .map(e -> new OutboxEntry(dsToEmf.get(e.getValue()), e.getValue(),
                         new JdbcTemplate(e.getValue())))
-                .peek(e -> log.info("Outbox habilitado: DataSource '{}'",
-                        dataSourceNames.getOrDefault(e.dataSource(), "desconocido")))
                 .toList();
 
         if (entries.isEmpty()) {
-            log.warn("Outbox: ningún DataSource tiene tabla event_publication. "
-                    + "Agrega la migración V{N}__crear_event_publication.sql en el contexto correspondiente.");
+            logger.warn(MensajeriaKey.LOG_OUTBOX_SIN_TABLA);
         }
     }
 
@@ -292,7 +290,7 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
         try {
             eventClass = ClassUtils.forName(eventType, classLoader);
         } catch (ClassNotFoundException e) {
-            log.warn("Evento '{}' con tipo desconocido '{}' encontrado en event_publication", id, eventType);
+            logger.warn(MensajeriaKey.LOG_OUTBOX_TIPO_DESCONOCIDO, id, eventType);
             return null;
         }
         Timestamp completionTs = rs.getTimestamp("completion_date");

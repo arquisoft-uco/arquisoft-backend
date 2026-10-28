@@ -4,4 +4,4 @@ import com.arquisoft.usuarios.domain.representantecomite.RepresentanteComiteDoma
 
 import java.util.UUID;
 
-public record DisponibilidadRepresentanteComiteUsuario(UUID usuario, RepresentanteComiteDomain representanteComite) {}
+public record DisponibilidadRepresentanteComiteUsuario(UUID usuario, String nombre, RepresentanteComiteDomain representanteComite) {}

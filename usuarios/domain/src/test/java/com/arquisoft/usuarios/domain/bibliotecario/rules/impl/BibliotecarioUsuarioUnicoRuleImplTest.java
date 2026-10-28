@@ -9,10 +9,13 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BibliotecarioUsuarioUnicoRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final BibliotecarioUsuarioUnicoRuleImpl rule = new BibliotecarioUsuarioUnicoRuleImpl();
 
@@ -21,7 +24,7 @@ class BibliotecarioUsuarioUnicoRuleImplTest {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
         var disponibilidad = new DisponibilidadBibliotecarioUsuario(
-                usuario, BibliotecarioDomain.crear(usuario));
+                usuario, NOMBRE, BibliotecarioDomain.crear(usuario));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(disponibilidad))
@@ -34,7 +37,7 @@ class BibliotecarioUsuarioUnicoRuleImplTest {
     void noDebeLanzar_cuandoBibliotecarioEsVacio() {
         // Arrange
         var disponibilidad = new DisponibilidadBibliotecarioUsuario(
-                UtilUUID.generarNuevoUUID(), BibliotecarioDomain.VACIO);
+                UtilUUID.generarNuevoUUID(), NOMBRE, BibliotecarioDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
@@ -45,9 +48,22 @@ class BibliotecarioUsuarioUnicoRuleImplTest {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
         var eliminado = BibliotecarioDomain.reconstruir(usuario, Instant.parse("2026-09-24T10:00:00Z"));
-        var disponibilidad = new DisponibilidadBibliotecarioUsuario(usuario, eliminado);
+        var disponibilidad = new DisponibilidadBibliotecarioUsuario(usuario, NOMBRE, eliminado);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoYaTieneElRol() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var entrada = new DisponibilidadBibliotecarioUsuario(usuario, NOMBRE, BibliotecarioDomain.crear(usuario));
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(BibliotecarioUsuarioDuplicadoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

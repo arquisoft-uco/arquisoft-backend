@@ -6,6 +6,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum RemoverJuradoKey implements ClaveMensaje {
 
     ERROR_NO_ENCONTRADO("usuarios.dominio.jurado.error.no-encontrado", 1),
+    ERROR_NO_ENCONTRADO_DETALLE("usuarios.dominio.jurado.error.no-encontrado-detalle", 1),
     LOG_REMOVIENDO("usuarios.aplicacion.jurado.log.removiendo", 1),
     LOG_VERIFICACION_REMOVER("usuarios.aplicacion.jurado.log.verificacion-remover", 4),
     LOG_REMOVIDO("usuarios.aplicacion.jurado.log.removido", 1);

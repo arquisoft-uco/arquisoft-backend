@@ -8,10 +8,10 @@ import com.arquisoft.usuarios.application.jurado.command.finder.JuradoPorUsuario
 import com.arquisoft.usuarios.application.jurado.command.secondaryport.JuradoOutputPort;
 import com.arquisoft.usuarios.application.jurado.command.secondaryport.entity.JuradoEntity;
 import com.arquisoft.usuarios.application.jurado.command.validator.AgregarJuradoValidator;
+import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.jurado.JuradoDomain;
 import com.arquisoft.usuarios.domain.jurado.event.JuradoAgregadoEvent;
 import com.arquisoft.usuarios.domain.jurado.exception.JuradoUsuarioDuplicadoException;
-import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,7 +74,7 @@ class AgregarJuradoUseCaseImplTest {
         var orden = inOrder(juradoPorUsuarioFinder, agregarJuradoValidator,
                 juradoOutputPort, eventPublisher);
         orden.verify(juradoPorUsuarioFinder).obtener(usuario.getId());
-        orden.verify(agregarJuradoValidator).validar(usuario.getId(), JuradoDomain.VACIO);
+        orden.verify(agregarJuradoValidator).validar(usuario, JuradoDomain.VACIO);
         orden.verify(juradoOutputPort).guardar(any());
         orden.verify(eventPublisher).publish(any());
 
@@ -106,7 +106,7 @@ class AgregarJuradoUseCaseImplTest {
 
         // Assert
         var orden = inOrder(agregarJuradoValidator, juradoOutputPort, eventPublisher);
-        orden.verify(agregarJuradoValidator).validar(usuario.getId(), eliminado);
+        orden.verify(agregarJuradoValidator).validar(usuario, eliminado);
         orden.verify(juradoOutputPort).reactivar(usuario.getId());
         orden.verify(eventPublisher).publish(any(JuradoAgregadoEvent.class));
         verify(juradoOutputPort, never()).guardar(any());
@@ -120,8 +120,8 @@ class AgregarJuradoUseCaseImplTest {
         var usuario = usuario();
         var vigente = JuradoDomain.crear(usuario.getId());
         when(juradoPorUsuarioFinder.obtener(usuario.getId())).thenReturn(vigente);
-        doThrow(new JuradoUsuarioDuplicadoException(usuario.getId()))
-                .when(agregarJuradoValidator).validar(usuario.getId(), vigente);
+        doThrow(new JuradoUsuarioDuplicadoException(usuario.getId(), usuario.getNombre()))
+                .when(agregarJuradoValidator).validar(usuario, vigente);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(usuario))

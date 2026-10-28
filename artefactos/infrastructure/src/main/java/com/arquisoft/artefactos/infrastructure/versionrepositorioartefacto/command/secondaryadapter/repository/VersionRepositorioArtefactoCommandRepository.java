@@ -6,10 +6,19 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface VersionRepositorioArtefactoCommandRepository
         extends JpaRepository<VersionRepositorioArtefactoJpaEntity, UUID> {
+
+    @Query("""
+            SELECT v.repositorioArtefacto
+            FROM VersionRepositorioArtefactoJpaEntity v
+            WHERE v.id IN (
+                SELECT a.versionRepositorioArtefacto FROM ArtefactoJpaEntity a WHERE a.proyectoGrado = :proyectoGrado)
+            """)
+    List<UUID> consultarRepositoriosAsignados(@Param("proyectoGrado") UUID proyectoGrado);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE VersionRepositorioArtefactoJpaEntity v "

@@ -85,7 +85,10 @@ escritura* / *de lectura*. Lo que cambia al testear:
 - `AppLogger` es varargs: un solo `ArgumentCaptor` solo casa con llamadas de un argumento. Usa un
   `eq(...)` por argumento. Un correo se espera **enmascarado** (`j***@uco.edu.co`).
 - En consumidores, los `debug`/`error` de `AbstractEventConsumer` y el cierre de
-  `AbstractNotificacionConsumer.registrar(...)` no se asertan.
+  `AbstractNotificacionConsumer.registrar(...)` no se asertan. Pero llegan **al mismo mock**
+  `logger` del consumidor (se lo pasa en `super(...)`): un `verifyNoMoreInteractions(logger)` o un
+  `never()` con `any(ClaveMensaje.class)` en `debug`/`warn`/`error` los atrapa. Estrecha a la clave
+  del consumidor (`eq(EstudianteKey.LOG_AGREGADO)`).
 
 ## Qué testear por capa
 

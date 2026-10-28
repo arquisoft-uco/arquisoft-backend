@@ -93,7 +93,7 @@ class RemoverRepresentanteComiteControllerTest {
     void debe422ConSuCodigo_cuandoRepresentanteComiteNoEstaVigente() throws Exception {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        doThrow(new RepresentanteComiteNoEncontradoException(usuario))
+        doThrow(new RepresentanteComiteNoEncontradoException(usuario, "Ana Pérez"))
                 .when(removerRepresentanteComiteInteractor).ejecutar(any());
 
         // Act & Assert

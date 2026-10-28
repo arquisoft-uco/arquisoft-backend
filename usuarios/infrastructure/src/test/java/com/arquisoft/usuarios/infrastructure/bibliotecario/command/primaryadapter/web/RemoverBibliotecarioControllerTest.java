@@ -93,7 +93,7 @@ class RemoverBibliotecarioControllerTest {
     void debe422ConSuCodigo_cuandoBibliotecarioNoEstaVigente() throws Exception {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        doThrow(new BibliotecarioNoEncontradoException(usuario)).when(removerBibliotecarioInteractor).ejecutar(any());
+        doThrow(new BibliotecarioNoEncontradoException(usuario, "Ana Pérez")).when(removerBibliotecarioInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(delete(RUTA, usuario).with(administrador()))

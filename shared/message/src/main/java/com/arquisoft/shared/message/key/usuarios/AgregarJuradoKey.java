@@ -6,6 +6,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum AgregarJuradoKey implements ClaveMensaje {
 
     ERROR_USUARIO_DUPLICADO("usuarios.dominio.jurado.error.usuario-duplicado", 1),
+    ERROR_USUARIO_DUPLICADO_DETALLE("usuarios.dominio.jurado.error.usuario-duplicado-detalle", 1),
     LOG_VERIFICACION_AGREGAR("usuarios.aplicacion.jurado.log.verificacion-agregar", 3),
     LOG_REACTIVADO("usuarios.aplicacion.jurado.log.reactivado", 1),
     LOG_GUARDADO("usuarios.infraestructura.jurado.log.guardado", 1),

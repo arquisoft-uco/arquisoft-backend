@@ -38,7 +38,6 @@ public final class FichasCodes {
         public static final String TIPO_ITEM_INVALIDO = "TIPO_ITEM_INVALIDO";
         public static final String ITEM_NO_ENCONTRADO = "ITEM_NO_ENCONTRADO";
         public static final String ESTADO_FICHA_REQUERIDO = "ITEM_ESTADO_FICHA_REQUERIDO";
-        public static final String ESTADO_FICHA_NO_MODIFICABLE = "ESTADO_FICHA_NO_MODIFICABLE";
         public static final String ITEM_CON_REVISIONES = "ITEM_CON_REVISIONES";
     }
 

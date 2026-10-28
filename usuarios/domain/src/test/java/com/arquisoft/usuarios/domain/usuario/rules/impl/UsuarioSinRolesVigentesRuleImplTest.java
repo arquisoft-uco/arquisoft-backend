@@ -8,9 +8,9 @@ import com.arquisoft.usuarios.domain.administrador.AdministradorDomain;
 import com.arquisoft.usuarios.domain.asesor.AsesorDomain;
 import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.usuarios.domain.bibliotecario.BibliotecarioDomain;
-import com.arquisoft.usuarios.domain.jurado.JuradoDomain;
 import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
+import com.arquisoft.usuarios.domain.jurado.JuradoDomain;
 import com.arquisoft.usuarios.domain.representantecomite.RepresentanteComiteDomain;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioRolesVigentesException;
 import com.arquisoft.usuarios.domain.usuario.model.RolesUsuario;
@@ -24,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class UsuarioSinRolesVigentesRuleImplTest {
 
+    private static final String NOMBRE = "Ana Pérez";
+
     private static final Instant ELIMINADO_EN = Instant.parse("2026-09-20T12:00:00Z");
 
     private final UsuarioSinRolesVigentesRuleImpl rule = new UsuarioSinRolesVigentesRuleImpl();
@@ -31,7 +33,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     @Test
     void noDebeLanzar_cuandoElUsuarioNuncaTuvoRoles() {
         // Arrange
-        var roles = new RolesUsuario(UtilUUID.generarNuevoUUID(), EstudianteDomain.VACIO, AsesorDomain.VACIO,
+        var roles = new RolesUsuario(UtilUUID.generarNuevoUUID(), NOMBRE, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO,
                 BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
 
@@ -43,7 +45,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void noDebeLanzar_cuandoTodosSusRolesEstanEliminados() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario,
+        var roles = new RolesUsuario(usuario, NOMBRE,
                 EstudianteDomain.reconstruir(usuario, ELIMINADO_EN),
                 AsesorDomain.reconstruir(usuario, ELIMINADO_EN),
                 AsesorFichaDomain.reconstruir(usuario, ELIMINADO_EN),
@@ -59,7 +61,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void debeLanzarConElRolVigente_cuandoSoloUnRolSigueVigente() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario,
+        var roles = new RolesUsuario(usuario, NOMBRE,
                 EstudianteDomain.VACIO,
                 AsesorDomain.reconstruir(usuario, UtilFecha.VACIO),
                 AsesorFichaDomain.reconstruir(usuario, ELIMINADO_EN),
@@ -76,6 +78,10 @@ class UsuarioSinRolesVigentesRuleImplTest {
                             .contains(": " + UsuariosRoles.ASESOR + ".")
                             .doesNotContain(UsuariosRoles.ESTUDIANTE)
                             .doesNotContain(UsuariosRoles.COORDINADOR);
+                    assertThat(ex.getError().getMessage())
+                            .contains(NOMBRE)
+                            .contains(UsuariosRoles.etiqueta(UsuariosRoles.ASESOR))
+                            .doesNotContain(usuario.toString());
                 });
     }
 
@@ -83,7 +89,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void debeLanzarConRepresentanteComite_cuandoSoloElRepresentanteComiteSigueVigente() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario,
+        var roles = new RolesUsuario(usuario, NOMBRE,
                 EstudianteDomain.VACIO,
                 AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO,
@@ -106,7 +112,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void noDebeLanzar_cuandoElRepresentanteComiteYaFueRemovido() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
+        var roles = new RolesUsuario(usuario, NOMBRE, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
                 RepresentanteComiteDomain.reconstruir(usuario, ELIMINADO_EN), AdministradorDomain.VACIO,
                 BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
@@ -119,7 +125,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void debeLanzarConAdministrador_cuandoSoloElAdministradorSigueVigente() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario,
+        var roles = new RolesUsuario(usuario, NOMBRE,
                 EstudianteDomain.VACIO,
                 AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO,
@@ -141,7 +147,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void noDebeLanzar_cuandoElAdministradorYaFueRemovido() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
+        var roles = new RolesUsuario(usuario, NOMBRE, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
                 RepresentanteComiteDomain.VACIO, AdministradorDomain.reconstruir(usuario, ELIMINADO_EN),
                 BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
@@ -154,7 +160,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void debeLanzarConBibliotecario_cuandoSoloElBibliotecarioSigueVigente() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
+        var roles = new RolesUsuario(usuario, NOMBRE, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO,
                 AdministradorDomain.VACIO, BibliotecarioDomain.crear(usuario), JuradoDomain.VACIO);
 
@@ -172,7 +178,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void noDebeLanzar_cuandoElBibliotecarioYaFueRemovido() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
+        var roles = new RolesUsuario(usuario, NOMBRE, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO,
                 AdministradorDomain.VACIO, BibliotecarioDomain.reconstruir(usuario, ELIMINADO_EN), JuradoDomain.VACIO);
 
@@ -184,7 +190,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void debeLanzarConJurado_cuandoSoloElJuradoSigueVigente() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
+        var roles = new RolesUsuario(usuario, NOMBRE, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO,
                 AdministradorDomain.VACIO, BibliotecarioDomain.VACIO, JuradoDomain.crear(usuario));
 
@@ -202,7 +208,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void noDebeLanzar_cuandoElJuradoYaFueRemovido() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario, EstudianteDomain.VACIO, AsesorDomain.VACIO,
+        var roles = new RolesUsuario(usuario, NOMBRE, EstudianteDomain.VACIO, AsesorDomain.VACIO,
                 AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO,
                 AdministradorDomain.VACIO, BibliotecarioDomain.VACIO, JuradoDomain.reconstruir(usuario, ELIMINADO_EN));
 
@@ -214,7 +220,7 @@ class UsuarioSinRolesVigentesRuleImplTest {
     void debeListarTodosLosRolesVigentes_cuandoVariosSiguenVigentes() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var roles = new RolesUsuario(usuario,
+        var roles = new RolesUsuario(usuario, NOMBRE,
                 EstudianteDomain.reconstruir(usuario, UtilFecha.VACIO),
                 AsesorDomain.reconstruir(usuario, UtilFecha.VACIO),
                 AsesorFichaDomain.reconstruir(usuario, UtilFecha.VACIO),

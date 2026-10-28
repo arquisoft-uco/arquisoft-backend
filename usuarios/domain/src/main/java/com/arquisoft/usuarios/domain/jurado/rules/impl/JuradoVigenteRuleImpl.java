@@ -10,7 +10,7 @@ public class JuradoVigenteRuleImpl implements JuradoVigenteRule {
     public void validar(ExistenciaJurado existencia) {
         var jurado = existencia.jurado();
         if (jurado.esVacio() || jurado.estaEliminado()) {
-            throw new JuradoNoEncontradoException(existencia.usuario());
+            throw new JuradoNoEncontradoException(existencia.usuario(), existencia.nombre());
         }
     }
 }

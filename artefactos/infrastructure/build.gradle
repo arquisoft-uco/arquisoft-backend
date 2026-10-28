@@ -10,6 +10,8 @@ dependencies {
     implementation project(':shared:amqp')
     implementation project(':shared:logger')
     implementation project(':shared:web')
+    implementation project(':shared:minio')
+    implementation project(':shared:tika')
 
     // shared:tracing — el consumidor AMQP recibe el GestorTraza por constructor.
     // shared:amqp lo declara con 'implementation', asi que no llega transitivamente.

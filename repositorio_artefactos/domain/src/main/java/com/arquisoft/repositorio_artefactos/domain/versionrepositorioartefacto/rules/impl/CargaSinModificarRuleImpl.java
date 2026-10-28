@@ -12,7 +12,7 @@ public class CargaSinModificarRuleImpl implements CargaSinModificarRule {
         var sinEtag = UtilTexto.esVacioONulo(consistencia.etagConsultado())
                 || UtilTexto.esVacioONulo(consistencia.etagAnalizado());
         if (sinEtag || !consistencia.etagConsultado().equals(consistencia.etagAnalizado())) {
-            throw new CargaModificadaException(consistencia.carga());
+            throw new CargaModificadaException(consistencia.carga(), consistencia.nombreArchivo());
         }
     }
 }

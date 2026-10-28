@@ -165,7 +165,7 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoControllerTest {
     @Test
     void debeRetornar422_cuandoElPuntajeExcedeElValorDelItem() throws Exception {
         // Arrange
-        doThrow(new PuntajeEvaluacionCuantitativaJuradoExcedeValorItemException(320, 200))
+        doThrow(new PuntajeEvaluacionCuantitativaJuradoExcedeValorItemException(320, 200, "Metodología"))
                 .when(interactor).ejecutar(any());
 
         // Act & Assert

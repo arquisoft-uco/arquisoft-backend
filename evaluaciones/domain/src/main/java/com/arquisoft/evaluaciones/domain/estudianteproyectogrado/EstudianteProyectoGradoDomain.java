@@ -96,8 +96,7 @@ public final class EstudianteProyectoGradoDomain {
         if (UtilUUID.esPorDefecto(proyectoGrado)) {
             result.agregarError(EvaluacionesFields.EstudianteProyectoGrado.PROYECTO_GRADO,
                     EvaluacionesCodes.EstudianteProyectoGrado.PROYECTO_GRADO_REQUERIDO,
-                    Mensajes.formatear(ValidadorKey.UUID_INVALIDO,
-                            EvaluacionesFields.EstudianteProyectoGrado.PROYECTO_GRADO));
+                    Mensajes.obtener(ValidadorKey.UUID_INVALIDO));
             return;
         }
         this.proyectoGrado = proyectoGrado;

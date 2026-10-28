@@ -11,7 +11,7 @@ import com.arquisoft.usuarios.domain.representantecomite.RepresentanteComiteDoma
 
 import java.util.UUID;
 
-public record RolesUsuario(UUID usuario, EstudianteDomain estudiante, AsesorDomain asesor,
+public record RolesUsuario(UUID usuario, String nombre, EstudianteDomain estudiante, AsesorDomain asesor,
                            AsesorFichaDomain asesorFicha, CoordinadorDomain coordinador,
                            RepresentanteComiteDomain representanteComite, AdministradorDomain administrador,
                            BibliotecarioDomain bibliotecario, JuradoDomain jurado) {}

@@ -28,7 +28,7 @@ public class VersionRepositorioArtefactoSubidaConsumer extends AbstractEventCons
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
-        super(objectMapper, gestorTraza);
+        super(objectMapper, gestorTraza, logger);
         this.agregarVersionRepositorioArtefactoInteractor = agregarVersionRepositorioArtefactoInteractor;
         this.logger = logger;
     }

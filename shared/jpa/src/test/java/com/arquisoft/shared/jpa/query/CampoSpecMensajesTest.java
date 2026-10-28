@@ -1,5 +1,7 @@
 package com.arquisoft.shared.jpa.query;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.query.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
@@ -79,5 +81,18 @@ class CampoSpecMensajesTest {
                 .isInstanceOf(FiltroInvalidoException.class)
                 .hasMessageContaining("Campo de filtro desconocido: 'inexistente'")
                 .hasMessageContaining("titulo");
+    }
+
+    @Test
+    void debeEntregarAlClienteUnMensajeSinElValorRecibido_cuandoElUuidDelFiltroEsInvalido() {
+        CampoSpec<Fila> campo = CampoSpec.uuid(root -> root.get("id"));
+
+        assertThatThrownBy(() -> campo.construirSpecMultivalor(FiltroOperador.IN, List.of("no-es-uuid")))
+                .isInstanceOf(FiltroInvalidoException.class)
+                .hasMessageContaining("no-es-uuid")
+                .extracting(e -> ((FiltroInvalidoException) e).getError().getMessage())
+                .isEqualTo(Mensajes.obtener(ConsultaKey.ERROR_UUID_INVALIDO))
+                .asString()
+                .doesNotContain("no-es-uuid");
     }
 }

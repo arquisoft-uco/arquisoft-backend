@@ -8,6 +8,7 @@ import com.arquisoft.mapas_ruta.domain.maparuta.MapaRutaDomain;
 import com.arquisoft.mapas_ruta.domain.maparuta.model.ExistenciaMapaRuta;
 import com.arquisoft.mapas_ruta.domain.maparuta.rules.MapaRutaExisteRule;
 import com.arquisoft.mapas_ruta.domain.maparuta.rules.impl.MapaRutaExisteRuleImpl;
+import com.arquisoft.mapas_ruta.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.ModificacionTareaDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.TareaDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.model.DisponibilidadTarea;
@@ -35,12 +36,13 @@ public class ModificarInformacionTareaValidatorImpl implements ModificarInformac
 
     @Override
     public void validar(ModificacionTareaDomain modificacion, TareaDomain tarea, MapaRutaDomain mapaRuta,
+                        ProyectoGradoDomain proyectoGrado,
                         boolean descripcionEnUso, boolean asesorAsignado) {
         tareaExisteRule.validar(new ExistenciaTarea(modificacion.getTarea(), !tarea.esVacio()));
         mapaRutaExisteRule.validar(new ExistenciaMapaRuta(tarea.getMapaRuta(), !mapaRuta.esVacio()));
         tareaUnicaPorMapaRutaRule.validar(new DisponibilidadTarea(
                 tarea.getMapaRuta(), modificacion.getDescripcion(), descripcionEnUso));
         asesorAsignadoProyectoGradoRule.validar(new AsignacionAsesorProyectoGrado(
-                mapaRuta.getProyectoGrado(), modificacion.getAsesor(), asesorAsignado));
+                mapaRuta.getProyectoGrado(), proyectoGrado.getTituloProyecto(), modificacion.getAsesor(), asesorAsignado));
     }
 }

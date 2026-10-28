@@ -11,7 +11,7 @@ public final class ValidatorUUID {
     public static boolean uuidValido(String valor, String campo, String codigoError, ValidationResult resultado) {
         if (!UtilUUID.uuidValido(valor)) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.UUID_INVALIDO, campo));
+                    Mensajes.obtener(ValidadorKey.UUID_INVALIDO));
             return false;
         }
         return true;

@@ -1,10 +1,10 @@
 package com.arquisoft.shared.amqp;
 
 import com.arquisoft.shared.amqp.trazabilidad.TrazaMessagePostProcessor;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -18,7 +18,6 @@ import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
-@Slf4j
 @Configuration
 public class RabbitMQConfig {
 
@@ -80,7 +79,8 @@ public class RabbitMQConfig {
     public RabbitTemplate rabbitTemplate(
             ConnectionFactory connectionFactory,
             JacksonJsonMessageConverter messageConverter,
-            MessagePostProcessor traceHeadersPostProcessor) {
+            MessagePostProcessor traceHeadersPostProcessor,
+            AppLogger logger) {
         var template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(messageConverter);
         template.setExchange(EXCHANGE_NAME);
@@ -92,7 +92,7 @@ public class RabbitMQConfig {
         // lo devuelve al publicador en lugar de descartarlo silenciosamente.
         template.setMandatory(true);
         template.setReturnsCallback(returned ->
-            log.error(Mensajes.obtener(MensajeriaKey.LOG_MENSAJE_NO_ENRUTADO),
+            logger.error(MensajeriaKey.LOG_MENSAJE_NO_ENRUTADO,
                     returned.getExchange(),
                     returned.getRoutingKey(),
                     returned.getReplyText())
@@ -102,7 +102,7 @@ public class RabbitMQConfig {
         // Si el broker envía NACK, se registra el error con el correlationId del evento.
         template.setConfirmCallback((correlation, ack, cause) -> {
             if (!ack) {
-                log.error(Mensajes.obtener(MensajeriaKey.LOG_BROKER_RECHAZO),
+                logger.error(MensajeriaKey.LOG_BROKER_RECHAZO,
                         correlation != null ? correlation.getId()
                                 : Mensajes.obtener(MensajeriaKey.VALOR_CORRELACION_DESCONOCIDA),
                         cause);

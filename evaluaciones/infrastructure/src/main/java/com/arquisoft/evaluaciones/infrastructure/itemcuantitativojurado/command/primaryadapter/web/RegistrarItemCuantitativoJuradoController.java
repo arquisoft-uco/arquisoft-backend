@@ -23,8 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("${rutas.evaluaciones.items-cuantitativos-jurado.base:/evaluaciones/items-cuantitativos-jurado}")
 @RequiredArgsConstructor
@@ -63,7 +61,7 @@ public class RegistrarItemCuantitativoJuradoController {
     })
     public ResponseEntity<RegistrarItemCuantitativoJuradoResponseDTO> registrar(
             @RequestBody RegistrarItemCuantitativoJuradoRequestDTO request) {
-        UUID id = interactor.ejecutar(
+        var id = interactor.ejecutar(
                 RegistrarItemCuantitativoJuradoRequestMapper.toCommand(request));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new RegistrarItemCuantitativoJuradoResponseDTO(id));

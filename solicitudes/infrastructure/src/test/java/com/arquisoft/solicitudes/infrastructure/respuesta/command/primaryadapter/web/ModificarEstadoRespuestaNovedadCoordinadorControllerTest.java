@@ -6,6 +6,7 @@ import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConf
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.ModificarEstadoRespuestaNovedadCoordinadorInteractor;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ModificarEstadoRespuestaNovedadCoordinadorCommand;
+import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import com.arquisoft.solicitudes.domain.respuesta.exception.EstadoRespuestaNoResolutivoException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisionException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontradaException;
@@ -130,7 +131,7 @@ class ModificarEstadoRespuestaNovedadCoordinadorControllerTest {
                 new SolicitudNoEsDestinatarioException(),
                 new RespuestaNoEncontradaException(),
                 new RespuestaNoEnRevisionException(),
-                new EstadoRespuestaNoResolutivoException("EN_REVISION"));
+                new EstadoRespuestaNoResolutivoException(EstadoRespuesta.EN_REVISION));
     }
 
     @ParameterizedTest

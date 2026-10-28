@@ -127,7 +127,7 @@ class AgregarObservacionEvaluacionControllerTest {
         // Arrange
         when(agregarObservacionEvaluacionInteractor.ejecutar(any()))
                 .thenThrow(new EvaluacionFichaCerradaException(
-                        EVALUACION_FICHA_PERFIL_ID, EstadoEvaluacion.APROBADA.getId()));
+                        EVALUACION_FICHA_PERFIL_ID, EstadoEvaluacion.APROBADA));
 
         // Act & Assert
         mockMvc.perform(peticionAutorizada(BODY_VALIDO))

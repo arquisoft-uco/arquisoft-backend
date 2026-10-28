@@ -3,12 +3,14 @@ package com.arquisoft.mapas_ruta.application.tarea.command.usecase.impl;
 import com.arquisoft.mapas_ruta.application.asignacionasesor.command.finder.AsesorAsignadoProyectoGradoFinder;
 import com.arquisoft.mapas_ruta.application.asignacionasesor.command.finder.model.AsesorEnProyectoGrado;
 import com.arquisoft.mapas_ruta.application.maparuta.command.finder.MapaRutaPorIdFinder;
+import com.arquisoft.mapas_ruta.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.mapas_ruta.application.tarea.command.finder.DescripcionTareaEnUsoFinder;
 import com.arquisoft.mapas_ruta.application.tarea.command.finder.TareaPorIdFinder;
 import com.arquisoft.mapas_ruta.application.tarea.command.finder.model.DescripcionTareaEnMapaRuta;
 import com.arquisoft.mapas_ruta.application.tarea.command.secondaryport.TareaOutputPort;
 import com.arquisoft.mapas_ruta.application.tarea.command.usecase.ModificarInformacionTareaUseCase;
 import com.arquisoft.mapas_ruta.application.tarea.command.validator.ModificarInformacionTareaValidator;
+import com.arquisoft.mapas_ruta.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.ModificacionTareaDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.mapas_ruta.TareaKey;
@@ -22,6 +24,7 @@ public class ModificarInformacionTareaUseCaseImpl implements ModificarInformacio
     private final TareaOutputPort tareaOutputPort;
     private final TareaPorIdFinder tareaPorIdFinder;
     private final MapaRutaPorIdFinder mapaRutaPorIdFinder;
+    private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
     private final DescripcionTareaEnUsoFinder descripcionTareaEnUsoFinder;
     private final AsesorAsignadoProyectoGradoFinder asesorAsignadoProyectoGradoFinder;
     private final ModificarInformacionTareaValidator modificarInformacionTareaValidator;
@@ -35,6 +38,9 @@ public class ModificarInformacionTareaUseCaseImpl implements ModificarInformacio
         var tareaExiste = !tarea.esVacio();
         var mapaRuta = mapaRutaPorIdFinder.obtener(tarea.getMapaRuta());
         var mapaRutaExiste = !mapaRuta.esVacio();
+        var proyectoGrado = mapaRutaExiste
+                ? proyectoGradoPorIdFinder.obtener(mapaRuta.getProyectoGrado())
+                : ProyectoGradoDomain.VACIO;
         var descripcionEnUso = tareaExiste && descripcionTareaEnUsoFinder.obtener(
                 new DescripcionTareaEnMapaRuta(entrada.getTarea(), tarea.getMapaRuta(), entrada.getDescripcion()));
         var asesorAsignado = mapaRutaExiste && asesorAsignadoProyectoGradoFinder.obtener(
@@ -42,7 +48,7 @@ public class ModificarInformacionTareaUseCaseImpl implements ModificarInformacio
 
         logger.debug(TareaKey.LOG_VERIFICACION_MODIFICAR_INFORMACION,
                 tareaExiste, mapaRutaExiste, descripcionEnUso, asesorAsignado);
-        modificarInformacionTareaValidator.validar(entrada, tarea, mapaRuta, descripcionEnUso, asesorAsignado);
+        modificarInformacionTareaValidator.validar(entrada, tarea, mapaRuta, proyectoGrado, descripcionEnUso, asesorAsignado);
 
         tareaOutputPort.actualizarInformacion(entrada.getTarea(), entrada.getDescripcion(), entrada.getAsesor());
 

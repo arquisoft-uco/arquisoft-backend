@@ -27,7 +27,7 @@ public class RegistrarItemCualitativoJuradoUseCaseImpl
     public UUID ejecutar(ItemCualitativoJuradoDomain item) {
         logger.info(ItemCualitativoJuradoKey.LOG_REGISTRANDO, item.getNombre());
 
-        boolean nombreYaExiste = nombreItemCualitativoJuradoExisteFinder.obtener(item.getNombre());
+        var nombreYaExiste = nombreItemCualitativoJuradoExisteFinder.obtener(item.getNombre());
 
         logger.debug(ItemCualitativoJuradoKey.LOG_VERIFICACION_REGISTRAR, nombreYaExiste);
         registrarItemCualitativoJuradoValidator.validar(item, nombreYaExiste);

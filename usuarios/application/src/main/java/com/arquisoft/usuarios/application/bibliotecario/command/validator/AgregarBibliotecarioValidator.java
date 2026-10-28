@@ -1,10 +1,9 @@
 package com.arquisoft.usuarios.application.bibliotecario.command.validator;
 
 import com.arquisoft.usuarios.domain.bibliotecario.BibliotecarioDomain;
-
-import java.util.UUID;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 
 public interface AgregarBibliotecarioValidator {
 
-    void validar(UUID usuario, BibliotecarioDomain bibliotecario);
+    void validar(UsuarioDomain usuario, BibliotecarioDomain bibliotecario);
 }

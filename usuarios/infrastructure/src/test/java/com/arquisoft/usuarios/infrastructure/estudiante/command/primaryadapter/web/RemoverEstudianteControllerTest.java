@@ -91,7 +91,7 @@ class RemoverEstudianteControllerTest {
     void debe422ConSuCodigo_cuandoEstudianteNoEstaVigente() throws Exception {
         // Arrange
         var usuario = UUID.randomUUID();
-        doThrow(new EstudianteNoEncontradoException(usuario)).when(removerEstudianteInteractor).ejecutar(any());
+        doThrow(new EstudianteNoEncontradoException(usuario, "Ana Pérez")).when(removerEstudianteInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(delete("/usuarios/{usuarioId}/estudiante", usuario).with(administrador()))

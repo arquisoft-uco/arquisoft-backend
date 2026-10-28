@@ -3,6 +3,7 @@ package com.arquisoft.mapas_ruta.application.tarea.command.validator.impl;
 import com.arquisoft.mapas_ruta.domain.asignacionasesor.exception.AsesorNoAsignadoProyectoGradoException;
 import com.arquisoft.mapas_ruta.domain.maparuta.MapaRutaDomain;
 import com.arquisoft.mapas_ruta.domain.maparuta.exception.MapaRutaNoEncontradoException;
+import com.arquisoft.mapas_ruta.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.ModificacionTareaDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.TareaDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.exception.TareaDuplicadaException;
@@ -42,7 +43,7 @@ class ModificarInformacionTareaValidatorImplTest {
         var modificacion = modificacion(tarea);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(modificacion, tarea, mapa, false, true)).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validar(modificacion, tarea, mapa, ProyectoGradoDomain.VACIO, false, true)).doesNotThrowAnyException();
     }
 
     @Test
@@ -52,7 +53,7 @@ class ModificarInformacionTareaValidatorImplTest {
                 UtilUUID.generarNuevoUUID(), "Redactar capitulo", UtilUUID.generarNuevoUUID());
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(modificacion, TareaDomain.VACIO, MapaRutaDomain.VACIO,
+        assertThatThrownBy(() -> validator.validar(modificacion, TareaDomain.VACIO, MapaRutaDomain.VACIO, ProyectoGradoDomain.VACIO,
                 false, false)).isInstanceOf(TareaNoEncontradaException.class);
     }
 
@@ -63,7 +64,7 @@ class ModificarInformacionTareaValidatorImplTest {
         var modificacion = modificacion(tarea);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(modificacion, tarea, MapaRutaDomain.VACIO, false, false))
+        assertThatThrownBy(() -> validator.validar(modificacion, tarea, MapaRutaDomain.VACIO, ProyectoGradoDomain.VACIO, false, false))
                 .isInstanceOf(MapaRutaNoEncontradoException.class);
     }
 
@@ -75,7 +76,7 @@ class ModificarInformacionTareaValidatorImplTest {
         var modificacion = modificacion(tarea);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(modificacion, tarea, mapa, true, true))
+        assertThatThrownBy(() -> validator.validar(modificacion, tarea, mapa, ProyectoGradoDomain.VACIO, true, true))
                 .isInstanceOf(TareaDuplicadaException.class);
     }
 
@@ -87,7 +88,7 @@ class ModificarInformacionTareaValidatorImplTest {
         var modificacion = modificacion(tarea);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(modificacion, tarea, mapa, false, false))
+        assertThatThrownBy(() -> validator.validar(modificacion, tarea, mapa, ProyectoGradoDomain.VACIO, false, false))
                 .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
     }
 
@@ -99,11 +100,11 @@ class ModificarInformacionTareaValidatorImplTest {
         var modificacion = modificacion(tarea);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(modificacion, TareaDomain.VACIO, MapaRutaDomain.VACIO,
+        assertThatThrownBy(() -> validator.validar(modificacion, TareaDomain.VACIO, MapaRutaDomain.VACIO, ProyectoGradoDomain.VACIO,
                 true, false)).isInstanceOf(TareaNoEncontradaException.class);
-        assertThatThrownBy(() -> validator.validar(modificacion, tarea, MapaRutaDomain.VACIO, true, false))
+        assertThatThrownBy(() -> validator.validar(modificacion, tarea, MapaRutaDomain.VACIO, ProyectoGradoDomain.VACIO, true, false))
                 .isInstanceOf(MapaRutaNoEncontradoException.class);
-        assertThatThrownBy(() -> validator.validar(modificacion, tarea, mapa, true, false))
+        assertThatThrownBy(() -> validator.validar(modificacion, tarea, mapa, ProyectoGradoDomain.VACIO, true, false))
                 .isInstanceOf(TareaDuplicadaException.class);
     }
 }

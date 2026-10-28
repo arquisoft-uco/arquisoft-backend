@@ -38,6 +38,61 @@ public final class ArtefactosCodes {
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_TAMANO_BYTES_REQUERIDO";
         public static final String TAMANO_BYTES_INVALIDO =
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_TAMANO_BYTES_INVALIDO";
+        public static final String VERSIONES_NO_ENCONTRADAS =
+                "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_VERSIONES_NO_ENCONTRADAS";
+    }
+
+    public static final class Artefacto {
+
+        private Artefacto() {}
+
+        public static final String ID_REQUERIDO = "ARTEFACTOS_ARTEFACTO_ID_REQUERIDO";
+        public static final String PROYECTO_GRADO_REQUERIDO = "ARTEFACTOS_ARTEFACTO_PROYECTO_GRADO_REQUERIDO";
+        public static final String ASESOR_REQUERIDO = "ARTEFACTOS_ARTEFACTO_ASESOR_REQUERIDO";
+        public static final String VERSION_REPOSITORIO_ARTEFACTO_REQUERIDA =
+                "ARTEFACTOS_ARTEFACTO_VERSION_REPOSITORIO_ARTEFACTO_REQUERIDA";
+        public static final String VERSIONES_REQUERIDAS = "ARTEFACTOS_ARTEFACTO_VERSIONES_REQUERIDAS";
+        public static final String VERSIONES_DUPLICADAS = "ARTEFACTOS_ARTEFACTO_VERSIONES_DUPLICADAS";
+        public static final String ARTEFACTOS_REQUERIDOS = "ARTEFACTOS_ARTEFACTO_ARTEFACTOS_REQUERIDOS";
+        public static final String REPOSITORIO_YA_ASIGNADO = "ARTEFACTOS_ARTEFACTO_REPOSITORIO_YA_ASIGNADO";
+        public static final String NO_ENCONTRADO = "ARTEFACTOS_ARTEFACTO_NO_ENCONTRADO";
+        public static final String ESTUDIANTE_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ESTUDIANTE_NO_PROPIETARIO";
+    }
+
+    public static final class ProyectoGrado {
+
+        private ProyectoGrado() {}
+
+        public static final String ID_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_ID_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_NOMBRE_REQUERIDO";
+        public static final String NOMBRE_DEMASIADO_LARGO = "ARTEFACTOS_PROYECTO_GRADO_NOMBRE_DEMASIADO_LARGO";
+        public static final String NO_ENCONTRADO = "ARTEFACTOS_PROYECTO_GRADO_NO_ENCONTRADO";
+    }
+
+    public static final class Asesor {
+
+        private Asesor() {}
+
+        public static final String ID_REQUERIDO = "ARTEFACTOS_ASESOR_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "ARTEFACTOS_ASESOR_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "ARTEFACTOS_ASESOR_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "ARTEFACTOS_ASESOR_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ARTEFACTOS_ASESOR_OCURRIDO_EN_REQUERIDO";
+        public static final String NO_ENCONTRADO = "ARTEFACTOS_ASESOR_NO_ENCONTRADO";
+        public static final String NO_VIGENTE = "ARTEFACTOS_ASESOR_NO_VIGENTE";
+    }
+
+    public static final class AsesorProyectoGrado {
+
+        private AsesorProyectoGrado() {}
+
+        public static final String ASESOR_REQUERIDO = "ARTEFACTOS_ASESOR_PROYECTO_GRADO_ASESOR_REQUERIDO";
+        public static final String PROYECTO_GRADO_REQUERIDO =
+                "ARTEFACTOS_ASESOR_PROYECTO_GRADO_PROYECTO_GRADO_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ARTEFACTOS_ASESOR_PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
+        public static final String VINCULO_REQUERIDO = "ARTEFACTOS_ASESOR_PROYECTO_GRADO_VINCULO_REQUERIDO";
+        public static final String TRASPASO_REQUERIDO = "ARTEFACTOS_ASESOR_PROYECTO_GRADO_TRASPASO_REQUERIDO";
+        public static final String NO_ASIGNADO = "ARTEFACTOS_ASESOR_PROYECTO_GRADO_NO_ASIGNADO";
     }
 
     public static final class RevisionAsesor {
@@ -46,6 +101,35 @@ public final class ArtefactosCodes {
 
         public static final String ESTUDIANTE_REQUERIDO = "REVISION_ASESOR_ESTUDIANTE_REQUERIDO";
         public static final String ASESOR_REQUERIDO = "REVISION_ASESOR_ASESOR_REQUERIDO";
+    }
+
+    public static final class VersionArtefacto {
+
+        private VersionArtefacto() {}
+
+        public static final String ASESOR_REQUERIDO = "VERSION_ARTEFACTO_ASESOR_REQUERIDO";
+        public static final String ARTEFACTO_REQUERIDO = "VERSION_ARTEFACTO_ARTEFACTO_REQUERIDO";
+        public static final String SOLICITANTE_REQUERIDO = "VERSION_ARTEFACTO_SOLICITANTE_REQUERIDO";
+        public static final String CARGA_REQUERIDA = "VERSION_ARTEFACTO_CARGA_REQUERIDA";
+        public static final String NUMERO_VERSION_INVALIDO = "VERSION_ARTEFACTO_NUMERO_VERSION_INVALIDO";
+        public static final String NOMBRE_ARCHIVO_REQUERIDO = "VERSION_ARTEFACTO_NOMBRE_ARCHIVO_REQUERIDO";
+        public static final String NOMBRE_ARCHIVO_DEMASIADO_LARGO =
+                "VERSION_ARTEFACTO_NOMBRE_ARCHIVO_DEMASIADO_LARGO";
+        public static final String NOMBRE_ARCHIVO_INVALIDO = "VERSION_ARTEFACTO_NOMBRE_ARCHIVO_INVALIDO";
+        public static final String TIPO_CONTENIDO_REQUERIDO = "VERSION_ARTEFACTO_TIPO_CONTENIDO_REQUERIDO";
+        public static final String TIPO_CONTENIDO_DEMASIADO_LARGO =
+                "VERSION_ARTEFACTO_TIPO_CONTENIDO_DEMASIADO_LARGO";
+        public static final String TIPO_CONTENIDO_NO_COINCIDE_EXTENSION =
+                "VERSION_ARTEFACTO_TIPO_CONTENIDO_NO_COINCIDE_EXTENSION";
+        public static final String TIPO_NO_PERMITIDO = "VERSION_ARTEFACTO_TIPO_NO_PERMITIDO";
+        public static final String TAMANO_BYTES_REQUERIDO = "VERSION_ARTEFACTO_TAMANO_BYTES_REQUERIDO";
+        public static final String TAMANO_BYTES_INVALIDO = "VERSION_ARTEFACTO_TAMANO_BYTES_INVALIDO";
+
+        public static final String CARGA_NO_ENCONTRADA = "VERSION_ARTEFACTO_CARGA_NO_ENCONTRADA";
+        public static final String CARGA_NO_CORRESPONDE = "VERSION_ARTEFACTO_CARGA_NO_CORRESPONDE";
+        public static final String CARGA_MODIFICADA = "VERSION_ARTEFACTO_CARGA_MODIFICADA";
+        public static final String TAMANO_ARCHIVO_EXCEDIDO = "VERSION_ARTEFACTO_TAMANO_ARCHIVO_EXCEDIDO";
+        public static final String TIPO_ARCHIVO_NO_COINCIDE = "VERSION_ARTEFACTO_TIPO_ARCHIVO_NO_COINCIDE";
     }
 
     public static final class EstudianteArtefacto {
