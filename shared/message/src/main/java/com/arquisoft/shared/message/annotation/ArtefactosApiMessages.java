@@ -145,16 +145,16 @@ public final class ArtefactosApiMessages {
 
         public static final String TAG_NAME = "Artefactos";
         public static final String TAG_DESCRIPTION = "Asignación de artefactos a los proyectos de grado y consulta de los asignados al asesor";
-        public static final String ASIGNAR_SUMMARY = "Asignar artefactos a un proyecto de grado";
+        public static final String ASIGNAR_SUMMARY = "Asignar un artefacto a un proyecto de grado";
         public static final String ASIGNAR_DESCRIPTION =
-                "Vincula al proyecto de grado una o varias versiones de repositorios de artefactos como "
-                        + "artefactos suyos, todo o nada. El asesor del artefacto es el del token y debe tener "
-                        + "asignado el proyecto. El proyecto no puede tener ya un artefacto de ninguno de los "
-                        + "repositorios, ni repetir un repositorio dentro del lote. Responde con los ids de los "
-                        + "artefactos creados, en el orden enviado.";
-        public static final String ASIGNAR_RESP_201 = "Artefactos asignados al proyecto de grado";
+                "Vincula al proyecto de grado una versión de repositorio de artefactos como artefacto suyo "
+                        + "y le asigna uno o varios estudiantes del proyecto, todo o nada. Cada estudiante recibe "
+                        + "un correo. El asesor del artefacto es el del token y debe tener asignado el proyecto. "
+                        + "El proyecto no puede tener ya un artefacto de ese repositorio. Responde con el id del "
+                        + "artefacto creado.";
+        public static final String ASIGNAR_RESP_201 = "Artefacto asignado al proyecto de grado";
         public static final String ASIGNAR_RESP_400 =
-                "Datos mal formados: identificador inválido, lista vacía o versión repetida";
+                "Datos mal formados: identificador de proyecto, versión o estudiante inválido";
         public static final String CAMBIAR_ASESOR_SUMMARY = "Cambiar el responsable de un artefacto";
         public static final String CAMBIAR_ASESOR_DESCRIPTION =
                 "Designa a otro asesor como responsable de un artefacto ya asignado. El nuevo asesor debe "
@@ -179,8 +179,10 @@ public final class ArtefactosApiMessages {
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar los artefactos del asesor";
         public static final String ASIGNAR_RESP_422 =
-                "El proyecto, el asesor o alguna versión no existe, el asesor no está asignado al proyecto "
-                        + "o el repositorio ya está asignado";
+                "El proyecto, el asesor o la versión no existe, el asesor no está asignado al proyecto, "
+                        + "el repositorio ya está asignado, la lista de estudiantes está vacía o repetida, o algún "
+                        + "estudiante no existe, está dado de baja, no pertenece al proyecto de grado o ya está "
+                        + "vinculado al artefacto";
     }
 
     public static final class EstadoRevisionAsesor {

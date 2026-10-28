@@ -69,8 +69,6 @@ public final class ArtefactosFields {
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String ASESOR = "asesor";
         public static final String VERSION_REPOSITORIO_ARTEFACTO = "versionRepositorioArtefacto";
-        public static final String VERSIONES_REPOSITORIO_ARTEFACTO = "versionesRepositorioArtefacto";
-        public static final String ARTEFACTOS = "artefactos";
     }
 
     public static final class ProyectoGrado {

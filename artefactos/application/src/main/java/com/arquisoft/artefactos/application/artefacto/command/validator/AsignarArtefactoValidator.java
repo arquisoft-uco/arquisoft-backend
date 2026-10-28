@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.application.artefacto.command.validator;
 
-import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactosDomain;
+import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
@@ -8,10 +8,10 @@ import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionReposi
 import java.util.List;
 import java.util.UUID;
 
-public interface AsignarArtefactosValidator {
+public interface AsignarArtefactoValidator {
 
     void validar(
-            AsignacionArtefactosDomain asignacion,
+            AsignacionArtefactoDomain registro,
             boolean proyectoExiste,
             AsesorDomain asesor,
             List<AsesorProyectoGradoDomain> vinculosMasRecientes,

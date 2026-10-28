@@ -33,6 +33,23 @@ class AsignarEstudiantesArtefactoMapperTest {
     }
 
     @Test
+    void debeArmarLaAgregacion_conLaSobrecargaDeTresArgumentos() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var primero = UtilUUID.generarNuevoUUID();
+        var segundo = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var agregacion = AsignarEstudiantesArtefactoMapper.toDomain(artefacto, asesor, List.of(primero, segundo));
+
+        // Assert
+        assertThat(agregacion.getAsesor()).isEqualTo(asesor);
+        assertThat(agregacion.getArtefacto()).isEqualTo(artefacto);
+        assertThat(agregacion.getEstudiantes()).containsExactly(primero, segundo);
+    }
+
+    @Test
     void debeLanzarValidacion_cuandoLaListaDeEstudiantesLlegaVaciaONula() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();

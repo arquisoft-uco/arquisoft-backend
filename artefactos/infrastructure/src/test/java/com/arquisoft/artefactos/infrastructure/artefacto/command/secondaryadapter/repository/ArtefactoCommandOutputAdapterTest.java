@@ -38,17 +38,15 @@ class ArtefactoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeGuardarTodosYLeerDeVuelta_cuandoSePersisteElLote() {
+    void debePersistirElArtefacto_yLoguearGuardado() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
-        var primero = new ArtefactoEntity(
-                UtilUUID.generarNuevoUUID(), proyecto, UtilUUID.generarNuevoUUID(), asesor);
         var segundo = new ArtefactoEntity(
                 UtilUUID.generarNuevoUUID(), proyecto, UtilUUID.generarNuevoUUID(), asesor);
 
         // Act
-        adapter.registrarTodos(List.of(primero, segundo));
+        adapter.registrar(segundo);
         entityManager.flush();
         entityManager.clear();
 
@@ -57,8 +55,7 @@ class ArtefactoCommandOutputAdapterTest {
         assertThat(guardado.getProyectoGrado()).isEqualTo(proyecto);
         assertThat(guardado.getVersionRepositorioArtefacto()).isEqualTo(segundo.versionRepositorioArtefacto());
         assertThat(guardado.getAsesor()).isEqualTo(asesor);
-        assertThat(entityManager.find(ArtefactoJpaEntity.class, primero.id())).isNotNull();
-        verify(logger).debug(ArtefactoKey.LOG_GUARDADOS, 2);
+        verify(logger).debug(ArtefactoKey.LOG_GUARDADO, segundo.id());
     }
 
     @Test

@@ -5,5 +5,5 @@ import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionReposi
 import java.util.List;
 import java.util.UUID;
 
-public record DisponibilidadRepositoriosProyecto(
-        List<VersionRepositorioArtefactoDomain> versiones, List<UUID> repositoriosAsignados) {}
+public record DisponibilidadRepositorioProyecto(
+        VersionRepositorioArtefactoDomain version, List<UUID> repositoriosAsignados) {}

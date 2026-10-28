@@ -1,0 +1,132 @@
+package com.arquisoft.artefactos.application.artefacto.command.usecase.impl;
+
+import com.arquisoft.artefactos.application.artefacto.command.finder.RepositoriosAsignadosProyectoFinder;
+import com.arquisoft.artefactos.application.artefacto.command.secondaryport.ArtefactoOutputPort;
+import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
+import com.arquisoft.artefactos.application.artefacto.command.validator.AsignarArtefactoValidator;
+import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
+import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
+import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoExisteFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
+import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
+import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
+import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
+import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
+import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
+import com.arquisoft.shared.util.UtilUUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class AsignarArtefactoUseCaseImplTest {
+
+    @Mock
+    private ProyectoGradoExisteFinder proyectoGradoExisteFinder;
+    @Mock
+    private AsesorPorIdFinder asesorPorIdFinder;
+    @Mock
+    private VinculosMasRecientesProyectoGradoFinder vinculosMasRecientesProyectoGradoFinder;
+    @Mock
+    private VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
+    @Mock
+    private RepositoriosAsignadosProyectoFinder repositoriosAsignadosProyectoFinder;
+    @Mock
+    private AsignarArtefactoValidator asignarArtefactoValidator;
+    @Mock
+    private ArtefactoOutputPort artefactoOutputPort;
+    @Mock
+    private AsignarEstudiantesArtefactoUseCase asignarEstudiantesArtefactoUseCase;
+    @Mock
+    private AppLogger logger;
+
+    @Captor
+    private ArgumentCaptor<ArtefactoEntity> entidadCaptor;
+
+    private AsignarArtefactoUseCaseImpl useCase;
+
+    @BeforeEach
+    void setUp() {
+        useCase = new AsignarArtefactoUseCaseImpl(
+                proyectoGradoExisteFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
+                versionesRepositorioArtefactoPorIdsFinder, repositoriosAsignadosProyectoFinder,
+                asignarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase, logger);
+    }
+
+    private static AsignacionArtefactoDomain registro(UUID proyecto, UUID asesor, UUID version) {
+        var artefacto = ArtefactoDomain.crear(proyecto, asesor, version);
+        var estudiantes = AgregacionEstudiantesArtefactoDomain.crear(asesor,
+                EstudianteArtefactoDomain.crear(artefacto.getId(), List.of(UtilUUID.generarNuevoUUID())));
+        return AsignacionArtefactoDomain.crear(artefacto, estudiantes);
+    }
+
+    @Test
+    void debeRegistrarYEncadenarEstudiantesEnOrden_yDevolverElId() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var version = UtilUUID.generarNuevoUUID();
+        var registro = registro(proyecto, asesor, version);
+        when(proyectoGradoExisteFinder.obtener(proyecto)).thenReturn(true);
+        when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
+        when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
+        when(versionesRepositorioArtefactoPorIdsFinder.obtener(List.of(version))).thenReturn(List.of());
+        when(repositoriosAsignadosProyectoFinder.obtener(proyecto)).thenReturn(List.of());
+
+        // Act
+        var id = useCase.ejecutar(registro);
+
+        // Assert
+        assertThat(id).isEqualTo(registro.getArtefacto().getId());
+        var orden = inOrder(asignarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase, logger);
+        orden.verify(asignarArtefactoValidator).validar(
+                registro, true, AsesorDomain.VACIO, List.of(), List.of(), List.of());
+        orden.verify(artefactoOutputPort).registrar(entidadCaptor.capture());
+        orden.verify(asignarEstudiantesArtefactoUseCase).ejecutar(registro.getEstudiantes());
+        orden.verify(logger).info(ArtefactoKey.LOG_ASIGNADO, id, proyecto);
+        assertThat(entidadCaptor.getValue().id()).isEqualTo(id);
+    }
+
+    @Test
+    void debeNoRegistrarNiEncadenar_cuandoElValidatorLanza() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var registro = registro(proyecto, asesor, UtilUUID.generarNuevoUUID());
+        when(proyectoGradoExisteFinder.obtener(proyecto)).thenReturn(false);
+        when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
+        when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
+        when(versionesRepositorioArtefactoPorIdsFinder.obtener(anyList())).thenReturn(List.of());
+        when(repositoriosAsignadosProyectoFinder.obtener(proyecto)).thenReturn(List.of());
+        doThrow(new ProyectoGradoNoEncontradoException(proyecto)).when(asignarArtefactoValidator)
+                .validar(any(), eq(false), any(), any(), anyList(), anyList());
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(registro))
+                .isInstanceOf(ProyectoGradoNoEncontradoException.class);
+        verify(artefactoOutputPort, never()).registrar(any());
+        verify(asignarEstudiantesArtefactoUseCase, never()).ejecutar(any());
+    }
+}

@@ -1,9 +1,12 @@
 package com.arquisoft.artefactos.application.artefacto.command.validator.impl;
 
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
-import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactosDomain;
+import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
+import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
+import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.RepositorioArtefactoYaAsignadoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
+import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoEncontradoException;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.exception.AsesorNoAsignadoProyectoGradoException;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
@@ -21,18 +24,25 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class AsignarArtefactosValidatorImplTest {
+class AsignarArtefactoValidatorImplTest {
 
-    private final AsignarArtefactosValidatorImpl validator = new AsignarArtefactosValidatorImpl();
+    private final AsignarArtefactoValidatorImpl validator = new AsignarArtefactoValidatorImpl();
 
     private UUID proyecto;
     private UUID asesorId;
     private UUID versionId;
     private UUID repositorio;
-    private AsignacionArtefactosDomain asignacion;
+    private AsignacionArtefactoDomain asignacion;
     private AsesorDomain asesorVigente;
     private AsesorProyectoGradoDomain vinculoVigente;
     private VersionRepositorioArtefactoDomain version;
+
+    private AsignacionArtefactoDomain armar() {
+        var artefacto = ArtefactoDomain.crear(proyecto, asesorId, versionId);
+        var estudiantes = AgregacionEstudiantesArtefactoDomain.crear(asesorId,
+                EstudianteArtefactoDomain.crear(artefacto.getId(), List.of(UtilUUID.generarNuevoUUID())));
+        return AsignacionArtefactoDomain.crear(artefacto, estudiantes);
+    }
 
     @BeforeEach
     void setUp() {
@@ -40,7 +50,7 @@ class AsignarArtefactosValidatorImplTest {
         asesorId = UtilUUID.generarNuevoUUID();
         versionId = UtilUUID.generarNuevoUUID();
         repositorio = UtilUUID.generarNuevoUUID();
-        asignacion = AsignacionArtefactosDomain.crear(ArtefactoDomain.crear(proyecto, asesorId, List.of(versionId)));
+        asignacion = armar();
         asesorVigente = AsesorDomain.reconstruir(
                 asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
         vinculoVigente = AsesorProyectoGradoDomain.reconstruir(
@@ -50,7 +60,7 @@ class AsignarArtefactosValidatorImplTest {
     }
 
     @Test
-    void debePasar_cuandoTodasLasReglasSeCumplen() {
+    void debePasar_cuandoTodoEsValido() {
         // Act & Assert
         assertThatCode(() -> validator.validar(
                 asignacion, true, asesorVigente, List.of(vinculoVigente), List.of(version), List.of()))
@@ -58,7 +68,7 @@ class AsignarArtefactosValidatorImplTest {
     }
 
     @Test
-    void debeLanzarProyectoNoEncontrado_antesQueLasDemasReglas_cuandoTodoFalla() {
+    void debeLanzarProyectoNoEncontrado_antesQueElAsesor() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 asignacion, false, AsesorDomain.VACIO, List.of(), List.of(), List.of(repositorio)))
@@ -66,39 +76,27 @@ class AsignarArtefactosValidatorImplTest {
     }
 
     @Test
-    void debeLanzarAsesorNoAsignado_antesQueLasVersiones_cuandoNoHayVinculoVigente() {
+    void debeLanzarAsesorNoEncontrado_cuandoElProyectoExisteYElAsesorNo() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(), List.of(), List.of()))
-                .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
+                asignacion, true, AsesorDomain.VACIO, List.of(), List.of(), List.of()))
+                .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
     @Test
-    void debeLanzarAsesorNoAsignado_antesQueLasVersiones_cuandoElVinculoEstaFinalizado() {
-        // Arrange
-        var finalizado = AsesorProyectoGradoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), asesorId, proyecto, Instant.now(), Instant.now());
-
-        // Act & Assert
-        assertThatThrownBy(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(finalizado), List.of(), List.of()))
-                .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
-    }
-
-    @Test
-    void debeLanzarAsesorNoAsignado_cuandoOtroAsesorTieneElVinculoMasReciente() {
+    void debeLanzarAsesorNoAsignado_cuandoOtroTieneElVinculoMasReciente() {
         // Arrange
         var otroAsesor = AsesorProyectoGradoDomain.reconstruir(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), proyecto, Instant.now(), null);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(otroAsesor), List.of(), List.of()))
+                asignacion, true, asesorVigente, List.of(otroAsesor), List.of(), List.of(repositorio)))
                 .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
     }
 
     @Test
-    void debeLanzarVersionNoEncontrada_antesQueElRepositorio_cuandoFaltaUnaVersion() {
+    void debeLanzarVersionNoEncontrada_antesQueElRepositorio() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 asignacion, true, asesorVigente, List.of(vinculoVigente), List.of(), List.of(repositorio)))

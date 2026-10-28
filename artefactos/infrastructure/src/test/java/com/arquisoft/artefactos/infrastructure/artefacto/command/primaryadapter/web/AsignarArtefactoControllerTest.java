@@ -1,8 +1,7 @@
 package com.arquisoft.artefactos.infrastructure.artefacto.command.primaryadapter.web;
 
-import com.arquisoft.artefactos.application.artefacto.command.primaryport.interactor.AsignarArtefactosInteractor;
-import com.arquisoft.artefactos.application.artefacto.command.primaryport.model.AsignarArtefactosCommand;
-import com.arquisoft.artefactos.application.artefacto.command.result.ArtefactosAsignadosResult;
+import com.arquisoft.artefactos.application.artefacto.command.primaryport.interactor.AsignarArtefactoInteractor;
+import com.arquisoft.artefactos.application.artefacto.command.primaryport.model.AsignarArtefactoCommand;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
@@ -27,7 +26,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,10 +37,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AsignarArtefactosController.class)
+@WebMvcTest(AsignarArtefactoController.class)
 @Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class,
-        TrazabilidadConfig.class, AsignarArtefactosControllerTest.TestSecurityConfig.class})
-class AsignarArtefactosControllerTest {
+        TrazabilidadConfig.class, AsignarArtefactoControllerTest.TestSecurityConfig.class})
+class AsignarArtefactoControllerTest {
 
     private static final String RUTA = "/artefactos";
     private static final UUID ASESOR_ID = UtilUUID.generarNuevoUUID();
@@ -66,28 +64,28 @@ class AsignarArtefactosControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AsignarArtefactosInteractor asignarArtefactosInteractor;
+    private AsignarArtefactoInteractor asignarArtefactoInteractor;
 
     private static RequestPostProcessor tokenAsesor() {
         return SecurityMockMvcRequestPostProcessors.jwt().jwt(j -> j.subject(ASESOR_ID.toString()));
     }
 
     @Test
-    void debeRetornar201ConLosIds_yAsignarConElAsesorDelToken() throws Exception {
+    void debeResponder201ConElId() throws Exception {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var primera = UtilUUID.generarNuevoUUID();
-        var segunda = UtilUUID.generarNuevoUUID();
-        var primerArtefacto = UtilUUID.generarNuevoUUID();
-        var segundoArtefacto = UtilUUID.generarNuevoUUID();
-        when(asignarArtefactosInteractor.ejecutar(any()))
-                .thenReturn(new ArtefactosAsignadosResult(List.of(primerArtefacto, segundoArtefacto)));
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var artefacto = UtilUUID.generarNuevoUUID();
+        when(asignarArtefactoInteractor.ejecutar(any()))
+                .thenReturn(artefacto);
         var body = """
                 {
                   "proyectoGrado": "%s",
-                  "versionesRepositorioArtefacto": ["%s", "%s"]
+                  "versionRepositorioArtefacto": "%s",
+                  "estudiantes": ["%s"]
                 }
-                """.formatted(proyecto, primera, segunda);
+                """.formatted(proyecto, primera, estudiante);
 
         // Act & Assert
         mockMvc.perform(post(RUTA)
@@ -95,14 +93,14 @@ class AsignarArtefactosControllerTest {
                         .content(body)
                         .with(tokenAsesor()))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.ids[0]").value(primerArtefacto.toString()))
-                .andExpect(jsonPath("$.ids[1]").value(segundoArtefacto.toString()));
+                .andExpect(jsonPath("$.id").value(artefacto.toString()));
 
-        var captor = ArgumentCaptor.forClass(AsignarArtefactosCommand.class);
-        verify(asignarArtefactosInteractor).ejecutar(captor.capture());
+        var captor = ArgumentCaptor.forClass(AsignarArtefactoCommand.class);
+        verify(asignarArtefactoInteractor).ejecutar(captor.capture());
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyecto);
         assertThat(captor.getValue().asesor()).isEqualTo(ASESOR_ID);
-        assertThat(captor.getValue().versionesRepositorioArtefacto()).containsExactly(primera, segunda);
+        assertThat(captor.getValue().versionRepositorioArtefacto()).isEqualTo(primera);
+        assertThat(captor.getValue().estudiantes()).containsExactly(estudiante);
     }
 
     @Test
@@ -111,7 +109,8 @@ class AsignarArtefactosControllerTest {
         var body = """
                 {
                   "proyectoGrado": "no-es-uuid",
-                  "versionesRepositorioArtefacto": []
+                  "versionRepositorioArtefacto": "no-es-uuid",
+                  "estudiantes": ["x"]
                 }
                 """;
 
@@ -124,21 +123,24 @@ class AsignarArtefactosControllerTest {
                 .andExpect(jsonPath("$.fieldErrors[?(@.field == '%s')]",
                         ArtefactosFields.Artefacto.PROYECTO_GRADO).exists())
                 .andExpect(jsonPath("$.fieldErrors[?(@.field == '%s')]",
-                        ArtefactosFields.Artefacto.VERSIONES_REPOSITORIO_ARTEFACTO).exists());
-        verify(asignarArtefactosInteractor, never()).ejecutar(any());
+                        ArtefactosFields.Artefacto.VERSION_REPOSITORIO_ARTEFACTO).exists())
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == '%s')]",
+                        ArtefactosFields.EstudianteArtefacto.ESTUDIANTES).exists());
+        verify(asignarArtefactoInteractor, never()).ejecutar(any());
     }
 
     @Test
     void debeRetornar422_cuandoUnaReglaDeDominioRechaza() throws Exception {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
-        when(asignarArtefactosInteractor.ejecutar(any())).thenThrow(new ProyectoGradoNoEncontradoException(proyecto));
+        when(asignarArtefactoInteractor.ejecutar(any())).thenThrow(new ProyectoGradoNoEncontradoException(proyecto));
         var body = """
                 {
                   "proyectoGrado": "%s",
-                  "versionesRepositorioArtefacto": ["%s"]
+                  "versionRepositorioArtefacto": "%s",
+                  "estudiantes": ["%s"]
                 }
-                """.formatted(proyecto, UtilUUID.generarNuevoUUID());
+                """.formatted(proyecto, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
 
         // Act & Assert
         mockMvc.perform(post(RUTA)

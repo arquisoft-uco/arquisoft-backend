@@ -1,8 +1,8 @@
 package com.arquisoft.artefactos.application.artefacto.command.validator.impl;
 
-import com.arquisoft.artefactos.application.artefacto.command.validator.AsignarArtefactosValidator;
-import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactosDomain;
-import com.arquisoft.artefactos.domain.artefacto.model.DisponibilidadRepositoriosProyecto;
+import com.arquisoft.artefactos.application.artefacto.command.validator.AsignarArtefactoValidator;
+import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
+import com.arquisoft.artefactos.domain.artefacto.model.DisponibilidadRepositorioProyecto;
 import com.arquisoft.artefactos.domain.artefacto.rules.RepositorioArtefactoUnicoEnProyectoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.RepositorioArtefactoUnicoEnProyectoRuleImpl;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
-public class AsignarArtefactosValidatorImpl implements AsignarArtefactosValidator {
+public class AsignarArtefactoValidatorImpl implements AsignarArtefactoValidator {
 
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
     private final AsesorExisteRule asesorExisteRule;
@@ -34,7 +34,7 @@ public class AsignarArtefactosValidatorImpl implements AsignarArtefactosValidato
     private final VersionesRepositorioArtefactoExistenRule versionesRepositorioArtefactoExistenRule;
     private final RepositorioArtefactoUnicoEnProyectoRule repositorioArtefactoUnicoEnProyectoRule;
 
-    public AsignarArtefactosValidatorImpl() {
+    public AsignarArtefactoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.asesorAsignadoProyectoGradoRule = new AsesorAsignadoProyectoGradoRuleImpl();
@@ -44,19 +44,20 @@ public class AsignarArtefactosValidatorImpl implements AsignarArtefactosValidato
 
     @Override
     public void validar(
-            AsignacionArtefactosDomain asignacion,
+            AsignacionArtefactoDomain registro,
             boolean proyectoExiste,
             AsesorDomain asesor,
             List<AsesorProyectoGradoDomain> vinculosMasRecientes,
             List<VersionRepositorioArtefactoDomain> versiones,
             List<UUID> repositoriosAsignados) {
-        proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(asignacion.getProyectoGrado(), proyectoExiste));
-        asesorExisteRule.validar(new ExistenciaAsesor(asignacion.getAsesor(), asesor));
+        var artefacto = registro.getArtefacto();
+        proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(artefacto.getProyectoGrado(), proyectoExiste));
+        asesorExisteRule.validar(new ExistenciaAsesor(artefacto.getAsesor(), asesor));
         asesorAsignadoProyectoGradoRule.validar(new VigenciaAsesorProyectoGrado(
-                asignacion.getAsesor(), asesor.getNombre(), asignacion.getProyectoGrado(), vinculosMasRecientes));
+                artefacto.getAsesor(), asesor.getNombre(), artefacto.getProyectoGrado(), vinculosMasRecientes));
         versionesRepositorioArtefactoExistenRule.validar(new ExistenciaVersionesRepositorioArtefacto(
-                asignacion.getVersionesRepositorioArtefacto(), versiones));
+                List.of(artefacto.getVersionRepositorioArtefacto()), versiones));
         repositorioArtefactoUnicoEnProyectoRule.validar(
-                new DisponibilidadRepositoriosProyecto(versiones, repositoriosAsignados));
+                new DisponibilidadRepositorioProyecto(versiones.getFirst(), repositoriosAsignados));
     }
 }

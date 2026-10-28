@@ -2,7 +2,8 @@ package com.arquisoft.artefactos.infrastructure.artefacto.command.primaryadapter
 
 import java.util.List;
 
-public record AsignarArtefactosRequestDTO(
+public record AsignarArtefactoRequestDTO(
         String proyectoGrado,
-        List<String> versionesRepositorioArtefacto) {
+        String versionRepositorioArtefacto,
+        List<String> estudiantes) {
 }
