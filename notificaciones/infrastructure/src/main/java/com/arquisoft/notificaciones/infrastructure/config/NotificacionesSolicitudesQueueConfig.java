@@ -26,6 +26,9 @@ public class NotificacionesSolicitudesQueueConfig {
     public static final String AMPLIACION_PLAZO_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.AMPLIACION_PLAZO_ENVIADA;
 
+    public static final String REGISTRO_MODIFICACION_USUARIOS_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_ENVIADA;
+
     public static final String NOVEDAD_COORDINADOR_RESPONDIDA_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_COORDINADOR_RESPONDIDA;
 
@@ -46,6 +49,20 @@ public class NotificacionesSolicitudesQueueConfig {
 
     public static final String CAMBIO_ASESOR_ESTADO_MODIFICADO_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.CAMBIO_ASESOR_ESTADO_MODIFICADO;
+
+    public static final String AMPLIACION_PLAZO_ESTADO_MODIFICADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.AMPLIACION_PLAZO_ESTADO_MODIFICADO;
+
+    @Bean
+    public Declarables notificacionesSolicitudAmpliacionPlazoEstadoModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                AMPLIACION_PLAZO_ESTADO_MODIFICADO_QUEUE,
+                EventTopics.Solicitudes.AMPLIACION_PLAZO_ESTADO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 
     @Bean
     public Declarables notificacionesSolicitudCambioAsesorEstadoModificadoDeclarables(
@@ -164,6 +181,17 @@ public class NotificacionesSolicitudesQueueConfig {
         return ColaEvento.declarar(
                 AMPLIACION_PLAZO_QUEUE,
                 EventTopics.Solicitudes.AMPLIACION_PLAZO_ENVIADA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesSolicitudRegistroModificacionUsuariosDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REGISTRO_MODIFICACION_USUARIOS_QUEUE,
+                EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_ENVIADA,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

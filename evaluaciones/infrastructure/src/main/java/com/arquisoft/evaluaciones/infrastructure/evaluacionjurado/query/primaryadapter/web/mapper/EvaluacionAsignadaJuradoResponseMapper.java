@@ -10,6 +10,9 @@ public final class EvaluacionAsignadaJuradoResponseMapper {
     public static EvaluacionAsignadaJuradoResponseDTO toResponse(EvaluacionAsignadaJuradoReadModel readModel) {
         return new EvaluacionAsignadaJuradoResponseDTO(
                 readModel.id(),
+                new EvaluacionAsignadaJuradoResponseDTO.EstadoDTO(
+                        readModel.estado().id(),
+                        readModel.estado().nombre()),
                 new EvaluacionAsignadaJuradoResponseDTO.EvaluacionDTO(
                         readModel.evaluacion().id(),
                         new EvaluacionAsignadaJuradoResponseDTO.EstadoDTO(
@@ -18,6 +21,8 @@ public final class EvaluacionAsignadaJuradoResponseMapper {
                 new EvaluacionAsignadaJuradoResponseDTO.EntregableDTO(
                         readModel.entregable().id(),
                         readModel.entregable().proyecto(),
-                        readModel.entregable().version()));
+                        readModel.entregable().version()),
+                readModel.tieneEvaluacionesCualitativas(),
+                readModel.tieneEvaluacionesCuantitativas());
     }
 }

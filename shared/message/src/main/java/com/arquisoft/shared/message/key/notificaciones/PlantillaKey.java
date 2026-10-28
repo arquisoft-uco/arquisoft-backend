@@ -31,6 +31,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.solicitud-ampliacion-plazo", 1),
     CUERPO_SOLICITUD_AMPLIACION_PLAZO(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo", 3),
+    ASUNTO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-registro-modificacion-usuarios", 1),
+    CUERPO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-registro-modificacion-usuarios", 3),
     ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA(
             "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador-respondida", 0),
     CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA(
@@ -59,6 +63,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.solicitud-cambio-asesor-estado-modificado", 0),
     CUERPO_SOLICITUD_CAMBIO_ASESOR_ESTADO_MODIFICADO(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-cambio-asesor-estado-modificado", 3),
+    ASUNTO_SOLICITUD_AMPLIACION_PLAZO_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-ampliacion-plazo-estado-modificado", 0),
+    CUERPO_SOLICITUD_AMPLIACION_PLAZO_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo-estado-modificado", 3),
     ASUNTO_REVISION_ITEM_AGREGADA(
             "notificaciones.aplicacion.plantilla.asunto.revision-item-agregada", 1),
     CUERPO_REVISION_ITEM_AGREGADA(
@@ -100,6 +108,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.estado-ficha-perfil-agregado", 2),
     CUERPO_ESTADO_FICHA_PERFIL_AGREGADO(
             "notificaciones.aplicacion.plantilla.cuerpo.estado-ficha-perfil-agregado", 3),
+    ASUNTO_REVISION_ASESOR_RESUELTA(
+            "notificaciones.aplicacion.plantilla.asunto.revision-asesor-resuelta", 1),
+    CUERPO_REVISION_ASESOR_RESUELTA(
+            "notificaciones.aplicacion.plantilla.cuerpo.revision-asesor-resuelta", 2),
     ASUNTO_VERSION_ARTEFACTO_GENERADA(
             "notificaciones.aplicacion.plantilla.asunto.version-artefacto-generada", 2),
     CUERPO_VERSION_ARTEFACTO_GENERADA(

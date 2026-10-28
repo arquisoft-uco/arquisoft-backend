@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.domain.estudiante.rules.impl;
 
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
-import com.arquisoft.artefactos.domain.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.artefactos.domain.estudiante.exception.EstudiantesNoEncontradosException;
 import com.arquisoft.artefactos.domain.estudiante.model.ExistenciaEstudiantes;
 import com.arquisoft.artefactos.domain.estudiante.rules.EstudiantesExistenRule;
 
@@ -18,7 +18,7 @@ public class EstudiantesExistenRuleImpl implements EstudiantesExistenRule {
                 .filter(solicitado -> !encontrados.contains(solicitado))
                 .toList();
         if (!faltantes.isEmpty()) {
-            throw new EstudianteNoEncontradoException(faltantes);
+            throw new EstudiantesNoEncontradosException(faltantes);
         }
     }
 }

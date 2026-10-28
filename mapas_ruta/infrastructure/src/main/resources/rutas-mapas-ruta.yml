@@ -15,5 +15,7 @@ rutas:
     tareas:
       base: /tareas
       por-id: /{tareaId}
+      estado-item: /{tareaId}/estado-item
+      planes-estimados: /{tareaId}/planes-estimados
     estados-item:
       base: /estados-item

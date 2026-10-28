@@ -6,7 +6,7 @@ import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioAr
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoEncontradoException;
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
-import com.arquisoft.artefactos.domain.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.artefactos.domain.estudiante.exception.EstudiantesNoEncontradosException;
 import com.arquisoft.artefactos.domain.estudiante.exception.EstudianteNoVigenteException;
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
@@ -97,7 +97,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 entrada, ajeno, asesor, version, List.of(), List.of(estudianteId), List.of()))
-                .isInstanceOf(EstudianteNoEncontradoException.class);
+                .isInstanceOf(EstudiantesNoEncontradosException.class);
     }
 
     @Test

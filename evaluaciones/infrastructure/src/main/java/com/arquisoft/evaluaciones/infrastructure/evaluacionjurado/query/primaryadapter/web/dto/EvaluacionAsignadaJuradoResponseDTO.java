@@ -4,8 +4,11 @@ import java.util.UUID;
 
 public record EvaluacionAsignadaJuradoResponseDTO(
         UUID id,
+        EstadoDTO estado,
         EvaluacionDTO evaluacion,
-        EntregableDTO entregable
+        EntregableDTO entregable,
+        boolean tieneEvaluacionesCualitativas,
+        boolean tieneEvaluacionesCuantitativas
 ) {
 
     public record EvaluacionDTO(UUID id, EstadoDTO estado) {

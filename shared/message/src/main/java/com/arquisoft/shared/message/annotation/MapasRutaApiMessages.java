@@ -87,6 +87,47 @@ public final class MapasRutaApiMessages {
         public static final String CONSULTAR_POR_MAPA_RUTA_RESP_200 = "Página de tareas del mapa de ruta";
         public static final String CONSULTAR_POR_MAPA_RUTA_RESP_400 =
                 "Identificador de mapa de ruta inválido, o filtro u ordenamiento no permitido";
+        public static final String CAMBIAR_ESTADO_ITEM_SUMMARY = "Cambiar el estado de una tarea";
+        public static final String CAMBIAR_ESTADO_ITEM_DESCRIPTION =
+                "Cambia el estado de una tarea de Nueva a En progreso o Finalizada, o de En progreso a Finalizada. "
+                        + "No se vuelve a Nueva, Finalizada es definitiva y repetir el estado actual se rechaza";
+        public static final String CAMBIAR_ESTADO_ITEM_RESP_204 = "Estado de la tarea cambiado";
+        public static final String CAMBIAR_ESTADO_ITEM_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_ESTADO_ITEM_RESP_422 =
+                "Tarea inexistente, estado fuera del catálogo o transición de estado no permitida";
+        public static final String MODIFICAR_INFORMACION_SUMMARY = "Modificar la información de una tarea";
+        public static final String MODIFICAR_INFORMACION_DESCRIPTION =
+                "Modifica la descripción y el asesor de una tarea existente. El mapa de ruta y el estado de la "
+                        + "tarea no cambian, y repetir los valores actuales se acepta";
+        public static final String MODIFICAR_INFORMACION_RESP_204 = "Información de la tarea modificada";
+        public static final String MODIFICAR_INFORMACION_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_INFORMACION_RESP_422 =
+                "Tarea o mapa de ruta inexistente, descripción ya usada por otra tarea del mapa de ruta "
+                        + "o asesor no asignado al proyecto de grado";
+        public static final String REMOVER_INFORMACION_SUMMARY = "Remover una tarea";
+        public static final String REMOVER_INFORMACION_DESCRIPTION =
+                "Elimina una tarea del mapa de ruta mientras esté Nueva o En progreso. "
+                        + "Una tarea Finalizada no se puede remover";
+        public static final String REMOVER_INFORMACION_RESP_204 = "Tarea removida";
+        public static final String REMOVER_INFORMACION_RESP_422 =
+                "Tarea inexistente o en un estado que no permite removerla";
+    }
+
+    public static final class PlanEstimado {
+
+        private PlanEstimado() {}
+
+        public static final String TAG_NAME = "Planes estimados";
+        public static final String TAG_DESCRIPTION = "Planes estimados de las tareas del mapa de ruta";
+        public static final String AGREGAR_SUMMARY = "Agregar un nuevo plan estimado";
+        public static final String AGREGAR_DESCRIPTION =
+                "Agrega el plan estimado de una tarea: los días que se espera tardar y, opcionalmente, una "
+                        + "descripción. Una tarea solo admite un plan estimado y el tiempo acumulado de los planes "
+                        + "del mapa no puede exceder el plazo del mapa de ruta";
+        public static final String AGREGAR_RESP_201 = "Plan estimado agregado";
+        public static final String AGREGAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String AGREGAR_RESP_422 =
+                "Tarea inexistente, tarea con plan estimado o tiempo acumulado que excede el plazo del mapa de ruta";
     }
 
     public static final class EstadoItem {

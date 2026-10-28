@@ -190,11 +190,13 @@ public final class EvaluacionesCodes {
 
         private EvaluacionJurado() {}
 
+        public static final String ID_REQUERIDO = "EVALUACION_JURADO_ID_REQUERIDO";
         public static final String EVALUACION_REQUERIDO = "EVALUACION_JURADO_EVALUACION_REQUERIDO";
         public static final String JURADO_REQUERIDO = "EVALUACION_JURADO_JURADO_REQUERIDO";
         public static final String JURADO_INVALIDO = "EVALUACION_JURADO_JURADO_INVALIDO";
         public static final String JURADOS_NO_ENCONTRADOS = "EVALUACION_JURADO_JURADOS_NO_ENCONTRADOS";
         public static final String JURADOS_YA_ASIGNADOS = "EVALUACION_JURADO_JURADOS_YA_ASIGNADOS";
+        public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_JURADO_ESTADO_NO_ENCONTRADO";
     }
 
     public static final class AsignacionJuradosEvaluacion {

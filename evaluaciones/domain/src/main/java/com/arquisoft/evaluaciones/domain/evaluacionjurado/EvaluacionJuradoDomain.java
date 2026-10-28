@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.domain.evaluacionjurado;
 
+import com.arquisoft.evaluaciones.domain.estadoevaluacionasignadajurado.EstadoEvaluacionAsignadaJurado;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.util.UtilUUID;
@@ -13,13 +14,15 @@ public final class EvaluacionJuradoDomain {
     private UUID id;
     private UUID evaluacion;
     private UUID jurado;
+    private EstadoEvaluacionAsignadaJurado estado;
 
     private EvaluacionJuradoDomain() {}
 
-    private EvaluacionJuradoDomain(UUID id, UUID evaluacion, UUID jurado) {
+    private EvaluacionJuradoDomain(UUID id, UUID evaluacion, UUID jurado, EstadoEvaluacionAsignadaJurado estado) {
         this.id = id;
         this.evaluacion = evaluacion;
         this.jurado = jurado;
+        this.estado = estado;
     }
 
     public static EvaluacionJuradoDomain crear(UUID evaluacion, UUID jurado) {
@@ -29,13 +32,15 @@ public final class EvaluacionJuradoDomain {
         evaluacionJurado.setId();
         evaluacionJurado.setEvaluacion(evaluacion, result);
         evaluacionJurado.setJurado(jurado, result);
+        evaluacionJurado.setEstadoInicial();
 
         result.lanzarSiTieneErrores();
         return evaluacionJurado;
     }
 
-    public static EvaluacionJuradoDomain reconstruir(UUID id, UUID evaluacion, UUID jurado) {
-        return new EvaluacionJuradoDomain(id, evaluacion, jurado);
+    public static EvaluacionJuradoDomain reconstruir(
+            UUID id, UUID evaluacion, UUID jurado, EstadoEvaluacionAsignadaJurado estado) {
+        return new EvaluacionJuradoDomain(id, evaluacion, jurado, estado);
     }
 
     private void setId() {
@@ -60,6 +65,10 @@ public final class EvaluacionJuradoDomain {
         this.jurado = jurado;
     }
 
+    private void setEstadoInicial() {
+        this.estado = EstadoEvaluacionAsignadaJurado.PENDIENTE_POR_EVALUAR;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -70,5 +79,9 @@ public final class EvaluacionJuradoDomain {
 
     public UUID getJurado() {
         return jurado;
+    }
+
+    public EstadoEvaluacionAsignadaJurado getEstado() {
+        return estado;
     }
 }

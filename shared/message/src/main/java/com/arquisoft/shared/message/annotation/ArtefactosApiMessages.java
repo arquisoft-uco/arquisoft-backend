@@ -42,6 +42,18 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar las revisiones realizadas";
+
+        public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de una revisión del asesor";
+        public static final String CAMBIAR_ESTADO_DESCRIPTION =
+                "Cambia el estado de la revisión del asesor a PENDIENTE, EN_PROGRESO o RESUELTA. El estudiante "
+                        + "se toma del token y debe participar del artefacto de la revisión. Cerrar la revisión "
+                        + "no es posible desde este recurso. Si el estado nuevo es RESUELTA, el asesor recibe un "
+                        + "correo; si coincide con el actual, no se realiza ningún cambio.";
+        public static final String CAMBIAR_ESTADO_RESP_204 = "Estado de la revisión cambiado";
+        public static final String CAMBIAR_ESTADO_RESP_400 = "Identificador o estado de la revisión mal formado";
+        public static final String CAMBIAR_ESTADO_RESP_422 =
+                "La revisión o el estudiante no existen, el estudiante no participa del artefacto, la revisión "
+                        + "está cerrada, el estado es desconocido o el estado destino no está permitido";
     }
 
     public static final class VersionArtefacto {

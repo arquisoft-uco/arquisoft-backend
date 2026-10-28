@@ -14,5 +14,7 @@ public interface MapaRutaOutputPort {
 
     Optional<MapaRutaEntity> obtenerPorId(UUID mapaRuta);
 
+    Optional<MapaRutaEntity> obtenerPorTarea(UUID tarea);
+
     void actualizarFechaFin(UUID mapaRuta, LocalDate fechaFin);
 }

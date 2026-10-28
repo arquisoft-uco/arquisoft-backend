@@ -4,6 +4,7 @@ import com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.second
 import com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.projection.ContextoRegistroEvaluacionJuradoProjection;
 import com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.projection.EstadoEvaluacionJuradoProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,27 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface EvaluacionJuradoCommandRepository extends JpaRepository<EvaluacionJuradoJpaEntity, UUID> {
+
+    @Modifying(clearAutomatically = true)
+    @Query("update EvaluacionJuradoJpaEntity evaluacionJurado "
+            + "set evaluacionJurado.estado = :estado where evaluacionJurado.id = :id")
+    int actualizarEstado(@Param("id") UUID id, @Param("estado") String estado);
+
+    // Completa = todo ítem cualitativo y todo ítem cuantitativo del catálogo tiene su evaluación
+    // registrada para esta evaluación de jurado.
+    @NativeQuery("""
+            SELECT CASE WHEN
+                NOT EXISTS (SELECT 1 FROM item_cualitativo_jurado ic
+                            WHERE NOT EXISTS (SELECT 1 FROM evaluacion_cualitativa_jurado ecj
+                                              WHERE ecj.evaluacion_jurado_id = :evaluacionJurado
+                                                AND ecj.item_id = ic.id))
+                AND NOT EXISTS (SELECT 1 FROM item_cuantitativo_jurado iq
+                                WHERE NOT EXISTS (SELECT 1 FROM evaluacion_cuantitativa_jurado eqj
+                                                  WHERE eqj.evaluacion_jurado_id = :evaluacionJurado
+                                                    AND eqj.item_id = iq.id))
+            THEN TRUE ELSE FALSE END
+            """)
+    boolean estaCompleta(@Param("evaluacionJurado") UUID evaluacionJurado);
 
     // FOR UPDATE OF e, ej: el bloqueo cubre el JOIN entre evaluacion y evaluacion_jurado, que @Lock
     // de Spring Data no expresa sobre una unica entidad. El futuro flujo de finalizacion debe

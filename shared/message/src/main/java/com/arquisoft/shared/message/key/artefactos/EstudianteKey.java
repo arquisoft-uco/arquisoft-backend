@@ -22,6 +22,8 @@ public enum EstudianteKey implements ClaveMensaje {
     LOG_ACTUALIZACION_NO_REPLICADO("artefactos.infraestructura.estudiante.log.actualizacion-no-replicado", 1),
     ERROR_NO_ENCONTRADO("artefactos.dominio.estudiante.error.no-encontrado", 0),
     ERROR_NO_ENCONTRADO_DETALLE("artefactos.dominio.estudiante.error.no-encontrado-detalle", 1),
+    ERROR_NO_ENCONTRADOS("artefactos.dominio.estudiante.error.no-encontrados", 0),
+    ERROR_NO_ENCONTRADOS_DETALLE("artefactos.dominio.estudiante.error.no-encontrados-detalle", 1),
     ERROR_NO_VIGENTE("artefactos.dominio.estudiante.error.no-vigente", 1),
     ERROR_NO_VIGENTE_DETALLE("artefactos.dominio.estudiante.error.no-vigente-detalle", 1);
 

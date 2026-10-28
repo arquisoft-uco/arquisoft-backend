@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.domain.estudiante.rules.impl;
 
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
-import com.arquisoft.artefactos.domain.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.artefactos.domain.estudiante.exception.EstudiantesNoEncontradosException;
 import com.arquisoft.artefactos.domain.estudiante.model.ExistenciaEstudiantes;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.util.UtilUUID;
@@ -36,10 +36,10 @@ class EstudiantesExistenRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(new ExistenciaEstudiantes(List.of(faltante), List.of())))
-                .isInstanceOf(EstudianteNoEncontradoException.class)
+                .isInstanceOf(EstudiantesNoEncontradosException.class)
                 .satisfies(ex -> {
-                    var excepcion = (EstudianteNoEncontradoException) ex;
-                    assertThat(excepcion.getCodigoError()).isEqualTo(ArtefactosCodes.Estudiante.NO_ENCONTRADO);
+                    var excepcion = (EstudiantesNoEncontradosException) ex;
+                    assertThat(excepcion.getCodigoError()).isEqualTo(ArtefactosCodes.Estudiante.NO_ENCONTRADOS);
                     assertThat(excepcion.getError().getMessage()).doesNotContain(faltante.toString());
                 });
     }

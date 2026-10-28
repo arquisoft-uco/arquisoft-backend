@@ -9,6 +9,7 @@ import com.arquisoft.shared.message.key.artefactos.EstadoRevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.ObservacionKey;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
+import com.arquisoft.shared.message.key.artefactos.CambiarEstadoRevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersionRepositorioArtefactoKey;
@@ -52,6 +53,7 @@ import com.arquisoft.shared.message.key.mapas_ruta.AsignacionAsesorKey;
 import com.arquisoft.shared.message.key.mapas_ruta.AsignacionProyectoKey;
 import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
 import com.arquisoft.shared.message.key.mapas_ruta.EstadoItemKey;
+import com.arquisoft.shared.message.key.mapas_ruta.PlanEstimadoKey;
 import com.arquisoft.shared.message.key.mapas_ruta.TareaKey;
 import com.arquisoft.shared.message.key.mapas_ruta.ProyectoGradoMapasRutaKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
@@ -198,6 +200,7 @@ public final class ClavesCatalogo {
             BibliotecarioKey.class,
             EstadoRevisionAsesorKey.class,
             RevisionAsesorKey.class,
+            CambiarEstadoRevisionAsesorKey.class,
             VersionArtefactoKey.class,
             EstudianteArtefactoKey.class,
             ObservacionKey.class,
@@ -238,7 +241,8 @@ public final class ClavesCatalogo {
             TareaKey.class,
             EstadoItemKey.class,
             AsignacionAsesorKey.class,
-            ProyectoGradoMapasRutaKey.class
+            ProyectoGradoMapasRutaKey.class,
+            PlanEstimadoKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

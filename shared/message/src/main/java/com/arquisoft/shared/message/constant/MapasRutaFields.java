@@ -24,5 +24,15 @@ public final class MapasRutaFields {
         public static final String DESCRIPCION = "descripcion";
         public static final String ASESOR = "asesor";
         public static final String TAREA = "tarea";
+        public static final String ESTADO_ITEM = "estadoItem";
+    }
+
+    public static final class PlanEstimado {
+
+        private PlanEstimado() {}
+
+        public static final String TAREA = "tarea";
+        public static final String TIEMPO_ESTIMADO_DIAS = "tiempoEstimadoDias";
+        public static final String DESCRIPCION_ESTIMADO = "descripcionEstimado";
     }
 }

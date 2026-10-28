@@ -28,4 +28,7 @@ public class EvaluacionJuradoJpaEntity {
 
     @Column(name = "jurado_id", nullable = false, columnDefinition = "uuid")
     private UUID jurado;
+
+    @Column(name = "estado_evaluacion_asignada_jurado_id", nullable = false, length = 60)
+    private String estado;
 }

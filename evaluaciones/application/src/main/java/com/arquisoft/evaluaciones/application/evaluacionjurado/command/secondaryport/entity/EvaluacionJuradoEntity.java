@@ -2,5 +2,5 @@ package com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondar
 
 import java.util.UUID;
 
-public record EvaluacionJuradoEntity(UUID id, UUID evaluacion, UUID jurado) {
+public record EvaluacionJuradoEntity(UUID id, UUID evaluacion, UUID jurado, String estado) {
 }

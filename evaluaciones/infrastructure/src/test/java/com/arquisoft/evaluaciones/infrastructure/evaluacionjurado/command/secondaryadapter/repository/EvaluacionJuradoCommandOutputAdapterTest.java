@@ -1,7 +1,10 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.repository;
 
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EvaluacionJuradoEntity;
+import com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativajurado.command.secondaryadapter.entity.EvaluacionCualitativaJuradoJpaEntity;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.secondaryadapter.entity.EvaluacionCuantitativaJuradoJpaEntity;
+import com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.secondaryadapter.entity.ItemCualitativoJuradoJpaEntity;
+import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.entity.ItemCuantitativoJuradoJpaEntity;
 import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.command.secondaryadapter.entity.ObservacionItemJuradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
@@ -27,6 +30,8 @@ import static org.mockito.Mockito.verify;
 // testing (nada de mockear el repository en una consulta nativa).
 @DataJpaTest
 class EvaluacionJuradoCommandOutputAdapterTest {
+
+    private static final String ESTADO_PENDIENTE = "PENDIENTE_POR_EVALUAR";
 
     @Autowired
     private EntityManager entityManager;
@@ -78,7 +83,8 @@ class EvaluacionJuradoCommandOutputAdapterTest {
                 .setParameter(1, evaluacion).setParameter(2, UUID.randomUUID())
                 .setParameter(3, estadoEvaluacion).executeUpdate();
         entityManager.createNativeQuery(
-                "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id) VALUES (?, ?, ?)")
+                "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id, estado_evaluacion_asignada_jurado_id) "
+                        + "VALUES (?, ?, ?, 'PENDIENTE_POR_EVALUAR')")
                 .setParameter(1, evaluacionJurado).setParameter(2, evaluacion).setParameter(3, jurado)
                 .executeUpdate();
         entityManager.flush();
@@ -179,13 +185,99 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeActualizarElEstadoYLoguear_cuandoSeActualizaElEstado() {
+        // Arrange
+        var evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "PENDIENTE");
+
+        // Act
+        adapter.actualizarEstado(evaluacionJurado, "EVALUADA");
+
+        // Assert
+        assertThat(repository.findById(evaluacionJurado))
+                .hasValueSatisfying(fila -> assertThat(fila.getEstado()).isEqualTo("EVALUADA"));
+        verify(logger).debug(EvaluacionJuradoKey.LOG_ESTADO_ACTUALIZADO, evaluacionJurado, "EVALUADA");
+    }
+
+    private UUID sembrarItemCualitativo() {
+        var item = UUID.randomUUID();
+        testEntityManager.persist(ItemCualitativoJuradoJpaEntity.builder()
+                .id(item).nombre("Claridad " + item).descripcion("Claridad de la exposición").build());
+        return item;
+    }
+
+    private UUID sembrarItemCuantitativo() {
+        var item = UUID.randomUUID();
+        testEntityManager.persist(ItemCuantitativoJuradoJpaEntity.builder()
+                .id(item).nombre("Metodología " + item).descripcion("Rigor metodológico")
+                .categoriaId(UUID.randomUUID()).valor(100).build());
+        return item;
+    }
+
+    private void sembrarEvaluacionCualitativa(UUID evaluacionJurado, UUID item) {
+        testEntityManager.persist(EvaluacionCualitativaJuradoJpaEntity.builder()
+                .id(UUID.randomUUID()).evaluacionJurado(evaluacionJurado).item(item)
+                .criterio(UUID.randomUUID()).build());
+    }
+
+    private void sembrarEvaluacionCuantitativa(UUID evaluacionJurado, UUID item) {
+        testEntityManager.persist(EvaluacionCuantitativaJuradoJpaEntity.builder()
+                .id(UUID.randomUUID()).evaluacionJuradoId(evaluacionJurado).itemId(item).puntaje(80).build());
+    }
+
+    @Test
+    void debeEstarCompleta_cuandoTodosLosItemsCualitativosYCuantitativosEstanEvaluados() {
+        // Arrange
+        var evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "EN_PROGRESO");
+        sembrarEvaluacionCualitativa(evaluacionJurado, sembrarItemCualitativo());
+        sembrarEvaluacionCuantitativa(evaluacionJurado, sembrarItemCuantitativo());
+        testEntityManager.flush();
+
+        // Act
+        var completa = adapter.estaCompleta(evaluacionJurado);
+
+        // Assert
+        assertThat(completa).isTrue();
+    }
+
+    @Test
+    void debeNoEstarCompleta_cuandoFaltaEvaluarAlgunItemCuantitativo() {
+        // Arrange
+        var evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "EN_PROGRESO");
+        sembrarEvaluacionCualitativa(evaluacionJurado, sembrarItemCualitativo());
+        sembrarItemCuantitativo();
+        testEntityManager.flush();
+
+        // Act
+        var completa = adapter.estaCompleta(evaluacionJurado);
+
+        // Assert
+        assertThat(completa).isFalse();
+    }
+
+    @Test
+    void debeNoEstarCompleta_cuandoLasEvaluacionesSonDeOtraEvaluacionJurado() {
+        // Arrange
+        var evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "EN_PROGRESO");
+        var otra = sembrarEvaluacionJurado(UUID.randomUUID(), "EN_PROGRESO");
+        sembrarEvaluacionCualitativa(otra, sembrarItemCualitativo());
+        sembrarEvaluacionCuantitativa(otra, sembrarItemCuantitativo());
+        testEntityManager.flush();
+
+        // Act
+        var completa = adapter.estaCompleta(evaluacionJurado);
+
+        // Assert
+        assertThat(completa).isFalse();
+    }
+
+    @Test
     void debePersistirElLoteCompletoYLoguear_cuandoSeRegistranTodas() {
         // Arrange
         var evaluacion = UUID.randomUUID();
         var entidades = List.of(
-                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()),
-                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()),
-                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()));
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID(), ESTADO_PENDIENTE),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID(), ESTADO_PENDIENTE),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID(), ESTADO_PENDIENTE));
 
         // Act
         adapter.registrarTodas(entidades);
@@ -209,8 +301,8 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         var asignadoEnOtra = UUID.randomUUID();
         var libre = UUID.randomUUID();
         adapter.registrarTodas(List.of(
-                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, asignado),
-                new EvaluacionJuradoEntity(UUID.randomUUID(), otraEvaluacion, asignadoEnOtra)));
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, asignado, ESTADO_PENDIENTE),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), otraEvaluacion, asignadoEnOtra, ESTADO_PENDIENTE)));
         entityManager.flush();
         entityManager.clear();
 

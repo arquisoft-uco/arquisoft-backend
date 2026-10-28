@@ -59,6 +59,33 @@ class TareaDomainTest {
     }
 
     @Test
+    void debeReconstruir_conTodosLosCamposSinValidar() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var mapaRuta = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var tarea = TareaDomain.reconstruir(id, mapaRuta, "", asesor, EstadoItem.FINALIZADA);
+
+        // Assert
+        assertThat(tarea.getId()).isEqualTo(id);
+        assertThat(tarea.getMapaRuta()).isEqualTo(mapaRuta);
+        assertThat(tarea.getDescripcion()).isEmpty();
+        assertThat(tarea.getAsesor()).isEqualTo(asesor);
+        assertThat(tarea.getEstadoItem()).isEqualTo(EstadoItem.FINALIZADA);
+        assertThat(tarea.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeSerVacio_elCentinela() {
+        // Act & Assert
+        assertThat(TareaDomain.VACIO.esVacio()).isTrue();
+        assertThat(TareaDomain.VACIO.getEstadoItem()).isEqualTo(EstadoItem.VACIO);
+        assertThat(UtilUUID.esPorDefecto(TareaDomain.VACIO.getId())).isTrue();
+    }
+
+    @Test
     void debeAceptar_cuandoDescripcionTieneExactamenteElMaximoTrasRecortar() {
         // Arrange
         var mapaRuta = UtilUUID.generarNuevoUUID();

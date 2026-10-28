@@ -8,10 +8,9 @@ import com.arquisoft.evaluaciones.application.evaluacionjurado.query.validator.C
 import com.arquisoft.evaluaciones.application.jurado.query.finder.JuradoExisteQueryFinder;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -23,15 +22,17 @@ public class ConsultarEvaluacionesAsignadasJuradoUseCaseImpl implements Consulta
     private final AppLogger logger;
 
     @Override
-    public List<EvaluacionAsignadaJuradoReadModel> ejecutar(EvaluacionesAsignadasJuradoCriteria criteria) {
-        logger.debug(EvaluacionJuradoKey.LOG_CONSULTANDO_ASIGNADAS, criteria.jurado());
+    public PaginatedResult<EvaluacionAsignadaJuradoReadModel> ejecutar(EvaluacionesAsignadasJuradoCriteria criteria) {
+        logger.debug(EvaluacionJuradoKey.LOG_CONSULTANDO_ASIGNADAS, criteria.getJurado(),
+                criteria.getPagina(), criteria.getTamanio(), criteria.tieneFiltros(), criteria.tieneOrden());
 
-        var existe = juradoExisteQueryFinder.obtener(criteria.jurado());
-        consultarEvaluacionesAsignadasJuradoValidator.validar(criteria.jurado(), existe);
+        var existe = juradoExisteQueryFinder.obtener(criteria.getJurado());
+        consultarEvaluacionesAsignadasJuradoValidator.validar(criteria.getJurado(), existe);
 
-        var resultado = evaluacionAsignadaJuradoQueryOutputPort.consultar(criteria);
+        var resultado = evaluacionAsignadaJuradoQueryOutputPort.consultarTodas(criteria);
 
-        logger.debug(EvaluacionJuradoKey.LOG_CONSULTA_ASIGNADAS_COMPLETADA, resultado.size());
+        logger.debug(EvaluacionJuradoKey.LOG_CONSULTA_ASIGNADAS_COMPLETADA,
+                resultado.getTotalElements(), criteria.getPagina(), criteria.getTamanio());
         return resultado;
     }
 }

@@ -10,6 +10,8 @@ public final class EvaluacionAsignadaJuradoQueryMapper {
     public static EvaluacionAsignadaJuradoReadModel toReadModel(EvaluacionAsignadaJuradoJpaQueryEntity entity) {
         return new EvaluacionAsignadaJuradoReadModel(
                 entity.getId(),
+                new EvaluacionAsignadaJuradoReadModel.Estado(
+                        entity.getEstadoJuradoId(), entity.getEstadoJuradoNombre()),
                 new EvaluacionAsignadaJuradoReadModel.Evaluacion(
                         entity.getEvaluacionId(),
                         new EvaluacionAsignadaJuradoReadModel.Estado(
@@ -17,6 +19,8 @@ public final class EvaluacionAsignadaJuradoQueryMapper {
                 new EvaluacionAsignadaJuradoReadModel.Entregable(
                         entity.getEntregableId(),
                         entity.getEntregableProyecto(),
-                        entity.getEntregableVersion()));
+                        entity.getEntregableVersion()),
+                entity.isTieneEvaluacionesCualitativas(),
+                entity.isTieneEvaluacionesCuantitativas());
     }
 }

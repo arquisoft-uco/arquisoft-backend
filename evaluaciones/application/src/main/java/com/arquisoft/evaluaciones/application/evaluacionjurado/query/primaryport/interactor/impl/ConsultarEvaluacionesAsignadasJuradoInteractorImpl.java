@@ -5,11 +5,10 @@ import com.arquisoft.evaluaciones.application.evaluacionjurado.query.primaryport
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.primaryport.model.ConsultarEvaluacionesAsignadasJuradoQuery;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.readmodel.EvaluacionAsignadaJuradoReadModel;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.usecase.ConsultarEvaluacionesAsignadasJuradoUseCase;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +19,8 @@ public class ConsultarEvaluacionesAsignadasJuradoInteractorImpl
 
     @Override
     @Transactional(readOnly = true, transactionManager = "evaluacionesTransactionManager")
-    public List<EvaluacionAsignadaJuradoReadModel> ejecutar(ConsultarEvaluacionesAsignadasJuradoQuery entrada) {
+    public PaginatedResult<EvaluacionAsignadaJuradoReadModel> ejecutar(
+            ConsultarEvaluacionesAsignadasJuradoQuery entrada) {
         var criteria = ConsultarEvaluacionesAsignadasJuradoMapper.toCriteria(entrada);
         return consultarEvaluacionesAsignadasJuradoUseCase.ejecutar(criteria);
     }

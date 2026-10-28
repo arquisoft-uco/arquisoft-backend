@@ -128,6 +128,9 @@ public final class EventTopics {
         public static final String AMPLIACION_PLAZO_ENVIADA =
                 "solicitudes.solicitud.ampliacion_plazo_enviada";
 
+        public static final String REGISTRO_MODIFICACION_USUARIOS_ENVIADA =
+                "solicitudes.solicitud.registro_modificacion_usuarios_enviada";
+
         public static final String NOVEDAD_COORDINADOR_RESPONDIDA =
                 "solicitudes.respuesta.novedad_coordinador_respondida";
 
@@ -148,6 +151,9 @@ public final class EventTopics {
 
         public static final String CAMBIO_ASESOR_ESTADO_MODIFICADO =
                 "solicitudes.respuesta.cambio_asesor_estado_modificado";
+
+        public static final String AMPLIACION_PLAZO_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.ampliacion_plazo_estado_modificado";
     }
 
     public static final class RepositorioArtefactos {
@@ -168,6 +174,8 @@ public final class EventTopics {
                 "artefactos.version_artefacto.generada";
         public static final String ESTUDIANTES_ARTEFACTO_ASIGNADOS =
                 "artefactos.estudiante_artefacto.asignados";
+        public static final String REVISION_ASESOR_ESTADO_CAMBIADO =
+                "artefactos.revision_asesor.estado_cambiado";
     }
 
     public static final class MapasRuta {
