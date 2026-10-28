@@ -61,7 +61,7 @@ public class EliminarUsuarioUseCaseImpl implements EliminarUsuarioUseCase {
                 !administrador.esVacio(), !bibliotecario.esVacio(), !jurado.esVacio());
 
         eliminarUsuarioValidator.validar(eliminacion.getUsuario(), usuario, new RolesUsuario(
-                eliminacion.getUsuario(), estudiante, asesor, asesorFicha, coordinador, representanteComite,
+                eliminacion.getUsuario(), usuario.getNombre(), estudiante, asesor, asesorFicha, coordinador, representanteComite,
                 administrador, bibliotecario, jurado));
 
         usuario.eliminar(UtilFecha.generarInstanteActual());

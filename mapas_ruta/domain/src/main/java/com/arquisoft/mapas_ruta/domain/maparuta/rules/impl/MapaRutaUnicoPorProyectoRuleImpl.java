@@ -9,7 +9,7 @@ public class MapaRutaUnicoPorProyectoRuleImpl implements MapaRutaUnicoPorProyect
     @Override
     public void validar(DisponibilidadMapaRuta disponibilidad) {
         if (disponibilidad.mapaRutaExiste()) {
-            throw new MapaRutaDuplicadoException(disponibilidad.proyectoGrado());
+            throw new MapaRutaDuplicadoException(disponibilidad.proyectoGrado(), disponibilidad.tituloProyecto());
         }
     }
 }

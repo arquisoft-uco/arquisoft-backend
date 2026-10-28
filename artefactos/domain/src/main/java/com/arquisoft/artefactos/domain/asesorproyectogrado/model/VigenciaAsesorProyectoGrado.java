@@ -5,4 +5,5 @@ import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDo
 import java.util.List;
 import java.util.UUID;
 
-public record VigenciaAsesorProyectoGrado(UUID asesor, UUID proyectoGrado, List<AsesorProyectoGradoDomain> masRecientes) {}
+public record VigenciaAsesorProyectoGrado(
+        UUID asesor, String nombreAsesor, UUID proyectoGrado, List<AsesorProyectoGradoDomain> masRecientes) {}

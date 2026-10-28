@@ -10,7 +10,7 @@ public class CoordinadorVigenteRuleImpl implements CoordinadorVigenteRule {
     public void validar(ExistenciaCoordinador existencia) {
         var coordinador = existencia.coordinador();
         if (coordinador.esVacio() || coordinador.estaEliminado()) {
-            throw new CoordinadorNoEncontradoException(existencia.usuario());
+            throw new CoordinadorNoEncontradoException(existencia.usuario(), existencia.nombre());
         }
     }
 }

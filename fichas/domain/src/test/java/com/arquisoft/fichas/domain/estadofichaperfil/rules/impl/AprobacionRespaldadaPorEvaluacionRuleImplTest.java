@@ -11,10 +11,13 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AprobacionRespaldadaPorEvaluacionRuleImplTest {
+
+    private static final String TITULO = "Sistema de gestión de tesis";
 
     private final AprobacionRespaldadaPorEvaluacionRuleImpl regla = new AprobacionRespaldadaPorEvaluacionRuleImpl();
 
@@ -26,13 +29,17 @@ class AprobacionRespaldadaPorEvaluacionRuleImplTest {
     @Test
     void debeLanzarExcepcion_cuandoAceptaYNingunaEvaluacionEsAprobatoria() {
         // Arrange
-        var respaldo = new RespaldoAprobacionFicha(true, resumenSoloNoAprobadas());
+        var respaldo = new RespaldoAprobacionFicha(true, TITULO, resumenSoloNoAprobadas());
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(respaldo))
-                .isInstanceOf(AprobacionSinEvaluacionAprobatoriaException.class)
-                .extracting("codigoError")
-                .isEqualTo(FichasCodes.EstadoFichaPerfil.APROBACION_SIN_EVALUACION_APROBATORIA);
+                .isInstanceOfSatisfying(AprobacionSinEvaluacionAprobatoriaException.class, ex -> {
+                    assertThat(ex.getCodigoError())
+                            .isEqualTo(FichasCodes.EstadoFichaPerfil.APROBACION_SIN_EVALUACION_APROBATORIA);
+                    assertThat(ex.getError().getMessage())
+                            .contains(TITULO)
+                            .doesNotContain(respaldo.resumen().fichaPerfil().toString());
+                });
     }
 
     @Test
@@ -41,7 +48,7 @@ class AprobacionRespaldadaPorEvaluacionRuleImplTest {
         var resumen = new ResumenEvaluacionesFicha(UUID.randomUUID(), List.of(
                 new ConteoEvaluacionesPorEstado(EstadoEvaluacion.NO_APROBADA, 2, 0),
                 new ConteoEvaluacionesPorEstado(EstadoEvaluacion.APROBADA_CON_OBSERVACIONES, 1, 1)));
-        var respaldo = new RespaldoAprobacionFicha(true, resumen);
+        var respaldo = new RespaldoAprobacionFicha(true, TITULO, resumen);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(respaldo)).doesNotThrowAnyException();
@@ -50,7 +57,7 @@ class AprobacionRespaldadaPorEvaluacionRuleImplTest {
     @Test
     void debePasar_cuandoNoAceptaAunqueNingunaEvaluacionSeaAprobatoria() {
         // Arrange
-        var respaldo = new RespaldoAprobacionFicha(false, resumenSoloNoAprobadas());
+        var respaldo = new RespaldoAprobacionFicha(false, TITULO, resumenSoloNoAprobadas());
 
         // Act & Assert
         assertThatCode(() -> regla.validar(respaldo)).doesNotThrowAnyException();

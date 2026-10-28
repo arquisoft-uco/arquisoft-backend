@@ -6,7 +6,6 @@ import com.arquisoft.notificaciones.infrastructure.config.NotificacionesFichasQu
 import com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.AbstractNotificacionConsumer;
 import com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.TipoNotificacionEvento;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -45,7 +44,7 @@ public class RevisionItemAgregadoConsumer extends AbstractNotificacionConsumer {
                     UtilColeccion.aplicarPorDefecto(payload.estudiantes());
 
             logger.info(
-                    Mensajes.obtener(ConsumidorKey.LOG_REVISION_ITEM_AGREGADO_RECIBIDO),
+                    ConsumidorKey.LOG_REVISION_ITEM_AGREGADO_RECIBIDO,
                     payload.itemId(),
                     estudiantes.size());
 

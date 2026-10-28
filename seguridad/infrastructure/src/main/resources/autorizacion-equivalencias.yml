@@ -97,6 +97,7 @@ security:
         # evaluaciones
         - {method: GET, path: "/api/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor-asesor:view"}
         - {method: POST, path: "/api/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor:create"}
+        - {method: POST, path: "/api/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor:create"}
         - {method: POST, path: "/api/evaluaciones-jurado/{evaluacionJuradoId}/evaluaciones-cualitativas", role: "evaluaciones:evaluacion-cualitativa-jurado:create"}
         - {method: POST, path: "/api/evaluaciones/asesor", role: "evaluaciones:evaluacion-asesor:view"}
         - {method: GET, path: "/api/evaluaciones/categorias-item-cuantitativo-asesor", role: "evaluaciones:categoria-item-cuantitativo-asesor:view"}
@@ -192,4 +193,7 @@ security:
         - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas", role: "mapas-ruta:tarea:create"}
         - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas/estudiante", role: "mapas-ruta:tarea-mapa-ruta-estudiante:view"}
         - {method: GET, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:view"}
+        - {method: PATCH, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:update"}
+        - {method: PATCH, path: "/api/tareas/{tareaId}/estado-item", role: "mapas-ruta:tarea:update-estado-item"}
+        - {method: DELETE, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:delete"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}

@@ -5,9 +5,12 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de EstudianteFichaPerfil. */
 public enum EstudianteFichaPerfilKey implements ClaveMensaje {
 
-    ERROR_DUPLICADO("fichas.dominio.estudiantefichaperfil.error.duplicado", 1),
+    ERROR_DUPLICADO("fichas.dominio.estudiantefichaperfil.error.duplicado", 0),
+    ERROR_DUPLICADO_DETALLE("fichas.dominio.estudiantefichaperfil.error.duplicado-detalle", 1),
     ERROR_LIMITE_EXCEDIDO("fichas.dominio.estudiantefichaperfil.error.limite-excedido", 1),
-    ERROR_RELACION_NO_ENCONTRADA("fichas.dominio.estudiantefichaperfil.error.relacion-no-encontrada", 2),
+    ERROR_RELACION_NO_ENCONTRADA("fichas.dominio.estudiantefichaperfil.error.relacion-no-encontrada", 0),
+    ERROR_RELACION_NO_ENCONTRADA_DETALLE(
+            "fichas.dominio.estudiantefichaperfil.error.relacion-no-encontrada-detalle", 2),
     LOG_ASIGNANDO("fichas.aplicacion.estudiantefichaperfil.log.asignando", 2),
     LOG_VERIFICACION_ASIGNAR("fichas.aplicacion.estudiantefichaperfil.log.verificacion-asignar", 4),
     LOG_ASIGNADO("fichas.aplicacion.estudiantefichaperfil.log.asignado", 2),

@@ -10,7 +10,7 @@ public class RevisionAsesorNoCerradaRuleImpl implements RevisionAsesorNoCerradaR
     @Override
     public void validar(EstadoActualRevisionAsesor entrada) {
         if (entrada.estado() == EstadoRevisionAsesor.CERRADA) {
-            throw new RevisionAsesorCerradaException();
+            throw new RevisionAsesorCerradaException(entrada.revisionAsesor());
         }
     }
 }

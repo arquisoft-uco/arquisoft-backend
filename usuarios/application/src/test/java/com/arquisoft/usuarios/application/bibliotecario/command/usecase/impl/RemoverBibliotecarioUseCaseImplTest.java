@@ -90,7 +90,7 @@ class RemoverBibliotecarioUseCaseImplTest {
                 eventPublisher);
         var captorInstante = ArgumentCaptor.forClass(Instant.class);
         var captorEvento = ArgumentCaptor.forClass(BibliotecarioRemovidoEvent.class);
-        orden.verify(removerBibliotecarioValidator).validar(id, vigente);
+        orden.verify(removerBibliotecarioValidator).validar(id, usuario, vigente);
         orden.verify(bibliotecarioOutputPort).eliminarLogica(eq(id), captorInstante.capture());
         orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.BIBLIOTECARIO);
         orden.verify(eventPublisher).publish(captorEvento.capture());
@@ -109,8 +109,8 @@ class RemoverBibliotecarioUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         when(bibliotecarioPorUsuarioFinder.obtener(id)).thenReturn(BibliotecarioDomain.VACIO);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new BibliotecarioNoEncontradoException(id))
-                .when(removerBibliotecarioValidator).validar(id, BibliotecarioDomain.VACIO);
+        doThrow(new BibliotecarioNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerBibliotecarioValidator).validar(id, UsuarioDomain.VACIO, BibliotecarioDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(BibliotecarioDomain.crear(id)))

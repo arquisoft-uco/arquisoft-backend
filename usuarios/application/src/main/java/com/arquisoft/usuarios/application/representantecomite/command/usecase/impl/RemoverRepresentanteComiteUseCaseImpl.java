@@ -37,7 +37,7 @@ public class RemoverRepresentanteComiteUseCaseImpl implements RemoverRepresentan
         logger.debug(RemoverRepresentanteComiteKey.LOG_VERIFICACION_REMOVER,
                 entrada.getUsuario(), !representanteComite.esVacio(), representanteComite.estaEliminado());
 
-        removerRepresentanteComiteValidator.validar(entrada.getUsuario(), representanteComite);
+        removerRepresentanteComiteValidator.validar(entrada.getUsuario(), usuario, representanteComite);
 
         representanteComite.remover(UtilFecha.generarInstanteActual());
         representanteComiteOutputPort.eliminarLogica(representanteComite.getUsuario(), representanteComite.getEliminadoEn());

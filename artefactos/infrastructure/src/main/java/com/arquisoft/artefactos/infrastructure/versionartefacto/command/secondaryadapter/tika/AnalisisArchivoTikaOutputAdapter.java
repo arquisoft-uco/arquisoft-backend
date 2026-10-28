@@ -3,10 +3,7 @@ package com.arquisoft.artefactos.infrastructure.versionartefacto.command.seconda
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.AnalisisArchivoOutputPort;
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.entity.AnalisisArchivoEntity;
 import com.arquisoft.artefactos.infrastructure.config.ArtefactosAlmacenamientoProperties;
-import com.arquisoft.shared.message.Mensajes;
-import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.constant.ArtefactosAlmacenamiento;
-import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
 import com.arquisoft.shared.minio.exception.MinioOperationException;
 import com.arquisoft.shared.minio.model.LecturaObjeto;
@@ -38,8 +35,7 @@ public class AnalisisArchivoTikaOutputAdapter implements AnalisisArchivoOutputPo
             var inspeccion = inspectorArchivo.inspeccionar(lectura.contenido(), propiedades.getTamanoMaximoBytes());
             return new AnalisisArchivoEntity(inspeccion.tipoDetectado(), lectura.etag());
         } catch (IOException e) {
-            throw new MinioOperationException(
-                    Mensajes.obtener(AlmacenamientoKey.ERROR_LECTURA), AppCodes.Minio.LECTURA_FALLIDA, e);
+            throw MinioOperationException.lecturaFallida(e);
         }
     }
 }

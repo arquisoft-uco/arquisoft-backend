@@ -29,7 +29,7 @@ public class AdministradorAgregadoConsumer extends AbstractEventConsumer {
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
-        super(objectMapper, gestorTraza);
+        super(objectMapper, gestorTraza, logger);
         this.registrarUsuarioInteractor = registrarUsuarioInteractor;
         this.logger = logger;
     }

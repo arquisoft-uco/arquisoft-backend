@@ -4,4 +4,4 @@ import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
 
 import java.util.UUID;
 
-public record ExistenciaEstudiante(UUID usuario, EstudianteDomain estudiante) {}
+public record ExistenciaEstudiante(UUID usuario, String nombre, EstudianteDomain estudiante) {}

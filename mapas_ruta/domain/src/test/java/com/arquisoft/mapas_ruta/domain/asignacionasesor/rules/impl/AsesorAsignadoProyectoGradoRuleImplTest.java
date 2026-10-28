@@ -6,30 +6,42 @@ import com.arquisoft.shared.message.constant.MapasRutaCodes;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AsesorAsignadoProyectoGradoRuleImplTest {
+
+    private static final String TITULO_PROYECTO = "Sistema de gestión académica";
 
     private final AsesorAsignadoProyectoGradoRuleImpl rule = new AsesorAsignadoProyectoGradoRuleImpl();
 
     @Test
     void debeLanzar_cuandoNoEstaAsignado() {
         // Arrange
-        var asignacion = new AsignacionAsesorProyectoGrado(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), false);
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var asignacion = new AsignacionAsesorProyectoGrado(proyectoGrado, TITULO_PROYECTO, asesor, false);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(asignacion))
-                .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class)
-                .hasFieldOrPropertyWithValue("codigoError", MapasRutaCodes.AsignacionAsesor.NO_ASIGNADO);
+                .isInstanceOfSatisfying(AsesorNoAsignadoProyectoGradoException.class, excepcion -> {
+                    assertThat(excepcion.getCodigoError()).isEqualTo(MapasRutaCodes.AsignacionAsesor.NO_ASIGNADO);
+                    assertThat(excepcion.getError().getMessage())
+                            .contains(TITULO_PROYECTO)
+                            .doesNotContain(proyectoGrado.toString())
+                            .doesNotContain(asesor.toString());
+                    assertThat(excepcion.getMessage())
+                            .contains(proyectoGrado.toString())
+                            .contains(asesor.toString());
+                });
     }
 
     @Test
     void noDebeLanzar_cuandoEstaAsignado() {
         // Arrange
         var asignacion = new AsignacionAsesorProyectoGrado(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), true);
+                UtilUUID.generarNuevoUUID(), TITULO_PROYECTO, UtilUUID.generarNuevoUUID(), true);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(asignacion)).doesNotThrowAnyException();

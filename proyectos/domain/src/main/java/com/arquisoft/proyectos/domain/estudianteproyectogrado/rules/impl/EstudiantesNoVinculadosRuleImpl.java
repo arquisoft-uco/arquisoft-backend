@@ -9,7 +9,8 @@ public class EstudiantesNoVinculadosRuleImpl implements EstudiantesNoVinculadosR
     @Override
     public void validar(VinculosEstudiantesProyectoGrado vinculos) {
         if (!vinculos.yaVinculados().isEmpty()) {
-            throw new EstudianteYaVinculadoException(vinculos.yaVinculados().getFirst());
+            throw new EstudianteYaVinculadoException(
+                    vinculos.yaVinculados().getFirst(), vinculos.nombresYaVinculados());
         }
     }
 }

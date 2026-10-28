@@ -9,7 +9,7 @@ public class EstudianteExisteRuleImpl implements EstudianteExisteRule {
     @Override
     public void validar(ExistenciaEstudiante entrada) {
         if (!entrada.existe()) {
-            throw new EstudianteNoEncontradoException();
+            throw new EstudianteNoEncontradoException(entrada.estudiante());
         }
     }
 }

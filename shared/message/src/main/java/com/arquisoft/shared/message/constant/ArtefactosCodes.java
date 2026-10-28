@@ -78,6 +78,7 @@ public final class ArtefactosCodes {
         public static final String NOMBRE_REQUERIDO = "ARTEFACTOS_ASESOR_NOMBRE_REQUERIDO";
         public static final String EMAIL_REQUERIDO = "ARTEFACTOS_ASESOR_EMAIL_REQUERIDO";
         public static final String OCURRIDO_EN_REQUERIDO = "ARTEFACTOS_ASESOR_OCURRIDO_EN_REQUERIDO";
+        public static final String NO_ENCONTRADO = "ARTEFACTOS_ASESOR_NO_ENCONTRADO";
         public static final String NO_VIGENTE = "ARTEFACTOS_ASESOR_NO_VIGENTE";
         public static final String DE_REVISION_NO_ENCONTRADO = "ASESOR_DE_REVISION_NO_ENCONTRADO";
     }

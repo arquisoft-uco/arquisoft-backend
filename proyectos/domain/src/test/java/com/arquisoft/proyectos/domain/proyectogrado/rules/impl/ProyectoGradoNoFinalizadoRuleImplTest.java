@@ -9,10 +9,13 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ProyectoGradoNoFinalizadoRuleImplTest {
+
+    private static final String TITULO_PROYECTO = "Plataforma de seguimiento de proyectos de grado";
 
     private final ProyectoGradoNoFinalizadoRuleImpl regla = new ProyectoGradoNoFinalizadoRuleImpl();
 
@@ -24,7 +27,7 @@ class ProyectoGradoNoFinalizadoRuleImplTest {
 
         // Act & Assert
         for (var estado : estados) {
-            var actual = new EstadoActualProyectoGrado(UtilUUID.generarNuevoUUID(), estado);
+            var actual = new EstadoActualProyectoGrado(UtilUUID.generarNuevoUUID(), TITULO_PROYECTO, estado);
             assertThatCode(() -> regla.validar(actual)).doesNotThrowAnyException();
         }
     }
@@ -32,12 +35,17 @@ class ProyectoGradoNoFinalizadoRuleImplTest {
     @Test
     void debeLanzarFinalizado_cuandoEstaFinalizado() {
         // Arrange
-        var actual = new EstadoActualProyectoGrado(UtilUUID.generarNuevoUUID(), EstadoProyecto.FINALIZADO);
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var actual = new EstadoActualProyectoGrado(proyectoGrado, TITULO_PROYECTO, EstadoProyecto.FINALIZADO);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(actual))
-                .isInstanceOf(ProyectoGradoFinalizadoException.class)
-                .extracting("codigoError")
-                .isEqualTo(ProyectosCodes.ProyectoGrado.FINALIZADO);
+                .isInstanceOfSatisfying(ProyectoGradoFinalizadoException.class, exception -> {
+                    assertThat(exception.getCodigoError()).isEqualTo(ProyectosCodes.ProyectoGrado.FINALIZADO);
+                    assertThat(exception.getError().getMessage())
+                            .contains(TITULO_PROYECTO)
+                            .doesNotContain(proyectoGrado.toString());
+                    assertThat(exception.getMessage()).contains(proyectoGrado.toString());
+                });
     }
 }

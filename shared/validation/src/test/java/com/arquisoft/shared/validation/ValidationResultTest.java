@@ -21,16 +21,15 @@ class ValidationResultTest {
     void debeUnirLosErroresConSeparador_cuandoHayVarios() {
         // Arrange
         var result = new ValidationResult();
-        result.agregarError("titulo", "TITULO_REQUERIDO", "El campo 'titulo' no puede ser nulo ni vacío.");
-        result.agregarError("asesor", "ASESOR_REQUERIDO", "El campo 'asesor' no puede ser nulo.");
+        result.agregarError("titulo", "TITULO_REQUERIDO", "obligatorio");
+        result.agregarError("asesor", "ASESOR_REQUERIDO", "no válido");
 
         // Act
         String descripcion = result.describirErrores();
 
         // Assert
         assertThat(descripcion).isEqualTo(
-                "[TITULO_REQUERIDO] El campo 'titulo' no puede ser nulo ni vacío."
-                        + " | [ASESOR_REQUERIDO] El campo 'asesor' no puede ser nulo.");
+                "[TITULO_REQUERIDO] titulo: obligatorio | [ASESOR_REQUERIDO] asesor: no válido");
     }
 
     @Test
@@ -42,7 +41,7 @@ class ValidationResultTest {
         // Act & Assert
         assertThatThrownBy(result::lanzarSiTieneErrores)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessage("[TITULO_REQUERIDO] obligatorio")
+                .hasMessage("[TITULO_REQUERIDO] titulo: obligatorio")
                 .extracting(e -> ((DomainValidationException) e).getCodigoError())
                 .isEqualTo(AppCodes.Validacion.DOMINIO);
     }

@@ -9,17 +9,20 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CoordinadorVigenteRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final CoordinadorVigenteRuleImpl rule = new CoordinadorVigenteRuleImpl();
 
     @Test
     void debeLanzarNoEncontradoConSuCodigo_cuandoCoordinadorNoExiste() {
         // Arrange
-        var existencia = new ExistenciaCoordinador(UtilUUID.generarNuevoUUID(), CoordinadorDomain.VACIO);
+        var existencia = new ExistenciaCoordinador(UtilUUID.generarNuevoUUID(), NOMBRE, CoordinadorDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(existencia))
@@ -33,7 +36,7 @@ class CoordinadorVigenteRuleImplTest {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
         var eliminado = CoordinadorDomain.reconstruir(usuario, Instant.parse("2026-09-24T10:00:00Z"));
-        var existencia = new ExistenciaCoordinador(usuario, eliminado);
+        var existencia = new ExistenciaCoordinador(usuario, NOMBRE, eliminado);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(existencia))
@@ -45,9 +48,22 @@ class CoordinadorVigenteRuleImplTest {
     void noDebeLanzar_cuandoCoordinadorEstaVigente() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var existencia = new ExistenciaCoordinador(usuario, CoordinadorDomain.crear(usuario));
+        var existencia = new ExistenciaCoordinador(usuario, NOMBRE, CoordinadorDomain.crear(usuario));
 
         // Act & Assert
         assertThatCode(() -> rule.validar(existencia)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoNoTieneElRolVigente() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var entrada = new ExistenciaCoordinador(usuario, NOMBRE, CoordinadorDomain.VACIO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(CoordinadorNoEncontradoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

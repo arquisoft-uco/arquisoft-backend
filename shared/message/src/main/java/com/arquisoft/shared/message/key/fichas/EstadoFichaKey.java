@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de EstadoFicha. */
 public enum EstadoFichaKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("fichas.dominio.estadoficha.error.no-encontrado", 1),
+    ERROR_NO_ENCONTRADO("fichas.dominio.estadoficha.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("fichas.dominio.estadoficha.error.no-encontrado-detalle", 1),
     LOG_CONSULTANDO_ACTOR("fichas.aplicacion.estadoficha.log.consultando-actor", 2),
     LOG_ROLES_RESUELTOS("fichas.aplicacion.estadoficha.log.roles-resueltos", 1),
     LOG_CONSULTA_COMPLETADA("fichas.aplicacion.estadoficha.log.consulta-completada", 1);

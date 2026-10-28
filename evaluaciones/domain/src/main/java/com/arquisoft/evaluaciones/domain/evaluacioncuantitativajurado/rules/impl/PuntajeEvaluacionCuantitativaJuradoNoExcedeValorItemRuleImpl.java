@@ -11,7 +11,9 @@ public class PuntajeEvaluacionCuantitativaJuradoNoExcedeValorItemRuleImpl
     public void validar(PuntajeVsValorMaximoItem puntajeVsValorMaximoItem) {
         if (puntajeVsValorMaximoItem.puntaje() > puntajeVsValorMaximoItem.valorMaximoItem()) {
             throw new PuntajeEvaluacionCuantitativaJuradoExcedeValorItemException(
-                    puntajeVsValorMaximoItem.puntaje(), puntajeVsValorMaximoItem.valorMaximoItem());
+                    puntajeVsValorMaximoItem.puntaje(),
+                    puntajeVsValorMaximoItem.valorMaximoItem(),
+                    puntajeVsValorMaximoItem.nombreItem());
         }
     }
 }

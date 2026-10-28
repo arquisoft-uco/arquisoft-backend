@@ -26,8 +26,7 @@ public record RemoverEstudianteProyectoGradoCommand(
                 && UtilUUID.esPorDefecto(UtilUUID.generarUUIDDesdeTexto(proyectoGrado))) {
             result.agregarError(EvaluacionesFields.EstudianteProyectoGrado.PROYECTO_GRADO,
                     EvaluacionesCodes.EstudianteProyectoGrado.PROYECTO_GRADO_REQUERIDO,
-                    Mensajes.formatear(ValidadorKey.UUID_INVALIDO,
-                            EvaluacionesFields.EstudianteProyectoGrado.PROYECTO_GRADO));
+                    Mensajes.obtener(ValidadorKey.UUID_INVALIDO));
         }
         ValidatorUUID.uuidValido(estudiante, EvaluacionesFields.EstudianteProyectoGrado.ESTUDIANTE,
                 EvaluacionesCodes.EstudianteProyectoGrado.ESTUDIANTE_REQUERIDO, result);

@@ -5,11 +5,11 @@ import com.arquisoft.shared.message.constant.UsuariosCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import com.arquisoft.usuarios.application.administrador.command.primaryport.interactor.RemoverAdministradorInteractor;
 import com.arquisoft.usuarios.application.administrador.command.primaryport.model.RemoverAdministradorCommand;
 import com.arquisoft.usuarios.domain.administrador.exception.AdministradorNoEncontradoException;
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
-import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -97,7 +97,7 @@ class RemoverAdministradorControllerTest {
     void debe422ConSuCodigo_cuandoElAdministradorNoEstaVigente() throws Exception {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        doThrow(new AdministradorNoEncontradoException(usuario))
+        doThrow(new AdministradorNoEncontradoException(usuario, "Ana Pérez"))
                 .when(removerAdministradorInteractor).ejecutar(any());
 
         // Act & Assert

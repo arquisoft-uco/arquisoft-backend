@@ -1,0 +1,7 @@
+package com.arquisoft.evaluaciones.domain.evaluacioncuantitativaasesor.rules;
+
+import com.arquisoft.evaluaciones.domain.evaluacioncuantitativaasesor.model.DisponibilidadEvaluacionesCuantitativasAsesor;
+import com.arquisoft.shared.rules.DomainRule;
+
+public interface EvaluacionesCuantitativasAsesorUnicasRule extends DomainRule<DisponibilidadEvaluacionesCuantitativasAsesor> {
+}

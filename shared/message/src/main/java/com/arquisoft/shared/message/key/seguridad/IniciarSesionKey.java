@@ -9,7 +9,7 @@ public enum IniciarSesionKey implements ClaveMensaje {
     ERROR_CREDENCIALES_INVALIDAS("seguridad.dominio.login.error.credenciales-invalidas", 0),
     ERROR_SERVICIO_NO_DISPONIBLE("seguridad.dominio.login.error.servicio-no-disponible", 0),
     ERROR_HTTP_401("seguridad.infraestructura.login.error.http-401", 0),
-    ERROR_AUDIENCIA_INVALIDA("seguridad.infraestructura.login.error.audiencia-invalida", 1),
+    ERROR_AUDIENCIA_INVALIDA_DETALLE("seguridad.infraestructura.login.error.audiencia-invalida-detalle", 1),
     LOG_CREDENCIALES_INVALIDAS("seguridad.infraestructura.login.log.credenciales-invalidas", 0),
     LOG_ERROR_AUTENTICACION_PROVEEDOR("seguridad.infraestructura.login.log.error-autenticacion-proveedor", 2),
     LOG_PROVEEDOR_NO_DISPONIBLE("seguridad.infraestructura.login.log.proveedor-no-disponible", 1),

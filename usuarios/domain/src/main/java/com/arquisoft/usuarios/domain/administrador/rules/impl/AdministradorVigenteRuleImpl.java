@@ -10,7 +10,7 @@ public class AdministradorVigenteRuleImpl implements AdministradorVigenteRule {
     public void validar(ExistenciaAdministrador existencia) {
         var administrador = existencia.administrador();
         if (administrador.esVacio() || administrador.estaEliminado()) {
-            throw new AdministradorNoEncontradoException(existencia.usuario());
+            throw new AdministradorNoEncontradoException(existencia.usuario(), existencia.nombre());
         }
     }
 }

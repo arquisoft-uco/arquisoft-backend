@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AsesorAsignadoProyectoGradoRuleImplTest {
 
     private static final Instant OCURRIDO_EN = Instant.parse("2026-10-01T10:00:00Z");
+    private static final String NOMBRE_ASESOR = "Laura Gómez";
 
     private final AsesorAsignadoProyectoGradoRuleImpl regla = new AsesorAsignadoProyectoGradoRuleImpl();
 
@@ -29,7 +30,7 @@ class AsesorAsignadoProyectoGradoRuleImplTest {
     void debeLanzar_cuandoElProyectoNoTieneVinculos() {
         // Arrange
         var vigencia = new VigenciaAsesorProyectoGrado(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), List.of());
+                UtilUUID.generarNuevoUUID(), NOMBRE_ASESOR, UtilUUID.generarNuevoUUID(), List.of());
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(vigencia))
@@ -42,7 +43,7 @@ class AsesorAsignadoProyectoGradoRuleImplTest {
     void debeLanzar_cuandoElMasRecienteEsDeOtroAsesor() {
         // Arrange
         var vigencia = new VigenciaAsesorProyectoGrado(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), NOMBRE_ASESOR, UtilUUID.generarNuevoUUID(),
                 List.of(vinculo(UtilUUID.generarNuevoUUID(), null)));
 
         // Act & Assert
@@ -55,7 +56,7 @@ class AsesorAsignadoProyectoGradoRuleImplTest {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
         var vigencia = new VigenciaAsesorProyectoGrado(
-                asesor, UtilUUID.generarNuevoUUID(),
+                asesor, NOMBRE_ASESOR, UtilUUID.generarNuevoUUID(),
                 List.of(vinculo(asesor, Instant.parse("2026-10-02T10:00:00Z"))));
 
         // Act & Assert
@@ -68,7 +69,7 @@ class AsesorAsignadoProyectoGradoRuleImplTest {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
         var vigencia = new VigenciaAsesorProyectoGrado(
-                asesor, UtilUUID.generarNuevoUUID(),
+                asesor, NOMBRE_ASESOR, UtilUUID.generarNuevoUUID(),
                 List.of(vinculo(asesor, null), vinculo(UtilUUID.generarNuevoUUID(), null)));
 
         // Act & Assert
@@ -81,7 +82,7 @@ class AsesorAsignadoProyectoGradoRuleImplTest {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
         var vigencia = new VigenciaAsesorProyectoGrado(
-                asesor, UtilUUID.generarNuevoUUID(), List.of(vinculo(asesor, null)));
+                asesor, NOMBRE_ASESOR, UtilUUID.generarNuevoUUID(), List.of(vinculo(asesor, null)));
 
         // Act & Assert
         assertThatCode(() -> regla.validar(vigencia)).doesNotThrowAnyException();

@@ -4,6 +4,7 @@ import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.CambioAsesorArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontradoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
+import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoEncontradoException;
 import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoVigenteException;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.exception.AsesorNoAsignadoProyectoGradoException;
@@ -58,14 +59,19 @@ class CambiarAsesorArtefactoValidatorImplTest {
     }
 
     @Test
-    void debeLanzarAsesorNoVigente_antesQueElVinculo_cuandoElAsesorNoExisteOEstaDadoDeBaja() {
+    void debeLanzarAsesorNoEncontrado_antesQueElVinculo_cuandoElAsesorNoExiste() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(cambio, artefacto, AsesorDomain.VACIO, List.of()))
+                .isInstanceOf(AsesorNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarAsesorNoVigente_antesQueElVinculo_cuandoElAsesorEstaDadoDeBaja() {
         // Arrange
         var eliminado = AsesorDomain.reconstruir(
                 asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), Instant.now());
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, artefacto, AsesorDomain.VACIO, List.of()))
-                .isInstanceOf(AsesorNoVigenteException.class);
         assertThatThrownBy(() -> validator.validar(cambio, artefacto, eliminado, List.of()))
                 .isInstanceOf(AsesorNoVigenteException.class);
     }

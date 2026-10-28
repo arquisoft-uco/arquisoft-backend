@@ -58,7 +58,7 @@ public record RegistrarUsuarioCommand(
                 .filter(rol -> !UsuariosRoles.CONOCIDOS.contains(rol))
                 .forEach(rol -> result.agregarError(UsuariosFields.Usuario.ROLES,
                         UsuariosCodes.Usuario.ROL_NO_VALIDO,
-                        Mensajes.formatear(RegistrarUsuarioKey.ERROR_ROL_NO_VALIDO, rol)));
+                        Mensajes.obtener(RegistrarUsuarioKey.ERROR_ROL_NO_VALIDO)));
 
         result.lanzarSiTieneErroresDeEntrada();
 

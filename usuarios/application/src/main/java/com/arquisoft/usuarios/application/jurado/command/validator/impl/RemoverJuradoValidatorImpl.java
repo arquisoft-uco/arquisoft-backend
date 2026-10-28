@@ -27,6 +27,6 @@ public class RemoverJuradoValidatorImpl implements RemoverJuradoValidator {
     @Override
     public void validar(UUID usuario, UsuarioDomain usuarioDomain, JuradoDomain jurado) {
         usuarioExisteRule.validar(new ExistenciaUsuario(usuario, usuarioDomain));
-        juradoVigenteRule.validar(new ExistenciaJurado(usuario, jurado));
+        juradoVigenteRule.validar(new ExistenciaJurado(usuario, usuarioDomain.getNombre(), jurado));
     }
 }

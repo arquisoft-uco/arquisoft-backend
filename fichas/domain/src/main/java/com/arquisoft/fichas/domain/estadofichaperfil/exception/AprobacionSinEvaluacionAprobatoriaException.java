@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.domain.estadofichaperfil.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.FichasCodes;
@@ -9,10 +10,11 @@ import java.util.UUID;
 
 public final class AprobacionSinEvaluacionAprobatoriaException extends DomainException {
 
-    public AprobacionSinEvaluacionAprobatoriaException(UUID fichaPerfil) {
-        super(
-                Mensajes.formatear(EstadoFichaPerfilKey.ERROR_APROBACION_SIN_EVALUACION_APROBATORIA, fichaPerfil),
-                FichasCodes.EstadoFichaPerfil.APROBACION_SIN_EVALUACION_APROBATORIA
-        );
+    public AprobacionSinEvaluacionAprobatoriaException(UUID fichaPerfil, String tituloProyecto) {
+        super(BaseError.conDetalle(
+                FichasCodes.EstadoFichaPerfil.APROBACION_SIN_EVALUACION_APROBATORIA,
+                Mensajes.formatear(EstadoFichaPerfilKey.ERROR_APROBACION_SIN_EVALUACION_APROBATORIA, tituloProyecto),
+                Mensajes.formatear(EstadoFichaPerfilKey.ERROR_APROBACION_SIN_EVALUACION_APROBATORIA_DETALLE, fichaPerfil)
+        ));
     }
 }

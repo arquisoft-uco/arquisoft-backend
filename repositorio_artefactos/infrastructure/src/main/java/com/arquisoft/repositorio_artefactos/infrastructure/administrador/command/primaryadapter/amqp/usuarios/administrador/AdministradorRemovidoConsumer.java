@@ -28,7 +28,7 @@ public class AdministradorRemovidoConsumer extends AbstractEventConsumer {
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
-        super(objectMapper, gestorTraza);
+        super(objectMapper, gestorTraza, logger);
         this.removerAdministradorInteractor = removerAdministradorInteractor;
         this.logger = logger;
     }

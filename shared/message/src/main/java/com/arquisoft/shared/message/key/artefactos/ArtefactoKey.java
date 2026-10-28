@@ -20,6 +20,7 @@ public enum ArtefactoKey implements ClaveMensaje {
     LOG_GUARDADOS("artefactos.infraestructura.artefacto.log.guardados", 1),
     LOG_TRASPASADOS("artefactos.infraestructura.artefacto.log.traspasados", 1),
     ERROR_REPOSITORIO_YA_ASIGNADO("artefactos.dominio.artefacto.error.repositorio-ya-asignado", 1),
+    ERROR_REPOSITORIO_YA_ASIGNADO_DETALLE("artefactos.dominio.artefacto.error.repositorio-ya-asignado-detalle", 1),
     ERROR_ESTUDIANTE_NO_PROPIETARIO("artefactos.dominio.artefacto.error.estudiante-no-propietario", 0),
     ERROR_ESTUDIANTE_NO_PROPIETARIO_DETALLE("artefactos.dominio.artefacto.error.estudiante-no-propietario-detalle", 2);
 

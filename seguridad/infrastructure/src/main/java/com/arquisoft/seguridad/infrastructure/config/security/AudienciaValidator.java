@@ -21,7 +21,7 @@ public class AudienciaValidator implements OAuth2TokenValidator<Jwt> {
         this.expectedAudiences = Set.copyOf(expectedAudiences);
         this.error = new OAuth2Error(
                 OAuth2ErrorCodes.INVALID_TOKEN,
-                Mensajes.formatear(IniciarSesionKey.ERROR_AUDIENCIA_INVALIDA, String.join(",", expectedAudiences)),
+                Mensajes.formatear(IniciarSesionKey.ERROR_AUDIENCIA_INVALIDA_DETALLE, String.join(",", expectedAudiences)),
                 null);
     }
 

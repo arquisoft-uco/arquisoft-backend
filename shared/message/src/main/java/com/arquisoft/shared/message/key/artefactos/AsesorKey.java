@@ -22,9 +22,13 @@ public enum AsesorKey implements ClaveMensaje {
     LOG_REMOCION_DESCARTADA("artefactos.aplicacion.asesor.log.remocion-descartada", 2),
     LOG_USUARIO_MODIFICADO_RECIBIDO("artefactos.infraestructura.asesor.log.usuario-modificado-recibido", 2),
     LOG_REACTIVADO("artefactos.aplicacion.asesor.log.reactivado", 1),
-    ERROR_NO_VIGENTE("artefactos.dominio.asesor.error.no-vigente", 0),
+    ERROR_NO_ENCONTRADO("artefactos.dominio.asesor.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("artefactos.dominio.asesor.error.no-encontrado-detalle", 1),
+    ERROR_NO_VIGENTE("artefactos.dominio.asesor.error.no-vigente", 1),
     ERROR_NO_VIGENTE_DETALLE("artefactos.dominio.asesor.error.no-vigente-detalle", 1),
-    ERROR_DE_REVISION_NO_ENCONTRADO("artefactos.dominio.asesor.error.de-revision-no-encontrado", 0);
+    ERROR_DE_REVISION_NO_ENCONTRADO("artefactos.dominio.asesor.error.de-revision-no-encontrado", 0),
+    ERROR_DE_REVISION_NO_ENCONTRADO_DETALLE(
+            "artefactos.dominio.asesor.error.de-revision-no-encontrado-detalle", 1);
 
     private final String clave;
     private final int parametros;

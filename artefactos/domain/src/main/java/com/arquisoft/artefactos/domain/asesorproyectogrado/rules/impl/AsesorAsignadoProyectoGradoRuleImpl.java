@@ -10,11 +10,16 @@ public class AsesorAsignadoProyectoGradoRuleImpl implements AsesorAsignadoProyec
     public void validar(VigenciaAsesorProyectoGrado vigencia) {
         var masRecientes = vigencia.masRecientes();
         if (masRecientes.size() != 1) {
-            throw new AsesorNoAsignadoProyectoGradoException(vigencia.asesor(), vigencia.proyectoGrado());
+            throw noAsignado(vigencia);
         }
         var masReciente = masRecientes.get(0);
         if (!masReciente.getAsesor().equals(vigencia.asesor()) || masReciente.estaFinalizado()) {
-            throw new AsesorNoAsignadoProyectoGradoException(vigencia.asesor(), vigencia.proyectoGrado());
+            throw noAsignado(vigencia);
         }
+    }
+
+    private static AsesorNoAsignadoProyectoGradoException noAsignado(VigenciaAsesorProyectoGrado vigencia) {
+        return new AsesorNoAsignadoProyectoGradoException(
+                vigencia.asesor(), vigencia.nombreAsesor(), vigencia.proyectoGrado());
     }
 }

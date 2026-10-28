@@ -6,10 +6,13 @@ import com.arquisoft.shared.message.constant.MapasRutaCodes;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CoordinadorPropietarioProyectoGradoRuleImplTest {
+
+    private static final String TITULO_PROYECTO = "Sistema de gestión académica";
 
     private final CoordinadorPropietarioProyectoGradoRuleImpl rule =
             new CoordinadorPropietarioProyectoGradoRuleImpl();
@@ -18,7 +21,8 @@ class CoordinadorPropietarioProyectoGradoRuleImplTest {
     void debePasar_cuandoElSolicitanteEsElCoordinadorAsignado() {
         // Arrange
         var coordinador = UtilUUID.generarNuevoUUID();
-        var propiedad = new PropiedadProyectoGrado(UtilUUID.generarNuevoUUID(), coordinador, coordinador);
+        var propiedad = new PropiedadProyectoGrado(
+                UtilUUID.generarNuevoUUID(), TITULO_PROYECTO, coordinador, coordinador);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(propiedad)).doesNotThrowAnyException();
@@ -27,12 +31,18 @@ class CoordinadorPropietarioProyectoGradoRuleImplTest {
     @Test
     void debeLanzarNoPropietario_cuandoElSolicitanteEsOtroCoordinador() {
         // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
         var propiedad = new PropiedadProyectoGrado(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+                proyectoGrado, TITULO_PROYECTO, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(propiedad))
-                .isInstanceOf(ProyectoGradoNoPropietarioException.class)
-                .hasFieldOrPropertyWithValue("codigoError", MapasRutaCodes.ProyectoGrado.NO_PROPIETARIO);
+                .isInstanceOfSatisfying(ProyectoGradoNoPropietarioException.class, excepcion -> {
+                    assertThat(excepcion.getCodigoError()).isEqualTo(MapasRutaCodes.ProyectoGrado.NO_PROPIETARIO);
+                    assertThat(excepcion.getError().getMessage())
+                            .contains(TITULO_PROYECTO)
+                            .doesNotContain(proyectoGrado.toString());
+                    assertThat(excepcion.getMessage()).contains(proyectoGrado.toString());
+                });
     }
 }

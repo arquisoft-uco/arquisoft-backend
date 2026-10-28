@@ -90,7 +90,7 @@ class RemoverRepresentanteComiteUseCaseImplTest {
                 proveedorIdentidadOutputPort, eventPublisher);
         var captorInstante = ArgumentCaptor.forClass(Instant.class);
         var captorEvento = ArgumentCaptor.forClass(RepresentanteComiteRemovidoEvent.class);
-        orden.verify(removerRepresentanteComiteValidator).validar(id, vigente);
+        orden.verify(removerRepresentanteComiteValidator).validar(id, usuario, vigente);
         orden.verify(representanteComiteOutputPort).eliminarLogica(eq(id), captorInstante.capture());
         orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.REPRESENTANTE_COMITE);
         orden.verify(eventPublisher).publish(captorEvento.capture());
@@ -109,8 +109,8 @@ class RemoverRepresentanteComiteUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         when(representanteComitePorUsuarioFinder.obtener(id)).thenReturn(RepresentanteComiteDomain.VACIO);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new RepresentanteComiteNoEncontradoException(id))
-                .when(removerRepresentanteComiteValidator).validar(id, RepresentanteComiteDomain.VACIO);
+        doThrow(new RepresentanteComiteNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerRepresentanteComiteValidator).validar(id, UsuarioDomain.VACIO, RepresentanteComiteDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(RepresentanteComiteDomain.crear(id)))
@@ -127,8 +127,8 @@ class RemoverRepresentanteComiteUseCaseImplTest {
         var removido = RepresentanteComiteDomain.reconstruir(id, Instant.parse("2026-09-01T10:00:00Z"));
         when(representanteComitePorUsuarioFinder.obtener(id)).thenReturn(removido);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(usuario(id));
-        doThrow(new RepresentanteComiteNoEncontradoException(id))
-                .when(removerRepresentanteComiteValidator).validar(id, removido);
+        doThrow(new RepresentanteComiteNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerRepresentanteComiteValidator).validar(eq(id), any(UsuarioDomain.class), eq(removido));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(RepresentanteComiteDomain.crear(id)))

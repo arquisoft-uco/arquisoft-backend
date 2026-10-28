@@ -118,7 +118,7 @@ class RemoverItemFichaPerfilControllerTest {
         result.agregarError(
                 FichasFields.ItemFichaPerfil.REVISIONES,
                 FichasCodes.ItemFichaPerfil.ITEM_CON_REVISIONES,
-                Mensajes.formatear(ItemFichaPerfilKey.ERROR_CON_REVISIONES, itemId)
+                Mensajes.formatear(ItemFichaPerfilKey.ERROR_CON_REVISIONES)
         );
 
         doThrow(new DomainValidationException(result))

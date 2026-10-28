@@ -9,7 +9,7 @@ public class CoordinadorPropietarioProyectoGradoRuleImpl implements CoordinadorP
     @Override
     public void validar(PropiedadProyectoGrado propiedad) {
         if (!propiedad.coordinadorAsignado().equals(propiedad.coordinadorSolicitante())) {
-            throw new ProyectoGradoNoPropietarioException(propiedad.proyectoGrado());
+            throw new ProyectoGradoNoPropietarioException(propiedad.proyectoGrado(), propiedad.tituloProyecto());
         }
     }
 }

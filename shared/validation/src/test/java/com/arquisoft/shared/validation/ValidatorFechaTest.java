@@ -44,7 +44,7 @@ class ValidatorFechaTest {
         assertThat(result.getErrores().get(0).campo()).isEqualTo(CAMPO);
         assertThat(result.getErrores().get(0).codigoError()).isEqualTo(CODIGO);
         assertThat(result.getErrores().get(0).mensaje())
-                .isEqualTo(Mensajes.formatear(ValidadorKey.FECHA_INVALIDA, CAMPO));
+                .isEqualTo(Mensajes.obtener(ValidadorKey.FECHA_INVALIDA));
     }
 
     @Test
@@ -76,7 +76,7 @@ class ValidatorFechaTest {
         assertThat(anterior).isFalse();
         assertThat(result.getErrores()).hasSize(2);
         assertThat(result.getErrores().get(0).mensaje())
-                .isEqualTo(Mensajes.formatear(ValidadorKey.FECHA_POSTERIOR, CAMPO, referencia));
+                .isEqualTo(Mensajes.formatear(ValidadorKey.FECHA_POSTERIOR, referencia));
     }
 
     @Test

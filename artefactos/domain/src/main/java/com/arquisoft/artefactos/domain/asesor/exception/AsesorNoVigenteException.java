@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public final class AsesorNoVigenteException extends DomainException {
 
-    public AsesorNoVigenteException(UUID asesor) {
+    public AsesorNoVigenteException(UUID asesor, String nombreAsesor) {
         super(BaseError.conDetalle(
                 ArtefactosCodes.Asesor.NO_VIGENTE,
-                Mensajes.obtener(AsesorKey.ERROR_NO_VIGENTE),
+                Mensajes.formatear(AsesorKey.ERROR_NO_VIGENTE, nombreAsesor),
                 Mensajes.formatear(AsesorKey.ERROR_NO_VIGENTE_DETALLE, asesor)
         ));
     }

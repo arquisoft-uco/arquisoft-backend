@@ -10,7 +10,7 @@ public class ProyectoGradoNoFinalizadoRuleImpl implements ProyectoGradoNoFinaliz
     @Override
     public void validar(EstadoActualProyectoGrado estado) {
         if (estado.estadoActual() == EstadoProyecto.FINALIZADO) {
-            throw new ProyectoGradoFinalizadoException(estado.proyectoGrado());
+            throw new ProyectoGradoFinalizadoException(estado.proyectoGrado(), estado.tituloProyecto());
         }
     }
 }

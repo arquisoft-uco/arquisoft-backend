@@ -1,7 +1,6 @@
 package com.arquisoft.shared.query;
 
 import com.arquisoft.shared.query.exception.FiltroException;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.query.pagination.SortDirection;
@@ -24,15 +23,15 @@ public final class SortOrder {
     public static SortOrder parse(String expresion) {
         if (UtilTexto.esVacioONulo(expresion)) {
             throw new FiltroException(
-                    Mensajes.obtener(ConsultaKey.ERROR_ORDEN_CAMPO_VACIO),
-                    AppCodes.Consulta.SORT_CAMPO_VACIO);
+                    AppCodes.Consulta.SORT_CAMPO_VACIO,
+                    ConsultaKey.ERROR_ORDEN_CAMPO_VACIO, ConsultaKey.ERROR_ORDEN_CAMPO_VACIO_DETALLE);
         }
         String[] partes = expresion.split(":", 2);
         String campo = partes[0].trim();
         if (campo.isBlank()) {
             throw new FiltroException(
-                    Mensajes.obtener(ConsultaKey.ERROR_ORDEN_CAMPO_VACIO),
-                    AppCodes.Consulta.SORT_CAMPO_VACIO);
+                    AppCodes.Consulta.SORT_CAMPO_VACIO,
+                    ConsultaKey.ERROR_ORDEN_CAMPO_VACIO, ConsultaKey.ERROR_ORDEN_CAMPO_VACIO_DETALLE);
         }
         var dir = SortDirection.ASC;
         if (partes.length > 1 && !partes[1].isBlank()) {
@@ -40,8 +39,9 @@ public final class SortOrder {
                 dir = SortDirection.valueOf(partes[1].trim().toUpperCase());
             } catch (IllegalArgumentException e) {
                 throw new FiltroException(
-                        Mensajes.formatear(ConsultaKey.ERROR_ORDEN_DIRECCION_INVALIDA, partes[1].trim()),
-                        AppCodes.Consulta.SORT_DIRECTION_INVALIDA);
+                        AppCodes.Consulta.SORT_DIRECTION_INVALIDA,
+                        ConsultaKey.ERROR_ORDEN_DIRECCION_INVALIDA, ConsultaKey.ERROR_ORDEN_DIRECCION_INVALIDA_DETALLE,
+                        partes[1].trim());
             }
         }
         return new SortOrder(campo, dir);

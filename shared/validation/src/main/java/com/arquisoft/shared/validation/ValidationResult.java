@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 public final class ValidationResult {
 
-    private static final String FORMATO_ERROR = "[%s] %s";
+    private static final String FORMATO_ERROR = "[%s] %s: %s";
     private static final String SEPARADOR_ERRORES = " | ";
 
     public record ValidationError(String campo, String codigoError, String mensaje) {}
@@ -32,7 +32,7 @@ public final class ValidationResult {
 
     public String describirErrores() {
         return errores.stream()
-                .map(e -> FORMATO_ERROR.formatted(e.codigoError(), e.mensaje()))
+                .map(e -> FORMATO_ERROR.formatted(e.codigoError(), e.campo(), e.mensaje()))
                 .collect(Collectors.joining(SEPARADOR_ERRORES));
     }
 

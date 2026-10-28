@@ -1,6 +1,5 @@
 package com.arquisoft.shared.jpa.query;
 
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.query.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.FiltroConector;
@@ -49,9 +48,8 @@ public abstract class QueryJpaSpecification<E> {
         CampoSpec<E> spec = camposPermitidos().get(predicado.campo());
         if (spec == null) {
             throw new FiltroInvalidoException(
-                    Mensajes.formatear(ConsultaKey.ERROR_CAMPO_FILTRO_DESCONOCIDO,
-                            predicado.campo(), camposPermitidos().keySet())
-            );
+                    ConsultaKey.ERROR_CAMPO_FILTRO_DESCONOCIDO, ConsultaKey.ERROR_CAMPO_FILTRO_DESCONOCIDO_DETALLE,
+                    predicado.campo(), camposPermitidos().keySet());
         }
         return spec.construirSpec(predicado.operador(), predicado.valor());
     }
@@ -60,9 +58,8 @@ public abstract class QueryJpaSpecification<E> {
         CampoSpec<E> spec = camposPermitidos().get(predicado.campo());
         if (spec == null) {
             throw new FiltroInvalidoException(
-                    Mensajes.formatear(ConsultaKey.ERROR_CAMPO_FILTRO_DESCONOCIDO,
-                            predicado.campo(), camposPermitidos().keySet())
-            );
+                    ConsultaKey.ERROR_CAMPO_FILTRO_DESCONOCIDO, ConsultaKey.ERROR_CAMPO_FILTRO_DESCONOCIDO_DETALLE,
+                    predicado.campo(), camposPermitidos().keySet());
         }
         return spec.construirSpecMultivalor(predicado.operador(), predicado.valores());
     }

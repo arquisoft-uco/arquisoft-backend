@@ -6,8 +6,11 @@ import com.arquisoft.artefactos.domain.artefacto.model.DisponibilidadRepositorio
 import com.arquisoft.artefactos.domain.artefacto.rules.RepositorioArtefactoUnicoEnProyectoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.RepositorioArtefactoUnicoEnProyectoRuleImpl;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
+import com.arquisoft.artefactos.domain.asesor.model.ExistenciaAsesor;
 import com.arquisoft.artefactos.domain.asesor.model.VigenciaAsesor;
+import com.arquisoft.artefactos.domain.asesor.rules.AsesorExisteRule;
 import com.arquisoft.artefactos.domain.asesor.rules.AsesorVigenteRule;
+import com.arquisoft.artefactos.domain.asesor.rules.impl.AsesorExisteRuleImpl;
 import com.arquisoft.artefactos.domain.asesor.rules.impl.AsesorVigenteRuleImpl;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.model.VigenciaAsesorProyectoGrado;
@@ -29,6 +32,7 @@ import java.util.UUID;
 public class AsignarArtefactosValidatorImpl implements AsignarArtefactosValidator {
 
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
+    private final AsesorExisteRule asesorExisteRule;
     private final AsesorVigenteRule asesorVigenteRule;
     private final AsesorAsignadoProyectoGradoRule asesorAsignadoProyectoGradoRule;
     private final VersionesRepositorioArtefactoExistenRule versionesRepositorioArtefactoExistenRule;
@@ -36,6 +40,7 @@ public class AsignarArtefactosValidatorImpl implements AsignarArtefactosValidato
 
     public AsignarArtefactosValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
+        this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.asesorVigenteRule = new AsesorVigenteRuleImpl();
         this.asesorAsignadoProyectoGradoRule = new AsesorAsignadoProyectoGradoRuleImpl();
         this.versionesRepositorioArtefactoExistenRule = new VersionesRepositorioArtefactoExistenRuleImpl();
@@ -51,9 +56,10 @@ public class AsignarArtefactosValidatorImpl implements AsignarArtefactosValidato
             List<VersionRepositorioArtefactoDomain> versiones,
             List<UUID> repositoriosAsignados) {
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(asignacion.getProyectoGrado(), proyectoExiste));
+        asesorExisteRule.validar(new ExistenciaAsesor(asignacion.getAsesor(), asesor));
         asesorVigenteRule.validar(new VigenciaAsesor(asignacion.getAsesor(), asesor));
         asesorAsignadoProyectoGradoRule.validar(new VigenciaAsesorProyectoGrado(
-                asignacion.getAsesor(), asignacion.getProyectoGrado(), vinculosMasRecientes));
+                asignacion.getAsesor(), asesor.getNombre(), asignacion.getProyectoGrado(), vinculosMasRecientes));
         versionesRepositorioArtefactoExistenRule.validar(new ExistenciaVersionesRepositorioArtefacto(
                 asignacion.getVersionesRepositorioArtefacto(), versiones));
         repositorioArtefactoUnicoEnProyectoRule.validar(

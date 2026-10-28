@@ -8,6 +8,7 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.message.prueba.CatalogoMensajesPrueba;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
@@ -184,7 +185,7 @@ class AsesorFichaCambiadoConsumerTest {
         adapter.onAsesorFichaCambiado(mensajeCon(idEvento, 3L), channel);
 
         // Assert
-        verify(logger).info(any(String.class), eq(idEvento), eq("a***@soyuco.edu.co"));
+        verify(logger).info(eq(ConsumidorKey.LOG_NOTIFICACION_DUPLICADA), eq(idEvento), eq("a***@soyuco.edu.co"));
         verify(channel).basicAck(3L, false);
     }
 
@@ -201,6 +202,6 @@ class AsesorFichaCambiadoConsumerTest {
         adapter.onAsesorFichaCambiado(mensajeCon(idEvento, 4L), channel);
 
         // Assert
-        verify(logger).warn(any(String.class), eq(idEvento), eq("a***@soyuco.edu.co"));
+        verify(logger).warn(eq(ConsumidorKey.LOG_NOTIFICACION_FALLIDA), eq(idEvento), eq("a***@soyuco.edu.co"));
     }
 }

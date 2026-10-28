@@ -6,6 +6,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum RemoverBibliotecarioKey implements ClaveMensaje {
 
     ERROR_NO_ENCONTRADO("usuarios.dominio.bibliotecario.error.no-encontrado", 1),
+    ERROR_NO_ENCONTRADO_DETALLE("usuarios.dominio.bibliotecario.error.no-encontrado-detalle", 1),
     LOG_REMOVIENDO("usuarios.aplicacion.bibliotecario.log.removiendo", 1),
     LOG_VERIFICACION_REMOVER("usuarios.aplicacion.bibliotecario.log.verificacion-remover", 3),
     LOG_REMOVIDO("usuarios.aplicacion.bibliotecario.log.removido", 1);

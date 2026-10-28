@@ -37,7 +37,7 @@ public class RemoverEstudianteUseCaseImpl implements RemoverEstudianteUseCase {
         logger.debug(RemoverEstudianteKey.LOG_VERIFICACION_REMOVER,
                 entrada.getUsuario(), !estudiante.esVacio(), estudiante.estaEliminado());
 
-        removerEstudianteValidator.validar(entrada.getUsuario(), estudiante);
+        removerEstudianteValidator.validar(entrada.getUsuario(), usuario, estudiante);
 
         estudiante.remover(UtilFecha.generarInstanteActual());
         estudianteOutputPort.eliminarLogica(estudiante.getUsuario(), estudiante.getEliminadoEn());

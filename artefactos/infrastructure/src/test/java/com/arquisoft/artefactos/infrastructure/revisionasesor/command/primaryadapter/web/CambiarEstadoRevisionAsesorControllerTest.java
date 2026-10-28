@@ -114,7 +114,7 @@ class CambiarEstadoRevisionAsesorControllerTest {
         // Arrange
         var revision = UtilUUID.generarNuevoUUID();
         var estudiante = UtilUUID.generarNuevoUUID();
-        doThrow(new RevisionAsesorNoEncontradaException()).when(interactor).ejecutar(any());
+        doThrow(new RevisionAsesorNoEncontradaException(revision)).when(interactor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(patch(RUTA, revision)
