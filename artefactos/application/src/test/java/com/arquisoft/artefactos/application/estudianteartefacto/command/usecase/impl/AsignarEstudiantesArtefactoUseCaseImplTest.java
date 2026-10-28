@@ -115,7 +115,7 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
                 .toList();
         var asesor = AsesorDomain.reconstruir(asesorId, "1", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
         var estudiantes = idsEstudiantes.stream()
-                .map(id -> EstudianteDomain.reconstruir(id, "2", "Est-" + id, id + "@uco.edu.co", null))
+                .map(id -> EstudianteDomain.reconstruir(id, "2", "Est-" + id, id + "@uco.edu.co", Instant.EPOCH, null))
                 .toList();
         var pertenencias = entrada.getPares();
         var yaVinculados = List.<ParEstudianteArtefacto>of();
@@ -173,7 +173,7 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
         var artefacto = ArtefactoDomain.reconstruir(
                 artefactoId, UtilUUID.generarNuevoUUID(), version.getId(), asesorId);
         var asesor = AsesorDomain.reconstruir(asesorId, "1", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
-        var estudiante = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", null);
+        var estudiante = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", Instant.EPOCH, null);
         when(artefactosPorIdsFinder.obtener(anyList())).thenReturn(List.of(artefacto));
         when(asesorPorIdFinder.obtener(asesorId)).thenReturn(asesor);
         when(versionesRepositorioArtefactoPorIdsFinder.obtener(anyList())).thenReturn(List.of(version));

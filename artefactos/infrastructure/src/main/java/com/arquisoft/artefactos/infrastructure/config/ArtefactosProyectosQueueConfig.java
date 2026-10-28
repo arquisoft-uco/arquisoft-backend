@@ -53,4 +53,32 @@ public class ArtefactosProyectosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS_QUEUE =
+            ArtefactosQueues.PREFIJO + EventTopics.Proyectos.ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS;
+
+    @Bean
+    public Declarables artefactosEstudiantesProyectoGradoAsignadosDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS_QUEUE,
+                EventTopics.Proyectos.ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String ESTUDIANTE_PROYECTO_GRADO_DESTITUIDO_QUEUE =
+            ArtefactosQueues.PREFIJO + EventTopics.Proyectos.ESTUDIANTE_PROYECTO_GRADO_DESTITUIDO;
+
+    @Bean
+    public Declarables artefactosEstudianteProyectoGradoDestituidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_PROYECTO_GRADO_DESTITUIDO_QUEUE,
+                EventTopics.Proyectos.ESTUDIANTE_PROYECTO_GRADO_DESTITUIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

@@ -1,6 +1,9 @@
 package com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secondaryadapter.entity.EstudianteArtefactoJpaEntity;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,4 +15,13 @@ public interface EstudianteArtefactoCommandRepository extends JpaRepository<Estu
 
     List<EstudianteArtefactoJpaEntity> findByArtefactoInAndEstudianteIn(
             List<UUID> artefactos, List<UUID> estudiantes);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            DELETE FROM EstudianteArtefactoJpaEntity ea
+            WHERE ea.estudiante = :estudiante
+              AND ea.artefacto IN (SELECT a.id FROM ArtefactoJpaEntity a WHERE a.proyectoGrado = :proyectoGrado)
+            """)
+    int eliminarPorProyectoGradoYEstudiante(
+            @Param("proyectoGrado") UUID proyectoGrado, @Param("estudiante") UUID estudiante);
 }

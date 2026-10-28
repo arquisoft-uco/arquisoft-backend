@@ -1,6 +1,7 @@
 package com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.entity.EstudianteArtefactoEntity;
+import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secondaryadapter.entity.EstudianteArtefactoJpaEntity;
 import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -101,6 +102,50 @@ class EstudianteArtefactoCommandOutputAdapterTest {
             assertThat(vinculo.artefacto()).isEqualTo(artefacto);
             assertThat(vinculo.estudiante()).isEqualTo(pedido);
         });
+    }
+
+    @Test
+    void debeBorrarSoloLosVinculosDelEstudianteEnArtefactosDelProyecto_cuandoSeDesvincula() {
+        // Arrange
+        var logger = mock(AppLogger.class);
+        var adapter = new EstudianteArtefactoCommandOutputAdapter(repository, logger);
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var primerArtefacto = sembrarArtefacto(proyecto);
+        var segundoArtefacto = sembrarArtefacto(proyecto);
+        var artefactoAjeno = sembrarArtefacto(UtilUUID.generarNuevoUUID());
+        var desvinculado = UtilUUID.generarNuevoUUID();
+        var otroEstudiante = UtilUUID.generarNuevoUUID();
+        sembrar(primerArtefacto, desvinculado);
+        sembrar(segundoArtefacto, desvinculado);
+        sembrar(artefactoAjeno, desvinculado);
+        sembrar(primerArtefacto, otroEstudiante);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarPorProyectoGradoYEstudiante(proyecto, desvinculado);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var restantes = adapter.obtenerVinculados(
+                List.of(primerArtefacto, segundoArtefacto, artefactoAjeno), List.of(desvinculado, otroEstudiante));
+        assertThat(restantes).extracting(EstudianteArtefactoEntity::artefacto, EstudianteArtefactoEntity::estudiante)
+                .containsExactlyInAnyOrder(
+                        org.assertj.core.groups.Tuple.tuple(artefactoAjeno, desvinculado),
+                        org.assertj.core.groups.Tuple.tuple(primerArtefacto, otroEstudiante));
+        verify(logger).debug(EstudianteArtefactoKey.LOG_DESVINCULADOS, proyecto, desvinculado);
+    }
+
+    private UUID sembrarArtefacto(UUID proyecto) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ArtefactoJpaEntity.builder()
+                .id(id)
+                .proyectoGrado(proyecto)
+                .versionRepositorioArtefacto(UtilUUID.generarNuevoUUID())
+                .asesor(UtilUUID.generarNuevoUUID())
+                .build());
+        return id;
     }
 
     private void sembrar(UUID artefacto, UUID estudiante) {

@@ -6,10 +6,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface EstudianteProyectoGradoCommandRepository
         extends JpaRepository<EstudianteProyectoGradoJpaEntity, UUID> {
+
+    List<EstudianteProyectoGradoJpaEntity> findByProyectoGradoIdAndEstudianteIdIn(
+            UUID proyectoGradoId, List<UUID> estudiantesIds);
+
+    Optional<EstudianteProyectoGradoJpaEntity> findByEstudianteIdAndProyectoGradoId(
+            UUID estudianteId, UUID proyectoGradoId);
 
     record PertenenciaProyeccion(UUID artefacto, UUID estudiante) {
     }

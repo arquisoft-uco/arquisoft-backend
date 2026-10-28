@@ -53,7 +53,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
         version = VersionRepositorioArtefactoDomain.reconstruir(
                 versionId, "Doc", 1, UtilUUID.generarNuevoUUID(), "Repo",
                 new DatosArchivo("a.pdf", "application/pdf", 10L));
-        estudiante = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", null);
+        estudiante = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", Instant.EPOCH, null);
         par = new ParEstudianteArtefacto(artefacto.getId(), estudianteId);
     }
 
@@ -108,7 +108,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
         var ajeno = ArtefactoDomain.reconstruir(
                 artefacto.getId(), artefacto.getProyectoGrado(), artefacto.getVersionRepositorioArtefacto(),
                 UtilUUID.generarNuevoUUID());
-        var eliminado = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", Instant.now());
+        var eliminado = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", Instant.EPOCH, Instant.now());
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
@@ -119,7 +119,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
     @Test
     void debeLanzarEstudianteNoVigente_antesQueLaPertenenciaAlProyecto() {
         // Arrange
-        var eliminado = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", Instant.now());
+        var eliminado = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", Instant.EPOCH, Instant.now());
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(

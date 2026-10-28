@@ -5,6 +5,8 @@ import com.arquisoft.artefactos.infrastructure.estudiante.command.secondaryadapt
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilObjeto;
 
+import java.time.Instant;
+
 public final class EstudianteJpaMapper {
 
     private EstudianteJpaMapper() {}
@@ -15,6 +17,22 @@ public final class EstudianteJpaMapper {
                 jpaEntity.getIdentificador(),
                 jpaEntity.getNombre(),
                 jpaEntity.getEmail(),
+                jpaEntity.getOcurridoEn(),
                 UtilObjeto.aplicarPorDefecto(jpaEntity.getEliminadoEn(), UtilFecha.VACIO));
+    }
+
+    public static EstudianteJpaEntity toJpaEntity(EstudianteEntity entity) {
+        return EstudianteJpaEntity.builder()
+                .id(entity.id())
+                .identificador(entity.identificador())
+                .nombre(entity.nombre())
+                .email(entity.email())
+                .ocurridoEn(entity.ocurridoEn())
+                .eliminadoEn(aColumna(entity.eliminadoEn()))
+                .build();
+    }
+
+    public static Instant aColumna(Instant eliminadoEn) {
+        return UtilFecha.VACIO.equals(eliminadoEn) ? null : eliminadoEn;
     }
 }

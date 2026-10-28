@@ -13,6 +13,17 @@ public final class EstudianteMapper {
                 entity.identificador(),
                 entity.nombre(),
                 entity.email(),
+                entity.ocurridoEn(),
                 entity.eliminadoEn());
+    }
+
+    public static EstudianteEntity toEntity(EstudianteDomain estudiante) {
+        return new EstudianteEntity(
+                estudiante.getId(),
+                estudiante.getIdentificador(),
+                estudiante.getNombre(),
+                estudiante.getEmail(),
+                estudiante.getOcurridoEn(),
+                estudiante.getEliminadoEn());
     }
 }

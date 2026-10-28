@@ -23,7 +23,7 @@ class EstudiantesVigentesRuleImplTest {
     @Test
     void debePasar_cuandoNingunEstudianteEstaDadoDeBaja() {
         // Arrange
-        var vigente = EstudianteDomain.reconstruir(UtilUUID.generarNuevoUUID(), "1", NOMBRE, "l@uco.edu.co", null);
+        var vigente = EstudianteDomain.reconstruir(UtilUUID.generarNuevoUUID(), "1", NOMBRE, "l@uco.edu.co", Instant.EPOCH, null);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(new VigenciaEstudiantes(List.of(vigente)))).doesNotThrowAnyException();
@@ -33,7 +33,7 @@ class EstudiantesVigentesRuleImplTest {
     void debeLanzarConNombreSinUuid_cuandoUnEstudianteEstaDadoDeBaja() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        var eliminado = EstudianteDomain.reconstruir(id, "1", NOMBRE, "l@uco.edu.co", Instant.now());
+        var eliminado = EstudianteDomain.reconstruir(id, "1", NOMBRE, "l@uco.edu.co", Instant.EPOCH, Instant.now());
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(new VigenciaEstudiantes(List.of(eliminado))))

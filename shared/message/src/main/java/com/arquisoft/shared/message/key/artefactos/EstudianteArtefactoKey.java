@@ -10,6 +10,8 @@ public enum EstudianteArtefactoKey implements ClaveMensaje {
     LOG_VERIFICACION_ASIGNAR("artefactos.aplicacion.estudianteartefacto.log.verificacion-asignar", 6),
     LOG_ASIGNADOS("artefactos.aplicacion.estudianteartefacto.log.asignados", 2),
     LOG_GUARDADOS("artefactos.infraestructura.estudianteartefacto.log.guardados", 1),
+    LOG_DESVINCULANDO("artefactos.aplicacion.estudianteartefacto.log.desvinculando", 2),
+    LOG_DESVINCULADOS("artefactos.infraestructura.estudianteartefacto.log.desvinculados", 2),
     ERROR_YA_VINCULADO("artefactos.dominio.estudianteartefacto.error.ya-vinculado", 1),
     ERROR_YA_VINCULADO_DETALLE("artefactos.dominio.estudianteartefacto.error.ya-vinculado-detalle", 1),
     ERROR_NO_VINCULADO_PROYECTO_GRADO(

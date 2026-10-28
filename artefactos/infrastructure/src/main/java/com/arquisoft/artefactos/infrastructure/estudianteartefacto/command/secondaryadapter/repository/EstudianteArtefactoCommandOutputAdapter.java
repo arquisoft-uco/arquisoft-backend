@@ -37,4 +37,10 @@ public class EstudianteArtefactoCommandOutputAdapter implements EstudianteArtefa
                 .map(EstudianteArtefactoJpaMapper::toEntity)
                 .toList();
     }
+
+    @Override
+    public void eliminarPorProyectoGradoYEstudiante(UUID proyectoGrado, UUID estudiante) {
+        estudianteArtefactoCommandRepository.eliminarPorProyectoGradoYEstudiante(proyectoGrado, estudiante);
+        logger.debug(EstudianteArtefactoKey.LOG_DESVINCULADOS, proyectoGrado, estudiante);
+    }
 }

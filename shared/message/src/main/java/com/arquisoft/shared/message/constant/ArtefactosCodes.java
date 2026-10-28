@@ -97,6 +97,27 @@ public final class ArtefactosCodes {
         public static final String NO_ASIGNADO = "ARTEFACTOS_ASESOR_PROYECTO_GRADO_NO_ASIGNADO";
     }
 
+    public static final class EstudianteProyectoGrado {
+
+        private EstudianteProyectoGrado() {}
+
+        public static final String ESTUDIANTE_REQUERIDO = "ARTEFACTOS_ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_REQUERIDO";
+        public static final String ESTUDIANTES_REQUERIDOS =
+                "ARTEFACTOS_ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTES_REQUERIDOS";
+        public static final String ESTUDIANTE_ID_REQUERIDO =
+                "ARTEFACTOS_ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
+        public static final String ESTUDIANTES_DUPLICADOS =
+                "ARTEFACTOS_ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTES_DUPLICADOS";
+        public static final String PROYECTO_GRADO_REQUERIDO =
+                "ARTEFACTOS_ESTUDIANTE_PROYECTO_GRADO_PROYECTO_GRADO_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO =
+                "ARTEFACTOS_ESTUDIANTE_PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
+        public static final String VINCULO_REQUERIDO = "ARTEFACTOS_ESTUDIANTE_PROYECTO_GRADO_VINCULO_REQUERIDO";
+        public static final String VINCULOS_REQUERIDOS = "ARTEFACTOS_ESTUDIANTE_PROYECTO_GRADO_VINCULOS_REQUERIDOS";
+        public static final String DESVINCULACION_REQUERIDA =
+                "ARTEFACTOS_ESTUDIANTE_PROYECTO_GRADO_DESVINCULACION_REQUERIDA";
+    }
+
     public static final class RevisionAsesor {
 
         private RevisionAsesor() {}
@@ -147,11 +168,19 @@ public final class ArtefactosCodes {
         public static final String ESTUDIANTE_YA_VINCULADO = "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_YA_VINCULADO";
         public static final String ESTUDIANTE_NO_VINCULADO_PROYECTO_GRADO =
                 "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_NO_VINCULADO_PROYECTO_GRADO";
+        public static final String PROYECTO_GRADO_REQUERIDO = "ESTUDIANTE_ARTEFACTO_PROYECTO_GRADO_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_REQUERIDO";
     }
 
     public static final class Estudiante {
 
         private Estudiante() {}
+
+        public static final String ID_REQUERIDO = "ARTEFACTOS_ESTUDIANTE_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "ARTEFACTOS_ESTUDIANTE_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "ARTEFACTOS_ESTUDIANTE_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "ARTEFACTOS_ESTUDIANTE_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ARTEFACTOS_ESTUDIANTE_OCURRIDO_EN_REQUERIDO";
 
         public static final String NO_ENCONTRADO = "ARTEFACTOS_ESTUDIANTE_NO_ENCONTRADO";
         public static final String NO_VIGENTE = "ARTEFACTOS_ESTUDIANTE_NO_VIGENTE";

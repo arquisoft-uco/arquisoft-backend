@@ -7,6 +7,7 @@ import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +22,7 @@ class EstudiantesExistenRuleImplTest {
     void debePasar_cuandoTodosLosEstudiantesExisten() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        var encontrado = EstudianteDomain.reconstruir(id, "1", "Laura", "l@uco.edu.co", null);
+        var encontrado = EstudianteDomain.reconstruir(id, "1", "Laura", "l@uco.edu.co", Instant.EPOCH, null);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(new ExistenciaEstudiantes(List.of(id), List.of(encontrado))))

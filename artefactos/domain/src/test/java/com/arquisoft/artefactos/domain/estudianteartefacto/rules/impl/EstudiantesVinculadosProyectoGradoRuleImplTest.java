@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +36,7 @@ class EstudiantesVinculadosProyectoGradoRuleImplTest {
         // Arrange
         var artefacto = UtilUUID.generarNuevoUUID();
         var estudiante = UtilUUID.generarNuevoUUID();
-        var conocido = EstudianteDomain.reconstruir(estudiante, "1", NOMBRE, "l@uco.edu.co", null);
+        var conocido = EstudianteDomain.reconstruir(estudiante, "1", NOMBRE, "l@uco.edu.co", Instant.EPOCH, null);
         var pertenencia = new PertenenciaProyectoGradoEstudiantes(
                 List.of(conocido), List.of(new ParEstudianteArtefacto(artefacto, estudiante)), List.of());
 

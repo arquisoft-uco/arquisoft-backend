@@ -30,8 +30,8 @@ class EstudiantesPorIdsFinderImplTest {
         var vigente = UtilUUID.generarNuevoUUID();
         var eliminado = UtilUUID.generarNuevoUUID();
         when(estudianteOutputPort.obtenerPorIds(List.of(vigente, eliminado))).thenReturn(List.of(
-                new EstudianteEntity(vigente, "1", "Laura", "l@uco.edu.co", null),
-                new EstudianteEntity(eliminado, "2", "Pedro", "p@uco.edu.co", Instant.now())));
+                new EstudianteEntity(vigente, "1", "Laura", "l@uco.edu.co", Instant.EPOCH, null),
+                new EstudianteEntity(eliminado, "2", "Pedro", "p@uco.edu.co", Instant.EPOCH, Instant.now())));
 
         // Act
         var resultado = finder.obtener(List.of(vigente, eliminado));
