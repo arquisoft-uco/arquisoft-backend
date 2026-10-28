@@ -106,7 +106,8 @@
               "fichas:estado-ficha-perfil-coordinador:view",
               "proyectos:estudiante-proyecto-grado:create",
               "mapas-ruta:tarea:create",
-              "solicitudes:respuesta-cambio-asesor:create"
+              "solicitudes:respuesta-cambio-asesor:create",
+              "solicitudes:respuesta-ampliacion-plazo:update"
             ]
           }
         },
@@ -2320,6 +2321,15 @@
         {
           "id": "f52bb47d-a31f-42b3-9f01-ebc19228f717",
           "name": "solicitudes:respuesta-cambio-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "213bc651-7d65-4e26-9055-1ff791919b44",
+          "name": "solicitudes:respuesta-ampliacion-plazo:update",
           "description": "",
           "composite": false,
           "clientRole": true,

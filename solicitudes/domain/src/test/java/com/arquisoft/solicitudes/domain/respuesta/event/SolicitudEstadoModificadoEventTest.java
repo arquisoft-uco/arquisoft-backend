@@ -97,10 +97,30 @@ class SolicitudEstadoModificadoEventTest {
     }
 
     @Test
+    void debeExponerElTemaYElTipoDeEventoDeAmpliacionPlazo_cuandoElTipoEsAmpliacionDePlazo() {
+        // Arrange
+        var solicitud = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var evento = new SolicitudEstadoModificadoEvent(
+                TipoSolicitud.AMPLIACION_DE_PLAZO, solicitud,
+                EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.AMPLIACION_PLAZO_ESTADO_MODIFICADO);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.ampliacion_plazo_estado_modificado");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudAmpliacionPlazoEstadoModificadoEvent");
+        assertThat(evento.getSolicitudId()).isEqualTo(solicitud);
+        assertThat(evento.getNuevoEstado()).isEqualTo(EstadoRespuesta.APROBADA.getId());
+        assertThat(evento.getRemitenteEmail()).isEqualTo("ana@uco.edu.co");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
+    }
+
+    @Test
     void debeLanzarTipoNoEncontrado_cuandoElTipoNoTieneEventoDeEstadoModificado() {
         // Act & Assert
         assertThatThrownBy(() -> new SolicitudEstadoModificadoEvent(
-                TipoSolicitud.AMPLIACION_DE_PLAZO, UUID.randomUUID(),
+                TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, UUID.randomUUID(),
                 EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE))
                 .isInstanceOf(TipoSolicitudNoEncontradoException.class);
     }
