@@ -60,6 +60,7 @@
               "solicitudes:respuesta-ampliacion-plazo:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
               "solicitudes:respuesta-cambio-asesor-enviada:view",
+              "solicitudes:respuesta-ampliacion-plazo-enviada:view",
               "mapas-ruta:mapa-ruta-coordinador:view",
               "fichas:ficha-perfil:create",
               "fichas:estudiante-ficha-perfil:create",
@@ -1410,6 +1411,15 @@
         {
           "id": "c3ec803c-262e-4b96-ac34-aab70ce4f43d",
           "name": "solicitudes:respuesta-novedad-coordinador-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "07affacc-5233-44a3-a9c4-1588dc7fbcdf",
+          "name": "solicitudes:respuesta-ampliacion-plazo-enviada:view",
           "description": "",
           "composite": false,
           "clientRole": true,

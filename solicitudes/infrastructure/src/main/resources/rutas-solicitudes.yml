@@ -40,4 +40,5 @@ rutas:
       novedad-coordinador-enviadas: /novedad-coordinador/respuestas/enviadas
       novedad-asesor-enviadas: /novedad-asesor/respuestas/enviadas
       cambio-asesor-enviadas: /cambio-asesor/respuestas/enviadas
+      ampliacion-plazo-enviadas: /ampliacion-plazo/respuestas/enviadas
       estados-respuesta: /estados-respuesta
