@@ -2,13 +2,15 @@ package com.arquisoft.artefactos.application.artefacto.command.primaryport.mappe
 
 import com.arquisoft.artefactos.application.artefacto.command.primaryport.model.AsignarArtefactosCommand;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
-import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
+import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AsignarArtefactosMapperTest {
 
@@ -19,7 +21,8 @@ class AsignarArtefactosMapperTest {
         var asesor = UtilUUID.generarNuevoUUID();
         var primera = UtilUUID.generarNuevoUUID();
         var segunda = UtilUUID.generarNuevoUUID();
-        var command = new AsignarArtefactosCommand(proyecto, asesor, List.of(primera, segunda), List.of());
+        var command = new AsignarArtefactosCommand(proyecto, asesor, List.of(primera, segunda),
+                List.of(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID()));
 
         // Act
         var asignacion = AsignarArtefactosMapper.toDomain(command);
@@ -35,7 +38,7 @@ class AsignarArtefactosMapperTest {
         });
         assertThat(asignacion.getArtefactos().get(0).getId())
                 .isNotEqualTo(asignacion.getArtefactos().get(1).getId());
-        assertThat(asignacion.getEstudiantes()).isSameAs(AgregacionEstudiantesArtefactoDomain.VACIO);
+        assertThat(asignacion.getEstudiantes().getCantidad()).isEqualTo(4);
     }
 
     @Test
@@ -53,10 +56,40 @@ class AsignarArtefactosMapperTest {
 
         // Assert
         var idsGenerados = asignacion.getArtefactos().stream().map(ArtefactoDomain::getId).toList();
-        assertThat(asignacion.getEstudiantes().esVacio()).isFalse();
         assertThat(asignacion.getEstudiantes().getAsesor()).isEqualTo(asesor);
         assertThat(asignacion.getEstudiantes().getArtefactos()).containsExactlyElementsOf(idsGenerados);
         assertThat(asignacion.getEstudiantes().getEstudiantes()).containsExactly(primero, segundo);
         assertThat(asignacion.getEstudiantes().getCantidad()).isEqualTo(4);
+    }
+
+    @Test
+    void debeLanzarValidacion_cuandoNoHayEstudiantes() {
+        // Arrange
+        var command = new AsignarArtefactosCommand(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                List.of(UtilUUID.generarNuevoUUID()), List.of());
+
+        // Act & Assert
+        assertThatThrownBy(() -> AsignarArtefactosMapper.toDomain(command))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(error -> error.codigoError())
+                        .contains(ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_REQUERIDOS));
+    }
+
+    @Test
+    void debeLanzarValidacion_cuandoUnEstudianteSeRepite() {
+        // Arrange
+        var repetido = UtilUUID.generarNuevoUUID();
+        var command = new AsignarArtefactosCommand(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                List.of(UtilUUID.generarNuevoUUID()), List.of(repetido, repetido));
+
+        // Act & Assert
+        assertThatThrownBy(() -> AsignarArtefactosMapper.toDomain(command))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(error -> error.codigoError())
+                        .contains(ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_DUPLICADOS));
     }
 }

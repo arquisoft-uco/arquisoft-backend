@@ -4,7 +4,6 @@ import com.arquisoft.artefactos.domain.estudianteartefacto.model.ParEstudianteAr
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilColeccion;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorColeccion;
 import com.arquisoft.shared.validation.ValidatorObjeto;
@@ -13,8 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 public final class AgregacionEstudiantesArtefactoDomain {
-
-    public static final AgregacionEstudiantesArtefactoDomain VACIO = vacio();
 
     private UUID asesor;
     private List<EstudianteArtefactoDomain> relaciones;
@@ -30,13 +27,6 @@ public final class AgregacionEstudiantesArtefactoDomain {
         agregacion.setRelaciones(relaciones, result);
 
         result.lanzarSiTieneErrores();
-        return agregacion;
-    }
-
-    private static AgregacionEstudiantesArtefactoDomain vacio() {
-        var agregacion = new AgregacionEstudiantesArtefactoDomain();
-        agregacion.asesor = UtilUUID.obtenerUUIDPorDefecto();
-        agregacion.relaciones = List.of();
         return agregacion;
     }
 
@@ -57,10 +47,6 @@ public final class AgregacionEstudiantesArtefactoDomain {
             return;
         }
         this.relaciones = lista;
-    }
-
-    public boolean esVacio() {
-        return this == VACIO;
     }
 
     public UUID getAsesor() {

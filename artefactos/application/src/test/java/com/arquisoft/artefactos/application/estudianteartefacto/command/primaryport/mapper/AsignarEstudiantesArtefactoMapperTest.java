@@ -1,13 +1,15 @@
 package com.arquisoft.artefactos.application.estudianteartefacto.command.primaryport.mapper;
 
 import com.arquisoft.artefactos.application.estudianteartefacto.command.primaryport.model.AsignarEstudiantesArtefactoCommand;
-import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
+import com.arquisoft.shared.message.constant.ArtefactosCodes;
+import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AsignarEstudiantesArtefactoMapperTest {
 
@@ -31,17 +33,16 @@ class AsignarEstudiantesArtefactoMapperTest {
     }
 
     @Test
-    void debeDevolverVacio_cuandoLaListaDeEstudiantesLlegaVaciaONula() {
+    void debeLanzarValidacion_cuandoLaListaDeEstudiantesLlegaVaciaONula() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
         var artefactos = List.of(UtilUUID.generarNuevoUUID());
 
-        // Act
-        var sinLista = AsignarEstudiantesArtefactoMapper.toDomain(asesor, artefactos, null);
-        var conListaVacia = AsignarEstudiantesArtefactoMapper.toDomain(asesor, artefactos, List.of());
-
-        // Assert
-        assertThat(sinLista).isSameAs(AgregacionEstudiantesArtefactoDomain.VACIO);
-        assertThat(conListaVacia).isSameAs(AgregacionEstudiantesArtefactoDomain.VACIO);
+        // Act & Assert
+        assertThatThrownBy(() -> AsignarEstudiantesArtefactoMapper.toDomain(asesor, artefactos, null))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(error -> error.codigoError())
+                        .contains(ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_REQUERIDOS));
     }
 }

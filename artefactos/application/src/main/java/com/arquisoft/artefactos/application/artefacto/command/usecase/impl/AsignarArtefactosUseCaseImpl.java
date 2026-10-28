@@ -53,9 +53,7 @@ public class AsignarArtefactosUseCaseImpl implements AsignarArtefactosUseCase {
                 .map(ArtefactoMapper::toEntity)
                 .toList());
 
-        if (!asignacion.getEstudiantes().esVacio()) {
-            asignarEstudiantesArtefactoUseCase.ejecutar(asignacion.getEstudiantes());
-        }
+        asignarEstudiantesArtefactoUseCase.ejecutar(asignacion.getEstudiantes());
 
         logger.info(ArtefactoKey.LOG_ASIGNADOS, asignacion.getProyectoGrado(), asignacion.getArtefactos().size());
         return ArtefactosAsignadosResultMapper.toResult(asignacion);

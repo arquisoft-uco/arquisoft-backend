@@ -80,14 +80,16 @@ class AsignarArtefactosControllerTest {
         var segunda = UtilUUID.generarNuevoUUID();
         var primerArtefacto = UtilUUID.generarNuevoUUID();
         var segundoArtefacto = UtilUUID.generarNuevoUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
         when(asignarArtefactosInteractor.ejecutar(any()))
                 .thenReturn(new ArtefactosAsignadosResult(List.of(primerArtefacto, segundoArtefacto)));
         var body = """
                 {
                   "proyectoGrado": "%s",
-                  "versionesRepositorioArtefacto": ["%s", "%s"]
+                  "versionesRepositorioArtefacto": ["%s", "%s"],
+                  "estudiantes": ["%s"]
                 }
-                """.formatted(proyecto, primera, segunda);
+                """.formatted(proyecto, primera, segunda, estudiante);
 
         // Act & Assert
         mockMvc.perform(post(RUTA)
@@ -103,34 +105,6 @@ class AsignarArtefactosControllerTest {
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyecto);
         assertThat(captor.getValue().asesor()).isEqualTo(ASESOR_ID);
         assertThat(captor.getValue().versionesRepositorioArtefacto()).containsExactly(primera, segunda);
-    }
-
-    @Test
-    void debeRetornar201YPasarLosEstudiantesAlComando_cuandoElBodyLosTrae() throws Exception {
-        // Arrange
-        var proyecto = UtilUUID.generarNuevoUUID();
-        var version = UtilUUID.generarNuevoUUID();
-        var estudiante = UtilUUID.generarNuevoUUID();
-        when(asignarArtefactosInteractor.ejecutar(any()))
-                .thenReturn(new ArtefactosAsignadosResult(List.of(UtilUUID.generarNuevoUUID())));
-        var body = """
-                {
-                  "proyectoGrado": "%s",
-                  "versionesRepositorioArtefacto": ["%s"],
-                  "estudiantes": ["%s"]
-                }
-                """.formatted(proyecto, version, estudiante);
-
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                        .with(tokenAsesor()))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.ids").isArray());
-
-        var captor = ArgumentCaptor.forClass(AsignarArtefactosCommand.class);
-        verify(asignarArtefactosInteractor).ejecutar(captor.capture());
         assertThat(captor.getValue().estudiantes()).containsExactly(estudiante);
     }
 

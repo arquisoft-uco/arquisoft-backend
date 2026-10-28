@@ -83,21 +83,4 @@ class AsignarEstudiantesArtefactoCommandTest {
                                     .isEqualTo(ArtefactosCodes.EstudianteArtefacto.ESTUDIANTE_ID_REQUERIDO);
                         }));
     }
-
-    @Test
-    void debeRechazar_cuandoUnEstudianteSeRepite() {
-        // Arrange
-        var artefacto = UtilUUID.generarNuevoUUID();
-        var asesor = UtilUUID.generarNuevoUUID();
-        var estudiante = UtilUUID.generarNuevoUUID().toString();
-
-        // Act & Assert
-        assertThatThrownBy(() -> AsignarEstudiantesArtefactoCommand.crear(
-                artefacto, asesor, List.of(estudiante, estudiante)))
-                .isInstanceOf(ApplicationValidationException.class)
-                .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
-                        .singleElement()
-                        .satisfies(error -> assertThat(error.codigoError())
-                                .isEqualTo(ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_DUPLICADOS)));
-    }
 }

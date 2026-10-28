@@ -1,6 +1,7 @@
 package com.arquisoft.artefactos.domain.artefacto;
 
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
+import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilUUID;
@@ -27,7 +28,9 @@ class AsignacionArtefactosDomainTest {
                 ArtefactoDomain.crear(proyecto, asesor, List.of(segunda)).getFirst());
 
         // Act
-        var asignacion = AsignacionArtefactosDomain.crear(artefactos, AgregacionEstudiantesArtefactoDomain.VACIO);
+        var asignacion = AsignacionArtefactosDomain.crear(artefactos, AgregacionEstudiantesArtefactoDomain.crear(
+                UtilUUID.generarNuevoUUID(),
+                EstudianteArtefactoDomain.crear(List.of(UtilUUID.generarNuevoUUID()), List.of(UtilUUID.generarNuevoUUID()))));
 
         // Assert
         assertThat(asignacion.getProyectoGrado()).isEqualTo(proyecto);
@@ -44,7 +47,9 @@ class AsignacionArtefactosDomainTest {
 
         // Act & Assert
         for (var artefactos : Arrays.asList(null, vacia)) {
-            assertThatThrownBy(() -> AsignacionArtefactosDomain.crear(artefactos, AgregacionEstudiantesArtefactoDomain.VACIO))
+            assertThatThrownBy(() -> AsignacionArtefactosDomain.crear(artefactos, AgregacionEstudiantesArtefactoDomain.crear(
+                UtilUUID.generarNuevoUUID(),
+                EstudianteArtefactoDomain.crear(List.of(UtilUUID.generarNuevoUUID()), List.of(UtilUUID.generarNuevoUUID())))))
                     .isInstanceOf(DomainValidationException.class)
                     .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                             .singleElement()
@@ -54,5 +59,23 @@ class AsignacionArtefactosDomainTest {
                                         .isEqualTo(ArtefactosCodes.Artefacto.ARTEFACTOS_REQUERIDOS);
                             }));
         }
+    }
+
+    @Test
+    void debeLanzar_cuandoLosEstudiantesSonNulos() {
+        // Arrange
+        var artefactos = ArtefactoDomain.crear(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), List.of(UtilUUID.generarNuevoUUID()));
+
+        // Act & Assert
+        assertThatThrownBy(() -> AsignacionArtefactosDomain.crear(artefactos, null))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .singleElement()
+                        .satisfies(error -> {
+                            assertThat(error.campo()).isEqualTo(ArtefactosFields.EstudianteArtefacto.ESTUDIANTES);
+                            assertThat(error.codigoError())
+                                    .isEqualTo(ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_REQUERIDOS);
+                        }));
     }
 }

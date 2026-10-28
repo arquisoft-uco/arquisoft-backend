@@ -37,7 +37,6 @@ class AgregacionEstudiantesArtefactoDomainTest {
         assertThat(agregacion.getPares()).containsExactlyInAnyOrder(
                 new ParEstudianteArtefacto(artefactoA, estudianteA), new ParEstudianteArtefacto(artefactoA, estudianteB),
                 new ParEstudianteArtefacto(artefactoB, estudianteA), new ParEstudianteArtefacto(artefactoB, estudianteB));
-        assertThat(agregacion.esVacio()).isFalse();
     }
 
     @Test
@@ -52,17 +51,5 @@ class AgregacionEstudiantesArtefactoDomainTest {
                                         ArtefactosCodes.EstudianteArtefacto.ASESOR_REQUERIDO),
                                 tuple(ArtefactosFields.EstudianteArtefacto.ESTUDIANTES,
                                         ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_REQUERIDOS)));
-    }
-
-    @Test
-    void debeSerVacioYSinElementos_cuandoSeUsaElCentinela() {
-        // Act
-        var vacio = AgregacionEstudiantesArtefactoDomain.VACIO;
-
-        // Assert
-        assertThat(vacio.esVacio()).isTrue();
-        assertThat(vacio.getRelaciones()).isEmpty();
-        assertThat(vacio.getPares()).isEmpty();
-        assertThat(vacio.getCantidad()).isZero();
     }
 }

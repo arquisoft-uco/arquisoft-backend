@@ -116,6 +116,20 @@ class AsignarArtefactosCommandTest {
     }
 
     @Test
+    void debeDejarEstudiantesVacios_cuandoNoLlegan() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID().toString();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var versiones = List.of(UtilUUID.generarNuevoUUID().toString());
+
+        // Act
+        var command = AsignarArtefactosCommand.crear(proyecto, asesor, versiones, null);
+
+        // Assert
+        assertThat(command.estudiantes()).isEmpty();
+    }
+
+    @Test
     void debeRechazar_cuandoUnEstudianteNoEsUuid() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID().toString();
@@ -132,23 +146,5 @@ class AsignarArtefactosCommandTest {
                             assertThat(error.codigoError())
                                     .isEqualTo(ArtefactosCodes.EstudianteArtefacto.ESTUDIANTE_ID_REQUERIDO);
                         }));
-    }
-
-    @Test
-    void debeRechazar_cuandoUnEstudianteSeRepite() {
-        // Arrange
-        var proyecto = UtilUUID.generarNuevoUUID().toString();
-        var asesor = UtilUUID.generarNuevoUUID();
-        var versiones = List.of(UtilUUID.generarNuevoUUID().toString());
-        var estudiante = UtilUUID.generarNuevoUUID().toString();
-
-        // Act & Assert
-        assertThatThrownBy(() -> AsignarArtefactosCommand.crear(
-                proyecto, asesor, versiones, List.of(estudiante, estudiante)))
-                .isInstanceOf(ApplicationValidationException.class)
-                .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
-                        .singleElement()
-                        .satisfies(error -> assertThat(error.codigoError())
-                                .isEqualTo(ArtefactosCodes.Artefacto.ESTUDIANTES_DUPLICADOS)));
     }
 }

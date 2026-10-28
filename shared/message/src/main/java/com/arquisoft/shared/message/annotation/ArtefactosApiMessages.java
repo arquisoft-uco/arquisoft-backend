@@ -106,11 +106,11 @@ public final class ArtefactosApiMessages {
                         + "estar ya vinculado al artefacto ni repetirse en la solicitud.";
         public static final String ASIGNAR_RESP_201 = "Estudiantes vinculados al artefacto";
         public static final String ASIGNAR_RESP_400 =
-                "Datos mal formados: lista vacía, identificador inválido o estudiante repetido";
+                "Datos mal formados: lista vacía o identificador de estudiante inválido";
         public static final String ASIGNAR_RESP_422 =
                 "El artefacto o algún estudiante no existe, el asesor no es el responsable del artefacto, "
                         + "algún estudiante está dado de baja, no pertenece al proyecto de grado o ya está "
-                        + "vinculado al artefacto";
+                        + "vinculado al artefacto, o un estudiante está repetido en la solicitud";
     }
 
     public static final class Observacion {
@@ -151,11 +151,12 @@ public final class ArtefactosApiMessages {
                         + "artefactos suyos, todo o nada. El asesor del artefacto es el del token y debe tener "
                         + "asignado el proyecto. El proyecto no puede tener ya un artefacto de ninguno de los "
                         + "repositorios, ni repetir un repositorio dentro del lote. Responde con los ids de los "
-                        + "artefactos creados, en el orden enviado. Opcionalmente vincula a todos los artefactos "
-                        + "creados los estudiantes indicados, que deben ser vigentes del proyecto.";
+                        + "artefactos creados, en el orden enviado. Exige al menos un estudiante, que debe ser vigente "
+                        + "del proyecto y queda vinculado a todos los artefactos creados.";
         public static final String ASIGNAR_RESP_201 = "Artefactos asignados al proyecto de grado";
         public static final String ASIGNAR_RESP_400 =
-                "Datos mal formados: identificador inválido, lista vacía o versión repetida";
+                "Datos mal formados: identificador de proyecto, de versión o de estudiante inválido, o "
+                        + "lista de versiones vacía o con versiones repetidas";
         public static final String CAMBIAR_ASESOR_SUMMARY = "Cambiar el responsable de un artefacto";
         public static final String CAMBIAR_ASESOR_DESCRIPTION =
                 "Designa a otro asesor como responsable de un artefacto ya asignado. El nuevo asesor debe "
@@ -180,8 +181,9 @@ public final class ArtefactosApiMessages {
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar los artefactos del asesor";
         public static final String ASIGNAR_RESP_422 =
-                "El proyecto, el asesor o alguna versión no existe, el asesor no está asignado al proyecto "
-                        + "o el repositorio ya está asignado";
+                "El proyecto, el asesor o alguna versión no existe, el asesor no está asignado al proyecto, "
+                        + "el repositorio ya está asignado, o los estudiantes faltan, se repiten, no existen, "
+                        + "están dados de baja o no pertenecen al proyecto";
     }
 
     public static final class EstadoRevisionAsesor {

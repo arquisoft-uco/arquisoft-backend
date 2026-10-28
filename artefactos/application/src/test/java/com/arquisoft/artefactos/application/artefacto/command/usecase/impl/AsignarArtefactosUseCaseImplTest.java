@@ -82,7 +82,9 @@ class AsignarArtefactosUseCaseImplTest {
 
     private static AsignacionArtefactosDomain asignacion(UUID proyecto, UUID asesor, List<UUID> versiones) {
         var artefactos = ArtefactoDomain.crear(proyecto, asesor, versiones);
-        return AsignacionArtefactosDomain.crear(artefactos, AgregacionEstudiantesArtefactoDomain.VACIO);
+        return AsignacionArtefactosDomain.crear(artefactos, AgregacionEstudiantesArtefactoDomain.crear(
+                UtilUUID.generarNuevoUUID(),
+                EstudianteArtefactoDomain.crear(List.of(UtilUUID.generarNuevoUUID()), List.of(UtilUUID.generarNuevoUUID()))));
     }
 
     @Test
@@ -130,7 +132,7 @@ class AsignarArtefactosUseCaseImplTest {
             assertThat(entity.asesor()).isEqualTo(asesor);
         });
         verify(logger).info(eq(ArtefactoKey.LOG_ASIGNADOS), eq(proyecto), eq(3));
-        verifyNoInteractions(asignarEstudiantesArtefactoUseCase);
+        verify(asignarEstudiantesArtefactoUseCase, times(1)).ejecutar(asignacion.getEstudiantes());
     }
 
     @Test

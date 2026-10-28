@@ -34,7 +34,7 @@ class AsignarArtefactosInteractorImplTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
         var version = UtilUUID.generarNuevoUUID();
-        var command = new AsignarArtefactosCommand(proyecto, asesor, List.of(version), List.of());
+        var command = new AsignarArtefactosCommand(proyecto, asesor, List.of(version), List.of(UtilUUID.generarNuevoUUID()));
         var esperado = new ArtefactosAsignadosResult(List.of(UtilUUID.generarNuevoUUID()));
         when(asignarArtefactosUseCase.ejecutar(any())).thenReturn(esperado);
 
