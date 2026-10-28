@@ -40,7 +40,7 @@ class AsignarEstudiantesArtefactoInteractorImplTest {
         var captor = ArgumentCaptor.forClass(AgregacionEstudiantesArtefactoDomain.class);
         verify(asignarEstudiantesArtefactoUseCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getAsesor()).isEqualTo(asesor);
-        assertThat(captor.getValue().getArtefactos()).containsExactly(artefacto);
+        assertThat(captor.getValue().getArtefacto()).isEqualTo(artefacto);
         assertThat(captor.getValue().getEstudiantes()).containsExactly(estudiante);
     }
 }

@@ -2,7 +2,6 @@ package com.arquisoft.artefactos.domain.estudianteartefacto.rules.impl;
 
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.exception.EstudianteYaVinculadoArtefactoException;
-import com.arquisoft.artefactos.domain.estudianteartefacto.model.ParEstudianteArtefacto;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.VinculosEstudiantesArtefacto;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.util.UtilUUID;
@@ -22,19 +21,24 @@ class EstudiantesNoVinculadosArtefactoRuleImplTest {
     private final EstudiantesNoVinculadosArtefactoRuleImpl rule = new EstudiantesNoVinculadosArtefactoRuleImpl();
 
     @Test
-    void debePasar_cuandoNingunParEstaVinculado() {
-        // Act & Assert
-        assertThatCode(() -> rule.validar(new VinculosEstudiantesArtefacto(List.of(), List.of())))
-                .doesNotThrowAnyException();
-    }
-
-    @Test
-    void debeLanzarConNombreSinUuid_cuandoUnParYaEstaVinculado() {
+    void debePasar_cuandoNingunEstudianteEstaVinculado() {
         // Arrange
         var estudiante = UtilUUID.generarNuevoUUID();
         var conocido = EstudianteDomain.reconstruir(estudiante, "1", NOMBRE, "l@uco.edu.co", Instant.EPOCH, null);
         var vinculos = new VinculosEstudiantesArtefacto(
-                List.of(conocido), List.of(new ParEstudianteArtefacto(UtilUUID.generarNuevoUUID(), estudiante)));
+                List.of(conocido), List.of(UtilUUID.generarNuevoUUID()));
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(vinculos)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarConNombreSinUuid_cuandoUnEstudianteYaEstaVinculado() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var conocido = EstudianteDomain.reconstruir(estudiante, "1", NOMBRE, "l@uco.edu.co", Instant.EPOCH, null);
+        var vinculos = new VinculosEstudiantesArtefacto(
+                List.of(conocido), List.of(estudiante));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(vinculos))

@@ -29,18 +29,10 @@ public final class EstudianteArtefactoDomain {
         return relacion;
     }
 
-    public static List<EstudianteArtefactoDomain> crear(List<UUID> artefactos, List<UUID> estudiantes) {
+    public static List<EstudianteArtefactoDomain> crear(UUID artefacto, List<UUID> estudiantes) {
         var result = new ValidationResult();
-        var artefactosLista = UtilColeccion.aplicarPorDefecto(artefactos);
         var estudiantesLista = UtilColeccion.aplicarPorDefecto(estudiantes);
 
-        if (ValidatorColeccion.noVacia(artefactosLista,
-                ArtefactosFields.EstudianteArtefacto.ARTEFACTOS,
-                ArtefactosCodes.Artefacto.ARTEFACTOS_REQUERIDOS, result)) {
-            ValidatorColeccion.sinDuplicados(artefactosLista,
-                    ArtefactosFields.EstudianteArtefacto.ARTEFACTOS,
-                    ArtefactosCodes.EstudianteArtefacto.ARTEFACTOS_DUPLICADOS, result);
-        }
         if (ValidatorColeccion.noVacia(estudiantesLista,
                 ArtefactosFields.EstudianteArtefacto.ESTUDIANTES,
                 ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_REQUERIDOS, result)) {
@@ -51,8 +43,8 @@ public final class EstudianteArtefactoDomain {
 
         result.lanzarSiTieneErrores();
 
-        return artefactosLista.stream()
-                .flatMap(artefacto -> estudiantesLista.stream().map(estudiante -> crear(artefacto, estudiante)))
+        return estudiantesLista.stream()
+                .map(estudiante -> crear(artefacto, estudiante))
                 .toList();
     }
 

@@ -10,7 +10,6 @@ public final class AsignarArtefactosRequestMapper {
     private AsignarArtefactosRequestMapper() {}
 
     public static AsignarArtefactosCommand toCommand(AsignarArtefactosRequestDTO dto, UUID asesor) {
-        return AsignarArtefactosCommand.crear(
-                dto.proyectoGrado(), asesor, dto.versionesRepositorioArtefacto(), dto.estudiantes());
+        return AsignarArtefactosCommand.crear(dto.proyectoGrado(), asesor, dto.versionesRepositorioArtefacto());
     }
 }

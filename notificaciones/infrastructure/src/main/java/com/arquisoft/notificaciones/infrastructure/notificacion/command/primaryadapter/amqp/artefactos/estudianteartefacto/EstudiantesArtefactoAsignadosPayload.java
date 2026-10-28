@@ -6,7 +6,7 @@ import java.util.List;
 public record EstudiantesArtefactoAsignadosPayload(
         String idEvento,
         Instant ocurridoEn,
-        List<String> documentos,
+        String documento,
         List<ContactoPayload> estudiantes,
         ContactoPayload asesor) {
 

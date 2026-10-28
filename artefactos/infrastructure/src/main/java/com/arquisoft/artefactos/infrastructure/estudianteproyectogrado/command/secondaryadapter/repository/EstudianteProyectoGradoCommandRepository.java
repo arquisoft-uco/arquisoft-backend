@@ -18,18 +18,14 @@ public interface EstudianteProyectoGradoCommandRepository
     Optional<EstudianteProyectoGradoJpaEntity> findByEstudianteIdAndProyectoGradoId(
             UUID estudianteId, UUID proyectoGradoId);
 
-    record PertenenciaProyeccion(UUID artefacto, UUID estudiante) {
-    }
-
     @Query("""
-            SELECT new com.arquisoft.artefactos.infrastructure.estudianteproyectogrado.command.secondaryadapter.\
-            repository.EstudianteProyectoGradoCommandRepository$PertenenciaProyeccion(a.id, epg.estudianteId)
+            SELECT epg.estudianteId
             FROM ArtefactoJpaEntity a, EstudianteProyectoGradoJpaEntity epg
-            WHERE epg.proyectoGradoId = a.proyectoGrado
-              AND a.id IN :artefactos
+            WHERE a.id = :artefacto
+              AND epg.proyectoGradoId = a.proyectoGrado
               AND epg.estudianteId IN :estudiantes
               AND epg.destituidoEn IS NULL
             """)
-    List<PertenenciaProyeccion> buscarPertenenciasVigentes(
-            @Param("artefactos") List<UUID> artefactos, @Param("estudiantes") List<UUID> estudiantes);
+    List<UUID> buscarEstudiantesVigentesDelArtefacto(
+            @Param("artefacto") UUID artefacto, @Param("estudiantes") List<UUID> estudiantes);
 }

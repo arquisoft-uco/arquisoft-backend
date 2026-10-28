@@ -1,7 +1,6 @@
 package com.arquisoft.artefactos.infrastructure.estudianteproyectogrado.command.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.application.estudianteproyectogrado.command.secondaryport.entity.EstudianteProyectoGradoEntity;
-import com.arquisoft.artefactos.application.estudianteproyectogrado.command.secondaryport.entity.PertenenciaProyectoGradoEntity;
 import com.arquisoft.shared.message.key.artefactos.EstudianteProyectoGradoKey;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
@@ -39,25 +38,20 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeDevolverUnaPertenenciaPorArtefactoDelProyecto_cuandoElVinculoEstaVigente() {
+    void debeDevolverElEstudiante_cuandoTieneVinculoVigenteConElProyectoDelArtefacto() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var estudiante = UtilUUID.generarNuevoUUID();
-        var primero = sembrarArtefacto(proyecto);
-        var segundo = sembrarArtefacto(proyecto);
-        var tercero = sembrarArtefacto(proyecto);
+        var artefacto = sembrarArtefacto(proyecto);
         sembrarVinculo(estudiante, proyecto, null);
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        var resultado = adapter.obtenerPertenenciasVigentes(List.of(primero, segundo, tercero), List.of(estudiante));
+        var resultado = adapter.obtenerEstudiantesVigentesDelArtefacto(artefacto, List.of(estudiante));
 
         // Assert
-        assertThat(resultado).containsExactlyInAnyOrder(
-                new PertenenciaProyectoGradoEntity(primero, estudiante),
-                new PertenenciaProyectoGradoEntity(segundo, estudiante),
-                new PertenenciaProyectoGradoEntity(tercero, estudiante));
+        assertThat(resultado).containsExactly(estudiante);
     }
 
     @Test
@@ -70,18 +64,20 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
         var destituido = UtilUUID.generarNuevoUUID();
         var deOtroProyecto = UtilUUID.generarNuevoUUID();
         var sinVinculo = UtilUUID.generarNuevoUUID();
+        var vigenteNoPedido = UtilUUID.generarNuevoUUID();
         sembrarVinculo(vigente, proyecto, null);
         sembrarVinculo(destituido, proyecto, Instant.now());
+        sembrarVinculo(vigenteNoPedido, proyecto, null);
         sembrarVinculo(deOtroProyecto, otroProyecto, null);
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        var resultado = adapter.obtenerPertenenciasVigentes(
-                List.of(artefacto), List.of(vigente, destituido, deOtroProyecto, sinVinculo));
+        var resultado = adapter.obtenerEstudiantesVigentesDelArtefacto(
+                artefacto, List.of(vigente, destituido, deOtroProyecto, sinVinculo));
 
         // Assert
-        assertThat(resultado).containsExactly(new PertenenciaProyectoGradoEntity(artefacto, vigente));
+        assertThat(resultado).containsExactly(vigente);
     }
 
     @Test

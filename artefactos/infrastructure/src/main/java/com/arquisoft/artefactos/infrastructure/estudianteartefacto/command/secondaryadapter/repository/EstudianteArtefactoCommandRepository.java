@@ -13,8 +13,7 @@ public interface EstudianteArtefactoCommandRepository extends JpaRepository<Estu
 
     boolean existsByArtefactoAndEstudiante(UUID artefacto, UUID estudiante);
 
-    List<EstudianteArtefactoJpaEntity> findByArtefactoInAndEstudianteIn(
-            List<UUID> artefactos, List<UUID> estudiantes);
+    List<EstudianteArtefactoJpaEntity> findByArtefactoAndEstudianteIn(UUID artefacto, List<UUID> estudiantes);
 
     @Modifying(clearAutomatically = true)
     @Query("""

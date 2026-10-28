@@ -31,8 +31,8 @@ public class EstudianteArtefactoCommandOutputAdapter implements EstudianteArtefa
     }
 
     @Override
-    public List<EstudianteArtefactoEntity> obtenerVinculados(List<UUID> artefactos, List<UUID> estudiantes) {
-        return estudianteArtefactoCommandRepository.findByArtefactoInAndEstudianteIn(artefactos, estudiantes)
+    public List<EstudianteArtefactoEntity> obtenerVinculados(UUID artefacto, List<UUID> estudiantes) {
+        return estudianteArtefactoCommandRepository.findByArtefactoAndEstudianteIn(artefacto, estudiantes)
                 .stream()
                 .map(EstudianteArtefactoJpaMapper::toEntity)
                 .toList();

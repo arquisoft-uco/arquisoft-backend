@@ -12,20 +12,20 @@ public final class EstudiantesArtefactoAsignadosEvent extends DomainEvent {
     public static final String EVENT_TOPIC = EventTopics.Artefactos.ESTUDIANTES_ARTEFACTO_ASIGNADOS;
     private static final String EVENT_TYPE = "EstudiantesArtefactoAsignadosEvent";
 
-    private final List<String> documentos;
+    private final String documento;
     private final List<ContactoEstudiante> estudiantes;
     private final ContactoAsesor asesor;
 
     public EstudiantesArtefactoAsignadosEvent(
-            List<String> documentos, List<ContactoEstudiante> estudiantes, ContactoAsesor asesor) {
+            String documento, List<ContactoEstudiante> estudiantes, ContactoAsesor asesor) {
         super(EVENT_TOPIC, EVENT_TYPE);
-        this.documentos = List.copyOf(documentos);
+        this.documento = documento;
         this.estudiantes = List.copyOf(estudiantes);
         this.asesor = asesor;
     }
 
-    public List<String> getDocumentos() {
-        return documentos;
+    public String getDocumento() {
+        return documento;
     }
 
     public List<ContactoEstudiante> getEstudiantes() {

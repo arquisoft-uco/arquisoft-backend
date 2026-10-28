@@ -14,8 +14,6 @@ public interface ArtefactoOutputPort {
 
     Optional<ArtefactoEntity> obtenerPorId(UUID id);
 
-    List<ArtefactoEntity> obtenerPorIds(List<UUID> ids);
-
     Optional<ArtefactoEntity> obtenerBloqueadoPorId(UUID id);
 
     void cambiarAsesor(UUID artefacto, UUID asesor);

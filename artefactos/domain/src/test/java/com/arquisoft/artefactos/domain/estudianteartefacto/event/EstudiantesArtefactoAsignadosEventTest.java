@@ -13,22 +13,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EstudiantesArtefactoAsignadosEventTest {
 
     @Test
-    void debeCargarDocumentosContactosYAsesorConCopiaInmutable_cuandoSeConstruye() {
+    void debeCargarDocumentoContactosYAsesorConCopiaInmutable_cuandoSeConstruye() {
         // Arrange
-        var documentos = new ArrayList<>(List.of("Anteproyecto"));
+        var documento = "Anteproyecto";
         var estudiantes = new ArrayList<>(List.of(new ContactoEstudiante("Laura Gomez", "laura@uco.edu.co")));
         var asesor = new ContactoAsesor("Ana Perez", "ana.perez@uco.edu.co");
 
         // Act
-        var evento = new EstudiantesArtefactoAsignadosEvent(documentos, estudiantes, asesor);
-        documentos.add("Otro");
+        var evento = new EstudiantesArtefactoAsignadosEvent(documento, estudiantes, asesor);
         estudiantes.clear();
 
         // Assert
         assertThat(EstudiantesArtefactoAsignadosEvent.EVENT_TOPIC)
                 .isEqualTo(EventTopics.Artefactos.ESTUDIANTES_ARTEFACTO_ASIGNADOS);
         assertThat(evento.getIdEvento()).isNotBlank();
-        assertThat(evento.getDocumentos()).containsExactly("Anteproyecto");
+        assertThat(evento.getDocumento()).isEqualTo("Anteproyecto");
         assertThat(evento.getEstudiantes())
                 .containsExactly(new ContactoEstudiante("Laura Gomez", "laura@uco.edu.co"));
         assertThat(evento.getAsesor()).isEqualTo(asesor);

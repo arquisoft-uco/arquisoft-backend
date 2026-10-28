@@ -2,35 +2,33 @@ package com.arquisoft.artefactos.domain.artefacto.rules.impl;
 
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
-import com.arquisoft.artefactos.domain.artefacto.model.PropiedadArtefactosAsesor;
+import com.arquisoft.artefactos.domain.artefacto.model.PropiedadArtefactoAsesor;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class AsesorPropietarioArtefactosRuleImplTest {
+class AsesorPropietarioArtefactoRuleImplTest {
 
-    private final AsesorPropietarioArtefactosRuleImpl rule = new AsesorPropietarioArtefactosRuleImpl();
+    private final AsesorPropietarioArtefactoRuleImpl rule = new AsesorPropietarioArtefactoRuleImpl();
 
     @Test
-    void debePasar_cuandoElAsesorEsDuenoDeTodosLosArtefactos() {
+    void debePasar_cuandoElAsesorEsDuenoDelArtefacto() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
         var propio = ArtefactoDomain.reconstruir(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), asesor);
 
         // Act & Assert
-        assertThatCode(() -> rule.validar(new PropiedadArtefactosAsesor(asesor, List.of(propio))))
+        assertThatCode(() -> rule.validar(new PropiedadArtefactoAsesor(asesor, propio)))
                 .doesNotThrowAnyException();
     }
 
     @Test
-    void debeLanzarSinUuidEnMensaje_cuandoUnArtefactoEsDeOtroAsesor() {
+    void debeLanzarSinUuidEnMensaje_cuandoElArtefactoEsDeOtroAsesor() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
         var ajeno = ArtefactoDomain.reconstruir(
@@ -38,7 +36,7 @@ class AsesorPropietarioArtefactosRuleImplTest {
                 UtilUUID.generarNuevoUUID());
 
         // Act & Assert
-        assertThatThrownBy(() -> rule.validar(new PropiedadArtefactosAsesor(asesor, List.of(ajeno))))
+        assertThatThrownBy(() -> rule.validar(new PropiedadArtefactoAsesor(asesor, ajeno)))
                 .isInstanceOf(AsesorNoPropietarioArtefactoException.class)
                 .satisfies(ex -> {
                     var excepcion = (AsesorNoPropietarioArtefactoException) ex;

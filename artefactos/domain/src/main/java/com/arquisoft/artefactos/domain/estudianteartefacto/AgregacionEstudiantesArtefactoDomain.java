@@ -1,6 +1,5 @@
 package com.arquisoft.artefactos.domain.estudianteartefacto;
 
-import com.arquisoft.artefactos.domain.estudianteartefacto.model.ParEstudianteArtefacto;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilColeccion;
@@ -57,18 +56,12 @@ public final class AgregacionEstudiantesArtefactoDomain {
         return relaciones;
     }
 
-    public List<UUID> getArtefactos() {
-        return relaciones.stream().map(EstudianteArtefactoDomain::getArtefacto).distinct().toList();
+    public UUID getArtefacto() {
+        return relaciones.getFirst().getArtefacto();
     }
 
     public List<UUID> getEstudiantes() {
-        return relaciones.stream().map(EstudianteArtefactoDomain::getEstudiante).distinct().toList();
-    }
-
-    public List<ParEstudianteArtefacto> getPares() {
-        return relaciones.stream()
-                .map(relacion -> new ParEstudianteArtefacto(relacion.getArtefacto(), relacion.getEstudiante()))
-                .toList();
+        return relaciones.stream().map(EstudianteArtefactoDomain::getEstudiante).toList();
     }
 
     public int getCantidad() {

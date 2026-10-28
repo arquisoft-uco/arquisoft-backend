@@ -1,6 +1,5 @@
 package com.arquisoft.artefactos.domain.estudianteartefacto;
 
-import com.arquisoft.artefactos.domain.estudianteartefacto.model.ParEstudianteArtefacto;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilUUID;
@@ -17,26 +16,22 @@ import static org.assertj.core.groups.Tuple.tuple;
 class AgregacionEstudiantesArtefactoDomainTest {
 
     @Test
-    void debeExponerParesYDistintos_cuandoHayVariosArtefactosYEstudiantes() {
+    void debeExponerArtefactoYEstudiantes_cuandoHayVarios() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
-        var artefactoA = UtilUUID.generarNuevoUUID();
-        var artefactoB = UtilUUID.generarNuevoUUID();
+        var artefacto = UtilUUID.generarNuevoUUID();
         var estudianteA = UtilUUID.generarNuevoUUID();
         var estudianteB = UtilUUID.generarNuevoUUID();
-        var relaciones = EstudianteArtefactoDomain.crear(List.of(artefactoA, artefactoB), List.of(estudianteA, estudianteB));
+        var relaciones = EstudianteArtefactoDomain.crear(artefacto, List.of(estudianteA, estudianteB));
 
         // Act
         var agregacion = AgregacionEstudiantesArtefactoDomain.crear(asesor, relaciones);
 
         // Assert
         assertThat(agregacion.getAsesor()).isEqualTo(asesor);
-        assertThat(agregacion.getCantidad()).isEqualTo(4);
-        assertThat(agregacion.getArtefactos()).containsExactly(artefactoA, artefactoB);
+        assertThat(agregacion.getCantidad()).isEqualTo(2);
+        assertThat(agregacion.getArtefacto()).isEqualTo(artefacto);
         assertThat(agregacion.getEstudiantes()).containsExactly(estudianteA, estudianteB);
-        assertThat(agregacion.getPares()).containsExactlyInAnyOrder(
-                new ParEstudianteArtefacto(artefactoA, estudianteA), new ParEstudianteArtefacto(artefactoA, estudianteB),
-                new ParEstudianteArtefacto(artefactoB, estudianteA), new ParEstudianteArtefacto(artefactoB, estudianteB));
     }
 
     @Test

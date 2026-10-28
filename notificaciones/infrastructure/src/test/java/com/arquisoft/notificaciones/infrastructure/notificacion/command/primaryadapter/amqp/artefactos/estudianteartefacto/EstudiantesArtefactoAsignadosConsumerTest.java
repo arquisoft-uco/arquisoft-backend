@@ -62,7 +62,7 @@ class EstudiantesArtefactoAsignadosConsumerTest {
         return """
                 {
                     "idEvento": "%s",
-                    "documentos": ["Anteproyecto", "Formato A"],
+                    "documento": "Anteproyecto",
                     "estudiantes": [
                         { "nombre": "Laura Gomez", "email": "laura@uco.edu.co" },
                         { "nombre": "Pedro Ruiz", "email": "pedro@uco.edu.co" }
@@ -89,8 +89,8 @@ class EstudiantesArtefactoAsignadosConsumerTest {
         assertThat(comandos).allSatisfy(command -> {
             assertThat(command.idEvento()).isEqualTo(idEvento);
             assertThat(command.tipo()).isEqualTo(TipoNotificacion.ESTUDIANTES_ARTEFACTO_ASIGNADOS);
-            assertThat(command.asunto()).contains("Anteproyecto, Formato A");
-            assertThat(command.cuerpo()).contains("Ana Perez").contains("Anteproyecto, Formato A");
+            assertThat(command.asunto()).contains("Anteproyecto");
+            assertThat(command.cuerpo()).contains("Ana Perez").contains("Anteproyecto");
             assertThat(command.pie()).isNotEmpty();
         });
         assertThat(comandos.get(0).destinatarioNombre()).isEqualTo("Laura Gomez");

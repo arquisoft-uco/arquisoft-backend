@@ -95,7 +95,7 @@ class EstudianteArtefactoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var resultado = adapter.obtenerVinculados(List.of(artefacto), List.of(pedido, UtilUUID.generarNuevoUUID()));
+        var resultado = adapter.obtenerVinculados(artefacto, List.of(pedido, UtilUUID.generarNuevoUUID()));
 
         // Assert
         assertThat(resultado).singleElement().satisfies(vinculo -> {
@@ -128,8 +128,9 @@ class EstudianteArtefactoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        var restantes = adapter.obtenerVinculados(
-                List.of(primerArtefacto, segundoArtefacto, artefactoAjeno), List.of(desvinculado, otroEstudiante));
+        var restantes = new java.util.ArrayList<EstudianteArtefactoEntity>();
+        List.of(primerArtefacto, segundoArtefacto, artefactoAjeno).forEach(artefacto ->
+                restantes.addAll(adapter.obtenerVinculados(artefacto, List.of(desvinculado, otroEstudiante))));
         assertThat(restantes).extracting(EstudianteArtefactoEntity::artefacto, EstudianteArtefactoEntity::estudiante)
                 .containsExactlyInAnyOrder(
                         org.assertj.core.groups.Tuple.tuple(artefactoAjeno, desvinculado),

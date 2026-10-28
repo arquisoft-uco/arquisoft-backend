@@ -4,15 +4,12 @@ import com.arquisoft.artefactos.application.artefacto.command.finder.Repositorio
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.ArtefactoOutputPort;
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 import com.arquisoft.artefactos.application.artefacto.command.validator.AsignarArtefactosValidator;
-import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoExisteFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
-import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactosDomain;
-import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
@@ -42,7 +39,6 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,8 +57,6 @@ class AsignarArtefactosUseCaseImplTest {
     @Mock
     private AsignarArtefactosValidator asignarArtefactosValidator;
     @Mock
-    private AsignarEstudiantesArtefactoUseCase asignarEstudiantesArtefactoUseCase;
-    @Mock
     private ArtefactoOutputPort artefactoOutputPort;
     @Mock
     private AppLogger logger;
@@ -77,14 +71,12 @@ class AsignarArtefactosUseCaseImplTest {
         useCase = new AsignarArtefactosUseCaseImpl(
                 proyectoGradoExisteFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
                 versionesRepositorioArtefactoPorIdsFinder, repositoriosAsignadosProyectoFinder,
-                asignarArtefactosValidator, asignarEstudiantesArtefactoUseCase, artefactoOutputPort, logger);
+                asignarArtefactosValidator, artefactoOutputPort, logger);
     }
 
     private static AsignacionArtefactosDomain asignacion(UUID proyecto, UUID asesor, List<UUID> versiones) {
         var artefactos = ArtefactoDomain.crear(proyecto, asesor, versiones);
-        return AsignacionArtefactosDomain.crear(artefactos, AgregacionEstudiantesArtefactoDomain.crear(
-                UtilUUID.generarNuevoUUID(),
-                EstudianteArtefactoDomain.crear(List.of(UtilUUID.generarNuevoUUID()), List.of(UtilUUID.generarNuevoUUID()))));
+        return AsignacionArtefactosDomain.crear(artefactos);
     }
 
     @Test
@@ -132,36 +124,6 @@ class AsignarArtefactosUseCaseImplTest {
             assertThat(entity.asesor()).isEqualTo(asesor);
         });
         verify(logger).info(eq(ArtefactoKey.LOG_ASIGNADOS), eq(proyecto), eq(3));
-        verify(asignarEstudiantesArtefactoUseCase, times(1)).ejecutar(asignacion.getEstudiantes());
-    }
-
-    @Test
-    void debeVincularEstudiantesDespuesDeRegistrarArtefactos_cuandoLaAsignacionLosTrae() {
-        // Arrange
-        var proyecto = UtilUUID.generarNuevoUUID();
-        var asesor = UtilUUID.generarNuevoUUID();
-        var artefactos = ArtefactoDomain.crear(
-                proyecto, asesor, List.of(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID()));
-        var idsArtefactos = artefactos.stream().map(ArtefactoDomain::getId).toList();
-        var estudiantes = AgregacionEstudiantesArtefactoDomain.crear(
-                asesor, EstudianteArtefactoDomain.crear(idsArtefactos, List.of(UtilUUID.generarNuevoUUID())));
-        var asignacion = AsignacionArtefactosDomain.crear(artefactos, estudiantes);
-        when(proyectoGradoExisteFinder.obtener(proyecto)).thenReturn(true);
-        when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
-        when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
-        when(versionesRepositorioArtefactoPorIdsFinder.obtener(anyList())).thenReturn(List.of());
-        when(repositoriosAsignadosProyectoFinder.obtener(proyecto)).thenReturn(List.of());
-
-        // Act
-        useCase.ejecutar(asignacion);
-
-        // Assert
-        var orden = inOrder(
-                asignarArtefactosValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase, logger);
-        orden.verify(asignarArtefactosValidator).validar(any(), eq(true), any(), anyList(), anyList(), anyList());
-        orden.verify(artefactoOutputPort).registrarTodos(anyList());
-        orden.verify(asignarEstudiantesArtefactoUseCase).ejecutar(estudiantes);
-        orden.verify(logger).info(eq(ArtefactoKey.LOG_ASIGNADOS), eq(proyecto), eq(2));
     }
 
     @Test
@@ -182,7 +144,6 @@ class AsignarArtefactosUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(asignacion))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
         verify(artefactoOutputPort, never()).registrarTodos(any());
-        verifyNoInteractions(asignarEstudiantesArtefactoUseCase);
         verify(logger, never()).info(any(ClaveMensaje.class), eq(proyecto), eq(1));
     }
 }

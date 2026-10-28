@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AsignarEstudiantesArtefactoMapperTest {
 
     @Test
-    void debeConstruirRelacionPorCadaParArtefactoEstudiante_cuandoHayEstudiantes() {
+    void debeConstruirUnaRelacionPorEstudiante_cuandoHayEstudiantes() {
         // Arrange
         var artefacto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
@@ -27,7 +27,7 @@ class AsignarEstudiantesArtefactoMapperTest {
 
         // Assert
         assertThat(agregacion.getAsesor()).isEqualTo(asesor);
-        assertThat(agregacion.getArtefactos()).containsExactly(artefacto);
+        assertThat(agregacion.getArtefacto()).isEqualTo(artefacto);
         assertThat(agregacion.getEstudiantes()).containsExactly(primero, segundo);
         assertThat(agregacion.getCantidad()).isEqualTo(2);
     }
@@ -36,10 +36,11 @@ class AsignarEstudiantesArtefactoMapperTest {
     void debeLanzarValidacion_cuandoLaListaDeEstudiantesLlegaVaciaONula() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
-        var artefactos = List.of(UtilUUID.generarNuevoUUID());
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var command = new AsignarEstudiantesArtefactoCommand(artefacto, asesor, null);
 
         // Act & Assert
-        assertThatThrownBy(() -> AsignarEstudiantesArtefactoMapper.toDomain(asesor, artefactos, null))
+        assertThatThrownBy(() -> AsignarEstudiantesArtefactoMapper.toDomain(command))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                         .extracting(error -> error.codigoError())

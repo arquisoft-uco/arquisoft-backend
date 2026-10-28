@@ -1,12 +1,10 @@
 package com.arquisoft.artefactos.domain.artefacto;
 
-import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilColeccion;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorColeccion;
-import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,16 +12,13 @@ import java.util.UUID;
 public final class AsignacionArtefactosDomain {
 
     private List<ArtefactoDomain> artefactos;
-    private AgregacionEstudiantesArtefactoDomain estudiantes;
 
     private AsignacionArtefactosDomain() {}
 
-    public static AsignacionArtefactosDomain crear(
-            List<ArtefactoDomain> artefactos, AgregacionEstudiantesArtefactoDomain estudiantes) {
+    public static AsignacionArtefactosDomain crear(List<ArtefactoDomain> artefactos) {
         var asignacion = new AsignacionArtefactosDomain();
         var result = new ValidationResult();
         asignacion.setArtefactos(artefactos, result);
-        asignacion.setEstudiantes(estudiantes, result);
         result.lanzarSiTieneErrores();
         return asignacion;
     }
@@ -36,15 +31,6 @@ public final class AsignacionArtefactosDomain {
             return;
         }
         this.artefactos = lista;
-    }
-
-    private void setEstudiantes(AgregacionEstudiantesArtefactoDomain estudiantes, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(estudiantes,
-                ArtefactosFields.EstudianteArtefacto.ESTUDIANTES,
-                ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_REQUERIDOS, result)) {
-            return;
-        }
-        this.estudiantes = estudiantes;
     }
 
     public List<UUID> getVersionesRepositorioArtefacto() {
@@ -61,9 +47,5 @@ public final class AsignacionArtefactosDomain {
 
     public List<ArtefactoDomain> getArtefactos() {
         return artefactos;
-    }
-
-    public AgregacionEstudiantesArtefactoDomain getEstudiantes() {
-        return estudiantes;
     }
 }

@@ -151,12 +151,10 @@ public final class ArtefactosApiMessages {
                         + "artefactos suyos, todo o nada. El asesor del artefacto es el del token y debe tener "
                         + "asignado el proyecto. El proyecto no puede tener ya un artefacto de ninguno de los "
                         + "repositorios, ni repetir un repositorio dentro del lote. Responde con los ids de los "
-                        + "artefactos creados, en el orden enviado. Exige al menos un estudiante, que debe ser vigente "
-                        + "del proyecto y queda vinculado a todos los artefactos creados.";
+                        + "artefactos creados, en el orden enviado.";
         public static final String ASIGNAR_RESP_201 = "Artefactos asignados al proyecto de grado";
         public static final String ASIGNAR_RESP_400 =
-                "Datos mal formados: identificador de proyecto, de versión o de estudiante inválido, o "
-                        + "lista de versiones vacía o con versiones repetidas";
+                "Datos mal formados: identificador inválido, lista vacía o versión repetida";
         public static final String CAMBIAR_ASESOR_SUMMARY = "Cambiar el responsable de un artefacto";
         public static final String CAMBIAR_ASESOR_DESCRIPTION =
                 "Designa a otro asesor como responsable de un artefacto ya asignado. El nuevo asesor debe "
@@ -181,9 +179,8 @@ public final class ArtefactosApiMessages {
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar los artefactos del asesor";
         public static final String ASIGNAR_RESP_422 =
-                "El proyecto, el asesor o alguna versión no existe, el asesor no está asignado al proyecto, "
-                        + "el repositorio ya está asignado, o los estudiantes faltan, se repiten, no existen, "
-                        + "están dados de baja o no pertenecen al proyecto";
+                "El proyecto, el asesor o alguna versión no existe, el asesor no está asignado al proyecto "
+                        + "o el repositorio ya está asignado";
     }
 
     public static final class EstadoRevisionAsesor {

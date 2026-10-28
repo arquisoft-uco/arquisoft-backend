@@ -2,12 +2,12 @@ package com.arquisoft.artefactos.application.estudianteartefacto.command.validat
 
 import com.arquisoft.artefactos.application.estudianteartefacto.command.validator.AsignarEstudiantesArtefactoValidator;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
-import com.arquisoft.artefactos.domain.artefacto.model.ExistenciaArtefactos;
-import com.arquisoft.artefactos.domain.artefacto.model.PropiedadArtefactosAsesor;
-import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactosExistenRule;
-import com.arquisoft.artefactos.domain.artefacto.rules.AsesorPropietarioArtefactosRule;
-import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactosExistenRuleImpl;
-import com.arquisoft.artefactos.domain.artefacto.rules.impl.AsesorPropietarioArtefactosRuleImpl;
+import com.arquisoft.artefactos.domain.artefacto.model.ExistenciaArtefacto;
+import com.arquisoft.artefactos.domain.artefacto.model.PropiedadArtefactoAsesor;
+import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoExisteRule;
+import com.arquisoft.artefactos.domain.artefacto.rules.AsesorPropietarioArtefactoRule;
+import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoExisteRuleImpl;
+import com.arquisoft.artefactos.domain.artefacto.rules.impl.AsesorPropietarioArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.model.ExistenciaAsesor;
 import com.arquisoft.artefactos.domain.asesor.rules.AsesorExisteRule;
@@ -20,7 +20,6 @@ import com.arquisoft.artefactos.domain.estudiante.rules.EstudiantesVigentesRule;
 import com.arquisoft.artefactos.domain.estudiante.rules.impl.EstudiantesExistenRuleImpl;
 import com.arquisoft.artefactos.domain.estudiante.rules.impl.EstudiantesVigentesRuleImpl;
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
-import com.arquisoft.artefactos.domain.estudianteartefacto.model.ParEstudianteArtefacto;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.PertenenciaProyectoGradoEstudiantes;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.VinculosEstudiantesArtefacto;
 import com.arquisoft.artefactos.domain.estudianteartefacto.rules.EstudiantesNoVinculadosArtefactoRule;
@@ -34,25 +33,26 @@ import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.impl.Ve
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class AsignarEstudiantesArtefactoValidatorImpl implements AsignarEstudiantesArtefactoValidator {
 
-    private final ArtefactosExistenRule artefactosExistenRule;
+    private final ArtefactoExisteRule artefactoExisteRule;
     private final AsesorExisteRule asesorExisteRule;
     private final VersionesRepositorioArtefactoExistenRule versionesRepositorioArtefactoExistenRule;
     private final EstudiantesExistenRule estudiantesExistenRule;
-    private final AsesorPropietarioArtefactosRule asesorPropietarioArtefactosRule;
+    private final AsesorPropietarioArtefactoRule asesorPropietarioArtefactoRule;
     private final EstudiantesVigentesRule estudiantesVigentesRule;
     private final EstudiantesVinculadosProyectoGradoRule estudiantesVinculadosProyectoGradoRule;
     private final EstudiantesNoVinculadosArtefactoRule estudiantesNoVinculadosArtefactoRule;
 
     public AsignarEstudiantesArtefactoValidatorImpl() {
-        this.artefactosExistenRule = new ArtefactosExistenRuleImpl();
+        this.artefactoExisteRule = new ArtefactoExisteRuleImpl();
         this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.versionesRepositorioArtefactoExistenRule = new VersionesRepositorioArtefactoExistenRuleImpl();
         this.estudiantesExistenRule = new EstudiantesExistenRuleImpl();
-        this.asesorPropietarioArtefactosRule = new AsesorPropietarioArtefactosRuleImpl();
+        this.asesorPropietarioArtefactoRule = new AsesorPropietarioArtefactoRuleImpl();
         this.estudiantesVigentesRule = new EstudiantesVigentesRuleImpl();
         this.estudiantesVinculadosProyectoGradoRule = new EstudiantesVinculadosProyectoGradoRuleImpl();
         this.estudiantesNoVinculadosArtefactoRule = new EstudiantesNoVinculadosArtefactoRuleImpl();
@@ -61,21 +61,21 @@ public class AsignarEstudiantesArtefactoValidatorImpl implements AsignarEstudian
     @Override
     public void validar(
             AgregacionEstudiantesArtefactoDomain entrada,
-            List<ArtefactoDomain> artefactos,
+            ArtefactoDomain artefacto,
             AsesorDomain asesor,
             List<VersionRepositorioArtefactoDomain> versiones,
             List<EstudianteDomain> estudiantes,
-            List<ParEstudianteArtefacto> pertenencias,
-            List<ParEstudianteArtefacto> yaVinculados) {
-        artefactosExistenRule.validar(new ExistenciaArtefactos(entrada.getArtefactos(), artefactos));
+            List<UUID> pertenencias,
+            List<UUID> yaVinculados) {
+        artefactoExisteRule.validar(new ExistenciaArtefacto(entrada.getArtefacto(), artefacto));
         asesorExisteRule.validar(new ExistenciaAsesor(entrada.getAsesor(), asesor));
         versionesRepositorioArtefactoExistenRule.validar(new ExistenciaVersionesRepositorioArtefacto(
-                artefactos.stream().map(ArtefactoDomain::getVersionRepositorioArtefacto).toList(), versiones));
+                List.of(artefacto.getVersionRepositorioArtefacto()), versiones));
         estudiantesExistenRule.validar(new ExistenciaEstudiantes(entrada.getEstudiantes(), estudiantes));
-        asesorPropietarioArtefactosRule.validar(new PropiedadArtefactosAsesor(entrada.getAsesor(), artefactos));
+        asesorPropietarioArtefactoRule.validar(new PropiedadArtefactoAsesor(entrada.getAsesor(), artefacto));
         estudiantesVigentesRule.validar(new VigenciaEstudiantes(estudiantes));
         estudiantesVinculadosProyectoGradoRule.validar(
-                new PertenenciaProyectoGradoEstudiantes(estudiantes, entrada.getPares(), pertenencias));
+                new PertenenciaProyectoGradoEstudiantes(estudiantes, pertenencias));
         estudiantesNoVinculadosArtefactoRule.validar(new VinculosEstudiantesArtefacto(estudiantes, yaVinculados));
     }
 }

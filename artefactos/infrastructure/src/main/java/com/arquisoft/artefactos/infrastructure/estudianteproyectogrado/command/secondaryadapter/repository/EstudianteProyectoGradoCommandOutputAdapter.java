@@ -2,7 +2,6 @@ package com.arquisoft.artefactos.infrastructure.estudianteproyectogrado.command.
 
 import com.arquisoft.artefactos.application.estudianteproyectogrado.command.secondaryport.EstudianteProyectoGradoOutputPort;
 import com.arquisoft.artefactos.application.estudianteproyectogrado.command.secondaryport.entity.EstudianteProyectoGradoEntity;
-import com.arquisoft.artefactos.application.estudianteproyectogrado.command.secondaryport.entity.PertenenciaProyectoGradoEntity;
 import com.arquisoft.artefactos.infrastructure.estudianteproyectogrado.command.secondaryadapter.mapper.EstudianteProyectoGradoJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EstudianteProyectoGradoKey;
@@ -21,12 +20,8 @@ public class EstudianteProyectoGradoCommandOutputAdapter implements EstudiantePr
     private final AppLogger logger;
 
     @Override
-    public List<PertenenciaProyectoGradoEntity> obtenerPertenenciasVigentes(
-            List<UUID> artefactos, List<UUID> estudiantes) {
-        return estudianteProyectoGradoCommandRepository.buscarPertenenciasVigentes(artefactos, estudiantes)
-                .stream()
-                .map(EstudianteProyectoGradoJpaMapper::toEntity)
-                .toList();
+    public List<UUID> obtenerEstudiantesVigentesDelArtefacto(UUID artefacto, List<UUID> estudiantes) {
+        return estudianteProyectoGradoCommandRepository.buscarEstudiantesVigentesDelArtefacto(artefacto, estudiantes);
     }
 
     @Override

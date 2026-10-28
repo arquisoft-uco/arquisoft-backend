@@ -16,17 +16,14 @@ import java.util.UUID;
 public record AsignarArtefactosCommand(
         UUID proyectoGrado,
         UUID asesor,
-        List<UUID> versionesRepositorioArtefacto,
-        List<UUID> estudiantes
+        List<UUID> versionesRepositorioArtefacto
 ) {
 
     public AsignarArtefactosCommand {
         versionesRepositorioArtefacto = UtilColeccion.aplicarPorDefecto(versionesRepositorioArtefacto);
-        estudiantes = UtilColeccion.aplicarPorDefecto(estudiantes);
     }
 
-    public static AsignarArtefactosCommand crear(
-            String proyectoGrado, UUID asesor, List<String> versiones, List<String> estudiantes) {
+    public static AsignarArtefactosCommand crear(String proyectoGrado, UUID asesor, List<String> versiones) {
         var result = new ValidationResult();
 
         ValidatorUUID.uuidValido(proyectoGrado,
@@ -36,16 +33,11 @@ public record AsignarArtefactosCommand(
                 ArtefactosFields.Artefacto.ASESOR,
                 ArtefactosCodes.Artefacto.ASESOR_REQUERIDO, result);
         var versionesConvertidas = validarVersiones(versiones, result);
-        var listaEstudiantes = UtilColeccion.aplicarPorDefecto(estudiantes);
-        listaEstudiantes.forEach(estudiante -> ValidatorUUID.uuidValido(estudiante,
-                ArtefactosFields.EstudianteArtefacto.ESTUDIANTES,
-                ArtefactosCodes.EstudianteArtefacto.ESTUDIANTE_ID_REQUERIDO, result));
 
         result.lanzarSiTieneErroresDeEntrada();
 
         return new AsignarArtefactosCommand(
-                UtilUUID.generarUUIDDesdeTexto(proyectoGrado), asesor, versionesConvertidas,
-                listaEstudiantes.stream().map(UtilUUID::generarUUIDDesdeTexto).toList());
+                UtilUUID.generarUUIDDesdeTexto(proyectoGrado), asesor, versionesConvertidas);
     }
 
     private static List<UUID> validarVersiones(List<String> versiones, ValidationResult result) {

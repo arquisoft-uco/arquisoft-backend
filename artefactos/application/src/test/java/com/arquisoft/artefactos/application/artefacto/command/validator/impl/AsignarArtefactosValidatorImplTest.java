@@ -1,8 +1,6 @@
 package com.arquisoft.artefactos.application.artefacto.command.validator.impl;
 
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
-import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
-import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactosDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.RepositorioArtefactoYaAsignadoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
@@ -42,10 +40,7 @@ class AsignarArtefactosValidatorImplTest {
         asesorId = UtilUUID.generarNuevoUUID();
         versionId = UtilUUID.generarNuevoUUID();
         repositorio = UtilUUID.generarNuevoUUID();
-        asignacion = AsignacionArtefactosDomain.crear(
-                ArtefactoDomain.crear(proyecto, asesorId, List.of(versionId)), AgregacionEstudiantesArtefactoDomain.crear(
-                UtilUUID.generarNuevoUUID(),
-                EstudianteArtefactoDomain.crear(List.of(UtilUUID.generarNuevoUUID()), List.of(UtilUUID.generarNuevoUUID()))));
+        asignacion = AsignacionArtefactosDomain.crear(ArtefactoDomain.crear(proyecto, asesorId, List.of(versionId)));
         asesorVigente = AsesorDomain.reconstruir(
                 asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
         vinculoVigente = AsesorProyectoGradoDomain.reconstruir(

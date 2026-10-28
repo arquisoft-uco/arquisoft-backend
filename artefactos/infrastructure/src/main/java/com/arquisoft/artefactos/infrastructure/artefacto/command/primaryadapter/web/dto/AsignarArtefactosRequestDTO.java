@@ -4,6 +4,5 @@ import java.util.List;
 
 public record AsignarArtefactosRequestDTO(
         String proyectoGrado,
-        List<String> versionesRepositorioArtefacto,
-        List<String> estudiantes) {
+        List<String> versionesRepositorioArtefacto) {
 }

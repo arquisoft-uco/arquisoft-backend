@@ -17,51 +17,60 @@ import static org.assertj.core.groups.Tuple.tuple;
 class EstudianteArtefactoDomainTest {
 
     @Test
-    void debeCrearProductoCartesiano_cuandoHayVariosArtefactosYEstudiantes() {
+    void debeCrearUnaRelacionPorEstudiante_cuandoHayVariosEstudiantes() {
         // Arrange
-        var artefactos = List.of(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var artefacto = UtilUUID.generarNuevoUUID();
         var estudiantes = List.of(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
 
         // Act
-        var relaciones = EstudianteArtefactoDomain.crear(artefactos, estudiantes);
+        var relaciones = EstudianteArtefactoDomain.crear(artefacto, estudiantes);
 
         // Assert
-        assertThat(relaciones).hasSize(6);
+        assertThat(relaciones).hasSize(3);
         assertThat(relaciones).extracting(EstudianteArtefactoDomain::getId).doesNotHaveDuplicates().doesNotContainNull();
-        assertThat(relaciones.stream().map(EstudianteArtefactoDomain::getArtefacto).distinct().toList())
-                .containsExactlyElementsOf(artefactos);
-        assertThat(relaciones.stream().map(EstudianteArtefactoDomain::getEstudiante).distinct().toList())
+        assertThat(relaciones).extracting(EstudianteArtefactoDomain::getArtefacto).containsOnly(artefacto);
+        assertThat(relaciones).extracting(EstudianteArtefactoDomain::getEstudiante)
                 .containsExactlyElementsOf(estudiantes);
     }
 
     @Test
-    void debeAcumularErrores_cuandoUnaListaEstaVaciaYLaOtraDuplicada() {
+    void debeLanzar_cuandoLaListaDeEstudiantesEstaVacia() {
         // Arrange
-        var repetido = UtilUUID.generarNuevoUUID();
-        var artefactosDuplicados = List.of(repetido, repetido);
+        var artefacto = UtilUUID.generarNuevoUUID();
         var estudiantesVacios = List.<UUID>of();
 
         // Act & Assert
-        assertThatThrownBy(() -> EstudianteArtefactoDomain.crear(artefactosDuplicados, estudiantesVacios))
+        assertThatThrownBy(() -> EstudianteArtefactoDomain.crear(artefacto, estudiantesVacios))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                         .extracting(ValidationError::campo, ValidationError::codigoError)
-                        .containsExactlyInAnyOrder(
-                                tuple(ArtefactosFields.EstudianteArtefacto.ARTEFACTOS,
-                                        ArtefactosCodes.EstudianteArtefacto.ARTEFACTOS_DUPLICADOS),
-                                tuple(ArtefactosFields.EstudianteArtefacto.ESTUDIANTES,
-                                        ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_REQUERIDOS)));
+                        .containsExactly(tuple(ArtefactosFields.EstudianteArtefacto.ESTUDIANTES,
+                                ArtefactosCodes.EstudianteArtefacto.ESTUDIANTES_REQUERIDOS)));
+    }
+
+    @Test
+    void debeLanzar_cuandoElArtefactoEsNulo() {
+        // Arrange
+        var estudiantes = List.of(UtilUUID.generarNuevoUUID());
+
+        // Act & Assert
+        assertThatThrownBy(() -> EstudianteArtefactoDomain.crear(null, estudiantes))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(ValidationError::campo, ValidationError::codigoError)
+                        .containsExactly(tuple(ArtefactosFields.EstudianteArtefacto.ARTEFACTO,
+                                ArtefactosCodes.EstudianteArtefacto.ARTEFACTO_ID_REQUERIDO)));
     }
 
     @Test
     void debeRechazarEstudiantesDuplicados_cuandoSeRepiteUnId() {
         // Arrange
         var repetido = UtilUUID.generarNuevoUUID();
-        var artefactos = List.of(UtilUUID.generarNuevoUUID());
+        var artefacto = UtilUUID.generarNuevoUUID();
         var estudiantes = List.of(repetido, repetido);
 
         // Act & Assert
-        assertThatThrownBy(() -> EstudianteArtefactoDomain.crear(artefactos, estudiantes))
+        assertThatThrownBy(() -> EstudianteArtefactoDomain.crear(artefacto, estudiantes))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                         .singleElement()

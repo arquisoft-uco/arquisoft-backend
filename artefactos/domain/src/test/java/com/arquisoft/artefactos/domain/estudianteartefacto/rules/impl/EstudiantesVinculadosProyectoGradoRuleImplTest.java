@@ -2,7 +2,6 @@ package com.arquisoft.artefactos.domain.estudianteartefacto.rules.impl;
 
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.exception.EstudianteNoVinculadoProyectoGradoException;
-import com.arquisoft.artefactos.domain.estudianteartefacto.model.ParEstudianteArtefacto;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.PertenenciaProyectoGradoEstudiantes;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.util.UtilUUID;
@@ -22,23 +21,23 @@ class EstudiantesVinculadosProyectoGradoRuleImplTest {
     private final EstudiantesVinculadosProyectoGradoRuleImpl rule = new EstudiantesVinculadosProyectoGradoRuleImpl();
 
     @Test
-    void debePasar_cuandoTodosLosParesTienenVinculoVigente() {
+    void debePasar_cuandoTodosLosEstudiantesTienenVinculoVigente() {
         // Arrange
-        var par = new ParEstudianteArtefacto(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
-        var pertenencia = new PertenenciaProyectoGradoEstudiantes(List.of(), List.of(par), List.of(par));
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var conocido = EstudianteDomain.reconstruir(estudiante, "1", NOMBRE, "l@uco.edu.co", Instant.EPOCH, null);
+        var pertenencia = new PertenenciaProyectoGradoEstudiantes(List.of(conocido), List.of(estudiante));
 
         // Act & Assert
         assertThatCode(() -> rule.validar(pertenencia)).doesNotThrowAnyException();
     }
 
     @Test
-    void debeLanzarConNombreSinUuid_cuandoUnParNoTieneVinculoVigente() {
+    void debeLanzarConNombreSinUuid_cuandoUnEstudianteNoTieneVinculoVigente() {
         // Arrange
-        var artefacto = UtilUUID.generarNuevoUUID();
         var estudiante = UtilUUID.generarNuevoUUID();
         var conocido = EstudianteDomain.reconstruir(estudiante, "1", NOMBRE, "l@uco.edu.co", Instant.EPOCH, null);
         var pertenencia = new PertenenciaProyectoGradoEstudiantes(
-                List.of(conocido), List.of(new ParEstudianteArtefacto(artefacto, estudiante)), List.of());
+                List.of(conocido), List.of());
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(pertenencia))

@@ -22,8 +22,6 @@ import java.io.IOException;
 @Component
 public class EstudiantesArtefactoAsignadosConsumer extends AbstractNotificacionConsumer {
 
-    private static final String SEPARADOR_DOCUMENTOS = ", ";
-
     private final EnviarNotificacionInteractor enviarNotificacionInteractor;
 
     public EstudiantesArtefactoAsignadosConsumer(
@@ -53,15 +51,14 @@ public class EstudiantesArtefactoAsignadosConsumer extends AbstractNotificacionC
     private void notificar(
             EstudiantesArtefactoAsignadosPayload payload,
             EstudiantesArtefactoAsignadosPayload.ContactoPayload estudiante) {
-        var documentos = String.join(SEPARADOR_DOCUMENTOS, UtilColeccion.aplicarPorDefecto(payload.documentos()));
         registrar(enviarNotificacionInteractor.ejecutar(EnviarNotificacionCommand.crear(
                 payload.idEvento(),
                 TipoNotificacionEvento.ESTUDIANTES_ARTEFACTO_ASIGNADOS.getCodigo(),
                 estudiante.nombre(),
                 estudiante.email(),
-                plantilla(PlantillaKey.ASUNTO_ESTUDIANTES_ARTEFACTO_ASIGNADOS, documentos),
+                plantilla(PlantillaKey.ASUNTO_ESTUDIANTES_ARTEFACTO_ASIGNADOS, payload.documento()),
                 plantilla(PlantillaKey.CUERPO_ESTUDIANTES_ARTEFACTO_ASIGNADOS,
-                        estudiante.nombre(), payload.asesor().nombre(), documentos),
+                        estudiante.nombre(), payload.asesor().nombre(), payload.documento()),
                 plantilla(PlantillaKey.PIE_GENERICO))));
     }
 }

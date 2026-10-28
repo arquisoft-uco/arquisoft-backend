@@ -12,7 +12,6 @@ import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantes
 import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.exception.EstudianteNoVinculadoProyectoGradoException;
 import com.arquisoft.artefactos.domain.estudianteartefacto.exception.EstudianteYaVinculadoArtefactoException;
-import com.arquisoft.artefactos.domain.estudianteartefacto.model.ParEstudianteArtefacto;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.exception.VersionRepositorioArtefactoNoEncontradaException;
@@ -38,7 +37,6 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
     private AsesorDomain asesor;
     private VersionRepositorioArtefactoDomain version;
     private EstudianteDomain estudiante;
-    private ParEstudianteArtefacto par;
 
     @BeforeEach
     void setUp() {
@@ -48,20 +46,19 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
         artefacto = ArtefactoDomain.reconstruir(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), versionId, asesorId);
         entrada = AgregacionEstudiantesArtefactoDomain.crear(
-                asesorId, EstudianteArtefactoDomain.crear(List.of(artefacto.getId()), List.of(estudianteId)));
+                asesorId, EstudianteArtefactoDomain.crear(artefacto.getId(), List.of(estudianteId)));
         asesor = AsesorDomain.reconstruir(asesorId, "1", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
         version = VersionRepositorioArtefactoDomain.reconstruir(
                 versionId, "Doc", 1, UtilUUID.generarNuevoUUID(), "Repo",
                 new DatosArchivo("a.pdf", "application/pdf", 10L));
         estudiante = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", Instant.EPOCH, null);
-        par = new ParEstudianteArtefacto(artefacto.getId(), estudianteId);
     }
 
     @Test
     void debePasar_cuandoTodasLasReglasSeCumplen() {
         // Act & Assert
         assertThatCode(() -> validator.validar(
-                entrada, List.of(artefacto), asesor, List.of(version), List.of(estudiante), List.of(par), List.of()))
+                entrada, artefacto, asesor, List.of(version), List.of(estudiante), List.of(estudianteId), List.of()))
                 .doesNotThrowAnyException();
     }
 
@@ -69,7 +66,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
     void debeLanzarArtefactoNoEncontrado_antesQueElAsesorInexistente() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada, List.of(), AsesorDomain.VACIO, List.of(version), List.of(estudiante), List.of(par), List.of()))
+                entrada, ArtefactoDomain.VACIO, AsesorDomain.VACIO, List.of(version), List.of(estudiante), List.of(estudianteId), List.of()))
                 .isInstanceOf(ArtefactoNoEncontradoException.class);
     }
 
@@ -77,7 +74,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
     void debeLanzarAsesorNoEncontrado_antesQueLasVersionesInexistentes() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada, List.of(artefacto), AsesorDomain.VACIO, List.of(), List.of(estudiante), List.of(par), List.of()))
+                entrada, artefacto, AsesorDomain.VACIO, List.of(), List.of(estudiante), List.of(estudianteId), List.of()))
                 .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
@@ -85,7 +82,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
     void debeLanzarVersionNoEncontrada_antesQueLosEstudiantesInexistentes() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada, List.of(artefacto), asesor, List.of(), List.of(), List.of(par), List.of()))
+                entrada, artefacto, asesor, List.of(), List.of(), List.of(estudianteId), List.of()))
                 .isInstanceOf(VersionRepositorioArtefactoNoEncontradaException.class);
     }
 
@@ -98,7 +95,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada, List.of(ajeno), asesor, List.of(version), List.of(), List.of(par), List.of()))
+                entrada, ajeno, asesor, List.of(version), List.of(), List.of(estudianteId), List.of()))
                 .isInstanceOf(EstudianteNoEncontradoException.class);
     }
 
@@ -112,7 +109,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada, List.of(ajeno), asesor, List.of(version), List.of(eliminado), List.of(par), List.of()))
+                entrada, ajeno, asesor, List.of(version), List.of(eliminado), List.of(estudianteId), List.of()))
                 .isInstanceOf(AsesorNoPropietarioArtefactoException.class);
     }
 
@@ -123,7 +120,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada, List.of(artefacto), asesor, List.of(version), List.of(eliminado), List.of(), List.of()))
+                entrada, artefacto, asesor, List.of(version), List.of(eliminado), List.of(), List.of()))
                 .isInstanceOf(EstudianteNoVigenteException.class);
     }
 
@@ -131,15 +128,15 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
     void debeLanzarNoVinculadoAlProyecto_antesQueElVinculoPrevioAlArtefacto() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada, List.of(artefacto), asesor, List.of(version), List.of(estudiante), List.of(), List.of(par)))
+                entrada, artefacto, asesor, List.of(version), List.of(estudiante), List.of(), List.of(estudianteId)))
                 .isInstanceOf(EstudianteNoVinculadoProyectoGradoException.class);
     }
 
     @Test
-    void debeLanzarYaVinculado_cuandoLaParejaYaExiste() {
+    void debeLanzarYaVinculado_cuandoElEstudianteYaEstaVinculado() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                entrada, List.of(artefacto), asesor, List.of(version), List.of(estudiante), List.of(par), List.of(par)))
+                entrada, artefacto, asesor, List.of(version), List.of(estudiante), List.of(estudianteId), List.of(estudianteId)))
                 .isInstanceOf(EstudianteYaVinculadoArtefactoException.class);
     }
 }

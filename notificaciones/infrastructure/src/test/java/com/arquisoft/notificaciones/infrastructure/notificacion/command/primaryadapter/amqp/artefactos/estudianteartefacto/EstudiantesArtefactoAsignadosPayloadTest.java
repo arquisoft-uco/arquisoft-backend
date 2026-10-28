@@ -20,20 +20,20 @@ class EstudiantesArtefactoAsignadosPayloadTest {
 
     private static final class EstudiantesArtefactoAsignadosEventoDePrueba extends DomainEvent {
 
-        private final List<String> documentos;
+        private final String documento;
         private final List<ContactoDePrueba> estudiantes;
         private final ContactoDePrueba asesor;
 
         private EstudiantesArtefactoAsignadosEventoDePrueba(
-                List<String> documentos, List<ContactoDePrueba> estudiantes, ContactoDePrueba asesor) {
+                String documento, List<ContactoDePrueba> estudiantes, ContactoDePrueba asesor) {
             super(EventTopics.Artefactos.ESTUDIANTES_ARTEFACTO_ASIGNADOS, "EstudiantesArtefactoAsignadosEvent");
-            this.documentos = documentos;
+            this.documento = documento;
             this.estudiantes = estudiantes;
             this.asesor = asesor;
         }
 
-        public List<String> getDocumentos() {
-            return documentos;
+        public String getDocumento() {
+            return documento;
         }
 
         public List<ContactoDePrueba> getEstudiantes() {
@@ -49,7 +49,7 @@ class EstudiantesArtefactoAsignadosPayloadTest {
     void debeDeserializarEventoReal() {
         // Arrange
         var evento = new EstudiantesArtefactoAsignadosEventoDePrueba(
-                List.of("Anteproyecto", "Formato A"),
+                "Anteproyecto",
                 List.of(new ContactoDePrueba("Laura Gomez", "laura@uco.edu.co"),
                         new ContactoDePrueba("Pedro Ruiz", "pedro@uco.edu.co")),
                 new ContactoDePrueba("Ana Perez", "ana.perez@uco.edu.co"));
@@ -61,7 +61,7 @@ class EstudiantesArtefactoAsignadosPayloadTest {
         // Assert
         assertThat(payload.idEvento()).isEqualTo(evento.getIdEvento());
         assertThat(payload.ocurridoEn()).isEqualTo(evento.getOcurridoEn());
-        assertThat(payload.documentos()).containsExactly("Anteproyecto", "Formato A");
+        assertThat(payload.documento()).isEqualTo("Anteproyecto");
         assertThat(payload.estudiantes()).extracting(
                         EstudiantesArtefactoAsignadosPayload.ContactoPayload::nombre,
                         EstudiantesArtefactoAsignadosPayload.ContactoPayload::email)
@@ -85,7 +85,7 @@ class EstudiantesArtefactoAsignadosPayloadTest {
         // Assert
         assertThat(payload.idEvento()).isEqualTo("evt-1");
         assertThat(payload.ocurridoEn()).isNull();
-        assertThat(payload.documentos()).isNull();
+        assertThat(payload.documento()).isNull();
         assertThat(payload.estudiantes()).isNull();
         assertThat(payload.asesor()).isNull();
     }

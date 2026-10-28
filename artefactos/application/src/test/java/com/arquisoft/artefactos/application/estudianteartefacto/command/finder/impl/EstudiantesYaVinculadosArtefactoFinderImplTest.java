@@ -4,7 +4,6 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.secondar
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.entity.EstudianteArtefactoEntity;
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
-import com.arquisoft.artefactos.domain.estudianteartefacto.model.ParEstudianteArtefacto;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,20 +27,20 @@ class EstudiantesYaVinculadosArtefactoFinderImplTest {
     private EstudiantesYaVinculadosArtefactoFinderImpl finder;
 
     @Test
-    void debeMapearAPares_cuandoElPuertoDevuelveVinculos() {
+    void debeDevolverLosEstudiantes_cuandoElPuertoDevuelveVinculos() {
         // Arrange
         var artefacto = UtilUUID.generarNuevoUUID();
         var estudiante = UtilUUID.generarNuevoUUID();
         var entrada = AgregacionEstudiantesArtefactoDomain.crear(
-                UtilUUID.generarNuevoUUID(), EstudianteArtefactoDomain.crear(List.of(artefacto), List.of(estudiante)));
-        when(estudianteArtefactoOutputPort.obtenerVinculados(List.of(artefacto), List.of(estudiante)))
+                UtilUUID.generarNuevoUUID(), EstudianteArtefactoDomain.crear(artefacto, List.of(estudiante)));
+        when(estudianteArtefactoOutputPort.obtenerVinculados(artefacto, List.of(estudiante)))
                 .thenReturn(List.of(new EstudianteArtefactoEntity(UtilUUID.generarNuevoUUID(), artefacto, estudiante)));
 
         // Act
         var resultado = finder.obtener(entrada);
 
         // Assert
-        assertThat(resultado).containsExactly(new ParEstudianteArtefacto(artefacto, estudiante));
-        verify(estudianteArtefactoOutputPort).obtenerVinculados(List.of(artefacto), List.of(estudiante));
+        assertThat(resultado).containsExactly(estudiante);
+        verify(estudianteArtefactoOutputPort).obtenerVinculados(artefacto, List.of(estudiante));
     }
 }

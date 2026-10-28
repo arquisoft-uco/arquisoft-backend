@@ -17,9 +17,8 @@ class AsignarArtefactosRequestMapperTest {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var version = UtilUUID.generarNuevoUUID();
-        var estudiante = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
-        var dto = new AsignarArtefactosRequestDTO(proyecto.toString(), List.of(version.toString()), List.of(estudiante.toString()));
+        var dto = new AsignarArtefactosRequestDTO(proyecto.toString(), List.of(version.toString()));
 
         // Act
         var command = AsignarArtefactosRequestMapper.toCommand(dto, asesor);
@@ -28,13 +27,12 @@ class AsignarArtefactosRequestMapperTest {
         assertThat(command.proyectoGrado()).isEqualTo(proyecto);
         assertThat(command.asesor()).isEqualTo(asesor);
         assertThat(command.versionesRepositorioArtefacto()).containsExactly(version);
-        assertThat(command.estudiantes()).containsExactly(estudiante);
     }
 
     @Test
     void debeLanzarValidacion_cuandoElDtoNoTraeDatos() {
         // Arrange
-        var dto = new AsignarArtefactosRequestDTO(null, null, null);
+        var dto = new AsignarArtefactosRequestDTO(null, null);
         var asesor = UtilUUID.generarNuevoUUID();
 
         // Act & Assert

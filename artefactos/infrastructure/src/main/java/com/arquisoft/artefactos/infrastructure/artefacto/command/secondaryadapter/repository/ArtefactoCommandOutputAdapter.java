@@ -37,11 +37,6 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     }
 
     @Override
-    public List<ArtefactoEntity> obtenerPorIds(List<UUID> ids) {
-        return artefactoCommandRepository.findAllById(ids).stream().map(ArtefactoJpaMapper::toEntity).toList();
-    }
-
-    @Override
     public Optional<ArtefactoEntity> obtenerBloqueadoPorId(UUID id) {
         return artefactoCommandRepository.bloquearPorId(id).map(ArtefactoJpaMapper::toEntity);
     }

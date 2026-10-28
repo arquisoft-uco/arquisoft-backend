@@ -4,20 +4,12 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.primaryp
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
 
-import java.util.List;
-import java.util.UUID;
-
 public final class AsignarEstudiantesArtefactoMapper {
 
     private AsignarEstudiantesArtefactoMapper() {}
 
     public static AgregacionEstudiantesArtefactoDomain toDomain(AsignarEstudiantesArtefactoCommand command) {
-        return toDomain(command.asesor(), List.of(command.artefacto()), command.estudiantes());
-    }
-
-    public static AgregacionEstudiantesArtefactoDomain toDomain(
-            UUID asesor, List<UUID> artefactos, List<UUID> estudiantes) {
-        var relaciones = EstudianteArtefactoDomain.crear(artefactos, estudiantes);
-        return AgregacionEstudiantesArtefactoDomain.crear(asesor, relaciones);
+        var relaciones = EstudianteArtefactoDomain.crear(command.artefacto(), command.estudiantes());
+        return AgregacionEstudiantesArtefactoDomain.crear(command.asesor(), relaciones);
     }
 }
