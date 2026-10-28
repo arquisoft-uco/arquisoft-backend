@@ -259,11 +259,14 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_422 = "La evaluación no existe";
         public static final String CONSULTAR_ASIGNADAS_SUMMARY = "Consultar evaluaciones asignadas al jurado";
         public static final String CONSULTAR_ASIGNADAS_DESCRIPTION =
-                "Lista las evaluaciones que el coordinador asignó al jurado autenticado, con su estado y su "
-                        + "entregable; primero las pendientes, luego las en progreso y al final las finalizadas";
+                "Pagina las evaluaciones que el coordinador asignó al jurado autenticado, con el estado de la "
+                        + "evaluación, el estado de la evaluación del jurado y su entregable. Admite filtros por "
+                        + "estadoJurado (PENDIENTE_POR_EVALUAR, EVALUADA), estado y proyecto, y orden por esos "
+                        + "campos y version; por defecto, primero las pendientes por evaluar";
         public static final String CONSULTAR_ASIGNADAS_RESP_200 =
-                "Evaluaciones asignadas al jurado (vacía si no tiene asignaciones)";
-        public static final String CONSULTAR_ASIGNADAS_RESP_400 = "La identidad del jurado autenticado no es válida";
+                "Página de evaluaciones asignadas al jurado (vacía si no tiene asignaciones)";
+        public static final String CONSULTAR_ASIGNADAS_RESP_400 =
+                "La identidad del jurado no es válida o el filtro/orden solicitado no es aceptado";
         public static final String CONSULTAR_ASIGNADAS_RESP_422 = "El jurado autenticado no existe";
         public static final String ASIGNAR_SUMMARY = "Asignar jurados a una evaluación";
         public static final String ASIGNAR_DESCRIPTION =

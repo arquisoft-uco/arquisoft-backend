@@ -195,6 +195,7 @@ public final class EvaluacionesCodes {
         public static final String JURADO_INVALIDO = "EVALUACION_JURADO_JURADO_INVALIDO";
         public static final String JURADOS_NO_ENCONTRADOS = "EVALUACION_JURADO_JURADOS_NO_ENCONTRADOS";
         public static final String JURADOS_YA_ASIGNADOS = "EVALUACION_JURADO_JURADOS_YA_ASIGNADOS";
+        public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_JURADO_ESTADO_NO_ENCONTRADO";
     }
 
     public static final class AsignacionJuradosEvaluacion {

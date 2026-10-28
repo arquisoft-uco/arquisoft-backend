@@ -2,10 +2,9 @@ package com.arquisoft.evaluaciones.application.evaluacionjurado.query.secondaryp
 
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.criteria.EvaluacionesAsignadasJuradoCriteria;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.readmodel.EvaluacionAsignadaJuradoReadModel;
-
-import java.util.List;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 
 public interface EvaluacionAsignadaJuradoQueryOutputPort {
 
-    List<EvaluacionAsignadaJuradoReadModel> consultar(EvaluacionesAsignadasJuradoCriteria criteria);
+    PaginatedResult<EvaluacionAsignadaJuradoReadModel> consultarTodas(EvaluacionesAsignadasJuradoCriteria criteria);
 }

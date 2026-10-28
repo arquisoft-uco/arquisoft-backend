@@ -8,6 +8,7 @@ public final class EvaluacionJuradoMapper {
     private EvaluacionJuradoMapper() {}
 
     public static EvaluacionJuradoEntity toEntity(EvaluacionJuradoDomain domain) {
-        return new EvaluacionJuradoEntity(domain.getId(), domain.getEvaluacion(), domain.getJurado());
+        return new EvaluacionJuradoEntity(
+                domain.getId(), domain.getEvaluacion(), domain.getJurado(), domain.getEstado().getId());
     }
 }

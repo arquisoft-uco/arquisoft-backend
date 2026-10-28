@@ -60,6 +60,7 @@ class EvaluacionJuradoQueryOutputAdapterTest {
                 .id(id)
                 .evaluacion(evaluacion)
                 .jurado(jurado)
+                .estado("PENDIENTE_POR_EVALUAR")
                 .build());
         return id;
     }

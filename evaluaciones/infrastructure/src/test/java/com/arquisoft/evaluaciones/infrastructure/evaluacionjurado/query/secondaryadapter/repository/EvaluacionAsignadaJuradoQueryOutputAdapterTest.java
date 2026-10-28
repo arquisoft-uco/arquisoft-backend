@@ -2,6 +2,10 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.query.seconda
 
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.criteria.EvaluacionesAsignadasJuradoCriteria;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.readmodel.EvaluacionAsignadaJuradoReadModel;
+import com.arquisoft.shared.query.FiltroOperador;
+import com.arquisoft.shared.query.NodoFiltro;
+import com.arquisoft.shared.query.SortOrder;
+import com.arquisoft.shared.query.pagination.SortDirection;
 import com.arquisoft.shared.util.UtilUUID;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,17 +14,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// evaluacion_jurado y evaluacion tienen @Entity de comando (Hibernate las crea); entregable y
-// estado_evaluacion no, asi que se crean a mano con el DDL compartido por los demas tests del contexto.
+// evaluacion_jurado y evaluacion tienen @Entity de comando (Hibernate las crea); entregable,
+// estado_evaluacion y estado_evaluacion_asignada_jurado no, asi que se crean a mano con el DDL compartido por
+// los demas tests del contexto.
 // @DirtiesContext: el CREATE TABLE nativo hace commit implicito en H2 y rompe el rollback
 // transaccional de @DataJpaTest entre clases que comparten el mismo contexto cacheado.
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
+
+    private static final String PENDIENTE_POR_EVALUAR = "PENDIENTE_POR_EVALUAR";
+    private static final String EVALUADA = "EVALUADA";
 
     @Autowired
     private EntityManager entityManager;
@@ -32,7 +41,8 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new EvaluacionAsignadaJuradoQueryOutputAdapter(repository);
+        adapter = new EvaluacionAsignadaJuradoQueryOutputAdapter(
+                repository, new EvaluacionAsignadaJuradoJpaSpecification());
         entityManager.createNativeQuery("""
                 CREATE TABLE IF NOT EXISTS entregable (
                     id UUID NOT NULL, proyecto VARCHAR(200) NOT NULL,
@@ -45,15 +55,22 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
                 """).executeUpdate();
         entityManager.createNativeQuery(
                 "ALTER TABLE estado_evaluacion ADD COLUMN IF NOT EXISTS orden INTEGER").executeUpdate();
-        sembrarEstado("PENDIENTE", "Pendiente", 1);
-        sembrarEstado("EN_PROGRESO", "En progreso", 2);
-        sembrarEstado("FINALIZADA", "Finalizada", 3);
+        entityManager.createNativeQuery("""
+                CREATE TABLE IF NOT EXISTS estado_evaluacion_asignada_jurado (
+                    id VARCHAR(60) NOT NULL, nombre VARCHAR(60) NOT NULL,
+                    descripcion VARCHAR(300) NOT NULL, orden INTEGER NOT NULL, PRIMARY KEY (id))
+                """).executeUpdate();
+        sembrarEstado("estado_evaluacion", "PENDIENTE", "Pendiente", 1);
+        sembrarEstado("estado_evaluacion", "EN_PROGRESO", "En progreso", 2);
+        sembrarEstado("estado_evaluacion", "FINALIZADA", "Finalizada", 3);
+        sembrarEstado("estado_evaluacion_asignada_jurado", PENDIENTE_POR_EVALUAR, "Pendiente por evaluar", 1);
+        sembrarEstado("estado_evaluacion_asignada_jurado", EVALUADA, "Evaluada", 2);
         entityManager.flush();
     }
 
-    private void sembrarEstado(String id, String nombre, int orden) {
+    private void sembrarEstado(String tabla, String id, String nombre, int orden) {
         entityManager.createNativeQuery(
-                        "MERGE INTO estado_evaluacion (id, nombre, descripcion, orden) VALUES (?, ?, ?, ?)")
+                        "MERGE INTO " + tabla + " (id, nombre, descripcion, orden) VALUES (?, ?, ?, ?)")
                 .setParameter(1, id)
                 .setParameter(2, nombre)
                 .setParameter(3, nombre)
@@ -61,7 +78,8 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
                 .executeUpdate();
     }
 
-    private UUID sembrarAsignacion(UUID jurado, UUID entregable, String proyecto, int version, String estado) {
+    private UUID sembrarAsignacion(
+            UUID jurado, UUID entregable, String proyecto, int version, String estado, String estadoJurado) {
         entityManager.createNativeQuery(
                         "INSERT INTO entregable (id, proyecto, version_entregable) VALUES (?, ?, ?)")
                 .setParameter(1, entregable)
@@ -76,19 +94,30 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
                 .setParameter(3, estado)
                 .executeUpdate();
         var evaluacionJurado = UtilUUID.generarNuevoUUID();
-        entityManager.createNativeQuery(
-                        "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id) VALUES (?, ?, ?)")
+        entityManager.createNativeQuery("""
+                        INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id, estado_evaluacion_asignada_jurado_id)
+                        VALUES (?, ?, ?, ?)
+                        """)
                 .setParameter(1, evaluacionJurado)
                 .setParameter(2, evaluacion)
                 .setParameter(3, jurado)
+                .setParameter(4, estadoJurado)
                 .executeUpdate();
         entityManager.flush();
         entityManager.clear();
         return evaluacionJurado;
     }
 
+    private UUID sembrarAsignacion(UUID jurado, String proyecto, int version, String estado, String estadoJurado) {
+        return sembrarAsignacion(jurado, UtilUUID.generarNuevoUUID(), proyecto, version, estado, estadoJurado);
+    }
+
     private UUID sembrarAsignacion(UUID jurado, String proyecto, int version, String estado) {
-        return sembrarAsignacion(jurado, UtilUUID.generarNuevoUUID(), proyecto, version, estado);
+        return sembrarAsignacion(jurado, proyecto, version, estado, PENDIENTE_POR_EVALUAR);
+    }
+
+    private static EvaluacionesAsignadasJuradoCriteria.Builder criteria(UUID jurado) {
+        return EvaluacionesAsignadasJuradoCriteria.builder().jurado(jurado);
     }
 
     @Test
@@ -99,25 +128,29 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
         sembrarAsignacion(UtilUUID.generarNuevoUUID(), "Beta", 1, "PENDIENTE");
 
         // Act
-        var resultado = adapter.consultar(new EvaluacionesAsignadasJuradoCriteria(jurado));
+        var resultado = adapter.consultarTodas(criteria(jurado).build());
 
         // Assert
-        assertThat(resultado).extracting(EvaluacionAsignadaJuradoReadModel::id).containsExactly(propia);
+        assertThat(resultado.getTotalElements()).isEqualTo(1);
+        assertThat(resultado.getContent()).extracting(EvaluacionAsignadaJuradoReadModel::id).containsExactly(propia);
     }
 
     @Test
-    void debeMapearEvaluacionEstadoYEntregable() {
+    void debeMapearEstadoJuradoEvaluacionYEntregable() {
         // Arrange
         var jurado = UtilUUID.generarNuevoUUID();
         var entregable = UtilUUID.generarNuevoUUID();
-        var evaluacionJurado = sembrarAsignacion(jurado, entregable, "Robot seguidor", 2, "EN_PROGRESO");
+        var evaluacionJurado = sembrarAsignacion(
+                jurado, entregable, "Robot seguidor", 2, "EN_PROGRESO", EVALUADA);
 
         // Act
-        var resultado = adapter.consultar(new EvaluacionesAsignadasJuradoCriteria(jurado));
+        var resultado = adapter.consultarTodas(criteria(jurado).build());
 
         // Assert
-        assertThat(resultado).singleElement().satisfies(asignacion -> {
+        assertThat(resultado.getContent()).singleElement().satisfies(asignacion -> {
             assertThat(asignacion.id()).isEqualTo(evaluacionJurado);
+            assertThat(asignacion.estado())
+                    .isEqualTo(new EvaluacionAsignadaJuradoReadModel.Estado(EVALUADA, "Evaluada"));
             assertThat(asignacion.evaluacion().id()).isNotNull();
             assertThat(asignacion.evaluacion().estado())
                     .isEqualTo(new EvaluacionAsignadaJuradoReadModel.Estado("EN_PROGRESO", "En progreso"));
@@ -127,37 +160,80 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
     }
 
     @Test
-    void debeOrdenarPorEstadoAntesQueProyecto_conFinalizadaAlFinal() {
+    void debeFiltrarPorEstadoDelJurado() {
         // Arrange
         var jurado = UtilUUID.generarNuevoUUID();
-        var finalizada = sembrarAsignacion(jurado, "Alfa", 1, "FINALIZADA");
-        var enProgreso = sembrarAsignacion(jurado, "Beta", 1, "EN_PROGRESO");
-        var pendiente = sembrarAsignacion(jurado, "Gamma", 1, "PENDIENTE");
+        var pendiente = sembrarAsignacion(jurado, "Alfa", 1, "PENDIENTE", PENDIENTE_POR_EVALUAR);
+        sembrarAsignacion(jurado, "Beta", 1, "EN_PROGRESO", EVALUADA);
 
         // Act
-        var resultado = adapter.consultar(new EvaluacionesAsignadasJuradoCriteria(jurado));
+        var resultado = adapter.consultarTodas(criteria(jurado)
+                .raiz(NodoFiltro.predicado("estadoJurado", FiltroOperador.ES, PENDIENTE_POR_EVALUAR))
+                .build());
 
         // Assert
-        assertThat(resultado)
+        assertThat(resultado.getContent())
                 .extracting(EvaluacionAsignadaJuradoReadModel::id)
-                .containsExactly(pendiente, enProgreso, finalizada);
+                .containsExactly(pendiente);
     }
 
     @Test
-    void debeDesempatarPorProyectoYVersion() {
+    void debeFiltrarPorEstadoDeLaEvaluacion() {
         // Arrange
         var jurado = UtilUUID.generarNuevoUUID();
+        sembrarAsignacion(jurado, "Alfa", 1, "PENDIENTE");
+        var finalizada = sembrarAsignacion(jurado, "Beta", 1, "FINALIZADA");
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(jurado)
+                .raiz(NodoFiltro.predicado("estado", FiltroOperador.ES, "FINALIZADA"))
+                .build());
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(EvaluacionAsignadaJuradoReadModel::id)
+                .containsExactly(finalizada);
+    }
+
+    @Test
+    void debeOrdenarPorEstadoDelJuradoSegunSuOrden_conEvaluadaAlFinal() {
+        // Arrange
+        var jurado = UtilUUID.generarNuevoUUID();
+        var evaluada = sembrarAsignacion(jurado, "Alfa", 1, "PENDIENTE", EVALUADA);
+        var pendiente = sembrarAsignacion(jurado, "Beta", 1, "PENDIENTE", PENDIENTE_POR_EVALUAR);
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(jurado)
+                .ordenamiento(List.of(SortOrder.of("estadoJurado", SortDirection.ASC)))
+                .build());
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(EvaluacionAsignadaJuradoReadModel::id)
+                .containsExactly(pendiente, evaluada);
+    }
+
+    @Test
+    void debeOrdenarPorEstadoProyectoYVersion() {
+        // Arrange
+        var jurado = UtilUUID.generarNuevoUUID();
+        var finalizada = sembrarAsignacion(jurado, "Alfa", 1, "FINALIZADA");
         var betaV2 = sembrarAsignacion(jurado, "Beta", 2, "PENDIENTE");
         var alfaV1 = sembrarAsignacion(jurado, "Alfa", 1, "PENDIENTE");
         var betaV1 = sembrarAsignacion(jurado, "Beta", 1, "PENDIENTE");
 
         // Act
-        var resultado = adapter.consultar(new EvaluacionesAsignadasJuradoCriteria(jurado));
+        var resultado = adapter.consultarTodas(criteria(jurado)
+                .ordenamiento(List.of(
+                        SortOrder.of("estado", SortDirection.ASC),
+                        SortOrder.of("proyecto", SortDirection.ASC),
+                        SortOrder.of("version", SortDirection.ASC)))
+                .build());
 
         // Assert
-        assertThat(resultado)
+        assertThat(resultado.getContent())
                 .extracting(EvaluacionAsignadaJuradoReadModel::id)
-                .containsExactly(alfaV1, betaV1, betaV2);
+                .containsExactly(alfaV1, betaV1, betaV2, finalizada);
     }
 
     @Test
@@ -166,9 +242,10 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
         sembrarAsignacion(UtilUUID.generarNuevoUUID(), "Alfa", 1, "PENDIENTE");
 
         // Act
-        var resultado = adapter.consultar(new EvaluacionesAsignadasJuradoCriteria(UtilUUID.generarNuevoUUID()));
+        var resultado = adapter.consultarTodas(criteria(UtilUUID.generarNuevoUUID()).build());
 
         // Assert
-        assertThat(resultado).isEmpty();
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isZero();
     }
 }

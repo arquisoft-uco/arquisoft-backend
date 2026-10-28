@@ -12,6 +12,7 @@ public final class EvaluacionJuradoJpaMapper {
                 .id(entity.id())
                 .evaluacion(entity.evaluacion())
                 .jurado(entity.jurado())
+                .estado(entity.estado())
                 .build();
     }
 }
