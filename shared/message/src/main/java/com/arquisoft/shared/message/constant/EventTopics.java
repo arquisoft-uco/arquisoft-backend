@@ -128,6 +128,9 @@ public final class EventTopics {
         public static final String AMPLIACION_PLAZO_ENVIADA =
                 "solicitudes.solicitud.ampliacion_plazo_enviada";
 
+        public static final String REGISTRO_MODIFICACION_USUARIOS_ENVIADA =
+                "solicitudes.solicitud.registro_modificacion_usuarios_enviada";
+
         public static final String NOVEDAD_COORDINADOR_RESPONDIDA =
                 "solicitudes.respuesta.novedad_coordinador_respondida";
 
