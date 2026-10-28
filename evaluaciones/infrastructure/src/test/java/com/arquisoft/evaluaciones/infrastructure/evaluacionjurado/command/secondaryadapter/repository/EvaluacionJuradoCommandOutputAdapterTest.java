@@ -182,6 +182,20 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeActualizarElEstadoYLoguear_cuandoSeActualizaElEstado() {
+        // Arrange
+        var evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "PENDIENTE");
+
+        // Act
+        adapter.actualizarEstado(evaluacionJurado, "EVALUADA");
+
+        // Assert
+        assertThat(repository.findById(evaluacionJurado))
+                .hasValueSatisfying(fila -> assertThat(fila.getEstado()).isEqualTo("EVALUADA"));
+        verify(logger).debug(EvaluacionJuradoKey.LOG_ESTADO_ACTUALIZADO, evaluacionJurado, "EVALUADA");
+    }
+
+    @Test
     void debePersistirElLoteCompletoYLoguear_cuandoSeRegistranTodas() {
         // Arrange
         var evaluacion = UUID.randomUUID();

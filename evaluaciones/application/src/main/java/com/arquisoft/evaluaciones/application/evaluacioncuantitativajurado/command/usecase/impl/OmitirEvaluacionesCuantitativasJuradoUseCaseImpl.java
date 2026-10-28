@@ -5,7 +5,9 @@ import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.comma
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.usecase.OmitirEvaluacionesCuantitativasJuradoUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.validator.OmitirEvaluacionesCuantitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.finder.ObservacionesDeEvaluacionesCuantitativasExistenFinder;
+import com.arquisoft.evaluaciones.domain.estadoevaluacionasignadajurado.EstadoEvaluacionAsignadaJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.OmisionEvaluacionesCuantitativasJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.model.EstadoOmisionEvaluacionesCuantitativasJurado;
@@ -26,6 +28,7 @@ public class OmitirEvaluacionesCuantitativasJuradoUseCaseImpl
     private final ObservacionesDeEvaluacionesCuantitativasExistenFinder observacionesDeEvaluacionesCuantitativasExistenFinder;
     private final OmitirEvaluacionesCuantitativasJuradoValidator validator;
     private final EvaluacionCuantitativaJuradoOutputPort evaluacionCuantitativaJuradoOutputPort;
+    private final EvaluacionJuradoOutputPort evaluacionJuradoOutputPort;
     private final AppLogger logger;
 
     @Override
@@ -50,6 +53,8 @@ public class OmitirEvaluacionesCuantitativasJuradoUseCaseImpl
                 new ObservacionesEvaluacionesCuantitativasJurado(evaluacionJurado, evaluaciones, existenObservaciones));
 
         evaluacionCuantitativaJuradoOutputPort.eliminarPorIds(evaluacionJurado, evaluaciones);
+        evaluacionJuradoOutputPort.actualizarEstado(
+                evaluacionJurado, EstadoEvaluacionAsignadaJurado.PENDIENTE_POR_EVALUAR.getId());
 
         logger.info(EvaluacionCuantitativaJuradoKey.LOG_LOTE_OMITIDO, evaluacionJurado, evaluaciones.size());
     }

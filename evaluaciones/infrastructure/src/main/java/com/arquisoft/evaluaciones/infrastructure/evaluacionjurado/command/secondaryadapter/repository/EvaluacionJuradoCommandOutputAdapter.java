@@ -38,6 +38,12 @@ public class EvaluacionJuradoCommandOutputAdapter implements EvaluacionJuradoOut
     }
 
     @Override
+    public void actualizarEstado(UUID evaluacionJurado, String estado) {
+        repository.actualizarEstado(evaluacionJurado, estado);
+        logger.debug(EvaluacionJuradoKey.LOG_ESTADO_ACTUALIZADO, evaluacionJurado, estado);
+    }
+
+    @Override
     public Set<UUID> consultarJuradosAsignados(UUID evaluacion, Set<UUID> jurados) {
         return repository.findJuradosAsignados(evaluacion, jurados);
     }
