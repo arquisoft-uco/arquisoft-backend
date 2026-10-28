@@ -102,7 +102,8 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
                 "INSERT INTO evaluacion (id, entregable_id, estado_evaluacion_id) VALUES (?, ?, 'PENDIENTE')")
                 .setParameter(1, evaluacion).setParameter(2, entregable).executeUpdate();
         entityManager.createNativeQuery(
-                "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id) VALUES (?, ?, ?)")
+                "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id, estado_evaluacion_asignada_jurado_id) "
+                        + "VALUES (?, ?, ?, 'PENDIENTE_POR_EVALUAR')")
                 .setParameter(1, evaluacionJurado).setParameter(2, evaluacion).setParameter(3, jurado)
                 .executeUpdate();
         return evaluacionJurado;

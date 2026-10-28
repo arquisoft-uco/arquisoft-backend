@@ -28,6 +28,8 @@ import static org.mockito.Mockito.verify;
 @DataJpaTest
 class EvaluacionJuradoCommandOutputAdapterTest {
 
+    private static final String ESTADO_PENDIENTE = "PENDIENTE_POR_EVALUAR";
+
     @Autowired
     private EntityManager entityManager;
 
@@ -78,7 +80,8 @@ class EvaluacionJuradoCommandOutputAdapterTest {
                 .setParameter(1, evaluacion).setParameter(2, UUID.randomUUID())
                 .setParameter(3, estadoEvaluacion).executeUpdate();
         entityManager.createNativeQuery(
-                "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id) VALUES (?, ?, ?)")
+                "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id, estado_evaluacion_asignada_jurado_id) "
+                        + "VALUES (?, ?, ?, 'PENDIENTE_POR_EVALUAR')")
                 .setParameter(1, evaluacionJurado).setParameter(2, evaluacion).setParameter(3, jurado)
                 .executeUpdate();
         entityManager.flush();
@@ -183,9 +186,9 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         // Arrange
         var evaluacion = UUID.randomUUID();
         var entidades = List.of(
-                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()),
-                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()),
-                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID()));
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID(), ESTADO_PENDIENTE),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID(), ESTADO_PENDIENTE),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, UUID.randomUUID(), ESTADO_PENDIENTE));
 
         // Act
         adapter.registrarTodas(entidades);
@@ -209,8 +212,8 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         var asignadoEnOtra = UUID.randomUUID();
         var libre = UUID.randomUUID();
         adapter.registrarTodas(List.of(
-                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, asignado),
-                new EvaluacionJuradoEntity(UUID.randomUUID(), otraEvaluacion, asignadoEnOtra)));
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, asignado, ESTADO_PENDIENTE),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), otraEvaluacion, asignadoEnOtra, ESTADO_PENDIENTE)));
         entityManager.flush();
         entityManager.clear();
 

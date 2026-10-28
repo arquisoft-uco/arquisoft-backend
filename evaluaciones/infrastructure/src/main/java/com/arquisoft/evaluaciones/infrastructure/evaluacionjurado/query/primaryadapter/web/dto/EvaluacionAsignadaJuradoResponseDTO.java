@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record EvaluacionAsignadaJuradoResponseDTO(
         UUID id,
+        EstadoDTO estado,
         EvaluacionDTO evaluacion,
         EntregableDTO entregable
 ) {

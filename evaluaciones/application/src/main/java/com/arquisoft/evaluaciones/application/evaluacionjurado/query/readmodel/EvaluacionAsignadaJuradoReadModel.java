@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record EvaluacionAsignadaJuradoReadModel(
         UUID id,
+        Estado estado,
         Evaluacion evaluacion,
         Entregable entregable
 ) {

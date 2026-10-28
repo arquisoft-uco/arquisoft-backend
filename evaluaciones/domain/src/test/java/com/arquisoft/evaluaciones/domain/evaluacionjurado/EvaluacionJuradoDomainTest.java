@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.domain.evaluacionjurado;
 
+import com.arquisoft.evaluaciones.domain.estadoevaluacionasignadajurado.EstadoEvaluacionAsignadaJurado;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.util.UtilUUID;
@@ -25,6 +26,7 @@ class EvaluacionJuradoDomainTest {
         assertThat(evaluacionJurado.getId()).isNotNull();
         assertThat(evaluacionJurado.getEvaluacion()).isEqualTo(evaluacion);
         assertThat(evaluacionJurado.getJurado()).isEqualTo(jurado);
+        assertThat(evaluacionJurado.getEstado()).isEqualTo(EstadoEvaluacionAsignadaJurado.PENDIENTE_POR_EVALUAR);
     }
 
     @Test
@@ -47,11 +49,12 @@ class EvaluacionJuradoDomainTest {
         var id = UtilUUID.generarNuevoUUID();
 
         // Act
-        var evaluacionJurado = EvaluacionJuradoDomain.reconstruir(id, null, null);
+        var evaluacionJurado = EvaluacionJuradoDomain.reconstruir(id, null, null, EstadoEvaluacionAsignadaJurado.EVALUADA);
 
         // Assert
         assertThat(evaluacionJurado.getId()).isEqualTo(id);
         assertThat(evaluacionJurado.getEvaluacion()).isNull();
         assertThat(evaluacionJurado.getJurado()).isNull();
+        assertThat(evaluacionJurado.getEstado()).isEqualTo(EstadoEvaluacionAsignadaJurado.EVALUADA);
     }
 }

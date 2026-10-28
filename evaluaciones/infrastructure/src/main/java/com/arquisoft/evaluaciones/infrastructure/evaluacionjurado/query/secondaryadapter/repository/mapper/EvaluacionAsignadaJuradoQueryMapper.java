@@ -10,6 +10,8 @@ public final class EvaluacionAsignadaJuradoQueryMapper {
     public static EvaluacionAsignadaJuradoReadModel toReadModel(EvaluacionAsignadaJuradoJpaQueryEntity entity) {
         return new EvaluacionAsignadaJuradoReadModel(
                 entity.getId(),
+                new EvaluacionAsignadaJuradoReadModel.Estado(
+                        entity.getEstadoJuradoId(), entity.getEstadoJuradoNombre()),
                 new EvaluacionAsignadaJuradoReadModel.Evaluacion(
                         entity.getEvaluacionId(),
                         new EvaluacionAsignadaJuradoReadModel.Estado(
