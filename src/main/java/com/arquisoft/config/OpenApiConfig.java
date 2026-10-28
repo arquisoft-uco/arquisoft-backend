@@ -76,6 +76,9 @@ public class OpenApiConfig {
     @Value("${rutas.mapas-ruta.mapas-ruta.base:/mapas-ruta}")
     private String mapasRutaBasePath;
 
+    @Value("${rutas.entregables.estados-entregable.base:/estados-entregable}")
+    private String estadosEntregableBasePath;
+
     @Bean
     public GroupedOpenApi allApi() {
         return GroupedOpenApi.builder()
@@ -144,7 +147,7 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
             .group("07-entregables")
             .displayName("Entregables")
-            .pathsToMatch("/entregables/**")
+            .pathsToMatch("/entregables/**", estadosEntregableBasePath + "/**")
             .build();
     }
 

@@ -1,5 +1,10 @@
 dependencies {
     implementation project(':entregables:domain')
+    implementation project(':shared:application')
+    implementation project(':shared:query')
+    implementation project(':shared:logger')
+
+    implementation 'org.springframework:spring-tx'
+
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
-
-

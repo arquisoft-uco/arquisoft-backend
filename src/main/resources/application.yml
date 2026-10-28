@@ -26,6 +26,7 @@ spring:
       - "classpath:rutas-artefactos.yml"
       - "classpath:rutas-repositorio-artefactos.yml"
       - "classpath:rutas-mapas-ruta.yml"
+      - "classpath:rutas-entregables.yml"
       # Tabla de equivalencias del adaptador role-table (emisor legado); se borra junto con el.
       - "classpath:autorizacion-equivalencias.yml"
   banner:
@@ -476,7 +477,7 @@ logging:
   # binding relajado de Spring Boot solo llega a nivel de PAQUETE, nunca de clase, asi que sin
   # grupos no hay forma de tocar `org.hibernate.SQL` y `org.hibernate.type` a la vez desde .env.
   group:
-    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones, com.arquisoft.proyectos, com.arquisoft.solicitudes, com.arquisoft.biblioteca, com.arquisoft.repositorio_artefactos, com.arquisoft.artefactos, com.arquisoft.mapas_ruta
+    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones, com.arquisoft.proyectos, com.arquisoft.solicitudes, com.arquisoft.biblioteca, com.arquisoft.repositorio_artefactos, com.arquisoft.artefactos, com.arquisoft.mapas_ruta, com.arquisoft.entregables
     plataforma: com.arquisoft.shared
     datos: org.hibernate.SQL, org.hibernate.type
     seguridad: org.springframework.security
