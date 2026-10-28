@@ -6,7 +6,9 @@ public record EvaluacionAsignadaJuradoReadModel(
         UUID id,
         Estado estado,
         Evaluacion evaluacion,
-        Entregable entregable
+        Entregable entregable,
+        boolean tieneEvaluacionesCualitativas,
+        boolean tieneEvaluacionesCuantitativas
 ) {
 
     public record Evaluacion(UUID id, Estado estado) {}

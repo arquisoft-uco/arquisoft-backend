@@ -262,7 +262,10 @@ public final class EvaluacionesApiMessages {
                 "Pagina las evaluaciones que el coordinador asignó al jurado autenticado, con el estado de la "
                         + "evaluación, el estado de la evaluación del jurado y su entregable. Admite filtros por "
                         + "estadoJurado (PENDIENTE_POR_EVALUAR, EVALUADA), estado y proyecto, y orden por esos "
-                        + "campos y version; por defecto, primero las pendientes por evaluar";
+                        + "campos y version; por defecto, primero las pendientes por evaluar. Cada elemento indica con "
+                        + "tieneEvaluacionesCualitativas y tieneEvaluacionesCuantitativas si el jurado ya "
+                        + "registró al menos una evaluación de ese tipo; se calculan sobre lo persistido, así "
+                        + "que al omitir todas las evaluaciones de un tipo su indicador vuelve a false";
         public static final String CONSULTAR_ASIGNADAS_RESP_200 =
                 "Página de evaluaciones asignadas al jurado (vacía si no tiene asignaciones)";
         public static final String CONSULTAR_ASIGNADAS_RESP_400 =

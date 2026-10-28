@@ -116,6 +116,30 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
         return sembrarAsignacion(jurado, proyecto, version, estado, PENDIENTE_POR_EVALUAR);
     }
 
+    private void sembrarEvaluacionCualitativa(UUID evaluacionJurado) {
+        entityManager.createNativeQuery("""
+                        INSERT INTO evaluacion_cualitativa_jurado (id, evaluacion_jurado_id, item_id, criterio_id)
+                        VALUES (?, ?, ?, ?)
+                        """)
+                .setParameter(1, UtilUUID.generarNuevoUUID())
+                .setParameter(2, evaluacionJurado)
+                .setParameter(3, UtilUUID.generarNuevoUUID())
+                .setParameter(4, UtilUUID.generarNuevoUUID())
+                .executeUpdate();
+    }
+
+    private void sembrarEvaluacionCuantitativa(UUID evaluacionJurado) {
+        entityManager.createNativeQuery("""
+                        INSERT INTO evaluacion_cuantitativa_jurado (id, evaluacion_jurado_id, item_id, puntaje)
+                        VALUES (?, ?, ?, ?)
+                        """)
+                .setParameter(1, UtilUUID.generarNuevoUUID())
+                .setParameter(2, evaluacionJurado)
+                .setParameter(3, UtilUUID.generarNuevoUUID())
+                .setParameter(4, 4)
+                .executeUpdate();
+    }
+
     private static EvaluacionesAsignadasJuradoCriteria.Builder criteria(UUID jurado) {
         return EvaluacionesAsignadasJuradoCriteria.builder().jurado(jurado);
     }
@@ -247,5 +271,62 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
         // Assert
         assertThat(resultado.getContent()).isEmpty();
         assertThat(resultado.getTotalElements()).isZero();
+    }
+
+    @Test
+    void debeIndicarSinEvaluacionesRegistradas_cuandoNoHayRegistros() {
+        // Arrange
+        var jurado = UtilUUID.generarNuevoUUID();
+        sembrarAsignacion(jurado, "Alfa", 1, "PENDIENTE");
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(jurado).build());
+
+        // Assert
+        assertThat(resultado.getContent()).singleElement().satisfies(asignacion -> {
+            assertThat(asignacion.tieneEvaluacionesCualitativas()).isFalse();
+            assertThat(asignacion.tieneEvaluacionesCuantitativas()).isFalse();
+        });
+    }
+
+    @Test
+    void debeIndicarSoloCualitativas_cuandoSoloHayCualitativasRegistradas() {
+        // Arrange
+        var jurado = UtilUUID.generarNuevoUUID();
+        var evaluacionJurado = sembrarAsignacion(jurado, "Alfa", 1, "EN_PROGRESO", PENDIENTE_POR_EVALUAR);
+        sembrarEvaluacionCualitativa(evaluacionJurado);
+        sembrarEvaluacionCualitativa(evaluacionJurado);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(jurado).build());
+
+        // Assert
+        assertThat(resultado.getTotalElements()).isEqualTo(1);
+        assertThat(resultado.getContent()).singleElement().satisfies(asignacion -> {
+            assertThat(asignacion.tieneEvaluacionesCualitativas()).isTrue();
+            assertThat(asignacion.tieneEvaluacionesCuantitativas()).isFalse();
+            assertThat(asignacion.estado().id()).isEqualTo(PENDIENTE_POR_EVALUAR);
+        });
+    }
+
+    @Test
+    void debeIndicarAmbas_cuandoHayCualitativasYCuantitativasRegistradas() {
+        // Arrange
+        var jurado = UtilUUID.generarNuevoUUID();
+        var evaluacionJurado = sembrarAsignacion(jurado, "Alfa", 1, "EN_PROGRESO", EVALUADA);
+        sembrarEvaluacionCualitativa(evaluacionJurado);
+        sembrarEvaluacionCuantitativa(evaluacionJurado);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(jurado).build());
+
+        // Assert
+        assertThat(resultado.getContent()).singleElement().satisfies(asignacion -> {
+            assertThat(asignacion.tieneEvaluacionesCualitativas()).isTrue();
+            assertThat(asignacion.tieneEvaluacionesCuantitativas()).isTrue();
+            assertThat(asignacion.estado().id()).isEqualTo(EVALUADA);
+        });
     }
 }

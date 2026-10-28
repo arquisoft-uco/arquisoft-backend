@@ -19,6 +19,8 @@ public final class EvaluacionAsignadaJuradoQueryMapper {
                 new EvaluacionAsignadaJuradoReadModel.Entregable(
                         entity.getEntregableId(),
                         entity.getEntregableProyecto(),
-                        entity.getEntregableVersion()));
+                        entity.getEntregableVersion()),
+                entity.isTieneEvaluacionesCualitativas(),
+                entity.isTieneEvaluacionesCuantitativas());
     }
 }
