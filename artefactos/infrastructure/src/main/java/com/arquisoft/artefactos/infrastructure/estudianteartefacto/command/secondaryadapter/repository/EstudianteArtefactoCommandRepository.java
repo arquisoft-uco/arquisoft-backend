@@ -15,7 +15,7 @@ public interface EstudianteArtefactoCommandRepository extends JpaRepository<Estu
 
     List<EstudianteArtefactoJpaEntity> findByArtefactoAndEstudianteIn(UUID artefacto, List<UUID> estudiantes);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""
             DELETE FROM EstudianteArtefactoJpaEntity ea
             WHERE ea.estudiante = :estudiante

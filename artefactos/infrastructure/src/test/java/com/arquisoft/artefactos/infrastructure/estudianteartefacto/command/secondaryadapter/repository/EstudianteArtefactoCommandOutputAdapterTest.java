@@ -3,6 +3,8 @@ package com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.seco
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.entity.EstudianteArtefactoEntity;
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secondaryadapter.entity.EstudianteArtefactoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.estudianteproyectogrado.command.secondaryadapter.repository.EstudianteProyectoGradoCommandRepository;
 import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.logger.AppLogger;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +26,9 @@ class EstudianteArtefactoCommandOutputAdapterTest {
 
     @Autowired
     private EstudianteArtefactoCommandRepository repository;
+
+    @Autowired
+    private EstudianteProyectoGradoCommandRepository estudianteProyectoGradoRepository;
 
     @Autowired
     private TestEntityManager entityManager;
@@ -136,6 +142,40 @@ class EstudianteArtefactoCommandOutputAdapterTest {
                         org.assertj.core.groups.Tuple.tuple(artefactoAjeno, desvinculado),
                         org.assertj.core.groups.Tuple.tuple(primerArtefacto, otroEstudiante));
         verify(logger).debug(EstudianteArtefactoKey.LOG_DESVINCULADOS, proyecto, desvinculado);
+    }
+
+    @Test
+    void debeConservarLaDestitucionPendiente_cuandoSeDesvinculaEnLaMismaTransaccion() {
+        // Arrange
+        var adapter = new EstudianteArtefactoCommandOutputAdapter(repository, mock(AppLogger.class));
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var vinculo = EstudianteProyectoGradoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .estudianteId(estudiante)
+                .proyectoGradoId(proyecto)
+                .ocurridoEn(Instant.parse("2026-10-28T22:45:51Z"))
+                .build();
+        entityManager.persist(vinculo);
+        entityManager.flush();
+        entityManager.clear();
+        var destituidoEn = Instant.parse("2026-10-28T23:20:26Z");
+        estudianteProyectoGradoRepository.save(EstudianteProyectoGradoJpaEntity.builder()
+                .id(vinculo.getId())
+                .estudianteId(estudiante)
+                .proyectoGradoId(proyecto)
+                .ocurridoEn(destituidoEn)
+                .destituidoEn(destituidoEn)
+                .build());
+
+        // Act
+        adapter.eliminarPorProyectoGradoYEstudiante(proyecto, estudiante);
+        entityManager.clear();
+
+        // Assert
+        var persistido = entityManager.find(EstudianteProyectoGradoJpaEntity.class, vinculo.getId());
+        assertThat(persistido.getDestituidoEn()).isEqualTo(destituidoEn);
+        assertThat(persistido.getOcurridoEn()).isEqualTo(destituidoEn);
     }
 
     private UUID sembrarArtefacto(UUID proyecto) {
