@@ -22,7 +22,9 @@ public enum EntregableProyectoGradoKey implements ClaveMensaje {
     LOG_GENERANDO("entregables.aplicacion.entregableproyectogrado.log.generando", 2),
     LOG_VERIFICACION_GENERAR("entregables.aplicacion.entregableproyectogrado.log.verificacion-generar", 3),
     LOG_GENERADO("entregables.aplicacion.entregableproyectogrado.log.generado", 3),
-    LOG_GUARDADO("entregables.infraestructura.entregableproyectogrado.log.guardado", 1);
+    LOG_GUARDADO("entregables.infraestructura.entregableproyectogrado.log.guardado", 1),
+    LOG_CONSULTANDO("entregables.aplicacion.entregableproyectogrado.log.consultando", 4),
+    LOG_CONSULTA_COMPLETADA("entregables.aplicacion.entregableproyectogrado.log.consulta-completada", 3);
 
     private final String clave;
     private final int parametros;
