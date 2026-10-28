@@ -60,6 +60,7 @@
               "solicitudes:respuesta-ampliacion-plazo:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
               "solicitudes:respuesta-cambio-asesor-enviada:view",
+              "solicitudes:respuesta-ampliacion-plazo-enviada:view",
               "mapas-ruta:mapa-ruta-coordinador:view",
               "fichas:ficha-perfil:create",
               "fichas:estudiante-ficha-perfil:create",
@@ -305,6 +306,7 @@
               "fichas:observacion-evaluacion-estudiante:view",
               "artefactos:revision-asesor-estudiante:view",
               "artefactos:observacion-revision-estudiante:view",
+              "artefactos:revision-asesor-estado:update",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create",
@@ -1416,6 +1418,15 @@
           "attributes": {}
         },
         {
+          "id": "07affacc-5233-44a3-a9c4-1588dc7fbcdf",
+          "name": "solicitudes:respuesta-ampliacion-plazo-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "e62a0fed-76b2-4ce1-8e38-ab732cc2b161",
           "name": "solicitudes:respuesta-cambio-asesor-enviada:view",
           "description": "",
@@ -2210,6 +2221,15 @@
         {
           "id": "7dea4ffe-193f-4284-a20d-936f11a7d3ec",
           "name": "artefactos:observacion-revision-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "65fbc180-d917-4e23-8812-09066e3caa26",
+          "name": "artefactos:revision-asesor-estado:update",
           "description": "",
           "composite": false,
           "clientRole": true,

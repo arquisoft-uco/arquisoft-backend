@@ -131,6 +131,7 @@ security:
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/enviadas", role: "solicitudes:solicitud-ampliacion-plazo-enviada:view"}
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/recibidas", role: "solicitudes:solicitud-ampliacion-plazo-recibida:view"}
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/respuestas/recibidas", role: "solicitudes:respuesta-ampliacion-plazo-recibida:view"}
+        - {method: POST, path: "/api/solicitudes/ampliacion-plazo/respuestas/enviadas", role: "solicitudes:respuesta-ampliacion-plazo-enviada:view"}
         - {method: DELETE, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}", role: "solicitudes:solicitud-ampliacion-plazo:delete"}
         - {method: DELETE, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}/respuesta", role: "solicitudes:respuesta-ampliacion-plazo:delete"}
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}/respuesta", role: "solicitudes:respuesta-ampliacion-plazo:create"}
@@ -178,6 +179,7 @@ security:
         - {method: GET, path: "/api/artefactos/{artefactoId}/estudiantes", role: "artefactos:estudiante-artefacto:view"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones", role: "artefactos:observacion-revision:view"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones/estudiante", role: "artefactos:observacion-revision-estudiante:view"}
+        - {method: PATCH, path: "/api/revisiones-asesor/{revisionAsesorId}/estado", role: "artefactos:revision-asesor-estado:update"}
         - {method: POST, path: "/api/artefactos", role: "artefactos:artefacto:create"}
         - {method: POST, path: "/api/artefactos/asesor", role: "artefactos:artefacto-asesor:view"}
         - {method: POST, path: "/api/versiones-artefacto/asesor", role: "artefactos:version-artefacto-asesor:view"}

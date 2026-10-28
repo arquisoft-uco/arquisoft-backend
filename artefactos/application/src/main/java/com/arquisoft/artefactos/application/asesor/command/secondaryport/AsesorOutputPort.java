@@ -17,4 +17,6 @@ public interface AsesorOutputPort {
     Optional<AsesorEntity> obtenerPorId(UUID id);
 
     void actualizar(AsesorEntity asesor);
+
+    Optional<AsesorEntity> obtenerPorRevisionAsesor(UUID revisionAsesor);
 }

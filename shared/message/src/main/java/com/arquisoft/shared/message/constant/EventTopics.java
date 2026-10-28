@@ -166,6 +166,8 @@ public final class EventTopics {
 
         public static final String VERSION_ARTEFACTO_GENERADA =
                 "artefactos.version_artefacto.generada";
+        public static final String REVISION_ASESOR_ESTADO_CAMBIADO =
+                "artefactos.revision_asesor.estado_cambiado";
     }
 
     public static final class MapasRuta {

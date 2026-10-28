@@ -135,4 +135,38 @@ class RespuestaQueryOutputAdapterAmpliacionPlazoTest {
                 .containsExactly("respuesta ampliacion ana");
         assertThat(resultado.getContent().get(0).solicitud().tipoSolicitudId()).isEqualTo(TIPO_AMPLIACION);
     }
+
+    @Test
+    void debeRetornarSoloRespuestasDeAmpliacionDePlazoDelCoordinadorDestinatario_cuandoElCriteriaFuerzaDestinatarioYTipo() {
+        // Arrange
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var coordUno = sembrarDestinatario("Coord Uno", "COORD-1", "coord1@uco.edu.co");
+        var coordDos = sembrarDestinatario("Coord Dos", "COORD-2", "coord2@uco.edu.co");
+        var fecha = LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC);
+        var fechaRespuesta = LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC);
+        var ampliacionUno = sembrarSolicitud(ana, coordUno, TIPO_AMPLIACION, fecha, "ampliacion uno");
+        var cambioUno = sembrarSolicitud(ana, coordUno, TIPO_CAMBIO, fecha, "cambio uno");
+        var ampliacionDos = sembrarSolicitud(ana, coordDos, TIPO_AMPLIACION, fecha, "ampliacion dos");
+        sembrarRespuesta(ampliacionUno, fechaRespuesta, "respuesta ampliacion uno");
+        sembrarRespuesta(cambioUno, fechaRespuesta, "respuesta cambio uno");
+        sembrarRespuesta(ampliacionDos, fechaRespuesta, "respuesta ampliacion dos");
+        entityManager.flush();
+        entityManager.clear();
+
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
+                                coordUno.getUsuarioId().toString()),
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_AMPLIACION))))
+                .build();
+
+        // Act
+        var resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(RespuestaReadModel::contenido)
+                .containsExactly("respuesta ampliacion uno");
+        assertThat(resultado.getContent().get(0).solicitud().tipoSolicitudId()).isEqualTo(TIPO_AMPLIACION);
+    }
 }
