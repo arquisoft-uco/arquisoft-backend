@@ -5,6 +5,8 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.usecase.OmitirEvaluacionesCualitativasJuradoUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.validator.OmitirEvaluacionesCualitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
+import com.arquisoft.evaluaciones.domain.estadoevaluacionasignadajurado.EstadoEvaluacionAsignadaJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.OmisionEvaluacionesCualitativasJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.EstadoOmisionEvaluacionesCualitativasJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
@@ -23,6 +25,7 @@ public class OmitirEvaluacionesCualitativasJuradoUseCaseImpl
     private final EvaluacionesCualitativasJuradoDeEvaluacionFinder evaluacionesCualitativasJuradoDeEvaluacionFinder;
     private final OmitirEvaluacionesCualitativasJuradoValidator validator;
     private final EvaluacionCualitativaJuradoOutputPort evaluacionCualitativaJuradoOutputPort;
+    private final EvaluacionJuradoOutputPort evaluacionJuradoOutputPort;
     private final AppLogger logger;
 
     @Override
@@ -44,6 +47,8 @@ public class OmitirEvaluacionesCualitativasJuradoUseCaseImpl
                 new EstadoOmisionEvaluacionesCualitativasJurado(evaluacionJurado, contexto.getEstado()));
 
         evaluacionCualitativaJuradoOutputPort.eliminarPorIds(evaluacionJurado, evaluaciones);
+        evaluacionJuradoOutputPort.actualizarEstado(
+                evaluacionJurado, EstadoEvaluacionAsignadaJurado.PENDIENTE_POR_EVALUAR.getId());
 
         logger.info(EvaluacionCualitativaJuradoKey.LOG_LOTE_OMITIDO, evaluacionJurado, evaluaciones.size());
     }

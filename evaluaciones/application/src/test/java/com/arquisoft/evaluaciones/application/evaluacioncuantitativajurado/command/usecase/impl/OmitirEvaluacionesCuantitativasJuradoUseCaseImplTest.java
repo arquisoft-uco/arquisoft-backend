@@ -4,7 +4,9 @@ import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.comma
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.EvaluacionCuantitativaJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.validator.OmitirEvaluacionesCuantitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.finder.ObservacionesDeEvaluacionesCuantitativasExistenFinder;
+import com.arquisoft.evaluaciones.domain.estadoevaluacionasignadajurado.EstadoEvaluacionAsignadaJurado;
 import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
@@ -59,6 +61,9 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
     private EvaluacionCuantitativaJuradoOutputPort outputPort;
 
     @Mock
+    private EvaluacionJuradoOutputPort evaluacionJuradoOutputPort;
+
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -80,12 +85,15 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
         useCase.ejecutar(omision);
 
         // Assert
-        var orden = inOrder(contextoFinder, evaluacionesFinder, observacionesFinder, validator, outputPort);
+        var orden = inOrder(contextoFinder, evaluacionesFinder, observacionesFinder, validator, outputPort,
+                evaluacionJuradoOutputPort);
         orden.verify(contextoFinder).obtener(evaluacionJurado);
         orden.verify(evaluacionesFinder).obtener(omision);
         orden.verify(observacionesFinder).obtener(Set.copyOf(ids));
         orden.verify(validator).validar(any(), any(), any(), any());
         orden.verify(outputPort).eliminarPorIds(evaluacionJurado, Set.copyOf(ids));
+        orden.verify(evaluacionJuradoOutputPort).actualizarEstado(
+                evaluacionJurado, EstadoEvaluacionAsignadaJurado.PENDIENTE_POR_EVALUAR.getId());
 
         verify(contextoFinder, times(1)).obtener(any());
         verify(evaluacionesFinder, times(1)).obtener(any());
@@ -128,6 +136,7 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
         verify(validator).validar(captor.capture(), any(), any(), any());
         assertThat(captor.getValue().existe()).isFalse();
         verify(outputPort, never()).eliminarPorIds(any(), any());
+        verify(evaluacionJuradoOutputPort, never()).actualizarEstado(any(), any());
         verify(logger, times(1)).info(any(ClaveMensaje.class), eq(evaluacionJurado), eq(1));
     }
 
@@ -150,6 +159,7 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(omision))
                 .isInstanceOf(EvaluacionesCuantitativasJuradoNoEncontradasException.class);
         verify(outputPort, never()).eliminarPorIds(any(), any());
+        verify(evaluacionJuradoOutputPort, never()).actualizarEstado(any(), any());
     }
 
     @Test
@@ -173,6 +183,7 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
         verify(validator).validar(any(), any(), captor.capture(), any());
         assertThat(captor.getValue().estado()).isEqualTo(EstadoEvaluacion.FINALIZADA);
         verify(outputPort, never()).eliminarPorIds(any(), any());
+        verify(evaluacionJuradoOutputPort, never()).actualizarEstado(any(), any());
     }
 
     @Test
@@ -196,6 +207,7 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
         verify(validator).validar(any(), any(), any(), captor.capture());
         assertThat(captor.getValue().existenObservaciones()).isTrue();
         verify(outputPort, never()).eliminarPorIds(any(), any());
+        verify(evaluacionJuradoOutputPort, never()).actualizarEstado(any(), any());
         verify(logger, times(1)).info(any(ClaveMensaje.class), eq(evaluacionJurado), eq(2));
     }
 }
