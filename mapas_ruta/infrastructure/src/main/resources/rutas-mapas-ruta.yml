@@ -17,5 +17,6 @@ rutas:
       por-id: /{tareaId}
       estado-item: /{tareaId}/estado-item
       planes-estimados: /{tareaId}/planes-estimados
+      planes-estimados-estudiante: /{tareaId}/planes-estimados/estudiante
     estados-item:
       base: /estados-item
