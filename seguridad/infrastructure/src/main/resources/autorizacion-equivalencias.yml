@@ -192,4 +192,6 @@ security:
         - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas", role: "mapas-ruta:tarea:create"}
         - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas/estudiante", role: "mapas-ruta:tarea-mapa-ruta-estudiante:view"}
         - {method: GET, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:view"}
+        - {method: PATCH, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:update"}
+        - {method: PATCH, path: "/api/tareas/{tareaId}/estado-item", role: "mapas-ruta:tarea:update-estado-item"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
