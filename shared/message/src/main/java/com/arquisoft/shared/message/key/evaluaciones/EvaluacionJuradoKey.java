@@ -15,6 +15,7 @@ public enum EvaluacionJuradoKey implements ClaveMensaje {
     LOG_ASIGNADOS("evaluaciones.aplicacion.evaluacionjurado.log.asignados", 2),
     LOG_LOTE_GUARDADO("evaluaciones.infraestructura.evaluacionjurado.log.lote-guardado", 1),
     LOG_ESTADO_ACTUALIZADO("evaluaciones.infraestructura.evaluacionjurado.log.estado-actualizado", 2),
+    LOG_EVALUADA("evaluaciones.aplicacion.evaluacionjurado.log.evaluada", 2),
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacionjurado.log.consultando", 5),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacionjurado.log.consulta-completada", 3),
     LOG_CONSULTANDO_ASIGNADAS("evaluaciones.aplicacion.evaluacionjurado.log.consultando-asignadas", 5),

@@ -125,6 +125,7 @@ public final class EvaluacionesFields {
 
         private EvaluacionJurado() {}
 
+        public static final String ID = "evaluacionJurado";
         public static final String EVALUACION = "evaluacion";
         public static final String JURADO = "jurado";
     }

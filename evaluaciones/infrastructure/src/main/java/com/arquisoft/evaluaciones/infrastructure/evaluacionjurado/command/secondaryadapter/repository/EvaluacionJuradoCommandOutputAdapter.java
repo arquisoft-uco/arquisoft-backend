@@ -44,6 +44,11 @@ public class EvaluacionJuradoCommandOutputAdapter implements EvaluacionJuradoOut
     }
 
     @Override
+    public boolean estaCompleta(UUID evaluacionJurado) {
+        return repository.estaCompleta(evaluacionJurado);
+    }
+
+    @Override
     public Set<UUID> consultarJuradosAsignados(UUID evaluacion, Set<UUID> jurados) {
         return repository.findJuradosAsignados(evaluacion, jurados);
     }
