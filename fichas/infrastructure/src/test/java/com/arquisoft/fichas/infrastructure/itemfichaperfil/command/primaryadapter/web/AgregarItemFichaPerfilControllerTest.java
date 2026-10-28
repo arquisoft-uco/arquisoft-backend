@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
+import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -113,7 +114,7 @@ class AgregarItemFichaPerfilControllerTest {
     @Test
     void debe422_cuandoTipoDuplicado() throws Exception {
         when(agregarItemFichaPerfilInteractor.ejecutar(any()))
-                .thenThrow(new ItemTipoDuplicadoException("OBJETIVO_GENERAL"));
+                .thenThrow(new ItemTipoDuplicadoException(TipoItem.OBJETIVO_GENERAL));
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
@@ -142,7 +143,7 @@ class AgregarItemFichaPerfilControllerTest {
         validationResult.agregarError(
                 FichasFields.ItemFichaPerfil.TIPO_ITEM,
                 FichasCodes.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
-                Mensajes.formatear(ItemFichaPerfilKey.ERROR_TIPO_INVALIDO, "TIPO_INEXISTENTE")
+                Mensajes.formatear(ItemFichaPerfilKey.ERROR_TIPO_INVALIDO)
         );
 
         when(agregarItemFichaPerfilInteractor.ejecutar(any()))

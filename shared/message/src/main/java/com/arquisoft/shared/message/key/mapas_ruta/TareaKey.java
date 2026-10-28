@@ -4,8 +4,10 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum TareaKey implements ClaveMensaje {
 
-    ERROR_DUPLICADA("mapas_ruta.dominio.tarea.error.duplicada", 2),
-    ERROR_ESTADO_ITEM_NO_ENCONTRADO("mapas_ruta.dominio.tarea.error.estado-item-no-encontrado", 1),
+    ERROR_DUPLICADA("mapas_ruta.dominio.tarea.error.duplicada", 1),
+    ERROR_DUPLICADA_DETALLE("mapas_ruta.dominio.tarea.error.duplicada-detalle", 2),
+    ERROR_ESTADO_ITEM_NO_ENCONTRADO("mapas_ruta.dominio.tarea.error.estado-item-no-encontrado", 0),
+    ERROR_ESTADO_ITEM_NO_ENCONTRADO_DETALLE("mapas_ruta.dominio.tarea.error.estado-item-no-encontrado-detalle", 1),
     ERROR_NO_ENCONTRADA("mapas_ruta.dominio.tarea.error.no-encontrada", 1),
     ERROR_TRANSICION_ESTADO_ITEM_NO_PERMITIDA("mapas_ruta.dominio.tarea.error.transicion-estado-item-no-permitida", 3),
     ERROR_NO_REMOVIBLE("mapas_ruta.dominio.tarea.error.no-removible", 2),

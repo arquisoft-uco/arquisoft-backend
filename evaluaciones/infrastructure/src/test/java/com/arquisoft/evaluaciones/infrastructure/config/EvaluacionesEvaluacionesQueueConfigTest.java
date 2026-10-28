@@ -33,4 +33,27 @@ class EvaluacionesEvaluacionesQueueConfigTest {
                             .isEqualTo(EvaluacionesEvaluacionesQueueConfig.EVALUACIONES_CUALITATIVAS_ASESOR_REGISTRADAS_QUEUE);
                 });
     }
+
+    @Test
+    void debeDeclararColaYBindingDeCuantitativas_cuandoSeConstruyeLaConfiguracion() {
+        // Arrange
+        var eventos = new TopicExchange("eventos");
+        var deadLetter = new DirectExchange("dlx");
+        var config = new EvaluacionesEvaluacionesQueueConfig();
+
+        // Act
+        var declarables = config.evaluacionesEvaluacionesCuantitativasAsesorRegistradasDeclarables(eventos, deadLetter);
+
+        // Assert
+        var colas = declarables.getDeclarablesByType(Queue.class).stream().map(Queue::getName).toList();
+        assertThat(colas).contains(EvaluacionesEvaluacionesQueueConfig.EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS_QUEUE);
+        assertThat(declarables.getDeclarablesByType(Binding.class))
+                .anySatisfy(binding -> {
+                    assertThat(binding.getExchange()).isEqualTo("eventos");
+                    assertThat(binding.getRoutingKey())
+                            .isEqualTo(EventTopics.Evaluaciones.EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS);
+                    assertThat(binding.getDestination())
+                            .isEqualTo(EvaluacionesEvaluacionesQueueConfig.EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS_QUEUE);
+                });
+    }
 }

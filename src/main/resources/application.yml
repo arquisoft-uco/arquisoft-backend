@@ -188,6 +188,13 @@ repositorio-artefactos:
     bucket: ${REPOSITORIO_ARTEFACTOS_BUCKET:repositorio-artefactos}
     tamano-maximo-bytes: ${REPOSITORIO_ARTEFACTOS_TAMANO_MAXIMO_BYTES:5242880}
 
+# ==================== ARTEFACTOS (almacenamiento) ====================
+# Bucket propio de artefactos (lo crea minio/configurar.sh), con los prefijos pendientes/ y versiones/.
+artefactos:
+  almacenamiento:
+    bucket: ${ARTEFACTOS_BUCKET:artefactos}
+    tamano-maximo-bytes: ${ARTEFACTOS_TAMANO_MAXIMO_BYTES:5242880}
+
 # ==================== DATASOURCES POR BOUNDED CONTEXT ====================
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
 # usando @ConfigurationProperties("datasource.{contexto}").

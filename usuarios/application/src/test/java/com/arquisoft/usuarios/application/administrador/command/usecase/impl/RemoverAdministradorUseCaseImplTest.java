@@ -92,7 +92,7 @@ class RemoverAdministradorUseCaseImplTest {
 
         var orden = inOrder(removerAdministradorValidator, administradorOutputPort,
                 proveedorIdentidadOutputPort, eventPublisher);
-        orden.verify(removerAdministradorValidator).validar(actor, usuarioId, administrador, 2L);
+        orden.verify(removerAdministradorValidator).validar(actor, usuarioId, usuario, administrador, 2L);
         orden.verify(administradorOutputPort).eliminarLogica(eq(usuarioId), any());
         orden.verify(proveedorIdentidadOutputPort).revocarRol(usuarioId, UsuariosRoles.ADMINISTRADOR);
 
@@ -117,7 +117,8 @@ class RemoverAdministradorUseCaseImplTest {
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuario(usuarioId));
         when(administradoresVigentesCountFinder.obtener()).thenReturn(1L);
         var rechazo = new AdministradorUnicoVigenteException(usuarioId);
-        doThrow(rechazo).when(removerAdministradorValidator).validar(actor, usuarioId, administrador, 1L);
+        doThrow(rechazo).when(removerAdministradorValidator)
+                .validar(eq(actor), eq(usuarioId), any(UsuarioDomain.class), eq(administrador), eq(1L));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada)).isSameAs(rechazo);

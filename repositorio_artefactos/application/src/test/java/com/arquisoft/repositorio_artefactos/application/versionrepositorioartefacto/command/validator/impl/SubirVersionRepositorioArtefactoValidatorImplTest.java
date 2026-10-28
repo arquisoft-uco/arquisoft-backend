@@ -52,7 +52,8 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
     }
 
     private void validar(int ultimoNumero) {
-        validator.validar(subida, administrador, repositorio, carga, analisis, MAXIMO, ultimoNumero);
+        validator.validarCarga(subida, administrador, repositorio, carga, MAXIMO, ultimoNumero);
+        validator.validarContenido(subida, carga, analisis);
     }
 
     @Test
@@ -193,12 +194,12 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
     }
 
     @Test
-    void debePriorizar_tipoAntesQueDocumento() {
+    void debePriorizar_documentoAntesQueTipo() {
         // Arrange
         analisis = AnalisisArchivoDomain.reconstruir("application/zip", "h".repeat(64), ETAG);
 
         // Act & Assert
-        assertThatThrownBy(() -> validar(0)).isInstanceOf(TipoArchivoNoCoincideException.class);
+        assertThatThrownBy(() -> validar(0)).isInstanceOf(DocumentoNoExisteException.class);
     }
 
     @Test
@@ -223,13 +224,13 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
     }
 
     @Test
-    void debePriorizar_cargaModificadaAntesQueTamanoYTipo() {
+    void debePriorizar_tamanoAntesQueCargaModificada() {
         // Arrange
         carga = CargaPendienteDomain.reconstruir(subida.getCarga(), subida.getRepositorio(),
                 subida.getSolicitante(), "formato.pdf", TIPO, MAXIMO + 1, ETAG);
         analisis = AnalisisArchivoDomain.reconstruir("application/zip", "h".repeat(64), "otro-etag");
 
         // Act & Assert
-        assertThatThrownBy(() -> validar(0)).isInstanceOf(CargaModificadaException.class);
+        assertThatThrownBy(() -> validar(0)).isInstanceOf(TamanoArchivoExcedidoException.class);
     }
 }

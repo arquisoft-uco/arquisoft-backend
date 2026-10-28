@@ -71,7 +71,7 @@ public final class CambioEstadoAsesorProyectoGradoDomain {
             result.agregarError(
                     ProyectosFields.AsesorProyectoGrado.ESTADO_ASESOR,
                     ProyectosCodes.AsesorProyectoGrado.ESTADO_ASESOR_INVALIDO,
-                    Mensajes.formatear(EstadoAsesorKey.ERROR_NO_ENCONTRADO, estadoAsesor));
+                    Mensajes.formatear(EstadoAsesorKey.ERROR_NO_ENCONTRADO));
             return;
         }
         this.estadoNuevo = EstadoAsesor.desde(estadoAsesor);

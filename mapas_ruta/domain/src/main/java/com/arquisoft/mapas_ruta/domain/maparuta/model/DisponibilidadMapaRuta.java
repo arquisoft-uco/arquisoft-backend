@@ -2,4 +2,4 @@ package com.arquisoft.mapas_ruta.domain.maparuta.model;
 
 import java.util.UUID;
 
-public record DisponibilidadMapaRuta(UUID proyectoGrado, boolean mapaRutaExiste) {}
+public record DisponibilidadMapaRuta(UUID proyectoGrado, String tituloProyecto, boolean mapaRutaExiste) {}

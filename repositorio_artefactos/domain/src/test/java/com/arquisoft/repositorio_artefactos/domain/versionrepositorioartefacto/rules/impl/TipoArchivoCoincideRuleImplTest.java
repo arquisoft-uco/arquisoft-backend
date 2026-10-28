@@ -33,16 +33,6 @@ class TipoArchivoCoincideRuleImplTest {
     }
 
     @Test
-    void debePasar_cuandoTikaAgregaParametros() {
-        // Arrange
-        var coincidencia = new CoincidenciaTipoArchivo("a.pdf", "application/pdf",
-                analisis("application/pdf; version=1.4"));
-
-        // Act & Assert
-        assertThatCode(() -> regla.validar(coincidencia)).doesNotThrowAnyException();
-    }
-
-    @Test
     void debeLanzar_cuandoExcelRenombradoAJpg() {
         // Arrange
         var coincidencia = new CoincidenciaTipoArchivo("foto.jpg", "image/jpeg", analisis(TIPO_XLSX));

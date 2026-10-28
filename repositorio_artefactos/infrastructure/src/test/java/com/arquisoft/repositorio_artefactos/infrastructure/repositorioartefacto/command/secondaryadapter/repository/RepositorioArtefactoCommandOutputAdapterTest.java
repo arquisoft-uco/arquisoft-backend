@@ -102,6 +102,33 @@ class RepositorioArtefactoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerBloqueadoPorId_cuandoExiste() {
+        // Arrange
+        var adapter = new RepositorioArtefactoCommandOutputAdapter(repositorioArtefactoCommandRepository, logger);
+        var administrador = sembrarAdministrador();
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new RepositorioArtefactoEntity(id, "Repo", "Descripcion", administrador));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerBloqueadoPorId(id);
+
+        // Assert
+        assertThat(encontrado).isPresent();
+        assertThat(encontrado.get().nombreRepositorio()).isEqualTo("Repo");
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElBloqueadoEstaAusente() {
+        // Arrange
+        var adapter = new RepositorioArtefactoCommandOutputAdapter(repositorioArtefactoCommandRepository, logger);
+
+        // Act & Assert
+        assertThat(adapter.obtenerBloqueadoPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
     void debeActualizarNombreYDescripcion_sinTocarAdministrador() {
         // Arrange
         var adapter = new RepositorioArtefactoCommandOutputAdapter(repositorioArtefactoCommandRepository, logger);

@@ -1,18 +1,21 @@
 package com.arquisoft.usuarios.domain.asesor.rules.impl;
 
+import com.arquisoft.shared.message.constant.UsuariosCodes;
 import com.arquisoft.usuarios.domain.asesor.AsesorDomain;
 import com.arquisoft.usuarios.domain.asesor.exception.AsesorUsuarioDuplicadoException;
 import com.arquisoft.usuarios.domain.asesor.model.DisponibilidadAsesorUsuario;
-import com.arquisoft.shared.message.constant.UsuariosCodes;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AsesorUsuarioUnicoRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final AsesorUsuarioUnicoRuleImpl rule = new AsesorUsuarioUnicoRuleImpl();
 
@@ -20,7 +23,7 @@ class AsesorUsuarioUnicoRuleImplTest {
     void debeLanzarDuplicadoConSuCodigo_cuandoUsuarioYaEsAsesor() {
         // Arrange
         var usuario = UUID.randomUUID();
-        var disponibilidad = new DisponibilidadAsesorUsuario(usuario, AsesorDomain.crear(usuario));
+        var disponibilidad = new DisponibilidadAsesorUsuario(usuario, NOMBRE, AsesorDomain.crear(usuario));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(disponibilidad))
@@ -32,7 +35,7 @@ class AsesorUsuarioUnicoRuleImplTest {
     @Test
     void noDebeLanzar_cuandoUsuarioNoEsAsesor() {
         // Arrange
-        var disponibilidad = new DisponibilidadAsesorUsuario(UUID.randomUUID(), AsesorDomain.VACIO);
+        var disponibilidad = new DisponibilidadAsesorUsuario(UUID.randomUUID(), NOMBRE, AsesorDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
@@ -43,9 +46,22 @@ class AsesorUsuarioUnicoRuleImplTest {
         // Arrange
         var usuario = UUID.randomUUID();
         var eliminado = AsesorDomain.reconstruir(usuario, Instant.parse("2026-09-23T10:00:00Z"));
-        var disponibilidad = new DisponibilidadAsesorUsuario(usuario, eliminado);
+        var disponibilidad = new DisponibilidadAsesorUsuario(usuario, NOMBRE, eliminado);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoYaTieneElRol() {
+        // Arrange
+        var usuario = UUID.randomUUID();
+        var entrada = new DisponibilidadAsesorUsuario(usuario, NOMBRE, AsesorDomain.crear(usuario));
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(AsesorUsuarioDuplicadoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

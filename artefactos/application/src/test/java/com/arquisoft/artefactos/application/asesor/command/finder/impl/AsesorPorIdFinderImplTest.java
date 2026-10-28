@@ -1,0 +1,54 @@
+package com.arquisoft.artefactos.application.asesor.command.finder.impl;
+
+import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
+import com.arquisoft.artefactos.application.asesor.command.secondaryport.AsesorOutputPort;
+import com.arquisoft.artefactos.application.asesor.command.secondaryport.entity.AsesorEntity;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Instant;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class AsesorPorIdFinderImplTest {
+
+    @Mock
+    private AsesorOutputPort asesorOutputPort;
+
+    @InjectMocks
+    private AsesorPorIdFinderImpl finder;
+
+    @Test
+    void debeDelegarEnElOutputPort_enAsesorPorIdFinder() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var entity = new AsesorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
+        when(asesorOutputPort.obtenerPorId(id)).thenReturn(Optional.of(entity));
+
+        // Act
+        var resultado = finder.obtener(id);
+
+        // Assert
+        assertThat(resultado.getId()).isEqualTo(id);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoNoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        when(asesorOutputPort.obtenerPorId(id)).thenReturn(Optional.empty());
+
+        // Act
+        var resultado = finder.obtener(id);
+
+        // Assert
+        assertThat(resultado).isEqualTo(AsesorDomain.VACIO);
+    }
+}

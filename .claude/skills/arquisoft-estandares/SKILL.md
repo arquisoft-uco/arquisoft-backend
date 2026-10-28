@@ -319,6 +319,23 @@ status por jerarquía; ningún contexto define handler propio salvo `seguridad`.
 jerarquía y del handler: `arquisoft-arquitectura` → *Dónde vive cada excepción* y *Convención de
 sufijos*.
 
+**El mensaje lo lee el usuario del front; el detalle, quien diagnostica.** El front pinta
+`ErrorResponseDTO.message` tal cual, así que el texto de cliente de una excepción nombra el objeto
+por lo que la persona reconoce (el nombre del archivo, el título, el nombre del documento) y no lleva
+UUIDs, la palabra "id", nombres de campo del API, tipos MIME ni bytes. Si no hay nombre porque el
+objeto no existe, va una frase genérica: "El artefacto solicitado no existe". Los identificadores
+que sirven para diagnosticar van al detalle: `super(BaseError.conDetalle(codigo, mensaje, detalle))`,
+con una segunda clave `{clave}-detalle` (`{CONSTANTE}_DETALLE`) que guarda el texto técnico.
+`getMessage()` devuelve el detalle, que es lo que loguean los handlers (consola y Grafana), y el DTO
+entrega el mensaje. Falla en silencio: los tests asertan el código de error, así que un UUID en el
+texto de cliente compila y pasa; para fijarlo, `doesNotContain(uuid.toString())`, nunca un literal
+copiado del catálogo. La señal es un constructor de excepción que recibe un `UUID` o un valor
+técnico destinado a un `%s` del mensaje. Si la `Rule` no tiene el nombre, el `record` de entrada lo
+trae del dato que el use case ya cargó; no se consulta la BD solo para redactar el mensaje. Lo mismo
+vale para el texto de un error de `ValidationResult`, que no tiene detalle: ahí el valor técnico
+simplemente no va. Referencia:
+`repositorio_artefactos/domain/…/versionrepositorioartefacto/exception/CargaNoCorrespondeException.java`.
+
 ## Checkstyle (obligatorio en CI — `config/checkstyle/checkstyle.xml`)
 
 Línea máx. 150 · archivo máx. 500 líneas · método máx. 60 líneas · máx. 7 parámetros · sin tabs ·
@@ -354,8 +371,10 @@ JUnit 6 + Mockito + AssertJ, AAA con marcadores `// Arrange / // Act / // Assert
   otro sitio un cambio de proveedor obligaría a tocarlo, y `verificarNeutralidadProveedorIdentidad` lo
   impide.
 - **Mensajes:** el catálogo de prueba se instala solo (`InstaladorCatalogoPrueba` vía
-  `ServiceLoader`, con `testImplementation testFixtures(project(':shared:message'))`) y lanza ante
-  una aridad mal declarada. Compara contra la constante de `{Contexto}Codes`/`Fields`, no el literal.
+  `ServiceLoader`, con `testImplementation testFixtures(project(':shared:message'))`), resuelve contra
+  los mismos `catalogo/*.properties` que se suben a Redis (no hay texto de respaldo: una clave sin
+  texto sale `??clave??`) y lanza ante una aridad mal declarada. Compara contra la constante de
+  `{Contexto}Codes`/`Fields`, no el literal: un literal del catálogo rompe al cambiar la redacción.
 - **Cobertura mínima 75%** en `check`. Excluidos: `*DTO`, `*Command`, `*ReadModel`, `*Application`,
   `*Entity` y `config/**`. **`*Domain` sí cuenta.** `shared:*` no aplica JaCoCo.
 
@@ -365,11 +384,20 @@ El gate real es `check` (tests + checkstyle + cobertura), no `test`.
 
 `@RequiredArgsConstructor`, nunca `@Autowired`; use cases y adaptadores son `@Component`, nunca
 `@Service`; se inyectan interfaces. Logging por el puerto `AppLogger` (`shared:logger`), nunca
-`@Slf4j`. `warn` para 4xx, `error` para 5xx.
+`@Slf4j` ni `LoggerFactory`: solo `Slf4jAppLogger`/`AppLoggerConfig` (la implementación del puerto)
+y `MdcContextoDiagnosticoOutputAdapter` (dueño del MDC) importan SLF4J. `warn` para 4xx, `error`
+para 5xx.
+
+**Si la superclase ya hereda un `logger`, el campo se llama `appLogger`.** `GenericFilterBean`
+(todo `OncePerRequestFilter`) y `ResponseEntityExceptionHandler` traen un `protected Log logger` de
+commons-logging: un `logger.warn(...)` ahí compila contra ese campo y se salta `AppLogger` y el
+catálogo sin avisar. Referencias: `TrazabilidadFilter`, `GlobalAppExceptionHandler`.
 
 **Nunca loguear desde un `@Bean` ni un `@PostConstruct`:** `Mensajes.instalar(...)` ocurre dentro de
 un `@Bean`, y antes de eso se resuelve la clave cruda y SLF4J descarta los argumentos. Un log de
-arranque va en un `@EventListener(ApplicationReadyEvent.class)`.
+arranque va en un `@EventListener(ApplicationReadyEvent.class)`. Un callback que el `@Bean` solo
+*registra* y que corre después sí loguea: recibe el `AppLogger` como parámetro del método `@Bean`
+(`RabbitMQConfig#rabbitTemplate`).
 
 ### Estructura de logs de un flujo de escritura
 

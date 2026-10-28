@@ -15,13 +15,21 @@ public enum ObservacionItemJuradoKey implements ClaveMensaje {
             "evaluaciones.aplicacion.observacionitemjurado.log.verificacion-modificar", 3),
     LOG_MODIFICADA("evaluaciones.aplicacion.observacionitemjurado.log.modificada", 1),
     ERROR_EVALUACION_CUANTITATIVA_JURADO_NO_ENCONTRADA(
-            "evaluaciones.dominio.observacionitemjurado.error.evaluacion-no-encontrada", 1),
+            "evaluaciones.dominio.observacionitemjurado.error.evaluacion-no-encontrada", 0),
+    ERROR_EVALUACION_CUANTITATIVA_JURADO_NO_ENCONTRADA_DETALLE(
+            "evaluaciones.dominio.observacionitemjurado.error.evaluacion-no-encontrada-detalle", 1),
     ERROR_OBSERVACION_NO_ENCONTRADA(
-            "evaluaciones.dominio.observacionitemjurado.error.observacion-no-encontrada", 1),
+            "evaluaciones.dominio.observacionitemjurado.error.observacion-no-encontrada", 0),
+    ERROR_OBSERVACION_NO_ENCONTRADA_DETALLE(
+            "evaluaciones.dominio.observacionitemjurado.error.observacion-no-encontrada-detalle", 1),
     ERROR_EVALUACION_JURADO_FINALIZADA(
-            "evaluaciones.dominio.observacionitemjurado.error.evaluacion-finalizada", 1),
+            "evaluaciones.dominio.observacionitemjurado.error.evaluacion-finalizada", 0),
+    ERROR_EVALUACION_JURADO_FINALIZADA_DETALLE(
+            "evaluaciones.dominio.observacionitemjurado.error.evaluacion-finalizada-detalle", 1),
     ERROR_DESCRIPCION_DUPLICADA(
-            "evaluaciones.dominio.observacionitemjurado.error.descripcion-duplicada", 1);
+            "evaluaciones.dominio.observacionitemjurado.error.descripcion-duplicada", 0),
+    ERROR_DESCRIPCION_DUPLICADA_DETALLE(
+            "evaluaciones.dominio.observacionitemjurado.error.descripcion-duplicada-detalle", 1);
 
     private final String clave;
     private final int parametros;

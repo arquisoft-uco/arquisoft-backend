@@ -74,7 +74,7 @@ class AgregarBibliotecarioUseCaseImplTest {
         var orden = inOrder(bibliotecarioPorUsuarioFinder, agregarBibliotecarioValidator,
                 bibliotecarioOutputPort, eventPublisher);
         orden.verify(bibliotecarioPorUsuarioFinder).obtener(usuario.getId());
-        orden.verify(agregarBibliotecarioValidator).validar(usuario.getId(), BibliotecarioDomain.VACIO);
+        orden.verify(agregarBibliotecarioValidator).validar(usuario, BibliotecarioDomain.VACIO);
         orden.verify(bibliotecarioOutputPort).guardar(any());
         orden.verify(eventPublisher).publish(any());
 
@@ -106,7 +106,7 @@ class AgregarBibliotecarioUseCaseImplTest {
 
         // Assert
         var orden = inOrder(agregarBibliotecarioValidator, bibliotecarioOutputPort, eventPublisher);
-        orden.verify(agregarBibliotecarioValidator).validar(usuario.getId(), eliminado);
+        orden.verify(agregarBibliotecarioValidator).validar(usuario, eliminado);
         orden.verify(bibliotecarioOutputPort).reactivar(usuario.getId());
         orden.verify(eventPublisher).publish(any(BibliotecarioAgregadoEvent.class));
         verify(bibliotecarioOutputPort, never()).guardar(any());
@@ -120,8 +120,8 @@ class AgregarBibliotecarioUseCaseImplTest {
         var usuario = usuario();
         var vigente = BibliotecarioDomain.crear(usuario.getId());
         when(bibliotecarioPorUsuarioFinder.obtener(usuario.getId())).thenReturn(vigente);
-        doThrow(new BibliotecarioUsuarioDuplicadoException(usuario.getId()))
-                .when(agregarBibliotecarioValidator).validar(usuario.getId(), vigente);
+        doThrow(new BibliotecarioUsuarioDuplicadoException(usuario.getId(), usuario.getNombre()))
+                .when(agregarBibliotecarioValidator).validar(usuario, vigente);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(usuario))

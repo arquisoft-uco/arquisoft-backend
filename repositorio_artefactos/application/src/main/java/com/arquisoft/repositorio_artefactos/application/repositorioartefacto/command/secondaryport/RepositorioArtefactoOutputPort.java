@@ -15,5 +15,7 @@ public interface RepositorioArtefactoOutputPort {
 
     Optional<RepositorioArtefactoEntity> obtenerPorId(UUID id);
 
+    Optional<RepositorioArtefactoEntity> obtenerBloqueadoPorId(UUID id);
+
     void actualizarDatos(UUID repositorio, String nombreRepositorio, String descripcion);
 }

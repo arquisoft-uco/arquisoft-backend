@@ -4,7 +4,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum AsignacionAsesorKey implements ClaveMensaje {
 
-    ERROR_NO_ASIGNADO("mapas_ruta.dominio.asignacionasesor.error.no-asignado", 2),
+    ERROR_NO_ASIGNADO("mapas_ruta.dominio.asignacionasesor.error.no-asignado", 1),
+    ERROR_NO_ASIGNADO_DETALLE("mapas_ruta.dominio.asignacionasesor.error.no-asignado-detalle", 2),
     LOG_ASESOR_ASIGNADO_SIMULADO("mapas_ruta.infraestructura.asignacionasesor.log.asesor-asignado-simulado", 2);
 
     private final String clave;

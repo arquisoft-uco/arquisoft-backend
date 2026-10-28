@@ -1,17 +1,17 @@
 package com.arquisoft.usuarios.application.asesorficha.command.usecase.impl;
 
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
-import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.usuarios.application.asesorficha.command.finder.AsesorFichaPorUsuarioFinder;
 import com.arquisoft.usuarios.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
 import com.arquisoft.usuarios.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.usuarios.application.asesorficha.command.validator.AgregarAsesorFichaValidator;
+import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.usuarios.domain.asesorficha.event.AsesorFichaAgregadoEvent;
 import com.arquisoft.usuarios.domain.asesorficha.exception.AsesorFichaUsuarioDuplicadoException;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
-import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.publisher.EventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -99,7 +99,7 @@ class AgregarAsesorFichaUseCaseImplTest {
         InOrder orden = inOrder(asesorFichaPorUsuarioFinder, agregarAsesorFichaValidator,
                 asesorFichaOutputPort, eventPublisher);
         orden.verify(asesorFichaPorUsuarioFinder).obtener(usuario.getId());
-        orden.verify(agregarAsesorFichaValidator).validar(usuario.getId(), AsesorFichaDomain.VACIO);
+        orden.verify(agregarAsesorFichaValidator).validar(usuario, AsesorFichaDomain.VACIO);
         orden.verify(asesorFichaOutputPort).guardar(any());
         orden.verify(eventPublisher).publish(any());
     }
@@ -109,7 +109,7 @@ class AgregarAsesorFichaUseCaseImplTest {
         // Arrange
         var usuario = usuario();
         when(asesorFichaPorUsuarioFinder.obtener(any())).thenReturn(AsesorFichaDomain.crear(usuario.getId()));
-        doThrow(new AsesorFichaUsuarioDuplicadoException(usuario.getId()))
+        doThrow(new AsesorFichaUsuarioDuplicadoException(usuario.getId(), usuario.getNombre()))
                 .when(agregarAsesorFichaValidator).validar(any(), any());
 
         // Act & Assert
@@ -131,7 +131,7 @@ class AgregarAsesorFichaUseCaseImplTest {
 
         // Assert
         var orden = inOrder(agregarAsesorFichaValidator, asesorFichaOutputPort, eventPublisher);
-        orden.verify(agregarAsesorFichaValidator).validar(usuario.getId(), eliminado);
+        orden.verify(agregarAsesorFichaValidator).validar(usuario, eliminado);
         orden.verify(asesorFichaOutputPort).reactivar(usuario.getId());
         orden.verify(eventPublisher).publish(any(AsesorFichaAgregadoEvent.class));
         verify(asesorFichaOutputPort, never()).guardar(any());

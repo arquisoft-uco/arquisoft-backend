@@ -9,7 +9,8 @@ public class AsesorAsignadoProyectoGradoRuleImpl implements AsesorAsignadoProyec
     @Override
     public void validar(AsignacionAsesorProyectoGrado asignacion) {
         if (!asignacion.asignado()) {
-            throw new AsesorNoAsignadoProyectoGradoException(asignacion.asesor(), asignacion.proyectoGrado());
+            throw new AsesorNoAsignadoProyectoGradoException(
+                    asignacion.asesor(), asignacion.proyectoGrado(), asignacion.tituloProyecto());
         }
     }
 }

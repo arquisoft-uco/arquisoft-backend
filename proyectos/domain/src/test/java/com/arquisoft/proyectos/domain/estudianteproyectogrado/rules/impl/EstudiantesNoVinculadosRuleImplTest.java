@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -18,22 +19,30 @@ class EstudiantesNoVinculadosRuleImplTest {
     @Test
     void debePasar_cuandoNoHayVinculados() {
         // Arrange
-        var vinculos = new VinculosEstudiantesProyectoGrado(List.of());
+        var vinculos = new VinculosEstudiantesProyectoGrado(List.of(), List.of());
 
         // Act & Assert
         assertThatCode(() -> regla.validar(vinculos)).doesNotThrowAnyException();
     }
 
     @Test
-    void debeLanzarYaVinculado_cuandoHayVinculados() {
+    void debeLanzarYaVinculadoNombrandoALosEstudiantes_cuandoHayVinculados() {
         // Arrange
+        var primero = UtilUUID.generarNuevoUUID();
+        var segundo = UtilUUID.generarNuevoUUID();
         var vinculos = new VinculosEstudiantesProyectoGrado(
-                List.of(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID()));
+                List.of(primero, segundo), List.of("Ana Pérez", "Luis Gómez"));
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(vinculos))
-                .isInstanceOf(EstudianteYaVinculadoException.class)
-                .extracting("codigoError")
-                .isEqualTo(ProyectosCodes.EstudianteProyectoGrado.ESTUDIANTE_YA_VINCULADO);
+                .isInstanceOfSatisfying(EstudianteYaVinculadoException.class, ex -> {
+                    assertThat(ex.getCodigoError())
+                            .isEqualTo(ProyectosCodes.EstudianteProyectoGrado.ESTUDIANTE_YA_VINCULADO);
+                    assertThat(ex.getError().getMessage())
+                            .contains("Ana Pérez")
+                            .contains("Luis Gómez")
+                            .doesNotContain(primero.toString())
+                            .doesNotContain(segundo.toString());
+                });
     }
 }

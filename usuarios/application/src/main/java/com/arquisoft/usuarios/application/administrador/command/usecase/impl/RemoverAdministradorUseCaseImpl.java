@@ -40,7 +40,7 @@ public class RemoverAdministradorUseCaseImpl implements RemoverAdministradorUseC
         logger.debug(RemoverAdministradorKey.LOG_VERIFICACION_REMOVER, entrada.getUsuario(),
                 !administrador.esVacio(), administrador.estaEliminado(), administradoresVigentes);
 
-        removerAdministradorValidator.validar(entrada.getActor(), entrada.getUsuario(), administrador,
+        removerAdministradorValidator.validar(entrada.getActor(), entrada.getUsuario(), usuario, administrador,
                 administradoresVigentes);
 
         administrador.remover(UtilFecha.generarInstanteActual());

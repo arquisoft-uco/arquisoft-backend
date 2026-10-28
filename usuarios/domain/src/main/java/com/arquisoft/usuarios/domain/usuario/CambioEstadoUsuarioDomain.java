@@ -46,7 +46,7 @@ public final class CambioEstadoUsuarioDomain {
         var recortado = UtilTexto.aplicarTrim(estado);
         if (!EstadoUsuario.esValido(recortado)) {
             result.agregarError(UsuariosFields.Usuario.ESTADO, UsuariosCodes.Usuario.ESTADO_INVALIDO,
-                    Mensajes.formatear(CambiarEstadoUsuarioKey.ERROR_ESTADO_INVALIDO, recortado));
+                    Mensajes.obtener(CambiarEstadoUsuarioKey.ERROR_ESTADO_INVALIDO));
             return;
         }
         this.estado = EstadoUsuario.desde(recortado);

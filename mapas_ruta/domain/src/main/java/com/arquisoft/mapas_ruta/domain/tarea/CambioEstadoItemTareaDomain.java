@@ -50,7 +50,7 @@ public final class CambioEstadoItemTareaDomain {
             result.agregarError(
                     MapasRutaFields.Tarea.ESTADO_ITEM,
                     MapasRutaCodes.Tarea.ESTADO_ITEM_INVALIDO,
-                    Mensajes.formatear(TareaKey.ERROR_ESTADO_ITEM_NO_ENCONTRADO, recortado));
+                    Mensajes.formatear(TareaKey.ERROR_ESTADO_ITEM_NO_ENCONTRADO_DETALLE, recortado));
             return;
         }
         this.estadoItem = EstadoItem.desde(recortado);

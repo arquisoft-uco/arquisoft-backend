@@ -162,6 +162,24 @@ public final class EvaluacionesApiMessages {
                         + "o algún ítem/criterio no existe o ya fue registrado";
     }
 
+    public static final class EvaluacionCuantitativaAsesor {
+
+        private EvaluacionCuantitativaAsesor() {}
+
+        public static final String TAG_NAME = "Evaluaciones cuantitativas del asesor";
+        public static final String TAG_DESCRIPTION =
+                "Registro de las evaluaciones cuantitativas asociadas a una evaluación de asesor";
+        public static final String REGISTRAR_SUMMARY = "Registrar evaluaciones cuantitativas del asesor";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra en un solo lote el puntaje que el asesor autenticado asigna a cada ítem cuantitativo "
+                        + "sobre una evaluación suya";
+        public static final String REGISTRAR_RESP_201 = "Lote registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación no existe, no pertenece al asesor, está finalizada, algún ítem no existe "
+                        + "o ya fue registrado, o algún puntaje excede el valor máximo del ítem";
+    }
+
     public static final class EvaluacionCuantitativaJurado {
 
         private EvaluacionCuantitativaJurado() {}

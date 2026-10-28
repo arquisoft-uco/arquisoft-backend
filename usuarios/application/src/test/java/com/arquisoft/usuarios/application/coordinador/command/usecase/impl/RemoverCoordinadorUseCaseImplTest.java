@@ -89,7 +89,7 @@ class RemoverCoordinadorUseCaseImplTest {
                 eventPublisher);
         var captorInstante = ArgumentCaptor.forClass(Instant.class);
         var captorEvento = ArgumentCaptor.forClass(CoordinadorRemovidoEvent.class);
-        orden.verify(removerCoordinadorValidator).validar(id, vigente);
+        orden.verify(removerCoordinadorValidator).validar(id, usuario, vigente);
         orden.verify(coordinadorOutputPort).eliminarLogica(eq(id), captorInstante.capture());
         orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.COORDINADOR);
         orden.verify(eventPublisher).publish(captorEvento.capture());
@@ -108,8 +108,8 @@ class RemoverCoordinadorUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         when(coordinadorPorUsuarioFinder.obtener(id)).thenReturn(CoordinadorDomain.VACIO);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new CoordinadorNoEncontradoException(id))
-                .when(removerCoordinadorValidator).validar(id, CoordinadorDomain.VACIO);
+        doThrow(new CoordinadorNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerCoordinadorValidator).validar(id, UsuarioDomain.VACIO, CoordinadorDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(CoordinadorDomain.crear(id)))
@@ -126,7 +126,8 @@ class RemoverCoordinadorUseCaseImplTest {
         var removido = CoordinadorDomain.reconstruir(id, Instant.parse("2026-09-01T10:00:00Z"));
         when(coordinadorPorUsuarioFinder.obtener(id)).thenReturn(removido);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(usuario(id));
-        doThrow(new CoordinadorNoEncontradoException(id)).when(removerCoordinadorValidator).validar(id, removido);
+        doThrow(new CoordinadorNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerCoordinadorValidator).validar(eq(id), any(UsuarioDomain.class), eq(removido));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(CoordinadorDomain.crear(id)))

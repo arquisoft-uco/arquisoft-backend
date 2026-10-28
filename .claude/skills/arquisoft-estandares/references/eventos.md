@@ -33,7 +33,7 @@ adaptador, no el use case.
 | Punto | Nivel | Dónde |
 |---|---|---|
 | Encolado en el outbox | `debug` | `SpringModulithEventPublisher` (ya hecho) |
-| Envelope recibido / confirmado | `debug` | `AbstractEventConsumer` (ya hecho) |
+| Envelope recibido / confirmado | `debug` | `AbstractEventConsumer` (ya hecho), con el `AppLogger` que el consumidor le pasa en `super(objectMapper, gestorTraza, logger)`: la línea sale con el nombre del consumidor concreto |
 | **Evento recibido** | `info` | el `{Evento}Consumer`, tras `deserialize` — `idEvento` + identificadores de negocio |
 | Cierre | `info` | el adaptador que interpreta el desenlace |
 | Nack a la DLQ | `error` | `AbstractEventConsumer` (ya hecho) |

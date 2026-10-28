@@ -2,6 +2,7 @@ package com.arquisoft.proyectos.application.asesorproyectogrado.command.validato
 
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.validator.impl.AsignarAsesorProyectoGradoValidatorImpl;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
+import com.arquisoft.proyectos.domain.asesor.exception.AsesorNoEncontradoException;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.AsignacionAsesorProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.exception.AsesorNoVigenteException;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -80,10 +82,10 @@ class AsignarAsesorProyectoGradoValidatorTest {
     }
 
     @Test
-    void debeLanzarAsesorNoVigente_cuandoElAsesorNoExisteEnLaReplica() {
+    void debeLanzarAsesorNoEncontrado_cuandoElAsesorNoExisteEnLaReplica() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(entrada(), proyecto, estadoEnProceso, AsesorDomain.VACIO, false, 0))
-                .isInstanceOf(AsesorNoVigenteException.class);
+                .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
     @Test
@@ -91,14 +93,16 @@ class AsignarAsesorProyectoGradoValidatorTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 entrada(asesorEliminado, proyecto.getCoordinador()), proyecto, estadoEnProceso, asesorEliminado, false, 0))
-                .isInstanceOf(AsesorNoVigenteException.class);
+                .isInstanceOfSatisfying(AsesorNoVigenteException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(asesorEliminado.getNombre())
+                        .doesNotContain(asesorEliminado.getId().toString()));
     }
 
     @Test
-    void debeLanzarAsesorNoVigente_antesQueFinalizado_cuandoAmbosSeCumplen() {
+    void debeLanzarAsesorNoEncontrado_antesQueFinalizado_cuandoAmbosSeCumplen() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(entrada(), proyecto, estadoFinalizado, AsesorDomain.VACIO, false, 0))
-                .isInstanceOf(AsesorNoVigenteException.class);
+                .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
     @Test

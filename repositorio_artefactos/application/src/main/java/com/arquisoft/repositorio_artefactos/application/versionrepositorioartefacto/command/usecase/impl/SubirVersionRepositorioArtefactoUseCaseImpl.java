@@ -1,7 +1,7 @@
 package com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.usecase.impl;
 
 import com.arquisoft.repositorio_artefactos.application.administrador.command.finder.AdministradorPorIdFinder;
-import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.RepositorioArtefactoPorIdFinder;
+import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.RepositorioArtefactoBloqueadoPorIdFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.AnalisisCargaFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.CargaPendienteFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.TamanoMaximoArchivoFinder;
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 public class SubirVersionRepositorioArtefactoUseCaseImpl implements SubirVersionRepositorioArtefactoUseCase {
 
     private final AdministradorPorIdFinder administradorPorIdFinder;
-    private final RepositorioArtefactoPorIdFinder repositorioArtefactoPorIdFinder;
+    private final RepositorioArtefactoBloqueadoPorIdFinder repositorioArtefactoBloqueadoPorIdFinder;
     private final CargaPendienteFinder cargaPendienteFinder;
     private final AnalisisCargaFinder analisisCargaFinder;
     private final UltimoNumeroVersionDocumentoFinder ultimoNumeroVersionDocumentoFinder;
@@ -44,16 +44,18 @@ public class SubirVersionRepositorioArtefactoUseCaseImpl implements SubirVersion
                 subida.getRepositorio(), subida.getCarga(), subida.getSolicitante());
 
         var administrador = administradorPorIdFinder.obtener(subida.getSolicitante());
-        var repositorio = repositorioArtefactoPorIdFinder.obtener(subida.getRepositorio());
+        var repositorio = repositorioArtefactoBloqueadoPorIdFinder.obtener(subida.getRepositorio());
         var carga = cargaPendienteFinder.obtener(subida.getCarga());
-        var analisis = analisisCargaFinder.obtener(subida.getCarga());
         var ultimoNumero = ultimoNumeroVersionDocumentoFinder.obtener(subida);
         var tamanoMaximo = tamanoMaximoArchivoFinder.obtener();
         logger.debug(VersionRepositorioArtefactoKey.LOG_VERIFICACION_SUBIR,
                 !administrador.esVacio(), !repositorio.esVacio(), !carga.esVacio(),
-                analisis.getTipoDetectado(), subida.isNuevoDocumento(), ultimoNumero);
+                subida.isNuevoDocumento(), ultimoNumero);
 
-        subirVersionValidator.validar(subida, administrador, repositorio, carga, analisis, tamanoMaximo, ultimoNumero);
+        subirVersionValidator.validarCarga(subida, administrador, repositorio, carga, tamanoMaximo, ultimoNumero);
+
+        var analisis = analisisCargaFinder.obtener(subida.getCarga());
+        subirVersionValidator.validarContenido(subida, carga, analisis);
 
         var version = VersionRepositorioArtefactoDomain.crear(subida, ultimoNumero, carga, analisis);
 

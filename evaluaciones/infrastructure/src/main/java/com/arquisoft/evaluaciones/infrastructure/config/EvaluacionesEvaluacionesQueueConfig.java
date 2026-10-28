@@ -15,6 +15,20 @@ public class EvaluacionesEvaluacionesQueueConfig {
     public static final String EVALUACIONES_CUALITATIVAS_ASESOR_REGISTRADAS_QUEUE =
             EvaluacionesQueues.PREFIJO + EventTopics.Evaluaciones.EVALUACIONES_CUALITATIVAS_ASESOR_REGISTRADAS;
 
+    public static final String EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS_QUEUE =
+            EvaluacionesQueues.PREFIJO + EventTopics.Evaluaciones.EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS;
+
+    @Bean
+    public Declarables evaluacionesEvaluacionesCuantitativasAsesorRegistradasDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS_QUEUE,
+                EventTopics.Evaluaciones.EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     @Bean
     public Declarables evaluacionesEvaluacionesCualitativasAsesorRegistradasDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,

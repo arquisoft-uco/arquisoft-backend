@@ -26,6 +26,7 @@ class EvaluacionCuantitativaJuradoRulesTest {
 
     private static final UUID EVALUACION_CUANTITATIVA_JURADO = UUID.randomUUID();
     private static final UUID JURADO = UUID.randomUUID();
+    private static final String NOMBRE_ITEM = "Metodología";
 
     @Test
     void debeAceptar_cuandoEvaluacionExiste() {
@@ -93,7 +94,7 @@ class EvaluacionCuantitativaJuradoRulesTest {
     void debeAceptar_cuandoPuntajeEsMenorQueValorMaximo() {
         // Act & Assert
         assertThatCode(() -> new PuntajeEvaluacionCuantitativaJuradoNoExcedeValorItemRuleImpl()
-                .validar(new PuntajeVsValorMaximoItem(300, 500)))
+                .validar(new PuntajeVsValorMaximoItem(300, 500, NOMBRE_ITEM)))
                 .doesNotThrowAnyException();
     }
 
@@ -101,7 +102,7 @@ class EvaluacionCuantitativaJuradoRulesTest {
     void debeAceptar_cuandoPuntajeEsIgualAlValorMaximo() {
         // Act & Assert
         assertThatCode(() -> new PuntajeEvaluacionCuantitativaJuradoNoExcedeValorItemRuleImpl()
-                .validar(new PuntajeVsValorMaximoItem(500, 500)))
+                .validar(new PuntajeVsValorMaximoItem(500, 500, NOMBRE_ITEM)))
                 .doesNotThrowAnyException();
     }
 
@@ -109,12 +110,12 @@ class EvaluacionCuantitativaJuradoRulesTest {
     void debeRechazar_cuandoPuntajeExcedeValorMaximo() {
         // Act & Assert
         assertThatThrownBy(() -> new PuntajeEvaluacionCuantitativaJuradoNoExcedeValorItemRuleImpl()
-                .validar(new PuntajeVsValorMaximoItem(501, 500)))
+                .validar(new PuntajeVsValorMaximoItem(501, 500, NOMBRE_ITEM)))
                 .isInstanceOfSatisfying(
                         PuntajeEvaluacionCuantitativaJuradoExcedeValorItemException.class, exception -> {
                             assertThat(exception.getCodigoError()).isEqualTo(
                                     EvaluacionesCodes.EvaluacionCuantitativaJurado.PUNTAJE_EXCEDE_VALOR_ITEM);
-                            assertThat(exception.getMessage()).contains("501").contains("500");
+                            assertThat(exception.getMessage()).contains("501").contains("500").contains(NOMBRE_ITEM);
                         });
     }
 }

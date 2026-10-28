@@ -7,6 +7,17 @@ public final class VersionRepositorioArtefactoMapper {
 
     private VersionRepositorioArtefactoMapper() {}
 
+    public static VersionRepositorioArtefactoDomain toDomain(VersionRepositorioArtefactoEntity entity) {
+        return VersionRepositorioArtefactoDomain.reconstruir(
+                entity.id(),
+                entity.nombreDocumento(),
+                entity.versionDocumento(),
+                entity.repositorioArtefacto(),
+                entity.nombreRepositorio(),
+                new VersionRepositorioArtefactoDomain.DatosArchivo(
+                        entity.nombreArchivo(), entity.tipoContenido(), entity.tamanoBytes()));
+    }
+
     public static VersionRepositorioArtefactoEntity toEntity(VersionRepositorioArtefactoDomain version) {
         return new VersionRepositorioArtefactoEntity(
                 version.getId(),

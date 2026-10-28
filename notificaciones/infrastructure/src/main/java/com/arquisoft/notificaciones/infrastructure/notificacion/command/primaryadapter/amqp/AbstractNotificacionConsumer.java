@@ -17,7 +17,7 @@ public abstract class AbstractNotificacionConsumer extends AbstractEventConsumer
 
     protected AbstractNotificacionConsumer(
             ObjectMapper objectMapper, GestorTraza gestorTraza, AppLogger logger) {
-        super(objectMapper, gestorTraza);
+        super(objectMapper, gestorTraza, logger);
         this.logger = logger;
     }
 
@@ -31,15 +31,15 @@ public abstract class AbstractNotificacionConsumer extends AbstractEventConsumer
     protected void registrar(EnvioNotificacionResult resultado) {
         switch (resultado) {
             case EnvioNotificacionResult.Enviada enviada -> logger.info(
-                    Mensajes.obtener(ConsumidorKey.LOG_NOTIFICACION_ENVIADA),
+                    ConsumidorKey.LOG_NOTIFICACION_ENVIADA,
                     enviada.idEvento(),
                     UtilTexto.enmascararCorreo(enviada.destinatario()));
             case EnvioNotificacionResult.Duplicada duplicada -> logger.info(
-                    Mensajes.obtener(ConsumidorKey.LOG_NOTIFICACION_DUPLICADA),
+                    ConsumidorKey.LOG_NOTIFICACION_DUPLICADA,
                     duplicada.idEvento(),
                     UtilTexto.enmascararCorreo(duplicada.destinatario()));
             case EnvioNotificacionResult.Fallida fallida -> logger.warn(
-                    Mensajes.obtener(ConsumidorKey.LOG_NOTIFICACION_FALLIDA),
+                    ConsumidorKey.LOG_NOTIFICACION_FALLIDA,
                     fallida.idEvento(),
                     UtilTexto.enmascararCorreo(fallida.destinatario()));
         }

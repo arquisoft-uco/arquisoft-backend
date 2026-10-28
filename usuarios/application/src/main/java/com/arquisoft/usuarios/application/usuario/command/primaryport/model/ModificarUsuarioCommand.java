@@ -58,7 +58,7 @@ public record ModificarUsuarioCommand(
                 .filter(rol -> !UsuariosRoles.CONOCIDOS.contains(rol))
                 .forEach(rol -> result.agregarError(UsuariosFields.Usuario.ROLES,
                         UsuariosCodes.Usuario.ROL_NO_VALIDO,
-                        Mensajes.formatear(RegistrarUsuarioKey.ERROR_ROL_NO_VALIDO, rol)));
+                        Mensajes.obtener(RegistrarUsuarioKey.ERROR_ROL_NO_VALIDO)));
 
         if (sinDatos(datos) && rolesNormalizados.isEmpty()) {
             result.agregarError(UsuariosFields.Usuario.USUARIO,

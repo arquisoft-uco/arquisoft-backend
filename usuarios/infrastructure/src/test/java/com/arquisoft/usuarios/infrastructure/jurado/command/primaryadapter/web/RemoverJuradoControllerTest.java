@@ -93,7 +93,7 @@ class RemoverJuradoControllerTest {
     void debeResponder422ConSuCodigo_cuandoElJuradoNoEstaVigente() throws Exception {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        doThrow(new JuradoNoEncontradoException(usuario)).when(removerJuradoInteractor).ejecutar(any());
+        doThrow(new JuradoNoEncontradoException(usuario, "Ana Pérez")).when(removerJuradoInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(delete(RUTA, usuario).with(administrador()))

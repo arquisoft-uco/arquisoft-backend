@@ -112,7 +112,7 @@ public final class EstadoEvaluacionFichaDomain {
                     FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                     FichasCodes.EstadoEvaluacionFicha.ESTADO_NO_ENCONTRADO,
                     Mensajes.formatear(
-                            EstadoEvaluacionFichaKey.ERROR_ESTADO_NO_ENCONTRADO, estadoEvaluacion));
+                            EstadoEvaluacionFichaKey.ERROR_ESTADO_NO_ENCONTRADO));
             return;
         }
         this.estadoEvaluacion = EstadoEvaluacion.desde(estadoEvaluacion);

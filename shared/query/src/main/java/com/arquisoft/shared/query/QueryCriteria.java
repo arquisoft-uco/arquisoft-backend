@@ -2,7 +2,6 @@ package com.arquisoft.shared.query;
 
 import com.arquisoft.shared.query.exception.FiltroException;
 
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 
@@ -79,9 +78,9 @@ public abstract class QueryCriteria {
                     ordenamiento.forEach(o -> {
                         if (!permitidos.contains(o.getCampo())) {
                             throw new FiltroException(
-                                    Mensajes.formatear(ConsultaKey.ERROR_CAMPO_ORDEN_NO_PERMITIDO,
-                                            o.getCampo(), permitidos),
-                                    AppCodes.Consulta.CAMPO_ORDEN_NO_PERMITIDO);
+                                    AppCodes.Consulta.CAMPO_ORDEN_NO_PERMITIDO,
+                                    ConsultaKey.ERROR_CAMPO_ORDEN_NO_PERMITIDO, ConsultaKey.ERROR_CAMPO_ORDEN_NO_PERMITIDO_DETALLE,
+                                    o.getCampo(), permitidos);
                         }
                     });
                 }
@@ -111,9 +110,9 @@ public abstract class QueryCriteria {
         private void validarProfundidad(NodoFiltro nodo, int profundidad) {
             if (profundidad > MAX_PROFUNDIDAD_FILTRO) {
                 throw new FiltroException(
-                        Mensajes.formatear(ConsultaKey.ERROR_PROFUNDIDAD_FILTRO_EXCEDIDA,
-                                MAX_PROFUNDIDAD_FILTRO),
-                        AppCodes.Consulta.PROFUNDIDAD_FILTRO_EXCEDIDA);
+                        AppCodes.Consulta.PROFUNDIDAD_FILTRO_EXCEDIDA,
+                        ConsultaKey.ERROR_PROFUNDIDAD_FILTRO_EXCEDIDA, ConsultaKey.ERROR_PROFUNDIDAD_FILTRO_EXCEDIDA_DETALLE,
+                        MAX_PROFUNDIDAD_FILTRO);
             }
             if (nodo instanceof NodoFiltro.Grupo g) {
                 g.nodos().forEach(hijo -> validarProfundidad(hijo, profundidad + 1));
@@ -130,30 +129,30 @@ public abstract class QueryCriteria {
                     validarCampoPermitido(p.campo(), permitidos);
                     if (p.operador().esMultivalor()) {
                         throw new FiltroException(
-                                Mensajes.formatear(ConsultaKey.ERROR_OPERADOR_REQUIERE_LISTA,
-                                        p.operador(), p.campo()),
-                                AppCodes.Consulta.OPERADOR_REQUIERE_LISTA);
+                                AppCodes.Consulta.OPERADOR_REQUIERE_LISTA,
+                                ConsultaKey.ERROR_OPERADOR_REQUIERE_LISTA, ConsultaKey.ERROR_OPERADOR_REQUIERE_LISTA_DETALLE,
+                                p.operador(), p.campo());
                     }
                     if (p.operador().requiereValor() && (p.valor() == null || p.valor().isBlank())) {
                         throw new FiltroException(
-                                Mensajes.formatear(ConsultaKey.ERROR_VALOR_REQUERIDO,
-                                        p.operador(), p.campo()),
-                                AppCodes.Consulta.VALOR_REQUERIDO);
+                                AppCodes.Consulta.VALOR_REQUERIDO,
+                                ConsultaKey.ERROR_VALOR_REQUERIDO, ConsultaKey.ERROR_VALOR_REQUERIDO_DETALLE,
+                                p.operador(), p.campo());
                     }
                 }
                 case NodoFiltro.PredicadoMultivalor p -> {
                     validarCampoPermitido(p.campo(), permitidos);
                     if (!p.operador().esMultivalor()) {
                         throw new FiltroException(
-                                Mensajes.formatear(ConsultaKey.ERROR_OPERADOR_NO_ACEPTA_LISTA,
-                                        p.operador(), p.campo()),
-                                AppCodes.Consulta.OPERADOR_NO_ACEPTA_LISTA);
+                                AppCodes.Consulta.OPERADOR_NO_ACEPTA_LISTA,
+                                ConsultaKey.ERROR_OPERADOR_NO_ACEPTA_LISTA, ConsultaKey.ERROR_OPERADOR_NO_ACEPTA_LISTA_DETALLE,
+                                p.operador(), p.campo());
                     }
                     if (p.valores().isEmpty()) {
                         throw new FiltroException(
-                                Mensajes.formatear(ConsultaKey.ERROR_VALOR_REQUERIDO,
-                                        p.operador(), p.campo()),
-                                AppCodes.Consulta.VALOR_REQUERIDO);
+                                AppCodes.Consulta.VALOR_REQUERIDO,
+                                ConsultaKey.ERROR_VALOR_REQUERIDO, ConsultaKey.ERROR_VALOR_REQUERIDO_DETALLE,
+                                p.operador(), p.campo());
                     }
                 }
                 case NodoFiltro.Grupo g -> g.nodos().forEach(this::validarPredicados);
@@ -163,8 +162,9 @@ public abstract class QueryCriteria {
         private void validarCampoPermitido(String campo, Set<String> permitidos) {
             if (permitidos != null && !permitidos.contains(campo)) {
                 throw new FiltroException(
-                        Mensajes.formatear(ConsultaKey.ERROR_CAMPO_FILTRO_NO_PERMITIDO, campo, permitidos),
-                        AppCodes.Consulta.CAMPO_FILTRO_NO_PERMITIDO);
+                        AppCodes.Consulta.CAMPO_FILTRO_NO_PERMITIDO,
+                        ConsultaKey.ERROR_CAMPO_FILTRO_NO_PERMITIDO, ConsultaKey.ERROR_CAMPO_FILTRO_NO_PERMITIDO_DETALLE,
+                        campo, permitidos);
             }
         }
     }

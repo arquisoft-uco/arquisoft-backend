@@ -37,7 +37,7 @@ public class RemoverCoordinadorUseCaseImpl implements RemoverCoordinadorUseCase 
         logger.debug(RemoverCoordinadorKey.LOG_VERIFICACION_REMOVER,
                 entrada.getUsuario(), !coordinador.esVacio(), coordinador.estaEliminado());
 
-        removerCoordinadorValidator.validar(entrada.getUsuario(), coordinador);
+        removerCoordinadorValidator.validar(entrada.getUsuario(), usuario, coordinador);
 
         coordinador.remover(UtilFecha.generarInstanteActual());
         coordinadorOutputPort.eliminarLogica(coordinador.getUsuario(), coordinador.getEliminadoEn());

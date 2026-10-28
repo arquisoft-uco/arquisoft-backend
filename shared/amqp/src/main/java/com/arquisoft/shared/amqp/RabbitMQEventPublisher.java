@@ -2,16 +2,14 @@ package com.arquisoft.shared.amqp;
 
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.publisher.EventPublisher;
-import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @ConditionalOnMissingBean(EventPublisher.class)
 public class RabbitMQEventPublisher implements EventPublisher {
@@ -20,9 +18,11 @@ public class RabbitMQEventPublisher implements EventPublisher {
     private static final long INITIAL_BACKOFF_MS = 500L;
 
     private final RabbitTemplate rabbitTemplate;
+    private final AppLogger logger;
 
-    public RabbitMQEventPublisher(RabbitTemplate rabbitTemplate) {
+    public RabbitMQEventPublisher(RabbitTemplate rabbitTemplate, AppLogger logger) {
         this.rabbitTemplate = rabbitTemplate;
+        this.logger = logger;
     }
 
     @Override
@@ -43,14 +43,14 @@ public class RabbitMQEventPublisher implements EventPublisher {
                     evento,
                     corr
                 );
-                log.info(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_PUBLICADO),
+                logger.info(MensajeriaKey.LOG_EVENTO_PUBLICADO,
                         evento.getTipoEvento(), claveRuta, evento.getIdEvento());
                 return;
             } catch (AmqpException ex) {
                 // Error transitorio de conectividad: vale la pena reintentar.
                 lastException = ex;
                 if (attempt < MAX_ATTEMPTS) {
-                    log.warn(Mensajes.obtener(MensajeriaKey.LOG_PUBLICACION_REINTENTO),
+                    logger.warn(MensajeriaKey.LOG_PUBLICACION_REINTENTO,
                             attempt, MAX_ATTEMPTS, backoffMs, evento.getTipoEvento(), evento.getIdEvento());
                     sleepUninterruptibly(backoffMs);
                     backoffMs *= 2;
@@ -58,14 +58,14 @@ public class RabbitMQEventPublisher implements EventPublisher {
             } catch (RuntimeException ex) {
                 // Error no transitorio (ej. fallo de serialización): no se reintenta.
                 // Se loguea aquí para preservar el contexto del evento antes de propagar.
-                log.error(Mensajes.obtener(MensajeriaKey.LOG_PUBLICACION_NO_RECUPERABLE),
-                        evento.getTipoEvento(), claveRuta, evento.getIdEvento(), ex);
+                logger.error(MensajeriaKey.LOG_PUBLICACION_NO_RECUPERABLE, ex,
+                        evento.getTipoEvento(), claveRuta, evento.getIdEvento());
                 throw ex;
             }
         }
 
-        log.error(Mensajes.obtener(MensajeriaKey.LOG_PUBLICACION_AGOTADA),
-                MAX_ATTEMPTS, evento.getTipoEvento(), claveRuta, evento.getIdEvento(), lastException);
+        logger.error(MensajeriaKey.LOG_PUBLICACION_AGOTADA, lastException,
+                MAX_ATTEMPTS, evento.getTipoEvento(), claveRuta, evento.getIdEvento());
         throw lastException;
     }
 

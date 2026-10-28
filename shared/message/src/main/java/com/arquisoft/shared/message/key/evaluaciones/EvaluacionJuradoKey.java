@@ -4,8 +4,10 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum EvaluacionJuradoKey implements ClaveMensaje {
 
-    ERROR_JURADOS_NO_ENCONTRADOS("evaluaciones.dominio.evaluacionjurado.error.jurados-no-encontrados", 1),
-    ERROR_JURADOS_YA_ASIGNADOS("evaluaciones.dominio.evaluacionjurado.error.jurados-ya-asignados", 1),
+    ERROR_JURADOS_NO_ENCONTRADOS("evaluaciones.dominio.evaluacionjurado.error.jurados-no-encontrados", 0),
+    ERROR_JURADOS_NO_ENCONTRADOS_DETALLE("evaluaciones.dominio.evaluacionjurado.error.jurados-no-encontrados-detalle", 1),
+    ERROR_JURADOS_YA_ASIGNADOS("evaluaciones.dominio.evaluacionjurado.error.jurados-ya-asignados", 0),
+    ERROR_JURADOS_YA_ASIGNADOS_DETALLE("evaluaciones.dominio.evaluacionjurado.error.jurados-ya-asignados-detalle", 1),
     LOG_ASIGNANDO("evaluaciones.aplicacion.evaluacionjurado.log.asignando", 2),
     LOG_VERIFICACION_ASIGNAR("evaluaciones.aplicacion.evaluacionjurado.log.verificacion-asignar", 4),
     LOG_ASIGNADOS("evaluaciones.aplicacion.evaluacionjurado.log.asignados", 2),

@@ -5,9 +5,8 @@ import com.arquisoft.usuarios.domain.jurado.JuradoDomain;
 import com.arquisoft.usuarios.domain.jurado.model.DisponibilidadJuradoUsuario;
 import com.arquisoft.usuarios.domain.jurado.rules.JuradoUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.jurado.rules.impl.JuradoUsuarioUnicoRuleImpl;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class AgregarJuradoValidatorImpl implements AgregarJuradoValidator {
@@ -19,8 +18,8 @@ public class AgregarJuradoValidatorImpl implements AgregarJuradoValidator {
     }
 
     @Override
-    public void validar(UUID usuario, JuradoDomain jurado) {
+    public void validar(UsuarioDomain usuario, JuradoDomain jurado) {
         juradoUsuarioUnicoRule.validar(
-                new DisponibilidadJuradoUsuario(usuario, jurado));
+                new DisponibilidadJuradoUsuario(usuario.getId(), usuario.getNombre(), jurado));
     }
 }

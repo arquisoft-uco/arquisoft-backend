@@ -1,19 +1,17 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
-import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.publisher.EventPublisher;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
 import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
-import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.ModificacionIdentidadEntity;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
+import com.arquisoft.usuarios.application.bibliotecario.command.usecase.AgregarBibliotecarioUseCase;
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
-import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
-import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
-import com.arquisoft.usuarios.application.bibliotecario.command.usecase.AgregarBibliotecarioUseCase;
 import com.arquisoft.usuarios.application.jurado.command.usecase.AgregarJuradoUseCase;
-import com.arquisoft.usuarios.domain.bibliotecario.exception.BibliotecarioUsuarioDuplicadoException;
+import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoOtroUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtraIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtroUsuarioExisteFinder;
@@ -21,8 +19,10 @@ import com.arquisoft.usuarios.application.usuario.command.finder.IdentificadorOt
 import com.arquisoft.usuarios.application.usuario.command.finder.UsuarioPorIdFinder;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.ProveedorIdentidadOutputPort;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.ModificacionIdentidadEntity;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.usuarios.application.usuario.command.validator.ModificarUsuarioValidator;
+import com.arquisoft.usuarios.domain.bibliotecario.exception.BibliotecarioUsuarioDuplicadoException;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.usuario.ModificacionUsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
@@ -335,7 +335,7 @@ class ModificarUsuarioUseCaseImplTest {
         // Arrange
         var modificacion = modificacionConRol("bibliotecario");
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
-        doThrow(new BibliotecarioUsuarioDuplicadoException(usuarioId))
+        doThrow(new BibliotecarioUsuarioDuplicadoException(usuarioId, usuarioActivo.getNombre()))
                 .when(agregarBibliotecarioUseCase).ejecutar(any());
 
         // Act & Assert
@@ -399,7 +399,7 @@ class ModificarUsuarioUseCaseImplTest {
                 "original@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO, Instant.parse("2026-09-25T10:15:30Z"));
         var modificacion = modificacionConRol("estudiante");
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioEliminado);
-        doThrow(new UsuarioEliminadoException(usuarioId)).when(modificarUsuarioValidator)
+        doThrow(new UsuarioEliminadoException(usuarioId, "Nombre Original")).when(modificarUsuarioValidator)
                 .validar(any(), eq(usuarioEliminado), eq(false), eq(false), eq(false));
 
         // Act & Assert

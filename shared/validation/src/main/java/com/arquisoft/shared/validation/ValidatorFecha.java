@@ -14,7 +14,7 @@ public final class ValidatorFecha {
     public static boolean fechaValida(String valor, String campo, String codigoError, ValidationResult resultado) {
         if (!UtilFecha.fechaValida(valor)) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.FECHA_INVALIDA, campo));
+                    Mensajes.obtener(ValidadorKey.FECHA_INVALIDA));
             return false;
         }
         return true;
@@ -24,7 +24,7 @@ public final class ValidatorFecha {
             LocalDate fecha, LocalDate referencia, String campo, String codigoError, ValidationResult resultado) {
         if (UtilObjeto.noEsNulo(fecha) && UtilObjeto.noEsNulo(referencia) && !fecha.isAfter(referencia)) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.FECHA_POSTERIOR, campo, referencia));
+                    Mensajes.formatear(ValidadorKey.FECHA_POSTERIOR, referencia));
             return false;
         }
         return true;

@@ -30,7 +30,7 @@ public class AgregarCoordinadorUseCaseImpl implements AgregarCoordinadorUseCase 
         logger.debug(AgregarCoordinadorKey.LOG_VERIFICACION_AGREGAR,
                 usuario.getId(), !coordinador.esVacio(), coordinador.estaEliminado());
 
-        agregarCoordinadorValidator.validar(usuario.getId(), coordinador);
+        agregarCoordinadorValidator.validar(usuario, coordinador);
 
         if (coordinador.esVacio()) {
             coordinadorOutputPort.guardar(CoordinadorMapper.toEntity(CoordinadorDomain.crear(usuario.getId())));

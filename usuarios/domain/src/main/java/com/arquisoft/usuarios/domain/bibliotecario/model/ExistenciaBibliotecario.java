@@ -4,4 +4,4 @@ import com.arquisoft.usuarios.domain.bibliotecario.BibliotecarioDomain;
 
 import java.util.UUID;
 
-public record ExistenciaBibliotecario(UUID usuario, BibliotecarioDomain bibliotecario) {}
+public record ExistenciaBibliotecario(UUID usuario, String nombre, BibliotecarioDomain bibliotecario) {}

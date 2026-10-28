@@ -10,7 +10,7 @@ public class EstadoEvaluacionNoDuplicadoRuleImpl implements EstadoEvaluacionNoDu
     public void validar(DisponibilidadEstadoEvaluacion disponibilidad) {
         if (disponibilidad.yaExiste()) {
             throw new EstadoEvaluacionDuplicadoException(
-                    disponibilidad.evaluacionFichaPerfil(), disponibilidad.estadoEvaluacion().getId());
+                    disponibilidad.evaluacionFichaPerfil(), disponibilidad.estadoEvaluacion());
         }
     }
 }

@@ -9,17 +9,20 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BibliotecarioVigenteRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final BibliotecarioVigenteRuleImpl rule = new BibliotecarioVigenteRuleImpl();
 
     @Test
     void debeLanzarNoEncontradoConSuCodigo_cuandoBibliotecarioNoExiste() {
         // Arrange
-        var existencia = new ExistenciaBibliotecario(UtilUUID.generarNuevoUUID(), BibliotecarioDomain.VACIO);
+        var existencia = new ExistenciaBibliotecario(UtilUUID.generarNuevoUUID(), NOMBRE, BibliotecarioDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(existencia))
@@ -33,7 +36,7 @@ class BibliotecarioVigenteRuleImplTest {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
         var eliminado = BibliotecarioDomain.reconstruir(usuario, Instant.parse("2026-09-24T10:00:00Z"));
-        var existencia = new ExistenciaBibliotecario(usuario, eliminado);
+        var existencia = new ExistenciaBibliotecario(usuario, NOMBRE, eliminado);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(existencia))
@@ -45,9 +48,22 @@ class BibliotecarioVigenteRuleImplTest {
     void noDebeLanzar_cuandoBibliotecarioEstaVigente() {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        var existencia = new ExistenciaBibliotecario(usuario, BibliotecarioDomain.crear(usuario));
+        var existencia = new ExistenciaBibliotecario(usuario, NOMBRE, BibliotecarioDomain.crear(usuario));
 
         // Act & Assert
         assertThatCode(() -> rule.validar(existencia)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoNoTieneElRolVigente() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var entrada = new ExistenciaBibliotecario(usuario, NOMBRE, BibliotecarioDomain.VACIO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(BibliotecarioNoEncontradoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

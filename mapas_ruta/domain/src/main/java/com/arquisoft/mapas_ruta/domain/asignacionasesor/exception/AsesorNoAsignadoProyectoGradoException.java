@@ -1,5 +1,6 @@
 package com.arquisoft.mapas_ruta.domain.asignacionasesor.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.MapasRutaCodes;
@@ -9,10 +10,11 @@ import java.util.UUID;
 
 public final class AsesorNoAsignadoProyectoGradoException extends DomainException {
 
-    public AsesorNoAsignadoProyectoGradoException(UUID asesor, UUID proyectoGrado) {
-        super(
-                Mensajes.formatear(AsignacionAsesorKey.ERROR_NO_ASIGNADO, asesor, proyectoGrado),
-                MapasRutaCodes.AsignacionAsesor.NO_ASIGNADO
-        );
+    public AsesorNoAsignadoProyectoGradoException(UUID asesor, UUID proyectoGrado, String tituloProyecto) {
+        super(BaseError.conDetalle(
+                MapasRutaCodes.AsignacionAsesor.NO_ASIGNADO,
+                Mensajes.formatear(AsignacionAsesorKey.ERROR_NO_ASIGNADO, tituloProyecto),
+                Mensajes.formatear(AsignacionAsesorKey.ERROR_NO_ASIGNADO_DETALLE, asesor, proyectoGrado)
+        ));
     }
 }

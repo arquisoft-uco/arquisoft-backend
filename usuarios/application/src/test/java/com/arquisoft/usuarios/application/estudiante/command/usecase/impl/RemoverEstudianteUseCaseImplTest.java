@@ -88,7 +88,7 @@ class RemoverEstudianteUseCaseImplTest {
                 eventPublisher);
         var captorInstante = ArgumentCaptor.forClass(Instant.class);
         var captorEvento = ArgumentCaptor.forClass(EstudianteRemovidoEvent.class);
-        orden.verify(removerEstudianteValidator).validar(id, vigente);
+        orden.verify(removerEstudianteValidator).validar(id, usuario, vigente);
         orden.verify(estudianteOutputPort).eliminarLogica(eq(id), captorInstante.capture());
         orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.ESTUDIANTE);
         orden.verify(eventPublisher).publish(captorEvento.capture());
@@ -107,8 +107,8 @@ class RemoverEstudianteUseCaseImplTest {
         var id = UUID.randomUUID();
         when(estudiantePorUsuarioFinder.obtener(id)).thenReturn(EstudianteDomain.VACIO);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new EstudianteNoEncontradoException(id))
-                .when(removerEstudianteValidator).validar(id, EstudianteDomain.VACIO);
+        doThrow(new EstudianteNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerEstudianteValidator).validar(id, UsuarioDomain.VACIO, EstudianteDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(EstudianteDomain.crear(id)))
@@ -125,7 +125,8 @@ class RemoverEstudianteUseCaseImplTest {
         var removido = EstudianteDomain.reconstruir(id, Instant.parse("2026-09-01T10:00:00Z"));
         when(estudiantePorUsuarioFinder.obtener(id)).thenReturn(removido);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(usuario(id));
-        doThrow(new EstudianteNoEncontradoException(id)).when(removerEstudianteValidator).validar(id, removido);
+        doThrow(new EstudianteNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerEstudianteValidator).validar(eq(id), any(UsuarioDomain.class), eq(removido));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(EstudianteDomain.crear(id)))

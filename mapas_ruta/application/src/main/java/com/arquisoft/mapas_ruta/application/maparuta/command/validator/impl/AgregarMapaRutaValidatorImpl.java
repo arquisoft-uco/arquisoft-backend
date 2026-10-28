@@ -35,12 +35,13 @@ public class AgregarMapaRutaValidatorImpl implements AgregarMapaRutaValidator {
     @Override
     public void validar(AgregacionMapaRutaDomain agregacion, ProyectoGradoDomain proyectoGrado, boolean mapaRutaExiste) {
         var proyectoGradoId = agregacion.getMapaRuta().getProyectoGrado();
+        var tituloProyecto = proyectoGrado.getTituloProyecto();
 
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(proyectoGradoId, !proyectoGrado.esVacio()));
         coordinadorPropietarioProyectoGradoRule.validar(new PropiedadProyectoGrado(
-                proyectoGradoId, agregacion.getCoordinador(), proyectoGrado.getCoordinador()));
+                proyectoGradoId, tituloProyecto, agregacion.getCoordinador(), proyectoGrado.getCoordinador()));
         proyectoGradoEnProcesoRule.validar(new EstadoActualProyectoGrado(
-                proyectoGradoId, proyectoGrado.getEstadoProyectoGrado()));
-        mapaRutaUnicoPorProyectoRule.validar(new DisponibilidadMapaRuta(proyectoGradoId, mapaRutaExiste));
+                proyectoGradoId, tituloProyecto, proyectoGrado.getEstadoProyectoGrado()));
+        mapaRutaUnicoPorProyectoRule.validar(new DisponibilidadMapaRuta(proyectoGradoId, tituloProyecto, mapaRutaExiste));
     }
 }
