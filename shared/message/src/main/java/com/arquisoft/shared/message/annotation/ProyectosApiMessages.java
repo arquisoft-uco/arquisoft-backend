@@ -128,6 +128,22 @@ public final class ProyectosApiMessages {
                 "Proyecto de grado no encontrado o estudiante no vinculado a él";
     }
 
+    public static final class ConsultaEstadoAsesor {
+
+        private ConsultaEstadoAsesor() {}
+
+        public static final String TAG_NAME = "Consulta de Estados de Asesor";
+        public static final String TAG_DESCRIPTION =
+                "Consulta del catálogo de estados que se pueden asignar a un asesor de proyecto de grado";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar los estados posibles de un asesor";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Permite al coordinador consultar la lista de los estados posibles que se pueden asignar "
+                        + "a un asesor de un proyecto de grado, con su nombre y descripción";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados posibles de asesor";
+        public static final String CONSULTAR_RESP_403 = "Sin permiso para consultar los estados de asesor";
+    }
+
     public static final class ConsultaProyectoGrado {
 
         private ConsultaProyectoGrado() {}
