@@ -11,6 +11,8 @@ public enum PlanEstimadoKey implements ClaveMensaje {
     LOG_AGREGANDO("mapas_ruta.aplicacion.planestimado.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("mapas_ruta.aplicacion.planestimado.log.verificacion-agregar", 4),
     LOG_AGREGADO("mapas_ruta.aplicacion.planestimado.log.agregado", 2),
+    LOG_CONSULTANDO("mapas_ruta.aplicacion.planestimado.log.consultando", 5),
+    LOG_CONSULTA_COMPLETADA("mapas_ruta.aplicacion.planestimado.log.consulta-completada", 3),
     LOG_GUARDADO("mapas_ruta.infraestructura.planestimado.log.guardado", 1);
 
     private final String clave;

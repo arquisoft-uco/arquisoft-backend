@@ -128,6 +128,14 @@ public final class MapasRutaApiMessages {
         public static final String AGREGAR_RESP_400 = "Datos de entrada inválidos";
         public static final String AGREGAR_RESP_422 =
                 "Tarea inexistente, tarea con plan estimado o tiempo acumulado que excede el plazo del mapa de ruta";
+        public static final String CONSULTAR_SUMMARY = "Consultar los planes estimados de una tarea";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve, paginados, filtrados y ordenados, los planes estimados de una tarea. Filtros por tiempo "
+                        + "estimado y descripción; sin orden se ordena por tiempo estimado ascendente. Si la tarea "
+                        + "no tiene plan estimado la página llega vacía";
+        public static final String CONSULTAR_RESP_200 = "Página de planes estimados de la tarea";
+        public static final String CONSULTAR_RESP_400 =
+                "Identificador de tarea inválido, o filtro u ordenamiento no permitido";
     }
 
     public static final class EstadoItem {

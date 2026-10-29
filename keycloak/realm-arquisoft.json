@@ -281,6 +281,7 @@
               "mapas-ruta:tarea:update",
               "mapas-ruta:tarea:delete",
               "mapas-ruta:plan-estimado:create",
+              "mapas-ruta:plan-estimado-tarea-estudiante:view",
               "mapas-ruta:tarea-mapa-ruta-estudiante:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
               "solicitudes:solicitud-novedad-asesor:create",
@@ -2412,6 +2413,15 @@
         {
           "id": "a70f38c6-84f1-44f6-a8f0-277ad3bad60b",
           "name": "mapas-ruta:plan-estimado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5c2e9b17-3d84-4a60-b1f7-9e0a6d4c8f23",
+          "name": "mapas-ruta:plan-estimado-tarea-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
