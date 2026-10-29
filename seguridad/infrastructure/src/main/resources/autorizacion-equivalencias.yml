@@ -206,6 +206,7 @@ security:
         - {method: DELETE, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:delete"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados", role: "mapas-ruta:plan-estimado:create"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados/estudiante", role: "mapas-ruta:plan-estimado-tarea-estudiante:view"}
+        - {method: PATCH, path: "/api/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:update"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
         # entregables
         - {method: GET, path: "/api/estados-entregable", role: "entregables:estado-entregable:view"}
