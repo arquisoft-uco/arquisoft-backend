@@ -82,6 +82,7 @@
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
               "solicitudes:solicitud-registro-modificacion-usuarios:create",
+              "solicitudes:solicitud-registro-modificacion-usuarios:delete",
               "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
               "fichas:item-ficha-perfil-coordinador:view",
               "solicitudes:estado-respuesta:view",
@@ -920,6 +921,15 @@
         {
           "id": "a9177be8-b046-4643-bbbb-e7364f575a21",
           "name": "solicitudes:solicitud-registro-modificacion-usuarios:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5f0c2d7e-3b1a-4c8e-9d46-7a2e1b9c8f30",
+          "name": "solicitudes:solicitud-registro-modificacion-usuarios:delete",
           "description": "",
           "composite": false,
           "clientRole": true,
