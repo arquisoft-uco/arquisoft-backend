@@ -11,6 +11,7 @@ rutas:
     versiones-artefacto:
       base: /versiones-artefacto
       asesor: /asesor
+      revisiones: /{versionArtefactoId}/revisiones
     observaciones:
       base: /revisiones-asesor
       listar: /{revisionAsesorId}/observaciones

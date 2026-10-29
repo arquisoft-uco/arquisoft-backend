@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +31,8 @@ class RevisionAsesorFinderImplTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var version = UtilUUID.generarNuevoUUID();
-        when(outputPort.obtenerPorId(id)).thenReturn(Optional.of(new RevisionAsesorEntity(id, version, "RESUELTA")));
+        var fecha = Instant.parse("2026-10-28T10:00:00Z");
+        when(outputPort.obtenerPorId(id)).thenReturn(Optional.of(new RevisionAsesorEntity(id, version, "RESUELTA", fecha)));
 
         // Act
         var resultado = finder.obtener(id);
@@ -39,6 +41,7 @@ class RevisionAsesorFinderImplTest {
         assertThat(resultado.getId()).isEqualTo(id);
         assertThat(resultado.getVersionArtefacto()).isEqualTo(version);
         assertThat(resultado.getEstado()).isEqualTo(EstadoRevisionAsesor.RESUELTA);
+        assertThat(resultado.getFechaCreacion()).isEqualTo(fecha);
     }
 
     @Test

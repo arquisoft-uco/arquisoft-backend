@@ -16,4 +16,13 @@ public final class VersionArtefactoJpaMapper {
                 .uriArchivo(entity.uriArchivo())
                 .build();
     }
+
+    public static VersionArtefactoEntity toEntity(VersionArtefactoJpaEntity jpaEntity) {
+        return new VersionArtefactoEntity(
+                jpaEntity.getId(),
+                jpaEntity.getArtefacto(),
+                jpaEntity.getNumeroVersion(),
+                jpaEntity.getFechaCreacion(),
+                jpaEntity.getUriArchivo());
+    }
 }

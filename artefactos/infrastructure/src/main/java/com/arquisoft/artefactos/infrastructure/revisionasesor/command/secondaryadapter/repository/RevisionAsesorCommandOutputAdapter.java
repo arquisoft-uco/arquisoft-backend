@@ -5,6 +5,7 @@ import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport
 import com.arquisoft.artefactos.infrastructure.revisionasesor.command.secondaryadapter.mapper.RevisionAsesorJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.CambiarEstadoRevisionAsesorKey;
+import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -32,5 +33,28 @@ public class RevisionAsesorCommandOutputAdapter implements RevisionAsesorOutputP
     public void actualizarEstado(UUID revisionAsesor, String estado) {
         revisionAsesorCommandRepository.actualizarEstado(revisionAsesor, estado);
         logger.debug(CambiarEstadoRevisionAsesorKey.LOG_ESTADO_ACTUALIZADO, revisionAsesor);
+    }
+
+    @Override
+    public void registrar(RevisionAsesorEntity revision) {
+        revisionAsesorCommandRepository.save(RevisionAsesorJpaMapper.toJpaEntity(revision));
+        logger.debug(RevisionAsesorKey.LOG_GUARDADA, revision.id());
+    }
+
+    @Override
+    public boolean existeAbiertaPorVersionArtefacto(UUID versionArtefacto) {
+        return revisionAsesorCommandRepository.existsByVersionArtefactoAndEstadoNot(
+                versionArtefacto, EstadoRevisionAsesorPersistencia.CERRADA.getCodigo());
+    }
+
+    @Override
+    public Optional<RevisionAsesorEntity> obtenerMasRecienteDeUltimaVersion(UUID artefacto) {
+        return revisionAsesorCommandRepository.buscarMasRecienteDeUltimaVersion(artefacto)
+                .map(RevisionAsesorJpaMapper::toEntity);
+    }
+
+    @Override
+    public boolean existeVersionPosterior(UUID revisionAsesor) {
+        return revisionAsesorCommandRepository.existeVersionPosterior(revisionAsesor);
     }
 }

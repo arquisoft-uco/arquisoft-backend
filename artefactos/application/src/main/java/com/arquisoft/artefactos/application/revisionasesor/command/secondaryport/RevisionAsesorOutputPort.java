@@ -12,4 +12,12 @@ public interface RevisionAsesorOutputPort {
     boolean existeParticipacion(UUID revisionAsesor, UUID estudiante);
 
     void actualizarEstado(UUID revisionAsesor, String estado);
+
+    void registrar(RevisionAsesorEntity revision);
+
+    boolean existeAbiertaPorVersionArtefacto(UUID versionArtefacto);
+
+    Optional<RevisionAsesorEntity> obtenerMasRecienteDeUltimaVersion(UUID artefacto);
+
+    boolean existeVersionPosterior(UUID revisionAsesor);
 }

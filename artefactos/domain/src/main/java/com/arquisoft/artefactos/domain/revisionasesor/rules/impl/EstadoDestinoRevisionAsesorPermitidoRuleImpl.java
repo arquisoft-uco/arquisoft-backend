@@ -9,7 +9,7 @@ public class EstadoDestinoRevisionAsesorPermitidoRuleImpl implements EstadoDesti
 
     @Override
     public void validar(DestinoCambioEstado entrada) {
-        if (entrada.estado() == EstadoRevisionAsesor.CERRADA) {
+        if (entrada.estado() != EstadoRevisionAsesor.RESUELTA) {
             throw new EstadoDestinoRevisionAsesorNoPermitidoException(entrada.revisionAsesor(), entrada.estado());
         }
     }

@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -28,4 +29,7 @@ public class RevisionAsesorJpaEntity {
 
     @Column(name = "estado_revision_asesor_id", nullable = false, length = 60)
     private String estado;
+
+    @Column(name = "fecha_creacion", nullable = false)
+    private Instant fechaCreacion;
 }

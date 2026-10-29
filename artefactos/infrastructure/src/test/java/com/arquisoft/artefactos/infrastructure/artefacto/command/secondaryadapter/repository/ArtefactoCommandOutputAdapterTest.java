@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapt
 
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -183,5 +184,33 @@ class ArtefactoCommandOutputAdapterTest {
         assertThat(entityManager.find(ArtefactoJpaEntity.class, objetivo).getAsesor()).isEqualTo(nuevo);
         assertThat(entityManager.find(ArtefactoJpaEntity.class, hermano).getAsesor()).isEqualTo(anterior);
         verify(logger).debug(ArtefactoKey.LOG_ASESOR_ACTUALIZADO, objetivo);
+    }
+
+    @Test
+    void debeObtenerPorVersionArtefacto_cuandoLaVersionPerteneceAlArtefacto() {
+        // Arrange
+        var asesor = UtilUUID.generarNuevoUUID();
+        var objetivo = sembrar(UtilUUID.generarNuevoUUID(), asesor);
+        var otro = sembrar(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var version = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new VersionArtefactoTestEntity(version, objetivo, 2));
+        entityManager.persist(new VersionArtefactoTestEntity(UtilUUID.generarNuevoUUID(), otro, 1));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorVersionArtefacto(version);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(objetivo);
+            assertThat(entity.asesor()).isEqualTo(asesor);
+        });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaVersionNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerPorVersionArtefacto(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 }

@@ -15,14 +15,19 @@ import com.arquisoft.artefactos.domain.revisionasesor.model.DestinoCambioEstado;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoActualRevisionAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ExistenciaRevisionAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ParticipacionEstudianteArtefacto;
+import com.arquisoft.artefactos.domain.revisionasesor.model.VersionPosteriorRevision;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.EstadoDestinoRevisionAsesorPermitidoRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.EstudianteParticipaArtefactoRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorExisteRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorNoCerradaRule;
+import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorNoPendienteRule;
+import com.arquisoft.artefactos.domain.revisionasesor.rules.VersionPosteriorARevisionExisteRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.EstadoDestinoRevisionAsesorPermitidoRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.EstudianteParticipaArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorExisteRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorNoCerradaRuleImpl;
+import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorNoPendienteRuleImpl;
+import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.VersionPosteriorARevisionExisteRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,7 +38,9 @@ public class CambiarEstadoRevisionAsesorValidatorImpl implements CambiarEstadoRe
     private final AsesorDeRevisionExisteRule asesorDeRevisionExisteRule;
     private final EstudianteParticipaArtefactoRule estudianteParticipaArtefactoRule;
     private final RevisionAsesorNoCerradaRule revisionAsesorNoCerradaRule;
+    private final RevisionAsesorNoPendienteRule revisionAsesorNoPendienteRule;
     private final EstadoDestinoRevisionAsesorPermitidoRule estadoDestinoRevisionAsesorPermitidoRule;
+    private final VersionPosteriorARevisionExisteRule versionPosteriorARevisionExisteRule;
 
     public CambiarEstadoRevisionAsesorValidatorImpl() {
         this.revisionAsesorExisteRule = new RevisionAsesorExisteRuleImpl();
@@ -41,12 +48,14 @@ public class CambiarEstadoRevisionAsesorValidatorImpl implements CambiarEstadoRe
         this.asesorDeRevisionExisteRule = new AsesorDeRevisionExisteRuleImpl();
         this.estudianteParticipaArtefactoRule = new EstudianteParticipaArtefactoRuleImpl();
         this.revisionAsesorNoCerradaRule = new RevisionAsesorNoCerradaRuleImpl();
+        this.revisionAsesorNoPendienteRule = new RevisionAsesorNoPendienteRuleImpl();
         this.estadoDestinoRevisionAsesorPermitidoRule = new EstadoDestinoRevisionAsesorPermitidoRuleImpl();
+        this.versionPosteriorARevisionExisteRule = new VersionPosteriorARevisionExisteRuleImpl();
     }
 
     @Override
     public void validar(CambioEstadoRevisionAsesorDomain cambio, RevisionAsesorDomain revision, AsesorDomain asesor,
-                        EstudianteDomain estudiante, boolean participa) {
+                        EstudianteDomain estudiante, boolean participa, boolean existeVersionPosterior) {
 
         revisionAsesorExisteRule.validar(
                 new ExistenciaRevisionAsesor(cambio.getRevisionAsesor(), !revision.esVacio()));
@@ -59,7 +68,11 @@ public class CambiarEstadoRevisionAsesorValidatorImpl implements CambiarEstadoRe
 
         revisionAsesorNoCerradaRule.validar(
                 new EstadoActualRevisionAsesor(revision.getId(), revision.getEstado()));
+        revisionAsesorNoPendienteRule.validar(
+                new EstadoActualRevisionAsesor(revision.getId(), revision.getEstado()));
         estadoDestinoRevisionAsesorPermitidoRule.validar(
                 new DestinoCambioEstado(cambio.getRevisionAsesor(), cambio.getEstado()));
+        versionPosteriorARevisionExisteRule.validar(
+                new VersionPosteriorRevision(cambio.getRevisionAsesor(), existeVersionPosterior));
     }
 }

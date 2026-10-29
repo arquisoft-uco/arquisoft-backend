@@ -162,7 +162,7 @@ class AsesorCommandOutputAdapterTest {
         entityManager.persist(new ArtefactoTestEntity(artefacto, asesor));
         entityManager.persist(new VersionArtefactoTestEntity(version, artefacto, 1));
         entityManager.persist(RevisionAsesorJpaEntity.builder()
-                .id(revision).versionArtefacto(version).estado("PENDIENTE").build());
+                .id(revision).versionArtefacto(version).estado("PENDIENTE").fechaCreacion(Instant.now()).build());
         entityManager.flush();
         entityManager.clear();
 

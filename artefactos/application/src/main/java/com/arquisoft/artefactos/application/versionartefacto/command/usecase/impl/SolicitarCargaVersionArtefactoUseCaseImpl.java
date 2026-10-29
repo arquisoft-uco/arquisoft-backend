@@ -3,7 +3,9 @@ package com.arquisoft.artefactos.application.versionartefacto.command.usecase.im
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorIdFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.EstudianteArtefactoExisteFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.model.ParticipacionEstudianteArtefacto;
+import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoMaximoArchivoFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.result.CargaVersionArtefactoResult;
 import com.arquisoft.artefactos.application.versionartefacto.command.result.mapper.CargaVersionArtefactoResultMapper;
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.AlmacenamientoVersionOutputPort;
@@ -23,6 +25,8 @@ public class SolicitarCargaVersionArtefactoUseCaseImpl implements SolicitarCarga
     private final ArtefactoPorIdFinder artefactoPorIdFinder;
     private final EstudianteArtefactoExisteFinder estudianteArtefactoExisteFinder;
     private final TamanoMaximoArchivoFinder tamanoMaximoArchivoFinder;
+    private final UltimoNumeroVersionArtefactoFinder ultimoNumeroVersionArtefactoFinder;
+    private final RevisionVigenteUltimaVersionFinder revisionVigenteUltimaVersionFinder;
     private final SolicitarCargaVersionArtefactoValidator solicitarCargaValidator;
     private final AlmacenamientoVersionOutputPort almacenamientoVersionOutputPort;
     private final AppLogger logger;
@@ -35,9 +39,13 @@ public class SolicitarCargaVersionArtefactoUseCaseImpl implements SolicitarCarga
         var estudianteVinculado = estudianteArtefactoExisteFinder.obtener(
                 new ParticipacionEstudianteArtefacto(solicitud.getSolicitante(), solicitud.getArtefacto()));
         var tamanoMaximo = tamanoMaximoArchivoFinder.obtener();
-        logger.debug(VersionArtefactoKey.LOG_VERIFICACION_SOLICITAR_CARGA, !artefacto.esVacio(), estudianteVinculado);
+        var ultimoNumero = ultimoNumeroVersionArtefactoFinder.obtener(solicitud.getArtefacto());
+        var revisionVigente = revisionVigenteUltimaVersionFinder.obtener(solicitud.getArtefacto());
+        logger.debug(VersionArtefactoKey.LOG_VERIFICACION_SOLICITAR_CARGA, !artefacto.esVacio(), estudianteVinculado,
+                ultimoNumero, revisionVigente.getEstado().getId());
 
-        solicitarCargaValidator.validar(solicitud, artefacto, estudianteVinculado, tamanoMaximo);
+        solicitarCargaValidator.validar(
+                solicitud, artefacto, estudianteVinculado, tamanoMaximo, ultimoNumero, revisionVigente);
 
         var formulario = almacenamientoVersionOutputPort.generarFormularioCarga(
                 SolicitudCargaMapper.toEntity(solicitud));
