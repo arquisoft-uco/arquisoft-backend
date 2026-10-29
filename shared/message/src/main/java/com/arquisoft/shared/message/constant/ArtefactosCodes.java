@@ -55,6 +55,7 @@ public final class ArtefactosCodes {
         public static final String NO_ENCONTRADO = "ARTEFACTOS_ARTEFACTO_NO_ENCONTRADO";
         public static final String ESTUDIANTE_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ESTUDIANTE_NO_PROPIETARIO";
         public static final String ASESOR_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ASESOR_NO_PROPIETARIO";
+        public static final String CERRADO = "ARTEFACTOS_ARTEFACTO_CERRADO";
     }
 
     public static final class ProyectoGrado {
@@ -129,6 +130,13 @@ public final class ArtefactosCodes {
         public static final String ESTADO_DESTINO_NO_PERMITIDO = "REVISION_ASESOR_ESTADO_DESTINO_NO_PERMITIDO";
         public static final String ESTUDIANTE_NO_PARTICIPA_ARTEFACTO =
                 "REVISION_ASESOR_ESTUDIANTE_NO_PARTICIPA_ARTEFACTO";
+        public static final String VERSION_ARTEFACTO_REQUERIDA = "REVISION_ASESOR_VERSION_ARTEFACTO_REQUERIDA";
+        public static final String ABIERTA_EXISTENTE = "REVISION_ASESOR_ABIERTA_EXISTENTE";
+        public static final String VERSION_ANTERIOR_SIN_REVISION = "REVISION_ASESOR_VERSION_ANTERIOR_SIN_REVISION";
+        public static final String VERSION_ANTERIOR_NO_EN_PROGRESO =
+                "REVISION_ASESOR_VERSION_ANTERIOR_NO_EN_PROGRESO";
+        public static final String PENDIENTE = "REVISION_ASESOR_PENDIENTE";
+        public static final String SIN_VERSION_POSTERIOR = "REVISION_ASESOR_SIN_VERSION_POSTERIOR";
     }
 
     public static final class VersionArtefacto {
@@ -158,6 +166,8 @@ public final class ArtefactosCodes {
         public static final String CARGA_MODIFICADA = "VERSION_ARTEFACTO_CARGA_MODIFICADA";
         public static final String TAMANO_ARCHIVO_EXCEDIDO = "VERSION_ARTEFACTO_TAMANO_ARCHIVO_EXCEDIDO";
         public static final String TIPO_ARCHIVO_NO_COINCIDE = "VERSION_ARTEFACTO_TIPO_ARCHIVO_NO_COINCIDE";
+        public static final String NO_ENCONTRADA = "VERSION_ARTEFACTO_NO_ENCONTRADA";
+        public static final String NO_ES_ULTIMA = "VERSION_ARTEFACTO_NO_ES_ULTIMA";
     }
 
     public static final class EstudianteArtefacto {

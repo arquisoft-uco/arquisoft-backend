@@ -29,6 +29,7 @@ public final class ArtefactosFields {
         public static final String ASESOR = "asesor";
         public static final String ID = "revisionAsesor";
         public static final String ESTADO = "estado";
+        public static final String VERSION_ARTEFACTO = "versionArtefacto";
     }
 
     public static final class VersionArtefacto {

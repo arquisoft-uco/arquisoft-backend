@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -26,5 +27,15 @@ public class VersionArtefactoCommandOutputAdapter implements VersionArtefactoOut
     @Override
     public int ultimoNumeroPorArtefacto(UUID artefacto) {
         return versionArtefactoCommandRepository.obtenerUltimoNumero(artefacto);
+    }
+
+    @Override
+    public Optional<VersionArtefactoEntity> obtenerPorId(UUID id) {
+        return versionArtefactoCommandRepository.findById(id).map(VersionArtefactoJpaMapper::toEntity);
+    }
+
+    @Override
+    public boolean esUltimaDeSuArtefacto(UUID versionArtefacto) {
+        return versionArtefactoCommandRepository.esUltimaDeSuArtefacto(versionArtefacto);
     }
 }

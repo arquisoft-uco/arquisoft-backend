@@ -23,14 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("${rutas.artefactos.revisiones-asesor.base:/revisiones-asesor}")
+@RequestMapping("${rutas.artefactos.artefactos.base:/artefactos}")
 @RequiredArgsConstructor
 @Tag(name = ArtefactosApiMessages.RevisionAsesor.TAG_NAME, description = ArtefactosApiMessages.RevisionAsesor.TAG_DESCRIPTION)
 public class CambiarEstadoRevisionAsesorController {
 
     private final CambiarEstadoRevisionAsesorInteractor cambiarEstadoRevisionAsesorInteractor;
 
-    @PatchMapping("${rutas.artefactos.revisiones-asesor.estado:/{revisionAsesorId}/estado}")
+    @PatchMapping("${rutas.artefactos.artefactos.estado-revision:/revisiones/{revisionAsesorId}/estado}")
     @Operation(
             summary = ArtefactosApiMessages.RevisionAsesor.CAMBIAR_ESTADO_SUMMARY,
             description = ArtefactosApiMessages.RevisionAsesor.CAMBIAR_ESTADO_DESCRIPTION,

@@ -108,8 +108,9 @@ skill citada; lo que aquí importa es reconocer cuándo el plan te empuja contra
   `Command`* y *Una operación sin entrada*).
 - Un use case encadenado que llama a un hermano en vez de colgar del orquestador
   (`arquisoft-arquitectura` → *Quién orquesta a quién*).
-- Un `Validator` con dependencias o con `if`, una `Rule` como bean, un `Validator` sin `Rule`s, o
-  una consulta de idempotencia convertida en `Rule` (`arquisoft-estandares` → *Validator, Rule,
+- Un `Validator` con dependencias, con `if` o con más de un método público (ni siquiera por el tope
+  de parámetros), una `Rule` como bean, un `Validator` sin `Rule`s, o una consulta de idempotencia
+  convertida en `Rule` (`arquisoft-estandares` → *Validator, Rule,
   Finder*).
 - **Un `Finder` consultado después de `validar(...)`**, o cuyo resultado lee la escritura o el
   evento sin una `Rule` que rechace su `VACIO` (`arquisoft-estandares` → *Validator, Rule, Finder*).

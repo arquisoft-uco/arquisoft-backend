@@ -24,6 +24,32 @@ public interface RevisionAsesorCommandRepository extends JpaRepository<RevisionA
     @Query("UPDATE RevisionAsesorJpaEntity r SET r.estado = :estado WHERE r.id = :revisionAsesor")
     int actualizarEstado(@Param("revisionAsesor") UUID revisionAsesor, @Param("estado") String estado);
 
+    boolean existsByVersionArtefactoAndEstadoNot(UUID versionArtefacto, String estado);
+
+    @NativeQuery("""
+            SELECT ra.*
+            FROM revision_asesor ra
+            JOIN version_artefacto va ON va.id = ra.version_artefacto_id
+            WHERE va.artefacto_id = :artefacto
+              AND va.version_artefacto = (
+                  SELECT MAX(v.version_artefacto) FROM version_artefacto v WHERE v.artefacto_id = :artefacto)
+            ORDER BY ra.fecha_creacion DESC
+            LIMIT 1
+            """)
+    Optional<RevisionAsesorJpaEntity> buscarMasRecienteDeUltimaVersion(@Param("artefacto") UUID artefacto);
+
+    @NativeQuery("""
+            SELECT EXISTS (
+                SELECT 1
+                FROM revision_asesor ra
+                JOIN version_artefacto va ON va.id = ra.version_artefacto_id
+                JOIN version_artefacto posterior ON posterior.artefacto_id = va.artefacto_id
+                    AND posterior.version_artefacto > va.version_artefacto
+                WHERE ra.id = :revisionAsesor
+            )
+            """)
+    boolean existeVersionPosterior(@Param("revisionAsesor") UUID revisionAsesor);
+
     @NativeQuery("""
             SELECT EXISTS (
                 SELECT 1

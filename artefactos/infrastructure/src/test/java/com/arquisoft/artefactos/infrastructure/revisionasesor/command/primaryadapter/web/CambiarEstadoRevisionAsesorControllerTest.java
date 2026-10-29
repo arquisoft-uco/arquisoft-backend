@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         TrazabilidadConfig.class, CambiarEstadoRevisionAsesorControllerTest.TestSecurityConfig.class})
 class CambiarEstadoRevisionAsesorControllerTest {
 
-    private static final String RUTA = "/revisiones-asesor/{revisionAsesorId}/estado";
+    private static final String RUTA = "/artefactos/revisiones/{revisionAsesorId}/estado";
 
     @TestConfiguration
     @EnableWebSecurity

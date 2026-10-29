@@ -249,7 +249,7 @@ Fuente: `arquisoft-arquitectura` → *Rutas en placeholders y autorización fuer
 | Client role reutilizado de otro endpoint sin la justificación de flujo partido | ⚠️ |
 | `verificarNeutralidadProveedorIdentidad` en rojo, o vocabulario de proveedor (Keycloak, PEP, `realm_access`, `resource_access`) fuera de `seguridad:infrastructure` y de los adaptadores de `usuarios` | ❌ |
 | Ruta literal en vez de placeholder (`"${rutas.{contexto}.{recurso}.base:/{recurso}}"`), o clase `{Contexto}Routes` | ❌ |
-| Base de la ruta con el nombre del contexto delante del recurso (`/{contexto}/{recurso}`) en vez del recurso solo, aunque el plan la pida así | ❌ |
+| Controlador nuevo cuya base no es la del contexto en la tabla de `arquisoft-arquitectura` (una raíz propia por recurso, o un contexto sin fila), aunque el plan la pida así | ❌ |
 
 ### Nivel 2.8 — Paginación y filtros (si la HU de lectura lo requiere)
 

@@ -15,4 +15,13 @@ public final class VersionArtefactoMapper {
                 version.getFechaCreacion(),
                 version.getUriArchivo());
     }
+
+    public static VersionArtefactoDomain toDomain(VersionArtefactoEntity entity) {
+        return VersionArtefactoDomain.reconstruir(
+                entity.id(),
+                entity.artefacto(),
+                entity.numeroVersion(),
+                entity.fechaCreacion(),
+                entity.uriArchivo());
+    }
 }

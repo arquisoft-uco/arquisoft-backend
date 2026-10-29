@@ -8,5 +8,5 @@ import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 public interface CambiarEstadoRevisionAsesorValidator {
 
     void validar(CambioEstadoRevisionAsesorDomain cambio, RevisionAsesorDomain revision, AsesorDomain asesor,
-                 EstudianteDomain estudiante, boolean participa);
+                 EstudianteDomain estudiante, boolean participa, boolean existeVersionPosterior);
 }

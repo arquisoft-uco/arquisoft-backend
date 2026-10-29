@@ -47,6 +47,33 @@ class VersionArtefactoDomainTest {
     }
 
     @Test
+    void debeReconstruir_conTodosLosCampos() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var fecha = Instant.parse("2026-10-28T10:00:00Z");
+
+        // Act
+        var version = VersionArtefactoDomain.reconstruir(id, artefacto, 3, fecha, "versiones/uri");
+
+        // Assert
+        assertThat(version.getId()).isEqualTo(id);
+        assertThat(version.getArtefacto()).isEqualTo(artefacto);
+        assertThat(version.getNumeroVersion()).isEqualTo(3);
+        assertThat(version.getFechaCreacion()).isEqualTo(fecha);
+        assertThat(version.getUriArchivo()).isEqualTo("versiones/uri");
+        assertThat(version.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeSerVacio_cuandoEsCentinela() {
+        // Act & Assert
+        assertThat(VersionArtefactoDomain.VACIO.esVacio()).isTrue();
+        assertThat(UtilUUID.esPorDefecto(VersionArtefactoDomain.VACIO.getId())).isTrue();
+        assertThat(VersionArtefactoDomain.VACIO.getNumeroVersion()).isZero();
+    }
+
+    @Test
     void debeAcumularErrores_cuandoUltimoNumeroNegativo() {
         // Arrange
         var generacion = GeneracionVersionArtefactoDomain.crear(

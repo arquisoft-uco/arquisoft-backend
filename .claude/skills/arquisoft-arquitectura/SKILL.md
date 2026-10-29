@@ -435,12 +435,25 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
 
 - `@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")` — placeholder con default; **no
   existe `{Contexto}Routes`**. Nunca el prefijo `/api`: ya es el `context-path`.
-- La base del `@RequestMapping` es **el recurso, en un solo segmento kebab-case, sin el nombre del
-  contexto delante**: `/fichas-perfil`, `/proyectos-grado`, `/solicitudes`, `/usuarios`. El contexto
-  es una frontera del código, no del contrato HTTP. Anteponerlo alarga cada ruta y, cuando el recurso
-  se llama como el contexto, repite el nombre (`/repositorio-artefactos/repositorios-artefactos`).
-  Lo anidado (`/{id}/estudiantes`, `/coordinador`) cuelga de esa base. `evaluaciones`
-  (`/evaluaciones/{recurso}`) no sigue esta forma: no la tomes como molde de rutas.
+- La base del `@RequestMapping` es **la base del contexto**, el primer segmento después de `/api`, y
+  todo endpoint del contexto cuelga de ella: `/fichas-perfil/items/{itemId}/revisiones`,
+  `/fichas-perfil/observaciones-evaluacion/{observacionEvaluacionId}` (`rutas-fichas.yml`). El path
+  dice a qué contexto pertenece el recurso, dos contextos no compiten por la misma raíz y la tabla de
+  equivalencias se lee por contexto. Lo que sería otra raíz pasa a ser un segmento bajo la base:
+  `/artefactos/versiones/{versionArtefactoId}/revisiones`, `/artefactos/revisiones/{revisionAsesorId}/estado`.
+
+  | Contexto | Base | | Contexto | Base |
+  |---|---|---|---|---|
+  | `seguridad` | `/auth` | | `artefactos` | `/artefactos` |
+  | `usuarios` | `/usuarios` | | `repositorio_artefactos` | `/repositorio-artefactos` |
+  | `fichas` | `/fichas-perfil` | | `entregables` | `/entregables` |
+  | `proyectos` | `/proyectos-grado` | | `evaluaciones` | `/evaluaciones` |
+  | `solicitudes` | `/solicitudes` | | `mapas_ruta` | `/mapas-ruta` |
+  | `biblioteca` | `/biblioteca` | | | |
+
+  Un contexto que expone su primer endpoint agrega antes su fila aquí. Las raíces que todavía no
+  cumplen están en `CLAUDE.md` → *Desviaciones conocidas*: no son molde, y un controlador nuevo usa la
+  base del contexto aunque sus hermanos no la usen.
 - **La autorización no vive en el controlador.** Ni `@PreAuthorize`, ni `hasAuthority`, ni roles: la
   decide `AutorizacionAccesoFilter` (`seguridad:infrastructure`) preguntando a `DecisionAccesoOutputPort`
   por `método + plantilla de ruta` (con `/api`). El adaptador del emisor (`pep`, `role-table` o `none`)

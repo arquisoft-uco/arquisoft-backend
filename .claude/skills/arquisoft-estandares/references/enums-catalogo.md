@@ -47,7 +47,7 @@ sigue lo que ya use su contexto.
 ### Cuando infrastructure necesita nombrar un enum de dominio
 
 No puede importarlo: se espeja con un enum propio de infraestructura que carga el código como texto,
-y el `Command.crear(...)` lo resuelve contra el del dominio (`RolUsuarioDTO`, `TipoNotificacionEvento`).
+y el `Command.crear(...)` lo resuelve contra el del dominio (`TipoNotificacionEvento`).
 Un enum espejo en vez de constantes sueltas da un único sitio y **una** prueba de deriva en las dos
 direcciones.
 
