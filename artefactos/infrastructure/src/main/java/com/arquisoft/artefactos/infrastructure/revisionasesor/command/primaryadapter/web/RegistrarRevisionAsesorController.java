@@ -26,14 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("${rutas.artefactos.versiones-artefacto.base:/versiones-artefacto}")
+@RequestMapping("${rutas.artefactos.artefactos.base:/artefactos}")
 @RequiredArgsConstructor
 @Tag(name = ArtefactosApiMessages.RevisionAsesor.TAG_NAME, description = ArtefactosApiMessages.RevisionAsesor.TAG_DESCRIPTION)
 public class RegistrarRevisionAsesorController {
 
     private final RegistrarRevisionAsesorInteractor registrarRevisionAsesorInteractor;
 
-    @PostMapping("${rutas.artefactos.versiones-artefacto.revisiones:/{versionArtefactoId}/revisiones}")
+    @PostMapping("${rutas.artefactos.artefactos.revisiones-version:/versiones/{versionArtefactoId}/revisiones}")
     @Operation(
             summary = ArtefactosApiMessages.RevisionAsesor.REGISTRAR_SUMMARY,
             description = ArtefactosApiMessages.RevisionAsesor.REGISTRAR_DESCRIPTION,
