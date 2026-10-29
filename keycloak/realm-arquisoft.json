@@ -313,6 +313,7 @@
               "fichas:observacion-evaluacion-estudiante:view",
               "artefactos:revision-asesor-estudiante:view",
               "artefactos:observacion-revision-estudiante:view",
+              "artefactos:version-artefacto-estudiante:view",
               "artefactos:revision-asesor-estado:update",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
@@ -2361,6 +2362,15 @@
         {
           "id": "7fcf85d3-9f30-48ed-9248-ef3a3e2b6854",
           "name": "artefactos:version-artefacto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b4a7c1e9-5d28-4f36-9a0b-2e8d6c3f7a15",
+          "name": "artefactos:version-artefacto-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,

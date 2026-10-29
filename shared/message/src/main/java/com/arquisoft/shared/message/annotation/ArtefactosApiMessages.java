@@ -88,6 +88,19 @@ public final class ArtefactosApiMessages {
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 =
                 "Sin permiso para consultar las versiones de los artefactos";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
+                "Consultar las versiones de los artefactos en los que participa el estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Devuelve, de forma paginada, las versiones de los artefactos en los que participa el estudiante "
+                        + "autenticado. Se puede filtrar por el artefacto (artefacto), la versión (version) y la "
+                        + "fecha de creación (fechaCreacion), y ordenar por version y fechaCreacion; por defecto, "
+                        + "la más reciente primero. El estudiante se toma del token, nunca del cuerpo.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Página de versiones de los artefactos del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
+                "Filtro, operador, valor u ordenamiento inválido, o identificador de estudiante inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
+                "Sin permiso para consultar las versiones de los artefactos del estudiante";
         public static final String SOLICITAR_CARGA_SUMMARY = "Solicitar la carga de una versión del artefacto";
         public static final String SOLICITAR_CARGA_DESCRIPTION =
                 "Entrega un formulario firmado para subir el archivo de la nueva versión directamente al "

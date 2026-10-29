@@ -144,6 +144,7 @@ public final class ArtefactosCodes {
         private VersionArtefacto() {}
 
         public static final String ASESOR_REQUERIDO = "VERSION_ARTEFACTO_ASESOR_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO = "VERSION_ARTEFACTO_ESTUDIANTE_REQUERIDO";
         public static final String ARTEFACTO_REQUERIDO = "VERSION_ARTEFACTO_ARTEFACTO_REQUERIDO";
         public static final String SOLICITANTE_REQUERIDO = "VERSION_ARTEFACTO_SOLICITANTE_REQUERIDO";
         public static final String CARGA_REQUERIDA = "VERSION_ARTEFACTO_CARGA_REQUERIDA";

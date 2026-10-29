@@ -187,6 +187,7 @@ security:
         - {method: POST, path: "/api/artefactos", role: "artefactos:artefacto:create"}
         - {method: POST, path: "/api/artefactos/asesor", role: "artefactos:artefacto-asesor:view"}
         - {method: POST, path: "/api/versiones-artefacto/asesor", role: "artefactos:version-artefacto-asesor:view"}
+        - {method: POST, path: "/api/artefactos/versiones/estudiante", role: "artefactos:version-artefacto-estudiante:view"}
         - {method: POST, path: "/api/artefactos/{artefactoId}/versiones/cargas", role: "artefactos:version-artefacto:upload"}
         - {method: POST, path: "/api/artefactos/{artefactoId}/versiones", role: "artefactos:version-artefacto:upload"}
         - {method: PATCH, path: "/api/artefactos/{artefactoId}/asesor", role: "artefactos:artefacto:update-asesor"}

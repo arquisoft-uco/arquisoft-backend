@@ -1,10 +1,14 @@
 package com.arquisoft.artefactos.infrastructure.versionartefacto.query.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.application.versionartefacto.query.criteria.VersionArtefactoAsesorCriteria;
+import com.arquisoft.artefactos.application.versionartefacto.query.criteria.VersionArtefactoEstudianteCriteria;
 import com.arquisoft.artefactos.application.versionartefacto.query.primaryport.mapper.ConsultarVersionesArtefactoAsesorMapper;
+import com.arquisoft.artefactos.application.versionartefacto.query.primaryport.mapper.ConsultarVersionesArtefactoEstudianteMapper;
 import com.arquisoft.artefactos.application.versionartefacto.query.primaryport.model.ConsultarVersionesArtefactoAsesorQuery;
+import com.arquisoft.artefactos.application.versionartefacto.query.primaryport.model.ConsultarVersionesArtefactoEstudianteQuery;
 import com.arquisoft.artefactos.application.versionartefacto.query.readmodel.VersionArtefactoReadModel;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.ArtefactoTestEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstudianteArtefactoTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.FiltroOperador;
@@ -33,10 +37,15 @@ class VersionArtefactoQueryOutputAdapterTest {
     @Autowired
     private VersionArtefactoAsesorQueryRepository repository;
 
+    @Autowired
+    private VersionArtefactoEstudianteQueryRepository estudianteRepository;
+
     private VersionArtefactoQueryOutputAdapter adapter;
 
     private final UUID asesorA = UtilUUID.generarNuevoUUID();
     private final UUID asesorB = UtilUUID.generarNuevoUUID();
+    private final UUID estudianteX = UtilUUID.generarNuevoUUID();
+    private final UUID estudianteY = UtilUUID.generarNuevoUUID();
 
     private UUID artefactoA1;
     private UUID artefactoA2;
@@ -48,7 +57,9 @@ class VersionArtefactoQueryOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new VersionArtefactoQueryOutputAdapter(repository, new VersionArtefactoAsesorJpaSpecification());
+        adapter = new VersionArtefactoQueryOutputAdapter(
+                repository, new VersionArtefactoAsesorJpaSpecification(),
+                estudianteRepository, new VersionArtefactoEstudianteJpaSpecification());
     }
 
     private UUID sembrarVersion(UUID artefacto, int numero, String fecha) {
@@ -205,6 +216,112 @@ class VersionArtefactoQueryOutputAdapterTest {
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
         var version = resultado.getContent().get(0);
+        assertThat(version.id()).isEqualTo(versionA1v2);
+        assertThat(version.artefacto()).isEqualTo(artefactoA1);
+        assertThat(version.version()).isEqualTo(2);
+        assertThat(version.fechaCreacion()).isEqualTo(Instant.parse("2026-10-20T10:00:00Z"));
+        assertThat(version.uriArchivo()).isEqualTo("artefactos/" + versionA1v2 + ".pdf");
+    }
+
+    private void sembrarEscenarioEstudiante() {
+        sembrarEscenario();
+        entityManager.persist(new EstudianteArtefactoTestEntity(UtilUUID.generarNuevoUUID(), artefactoA1, estudianteX));
+        entityManager.persist(new EstudianteArtefactoTestEntity(UtilUUID.generarNuevoUUID(), artefactoA2, estudianteX));
+        entityManager.persist(new EstudianteArtefactoTestEntity(UtilUUID.generarNuevoUUID(), artefactoA1, estudianteY));
+        entityManager.persist(new EstudianteArtefactoTestEntity(UtilUUID.generarNuevoUUID(), artefactoB, estudianteY));
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    private VersionArtefactoEstudianteCriteria criteriaEstudiante(
+            UUID estudiante, NodoFiltro raiz, List<SortOrder> orden, int pagina, int tamanio) {
+        var criterio = ConsultaCriteriaQuery.crear(pagina, tamanio, orden, raiz);
+        return ConsultarVersionesArtefactoEstudianteMapper.toCriteria(
+                ConsultarVersionesArtefactoEstudianteQuery.crear(estudiante, criterio));
+    }
+
+    private VersionArtefactoEstudianteCriteria criteriaEstudiante(UUID estudiante, NodoFiltro raiz) {
+        return criteriaEstudiante(estudiante, raiz, List.of(), 0, 10);
+    }
+
+    @Test
+    void debeRetornarSoloVersionesDeArtefactosDelEstudiante_sinDuplicarPorOtrosParticipantes() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+
+        // Act
+        var deX = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteX, null));
+        var deY = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteY, null));
+
+        // Assert
+        assertThat(deX.getTotalElements()).isEqualTo(3L);
+        assertThat(ids(deX.getContent())).containsExactly(versionA1v2, versionA2v1, versionA1v1);
+        assertThat(ids(deY.getContent())).containsExactly(versionB, versionA1v2, versionA1v1);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoEstudianteSinArtefactos() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+
+        // Act
+        var resultado = adapter.consultarTodasEstudiante(criteriaEstudiante(UtilUUID.generarNuevoUUID(), null));
+
+        // Assert
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isZero();
+    }
+
+    @Test
+    void debeFiltrarPorArtefacto_yExcluirArtefactosAjenos_yNoPermitirSustituirAlEstudiante() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+        var propio = NodoFiltro.predicado("artefacto", FiltroOperador.ES, artefactoA2.toString());
+        var ajeno = NodoFiltro.predicado("artefacto", FiltroOperador.ES, artefactoB.toString());
+        var otroEstudiante = NodoFiltro.predicado("estudianteId", FiltroOperador.ES, estudianteY.toString());
+
+        // Act
+        var conPropio = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteX, propio));
+        var conAjeno = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteX, ajeno));
+        var sustituido = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteX, otroEstudiante));
+
+        // Assert
+        assertThat(ids(conPropio.getContent())).containsExactly(versionA2v1);
+        assertThat(conAjeno.getContent()).isEmpty();
+        assertThat(sustituido.getContent()).isEmpty();
+    }
+
+    @Test
+    void debeFiltrarPorVersion_yOrdenarPorVersionDescendente() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+        var porVersion = NodoFiltro.predicado("version", FiltroOperador.ES, "2");
+        var orden = List.of(SortOrder.of("version", SortDirection.DESC));
+
+        // Act
+        var filtrado = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteX, porVersion));
+        var ordenado = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteX, null, orden, 0, 10));
+
+        // Assert
+        assertThat(ids(filtrado.getContent())).containsExactly(versionA1v2);
+        assertThat(ordenado.getContent()).extracting(VersionArtefactoReadModel::version)
+                .containsExactly(2, 1, 1);
+    }
+
+    @Test
+    void debePaginarYProyectarTodosLosCampos_cuandoHayMasVersionesQueElTamanioDePagina() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+
+        // Act
+        var primera = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteX, null, List.of(), 0, 2));
+        var segunda = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteX, null, List.of(), 1, 2));
+
+        // Assert
+        assertThat(primera.getContent()).hasSize(2);
+        assertThat(segunda.getContent()).hasSize(1);
+        assertThat(segunda.getTotalElements()).isEqualTo(3L);
+        var version = primera.getContent().get(0);
         assertThat(version.id()).isEqualTo(versionA1v2);
         assertThat(version.artefacto()).isEqualTo(artefactoA1);
         assertThat(version.version()).isEqualTo(2);

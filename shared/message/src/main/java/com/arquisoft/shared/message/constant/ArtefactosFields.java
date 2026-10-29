@@ -37,6 +37,7 @@ public final class ArtefactosFields {
         private VersionArtefacto() {}
 
         public static final String ASESOR = "asesor";
+        public static final String ESTUDIANTE = "estudiante";
         public static final String ARTEFACTO = "artefacto";
         public static final String SOLICITANTE = "solicitante";
         public static final String CARGA = "carga";

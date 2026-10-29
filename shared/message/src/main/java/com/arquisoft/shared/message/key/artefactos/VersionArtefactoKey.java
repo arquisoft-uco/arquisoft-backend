@@ -30,6 +30,9 @@ public enum VersionArtefactoKey implements ClaveMensaje {
     LOG_GENERADA("artefactos.aplicacion.versionartefacto.log.generada", 3),
     LOG_CONSULTANDO_ASESOR("artefactos.aplicacion.versionartefacto.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("artefactos.aplicacion.versionartefacto.log.consulta-asesor-completada", 1),
+    LOG_CONSULTANDO_ESTUDIANTE("artefactos.aplicacion.versionartefacto.log.consultando-estudiante", 4),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA(
+            "artefactos.aplicacion.versionartefacto.log.consulta-estudiante-completada", 1),
     LOG_GUARDADA("artefactos.infraestructura.versionartefacto.log.guardada", 1),
     LOG_CARGA_COPIADA("artefactos.infraestructura.versionartefacto.log.carga-copiada", 2),
     LOG_CARGA_ELIMINADA("artefactos.infraestructura.versionartefacto.log.carga-eliminada", 1);
