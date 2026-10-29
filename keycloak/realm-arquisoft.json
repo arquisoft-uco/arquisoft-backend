@@ -213,6 +213,7 @@
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
+              "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view",
               "usuarios:administrador:delete",
               "usuarios:asesor:delete",
               "solicitudes:estado-respuesta:view",
@@ -283,6 +284,7 @@
               "mapas-ruta:tarea:update",
               "mapas-ruta:tarea:delete",
               "mapas-ruta:plan-estimado:create",
+              "mapas-ruta:plan-estimado:update",
               "mapas-ruta:plan-estimado-tarea-estudiante:view",
               "mapas-ruta:tarea-mapa-ruta-estudiante:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
@@ -313,7 +315,10 @@
               "proyectos:proyecto-grado-estudiante:view",
               "fichas:observacion-evaluacion-estudiante:view",
               "artefactos:revision-asesor-estudiante:view",
+              "artefactos:artefacto-estudiante:view",
               "artefactos:observacion-revision-estudiante:view",
+              "artefactos:version-artefacto-estudiante:view",
+              "artefactos:artefacto-participacion-estudiante:view",
               "artefactos:revision-asesor-estado:update",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
@@ -938,6 +943,15 @@
           "attributes": {}
         },
         {
+          "id": "fa803155-7535-462e-8184-db73ffbe2045",
+          "name": "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "90b399f9-a0f7-43d1-9be4-5dc3238ddfb0",
           "name": "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
           "description": "",
@@ -1408,6 +1422,15 @@
         {
           "id": "f45af131-0885-4d5e-94bb-d53666e8c13c",
           "name": "fichas:ficha-perfil-coordinador:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7e2f4b81-3a6c-4d95-b0e7-5c1a9d3f8e26",
+          "name": "artefactos:artefacto-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2351,6 +2374,15 @@
           "attributes": {}
         },
         {
+          "id": "b7c4e1a2-5d3f-4a68-9e0b-2f1d8c6a4e73",
+          "name": "artefactos:artefacto-participacion-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "65fbc180-d917-4e23-8812-09066e3caa26",
           "name": "artefactos:revision-asesor-estado:update",
           "description": "",
@@ -2371,6 +2403,15 @@
         {
           "id": "7fcf85d3-9f30-48ed-9248-ef3a3e2b6854",
           "name": "artefactos:version-artefacto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b4a7c1e9-5d28-4f36-9a0b-2e8d6c3f7a15",
+          "name": "artefactos:version-artefacto-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2443,6 +2484,15 @@
         {
           "id": "a70f38c6-84f1-44f6-a8f0-277ad3bad60b",
           "name": "mapas-ruta:plan-estimado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7e3a9d52-1c6b-4f08-a2d4-b95e0c18f6a7",
+          "name": "mapas-ruta:plan-estimado:update",
           "description": "",
           "composite": false,
           "clientRole": true,

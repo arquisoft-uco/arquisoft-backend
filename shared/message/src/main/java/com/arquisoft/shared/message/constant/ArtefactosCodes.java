@@ -49,6 +49,7 @@ public final class ArtefactosCodes {
         public static final String ID_REQUERIDO = "ARTEFACTOS_ARTEFACTO_ID_REQUERIDO";
         public static final String PROYECTO_GRADO_REQUERIDO = "ARTEFACTOS_ARTEFACTO_PROYECTO_GRADO_REQUERIDO";
         public static final String ASESOR_REQUERIDO = "ARTEFACTOS_ARTEFACTO_ASESOR_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO = "ARTEFACTOS_ARTEFACTO_ESTUDIANTE_REQUERIDO";
         public static final String VERSION_REPOSITORIO_ARTEFACTO_REQUERIDA =
                 "ARTEFACTOS_ARTEFACTO_VERSION_REPOSITORIO_ARTEFACTO_REQUERIDA";
         public static final String REPOSITORIO_YA_ASIGNADO = "ARTEFACTOS_ARTEFACTO_REPOSITORIO_YA_ASIGNADO";
@@ -144,6 +145,7 @@ public final class ArtefactosCodes {
         private VersionArtefacto() {}
 
         public static final String ASESOR_REQUERIDO = "VERSION_ARTEFACTO_ASESOR_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO = "VERSION_ARTEFACTO_ESTUDIANTE_REQUERIDO";
         public static final String ARTEFACTO_REQUERIDO = "VERSION_ARTEFACTO_ARTEFACTO_REQUERIDO";
         public static final String SOLICITANTE_REQUERIDO = "VERSION_ARTEFACTO_SOLICITANTE_REQUERIDO";
         public static final String CARGA_REQUERIDA = "VERSION_ARTEFACTO_CARGA_REQUERIDA";
