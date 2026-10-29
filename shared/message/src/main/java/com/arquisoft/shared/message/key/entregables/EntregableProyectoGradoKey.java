@@ -6,6 +6,9 @@ public enum EntregableProyectoGradoKey implements ClaveMensaje {
 
     ERROR_NO_ENCONTRADO("entregables.dominio.entregableproyectogrado.error.no-encontrado", 0),
     ERROR_NO_ENCONTRADO_DETALLE("entregables.dominio.entregableproyectogrado.error.no-encontrado-detalle", 1),
+    ERROR_ASESOR_NO_PROPIETARIO("entregables.dominio.entregableproyectogrado.error.asesor-no-propietario", 0),
+    ERROR_ASESOR_NO_PROPIETARIO_DETALLE(
+            "entregables.dominio.entregableproyectogrado.error.asesor-no-propietario-detalle", 2),
     ERROR_ESTADO_INVALIDO("entregables.dominio.entregableproyectogrado.error.estado-invalido", 0),
     ERROR_ESTADO_DESTINO_NO_PERMITIDO(
             "entregables.dominio.entregableproyectogrado.error.estado-destino-no-permitido", 1),

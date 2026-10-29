@@ -3,6 +3,9 @@ package com.arquisoft.entregables.application.artefactoentregable.query.usecase.
 import com.arquisoft.entregables.application.artefactoentregable.query.criteria.ArtefactoEntregableCriteria;
 import com.arquisoft.entregables.application.artefactoentregable.query.readmodel.ArtefactoEntregableReadModel;
 import com.arquisoft.entregables.application.artefactoentregable.query.secondaryport.ArtefactoEntregableQueryOutputPort;
+import com.arquisoft.entregables.application.artefactoentregable.query.validator.ConsultarArtefactosEntregableValidator;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.AsesorDeEntregableProyectoGradoQueryFinder;
+import com.arquisoft.entregables.domain.entregableproyectogrado.exception.AsesorNoPropietarioEntregableProyectoGradoException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ArtefactoEntregableKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -16,7 +19,13 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +35,12 @@ class ConsultarArtefactosEntregableUseCaseImplTest {
 
     @Mock
     private ArtefactoEntregableQueryOutputPort outputPort;
+
+    @Mock
+    private AsesorDeEntregableProyectoGradoQueryFinder finder;
+
+    @Mock
+    private ConsultarArtefactosEntregableValidator validator;
 
     @Mock
     private AppLogger logger;
@@ -40,18 +55,23 @@ class ConsultarArtefactosEntregableUseCaseImplTest {
     }
 
     @Test
-    void debeRetornarLoQueDevuelveElPuerto() {
+    void debeRetornarLoQueDevuelveElPuerto_enOrdenFinderValidatorPuerto() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var artefactos = List.of(artefacto(entregable), artefacto(entregable), artefacto(entregable));
+        when(finder.obtener(entregable)).thenReturn(asesor);
         when(outputPort.consultarPorEntregable(entregable)).thenReturn(artefactos);
 
         // Act
-        var resultado = useCase.ejecutar(new ArtefactoEntregableCriteria(entregable));
+        var resultado = useCase.ejecutar(new ArtefactoEntregableCriteria(entregable, asesor));
 
         // Assert
         assertThat(resultado).isSameAs(artefactos);
-        verify(outputPort, times(1)).consultarPorEntregable(entregable);
+        var orden = inOrder(finder, validator, outputPort);
+        orden.verify(finder, times(1)).obtener(entregable);
+        orden.verify(validator).validar(entregable, asesor, asesor);
+        orden.verify(outputPort, times(1)).consultarPorEntregable(entregable);
         verify(logger).debug(eq(ArtefactoEntregableKey.LOG_CONSULTANDO), eq(entregable));
         verify(logger).debug(eq(ArtefactoEntregableKey.LOG_CONSULTA_COMPLETADA), eq(entregable), eq(3));
     }
@@ -60,13 +80,32 @@ class ConsultarArtefactosEntregableUseCaseImplTest {
     void debeRetornarListaVacia_cuandoElPuertoNoDevuelveNada() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        when(finder.obtener(entregable)).thenReturn(asesor);
         when(outputPort.consultarPorEntregable(entregable)).thenReturn(List.of());
 
         // Act
-        var resultado = useCase.ejecutar(new ArtefactoEntregableCriteria(entregable));
+        var resultado = useCase.ejecutar(new ArtefactoEntregableCriteria(entregable, asesor));
 
         // Assert
         assertThat(resultado).isEmpty();
         verify(logger).debug(eq(ArtefactoEntregableKey.LOG_CONSULTA_COMPLETADA), eq(entregable), eq(0));
+    }
+
+    @Test
+    void debeNoLeerArtefactos_cuandoElValidatorRechaza() {
+        // Arrange
+        var entregable = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var otroAsesor = UtilUUID.generarNuevoUUID();
+        when(finder.obtener(entregable)).thenReturn(otroAsesor);
+        doThrow(new AsesorNoPropietarioEntregableProyectoGradoException(asesor, entregable))
+                .when(validator).validar(entregable, otroAsesor, asesor);
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(new ArtefactoEntregableCriteria(entregable, asesor)))
+                .isInstanceOf(AsesorNoPropietarioEntregableProyectoGradoException.class);
+        verifyNoInteractions(outputPort);
+        verify(logger, never()).debug(eq(ArtefactoEntregableKey.LOG_CONSULTA_COMPLETADA), any(), any());
     }
 }

@@ -7,17 +7,20 @@ import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.UUID;
 
-public record ConsultarArtefactosEntregableQuery(UUID entregableProyectoGrado) {
+public record ConsultarArtefactosEntregableQuery(UUID entregableProyectoGrado, UUID asesor) {
 
-    public static ConsultarArtefactosEntregableQuery crear(UUID entregableProyectoGrado) {
+    public static ConsultarArtefactosEntregableQuery crear(UUID entregableProyectoGrado, UUID asesor) {
         var result = new ValidationResult();
 
         ValidatorObjeto.noNulo(entregableProyectoGrado,
                 EntregablesFields.EntregableProyectoGrado.ID,
                 EntregablesCodes.EntregableProyectoGrado.ID_REQUERIDO, result);
+        ValidatorObjeto.noNulo(asesor,
+                EntregablesFields.EntregableProyectoGrado.ASESOR,
+                EntregablesCodes.EntregableProyectoGrado.ASESOR_REQUERIDO, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new ConsultarArtefactosEntregableQuery(entregableProyectoGrado);
+        return new ConsultarArtefactosEntregableQuery(entregableProyectoGrado, asesor);
     }
 }

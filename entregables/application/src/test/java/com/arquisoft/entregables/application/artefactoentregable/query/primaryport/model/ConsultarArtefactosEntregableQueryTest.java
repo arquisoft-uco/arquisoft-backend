@@ -11,23 +11,28 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ConsultarArtefactosEntregableQueryTest {
 
     @Test
-    void debeCrear_cuandoElEntregableEsValido() {
+    void debeCrear_cuandoLosDatosSonValidos() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
 
         // Act
-        var query = ConsultarArtefactosEntregableQuery.crear(entregable);
+        var query = ConsultarArtefactosEntregableQuery.crear(entregable, asesor);
 
         // Assert
         assertThat(query.entregableProyectoGrado()).isEqualTo(entregable);
+        assertThat(query.asesor()).isEqualTo(asesor);
     }
 
     @Test
-    void debeLanzarValidacionDeEntrada_cuandoFaltaElEntregable() {
+    void debeLanzarValidacionDeEntrada_cuandoFaltanEntregableYAsesor() {
         // Act & Assert
-        assertThatThrownBy(() -> ConsultarArtefactosEntregableQuery.crear(null))
-                .isInstanceOfSatisfying(ApplicationValidationException.class, ex ->
-                        assertThat(ex.getValidationResult()
-                                .tieneErroresDeCampo(EntregablesFields.EntregableProyectoGrado.ID)).isTrue());
+        assertThatThrownBy(() -> ConsultarArtefactosEntregableQuery.crear(null, null))
+                .isInstanceOfSatisfying(ApplicationValidationException.class, ex -> {
+                    assertThat(ex.getValidationResult()
+                            .tieneErroresDeCampo(EntregablesFields.EntregableProyectoGrado.ID)).isTrue();
+                    assertThat(ex.getValidationResult()
+                            .tieneErroresDeCampo(EntregablesFields.EntregableProyectoGrado.ASESOR)).isTrue();
+                });
     }
 }
