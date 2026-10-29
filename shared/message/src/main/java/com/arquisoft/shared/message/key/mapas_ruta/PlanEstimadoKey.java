@@ -18,6 +18,10 @@ public enum PlanEstimadoKey implements ClaveMensaje {
     LOG_MODIFICANDO("mapas_ruta.aplicacion.planestimado.log.modificando", 1),
     LOG_VERIFICACION_MODIFICAR("mapas_ruta.aplicacion.planestimado.log.verificacion-modificar", 1),
     LOG_MODIFICADO("mapas_ruta.aplicacion.planestimado.log.modificado", 1),
+    LOG_REMOVIENDO("mapas_ruta.aplicacion.planestimado.log.removiendo", 1),
+    LOG_VERIFICACION_REMOVER("mapas_ruta.aplicacion.planestimado.log.verificacion-remover", 1),
+    LOG_REMOVIDO("mapas_ruta.aplicacion.planestimado.log.removido", 1),
+    LOG_ELIMINADO("mapas_ruta.infraestructura.planestimado.log.eliminado", 1),
     LOG_GUARDADO("mapas_ruta.infraestructura.planestimado.log.guardado", 1);
 
     private final String clave;

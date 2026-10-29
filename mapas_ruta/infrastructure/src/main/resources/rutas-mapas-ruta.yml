@@ -12,6 +12,7 @@ rutas:
       fecha-fin: /{id}/fecha-fin
       tareas: /{mapaRutaId}/tareas
       tareas-estudiante: /{mapaRutaId}/tareas/estudiante
+      planes-estimados: /planes-estimados/{planEstimadoId}
     tareas:
       base: /tareas
       por-id: /{tareaId}
