@@ -12,6 +12,7 @@ import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefa
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.VersionRepositorioArtefactoOutputPort;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.mapper.VersionRepositorioArtefactoMapper;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.usecase.SubirVersionRepositorioArtefactoUseCase;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.validator.SubirVersionRepositorioArtefactoContenidoValidator;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.validator.SubirVersionRepositorioArtefactoValidator;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
@@ -33,6 +34,7 @@ public class SubirVersionRepositorioArtefactoUseCaseImpl implements SubirVersion
     private final UltimoNumeroVersionDocumentoFinder ultimoNumeroVersionDocumentoFinder;
     private final TamanoMaximoArchivoFinder tamanoMaximoArchivoFinder;
     private final SubirVersionRepositorioArtefactoValidator subirVersionValidator;
+    private final SubirVersionRepositorioArtefactoContenidoValidator subirVersionContenidoValidator;
     private final AlmacenamientoVersionOutputPort almacenamientoVersionOutputPort;
     private final VersionRepositorioArtefactoOutputPort versionRepositorioArtefactoOutputPort;
     private final EventPublisher eventPublisher;
@@ -52,10 +54,10 @@ public class SubirVersionRepositorioArtefactoUseCaseImpl implements SubirVersion
                 !administrador.esVacio(), !repositorio.esVacio(), !carga.esVacio(),
                 subida.isNuevoDocumento(), ultimoNumero);
 
-        subirVersionValidator.validarCarga(subida, administrador, repositorio, carga, tamanoMaximo, ultimoNumero);
+        subirVersionValidator.validar(subida, administrador, repositorio, carga, tamanoMaximo, ultimoNumero);
 
         var analisis = analisisCargaFinder.obtener(subida.getCarga());
-        subirVersionValidator.validarContenido(subida, carga, analisis);
+        subirVersionContenidoValidator.validar(subida, carga, analisis);
 
         var version = VersionRepositorioArtefactoDomain.crear(subida, ultimoNumero, carga, analisis);
 

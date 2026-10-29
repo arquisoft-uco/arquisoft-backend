@@ -4,16 +4,13 @@ import com.arquisoft.repositorio_artefactos.domain.administrador.AdministradorDo
 import com.arquisoft.repositorio_artefactos.domain.administrador.exception.AdministradorNoVigenteException;
 import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.RepositorioArtefactoDomain;
 import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.exception.RepositorioArtefactoNoEncontradoException;
-import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.AnalisisArchivoDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.CargaPendienteDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
-import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.CargaModificadaException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.CargaNoCorrespondeException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.CargaPendienteNoEncontradaException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.DocumentoNoExisteException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.DocumentoYaExisteException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.TamanoArchivoExcedidoException;
-import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.TipoArchivoNoCoincideException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +33,6 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
     private AdministradorDomain administrador;
     private RepositorioArtefactoDomain repositorio;
     private CargaPendienteDomain carga;
-    private AnalisisArchivoDomain analisis;
 
     @BeforeEach
     void setUp() {
@@ -48,12 +44,10 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
                 subida.getRepositorio(), "Repo", "Desc", UtilUUID.generarNuevoUUID());
         carga = CargaPendienteDomain.reconstruir(subida.getCarga(), subida.getRepositorio(),
                 subida.getSolicitante(), "formato.pdf", TIPO, 2048L, ETAG);
-        analisis = AnalisisArchivoDomain.reconstruir(TIPO, "h".repeat(64), ETAG);
     }
 
     private void validar(int ultimoNumero) {
-        validator.validarCarga(subida, administrador, repositorio, carga, MAXIMO, ultimoNumero);
-        validator.validarContenido(subida, carga, analisis);
+        validator.validar(subida, administrador, repositorio, carga, MAXIMO, ultimoNumero);
     }
 
     @Test
@@ -100,24 +94,6 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
     }
 
     @Test
-    void debeLanzar_cuandoEtagsDifieren() {
-        // Arrange
-        analisis = AnalisisArchivoDomain.reconstruir(TIPO, "h".repeat(64), "otro-etag");
-
-        // Act & Assert
-        assertThatThrownBy(() -> validar(2)).isInstanceOf(CargaModificadaException.class);
-    }
-
-    @Test
-    void debeLanzar_cuandoElAnalisisEstaVacio() {
-        // Arrange
-        analisis = AnalisisArchivoDomain.VACIO;
-
-        // Act & Assert
-        assertThatThrownBy(() -> validar(2)).isInstanceOf(CargaModificadaException.class);
-    }
-
-    @Test
     void debeLanzar_cuandoTamanoExcede() {
         // Arrange
         carga = CargaPendienteDomain.reconstruir(subida.getCarga(), subida.getRepositorio(),
@@ -125,15 +101,6 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validar(2)).isInstanceOf(TamanoArchivoExcedidoException.class);
-    }
-
-    @Test
-    void debeLanzar_cuandoTipoDetectadoNoCoincide() {
-        // Arrange
-        analisis = AnalisisArchivoDomain.reconstruir("application/zip", "h".repeat(64), ETAG);
-
-        // Act & Assert
-        assertThatThrownBy(() -> validar(2)).isInstanceOf(TipoArchivoNoCoincideException.class);
     }
 
     @Test
@@ -176,30 +143,9 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
     void debePriorizar_cargaInexistenteAntesQueAjena() {
         // Arrange
         carga = CargaPendienteDomain.VACIO;
-        analisis = AnalisisArchivoDomain.VACIO;
 
         // Act & Assert
         assertThatThrownBy(() -> validar(2)).isInstanceOf(CargaPendienteNoEncontradaException.class);
-    }
-
-    @Test
-    void debePriorizar_tamanoAntesQueTipo() {
-        // Arrange
-        carga = CargaPendienteDomain.reconstruir(subida.getCarga(), subida.getRepositorio(),
-                subida.getSolicitante(), "formato.pdf", TIPO, MAXIMO + 1, ETAG);
-        analisis = AnalisisArchivoDomain.reconstruir("application/zip", "h".repeat(64), ETAG);
-
-        // Act & Assert
-        assertThatThrownBy(() -> validar(2)).isInstanceOf(TamanoArchivoExcedidoException.class);
-    }
-
-    @Test
-    void debePriorizar_documentoAntesQueTipo() {
-        // Arrange
-        analisis = AnalisisArchivoDomain.reconstruir("application/zip", "h".repeat(64), ETAG);
-
-        // Act & Assert
-        assertThatThrownBy(() -> validar(0)).isInstanceOf(DocumentoNoExisteException.class);
     }
 
     @Test
@@ -212,25 +158,4 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
         assertThatThrownBy(() -> validar(2)).isInstanceOf(RepositorioArtefactoNoEncontradoException.class);
     }
 
-    @Test
-    void debePriorizar_cargaAjenaAntesQueModificada() {
-        // Arrange
-        carga = CargaPendienteDomain.reconstruir(subida.getCarga(), subida.getRepositorio(),
-                UtilUUID.generarNuevoUUID(), "formato.pdf", TIPO, 2048L, ETAG);
-        analisis = AnalisisArchivoDomain.reconstruir(TIPO, "h".repeat(64), "otro-etag");
-
-        // Act & Assert
-        assertThatThrownBy(() -> validar(2)).isInstanceOf(CargaNoCorrespondeException.class);
-    }
-
-    @Test
-    void debePriorizar_tamanoAntesQueCargaModificada() {
-        // Arrange
-        carga = CargaPendienteDomain.reconstruir(subida.getCarga(), subida.getRepositorio(),
-                subida.getSolicitante(), "formato.pdf", TIPO, MAXIMO + 1, ETAG);
-        analisis = AnalisisArchivoDomain.reconstruir("application/zip", "h".repeat(64), "otro-etag");
-
-        // Act & Assert
-        assertThatThrownBy(() -> validar(0)).isInstanceOf(TamanoArchivoExcedidoException.class);
-    }
 }
