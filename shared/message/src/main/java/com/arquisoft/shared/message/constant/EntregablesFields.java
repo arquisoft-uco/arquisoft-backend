@@ -10,6 +10,7 @@ public final class EntregablesFields {
 
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String ASESOR = "asesor";
+        public static final String ESTUDIANTE = "estudiante";
         public static final String ULTIMA_VERSION = "ultimaVersion";
         public static final String ID = "entregableProyectoGrado";
         public static final String ESTADO_ENTREGABLE = "estadoEntregable";

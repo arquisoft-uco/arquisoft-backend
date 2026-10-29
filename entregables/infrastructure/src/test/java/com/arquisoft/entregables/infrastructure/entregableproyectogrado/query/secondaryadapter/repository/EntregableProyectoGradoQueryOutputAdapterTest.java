@@ -1,7 +1,9 @@
 package com.arquisoft.entregables.infrastructure.entregableproyectogrado.query.secondaryadapter.repository;
 
 import com.arquisoft.entregables.application.entregableproyectogrado.query.criteria.EntregableProyectoGradoCriteria;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.mapper.ConsultarEntregablesProyectoGradoEstudianteMapper;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.mapper.ConsultarEntregablesProyectoGradoJuradoMapper;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.model.ConsultarEntregablesProyectoGradoEstudianteQuery;
 import com.arquisoft.entregables.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
 import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
@@ -378,6 +380,33 @@ class EntregableProyectoGradoQueryOutputAdapterTest {
         // Assert
         assertThat(resultado.getContent()).isEmpty();
         assertThat(resultado.getTotalElements()).isZero();
+    }
+
+    @Test
+    void debeRetornarSoloEntregablesDelProyecto_cuandoSeAplicaElFiltroForzadoDelEstudiante() {
+        // Arrange
+        var proyecto = sembrarProyecto("A");
+        var otroProyecto = sembrarProyecto("B");
+        var asesor = sembrarAsesor("Ana", null);
+        var aprobado = sembrarEntregable(proyecto, 1, asesor, "APROBADO");
+        var enEvaluacion = sembrarEntregable(proyecto, 2, asesor, "EN_EVALUACION");
+        var cerrado = sembrarEntregable(proyecto, 3, asesor, "CERRADO");
+        sembrarEntregable(otroProyecto, 1, asesor, "APROBADO");
+        sembrarEntregable(otroProyecto, 2, asesor, "CERRADO");
+        confirmar();
+        var raizCliente = NodoFiltro.grupo(FiltroConector.OR, List.of(
+                NodoFiltro.predicado("estadoEntregable", FiltroOperador.ES, "APROBADO"),
+                NodoFiltro.predicado("asesorId", FiltroOperador.ES, asesor.toString())));
+        var criteriaEstudiante = ConsultarEntregablesProyectoGradoEstudianteMapper.toCriteria(
+                ConsultarEntregablesProyectoGradoEstudianteQuery.crear(UtilUUID.generarNuevoUUID(), proyecto,
+                        ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente)));
+
+        // Act
+        var resultado = adapter.consultar(criteriaEstudiante.consulta());
+
+        // Assert
+        assertThat(resultado.getContent()).extracting("id")
+                .containsExactlyInAnyOrder(aprobado, enEvaluacion, cerrado);
     }
 
     private static EntregableProyectoGradoCriteria ordenado(String campo, SortDirection direccion) {

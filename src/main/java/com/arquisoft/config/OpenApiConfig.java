@@ -154,7 +154,7 @@ public class OpenApiConfig {
             .group("07-entregables")
             .displayName("Entregables")
             .pathsToMatch("/entregables/**", estadosEntregableBasePath + "/**",
-                entregablesProyectosGradoBasePath + "/*/entregables",
+                entregablesProyectosGradoBasePath + "/*/entregables/**",
                 entregablesProyectoGradoBasePath + "/**")
             .build();
     }

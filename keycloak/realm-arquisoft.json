@@ -263,6 +263,7 @@
           "client": {
             "arquisoft-api": [
               "artefactos:version-artefacto:upload",
+              "entregables:entregable-proyecto-grado-estudiante:view",
               "solicitudes:respuesta-cambio-asesor-recibida:view",
               "solicitudes:respuesta-ampliacion-plazo-recibida:view",
               "solicitudes:solicitud-novedad-asesor:delete",
@@ -1122,6 +1123,15 @@
         {
           "id": "ff2468d4-bbf2-4e51-bc64-410ad2676e9d",
           "name": "entregables:entregable-proyecto-grado-jurado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "37621b3e-e09d-4c2a-8533-8cbe644068c0",
+          "name": "entregables:entregable-proyecto-grado-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
