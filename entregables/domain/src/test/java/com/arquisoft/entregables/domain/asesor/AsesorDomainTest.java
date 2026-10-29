@@ -2,6 +2,7 @@ package com.arquisoft.entregables.domain.asesor;
 
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.message.constant.EntregablesFields;
+import com.arquisoft.shared.message.constant.EntregablesLimits;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidationException;
@@ -146,6 +147,89 @@ class AsesorDomainTest {
                         .extracting(e -> e.campo())
                         .contains(EntregablesFields.Asesor.IDENTIFICADOR, EntregablesFields.Asesor.NOMBRE,
                                 EntregablesFields.Asesor.EMAIL, EntregablesFields.Asesor.OCURRIDO_EN));
+        assertThat(asesor.estaEliminado()).isTrue();
+    }
+
+    @Test
+    void debeAcumularErroresDeLongitud_cuandoIdentificadorNombreYEmailExcedenElMaximo() {
+        // Arrange
+        var identificador = "1".repeat(EntregablesLimits.Asesor.IDENTIFICADOR_MAX + 1);
+        var nombre = "n".repeat(EntregablesLimits.Asesor.NOMBRE_MAX + 1);
+        var email = "e".repeat(EntregablesLimits.Asesor.EMAIL_MAX + 1);
+        var id = UtilUUID.generarNuevoUUID();
+        var ocurridoEn = Instant.now();
+
+        // Act & Assert
+        assertThatThrownBy(() -> AsesorDomain.crear(id, identificador, nombre, email, ocurridoEn))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> {
+                    var errores = ((DomainValidationException) ex).getValidationResult().getErrores();
+                    assertThat(errores).hasSize(3);
+                    assertThat(errores).anySatisfy(error -> {
+                        assertThat(error.campo()).isEqualTo(EntregablesFields.Asesor.IDENTIFICADOR);
+                        assertThat(error.codigoError())
+                                .isEqualTo(EntregablesCodes.Asesor.IDENTIFICADOR_LONGITUD_MAXIMA);
+                    });
+                    assertThat(errores).anySatisfy(error -> {
+                        assertThat(error.campo()).isEqualTo(EntregablesFields.Asesor.NOMBRE);
+                        assertThat(error.codigoError())
+                                .isEqualTo(EntregablesCodes.Asesor.NOMBRE_LONGITUD_MAXIMA);
+                    });
+                    assertThat(errores).anySatisfy(error -> {
+                        assertThat(error.campo()).isEqualTo(EntregablesFields.Asesor.EMAIL);
+                        assertThat(error.codigoError())
+                                .isEqualTo(EntregablesCodes.Asesor.EMAIL_LONGITUD_MAXIMA);
+                    });
+                });
+    }
+
+    @Test
+    void debeCrear_cuandoLosCamposTienenExactamenteElMaximo() {
+        // Arrange
+        var identificador = "1".repeat(EntregablesLimits.Asesor.IDENTIFICADOR_MAX);
+        var nombre = "n".repeat(EntregablesLimits.Asesor.NOMBRE_MAX);
+        var email = "e".repeat(EntregablesLimits.Asesor.EMAIL_MAX);
+
+        // Act
+        var asesor = AsesorDomain.crear(UtilUUID.generarNuevoUUID(), identificador, nombre, email, Instant.now());
+
+        // Assert
+        assertThat(asesor.getIdentificador()).isEqualTo(identificador);
+        assertThat(asesor.getNombre()).isEqualTo(nombre);
+        assertThat(asesor.getEmail()).isEqualTo(email);
+    }
+
+    @Test
+    void debeRecortarEspacios_alCrear() {
+        // Act
+        var asesor = AsesorDomain.crear(UtilUUID.generarNuevoUUID(), " 20161020123 ", "  Ana Perez ",
+                "  ana@uco.edu.co ", Instant.now());
+
+        // Assert
+        assertThat(asesor.getIdentificador()).isEqualTo("20161020123");
+        assertThat(asesor.getNombre()).isEqualTo("Ana Perez");
+        assertThat(asesor.getEmail()).isEqualTo("ana@uco.edu.co");
+    }
+
+    @Test
+    void debeAcumularErroresDeLongitud_cuandoSeReactivaConDatosQueExceden() {
+        // Arrange
+        var eliminadoEn = Instant.parse("2026-09-10T10:00:00Z");
+        var asesor = AsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), "20161020123", "Ana Perez",
+                "ana@uco.edu.co", eliminadoEn, eliminadoEn);
+        var identificador = "1".repeat(EntregablesLimits.Asesor.IDENTIFICADOR_MAX + 1);
+        var nombre = "n".repeat(EntregablesLimits.Asesor.NOMBRE_MAX + 1);
+        var email = "e".repeat(EntregablesLimits.Asesor.EMAIL_MAX + 1);
+        var ocurridoEn = Instant.parse("2026-09-23T10:00:00Z");
+
+        // Act & Assert
+        assertThatThrownBy(() -> asesor.reactivar(identificador, nombre, email, ocurridoEn))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(e -> e.codigoError())
+                        .containsExactlyInAnyOrder(EntregablesCodes.Asesor.IDENTIFICADOR_LONGITUD_MAXIMA,
+                                EntregablesCodes.Asesor.NOMBRE_LONGITUD_MAXIMA,
+                                EntregablesCodes.Asesor.EMAIL_LONGITUD_MAXIMA));
         assertThat(asesor.estaEliminado()).isTrue();
     }
 }

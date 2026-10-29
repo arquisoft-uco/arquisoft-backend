@@ -2,11 +2,13 @@ package com.arquisoft.entregables.domain.asesor;
 
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.message.constant.EntregablesFields;
+import com.arquisoft.shared.message.constant.EntregablesLimits;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 
@@ -87,30 +89,48 @@ public final class AsesorDomain {
     }
 
     private void setIdentificador(String identificador, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(identificador,
+        var recortado = UtilTexto.aplicarTrim(identificador);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 EntregablesFields.Asesor.IDENTIFICADOR,
                 EntregablesCodes.Asesor.IDENTIFICADOR_REQUERIDO, result)) {
             return;
         }
-        this.identificador = identificador;
+        if (!ValidatorLongitud.longitudMaxima(recortado, EntregablesLimits.Asesor.IDENTIFICADOR_MAX,
+                EntregablesFields.Asesor.IDENTIFICADOR,
+                EntregablesCodes.Asesor.IDENTIFICADOR_LONGITUD_MAXIMA, result)) {
+            return;
+        }
+        this.identificador = recortado;
     }
 
     private void setNombre(String nombre, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(nombre,
+        var recortado = UtilTexto.aplicarTrim(nombre);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 EntregablesFields.Asesor.NOMBRE,
                 EntregablesCodes.Asesor.NOMBRE_REQUERIDO, result)) {
             return;
         }
-        this.nombre = nombre;
+        if (!ValidatorLongitud.longitudMaxima(recortado, EntregablesLimits.Asesor.NOMBRE_MAX,
+                EntregablesFields.Asesor.NOMBRE,
+                EntregablesCodes.Asesor.NOMBRE_LONGITUD_MAXIMA, result)) {
+            return;
+        }
+        this.nombre = recortado;
     }
 
     private void setEmail(String email, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(email,
+        var recortado = UtilTexto.aplicarTrim(email);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 EntregablesFields.Asesor.EMAIL,
                 EntregablesCodes.Asesor.EMAIL_REQUERIDO, result)) {
             return;
         }
-        this.email = email;
+        if (!ValidatorLongitud.longitudMaxima(recortado, EntregablesLimits.Asesor.EMAIL_MAX,
+                EntregablesFields.Asesor.EMAIL,
+                EntregablesCodes.Asesor.EMAIL_LONGITUD_MAXIMA, result)) {
+            return;
+        }
+        this.email = recortado;
     }
 
     private void setOcurridoEn(Instant ocurridoEn, ValidationResult result) {
