@@ -165,6 +165,8 @@ security:
         - {method: POST, path: "/api/solicitudes/novedad-coordinador/{solicitudId}/respuesta", role: "solicitudes:respuesta-novedad-coordinador:create"}
         - {method: PATCH, path: "/api/solicitudes/novedad-coordinador/{solicitudId}/respuesta/estado", role: "solicitudes:respuesta-novedad-coordinador:update"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios", role: "solicitudes:solicitud-registro-modificacion-usuarios:create"}
+        - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/enviadas", role: "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view"}
+        - {method: DELETE, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}", role: "solicitudes:solicitud-registro-modificacion-usuarios:delete"}
         - {method: GET, path: "/api/solicitudes/tipos-solicitud", role: "solicitudes:tipo-solicitud:view"}
         # repositorio_artefactos
         - {method: POST, path: "/api/repositorio-artefactos", role: "repositorio-artefactos:repositorio-artefacto:create"}
@@ -179,15 +181,17 @@ security:
         - {method: POST, path: "/api/revisiones-asesor/estudiante", role: "artefactos:revision-asesor-estudiante:view"}
         - {method: POST, path: "/api/revisiones-asesor/asesor", role: "artefactos:revision-asesor-asesor:view"}
         - {method: GET, path: "/api/artefactos/{artefactoId}/estudiantes", role: "artefactos:estudiante-artefacto:view"}
+        - {method: POST, path: "/api/artefactos/{artefactoId}/estudiantes", role: "artefactos:estudiante-artefacto:create"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones", role: "artefactos:observacion-revision:view"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones/estudiante", role: "artefactos:observacion-revision-estudiante:view"}
-        - {method: PATCH, path: "/api/revisiones-asesor/{revisionAsesorId}/estado", role: "artefactos:revision-asesor-estado:update"}
         - {method: POST, path: "/api/artefactos", role: "artefactos:artefacto:create"}
         - {method: POST, path: "/api/artefactos/asesor", role: "artefactos:artefacto-asesor:view"}
         - {method: POST, path: "/api/versiones-artefacto/asesor", role: "artefactos:version-artefacto-asesor:view"}
         - {method: POST, path: "/api/artefactos/{artefactoId}/versiones/cargas", role: "artefactos:version-artefacto:upload"}
         - {method: POST, path: "/api/artefactos/{artefactoId}/versiones", role: "artefactos:version-artefacto:upload"}
         - {method: PATCH, path: "/api/artefactos/{artefactoId}/asesor", role: "artefactos:artefacto:update-asesor"}
+        - {method: POST, path: "/api/artefactos/versiones/{versionArtefactoId}/revisiones", role: "artefactos:revision-asesor:create"}
+        - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/estado", role: "artefactos:revision-asesor-estado:update"}
         # mapas_ruta
         - {method: POST, path: "/api/mapas-ruta", role: "mapas-ruta:mapa-ruta:create"}
         - {method: POST, path: "/api/mapas-ruta/coordinador", role: "mapas-ruta:mapa-ruta-coordinador:view"}
@@ -203,3 +207,11 @@ security:
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados/estudiante", role: "mapas-ruta:plan-estimado-tarea-estudiante:view"}
         - {method: PATCH, path: "/api/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:update"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
+        # entregables
+        - {method: GET, path: "/api/estados-entregable", role: "entregables:estado-entregable:view"}
+        - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/entregables", role: "entregables:entregable-proyecto-grado:create"}
+        - {method: PATCH, path: "/api/entregables-proyecto-grado/{entregableProyectoGradoId}/estado", role: "entregables:entregable-proyecto-grado-estado:update"}
+        - {method: POST, path: "/api/entregables-proyecto-grado/asesor", role: "entregables:entregable-proyecto-grado-asesor:view"}
+        - {method: POST, path: "/api/entregables-proyecto-grado/jurado", role: "entregables:entregable-proyecto-grado-jurado:view"}
+        - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/entregables/estudiante", role: "entregables:entregable-proyecto-grado-estudiante:view"}
+        - {method: GET, path: "/api/entregables-proyecto-grado/{entregableProyectoGradoId}/artefactos", role: "entregables:artefacto-entregable:view"}

@@ -74,4 +74,53 @@ class VersionArtefactoCommandOutputAdapterTest {
         assertThat(adapter().ultimoNumeroPorArtefacto(artefacto)).isEqualTo(2);
         assertThat(adapter().ultimoNumeroPorArtefacto(otro)).isEqualTo(7);
     }
+
+    @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var entity = version(UtilUUID.generarNuevoUUID(), 4);
+        adapter().registrar(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter().obtenerPorId(entity.id());
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(encontrada -> {
+            assertThat(encontrada.id()).isEqualTo(entity.id());
+            assertThat(encontrada.artefacto()).isEqualTo(entity.artefacto());
+            assertThat(encontrada.numeroVersion()).isEqualTo(4);
+            assertThat(encontrada.uriArchivo()).isEqualTo(entity.uriArchivo());
+        });
+        assertThat(adapter().obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeSerUltima_cuandoNoHayMayor() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var primera = version(artefacto, 1);
+        var segunda = version(artefacto, 2);
+        adapter().registrar(primera);
+        adapter().registrar(segunda);
+        adapter().registrar(version(UtilUUID.generarNuevoUUID(), 9));
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().esUltimaDeSuArtefacto(segunda.id())).isTrue();
+    }
+
+    @Test
+    void noDebeSerUltima_cuandoHayMayor() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var primera = version(artefacto, 1);
+        adapter().registrar(primera);
+        adapter().registrar(version(artefacto, 2));
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().esUltimaDeSuArtefacto(primera.id())).isFalse();
+    }
 }

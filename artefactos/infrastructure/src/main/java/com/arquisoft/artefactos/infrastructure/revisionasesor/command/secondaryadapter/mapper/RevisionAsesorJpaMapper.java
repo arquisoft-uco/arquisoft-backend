@@ -11,6 +11,16 @@ public final class RevisionAsesorJpaMapper {
         return new RevisionAsesorEntity(
                 jpaEntity.getId(),
                 jpaEntity.getVersionArtefacto(),
-                jpaEntity.getEstado());
+                jpaEntity.getEstado(),
+                jpaEntity.getFechaCreacion());
+    }
+
+    public static RevisionAsesorJpaEntity toJpaEntity(RevisionAsesorEntity entity) {
+        return RevisionAsesorJpaEntity.builder()
+                .id(entity.id())
+                .versionArtefacto(entity.versionArtefacto())
+                .estado(entity.estado())
+                .fechaCreacion(entity.fechaCreacion())
+                .build();
     }
 }

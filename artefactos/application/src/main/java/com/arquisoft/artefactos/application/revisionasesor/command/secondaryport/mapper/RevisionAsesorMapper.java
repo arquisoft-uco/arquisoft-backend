@@ -12,6 +12,15 @@ public final class RevisionAsesorMapper {
         return RevisionAsesorDomain.reconstruir(
                 entity.id(),
                 entity.versionArtefacto(),
-                EstadoRevisionAsesor.desde(entity.estado()));
+                EstadoRevisionAsesor.desde(entity.estado()),
+                entity.fechaCreacion());
+    }
+
+    public static RevisionAsesorEntity toEntity(RevisionAsesorDomain revision) {
+        return new RevisionAsesorEntity(
+                revision.getId(),
+                revision.getVersionArtefacto(),
+                revision.getEstado().getId(),
+                revision.getFechaCreacion());
     }
 }

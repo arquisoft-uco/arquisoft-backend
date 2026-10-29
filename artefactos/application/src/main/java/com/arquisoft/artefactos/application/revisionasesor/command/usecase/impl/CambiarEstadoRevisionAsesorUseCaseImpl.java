@@ -1,9 +1,10 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorDeRevisionAsesorFinder;
-import com.arquisoft.artefactos.application.estudiante.command.finder.EstudianteFinder;
+import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantePorIdFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.EstudianteParticipaRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
+import com.arquisoft.artefactos.application.revisionasesor.command.finder.VersionPosteriorARevisionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.command.usecase.CambiarEstadoRevisionAsesorUseCase;
 import com.arquisoft.artefactos.application.revisionasesor.command.validator.CambiarEstadoRevisionAsesorValidator;
@@ -22,8 +23,9 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
     private final RevisionAsesorOutputPort revisionAsesorOutputPort;
     private final RevisionAsesorFinder revisionAsesorFinder;
     private final AsesorDeRevisionAsesorFinder asesorDeRevisionAsesorFinder;
-    private final EstudianteFinder estudianteFinder;
+    private final EstudiantePorIdFinder estudiantePorIdFinder;
     private final EstudianteParticipaRevisionAsesorFinder estudianteParticipaRevisionAsesorFinder;
+    private final VersionPosteriorARevisionFinder versionPosteriorARevisionFinder;
     private final CambiarEstadoRevisionAsesorValidator cambiarEstadoRevisionAsesorValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
@@ -37,13 +39,15 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
 
         var revision = revisionAsesorFinder.obtener(revisionAsesor);
         var asesor = asesorDeRevisionAsesorFinder.obtener(revisionAsesor);
-        var estudiante = estudianteFinder.obtener(cambio.getEstudiante());
+        var estudiante = estudiantePorIdFinder.obtener(cambio.getEstudiante());
         var participa = estudianteParticipaRevisionAsesorFinder.obtener(cambio);
+        var existeVersionPosterior = versionPosteriorARevisionFinder.obtener(revisionAsesor);
 
         logger.debug(CambiarEstadoRevisionAsesorKey.LOG_VERIFICACION_CAMBIO_ESTADO,
-                !revision.esVacio(), !asesor.esVacio(), !estudiante.esVacio(), participa);
+                !revision.esVacio(), !asesor.esVacio(), !estudiante.esVacio(), participa, existeVersionPosterior);
 
-        cambiarEstadoRevisionAsesorValidator.validar(cambio, revision, asesor, estudiante, participa);
+        cambiarEstadoRevisionAsesorValidator.validar(
+                cambio, revision, asesor, estudiante, participa, existeVersionPosterior);
 
         if (revision.tieneEstado(estadoNuevo)) {
             logger.info(CambiarEstadoRevisionAsesorKey.LOG_ESTADO_SIN_CAMBIO, revisionAsesor, estadoNuevo.getId());

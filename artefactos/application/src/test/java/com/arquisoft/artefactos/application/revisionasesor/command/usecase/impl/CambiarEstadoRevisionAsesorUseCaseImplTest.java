@@ -1,9 +1,10 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorDeRevisionAsesorFinder;
-import com.arquisoft.artefactos.application.estudiante.command.finder.EstudianteFinder;
+import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantePorIdFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.EstudianteParticipaRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
+import com.arquisoft.artefactos.application.revisionasesor.command.finder.VersionPosteriorARevisionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.command.validator.CambiarEstadoRevisionAsesorValidator;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
@@ -11,6 +12,7 @@ import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.CambioEstadoRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.event.RevisionAsesorEstadoCambiadoEvent;
+import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorPendienteException;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.publisher.EventPublisher;
@@ -27,9 +29,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -47,9 +51,11 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
     @Mock
     private AsesorDeRevisionAsesorFinder asesorDeRevisionAsesorFinder;
     @Mock
-    private EstudianteFinder estudianteFinder;
+    private EstudiantePorIdFinder estudiantePorIdFinder;
     @Mock
     private EstudianteParticipaRevisionAsesorFinder estudianteParticipaRevisionAsesorFinder;
+    @Mock
+    private VersionPosteriorARevisionFinder versionPosteriorARevisionFinder;
     @Mock
     private CambiarEstadoRevisionAsesorValidator validator;
     @Mock
@@ -71,15 +77,18 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
         estudianteId = UtilUUID.generarNuevoUUID();
         asesor = AsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), "20161020123", "Ana", "ana@uco.edu.co",
                 Instant.now(), null);
-        estudiante = EstudianteDomain.reconstruir(estudianteId, "Luis", "luis@uco.edu.co");
+        estudiante = EstudianteDomain.reconstruir(
+                estudianteId, "20201020123", "Luis", "luis@uco.edu.co", Instant.now(), null);
     }
 
     private void stubearFinders(EstadoRevisionAsesor estadoActual) {
-        var revision = RevisionAsesorDomain.reconstruir(revisionId, UtilUUID.generarNuevoUUID(), estadoActual);
+        var revision = RevisionAsesorDomain.reconstruir(
+                revisionId, UtilUUID.generarNuevoUUID(), estadoActual, Instant.now());
         when(revisionAsesorFinder.obtener(revisionId)).thenReturn(revision);
         when(asesorDeRevisionAsesorFinder.obtener(revisionId)).thenReturn(asesor);
-        when(estudianteFinder.obtener(estudianteId)).thenReturn(estudiante);
+        when(estudiantePorIdFinder.obtener(estudianteId)).thenReturn(estudiante);
         when(estudianteParticipaRevisionAsesorFinder.obtener(any())).thenReturn(true);
+        when(versionPosteriorARevisionFinder.obtener(revisionId)).thenReturn(true);
     }
 
     @Test
@@ -92,14 +101,16 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
         useCase.ejecutar(cambio);
 
         // Assert
-        var orden = inOrder(revisionAsesorFinder, asesorDeRevisionAsesorFinder, estudianteFinder,
-                estudianteParticipaRevisionAsesorFinder, validator, revisionAsesorOutputPort, eventPublisher);
+        var orden = inOrder(revisionAsesorFinder, asesorDeRevisionAsesorFinder, estudiantePorIdFinder,
+                estudianteParticipaRevisionAsesorFinder, versionPosteriorARevisionFinder, validator,
+                revisionAsesorOutputPort, eventPublisher);
         orden.verify(revisionAsesorFinder, times(1)).obtener(revisionId);
         orden.verify(asesorDeRevisionAsesorFinder, times(1)).obtener(revisionId);
-        orden.verify(estudianteFinder, times(1)).obtener(estudianteId);
+        orden.verify(estudiantePorIdFinder, times(1)).obtener(estudianteId);
         orden.verify(estudianteParticipaRevisionAsesorFinder, times(1)).obtener(cambio);
+        orden.verify(versionPosteriorARevisionFinder, times(1)).obtener(revisionId);
         orden.verify(validator).validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante),
-                eq(true));
+                eq(true), eq(true));
         orden.verify(revisionAsesorOutputPort).actualizarEstado(revisionId, "RESUELTA");
         var captor = ArgumentCaptor.forClass(RevisionAsesorEstadoCambiadoEvent.class);
         orden.verify(eventPublisher).publish(captor.capture());
@@ -112,17 +123,18 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
     }
 
     @Test
-    void debeActualizarSinPublicar_cuandoEstadoNuevoNoEsResuelta() {
+    void noDebeEscribirNiPublicar_cuandoValidatorRechaza() {
         // Arrange
         stubearFinders(EstadoRevisionAsesor.PENDIENTE);
-        var cambio = CambioEstadoRevisionAsesorDomain.crear(revisionId, "EN_PROGRESO", estudianteId);
+        var cambio = CambioEstadoRevisionAsesorDomain.crear(revisionId, "RESUELTA", estudianteId);
+        doThrow(new RevisionAsesorPendienteException(revisionId)).when(validator)
+                .validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante), eq(true), eq(true));
 
-        // Act
-        useCase.ejecutar(cambio);
-
-        // Assert
-        verify(revisionAsesorOutputPort).actualizarEstado(revisionId, "EN_PROGRESO");
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(cambio)).isInstanceOf(RevisionAsesorPendienteException.class);
+        verify(revisionAsesorOutputPort, never()).actualizarEstado(any(), anyString());
         verify(eventPublisher, never()).publish(any());
+        verify(logger, never()).info(eq(CambiarEstadoRevisionAsesorKey.LOG_ESTADO_CAMBIADO), any(), any());
     }
 
     @Test
@@ -135,7 +147,7 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
         useCase.ejecutar(cambio);
 
         // Assert
-        verify(validator).validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante), eq(true));
+        verify(validator).validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante), eq(true), eq(true));
         verify(revisionAsesorOutputPort, never()).actualizarEstado(any(), anyString());
         verify(eventPublisher, never()).publish(any());
         verify(logger).info(CambiarEstadoRevisionAsesorKey.LOG_ESTADO_SIN_CAMBIO, revisionId, "RESUELTA");

@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.application.versionrepositorioartefacto.command
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.secondaryport.entity.VersionRepositorioArtefactoEntity;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface VersionRepositorioArtefactoOutputPort {
@@ -11,7 +12,7 @@ public interface VersionRepositorioArtefactoOutputPort {
 
     boolean existePorId(UUID id);
 
-    List<VersionRepositorioArtefactoEntity> consultarPorIds(List<UUID> ids);
+    Optional<VersionRepositorioArtefactoEntity> obtenerPorId(UUID id);
 
     List<UUID> consultarRepositoriosAsignados(UUID proyectoGrado);
 

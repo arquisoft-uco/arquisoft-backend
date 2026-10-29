@@ -1,7 +1,41 @@
 dependencies {
+    // La direccion domain <- application <- infrastructure la verifica :verificarCapasHexagonales
+    // del build raiz. Solo los tests ven el dominio (arrange de agregados en slices).
     testImplementation project(':entregables:domain')
     implementation project(':entregables:application')
-    implementation "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
+    implementation project(':shared:domain')
+    implementation project(':shared:application')
+    implementation project(':shared:query')
+    implementation project(':shared:amqp')
+    implementation project(':shared:logger')
+    implementation project(':shared:tracing')
+    implementation project(':shared:web')
+    implementation project(':shared:jpa')
+
+    // Solo para los slices de test: un controlador de produccion no puede importar seguridad.
+    testImplementation "org.springframework.boot:spring-boot-starter-security"
+    testImplementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+
+    // AMQP — los consumidores extienden AbstractEventConsumer; spring-amqp no es transitivo desde shared:amqp.
+    implementation "org.springframework.boot:spring-boot-starter-amqp"
+
+    // Database
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
+    runtimeOnly "org.postgresql:postgresql"
+
+    // OpenAPI / Swagger (ADR-011)
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+
+    // Testing
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure"
+    testImplementation "org.springframework.boot:spring-boot-data-jpa-test"
+    testImplementation "org.springframework.boot:spring-boot-webmvc-test"
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation testFixtures(project(':shared:web'))
+    testImplementation "com.h2database:h2"
+    testImplementation project(':shared:tracing')
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
-
-

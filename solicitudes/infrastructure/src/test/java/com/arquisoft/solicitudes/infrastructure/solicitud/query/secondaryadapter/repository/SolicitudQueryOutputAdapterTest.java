@@ -34,6 +34,7 @@ class SolicitudQueryOutputAdapterTest {
     private static final String TIPO_NOVEDAD = "NOVEDAD_PARA_EL_COORDINADOR";
     private static final String TIPO_CAMBIO = "CAMBIO_DE_ASESOR";
     private static final String TIPO_AMPLIACION = "AMPLIACION_DE_PLAZO";
+    private static final String TIPO_REGISTRO = "REGISTRO_Y_MODIFICACION_DE_USUARIOS";
 
     @Autowired
     private TestEntityManager entityManager;
@@ -49,10 +50,10 @@ class SolicitudQueryOutputAdapterTest {
 
         entityManager.persist(TipoSolicitudJpaEntity.builder()
                 .id(TIPO_NOVEDAD).nombre("Novedad para el Coordinador").descripcion("desc").build());
-        entityManager.persist(TipoSolicitudJpaEntity.builder()
-                .id(TIPO_CAMBIO).nombre("Cambio de Asesor").descripcion("desc").build());
-        entityManager.persist(TipoSolicitudJpaEntity.builder()
-                .id(TIPO_AMPLIACION).nombre("Ampliación de Plazo").descripcion("desc").build());
+        entityManager.persist(TipoSolicitudJpaEntity.builder().id(TIPO_CAMBIO).nombre("Cambio de Asesor").descripcion("desc").build());
+        entityManager.persist(TipoSolicitudJpaEntity.builder().id(TIPO_AMPLIACION).nombre("Ampliación de Plazo").descripcion("desc").build());
+        entityManager.persist(TipoSolicitudJpaEntity.builder().id(TIPO_REGISTRO)
+                .nombre("Registro y modificación de Usuarios").descripcion("desc").build());
         entityManager.flush();
     }
 
@@ -108,8 +109,6 @@ class SolicitudQueryOutputAdapterTest {
                         remitenteUsuarioId.toString()))
                 .build();
     }
-
-    // --- HU-091: lado destinatario (recibidas) ---
 
     @Test
     void debeRetornarSoloLasSolicitudesDelDestinatario_yProyectarRemitenteYDestinatario() {
@@ -351,8 +350,6 @@ class SolicitudQueryOutputAdapterTest {
                 .containsExactly("Alba", "Zulma");
     }
 
-    // --- HU-096: lado remitente (enviadas) ---
-
     @Test
     void debeRetornarSoloLasSolicitudesDelRemitente_yProyectarDestinatario() {
         // Arrange
@@ -465,7 +462,8 @@ class SolicitudQueryOutputAdapterTest {
     @ParameterizedTest
     @CsvSource({
             "CAMBIO_DE_ASESOR, es cambio, cambio ajeno",
-            "AMPLIACION_DE_PLAZO, es ampliacion, ampliacion ajena"})
+            "AMPLIACION_DE_PLAZO, es ampliacion, ampliacion ajena",
+            "REGISTRO_Y_MODIFICACION_DE_USUARIOS, es registro, registro ajeno"})
     void debeRetornarSoloElTipoForzadoDelRemitente_cuandoElCriteriaFuerzaTipoYRemitente(
             String tipo, String mensajePropio, String mensajeAjeno) {
         // Arrange

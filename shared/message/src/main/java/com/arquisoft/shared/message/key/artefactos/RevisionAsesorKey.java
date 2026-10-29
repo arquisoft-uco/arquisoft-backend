@@ -19,7 +19,24 @@ public enum RevisionAsesorKey implements ClaveMensaje {
     ERROR_ESTADO_INVALIDO("artefactos.dominio.revisionasesor.error.estado-invalido", 1),
     ERROR_ESTUDIANTE_NO_PARTICIPA("artefactos.dominio.revisionasesor.error.estudiante-no-participa", 0),
     ERROR_ESTUDIANTE_NO_PARTICIPA_DETALLE(
-            "artefactos.dominio.revisionasesor.error.estudiante-no-participa-detalle", 2);
+            "artefactos.dominio.revisionasesor.error.estudiante-no-participa-detalle", 2),
+    ERROR_ABIERTA_EXISTENTE("artefactos.dominio.revisionasesor.error.abierta-existente", 1),
+    ERROR_ABIERTA_EXISTENTE_DETALLE("artefactos.dominio.revisionasesor.error.abierta-existente-detalle", 1),
+    ERROR_VERSION_ANTERIOR_SIN_REVISION(
+            "artefactos.dominio.revisionasesor.error.version-anterior-sin-revision", 1),
+    ERROR_VERSION_ANTERIOR_SIN_REVISION_DETALLE(
+            "artefactos.dominio.revisionasesor.error.version-anterior-sin-revision-detalle", 1),
+    ERROR_ARTEFACTO_CERRADO("artefactos.dominio.revisionasesor.error.artefacto-cerrado", 0),
+    ERROR_ARTEFACTO_CERRADO_DETALLE("artefactos.dominio.revisionasesor.error.artefacto-cerrado-detalle", 1),
+    ERROR_VERSION_ANTERIOR_NO_EN_PROGRESO(
+            "artefactos.dominio.revisionasesor.error.version-anterior-no-en-progreso", 2),
+    ERROR_VERSION_ANTERIOR_NO_EN_PROGRESO_DETALLE(
+            "artefactos.dominio.revisionasesor.error.version-anterior-no-en-progreso-detalle", 2),
+    ERROR_PENDIENTE("artefactos.dominio.revisionasesor.error.pendiente", 0),
+    ERROR_PENDIENTE_DETALLE("artefactos.dominio.revisionasesor.error.pendiente-detalle", 1),
+    ERROR_SIN_VERSION_POSTERIOR("artefactos.dominio.revisionasesor.error.sin-version-posterior", 0),
+    ERROR_SIN_VERSION_POSTERIOR_DETALLE("artefactos.dominio.revisionasesor.error.sin-version-posterior-detalle", 1),
+    LOG_GUARDADA("artefactos.infraestructura.revisionasesor.log.guardada", 1);
 
     private final String clave;
     private final int parametros;

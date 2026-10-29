@@ -76,6 +76,15 @@ public class OpenApiConfig {
     @Value("${rutas.mapas-ruta.mapas-ruta.base:/mapas-ruta}")
     private String mapasRutaBasePath;
 
+    @Value("${rutas.entregables.estados-entregable.base:/estados-entregable}")
+    private String estadosEntregableBasePath;
+
+    @Value("${rutas.entregables.proyectos-grado.base:/proyectos-grado}")
+    private String entregablesProyectosGradoBasePath;
+
+    @Value("${rutas.entregables.entregables-proyecto-grado.base:/entregables-proyecto-grado}")
+    private String entregablesProyectoGradoBasePath;
+
     @Bean
     public GroupedOpenApi allApi() {
         return GroupedOpenApi.builder()
@@ -144,7 +153,9 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
             .group("07-entregables")
             .displayName("Entregables")
-            .pathsToMatch("/entregables/**")
+            .pathsToMatch("/entregables/**", estadosEntregableBasePath + "/**",
+                entregablesProyectosGradoBasePath + "/*/entregables/**",
+                entregablesProyectoGradoBasePath + "/**")
             .build();
     }
 

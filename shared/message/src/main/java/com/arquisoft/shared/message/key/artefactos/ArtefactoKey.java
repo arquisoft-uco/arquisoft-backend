@@ -7,7 +7,7 @@ public enum ArtefactoKey implements ClaveMensaje {
 
     LOG_ASIGNANDO("artefactos.aplicacion.artefacto.log.asignando", 2),
     LOG_VERIFICACION_ASIGNAR("artefactos.aplicacion.artefacto.log.verificacion-asignar", 5),
-    LOG_ASIGNADOS("artefactos.aplicacion.artefacto.log.asignados", 2),
+    LOG_ASIGNADO("artefactos.aplicacion.artefacto.log.asignado", 2),
     LOG_TRASPASANDO("artefactos.aplicacion.artefacto.log.traspasando", 2),
     LOG_CONSULTANDO_ASESOR("artefactos.aplicacion.artefacto.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("artefactos.aplicacion.artefacto.log.consulta-asesor-completada", 1),
@@ -17,12 +17,14 @@ public enum ArtefactoKey implements ClaveMensaje {
     LOG_ASESOR_ACTUALIZADO("artefactos.infraestructura.artefacto.log.asesor-actualizado", 1),
     ERROR_NO_ENCONTRADO("artefactos.dominio.artefacto.error.no-encontrado", 0),
     ERROR_NO_ENCONTRADO_DETALLE("artefactos.dominio.artefacto.error.no-encontrado-detalle", 1),
-    LOG_GUARDADOS("artefactos.infraestructura.artefacto.log.guardados", 1),
+    LOG_GUARDADO("artefactos.infraestructura.artefacto.log.guardado", 1),
     LOG_TRASPASADOS("artefactos.infraestructura.artefacto.log.traspasados", 1),
     ERROR_REPOSITORIO_YA_ASIGNADO("artefactos.dominio.artefacto.error.repositorio-ya-asignado", 1),
     ERROR_REPOSITORIO_YA_ASIGNADO_DETALLE("artefactos.dominio.artefacto.error.repositorio-ya-asignado-detalle", 1),
     ERROR_ESTUDIANTE_NO_PROPIETARIO("artefactos.dominio.artefacto.error.estudiante-no-propietario", 0),
-    ERROR_ESTUDIANTE_NO_PROPIETARIO_DETALLE("artefactos.dominio.artefacto.error.estudiante-no-propietario-detalle", 2);
+    ERROR_ESTUDIANTE_NO_PROPIETARIO_DETALLE("artefactos.dominio.artefacto.error.estudiante-no-propietario-detalle", 2),
+    ERROR_ASESOR_NO_PROPIETARIO("artefactos.dominio.artefacto.error.asesor-no-propietario", 0),
+    ERROR_ASESOR_NO_PROPIETARIO_DETALLE("artefactos.dominio.artefacto.error.asesor-no-propietario-detalle", 2);
 
     private final String clave;
     private final int parametros;

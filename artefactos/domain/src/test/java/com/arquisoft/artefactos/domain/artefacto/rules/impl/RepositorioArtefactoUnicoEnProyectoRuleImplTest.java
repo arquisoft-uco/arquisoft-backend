@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.domain.artefacto.rules.impl;
 
 import com.arquisoft.artefactos.domain.artefacto.exception.RepositorioArtefactoYaAsignadoException;
-import com.arquisoft.artefactos.domain.artefacto.model.DisponibilidadRepositoriosProyecto;
+import com.arquisoft.artefactos.domain.artefacto.model.DisponibilidadRepositorioProyecto;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -25,41 +26,29 @@ class RepositorioArtefactoUnicoEnProyectoRuleImplTest {
     }
 
     @Test
-    void debePasar_cuandoRepositoriosDistintosYNoAsignados() {
+    void debePasar_cuandoElRepositorioNoEstaAsignado() {
         // Arrange
-        var disponibilidad = new DisponibilidadRepositoriosProyecto(
-                List.of(version(UtilUUID.generarNuevoUUID()), version(UtilUUID.generarNuevoUUID())),
-                List.of(UtilUUID.generarNuevoUUID()));
+        var disponibilidad = new DisponibilidadRepositorioProyecto(
+                version(UtilUUID.generarNuevoUUID()), List.of(UtilUUID.generarNuevoUUID()));
 
         // Act & Assert
         assertThatCode(() -> regla.validar(disponibilidad)).doesNotThrowAnyException();
     }
 
     @Test
-    void debeLanzar_cuandoDosVersionesSonDelMismoRepositorio() {
+    void debeLanzar_cuandoElRepositorioYaEstaAsignado() {
         // Arrange
         var repositorio = UtilUUID.generarNuevoUUID();
-        var disponibilidad = new DisponibilidadRepositoriosProyecto(
-                List.of(version(repositorio), version(repositorio)), List.of());
+        var disponibilidad = new DisponibilidadRepositorioProyecto(version(repositorio), List.of(repositorio));
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(disponibilidad))
                 .isInstanceOf(RepositorioArtefactoYaAsignadoException.class)
-                .extracting("codigoError")
-                .isEqualTo(ArtefactosCodes.Artefacto.REPOSITORIO_YA_ASIGNADO);
-    }
-
-    @Test
-    void debeLanzar_cuandoElProyectoYaTieneElRepositorio() {
-        // Arrange
-        var repositorio = UtilUUID.generarNuevoUUID();
-        var disponibilidad = new DisponibilidadRepositoriosProyecto(
-                List.of(version(repositorio)), List.of(repositorio));
-
-        // Act & Assert
-        assertThatThrownBy(() -> regla.validar(disponibilidad))
-                .isInstanceOf(RepositorioArtefactoYaAsignadoException.class)
-                .extracting("codigoError")
-                .isEqualTo(ArtefactosCodes.Artefacto.REPOSITORIO_YA_ASIGNADO);
+                .satisfies(ex -> {
+                    var error = ((RepositorioArtefactoYaAsignadoException) ex).getError();
+                    assertThat(error.getCodigoError()).isEqualTo(ArtefactosCodes.Artefacto.REPOSITORIO_YA_ASIGNADO);
+                    assertThat(error.getMessage()).contains("Repo").doesNotContain(repositorio.toString());
+                    assertThat(error.getDetalle()).contains(repositorio.toString());
+                });
     }
 }

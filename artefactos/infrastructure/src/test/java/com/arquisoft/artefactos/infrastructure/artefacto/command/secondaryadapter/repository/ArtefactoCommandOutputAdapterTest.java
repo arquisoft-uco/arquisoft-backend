@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapt
 
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -38,17 +39,15 @@ class ArtefactoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeGuardarTodosYLeerDeVuelta_cuandoSePersisteElLote() {
+    void debePersistirElArtefacto_yLoguearGuardado() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
-        var primero = new ArtefactoEntity(
-                UtilUUID.generarNuevoUUID(), proyecto, UtilUUID.generarNuevoUUID(), asesor);
         var segundo = new ArtefactoEntity(
                 UtilUUID.generarNuevoUUID(), proyecto, UtilUUID.generarNuevoUUID(), asesor);
 
         // Act
-        adapter.registrarTodos(List.of(primero, segundo));
+        adapter.registrar(segundo);
         entityManager.flush();
         entityManager.clear();
 
@@ -57,8 +56,7 @@ class ArtefactoCommandOutputAdapterTest {
         assertThat(guardado.getProyectoGrado()).isEqualTo(proyecto);
         assertThat(guardado.getVersionRepositorioArtefacto()).isEqualTo(segundo.versionRepositorioArtefacto());
         assertThat(guardado.getAsesor()).isEqualTo(asesor);
-        assertThat(entityManager.find(ArtefactoJpaEntity.class, primero.id())).isNotNull();
-        verify(logger).debug(ArtefactoKey.LOG_GUARDADOS, 2);
+        verify(logger).debug(ArtefactoKey.LOG_GUARDADO, segundo.id());
     }
 
     @Test
@@ -186,5 +184,33 @@ class ArtefactoCommandOutputAdapterTest {
         assertThat(entityManager.find(ArtefactoJpaEntity.class, objetivo).getAsesor()).isEqualTo(nuevo);
         assertThat(entityManager.find(ArtefactoJpaEntity.class, hermano).getAsesor()).isEqualTo(anterior);
         verify(logger).debug(ArtefactoKey.LOG_ASESOR_ACTUALIZADO, objetivo);
+    }
+
+    @Test
+    void debeObtenerPorVersionArtefacto_cuandoLaVersionPerteneceAlArtefacto() {
+        // Arrange
+        var asesor = UtilUUID.generarNuevoUUID();
+        var objetivo = sembrar(UtilUUID.generarNuevoUUID(), asesor);
+        var otro = sembrar(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var version = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new VersionArtefactoTestEntity(version, objetivo, 2));
+        entityManager.persist(new VersionArtefactoTestEntity(UtilUUID.generarNuevoUUID(), otro, 1));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorVersionArtefacto(version);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(objetivo);
+            assertThat(entity.asesor()).isEqualTo(asesor);
+        });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaVersionNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerPorVersionArtefacto(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 }

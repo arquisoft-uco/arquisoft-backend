@@ -153,28 +153,39 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeConsultarSoloLasVersionesExistentes_cuandoAlgunaIdNoExiste() {
+    void debeObtenerLaVersion_cuandoExiste() {
         // Arrange
         var repositorio = UtilUUID.generarNuevoUUID();
-        var primera = UtilUUID.generarNuevoUUID();
-        var segunda = UtilUUID.generarNuevoUUID();
-        var ajena = UtilUUID.generarNuevoUUID();
-        adapter.guardar(entidadDeRepositorio(primera, repositorio, "Doc uno"));
-        adapter.guardar(entidadDeRepositorio(segunda, repositorio, "Doc dos"));
-        adapter.guardar(entidadDeRepositorio(ajena, UtilUUID.generarNuevoUUID(), "Doc tres"));
+        var buscada = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadDeRepositorio(buscada, repositorio, "Doc uno"));
+        adapter.guardar(entidadDeRepositorio(UtilUUID.generarNuevoUUID(), repositorio, "Doc dos"));
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        var encontradas = adapter.consultarPorIds(List.of(primera, segunda, UtilUUID.generarNuevoUUID()));
+        var encontrada = adapter.obtenerPorId(buscada);
 
         // Assert
-        assertThat(encontradas).extracting(VersionRepositorioArtefactoEntity::id)
-                .containsExactlyInAnyOrder(primera, segunda);
-        assertThat(encontradas).allSatisfy(version -> {
+        assertThat(encontrada).hasValueSatisfying(version -> {
+            assertThat(version.id()).isEqualTo(buscada);
+            assertThat(version.nombreDocumento()).isEqualTo("Doc uno");
             assertThat(version.repositorioArtefacto()).isEqualTo(repositorio);
             assertThat(version.nombreArchivo()).isEqualTo("plantilla.pdf");
         });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaVersionNoExiste() {
+        // Arrange
+        adapter.guardar(entidadDeRepositorio(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Doc uno"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrada = adapter.obtenerPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrada).isEmpty();
     }
 
     @Test

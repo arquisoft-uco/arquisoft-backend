@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -20,12 +21,21 @@ import java.util.UUID;
 public class EstudianteJpaEntity {
 
     @Id
-    @Column(name = "id", columnDefinition = "uuid")
+    @Column(name = "id", columnDefinition = "UUID")
     private UUID id;
+
+    @Column(name = "identificador", nullable = false, length = 30)
+    private String identificador;
 
     @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
 
     @Column(name = "email", nullable = false, length = 50)
     private String email;
+
+    @Column(name = "ocurrido_en", nullable = false)
+    private Instant ocurridoEn;
+
+    @Column(name = "eliminado_en")
+    private Instant eliminadoEn;
 }

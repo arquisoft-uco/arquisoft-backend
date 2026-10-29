@@ -2,19 +2,20 @@ package com.arquisoft.artefactos.application.artefacto.command.secondaryport;
 
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface ArtefactoOutputPort {
 
-    void registrarTodos(List<ArtefactoEntity> artefactos);
+    void registrar(ArtefactoEntity artefacto);
 
     void traspasarAsesorDeProyecto(UUID proyectoGrado, UUID asesor);
 
     Optional<ArtefactoEntity> obtenerPorId(UUID id);
 
     Optional<ArtefactoEntity> obtenerBloqueadoPorId(UUID id);
+
+    Optional<ArtefactoEntity> obtenerPorVersionArtefacto(UUID versionArtefacto);
 
     void cambiarAsesor(UUID artefacto, UUID asesor);
 }

@@ -3,7 +3,9 @@ package com.arquisoft.artefactos.domain.versionrepositorioartefacto;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.message.constant.ArtefactosLimits;
+import com.arquisoft.shared.util.UtilNumero;
 import com.arquisoft.shared.util.UtilTexto;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorNumero;
@@ -15,6 +17,10 @@ import java.util.UUID;
 public final class VersionRepositorioArtefactoDomain {
 
     public record DatosArchivo(String nombreArchivo, String tipoContenido, long tamanoBytes) {}
+
+    public static final VersionRepositorioArtefactoDomain VACIO = VersionRepositorioArtefactoDomain.reconstruir(
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilNumero.CERO, UtilUUID.obtenerUUIDPorDefecto(),
+            UtilTexto.VACIO, new DatosArchivo(UtilTexto.VACIO, UtilTexto.VACIO, UtilNumero.CERO));
 
     private UUID id;
     private String nombreDocumento;
@@ -191,5 +197,9 @@ public final class VersionRepositorioArtefactoDomain {
 
     public long getTamanoBytes() {
         return tamanoBytes;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

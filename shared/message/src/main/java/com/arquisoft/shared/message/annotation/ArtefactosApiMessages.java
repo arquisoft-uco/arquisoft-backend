@@ -43,17 +43,30 @@ public final class ArtefactosApiMessages {
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar las revisiones realizadas";
 
+        public static final String REGISTRAR_SUMMARY = "Registrar una revisión de la versión de un artefacto";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra, en estado PENDIENTE, una revisión sobre la versión más reciente del artefacto. El "
+                        + "asesor se toma del token y debe ser el responsable del artefacto. Si la versión tiene "
+                        + "revisiones, todas deben estar cerradas: registrar una nueva reabre el artefacto. No "
+                        + "envía correos.";
+        public static final String REGISTRAR_RESP_201 = "Revisión registrada";
+        public static final String REGISTRAR_RESP_400 = "Identificador de la versión del artefacto mal formado";
+        public static final String REGISTRAR_RESP_422 =
+                "La versión o su artefacto no existen, el asesor no es el responsable del artefacto, la versión "
+                        + "no es la más reciente o ya tiene una revisión sin cerrar";
+
         public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de una revisión del asesor";
         public static final String CAMBIAR_ESTADO_DESCRIPTION =
-                "Cambia el estado de la revisión del asesor a PENDIENTE, EN_PROGRESO o RESUELTA. El estudiante "
-                        + "se toma del token y debe participar del artefacto de la revisión. Cerrar la revisión "
-                        + "no es posible desde este recurso. Si el estado nuevo es RESUELTA, el asesor recibe un "
-                        + "correo; si coincide con el actual, no se realiza ningún cambio.";
+                "Marca como RESUELTA una revisión EN_PROGRESO, siempre que el estudiante ya haya subido una "
+                        + "versión posterior a la revisada. El estudiante se toma del token y debe participar del "
+                        + "artefacto de la revisión. Cualquier otro estado destino se rechaza. El asesor recibe un "
+                        + "correo; si el estado coincide con el actual, no se realiza ningún cambio.";
         public static final String CAMBIAR_ESTADO_RESP_204 = "Estado de la revisión cambiado";
         public static final String CAMBIAR_ESTADO_RESP_400 = "Identificador o estado de la revisión mal formado";
         public static final String CAMBIAR_ESTADO_RESP_422 =
                 "La revisión o el estudiante no existen, el estudiante no participa del artefacto, la revisión "
-                        + "está cerrada, el estado es desconocido o el estado destino no está permitido";
+                        + "está cerrada o pendiente, el estado es desconocido o no está permitido, o aún no hay una "
+                        + "versión posterior a la revisada";
     }
 
     public static final class VersionArtefacto {
@@ -82,7 +95,8 @@ public final class ArtefactosApiMessages {
         public static final String SOLICITAR_CARGA_RESP_200 = "Formulario de carga generado";
         public static final String SOLICITAR_CARGA_RESP_400 = "Datos de entrada inválidos";
         public static final String SOLICITAR_CARGA_RESP_422 =
-                "Artefacto inexistente, estudiante no vinculado, tipo o tamaño de archivo no permitido";
+                "Artefacto inexistente, estudiante no vinculado, tipo o tamaño de archivo no permitido, o la última "
+                        + "versión no tiene una revisión en progreso (sin revisión, pendiente, resuelta o cerrada)";
         public static final String SOLICITAR_CARGA_RESP_503 = "Almacenamiento de objetos no disponible";
         public static final String GENERAR_SUMMARY = "Confirmar la carga de una nueva versión del artefacto";
         public static final String GENERAR_DESCRIPTION =
@@ -92,7 +106,8 @@ public final class ArtefactosApiMessages {
         public static final String GENERAR_RESP_400 = "Datos de entrada inválidos";
         public static final String GENERAR_RESP_422 =
                 "Artefacto inexistente, estudiante no vinculado, asesor dado de baja, carga inexistente o ajena, "
-                        + "o archivo inválido";
+                        + "archivo inválido, o la última versión no tiene una revisión en progreso (sin revisión, "
+                        + "pendiente, resuelta o cerrada)";
         public static final String GENERAR_RESP_503 = "Almacenamiento de objetos no disponible";
         public static final String PARAM_ARTEFACTO = "Identificador del artefacto";
     }
@@ -111,6 +126,18 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado de estudiantes vinculados al artefacto";
         public static final String CONSULTAR_RESP_400 = "Identificador de artefacto inválido";
         public static final String CONSULTAR_RESP_403 = "Sin permisos para consultar los estudiantes del artefacto";
+        public static final String ASIGNAR_SUMMARY = "Vincular estudiantes a un artefacto";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Vincula uno o varios estudiantes vigentes del proyecto de grado a un artefacto del asesor "
+                        + "autenticado, todo o nada. Cada estudiante recibe un correo. Ningún estudiante puede "
+                        + "estar ya vinculado al artefacto ni repetirse en la solicitud.";
+        public static final String ASIGNAR_RESP_201 = "Estudiantes vinculados al artefacto";
+        public static final String ASIGNAR_RESP_400 =
+                "Datos mal formados: lista vacía o identificador de estudiante inválido";
+        public static final String ASIGNAR_RESP_422 =
+                "El artefacto o algún estudiante no existe, el asesor no es el responsable del artefacto, "
+                        + "algún estudiante está dado de baja, no pertenece al proyecto de grado o ya está "
+                        + "vinculado al artefacto, o un estudiante está repetido en la solicitud";
     }
 
     public static final class Observacion {
@@ -145,16 +172,16 @@ public final class ArtefactosApiMessages {
 
         public static final String TAG_NAME = "Artefactos";
         public static final String TAG_DESCRIPTION = "Asignación de artefactos a los proyectos de grado y consulta de los asignados al asesor";
-        public static final String ASIGNAR_SUMMARY = "Asignar artefactos a un proyecto de grado";
+        public static final String ASIGNAR_SUMMARY = "Asignar un artefacto a un proyecto de grado";
         public static final String ASIGNAR_DESCRIPTION =
-                "Vincula al proyecto de grado una o varias versiones de repositorios de artefactos como "
-                        + "artefactos suyos, todo o nada. El asesor del artefacto es el del token y debe tener "
-                        + "asignado el proyecto. El proyecto no puede tener ya un artefacto de ninguno de los "
-                        + "repositorios, ni repetir un repositorio dentro del lote. Responde con los ids de los "
-                        + "artefactos creados, en el orden enviado.";
-        public static final String ASIGNAR_RESP_201 = "Artefactos asignados al proyecto de grado";
+                "Vincula al proyecto de grado una versión de repositorio de artefactos como artefacto suyo "
+                        + "y le asigna uno o varios estudiantes del proyecto, todo o nada. Cada estudiante recibe "
+                        + "un correo. El asesor del artefacto es el del token y debe tener asignado el proyecto. "
+                        + "El proyecto no puede tener ya un artefacto de ese repositorio. Responde con el id del "
+                        + "artefacto creado.";
+        public static final String ASIGNAR_RESP_201 = "Artefacto asignado al proyecto de grado";
         public static final String ASIGNAR_RESP_400 =
-                "Datos mal formados: identificador inválido, lista vacía o versión repetida";
+                "Datos mal formados: identificador de proyecto, versión o estudiante inválido";
         public static final String CAMBIAR_ASESOR_SUMMARY = "Cambiar el responsable de un artefacto";
         public static final String CAMBIAR_ASESOR_DESCRIPTION =
                 "Designa a otro asesor como responsable de un artefacto ya asignado. El nuevo asesor debe "
@@ -179,8 +206,10 @@ public final class ArtefactosApiMessages {
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar los artefactos del asesor";
         public static final String ASIGNAR_RESP_422 =
-                "El proyecto, el asesor o alguna versión no existe, el asesor no está asignado al proyecto "
-                        + "o el repositorio ya está asignado";
+                "El proyecto, el asesor o la versión no existe, el asesor no está asignado al proyecto, "
+                        + "el repositorio ya está asignado, la lista de estudiantes está vacía o repetida, o algún "
+                        + "estudiante no existe, está dado de baja, no pertenece al proyecto de grado o ya está "
+                        + "vinculado al artefacto";
     }
 
     public static final class EstadoRevisionAsesor {

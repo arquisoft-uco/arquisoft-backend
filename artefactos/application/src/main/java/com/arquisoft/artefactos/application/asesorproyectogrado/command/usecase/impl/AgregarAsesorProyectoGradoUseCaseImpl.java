@@ -45,6 +45,9 @@ public class AgregarAsesorProyectoGradoUseCaseImpl implements AgregarAsesorProye
             return AgregacionAsesorProyectoGradoResultMapper.toResultDescartada(entrada, existente.getOcurridoEn());
         }
         if (!existente.estaFinalizado()) {
+            existente.reactivar(entrada.getOcurridoEn());
+            asesorProyectoGradoOutputPort.guardar(AsesorProyectoGradoMapper.toEntity(existente));
+            traspasarSiEsElMasReciente(agregacion, ultimoOcurridoEn);
             return AgregacionAsesorProyectoGradoResultMapper.toResultDuplicada(entrada);
         }
 

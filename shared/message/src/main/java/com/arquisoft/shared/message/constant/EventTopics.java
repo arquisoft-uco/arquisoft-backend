@@ -172,6 +172,8 @@ public final class EventTopics {
 
         public static final String VERSION_ARTEFACTO_GENERADA =
                 "artefactos.version_artefacto.generada";
+        public static final String ESTUDIANTES_ARTEFACTO_ASIGNADOS =
+                "artefactos.estudiante_artefacto.asignados";
         public static final String REVISION_ASESOR_ESTADO_CAMBIADO =
                 "artefactos.revision_asesor.estado_cambiado";
     }

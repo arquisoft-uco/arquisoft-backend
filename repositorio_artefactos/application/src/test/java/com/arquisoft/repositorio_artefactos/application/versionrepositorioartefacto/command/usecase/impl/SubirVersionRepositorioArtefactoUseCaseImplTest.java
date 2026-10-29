@@ -9,6 +9,7 @@ import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefa
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.AlmacenamientoVersionOutputPort;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.VersionRepositorioArtefactoOutputPort;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.entity.VersionRepositorioArtefactoEntity;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.validator.SubirVersionRepositorioArtefactoContenidoValidator;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.validator.SubirVersionRepositorioArtefactoValidator;
 import com.arquisoft.repositorio_artefactos.domain.administrador.AdministradorDomain;
 import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.RepositorioArtefactoDomain;
@@ -70,6 +71,8 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     @Mock
     private SubirVersionRepositorioArtefactoValidator validator;
     @Mock
+    private SubirVersionRepositorioArtefactoContenidoValidator contenidoValidator;
+    @Mock
     private AlmacenamientoVersionOutputPort almacenamiento;
     @Mock
     private VersionRepositorioArtefactoOutputPort versionOutputPort;
@@ -90,8 +93,8 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     void setUp() {
         useCase = new SubirVersionRepositorioArtefactoUseCaseImpl(administradorPorIdFinder,
                 repositorioArtefactoBloqueadoPorIdFinder, cargaPendienteFinder, analisisCargaFinder,
-                ultimoNumeroVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator, almacenamiento,
-                versionOutputPort, eventPublisher, logger);
+                ultimoNumeroVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator, contenidoValidator,
+                almacenamiento, versionOutputPort, eventPublisher, logger);
         subida = SubidaVersionRepositorioArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Formato A", false);
         administrador = AdministradorDomain.crear(
@@ -128,15 +131,15 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
         var captorVersion = ArgumentCaptor.forClass(VersionRepositorioArtefactoEntity.class);
         var ordenFinders = inOrder(administradorPorIdFinder, repositorioArtefactoBloqueadoPorIdFinder,
                 cargaPendienteFinder, ultimoNumeroVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator,
-                analisisCargaFinder);
+                analisisCargaFinder, contenidoValidator);
         ordenFinders.verify(administradorPorIdFinder).obtener(subida.getSolicitante());
         ordenFinders.verify(repositorioArtefactoBloqueadoPorIdFinder).obtener(subida.getRepositorio());
         ordenFinders.verify(cargaPendienteFinder).obtener(subida.getCarga());
         ordenFinders.verify(ultimoNumeroVersionDocumentoFinder).obtener(subida);
         ordenFinders.verify(tamanoMaximoArchivoFinder).obtener();
-        ordenFinders.verify(validator).validarCarga(subida, administrador, repositorio, carga, MAXIMO, 4);
+        ordenFinders.verify(validator).validar(subida, administrador, repositorio, carga, MAXIMO, 4);
         ordenFinders.verify(analisisCargaFinder).obtener(subida.getCarga());
-        ordenFinders.verify(validator).validarContenido(subida, carga, analisis);
+        ordenFinders.verify(contenidoValidator).validar(subida, carga, analisis);
         verify(administradorPorIdFinder, times(1)).obtener(any());
         verify(repositorioArtefactoBloqueadoPorIdFinder, times(1)).obtener(any());
         verify(cargaPendienteFinder, times(1)).obtener(any());
@@ -153,16 +156,16 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     }
 
     @Test
-    void debeNoAnalizarElArchivo_cuandoLaCargaSeRechaza() {
+    void debeNoAnalizarElArchivo_cuandoLasPrecondicionesSeRechazan() {
         // Arrange
         prepararFindersDeCarga(0);
         doThrow(new TamanoArchivoExcedidoException("plantilla.docx", MAXIMO + 1, MAXIMO))
-                .when(validator).validarCarga(any(), any(), any(), any(), anyLong(), anyInt());
+                .when(validator).validar(any(), any(), any(), any(), anyLong(), anyInt());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(subida)).isInstanceOf(TamanoArchivoExcedidoException.class);
         verifyNoInteractions(analisisCargaFinder, almacenamiento, versionOutputPort, eventPublisher);
-        verify(validator, never()).validarContenido(any(), any(), any());
+        verifyNoInteractions(contenidoValidator);
     }
 
     @Test
@@ -170,7 +173,7 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
         // Arrange
         prepararFinders(0);
         doThrow(new TipoArchivoNoCoincideException("plantilla.docx", "a", "b"))
-                .when(validator).validarContenido(any(), any(), any());
+                .when(contenidoValidator).validar(any(), any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(subida)).isInstanceOf(TipoArchivoNoCoincideException.class);

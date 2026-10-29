@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const RAMAS_PROTEGIDAS = ['main', 'master', 'develop'];
+const REPOSITORIOS_DIRECTO_A_MAIN = ['arquisoft-docs'];
 const ARCHIVO_NO_VERSIONABLE =
   /(^|\/)(\.env|\.env[\w.-]*\.properties|[^/]+\.key|\.gradle|build|logs|\.workspace|\.mcp\.json|settings\.local\.json)(\/.*)?$/;
 const ES_CODIGO_FUENTE = /(^|\/)src\/(main|test)\//;
@@ -24,9 +25,20 @@ const PATRON_MUTACION_DE_PR =
 const PATRON_GIT = new RegExp(
   `${INICIO_DE_ORDEN}git((?:\\s+(?:-C\\s+\\S+|-c\\s+\\S+|--[\\w-]+(?:=\\S+)?))*)\\s+(push|commit|add)\\b(.*)$`,
 );
+const PATRON_CAMBIO_DE_DIRECTORIO =
+  /^\s*(?:&\s*)?(?:cd|pushd|Set-Location)\s+("[^"]*"|'[^']*'|\S+)\s*$/i;
+const ES_RUTA_ABSOLUTA = /^(?:[a-zA-Z]:[\\/]|[\\/]|~)/;
+const ES_RUTA_MSYS = /^\/([a-zA-Z])(?=\/|$)/;
+const NOMBRE_DEL_REMOTO = /([^/:\\]+?)(?:\.git)?\/?$/;
 
 const sinComillas = (texto) => texto.replace(/^["']+|["')]+$/g, '');
 const rechazar = (razon) => ({ decision: 'deny', razon });
+
+function resolverDirectorio(base, destino) {
+  if (!destino) return base;
+  if (!base || ES_RUTA_ABSOLUTA.test(destino)) return destino;
+  return `${base.replace(/[\\/]+$/, '')}/${destino}`;
+}
 
 function quitarHeredocs(comando) {
   return comando
@@ -52,6 +64,8 @@ function evaluarPush(tokens, contexto) {
     return rechazar('Un refspec con "+" fuerza el push y está prohibido. Sube sin forzar.');
   }
 
+  if (contexto.directoAMain()) return null;
+
   const destinos = refspecs.map((r) =>
     r
       .split(':')
@@ -75,6 +89,7 @@ function evaluarPush(tokens, contexto) {
 }
 
 function evaluarCommit(contexto) {
+  if (contexto.directoAMain()) return null;
   const rama = contexto.rama();
   if (rama && RAMAS_PROTEGIDAS.includes(rama)) {
     return rechazar(
@@ -106,7 +121,7 @@ function esApiQueRevisaOMergea(segmento) {
   return escribeRevision || PATRON_MUTACION_DE_PR.test(segmento);
 }
 
-function evaluarSegmento(segmento, ramaDe) {
+function evaluarSegmento(segmento, ramaDe, repositorioDe, directorioActual) {
   if (PATRON_GH_MERGE.test(segmento) || PATRON_GH_API_MERGE.test(segmento)) {
     return rechazar(
       'El merge de un PR lo aprueba y ejecuta una persona desde GitHub después de revisarlo.',
@@ -122,8 +137,12 @@ function evaluarSegmento(segmento, ramaDe) {
   if (!git) return null;
 
   const [, opciones, subcomando, argumentos] = git;
-  const directorio = /-C\s+(\S+)/.exec(opciones)?.[1];
-  const contexto = { rama: () => ramaDe(directorio ? sinComillas(directorio) : undefined) };
+  const opcionC = /-C\s+(\S+)/.exec(opciones)?.[1];
+  const directorio = resolverDirectorio(directorioActual, opcionC ? sinComillas(opcionC) : undefined);
+  const contexto = {
+    rama: () => ramaDe(directorio),
+    directoAMain: () => REPOSITORIOS_DIRECTO_A_MAIN.includes(repositorioDe(directorio)),
+  };
   const tokens = argumentos.trim().split(/\s+/).filter(Boolean).map(sinComillas);
 
   if (subcomando === 'push') return evaluarPush(tokens, contexto);
@@ -131,25 +150,30 @@ function evaluarSegmento(segmento, ramaDe) {
   return evaluarAdd(tokens);
 }
 
-export function evaluarComando(comando, ramaDe) {
+export function evaluarComando(comando, ramaDe, repositorioDe = () => null) {
   const segmentos = quitarHeredocs(comando).split(/&&|\|\||;|\||\n/);
+  let directorioActual;
   for (const segmento of segmentos) {
-    const veredicto = evaluarSegmento(segmento, ramaDe);
+    const cambio = PATRON_CAMBIO_DE_DIRECTORIO.exec(segmento);
+    if (cambio) {
+      directorioActual = resolverDirectorio(directorioActual, sinComillas(cambio[1]));
+      continue;
+    }
+    const veredicto = evaluarSegmento(segmento, ramaDe, repositorioDe, directorioActual);
     if (veredicto) return veredicto;
   }
   return null;
 }
 
-function ramaDelRepositorio(directorio, cwd) {
-  if (directorio && /[$`]/.test(directorio)) return null;
-  const argumentos = [
-    ...(directorio ? ['-C', directorio] : []),
-    'rev-parse',
-    '--abbrev-ref',
-    'HEAD',
-  ];
+function paraGit(directorio) {
+  if (process.platform !== 'win32') return directorio;
+  return directorio.replace(ES_RUTA_MSYS, (_, unidad) => `${unidad.toUpperCase()}:`);
+}
+
+function consultarGit(directorio, cwd, argumentos) {
+  if (directorio && /[$`~]/.test(directorio)) return null;
   try {
-    return execFileSync('git', argumentos, {
+    return execFileSync('git', [...(directorio ? ['-C', paraGit(directorio)] : []), ...argumentos], {
       cwd,
       encoding: 'utf8',
       timeout: 5000,
@@ -158,6 +182,15 @@ function ramaDelRepositorio(directorio, cwd) {
   } catch {
     return null;
   }
+}
+
+function ramaDelRepositorio(directorio, cwd) {
+  return consultarGit(directorio, cwd, ['rev-parse', '--abbrev-ref', 'HEAD']);
+}
+
+function nombreDelRepositorio(directorio, cwd) {
+  const remoto = consultarGit(directorio, cwd, ['config', '--get', 'remote.origin.url']);
+  return remoto ? (NOMBRE_DEL_REMOTO.exec(remoto)?.[1] ?? null) : null;
 }
 
 function main() {
@@ -170,8 +203,10 @@ function main() {
   const comando = entrada?.tool_input?.command;
   if (typeof comando !== 'string') return;
 
-  const veredicto = evaluarComando(comando, (directorio) =>
-    ramaDelRepositorio(directorio, entrada.cwd),
+  const veredicto = evaluarComando(
+    comando,
+    (directorio) => ramaDelRepositorio(directorio, entrada.cwd),
+    (directorio) => nombreDelRepositorio(directorio, entrada.cwd),
   );
   if (!veredicto) return;
 

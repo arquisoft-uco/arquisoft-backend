@@ -5,6 +5,7 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,6 +22,14 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM ArtefactoJpaEntity a WHERE a.id = :id")
     Optional<ArtefactoJpaEntity> bloquearPorId(@Param("id") UUID id);
+
+    @NativeQuery("""
+            SELECT a.*
+            FROM artefacto a
+            JOIN version_artefacto va ON va.artefacto_id = a.id
+            WHERE va.id = :versionArtefacto
+            """)
+    Optional<ArtefactoJpaEntity> buscarPorVersionArtefacto(@Param("versionArtefacto") UUID versionArtefacto);
 
     @Modifying
     @Query("UPDATE ArtefactoJpaEntity a SET a.asesor = :asesor WHERE a.id = :id")

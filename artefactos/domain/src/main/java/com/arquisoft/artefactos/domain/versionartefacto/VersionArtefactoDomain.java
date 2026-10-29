@@ -4,6 +4,8 @@ import com.arquisoft.shared.message.constant.ArtefactosAlmacenamiento;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilNumero;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorNumero;
@@ -13,6 +15,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 public final class VersionArtefactoDomain {
+
+    public static final VersionArtefactoDomain VACIO = reconstruir(
+            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
+            UtilNumero.CERO, UtilFecha.VACIO, UtilTexto.VACIO);
 
     private UUID id;
     private UUID artefacto;
@@ -33,6 +39,17 @@ public final class VersionArtefactoDomain {
         version.setUriArchivo();
 
         result.lanzarSiTieneErrores();
+        return version;
+    }
+
+    public static VersionArtefactoDomain reconstruir(
+            UUID id, UUID artefacto, int numeroVersion, Instant fechaCreacion, String uriArchivo) {
+        var version = new VersionArtefactoDomain();
+        version.id = id;
+        version.artefacto = artefacto;
+        version.numeroVersion = numeroVersion;
+        version.fechaCreacion = fechaCreacion;
+        version.uriArchivo = uriArchivo;
         return version;
     }
 
@@ -84,5 +101,9 @@ public final class VersionArtefactoDomain {
 
     public String getUriArchivo() {
         return uriArchivo;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

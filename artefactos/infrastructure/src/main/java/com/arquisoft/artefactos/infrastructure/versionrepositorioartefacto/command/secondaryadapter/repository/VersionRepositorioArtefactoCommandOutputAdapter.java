@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -31,10 +32,9 @@ public class VersionRepositorioArtefactoCommandOutputAdapter implements VersionR
     }
 
     @Override
-    public List<VersionRepositorioArtefactoEntity> consultarPorIds(List<UUID> ids) {
-        return versionRepositorioArtefactoCommandRepository.findAllById(ids).stream()
-                .map(VersionRepositorioArtefactoJpaMapper::toEntity)
-                .toList();
+    public Optional<VersionRepositorioArtefactoEntity> obtenerPorId(UUID id) {
+        return versionRepositorioArtefactoCommandRepository.findById(id)
+                .map(VersionRepositorioArtefactoJpaMapper::toEntity);
     }
 
     @Override

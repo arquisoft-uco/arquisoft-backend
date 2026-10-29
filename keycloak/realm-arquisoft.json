@@ -82,6 +82,8 @@
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
               "solicitudes:solicitud-registro-modificacion-usuarios:create",
+              "solicitudes:solicitud-registro-modificacion-usuarios:delete",
+              "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
               "fichas:item-ficha-perfil-coordinador:view",
               "solicitudes:estado-respuesta:view",
               "proyectos:asesor-proyecto-grado:update-estado",
@@ -123,6 +125,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "entregables:entregable-proyecto-grado-jurado:view",
               "evaluaciones:evaluacion-cuantitativa-jurado:delete",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:evaluacion-cuantitativa-jurado:update",
@@ -262,6 +265,7 @@
           "client": {
             "arquisoft-api": [
               "artefactos:version-artefacto:upload",
+              "entregables:entregable-proyecto-grado-estudiante:view",
               "solicitudes:respuesta-cambio-asesor-recibida:view",
               "solicitudes:respuesta-ampliacion-plazo-recibida:view",
               "solicitudes:solicitud-novedad-asesor:delete",
@@ -331,6 +335,11 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "entregables:estado-entregable:view",
+              "entregables:entregable-proyecto-grado:create",
+              "entregables:entregable-proyecto-grado-estado:update",
+              "entregables:entregable-proyecto-grado-asesor:view",
+              "entregables:artefacto-entregable:view",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
               "solicitudes:respuesta-novedad-asesor:update",
@@ -359,7 +368,9 @@
               "artefactos:artefacto:create",
               "artefactos:version-artefacto-asesor:view",
               "artefactos:artefacto-asesor:view",
-              "artefactos:artefacto:update-asesor"
+              "artefactos:artefacto:update-asesor",
+              "artefactos:estudiante-artefacto:create",
+              "artefactos:revision-asesor:create"
             ]
           }
         },
@@ -918,6 +929,24 @@
           "attributes": {}
         },
         {
+          "id": "5f0c2d7e-3b1a-4c8e-9d46-7a2e1b9c8f30",
+          "name": "solicitudes:solicitud-registro-modificacion-usuarios:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "90b399f9-a0f7-43d1-9be4-5dc3238ddfb0",
+          "name": "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "93ae69f9-2639-4328-9f89-d9c0541ca973",
           "name": "solicitudes:respuesta-novedad-asesor:delete",
           "description": "",
@@ -1073,6 +1102,69 @@
         {
           "id": "62de902b-7e68-462d-bf78-285f621dc432",
           "name": "evaluaciones:item-cualitativo-jurado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c2365dde-bb30-4cf4-8406-de657a630afb",
+          "name": "entregables:estado-entregable:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a676e575-ca43-4ae2-9db7-732bf0515f97",
+          "name": "entregables:entregable-proyecto-grado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7603af29-f56c-4187-8f21-fedd7159be6c",
+          "name": "entregables:entregable-proyecto-grado-estado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "231a7606-0d3e-4436-8f92-46071d4f91b1",
+          "name": "entregables:entregable-proyecto-grado-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "78db41e4-837c-4639-b863-86b3ba644930",
+          "name": "entregables:artefacto-entregable:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "ff2468d4-bbf2-4e51-bc64-410ad2676e9d",
+          "name": "entregables:entregable-proyecto-grado-jurado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "37621b3e-e09d-4c2a-8533-8cbe644068c0",
+          "name": "entregables:entregable-proyecto-grado-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1325,6 +1417,15 @@
         {
           "id": "9a5395ad-5e88-4f8c-ac4d-346814dc7e33",
           "name": "artefactos:revision-asesor-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "ef409a0c-3c64-4cfb-b5b7-a633cd58de10",
+          "name": "artefactos:revision-asesor:create",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2207,6 +2308,15 @@
         {
           "id": "1aa11b4f-cf13-4077-8399-30a240c06523",
           "name": "artefactos:estudiante-artefacto:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "97d6f448-046f-4107-b113-94886e86afc1",
+          "name": "artefactos:estudiante-artefacto:create",
           "description": "",
           "composite": false,
           "clientRole": true,

@@ -4,6 +4,7 @@ import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBl
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.EstudianteArtefactoExisteFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.model.ParticipacionEstudianteArtefacto;
+import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.AnalisisCargaFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.CargaPendienteFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoMaximoArchivoFinder;
@@ -14,20 +15,21 @@ import com.arquisoft.artefactos.application.versionartefacto.command.secondarypo
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.VersionArtefactoOutputPort;
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.mapper.VersionArtefactoMapper;
 import com.arquisoft.artefactos.application.versionartefacto.command.usecase.GenerarVersionArtefactoUseCase;
+import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoContenidoValidator;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoValidator;
-import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.versionartefacto.GeneracionVersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.VersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.event.VersionArtefactoGeneradaEvent;
+import com.arquisoft.artefactos.domain.revisionasesor.model.RevisionVersionAnterior;
 import com.arquisoft.artefactos.domain.versionartefacto.model.CargaAnalizada;
 import com.arquisoft.artefactos.domain.versionartefacto.model.ContactoAsesor;
+import com.arquisoft.artefactos.domain.versionartefacto.model.PrecondicionesGeneracionVersion;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -36,12 +38,14 @@ public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefac
     private final ArtefactoBloqueadoPorIdFinder artefactoBloqueadoPorIdFinder;
     private final EstudianteArtefactoExisteFinder estudianteArtefactoExisteFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
-    private final VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
+    private final VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
     private final CargaPendienteFinder cargaPendienteFinder;
     private final AnalisisCargaFinder analisisCargaFinder;
     private final UltimoNumeroVersionArtefactoFinder ultimoNumeroVersionArtefactoFinder;
+    private final RevisionVigenteUltimaVersionFinder revisionVigenteUltimaVersionFinder;
     private final TamanoMaximoArchivoFinder tamanoMaximoArchivoFinder;
     private final GenerarVersionArtefactoValidator generarVersionValidator;
+    private final GenerarVersionArtefactoContenidoValidator generarVersionContenidoValidator;
     private final AlmacenamientoVersionOutputPort almacenamientoVersionOutputPort;
     private final VersionArtefactoOutputPort versionArtefactoOutputPort;
     private final EventPublisher eventPublisher;
@@ -56,28 +60,30 @@ public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefac
         var estudianteVinculado = estudianteArtefactoExisteFinder.obtener(
                 new ParticipacionEstudianteArtefacto(generacion.getSolicitante(), generacion.getArtefacto()));
         var asesor = asesorPorIdFinder.obtener(artefacto.getAsesor());
-        var versionesRepositorio = versionesRepositorioArtefactoPorIdsFinder.obtener(
-                List.of(artefacto.getVersionRepositorioArtefacto()));
+        var versionRepositorio = versionRepositorioArtefactoPorIdFinder.obtener(
+                artefacto.getVersionRepositorioArtefacto());
         var carga = cargaPendienteFinder.obtener(generacion.getCarga());
         var tamanoMaximo = tamanoMaximoArchivoFinder.obtener();
+        var ultimoNumero = ultimoNumeroVersionArtefactoFinder.obtener(generacion.getArtefacto());
+        var revisionVigente = revisionVigenteUltimaVersionFinder.obtener(generacion.getArtefacto());
         logger.debug(VersionArtefactoKey.LOG_VERIFICACION_GENERAR,
                 !artefacto.esVacio(), estudianteVinculado, !asesor.esVacio() && !asesor.estaEliminado(),
-                versionesRepositorio.size(), !carga.esVacio());
+                !versionRepositorio.esVacio(), !carga.esVacio(), ultimoNumero, revisionVigente.getEstado().getId());
 
-        generarVersionValidator.validarCarga(
-                generacion, artefacto, estudianteVinculado, asesor, versionesRepositorio, carga, tamanoMaximo);
+        generarVersionValidator.validar(generacion, new PrecondicionesGeneracionVersion(
+                artefacto, estudianteVinculado, asesor, versionRepositorio, carga, tamanoMaximo,
+                new RevisionVersionAnterior(ultimoNumero, revisionVigente)));
 
         var analisis = analisisCargaFinder.obtener(generacion.getCarga());
-        generarVersionValidator.validarContenido(generacion, new CargaAnalizada(carga, analisis));
+        generarVersionContenidoValidator.validar(generacion, new CargaAnalizada(carga, analisis));
 
-        var ultimoNumero = ultimoNumeroVersionArtefactoFinder.obtener(generacion.getArtefacto());
         var version = VersionArtefactoDomain.crear(generacion, ultimoNumero);
 
         almacenamientoVersionOutputPort.copiarCargaAUri(carga.getCarga(), carga.getEtag(), version.getUriArchivo());
         versionArtefactoOutputPort.registrar(VersionArtefactoMapper.toEntity(version));
         eventPublisher.publish(new VersionArtefactoGeneradaEvent(
                 version,
-                versionesRepositorio.getFirst().getNombreDocumento(),
+                versionRepositorio.getNombreDocumento(),
                 new ContactoAsesor(asesor.getNombre(), asesor.getEmail())));
         almacenamientoVersionOutputPort.eliminarCarga(carga.getCarga());
 
