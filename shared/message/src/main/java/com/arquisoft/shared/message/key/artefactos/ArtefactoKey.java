@@ -11,6 +11,8 @@ public enum ArtefactoKey implements ClaveMensaje {
     LOG_TRASPASANDO("artefactos.aplicacion.artefacto.log.traspasando", 2),
     LOG_CONSULTANDO_ASESOR("artefactos.aplicacion.artefacto.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("artefactos.aplicacion.artefacto.log.consulta-asesor-completada", 1),
+    LOG_CONSULTANDO_ESTUDIANTE("artefactos.aplicacion.artefacto.log.consultando-estudiante", 4),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("artefactos.aplicacion.artefacto.log.consulta-estudiante-completada", 1),
     LOG_CAMBIANDO_ASESOR("artefactos.aplicacion.artefacto.log.cambiando-asesor", 2),
     LOG_VERIFICACION_CAMBIAR_ASESOR("artefactos.aplicacion.artefacto.log.verificacion-cambiar-asesor", 3),
     LOG_ASESOR_CAMBIADO("artefactos.aplicacion.artefacto.log.asesor-cambiado", 2),
