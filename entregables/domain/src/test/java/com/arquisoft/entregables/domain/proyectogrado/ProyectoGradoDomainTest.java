@@ -1,8 +1,6 @@
 package com.arquisoft.entregables.domain.proyectogrado;
 
-import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.message.constant.EntregablesFields;
-import com.arquisoft.shared.message.constant.EntregablesLimits;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
@@ -13,12 +11,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ProyectoGradoDomainTest {
 
     @Test
-    void debeCrearConNombreRecortado_cuandoDatosValidos() {
+    void debeCrearConNombreTalCual_cuandoDatosValidos() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
 
         // Act
-        var proyecto = ProyectoGradoDomain.crear(id, "  Sistema de gestion  ");
+        var proyecto = ProyectoGradoDomain.crear(id, "Sistema de gestion");
 
         // Assert
         assertThat(proyecto.getId()).isEqualTo(id);
@@ -37,17 +35,15 @@ class ProyectoGradoDomainTest {
     }
 
     @Test
-    void debeRechazar_cuandoElNombreSuperaElMaximo() {
+    void debeCrear_cuandoElNombreEsMuyLargo() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        var nombre = "a".repeat(EntregablesLimits.ProyectoGrado.NOMBRE_MAX + 1);
+        var nombre = "a".repeat(500);
 
-        // Act & Assert
-        assertThatThrownBy(() -> ProyectoGradoDomain.crear(id, nombre))
-                .isInstanceOf(DomainValidationException.class)
-                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
-                        .singleElement()
-                        .satisfies(error -> assertThat(error.codigoError())
-                                .isEqualTo(EntregablesCodes.ProyectoGrado.NOMBRE_LONGITUD_MAXIMA)));
+        // Act
+        var proyecto = ProyectoGradoDomain.crear(id, nombre);
+
+        // Assert
+        assertThat(proyecto.getNombre()).isEqualTo(nombre);
     }
 }
