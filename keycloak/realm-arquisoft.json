@@ -335,6 +335,7 @@
               "entregables:entregable-proyecto-grado:create",
               "entregables:entregable-proyecto-grado-estado:update",
               "entregables:entregable-proyecto-grado-asesor:view",
+              "entregables:artefacto-entregable:view",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
               "solicitudes:respuesta-novedad-asesor:update",
@@ -1114,6 +1115,15 @@
         {
           "id": "231a7606-0d3e-4436-8f92-46071d4f91b1",
           "name": "entregables:entregable-proyecto-grado-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "78db41e4-837c-4639-b863-86b3ba644930",
+          "name": "entregables:artefacto-entregable:view",
           "description": "",
           "composite": false,
           "clientRole": true,

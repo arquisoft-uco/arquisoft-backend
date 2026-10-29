@@ -75,4 +75,18 @@ public final class EntregablesApiMessages {
                         + "o el tamaño de página está fuera de rango";
         public static final String CONSULTAR_ESTUDIANTE_RESP_422 = "El estudiante no pertenece al proyecto de grado";
     }
+
+    public static final class ArtefactoEntregable {
+
+        private ArtefactoEntregable() {}
+
+        public static final String TAG_NAME = "Artefactos de entregable";
+        public static final String TAG_DESCRIPTION = "Consulta de los artefactos vinculados a un entregable de proyecto de grado";
+        public static final String CONSULTAR_SUMMARY = "Consultar los artefactos de un entregable";
+        public static final String CONSULTAR_DESCRIPTION =
+                "El asesor consulta los artefactos vinculados a un entregable de proyecto de grado. "
+                        + "Cada elemento trae el documento, el repositorio y la URI del archivo";
+        public static final String CONSULTAR_RESP_200 = "Artefactos del entregable; lista vacía si no tiene ninguno";
+        public static final String CONSULTAR_RESP_400 = "El identificador del entregable no es un UUID válido";
+    }
 }
