@@ -29,6 +29,17 @@ public class PlanEstimadoCommandOutputAdapter implements PlanEstimadoOutputPort 
     }
 
     @Override
+    public boolean existePorId(UUID planEstimado) {
+        return repository.existsById(planEstimado);
+    }
+
+    @Override
+    public void actualizarDescripcion(UUID planEstimado, String descripcionEstimado) {
+        repository.actualizarDescripcion(planEstimado, descripcionEstimado.isEmpty() ? null : descripcionEstimado);
+        logger.debug(PlanEstimadoKey.LOG_GUARDADO, planEstimado);
+    }
+
+    @Override
     public long sumarDiasEstimadosPorMapaRutaDeTarea(UUID tarea) {
         return repository.sumarDiasEstimadosPorMapaRutaDeTarea(tarea);
     }

@@ -10,5 +10,9 @@ public interface PlanEstimadoOutputPort {
 
     boolean existePorTarea(UUID tarea);
 
+    boolean existePorId(UUID planEstimado);
+
+    void actualizarDescripcion(UUID planEstimado, String descripcionEstimado);
+
     long sumarDiasEstimadosPorMapaRutaDeTarea(UUID tarea);
 }
