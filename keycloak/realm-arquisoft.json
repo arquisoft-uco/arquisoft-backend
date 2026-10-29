@@ -82,6 +82,7 @@
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
               "solicitudes:solicitud-registro-modificacion-usuarios:create",
+              "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
               "fichas:item-ficha-perfil-coordinador:view",
               "solicitudes:estado-respuesta:view",
               "proyectos:asesor-proyecto-grado:update-estado",
@@ -917,6 +918,15 @@
         {
           "id": "a9177be8-b046-4643-bbbb-e7364f575a21",
           "name": "solicitudes:solicitud-registro-modificacion-usuarios:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "90b399f9-a0f7-43d1-9be4-5dc3238ddfb0",
+          "name": "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
           "description": "",
           "composite": false,
           "clientRole": true,

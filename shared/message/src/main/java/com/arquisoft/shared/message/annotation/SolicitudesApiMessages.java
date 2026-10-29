@@ -233,6 +233,19 @@ public final class SolicitudesApiMessages {
                 "Criterio de filtro, orden o paginación inválido";
         public static final String CONSULTAR_AMPLIACION_PLAZO_ENVIADAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de ampliación de plazo enviadas";
+
+        public static final String CONSULTAR_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS_SUMMARY =
+                "Consultar solicitudes de registro y modificación de usuarios enviadas";
+        public static final String CONSULTAR_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS_DESCRIPTION =
+                "Permite a un coordinador consultar de forma paginada y filtrable las solicitudes de "
+                        + "registro y modificación de usuarios que ha enviado. El alcance se limita a las "
+                        + "solicitudes cuyo remitente es el coordinador autenticado.";
+        public static final String CONSULTAR_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS_RESP_200 =
+                "Página de solicitudes de registro y modificación de usuarios enviadas";
+        public static final String CONSULTAR_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de registro y modificación de usuarios enviadas";
     }
 
     public static final class Respuesta {

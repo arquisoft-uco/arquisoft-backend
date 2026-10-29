@@ -24,6 +24,7 @@ rutas:
       ampliacion-plazo-recibidas: /ampliacion-plazo/recibidas
       ampliacion-plazo-por-id: /ampliacion-plazo/{solicitudId}
       registro-modificacion-usuarios: /registro-modificacion-usuarios
+      registro-modificacion-usuarios-enviadas: /registro-modificacion-usuarios/enviadas
       tipos-solicitud: /tipos-solicitud
     respuesta:
       base: /solicitudes
