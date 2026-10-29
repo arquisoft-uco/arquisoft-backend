@@ -25,6 +25,9 @@ public class EstudianteTestEntity {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "ocurrido_en", nullable = false)
+    private Instant ocurridoEn = Instant.EPOCH;
+
     @Column(name = "eliminado_en")
     private Instant eliminadoEn;
 

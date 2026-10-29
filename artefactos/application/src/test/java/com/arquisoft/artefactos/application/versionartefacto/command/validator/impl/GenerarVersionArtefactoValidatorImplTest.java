@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,7 +37,7 @@ class GenerarVersionArtefactoValidatorImplTest {
     private GeneracionVersionArtefactoDomain generacion;
     private ArtefactoDomain artefacto;
     private AsesorDomain asesor;
-    private List<VersionRepositorioArtefactoDomain> versiones;
+    private VersionRepositorioArtefactoDomain versionRepositorio;
     private CargaPendienteDomain carga;
     private AnalisisArchivoDomain analisis;
 
@@ -52,16 +51,16 @@ class GenerarVersionArtefactoValidatorImplTest {
                 versionId, asesorId);
         asesor = AsesorDomain.reconstruir(asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co",
                 Instant.now(), null);
-        versiones = List.of(VersionRepositorioArtefactoDomain.reconstruir(versionId, "Formato A", 1,
-                UtilUUID.generarNuevoUUID(), "Repo", new DatosArchivo("a.pdf", TIPO, 10L)));
+        versionRepositorio = VersionRepositorioArtefactoDomain.reconstruir(versionId, "Formato A", 1,
+                UtilUUID.generarNuevoUUID(), "Repo", new DatosArchivo("a.pdf", TIPO, 10L));
         carga = CargaPendienteDomain.reconstruir(generacion.getCarga(), generacion.getArtefacto(),
                 generacion.getSolicitante(), "informe.pdf", TIPO, 2048L, ETAG);
         analisis = AnalisisArchivoDomain.reconstruir(TIPO, ETAG);
     }
 
     private void validarCarga(ArtefactoDomain art, boolean vinculado, AsesorDomain ases,
-                              List<VersionRepositorioArtefactoDomain> vers, CargaPendienteDomain car, long maximo) {
-        validator.validarCarga(generacion, art, vinculado, ases, vers, car, maximo);
+                              VersionRepositorioArtefactoDomain ver, CargaPendienteDomain car, long maximo) {
+        validator.validarCarga(generacion, art, vinculado, ases, ver, car, maximo);
     }
 
     private void validarContenido(AnalisisArchivoDomain ana) {
@@ -71,7 +70,7 @@ class GenerarVersionArtefactoValidatorImplTest {
     @Test
     void debePasar_cuandoTodoValido() {
         // Act & Assert
-        assertThatCode(() -> validarCarga(artefacto, true, asesor, versiones, carga, MAXIMO))
+        assertThatCode(() -> validarCarga(artefacto, true, asesor, versionRepositorio, carga, MAXIMO))
                 .doesNotThrowAnyException();
         assertThatCode(() -> validarContenido(analisis)).doesNotThrowAnyException();
     }
@@ -79,16 +78,16 @@ class GenerarVersionArtefactoValidatorImplTest {
     @Test
     void debeLanzarArtefactoNoEncontrado_antesQueLasDemas() {
         // Act & Assert
-        assertThatThrownBy(() -> validarCarga(ArtefactoDomain.VACIO, false, AsesorDomain.VACIO, List.of(),
-                CargaPendienteDomain.VACIO, 1L))
+        assertThatThrownBy(() -> validarCarga(ArtefactoDomain.VACIO, false, AsesorDomain.VACIO,
+                VersionRepositorioArtefactoDomain.VACIO, CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(ArtefactoNoEncontradoException.class);
     }
 
     @Test
     void debeLanzarNoPropietario_antesQueElAsesor() {
         // Act & Assert
-        assertThatThrownBy(() -> validarCarga(artefacto, false, AsesorDomain.VACIO, List.of(),
-                CargaPendienteDomain.VACIO, 1L))
+        assertThatThrownBy(() -> validarCarga(artefacto, false, AsesorDomain.VACIO,
+                VersionRepositorioArtefactoDomain.VACIO, CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(EstudianteNoPropietarioArtefactoException.class);
     }
 
@@ -99,23 +98,23 @@ class GenerarVersionArtefactoValidatorImplTest {
                 "ana@uco.edu.co", Instant.now(), Instant.now());
 
         // Act & Assert
-        assertThatThrownBy(() -> validarCarga(artefacto, true, eliminado, List.of(),
-                CargaPendienteDomain.VACIO, 1L))
+        assertThatThrownBy(() -> validarCarga(artefacto, true, eliminado,
+                VersionRepositorioArtefactoDomain.VACIO, CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(AsesorNoVigenteException.class);
     }
 
     @Test
     void debeLanzarVersionRepositorioNoEncontrada_antesQueLaCarga() {
         // Act & Assert
-        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, List.of(),
-                CargaPendienteDomain.VACIO, 1L))
+        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor,
+                VersionRepositorioArtefactoDomain.VACIO, CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(VersionRepositorioArtefactoNoEncontradaException.class);
     }
 
     @Test
     void debeLanzarCargaNoEncontrada() {
         // Act & Assert
-        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, versiones,
+        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, versionRepositorio,
                 CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(CargaPendienteNoEncontradaException.class);
     }
@@ -127,14 +126,14 @@ class GenerarVersionArtefactoValidatorImplTest {
                 UtilUUID.generarNuevoUUID(), "informe.pdf", TIPO, 2048L, ETAG);
 
         // Act & Assert
-        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, versiones, ajena, MAXIMO))
+        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, versionRepositorio, ajena, MAXIMO))
                 .isInstanceOf(CargaNoCorrespondeException.class);
     }
 
     @Test
     void debeLanzarTamanoExcedido() {
         // Act & Assert
-        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, versiones, carga, 1024L))
+        assertThatThrownBy(() -> validarCarga(artefacto, true, asesor, versionRepositorio, carga, 1024L))
                 .isInstanceOf(TamanoArchivoExcedidoException.class);
     }
 

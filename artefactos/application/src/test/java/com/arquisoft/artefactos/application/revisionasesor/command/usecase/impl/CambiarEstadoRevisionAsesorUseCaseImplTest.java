@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorDeRevisionAsesorFinder;
-import com.arquisoft.artefactos.application.estudiante.command.finder.EstudianteFinder;
+import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantePorIdFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.EstudianteParticipaRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
@@ -47,7 +47,7 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
     @Mock
     private AsesorDeRevisionAsesorFinder asesorDeRevisionAsesorFinder;
     @Mock
-    private EstudianteFinder estudianteFinder;
+    private EstudiantePorIdFinder estudiantePorIdFinder;
     @Mock
     private EstudianteParticipaRevisionAsesorFinder estudianteParticipaRevisionAsesorFinder;
     @Mock
@@ -71,14 +71,15 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
         estudianteId = UtilUUID.generarNuevoUUID();
         asesor = AsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), "20161020123", "Ana", "ana@uco.edu.co",
                 Instant.now(), null);
-        estudiante = EstudianteDomain.reconstruir(estudianteId, "Luis", "luis@uco.edu.co");
+        estudiante = EstudianteDomain.reconstruir(
+                estudianteId, "20201020123", "Luis", "luis@uco.edu.co", Instant.now(), null);
     }
 
     private void stubearFinders(EstadoRevisionAsesor estadoActual) {
         var revision = RevisionAsesorDomain.reconstruir(revisionId, UtilUUID.generarNuevoUUID(), estadoActual);
         when(revisionAsesorFinder.obtener(revisionId)).thenReturn(revision);
         when(asesorDeRevisionAsesorFinder.obtener(revisionId)).thenReturn(asesor);
-        when(estudianteFinder.obtener(estudianteId)).thenReturn(estudiante);
+        when(estudiantePorIdFinder.obtener(estudianteId)).thenReturn(estudiante);
         when(estudianteParticipaRevisionAsesorFinder.obtener(any())).thenReturn(true);
     }
 
@@ -92,11 +93,11 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
         useCase.ejecutar(cambio);
 
         // Assert
-        var orden = inOrder(revisionAsesorFinder, asesorDeRevisionAsesorFinder, estudianteFinder,
+        var orden = inOrder(revisionAsesorFinder, asesorDeRevisionAsesorFinder, estudiantePorIdFinder,
                 estudianteParticipaRevisionAsesorFinder, validator, revisionAsesorOutputPort, eventPublisher);
         orden.verify(revisionAsesorFinder, times(1)).obtener(revisionId);
         orden.verify(asesorDeRevisionAsesorFinder, times(1)).obtener(revisionId);
-        orden.verify(estudianteFinder, times(1)).obtener(estudianteId);
+        orden.verify(estudiantePorIdFinder, times(1)).obtener(estudianteId);
         orden.verify(estudianteParticipaRevisionAsesorFinder, times(1)).obtener(cambio);
         orden.verify(validator).validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante),
                 eq(true));

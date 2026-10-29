@@ -153,20 +153,49 @@ class AgregarAsesorProyectoGradoUseCaseImplTest {
     }
 
     @Test
-    void debeNoTraspasar_cuandoEsDuplicada() {
+    void debeAvanzarYTraspasar_cuandoEsDuplicadaYEsElVinculoMasReciente() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         var entrada = agregacion(asesor, proyecto, DESPUES);
-        when(asesorProyectoGradoPorVinculoFinder.obtener(any()))
-                .thenReturn(existente(asesor, proyecto, ANTES, null));
+        var vigente = existente(asesor, proyecto, ANTES, null);
+        when(asesorProyectoGradoPorVinculoFinder.obtener(any())).thenReturn(vigente);
+        when(ultimoOcurridoEnProyectoGradoFinder.obtener(any())).thenReturn(UtilFecha.VACIO);
 
         // Act
         var resultado = useCase.ejecutar(entrada);
 
         // Assert
         assertThat(resultado).isEqualTo(new AgregacionAsesorProyectoGradoResult.Duplicada(asesor, proyecto));
-        verify(asesorProyectoGradoOutputPort, never()).guardar(any());
+        var captor = ArgumentCaptor.forClass(AsesorProyectoGradoEntity.class);
+        verify(asesorProyectoGradoOutputPort, times(1)).guardar(captor.capture());
+        assertThat(captor.getValue().id()).isEqualTo(vigente.getId());
+        assertThat(captor.getValue().ocurridoEn()).isEqualTo(DESPUES);
+        assertThat(captor.getValue().finalizadoEn()).isEqualTo(UtilFecha.VACIO);
+        var orden = inOrder(asesorProyectoGradoOutputPort, traspasarArtefactosUseCase);
+        orden.verify(asesorProyectoGradoOutputPort).guardar(any());
+        orden.verify(traspasarArtefactosUseCase).ejecutar(entrada.getTraspaso());
+    }
+
+    @Test
+    void debeAvanzarSinTraspasar_cuandoEsDuplicadaYOtroAsesorDelProyectoTieneUnEventoMasNuevo() {
+        // Arrange
+        var asesor = UtilUUID.generarNuevoUUID();
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var entrada = agregacion(asesor, proyecto, DESPUES);
+        var vigente = existente(asesor, proyecto, ANTES, null);
+        var masNuevo = Instant.parse("2026-10-03T10:00:00Z");
+        when(asesorProyectoGradoPorVinculoFinder.obtener(any())).thenReturn(vigente);
+        when(ultimoOcurridoEnProyectoGradoFinder.obtener(proyecto)).thenReturn(masNuevo);
+
+        // Act
+        var resultado = useCase.ejecutar(entrada);
+
+        // Assert
+        assertThat(resultado).isEqualTo(new AgregacionAsesorProyectoGradoResult.Duplicada(asesor, proyecto));
+        var captor = ArgumentCaptor.forClass(AsesorProyectoGradoEntity.class);
+        verify(asesorProyectoGradoOutputPort, times(1)).guardar(captor.capture());
+        assertThat(captor.getValue().ocurridoEn()).isEqualTo(DESPUES);
         verify(traspasarArtefactosUseCase, never()).ejecutar(any());
     }
 

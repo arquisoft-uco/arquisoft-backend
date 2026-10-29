@@ -6,16 +6,15 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 
-import java.util.List;
 import java.util.UUID;
 
 public final class VersionRepositorioArtefactoNoEncontradaException extends DomainException {
 
-    public VersionRepositorioArtefactoNoEncontradaException(List<UUID> versiones) {
+    public VersionRepositorioArtefactoNoEncontradaException(UUID version) {
         super(BaseError.conDetalle(
-                ArtefactosCodes.VersionRepositorioArtefacto.VERSIONES_NO_ENCONTRADAS,
-                Mensajes.obtener(AgregarVersionRepositorioArtefactoKey.ERROR_NO_ENCONTRADAS),
-                Mensajes.formatear(AgregarVersionRepositorioArtefactoKey.ERROR_NO_ENCONTRADAS_DETALLE, versiones)
+                ArtefactosCodes.VersionRepositorioArtefacto.VERSION_NO_ENCONTRADA,
+                Mensajes.obtener(AgregarVersionRepositorioArtefactoKey.ERROR_NO_ENCONTRADA),
+                Mensajes.formatear(AgregarVersionRepositorioArtefactoKey.ERROR_NO_ENCONTRADA_DETALLE, version)
         ));
     }
 }

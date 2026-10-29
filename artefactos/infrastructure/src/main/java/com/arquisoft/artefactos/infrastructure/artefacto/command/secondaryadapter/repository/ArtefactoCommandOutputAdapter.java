@@ -8,7 +8,6 @@ import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,9 +19,9 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     private final AppLogger logger;
 
     @Override
-    public void registrarTodos(List<ArtefactoEntity> artefactos) {
-        artefactoCommandRepository.saveAll(artefactos.stream().map(ArtefactoJpaMapper::toJpaEntity).toList());
-        logger.debug(ArtefactoKey.LOG_GUARDADOS, artefactos.size());
+    public void registrar(ArtefactoEntity artefacto) {
+        artefactoCommandRepository.save(ArtefactoJpaMapper.toJpaEntity(artefacto));
+        logger.debug(ArtefactoKey.LOG_GUARDADO, artefacto.id());
     }
 
     @Override

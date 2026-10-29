@@ -50,6 +50,10 @@ public final class ArtefactosFields {
         private EstudianteArtefacto() {}
 
         public static final String ARTEFACTO = "artefacto";
+        public static final String ESTUDIANTES = "estudiantes";
+        public static final String ESTUDIANTE = "estudiante";
+        public static final String ASESOR = "asesor";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
     }
 
     public static final class Observacion {
@@ -67,8 +71,6 @@ public final class ArtefactosFields {
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String ASESOR = "asesor";
         public static final String VERSION_REPOSITORIO_ARTEFACTO = "versionRepositorioArtefacto";
-        public static final String VERSIONES_REPOSITORIO_ARTEFACTO = "versionesRepositorioArtefacto";
-        public static final String ARTEFACTOS = "artefactos";
     }
 
     public static final class ProyectoGrado {
@@ -99,5 +101,29 @@ public final class ArtefactosFields {
         public static final String OCURRIDO_EN = "ocurridoEn";
         public static final String VINCULO = "vinculo";
         public static final String TRASPASO = "traspaso";
+    }
+
+    public static final class Estudiante {
+
+        private Estudiante() {}
+
+        public static final String ID = "id";
+        public static final String IDENTIFICADOR = "identificador";
+        public static final String NOMBRE = "nombre";
+        public static final String EMAIL = "email";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
+    public static final class EstudianteProyectoGrado {
+
+        private EstudianteProyectoGrado() {}
+
+        public static final String ESTUDIANTE = "estudiante";
+        public static final String ESTUDIANTES = "estudiantes";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+        public static final String VINCULO = "vinculo";
+        public static final String VINCULOS = "vinculos";
+        public static final String DESVINCULACION = "desvinculacion";
     }
 }

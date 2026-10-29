@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorDeRevisionAsesorFinder;
-import com.arquisoft.artefactos.application.estudiante.command.finder.EstudianteFinder;
+import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantePorIdFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.EstudianteParticipaRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
@@ -22,7 +22,7 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
     private final RevisionAsesorOutputPort revisionAsesorOutputPort;
     private final RevisionAsesorFinder revisionAsesorFinder;
     private final AsesorDeRevisionAsesorFinder asesorDeRevisionAsesorFinder;
-    private final EstudianteFinder estudianteFinder;
+    private final EstudiantePorIdFinder estudiantePorIdFinder;
     private final EstudianteParticipaRevisionAsesorFinder estudianteParticipaRevisionAsesorFinder;
     private final CambiarEstadoRevisionAsesorValidator cambiarEstadoRevisionAsesorValidator;
     private final EventPublisher eventPublisher;
@@ -37,7 +37,7 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
 
         var revision = revisionAsesorFinder.obtener(revisionAsesor);
         var asesor = asesorDeRevisionAsesorFinder.obtener(revisionAsesor);
-        var estudiante = estudianteFinder.obtener(cambio.getEstudiante());
+        var estudiante = estudiantePorIdFinder.obtener(cambio.getEstudiante());
         var participa = estudianteParticipaRevisionAsesorFinder.obtener(cambio);
 
         logger.debug(CambiarEstadoRevisionAsesorKey.LOG_VERIFICACION_CAMBIO_ESTADO,

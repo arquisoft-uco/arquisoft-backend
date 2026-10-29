@@ -28,7 +28,8 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
     private final UUID estudianteId = UtilUUID.generarNuevoUUID();
     private final AsesorDomain asesor = AsesorDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), "20161020123", "Ana", "ana@uco.edu.co", Instant.now(), null);
-    private final EstudianteDomain estudiante = EstudianteDomain.reconstruir(estudianteId, "Luis", "luis@uco.edu.co");
+    private final EstudianteDomain estudiante = EstudianteDomain.reconstruir(
+            estudianteId, "20201020123", "Luis", "luis@uco.edu.co", Instant.now(), null);
 
     private RevisionAsesorDomain revision(EstadoRevisionAsesor estado) {
         return RevisionAsesorDomain.reconstruir(revisionId, UtilUUID.generarNuevoUUID(), estado);

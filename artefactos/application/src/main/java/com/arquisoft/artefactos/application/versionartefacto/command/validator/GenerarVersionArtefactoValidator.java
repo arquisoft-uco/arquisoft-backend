@@ -7,13 +7,11 @@ import com.arquisoft.artefactos.domain.versionartefacto.GeneracionVersionArtefac
 import com.arquisoft.artefactos.domain.versionartefacto.model.CargaAnalizada;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 
-import java.util.List;
-
 public interface GenerarVersionArtefactoValidator {
 
     void validarCarga(GeneracionVersionArtefactoDomain generacion, ArtefactoDomain artefacto,
                       boolean estudianteVinculado, AsesorDomain asesor,
-                      List<VersionRepositorioArtefactoDomain> versionesRepositorio, CargaPendienteDomain carga,
+                      VersionRepositorioArtefactoDomain versionRepositorio, CargaPendienteDomain carga,
                       long tamanoMaximoBytes);
 
     void validarContenido(GeneracionVersionArtefactoDomain generacion, CargaAnalizada cargaAnalizada);

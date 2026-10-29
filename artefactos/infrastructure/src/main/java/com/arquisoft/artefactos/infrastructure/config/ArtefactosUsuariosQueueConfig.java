@@ -53,4 +53,32 @@ public class ArtefactosUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ESTUDIANTE_AGREGADO_QUEUE =
+            ArtefactosQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_AGREGADO;
+
+    @Bean
+    public Declarables artefactosEstudianteAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String ESTUDIANTE_REMOVIDO_QUEUE =
+            ArtefactosQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_REMOVIDO;
+
+    @Bean
+    public Declarables artefactosEstudianteRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

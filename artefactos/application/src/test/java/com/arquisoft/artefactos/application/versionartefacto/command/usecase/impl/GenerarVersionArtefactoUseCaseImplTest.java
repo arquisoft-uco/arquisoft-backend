@@ -12,7 +12,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.secondarypo
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.VersionArtefactoOutputPort;
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.entity.VersionArtefactoEntity;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoValidator;
-import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionesRepositorioArtefactoPorIdsFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.AnalisisArchivoDomain;
@@ -37,13 +37,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -68,7 +66,7 @@ class GenerarVersionArtefactoUseCaseImplTest {
     @Mock
     private AsesorPorIdFinder asesorPorIdFinder;
     @Mock
-    private VersionesRepositorioArtefactoPorIdsFinder versionesRepositorioArtefactoPorIdsFinder;
+    private VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
     @Mock
     private CargaPendienteFinder cargaPendienteFinder;
     @Mock
@@ -99,7 +97,7 @@ class GenerarVersionArtefactoUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new GenerarVersionArtefactoUseCaseImpl(artefactoBloqueadoPorIdFinder,
-                estudianteArtefactoExisteFinder, asesorPorIdFinder, versionesRepositorioArtefactoPorIdsFinder,
+                estudianteArtefactoExisteFinder, asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 cargaPendienteFinder,
                 analisisCargaFinder, ultimoNumeroVersionArtefactoFinder, tamanoMaximoArchivoFinder, validator,
                 almacenamiento, versionOutputPort, eventPublisher, logger);
@@ -124,8 +122,8 @@ class GenerarVersionArtefactoUseCaseImplTest {
                 new ParticipacionEstudianteArtefacto(generacion.getSolicitante(), generacion.getArtefacto())))
                 .thenReturn(true);
         when(asesorPorIdFinder.obtener(artefacto.getAsesor())).thenReturn(asesor);
-        when(versionesRepositorioArtefactoPorIdsFinder.obtener(List.of(artefacto.getVersionRepositorioArtefacto())))
-                .thenReturn(List.of(versionRepositorio));
+        when(versionRepositorioArtefactoPorIdFinder.obtener(artefacto.getVersionRepositorioArtefacto()))
+                .thenReturn(versionRepositorio);
         when(cargaPendienteFinder.obtener(generacion.getCarga())).thenReturn(carga);
         when(tamanoMaximoArchivoFinder.obtener()).thenReturn(MAXIMO);
     }
@@ -146,23 +144,23 @@ class GenerarVersionArtefactoUseCaseImplTest {
 
         // Assert
         var ordenFinders = inOrder(artefactoBloqueadoPorIdFinder, estudianteArtefactoExisteFinder,
-                asesorPorIdFinder, versionesRepositorioArtefactoPorIdsFinder, cargaPendienteFinder,
+                asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder, cargaPendienteFinder,
                 tamanoMaximoArchivoFinder, validator, analisisCargaFinder, ultimoNumeroVersionArtefactoFinder);
         ordenFinders.verify(artefactoBloqueadoPorIdFinder).obtener(generacion.getArtefacto());
         ordenFinders.verify(estudianteArtefactoExisteFinder).obtener(any());
         ordenFinders.verify(asesorPorIdFinder).obtener(artefacto.getAsesor());
-        ordenFinders.verify(versionesRepositorioArtefactoPorIdsFinder).obtener(anyList());
+        ordenFinders.verify(versionRepositorioArtefactoPorIdFinder).obtener(artefacto.getVersionRepositorioArtefacto());
         ordenFinders.verify(cargaPendienteFinder).obtener(generacion.getCarga());
         ordenFinders.verify(tamanoMaximoArchivoFinder).obtener();
         ordenFinders.verify(validator).validarCarga(eq(generacion), eq(artefacto), eq(true), eq(asesor),
-                eq(List.of(versionRepositorio)), eq(carga), eq(MAXIMO));
+                eq(versionRepositorio), eq(carga), eq(MAXIMO));
         ordenFinders.verify(analisisCargaFinder).obtener(generacion.getCarga());
         ordenFinders.verify(validator).validarContenido(generacion, new CargaAnalizada(carga, analisis));
         ordenFinders.verify(ultimoNumeroVersionArtefactoFinder).obtener(generacion.getArtefacto());
         verify(artefactoBloqueadoPorIdFinder, times(1)).obtener(any());
         verify(estudianteArtefactoExisteFinder, times(1)).obtener(any());
         verify(asesorPorIdFinder, times(1)).obtener(any());
-        verify(versionesRepositorioArtefactoPorIdsFinder, times(1)).obtener(anyList());
+        verify(versionRepositorioArtefactoPorIdFinder, times(1)).obtener(any());
         verify(cargaPendienteFinder, times(1)).obtener(any());
         verify(analisisCargaFinder, times(1)).obtener(any());
         verify(ultimoNumeroVersionArtefactoFinder, times(1)).obtener(any());
@@ -193,7 +191,7 @@ class GenerarVersionArtefactoUseCaseImplTest {
         // Arrange
         prepararFindersDeCarga();
         doThrow(new CargaNoCorrespondeException(generacion.getCarga(), "plantilla.docx"))
-                .when(validator).validarCarga(any(), any(), anyBoolean(), any(), anyList(), any(), anyLong());
+                .when(validator).validarCarga(any(), any(), anyBoolean(), any(), any(), any(), anyLong());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(generacion)).isInstanceOf(CargaNoCorrespondeException.class);
