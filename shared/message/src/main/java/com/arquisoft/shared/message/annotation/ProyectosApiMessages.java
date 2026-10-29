@@ -136,11 +136,13 @@ public final class ProyectosApiMessages {
         public static final String TAG_DESCRIPTION =
                 "Consulta del catálogo de estados que se pueden asignar a un asesor de proyecto de grado";
 
-        public static final String CONSULTAR_SUMMARY = "Consultar los estados de asesor";
+        public static final String CONSULTAR_SUMMARY = "Consultar los estados posibles de un asesor";
         public static final String CONSULTAR_DESCRIPTION =
-                "Permite al coordinador consultar el catálogo completo de estados que se pueden asignar a un "
-                        + "asesor de un proyecto de grado, con su nombre y descripción";
-        public static final String CONSULTAR_RESP_200 = "Catálogo de estados de asesor";
+                "Permite al coordinador consultar, con paginación, filtros y orden por identificador o nombre, "
+                        + "los estados posibles que se pueden asignar a un asesor de un proyecto de grado, "
+                        + "con su nombre y descripción";
+        public static final String CONSULTAR_RESP_200 = "Página de estados posibles de asesor";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
         public static final String CONSULTAR_RESP_403 = "Sin permiso para consultar los estados de asesor";
     }
 
