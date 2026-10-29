@@ -198,6 +198,7 @@
           "client": {
             "arquisoft-api": [
               "solicitudes:respuesta-registro-modificacion-usuarios:create",
+              "solicitudes:respuesta-registro-modificacion-usuarios-enviada:view",
               "usuarios:usuario:create",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:item-cuantitativo-jurado:update",
@@ -1548,6 +1549,15 @@
         {
           "id": "07affacc-5233-44a3-a9c4-1588dc7fbcdf",
           "name": "solicitudes:respuesta-ampliacion-plazo-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5d2c8e1a-7b4f-4a36-9c0e-3f1a6b8d2e47",
+          "name": "solicitudes:respuesta-registro-modificacion-usuarios-enviada:view",
           "description": "",
           "composite": false,
           "clientRole": true,
