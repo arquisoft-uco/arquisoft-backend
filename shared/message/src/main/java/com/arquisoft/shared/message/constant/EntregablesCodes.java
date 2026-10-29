@@ -37,7 +37,6 @@ public final class EntregablesCodes {
 
         public static final String ID_REQUERIDO = "ENTREGABLES_PROYECTO_GRADO_ID_REQUERIDO";
         public static final String NOMBRE_REQUERIDO = "ENTREGABLES_PROYECTO_GRADO_NOMBRE_REQUERIDO";
-        public static final String NOMBRE_LONGITUD_MAXIMA = "ENTREGABLES_PROYECTO_GRADO_NOMBRE_LONGITUD_MAXIMA";
         public static final String NO_ENCONTRADO = "ENTREGABLES_PROYECTO_GRADO_NO_ENCONTRADO";
         public static final String ESTUDIANTE_NO_PERTENECE = "ENTREGABLES_PROYECTO_GRADO_ESTUDIANTE_NO_PERTENECE";
     }
