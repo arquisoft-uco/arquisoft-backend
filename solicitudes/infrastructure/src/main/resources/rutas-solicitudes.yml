@@ -33,6 +33,7 @@ rutas:
       novedad-coordinador: /novedad-coordinador/{solicitudId}/respuesta
       cambio-asesor: /cambio-asesor/{solicitudId}/respuesta
       ampliacion-plazo: /ampliacion-plazo/{solicitudId}/respuesta
+      registro-modificacion-usuarios: /registro-modificacion-usuarios/{solicitudId}/respuesta
       novedad-asesor: /novedad-asesor/{solicitudId}/respuesta
       novedad-coordinador-estado: /novedad-coordinador/{solicitudId}/respuesta/estado
       novedad-asesor-estado: /novedad-asesor/{solicitudId}/respuesta/estado

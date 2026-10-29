@@ -51,6 +51,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.solicitud-ampliacion-plazo-respondida", 0),
     CUERPO_SOLICITUD_AMPLIACION_PLAZO_RESPONDIDA(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo-respondida", 3),
+    ASUNTO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-registro-modificacion-usuarios-respondida", 0),
+    CUERPO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-registro-modificacion-usuarios-respondida", 3),
     ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO(
             "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador-estado-modificado", 0),
     CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO(

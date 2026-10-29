@@ -197,6 +197,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "solicitudes:respuesta-registro-modificacion-usuarios:create",
               "usuarios:usuario:create",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:item-cuantitativo-jurado:update",
@@ -2213,6 +2214,15 @@
         {
           "id": "210e1e80-6faa-4bbf-b201-ff94c55148d8",
           "name": "solicitudes:respuesta-novedad-coordinador:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "32a99a2d-01f2-494b-8341-6c79f5e69af2",
+          "name": "solicitudes:respuesta-registro-modificacion-usuarios:create",
           "description": "",
           "composite": false,
           "clientRole": true,

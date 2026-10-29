@@ -321,6 +321,17 @@ public final class SolicitudesApiMessages {
         public static final String RESPONDER_AMPLIACION_PLAZO_RESP_422 =
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
 
+        public static final String RESPONDER_REGISTRO_MODIFICACION_USUARIOS_SUMMARY =
+                "Responder solicitud para registro y modificación de usuarios";
+        public static final String RESPONDER_REGISTRO_MODIFICACION_USUARIOS_DESCRIPTION =
+                "Permite a un administrador responder una solicitud para registro y modificación de "
+                        + "usuarios que le fue dirigida, registrando el contenido de la respuesta.";
+        public static final String RESPONDER_REGISTRO_MODIFICACION_USUARIOS_RESP_201 =
+                "Respuesta registrada — retorna el UUID asignado";
+        public static final String RESPONDER_REGISTRO_MODIFICACION_USUARIOS_RESP_400 = "Datos inválidos";
+        public static final String RESPONDER_REGISTRO_MODIFICACION_USUARIOS_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro administrador, o ya respondida";
+
         public static final String RESPONDER_NOVEDAD_ASESOR_SUMMARY =
                 "Responder solicitud de novedad para el asesor";
         public static final String RESPONDER_NOVEDAD_ASESOR_DESCRIPTION =

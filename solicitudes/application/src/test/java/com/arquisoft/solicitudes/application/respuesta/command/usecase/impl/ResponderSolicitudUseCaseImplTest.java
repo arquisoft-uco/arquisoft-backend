@@ -200,6 +200,34 @@ class ResponderSolicitudUseCaseImplTest {
     }
 
     @Test
+    void debePublicarElEventoDeRegistroModificacionUsuarios_cuandoElTipoEsRegistroYModificacionDeUsuarios() {
+        // Arrange
+        var respuesta = RespuestaDomain.crear(solicitud, "Se aprueba el registro");
+        var entradaRegistro = RespuestaSolicitudDomain.crear(
+                respuesta, coordinadorUsuario, TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS);
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteUsuario, coordinadorUsuario, TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS.getId()));
+        when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", UtilFecha.generarInstanteActual()));
+        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(coordinadorUsuario, "ADM-1", "Pedro Administrador", "pedro@uco.edu.co", UtilFecha.generarInstanteActual()));
+
+        // Act
+        useCase.ejecutar(entradaRegistro);
+
+        // Assert
+        var eventCaptor = ArgumentCaptor.forClass(SolicitudRespondidaEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        var evento = eventCaptor.getValue();
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA);
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudRegistroModificacionUsuariosRespondidaEvent");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Administrador");
+        verify(logger).info(eq(RespuestaKey.LOG_RESPONDIENDO),
+                eq(TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS.getId()), eq(solicitud), eq(coordinadorUsuario));
+    }
+
+    @Test
     void debeAbortarSinRegistrarNiPublicar_cuandoElValidatorLanza() {
         // Arrange
         stubFlujoValido();
