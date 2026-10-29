@@ -31,11 +31,12 @@ class ConsultarArtefactosEntregableInteractorImplTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var esperado = List.<ArtefactoEntregableReadModel>of();
-        var criteria = new ArtefactoEntregableCriteria(entregable);
+        var asesor = UtilUUID.generarNuevoUUID();
+        var criteria = new ArtefactoEntregableCriteria(entregable, asesor);
         when(useCase.ejecutar(criteria)).thenReturn(esperado);
 
         // Act
-        var resultado = interactor.ejecutar(ConsultarArtefactosEntregableQuery.crear(entregable));
+        var resultado = interactor.ejecutar(ConsultarArtefactosEntregableQuery.crear(entregable, asesor));
 
         // Assert
         assertThat(resultado).isSameAs(esperado);

@@ -3,7 +3,9 @@ package com.arquisoft.entregables.infrastructure.artefactoentregable.query.prima
 import com.arquisoft.entregables.application.artefactoentregable.query.primaryport.interactor.ConsultarArtefactosEntregableInteractor;
 import com.arquisoft.entregables.application.artefactoentregable.query.primaryport.model.ConsultarArtefactosEntregableQuery;
 import com.arquisoft.entregables.application.artefactoentregable.query.readmodel.ArtefactoEntregableReadModel;
+import com.arquisoft.entregables.domain.entregableproyectogrado.exception.AsesorNoPropietarioEntregableProyectoGradoException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
+import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -23,6 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -65,8 +68,12 @@ class ConsultarArtefactosEntregableControllerTest {
         return "/entregables-proyecto-grado/" + entregable + "/artefactos";
     }
 
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwt(UUID asesor) {
+        return SecurityMockMvcRequestPostProcessors.jwt().jwt(j -> j.subject(asesor.toString()));
+    }
+
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwt() {
-        return SecurityMockMvcRequestPostProcessors.jwt().jwt(j -> j.subject(UtilUUID.generarNuevoUUID().toString()));
+        return jwt(UtilUUID.generarNuevoUUID());
     }
 
     @Test
@@ -76,10 +83,11 @@ class ConsultarArtefactosEntregableControllerTest {
         var id = UtilUUID.generarNuevoUUID();
         var readModel = new ArtefactoEntregableReadModel(id, entregable, UtilUUID.generarNuevoUUID(), "uri",
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Doc", UtilUUID.generarNuevoUUID(), "Repo");
+        var asesor = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(any(ConsultarArtefactosEntregableQuery.class))).thenReturn(List.of(readModel));
 
         // Act & Assert
-        mockMvc.perform(get(ruta(entregable.toString())).with(jwt()))
+        mockMvc.perform(get(ruta(entregable.toString())).with(jwt(asesor)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(id.toString()))
@@ -90,6 +98,7 @@ class ConsultarArtefactosEntregableControllerTest {
         var captor = ArgumentCaptor.forClass(ConsultarArtefactosEntregableQuery.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().entregableProyectoGrado()).isEqualTo(entregable);
+        assertThat(captor.getValue().asesor()).isEqualTo(asesor);
     }
 
     @Test
@@ -117,5 +126,20 @@ class ConsultarArtefactosEntregableControllerTest {
         mockMvc.perform(get(ruta(UtilUUID.generarNuevoUUID().toString())))
                 .andExpect(status().isUnauthorized());
         verify(interactor, never()).ejecutar(any(ConsultarArtefactosEntregableQuery.class));
+    }
+
+    @Test
+    void debeResponder422_cuandoElEntregableNoEsDelAsesor() throws Exception {
+        // Arrange
+        var entregable = UtilUUID.generarNuevoUUID();
+        when(interactor.ejecutar(any(ConsultarArtefactosEntregableQuery.class)))
+                .thenThrow(new AsesorNoPropietarioEntregableProyectoGradoException(
+                        UtilUUID.generarNuevoUUID(), entregable));
+
+        // Act & Assert
+        mockMvc.perform(get(ruta(entregable.toString())).with(jwt()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode")
+                        .value(EntregablesCodes.EntregableProyectoGrado.ASESOR_NO_PROPIETARIO));
     }
 }
