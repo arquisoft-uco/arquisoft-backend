@@ -13,8 +13,7 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADO_DETALLE("entregables.dominio.proyectogrado.error.no-encontrado-detalle", 1),
     ERROR_ESTUDIANTE_NO_PERTENECE("entregables.dominio.proyectogrado.error.estudiante-no-pertenece", 0),
     ERROR_ESTUDIANTE_NO_PERTENECE_DETALLE(
-            "entregables.dominio.proyectogrado.error.estudiante-no-pertenece-detalle", 2),
-    LOG_PERTENENCIA_SIMULADA("entregables.infraestructura.proyectogrado.log.pertenencia-simulada", 2);
+            "entregables.dominio.proyectogrado.error.estudiante-no-pertenece-detalle", 2);
 
     private final String clave;
     private final int parametros;

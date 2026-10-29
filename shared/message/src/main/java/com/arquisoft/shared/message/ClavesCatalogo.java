@@ -247,6 +247,7 @@ public final class ClavesCatalogo {
             com.arquisoft.shared.message.key.entregables.ArtefactoEntregableKey.class,
             com.arquisoft.shared.message.key.entregables.ProyectoGradoKey.class,
             com.arquisoft.shared.message.key.entregables.AsesorKey.class,
+            com.arquisoft.shared.message.key.entregables.EstudianteProyectoGradoKey.class,
             AsignacionAsesorKey.class,
             ProyectoGradoMapasRutaKey.class,
             PlanEstimadoKey.class

@@ -34,4 +34,14 @@ public final class EntregablesFields {
         public static final String EMAIL = "email";
         public static final String OCURRIDO_EN = "ocurridoEn";
     }
+
+    public static final class EstudianteProyectoGrado {
+
+        private EstudianteProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String ESTUDIANTES = "estudiantes";
+        public static final String ESTUDIANTE = "estudiante";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
 }

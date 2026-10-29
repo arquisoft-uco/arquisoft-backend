@@ -53,4 +53,15 @@ public final class EntregablesCodes {
         public static final String OCURRIDO_EN_REQUERIDO = "ENTREGABLES_ASESOR_OCURRIDO_EN_REQUERIDO";
         public static final String NO_VIGENTE = "ENTREGABLES_ASESOR_NO_VIGENTE";
     }
+
+    public static final class EstudianteProyectoGrado {
+
+        private EstudianteProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO_REQUERIDO = "ENTREGABLES_ESTUDIANTE_PROYECTO_GRADO_PROYECTO_GRADO_REQUERIDO";
+        public static final String ESTUDIANTES_REQUERIDOS = "ENTREGABLES_ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTES_REQUERIDOS";
+        public static final String ESTUDIANTE_REQUERIDO = "ENTREGABLES_ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ENTREGABLES_ESTUDIANTE_PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
+        public static final String ESTUDIANTE_DUPLICADO = "ENTREGABLES_ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_DUPLICADO";
+    }
 }
