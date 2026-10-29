@@ -50,8 +50,11 @@ public final class ContextosCatalogo {
     /** Contexto mapas de ruta. */
     public static final String MAPAS_RUTA = "mapas_ruta";
 
+    /** Contexto entregables. */
+    public static final String ENTREGABLES = "entregables";
+
     /** Todos los contextos, en el orden en que se cargan. */
     public static final List<String> TODOS = List.of(
             APP, FICHAS, SEGURIDAD, USUARIOS, NOTIFICACIONES, EVALUACIONES, PROYECTOS, SOLICITUDES,
-            BIBLIOTECA, REPOSITORIO_ARTEFACTOS, ARTEFACTOS, MAPAS_RUTA);
+            BIBLIOTECA, REPOSITORIO_ARTEFACTOS, ARTEFACTOS, MAPAS_RUTA, ENTREGABLES);
 }

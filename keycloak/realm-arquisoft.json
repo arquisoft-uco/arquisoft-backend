@@ -329,6 +329,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "entregables:estado-entregable:view",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
               "solicitudes:respuesta-novedad-asesor:update",
@@ -1072,6 +1073,15 @@
         {
           "id": "62de902b-7e68-462d-bf78-285f621dc432",
           "name": "evaluaciones:item-cualitativo-jurado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c2365dde-bb30-4cf4-8406-de657a630afb",
+          "name": "entregables:estado-entregable:view",
           "description": "",
           "composite": false,
           "clientRole": true,
