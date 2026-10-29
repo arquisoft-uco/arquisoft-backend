@@ -30,7 +30,7 @@ public final class EntregablesApiMessages {
         private EntregableProyectoGrado() {}
 
         public static final String TAG_NAME = "Entregables de proyecto de grado";
-        public static final String TAG_DESCRIPTION = "Generación de entregables de un proyecto de grado y cambio de su estado";
+        public static final String TAG_DESCRIPTION = "Generación, consulta y cambio de estado de los entregables de un proyecto de grado";
         public static final String GENERAR_SUMMARY = "Generar un entregable de un proyecto de grado";
         public static final String GENERAR_DESCRIPTION =
                 "El asesor genera un nuevo entregable del proyecto de grado, que queda disponible para evaluación. "
@@ -47,5 +47,13 @@ public final class EntregablesApiMessages {
                 "El identificador del entregable no es un UUID válido o el estado viene vacío";
         public static final String CAMBIAR_ESTADO_RESP_422 =
                 "El entregable no existe, el estado no existe o la transición no está permitida";
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar los entregables generados";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "El asesor lista, de forma paginada, los entregables generados y los filtra por proyecto de grado, "
+                        + "asesor y estado, entre otros campos. Cada elemento trae la versión, el proyecto, el asesor y el estado";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de entregables de proyecto de grado";
+        public static final String CONSULTAR_ASESOR_RESP_400 =
+                "Un campo de filtro u orden no es válido, un operador no aplica al campo, un identificador no es un UUID "
+                        + "o el tamaño de página está fuera de rango";
     }
 }

@@ -13,3 +13,4 @@ rutas:
     entregables-proyecto-grado:
       base: /entregables-proyecto-grado
       estado: /{entregableProyectoGradoId}/estado
+      asesor: /asesor
