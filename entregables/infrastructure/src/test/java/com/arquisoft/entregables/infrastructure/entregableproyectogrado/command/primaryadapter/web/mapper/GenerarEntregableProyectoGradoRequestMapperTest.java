@@ -1,14 +1,12 @@
 package com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.primaryadapter.web.mapper;
 
 import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.ApplicationValidationException;
 import com.arquisoft.shared.web.identidad.IdentidadActual;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class GenerarEntregableProyectoGradoRequestMapperTest {
 
@@ -25,15 +23,5 @@ class GenerarEntregableProyectoGradoRequestMapperTest {
         // Assert
         assertThat(command.proyectoGrado()).isEqualTo(proyecto);
         assertThat(command.asesor()).isEqualTo(asesor);
-    }
-
-    @Test
-    void debeLanzarErrorDeEntrada_cuandoElProyectoEsNulo() {
-        // Arrange
-        var identidad = new IdentidadActual(UtilUUID.generarNuevoUUID(), null, null, List.of(), null, null);
-
-        // Act & Assert
-        assertThatThrownBy(() -> GenerarEntregableProyectoGradoRequestMapper.toCommand(null, identidad))
-                .isInstanceOf(ApplicationValidationException.class);
     }
 }

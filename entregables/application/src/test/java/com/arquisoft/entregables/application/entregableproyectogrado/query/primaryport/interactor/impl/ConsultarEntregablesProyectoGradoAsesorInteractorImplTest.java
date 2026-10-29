@@ -1,9 +1,9 @@
 package com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.interactor.impl;
 
 import com.arquisoft.entregables.application.entregableproyectogrado.query.criteria.EntregableProyectoGradoCriteria;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.model.ConsultarEntregablesProyectoGradoAsesorQuery;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.readmodel.EntregableProyectoGradoReadModel;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.usecase.ConsultarEntregablesProyectoGradoAsesorUseCase;
-import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.model.ConsultarEntregablesProyectoGradoAsesorQuery;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.util.UtilUUID;

@@ -74,8 +74,9 @@ de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 ### Bounded Contexts
 
 Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`,
-`solicitudes`, `biblioteca`, `repositorio_artefactos`, `artefactos` y `mapas_ruta`. El único andamiaje
-que queda es `entregables`: solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
+`solicitudes`, `biblioteca`, `repositorio_artefactos`, `artefactos`, `mapas_ruta` y `entregables`
+(réplicas de `asesor`, `proyecto_grado` y `estudiante_proyecto_grado`, generar y cambiar estado de un
+entregable y sus listados). Ya no queda ningún contexto en andamiaje. `usuarios` es el dueño del ciclo de vida del usuario:
 `RegistrarUsuario` lo da de alta en el proveedor de identidad configurado y publica los eventos con los que `fichas` y `proyectos`
 mantienen sus réplicas.
 

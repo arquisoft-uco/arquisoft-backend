@@ -1,6 +1,7 @@
 package com.arquisoft.entregables.infrastructure.entregableproyectogrado.query.secondaryadapter.repository;
 
 import com.arquisoft.entregables.application.entregableproyectogrado.query.criteria.EntregableProyectoGradoCriteria;
+import com.arquisoft.shared.util.UtilObjeto;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +34,7 @@ class EntregableProyectoGradoSortMapperTest {
             // Assert
             assertThat(EntregableProyectoGradoCriteria.Campo.esValidoParaOrdenar(campo.getClave()))
                     .as("campo %s", campo.getClave())
-                    .isEqualTo(ruta != null);
+                    .isEqualTo(UtilObjeto.noEsNulo(ruta));
         }
     }
 }

@@ -49,7 +49,7 @@ public class EntregablesDataSourceConfig {
 
     @Bean(name = "entregablesDataSource")
     public DataSource entregablesDataSource() {
-        HikariConfig config = new HikariConfig();
+        var config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(username);
         config.setPassword(password);
