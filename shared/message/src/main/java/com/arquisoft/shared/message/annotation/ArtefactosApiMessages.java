@@ -171,7 +171,9 @@ public final class ArtefactosApiMessages {
         private Artefacto() {}
 
         public static final String TAG_NAME = "Artefactos";
-        public static final String TAG_DESCRIPTION = "Asignación de artefactos a los proyectos de grado y consulta de los asignados al asesor";
+        public static final String TAG_DESCRIPTION =
+                "Asignación de artefactos a los proyectos de grado y consulta de los asignados al asesor "
+                        + "y de los proyectos del estudiante";
         public static final String ASIGNAR_SUMMARY = "Asignar un artefacto a un proyecto de grado";
         public static final String ASIGNAR_DESCRIPTION =
                 "Vincula al proyecto de grado una versión de repositorio de artefactos como artefacto suyo "
@@ -205,6 +207,19 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar los artefactos del asesor";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Filtrar los artefactos de los proyectos de grado del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Devuelve, de forma paginada, los artefactos de los proyectos de grado a los que el estudiante "
+                        + "autenticado está vinculado, con su proyecto, la versión del repositorio usada como base y "
+                        + "el asesor responsable. Se puede filtrar por proyectoGrado, nombreProyecto, "
+                        + "versionRepositorioArtefacto, nombreDocumento, versionDocumento, nombreRepositorio, "
+                        + "asesor y nombreAsesor, y ordenar por nombreProyecto, nombreDocumento, versionDocumento, "
+                        + "nombreRepositorio y nombreAsesor; por defecto, nombreProyecto y nombreDocumento "
+                        + "ascendentes. El estudiante se toma del token, nunca del cuerpo.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Página de artefactos de los proyectos del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
+                "Filtro, operador, valor u ordenamiento inválido, o identificador de estudiante inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permiso para consultar los artefactos del estudiante";
         public static final String ASIGNAR_RESP_422 =
                 "El proyecto, el asesor o la versión no existe, el asesor no está asignado al proyecto, "
                         + "el repositorio ya está asignado, la lista de estudiantes está vacía o repetida, o algún "

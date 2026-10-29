@@ -20,6 +20,7 @@ rutas:
       cargas-version: /{artefactoId}/versiones/cargas
       versiones: /{artefactoId}/versiones
       asesor: /asesor
+      estudiante: /estudiante
       cambiar-asesor: /{artefactoId}/asesor
       revisiones-version: /versiones/{versionArtefactoId}/revisiones
       estado-revision: /revisiones/{revisionAsesorId}/estado
