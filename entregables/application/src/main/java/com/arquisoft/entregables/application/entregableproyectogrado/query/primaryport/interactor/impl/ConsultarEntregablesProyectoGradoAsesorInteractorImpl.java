@@ -4,7 +4,7 @@ import com.arquisoft.entregables.application.entregableproyectogrado.query.prima
 import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.mapper.ConsultarEntregablesProyectoGradoAsesorMapper;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.readmodel.EntregableProyectoGradoReadModel;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.usecase.ConsultarEntregablesProyectoGradoAsesorUseCase;
-import com.arquisoft.shared.query.ConsultaCriteriaQuery;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.model.ConsultarEntregablesProyectoGradoAsesorQuery;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ public class ConsultarEntregablesProyectoGradoAsesorInteractorImpl
 
     @Override
     @Transactional(readOnly = true, transactionManager = "entregablesTransactionManager")
-    public PaginatedResult<EntregableProyectoGradoReadModel> ejecutar(ConsultaCriteriaQuery entrada) {
+    public PaginatedResult<EntregableProyectoGradoReadModel> ejecutar(ConsultarEntregablesProyectoGradoAsesorQuery entrada) {
         var criteria = ConsultarEntregablesProyectoGradoAsesorMapper.toCriteria(entrada);
         return consultarEntregablesProyectoGradoAsesorUseCase.ejecutar(criteria);
     }
