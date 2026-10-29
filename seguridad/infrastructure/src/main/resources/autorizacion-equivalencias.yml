@@ -205,3 +205,4 @@ security:
         # entregables
         - {method: GET, path: "/api/estados-entregable", role: "entregables:estado-entregable:view"}
         - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/entregables", role: "entregables:entregable-proyecto-grado:create"}
+        - {method: PATCH, path: "/api/entregables-proyecto-grado/{entregableProyectoGradoId}/estado", role: "entregables:entregable-proyecto-grado-estado:update"}

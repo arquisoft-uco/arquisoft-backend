@@ -4,6 +4,21 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum EntregableProyectoGradoKey implements ClaveMensaje {
 
+    ERROR_NO_ENCONTRADO("entregables.dominio.entregableproyectogrado.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("entregables.dominio.entregableproyectogrado.error.no-encontrado-detalle", 1),
+    ERROR_ESTADO_INVALIDO("entregables.dominio.entregableproyectogrado.error.estado-invalido", 0),
+    ERROR_ESTADO_DESTINO_NO_PERMITIDO(
+            "entregables.dominio.entregableproyectogrado.error.estado-destino-no-permitido", 1),
+    ERROR_ESTADO_DESTINO_NO_PERMITIDO_DETALLE(
+            "entregables.dominio.entregableproyectogrado.error.estado-destino-no-permitido-detalle", 2),
+    ERROR_CIERRE_NO_PERMITIDO("entregables.dominio.entregableproyectogrado.error.cierre-no-permitido", 1),
+    ERROR_CIERRE_NO_PERMITIDO_DETALLE(
+            "entregables.dominio.entregableproyectogrado.error.cierre-no-permitido-detalle", 2),
+    LOG_CAMBIANDO_ESTADO("entregables.aplicacion.entregableproyectogrado.log.cambiando-estado", 2),
+    LOG_VERIFICACION_CAMBIAR_ESTADO(
+            "entregables.aplicacion.entregableproyectogrado.log.verificacion-cambiar-estado", 2),
+    LOG_ESTADO_CAMBIADO("entregables.aplicacion.entregableproyectogrado.log.estado-cambiado", 3),
+    LOG_ESTADO_ACTUALIZADO("entregables.infraestructura.entregableproyectogrado.log.estado-actualizado", 1),
     LOG_GENERANDO("entregables.aplicacion.entregableproyectogrado.log.generando", 2),
     LOG_VERIFICACION_GENERAR("entregables.aplicacion.entregableproyectogrado.log.verificacion-generar", 3),
     LOG_GENERADO("entregables.aplicacion.entregableproyectogrado.log.generado", 3),

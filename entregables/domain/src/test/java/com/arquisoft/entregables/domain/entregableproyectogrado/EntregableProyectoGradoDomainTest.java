@@ -52,4 +52,31 @@ class EntregableProyectoGradoDomainTest {
                                 EntregablesCodes.EntregableProyectoGrado.ULTIMA_VERSION_INVALIDA,
                                 EntregablesCodes.EntregableProyectoGrado.ASESOR_REQUERIDO));
     }
+
+    @Test
+    void debeReconstruirConTodosLosCamposSinRevalidar_cuandoSeLeeDelPuerto() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 3, asesor, EstadoEntregable.APROBADO);
+
+        // Assert
+        assertThat(entregable.getId()).isEqualTo(id);
+        assertThat(entregable.getProyectoGrado()).isEqualTo(proyecto);
+        assertThat(entregable.getVersion()).isEqualTo(3);
+        assertThat(entregable.getAsesor()).isEqualTo(asesor);
+        assertThat(entregable.getEstadoEntregable()).isEqualTo(EstadoEntregable.APROBADO);
+        assertThat(entregable.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeSerVacio_cuandoEsElCentinela() {
+        // Act & Assert
+        assertThat(EntregableProyectoGradoDomain.VACIO.esVacio()).isTrue();
+        assertThat(EntregableProyectoGradoDomain.VACIO.getEstadoEntregable()).isEqualTo(EstadoEntregable.VACIO);
+        assertThat(UtilUUID.esPorDefecto(EntregableProyectoGradoDomain.VACIO.getId())).isTrue();
+    }
 }
