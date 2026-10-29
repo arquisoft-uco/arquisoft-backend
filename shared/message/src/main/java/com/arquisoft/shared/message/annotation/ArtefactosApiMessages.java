@@ -117,7 +117,18 @@ public final class ArtefactosApiMessages {
         private EstudianteArtefacto() {}
 
         public static final String TAG_NAME = "Estudiantes de artefactos";
-        public static final String TAG_DESCRIPTION = "Consulta de los estudiantes vinculados a un artefacto";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de los estudiantes vinculados a un artefacto y de los artefactos de un estudiante";
+        public static final String CONSULTAR_PARTICIPACION_SUMMARY =
+                "Consultar los artefactos en los que participa el estudiante";
+        public static final String CONSULTAR_PARTICIPACION_DESCRIPTION =
+                "Devuelve, sin paginar y ordenados por proyecto de grado, documento y versión, los artefactos "
+                        + "a los que está vinculado el estudiante autenticado, con su proyecto de grado y su "
+                        + "documento. Un estudiante sin vínculos recibe una lista vacía.";
+        public static final String CONSULTAR_PARTICIPACION_RESP_200 =
+                "Listado de artefactos en los que participa el estudiante";
+        public static final String CONSULTAR_PARTICIPACION_RESP_403 =
+                "Sin permisos para consultar los artefactos del estudiante";
         public static final String CONSULTAR_SUMMARY = "Consultar los estudiantes vinculados a un artefacto";
         public static final String CONSULTAR_DESCRIPTION =
                 "Devuelve, sin paginar y ordenados por nombre, los estudiantes vinculados al artefacto con su "

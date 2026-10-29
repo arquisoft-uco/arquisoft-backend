@@ -1,6 +1,10 @@
 package com.arquisoft.artefactos.infrastructure.estudianteartefacto.query.secondaryadapter.repository;
 
+import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secondaryadapter.entity.EstudianteArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.estudianteartefacto.support.EstudianteTestEntity;
+import com.arquisoft.artefactos.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.entity.VersionRepositorioArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.ArtefactoTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstudianteArtefactoTestEntity;
 import com.arquisoft.shared.util.UtilUUID;
@@ -24,11 +28,14 @@ class EstudianteArtefactoQueryOutputAdapterTest {
     @Autowired
     private EstudianteArtefactoQueryRepository repository;
 
+    @Autowired
+    private ParticipacionArtefactoQueryRepository participacionRepository;
+
     private EstudianteArtefactoQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EstudianteArtefactoQueryOutputAdapter(repository);
+        adapter = new EstudianteArtefactoQueryOutputAdapter(repository, participacionRepository);
     }
 
     private UUID sembrarArtefacto() {
@@ -47,6 +54,108 @@ class EstudianteArtefactoQueryOutputAdapterTest {
                 estudiante, "ID-" + nombre, nombre, nombre.toLowerCase() + "@uco.edu.co", eliminadoEn));
         entityManager.persist(new EstudianteArtefactoTestEntity(vinculo, artefacto, estudiante));
         return estudiante;
+    }
+
+    private UUID sembrarProyecto(String nombre) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ProyectoGradoJpaEntity(id, nombre));
+        return id;
+    }
+
+    private UUID sembrarVersion(String documento, int version, String repositorio) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new VersionRepositorioArtefactoJpaEntity(
+                id, documento, version, UtilUUID.generarNuevoUUID(), repositorio,
+                "archivo.pdf", "application/pdf", 10L));
+        return id;
+    }
+
+    private UUID sembrarParticipacion(UUID estudiante, UUID proyecto, UUID version) {
+        var artefacto = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ArtefactoJpaEntity(artefacto, proyecto, version, UtilUUID.generarNuevoUUID()));
+        entityManager.persist(new EstudianteArtefactoJpaEntity(UtilUUID.generarNuevoUUID(), artefacto, estudiante));
+        return artefacto;
+    }
+
+    @Test
+    void debeRetornarSoloLosArtefactosDelEstudiante_cuandoOtrosEstudiantesTambienTienenVinculos() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        var proyecto = sembrarProyecto("Alfa");
+        var version = sembrarVersion("Informe", 1, "Repo");
+        var propio = sembrarParticipacion(estudiante, proyecto, version);
+        sembrarParticipacion(otro, proyecto, version);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
+
+        // Assert
+        assertThat(resultado).extracting("id").containsExactly(propio);
+    }
+
+    @Test
+    void debeOrdenarPorProyectoDocumentoYVersion_cuandoHayVarios() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var alfa = sembrarProyecto("Alfa");
+        var beta = sembrarProyecto("Beta");
+        var betaDoc1 = sembrarParticipacion(estudiante, beta, sembrarVersion("Anteproyecto", 1, "Repo"));
+        var alfaInformeV2 = sembrarParticipacion(estudiante, alfa, sembrarVersion("Informe", 2, "Repo"));
+        var alfaInformeV1 = sembrarParticipacion(estudiante, alfa, sembrarVersion("Informe", 1, "Repo"));
+        var alfaAnteproyecto = sembrarParticipacion(estudiante, alfa, sembrarVersion("Anteproyecto", 5, "Repo"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
+
+        // Assert
+        assertThat(resultado).extracting("id")
+                .containsExactly(alfaAnteproyecto, alfaInformeV1, alfaInformeV2, betaDoc1);
+    }
+
+    @Test
+    void debeIncluirNombresDeProyectoYRepositorio_cuandoUneLasTablas() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var proyecto = sembrarProyecto("Proyecto Alfa");
+        var version = sembrarVersion("Informe", 3, "Repo Uno");
+        var artefacto = sembrarParticipacion(estudiante, proyecto, version);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
+
+        // Assert
+        assertThat(resultado).hasSize(1);
+        var readModel = resultado.get(0);
+        assertThat(readModel.id()).isEqualTo(artefacto);
+        assertThat(readModel.proyectoGrado()).isEqualTo(proyecto);
+        assertThat(readModel.nombreProyecto()).isEqualTo("Proyecto Alfa");
+        assertThat(readModel.versionRepositorioArtefacto()).isEqualTo(version);
+        assertThat(readModel.nombreDocumento()).isEqualTo("Informe");
+        assertThat(readModel.versionDocumento()).isEqualTo(3);
+        assertThat(readModel.nombreRepositorio()).isEqualTo("Repo Uno");
+    }
+
+    @Test
+    void debeRetornarListaVacia_cuandoElEstudianteNoTieneVinculos() {
+        // Arrange
+        var proyecto = sembrarProyecto("Alfa");
+        var version = sembrarVersion("Informe", 1, "Repo");
+        sembrarParticipacion(UtilUUID.generarNuevoUUID(), proyecto, version);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarParticipacionesPorEstudiante(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
     }
 
     @Test
