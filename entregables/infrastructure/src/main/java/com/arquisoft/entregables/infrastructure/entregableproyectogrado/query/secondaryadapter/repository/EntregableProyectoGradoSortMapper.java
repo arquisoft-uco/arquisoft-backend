@@ -13,7 +13,7 @@ final class EntregableProyectoGradoSortMapper {
     static {
         var m = new LinkedHashMap<String, String>();
         for (var campo : EntregableProyectoGradoCriteria.Campo.values()) {
-            String ruta = switch (campo) {
+            var ruta = switch (campo) {
                 case PROYECTO_GRADO_NOMBRE -> "proyectoGradoNombre";
                 case ASESOR_NOMBRE -> "asesorNombre";
                 case VERSION_ENTREGABLE -> "versionEntregable";
