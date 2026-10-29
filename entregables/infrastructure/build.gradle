@@ -6,6 +6,7 @@ dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:application')
     implementation project(':shared:query')
+    implementation project(':shared:amqp')
     implementation project(':shared:logger')
     implementation project(':shared:tracing')
     implementation project(':shared:web')
@@ -14,6 +15,9 @@ dependencies {
     // Solo para los slices de test: un controlador de produccion no puede importar seguridad.
     testImplementation "org.springframework.boot:spring-boot-starter-security"
     testImplementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+
+    // AMQP — los consumidores extienden AbstractEventConsumer; spring-amqp no es transitivo desde shared:amqp.
+    implementation "org.springframework.boot:spring-boot-starter-amqp"
 
     // Database
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
