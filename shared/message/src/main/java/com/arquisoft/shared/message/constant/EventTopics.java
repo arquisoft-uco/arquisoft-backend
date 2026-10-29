@@ -157,6 +157,9 @@ public final class EventTopics {
 
         public static final String AMPLIACION_PLAZO_ESTADO_MODIFICADO =
                 "solicitudes.respuesta.ampliacion_plazo_estado_modificado";
+
+        public static final String REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.registro_modificacion_usuarios_estado_modificado";
     }
 
     public static final class RepositorioArtefactos {

@@ -460,6 +460,22 @@ public final class SolicitudesApiMessages {
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
                         + "encontrada, ya no está en revisión, o el nuevo estado no es resolutivo";
 
+        public static final String MODIFICAR_ESTADO_REGISTRO_MODIFICACION_USUARIOS_SUMMARY =
+                "Modificar estado de la respuesta de solicitud para registro y modificación de usuarios";
+        public static final String MODIFICAR_ESTADO_REGISTRO_MODIFICACION_USUARIOS_DESCRIPTION =
+                "Permite a un administrador determinar el veredicto (aprobada o no aprobada) de la "
+                        + "respuesta que registró para una solicitud de registro y modificación de usuarios "
+                        + "que le fue dirigida, mientras siga en revisión.";
+        public static final String MODIFICAR_ESTADO_REGISTRO_MODIFICACION_USUARIOS_RESP_204 = "Estado modificado";
+        public static final String MODIFICAR_ESTADO_REGISTRO_MODIFICACION_USUARIOS_RESP_400 =
+                "Identificador de solicitud inválido, o nuevo estado en blanco";
+        public static final String MODIFICAR_ESTADO_REGISTRO_MODIFICACION_USUARIOS_RESP_403 =
+                "Sin permisos para modificar el estado de respuestas de solicitudes de registro y "
+                        + "modificación de usuarios";
+        public static final String MODIFICAR_ESTADO_REGISTRO_MODIFICACION_USUARIOS_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro administrador; respuesta no "
+                        + "encontrada, ya no está en revisión, o el nuevo estado no es resolutivo";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_SUMMARY =
                 "Consultar respuestas de solicitudes de novedad para el coordinador recibidas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_DESCRIPTION =

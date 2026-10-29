@@ -117,12 +117,25 @@ class SolicitudEstadoModificadoEventTest {
     }
 
     @Test
-    void debeLanzarTipoNoEncontrado_cuandoElTipoNoTieneEventoDeEstadoModificado() {
-        // Act & Assert
-        assertThatThrownBy(() -> new SolicitudEstadoModificadoEvent(
-                TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, UUID.randomUUID(),
-                EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE))
-                .isInstanceOf(TipoSolicitudNoEncontradoException.class);
+    void debeUsarTemaYTipoDeRegistroModificacionUsuarios_cuandoElTipoEsRegistro() {
+        // Arrange
+        var solicitud = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var evento = new SolicitudEstadoModificadoEvent(
+                TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, solicitud,
+                EstadoRespuesta.APROBADA, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento())
+                .isEqualTo(EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO);
+        assertThat(evento.getTemaEvento())
+                .isEqualTo("solicitudes.respuesta.registro_modificacion_usuarios_estado_modificado");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudRegistroModificacionUsuariosEstadoModificadoEvent");
+        assertThat(evento.getSolicitudId()).isEqualTo(solicitud);
+        assertThat(evento.getNuevoEstado()).isEqualTo(EstadoRespuesta.APROBADA.getId());
+        assertThat(evento.getRemitenteEmail()).isEqualTo("ana@uco.edu.co");
+        assertThat(evento.getResponsableNombre()).isEqualTo("Pedro Coordinador");
     }
 
     @Test
