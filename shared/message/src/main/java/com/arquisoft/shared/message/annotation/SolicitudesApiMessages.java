@@ -132,6 +132,20 @@ public final class SolicitudesApiMessages {
         public static final String ELIMINAR_AMPLIACION_PLAZO_RESP_422 =
                 "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
 
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_SUMMARY =
+                "Eliminar solicitud para registro y modificación de usuarios";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_DESCRIPTION =
+                "Permite a un coordinador eliminar definitivamente una solicitud para registro y "
+                        + "modificación de usuarios que envió por error.";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_RESP_204 =
+                "Solicitud eliminada";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_RESP_403 =
+                "Sin permisos para eliminar solicitudes para registro y modificación de usuarios";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_RESP_422 =
+                "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_SUMMARY =
                 "Consultar solicitudes de novedad para el coordinador recibidas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_DESCRIPTION =

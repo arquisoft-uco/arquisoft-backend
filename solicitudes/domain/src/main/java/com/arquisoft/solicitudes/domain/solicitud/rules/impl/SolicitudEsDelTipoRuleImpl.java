@@ -15,7 +15,9 @@ public class SolicitudEsDelTipoRuleImpl implements SolicitudEsDelTipoRule {
             TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId(), new SolicitudEsNovedadAsesorRuleImpl(),
             TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), new SolicitudEsNovedadCoordinadorRuleImpl(),
             TipoSolicitud.CAMBIO_DE_ASESOR.getId(), new SolicitudEsCambioAsesorRuleImpl(),
-            TipoSolicitud.AMPLIACION_DE_PLAZO.getId(), new SolicitudEsAmpliacionPlazoRuleImpl());
+            TipoSolicitud.AMPLIACION_DE_PLAZO.getId(), new SolicitudEsAmpliacionPlazoRuleImpl(),
+            TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS.getId(),
+            new SolicitudEsRegistroModificacionUsuariosRuleImpl());
 
     @Override
     public void validar(TipoSolicitudConcordante concordancia) {

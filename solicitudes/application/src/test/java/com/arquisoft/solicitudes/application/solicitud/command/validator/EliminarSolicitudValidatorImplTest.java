@@ -9,6 +9,7 @@ import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoinc
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideRegistroModificacionUsuariosException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
@@ -171,5 +172,31 @@ class EliminarSolicitudValidatorImplTest {
                 entrada(solicitud, solicitante, TipoSolicitud.AMPLIACION_DE_PLAZO),
                 resumen(solicitud, solicitante, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR), false))
                 .isInstanceOf(SolicitudTipoNoCoincideAmpliacionPlazoException.class);
+    }
+
+    @Test
+    void debePasar_cuandoLasCuatroReglasSeCumplenParaRegistroModificacionUsuarios() {
+        // Arrange
+        var solicitud = UtilUUID.generarNuevoUUID();
+        var solicitante = UtilUUID.generarNuevoUUID();
+        var tipo = TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS;
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(
+                entrada(solicitud, solicitante, tipo), resumen(solicitud, solicitante, tipo), false))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarElErrorDeRegistroModificacionUsuarios_cuandoSeEsperabaRegistroModificacionUsuariosYLaSolicitudEsDeOtroTipo() {
+        // Arrange
+        var solicitud = UtilUUID.generarNuevoUUID();
+        var solicitante = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                entrada(solicitud, solicitante, TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS),
+                resumen(solicitud, solicitante, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR), false))
+                .isInstanceOf(SolicitudTipoNoCoincideRegistroModificacionUsuariosException.class);
     }
 }
