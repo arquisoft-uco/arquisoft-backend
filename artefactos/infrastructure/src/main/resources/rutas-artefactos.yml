@@ -20,6 +20,7 @@ rutas:
       estudiante-participaciones: /estudiante/participaciones
       cargas-version: /{artefactoId}/versiones/cargas
       versiones: /{artefactoId}/versiones
+      versiones-estudiante: /versiones/estudiante
       asesor: /asesor
       estudiante: /estudiante
       cambiar-asesor: /{artefactoId}/asesor
