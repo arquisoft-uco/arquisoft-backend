@@ -1,6 +1,12 @@
 package com.arquisoft.artefactos.infrastructure.artefacto.query.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.application.artefacto.query.criteria.ArtefactoAsesorCriteria;
+import com.arquisoft.artefactos.application.artefacto.query.criteria.ArtefactoEstudianteCriteria;
+import com.arquisoft.artefactos.application.artefacto.query.primaryport.mapper.ConsultarArtefactosEstudianteMapper;
+import com.arquisoft.artefactos.application.artefacto.query.primaryport.model.ConsultarArtefactosEstudianteQuery;
+import com.arquisoft.artefactos.application.artefacto.query.readmodel.ArtefactoEstudianteReadModel;
+import com.arquisoft.artefactos.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
+import com.arquisoft.artefactos.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
 import com.arquisoft.artefactos.application.artefacto.query.primaryport.mapper.ConsultarArtefactosAsesorMapper;
 import com.arquisoft.artefactos.application.artefacto.query.primaryport.model.ConsultarArtefactosAsesorQuery;
 import com.arquisoft.artefactos.application.artefacto.query.readmodel.ArtefactoReadModel;
@@ -19,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,10 +40,15 @@ class ArtefactoQueryOutputAdapterTest {
     @Autowired
     private ArtefactoAsesorQueryRepository repository;
 
+    @Autowired
+    private ArtefactoEstudianteQueryRepository estudianteRepository;
+
     private ArtefactoQueryOutputAdapter adapter;
 
     private final UUID asesorA = UtilUUID.generarNuevoUUID();
     private final UUID asesorB = UtilUUID.generarNuevoUUID();
+    private final UUID estudianteX = UtilUUID.generarNuevoUUID();
+    private final UUID estudianteY = UtilUUID.generarNuevoUUID();
 
     private UUID proyectoAlfa;
     private UUID proyectoBeta;
@@ -50,7 +62,8 @@ class ArtefactoQueryOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new ArtefactoQueryOutputAdapter(repository, new ArtefactoAsesorJpaSpecification());
+        adapter = new ArtefactoQueryOutputAdapter(repository, new ArtefactoAsesorJpaSpecification(),
+                estudianteRepository, new ArtefactoEstudianteJpaSpecification());
     }
 
     private UUID sembrarProyecto(String nombre) {
@@ -247,5 +260,143 @@ class ArtefactoQueryOutputAdapterTest {
         assertThat(artefacto.nombreDocumento()).isEqualTo("Anteproyecto");
         assertThat(artefacto.versionDocumento()).isEqualTo(3);
         assertThat(artefacto.nombreRepositorio()).isEqualTo("Repo Uno");
+    }
+
+    private void sembrarAsesor(UUID id, String nombre, Instant eliminadoEn) {
+        entityManager.persist(new AsesorJpaEntity(id, "ID-" + nombre, nombre, nombre + "@uco.edu.co",
+                Instant.now(), eliminadoEn));
+    }
+
+    private void sembrarVinculo(UUID estudiante, UUID proyecto, Instant destituidoEn) {
+        entityManager.persist(new EstudianteProyectoGradoJpaEntity(
+                UtilUUID.generarNuevoUUID(), estudiante, proyecto, Instant.now(), destituidoEn));
+    }
+
+    private ArtefactoEstudianteCriteria criteriaEstudiante(
+            UUID estudiante, NodoFiltro raiz, List<SortOrder> orden, int pagina, int tamanio) {
+        var criterio = ConsultaCriteriaQuery.crear(pagina, tamanio, orden, raiz);
+        return ConsultarArtefactosEstudianteMapper.toCriteria(
+                ConsultarArtefactosEstudianteQuery.crear(estudiante, criterio));
+    }
+
+    private ArtefactoEstudianteCriteria criteriaEstudiante(UUID estudiante, NodoFiltro raiz) {
+        return criteriaEstudiante(estudiante, raiz, List.of(), 0, 10);
+    }
+
+    private static List<UUID> idsEstudiante(List<ArtefactoEstudianteReadModel> contenido) {
+        return contenido.stream().map(ArtefactoEstudianteReadModel::id).toList();
+    }
+
+    private void sembrarEscenarioEstudiante() {
+        sembrarEscenario();
+        sembrarAsesor(asesorA, "Ana", null);
+        sembrarAsesor(asesorB, "Beto", Instant.now());
+        sembrarVinculo(estudianteX, proyectoAlfa, null);
+        sembrarVinculo(estudianteX, proyectoBeta, Instant.now());
+        sembrarVinculo(estudianteY, proyectoBeta, null);
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    @Test
+    void debeDevolverSoloArtefactosDeProyectosConVinculoVigente_cuandoHayVinculosDestituidosYAjenos() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+
+        // Act
+        var deX = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, null));
+        var deY = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteY, null));
+        var deAjeno = adapter.consultarTodosEstudiante(
+                criteriaEstudiante(UtilUUID.generarNuevoUUID(), null));
+
+        // Assert
+        assertThat(idsEstudiante(deX.getContent()))
+                .containsExactlyInAnyOrder(artefactoAlfa1, artefactoAlfa2, artefactoDeB);
+        assertThat(idsEstudiante(deY.getContent())).containsExactly(artefactoBeta1);
+        assertThat(deAjeno.getContent()).isEmpty();
+    }
+
+    @Test
+    void debeIncluirNombreYIdDelAsesor_cuandoElAsesorFueDadoDeBaja() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+
+        // Act
+        var resultado = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, null));
+
+        // Assert
+        var deBaja = resultado.getContent().stream()
+                .filter(a -> a.id().equals(artefactoDeB)).findFirst().orElseThrow();
+        assertThat(deBaja.nombreAsesor()).isEqualTo("Beto");
+        assertThat(deBaja.asesor()).isEqualTo(asesorB);
+    }
+
+    @Test
+    void debeMapearTodosLosCamposDelEstudiante_cuandoHayResultado() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+        var raiz = NodoFiltro.predicado("versionDocumento", FiltroOperador.ES, "2");
+
+        // Act
+        var resultado = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, raiz));
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        var artefacto = resultado.getContent().get(0);
+        assertThat(artefacto.id()).isEqualTo(artefactoAlfa1);
+        assertThat(artefacto.proyectoGrado()).isEqualTo(proyectoAlfa);
+        assertThat(artefacto.nombreProyecto()).isEqualTo("Alfa");
+        assertThat(artefacto.versionRepositorioArtefacto()).isEqualTo(versionAlfaDoc2);
+        assertThat(artefacto.nombreDocumento()).isEqualTo("Informe");
+        assertThat(artefacto.versionDocumento()).isEqualTo(2);
+        assertThat(artefacto.nombreRepositorio()).isEqualTo("Repo Dos");
+        assertThat(artefacto.asesor()).isEqualTo(asesorA);
+        assertThat(artefacto.nombreAsesor()).isEqualTo("Ana");
+    }
+
+    @Test
+    void debeFiltrarPorNombreAsesorDocumentoEIdAsesor_cuandoElCriterioLoPide() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+        var porAsesor = NodoFiltro.predicado("nombreAsesor", FiltroOperador.CONTIENE, "bet");
+        var porDocumento = NodoFiltro.predicado("nombreDocumento", FiltroOperador.CONTIENE, "informe");
+        var porIdAsesor = NodoFiltro.predicado("asesor", FiltroOperador.ES, asesorA.toString());
+
+        // Act
+        var conAsesor = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, porAsesor));
+        var conDocumento = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, porDocumento));
+        var conIdAsesor = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, porIdAsesor));
+
+        // Assert
+        assertThat(idsEstudiante(conAsesor.getContent())).containsExactly(artefactoDeB);
+        assertThat(idsEstudiante(conDocumento.getContent())).containsExactly(artefactoAlfa1);
+        assertThat(idsEstudiante(conIdAsesor.getContent()))
+                .containsExactlyInAnyOrder(artefactoAlfa1, artefactoAlfa2);
+    }
+
+    @Test
+    void debeOrdenarPorNombreAsesor_cuandoElClienteLoPide() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+        var orden = List.of(SortOrder.of("nombreAsesor", SortDirection.DESC));
+
+        // Act
+        var resultado = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, null, orden, 0, 10));
+
+        // Assert
+        assertThat(resultado.getContent().get(0).nombreAsesor()).isEqualTo("Beto");
+    }
+
+    @Test
+    void debePaginar_cuandoTamanioEsMenorAlTotal() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+
+        // Act
+        var resultado = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, null, List.of(), 1, 2));
+
+        // Assert
+        assertThat(resultado.getTotalElements()).isEqualTo(3L);
+        assertThat(resultado.getContent()).hasSize(1);
     }
 }

@@ -102,6 +102,68 @@ class PlanEstimadoCommandOutputAdapterTest {
         assertThat(adapter.existePorTarea(sinPlan)).isFalse();
     }
 
+    private UUID sembrarPlanConDescripcion(UUID tarea, int dias, String descripcion) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(PlanEstimadoJpaEntity.builder()
+                .id(id)
+                .tareaId(tarea)
+                .tiempoEstimadoDias(dias)
+                .descripcionEstimado(descripcion)
+                .build());
+        return id;
+    }
+
+    @Test
+    void debeIndicarExistenciaPorId_soloParaElPlanPersistido() {
+        // Arrange
+        var plan = sembrarPlanConDescripcion(UtilUUID.generarNuevoUUID(), 3, "Original");
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.existePorId(plan)).isTrue();
+        assertThat(adapter.existePorId(UtilUUID.generarNuevoUUID())).isFalse();
+    }
+
+    @Test
+    void debeActualizarSoloLaDescripcion_cuandoSeModifica() {
+        // Arrange
+        var tarea = UtilUUID.generarNuevoUUID();
+        var plan = sembrarPlanConDescripcion(tarea, 3, "Original");
+        var otroPlan = sembrarPlanConDescripcion(UtilUUID.generarNuevoUUID(), 5, "Otra");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarDescripcion(plan, "Nueva");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var modificado = entityManager.find(PlanEstimadoJpaEntity.class, plan);
+        assertThat(modificado.getDescripcionEstimado()).isEqualTo("Nueva");
+        assertThat(modificado.getTareaId()).isEqualTo(tarea);
+        assertThat(modificado.getTiempoEstimadoDias()).isEqualTo(3);
+        assertThat(entityManager.find(PlanEstimadoJpaEntity.class, otroPlan).getDescripcionEstimado())
+                .isEqualTo("Otra");
+        verify(logger).debug(any(ClaveMensaje.class), eq(plan));
+    }
+
+    @Test
+    void debePersistirNull_cuandoLaDescripcionNuevaEsVacia() {
+        // Arrange
+        var plan = sembrarPlanConDescripcion(UtilUUID.generarNuevoUUID(), 2, "Original");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarDescripcion(plan, UtilTexto.VACIO);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(PlanEstimadoJpaEntity.class, plan).getDescripcionEstimado()).isNull();
+    }
+
     @Test
     void debeSumarDias_deTodasLasTareasDelMismoMapaIgnorandoOtrosMapas() {
         // Arrange

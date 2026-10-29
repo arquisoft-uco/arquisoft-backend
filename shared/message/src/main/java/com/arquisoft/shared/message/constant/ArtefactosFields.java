@@ -70,6 +70,7 @@ public final class ArtefactosFields {
         private Artefacto() {}
 
         public static final String ID = "id";
+        public static final String ESTUDIANTE = "estudiante";
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String ASESOR = "asesor";
         public static final String VERSION_REPOSITORIO_ARTEFACTO = "versionRepositorioArtefacto";

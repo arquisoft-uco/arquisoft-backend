@@ -68,7 +68,11 @@ public enum SolicitudKey implements ClaveMensaje {
     LOG_CONSULTANDO_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS(
             "solicitudes.aplicacion.solicitud.log.consultando-registro-modificacion-usuarios-enviadas", 4),
     LOG_CONSULTA_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-registro-modificacion-usuarios-enviadas-completada", 3);
+            "solicitudes.aplicacion.solicitud.log.consulta-registro-modificacion-usuarios-enviadas-completada", 3),
+    LOG_CONSULTANDO_REGISTRO_MODIFICACION_USUARIOS_RECIBIDAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-registro-modificacion-usuarios-recibidas", 4),
+    LOG_CONSULTA_REGISTRO_MODIFICACION_USUARIOS_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-registro-modificacion-usuarios-recibidas-completada", 3);
 
     private final String clave;
     private final int parametros;
