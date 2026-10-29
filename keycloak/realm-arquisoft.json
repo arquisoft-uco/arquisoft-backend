@@ -212,6 +212,7 @@
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
+              "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view",
               "usuarios:administrador:delete",
               "usuarios:asesor:delete",
               "solicitudes:estado-respuesta:view",
@@ -930,6 +931,15 @@
         {
           "id": "5f0c2d7e-3b1a-4c8e-9d46-7a2e1b9c8f30",
           "name": "solicitudes:solicitud-registro-modificacion-usuarios:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "fa803155-7535-462e-8184-db73ffbe2045",
+          "name": "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view",
           "description": "",
           "composite": false,
           "clientRole": true,

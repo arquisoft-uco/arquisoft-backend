@@ -166,6 +166,7 @@ security:
         - {method: PATCH, path: "/api/solicitudes/novedad-coordinador/{solicitudId}/respuesta/estado", role: "solicitudes:respuesta-novedad-coordinador:update"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios", role: "solicitudes:solicitud-registro-modificacion-usuarios:create"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/enviadas", role: "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view"}
+        - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/recibidas", role: "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view"}
         - {method: DELETE, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}", role: "solicitudes:solicitud-registro-modificacion-usuarios:delete"}
         - {method: GET, path: "/api/solicitudes/tipos-solicitud", role: "solicitudes:tipo-solicitud:view"}
         # repositorio_artefactos
