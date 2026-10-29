@@ -119,7 +119,10 @@ legítima (`arquisoft-estandares` → *El `Finder` dependiente*) lleva su razón
 implementador la tomará por error. En un comando, **todos** los `Finder`s van antes del `Validator`,
 y cada resultado que la escritura o el evento leen tiene su `Rule` en la lista del `Validator`
 (`arquisoft-estandares` → *Validator, Rule, Finder*). Un `Finder` "después de validar" o "sin `Rule`
-porque la FK lo garantiza" es un plan que deja pasar un `VACIO` en silencio.
+porque la FK lo garantiza" es un plan que deja pasar un `VACIO` en silencio. Cada `Validator` expone
+un solo `validar(...)`: ante el tope de parámetros o una lectura costosa entre dos grupos de reglas, el
+plan declara el `record` de entrada o el segundo `Validator`, nunca un `validarX` más en uno existente
+(misma sección de la skill).
 
 **9. ¿Sistema externo** (proveedor de identidad, PEP, SMTP, MinIO, HTTP)? Puerto en `command/secondaryport/`, adaptador
 en `command/secondaryadapter/{tecnologia}/`, sin lógica de negocio.

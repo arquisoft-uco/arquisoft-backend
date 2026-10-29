@@ -53,6 +53,14 @@ lanza en su violación, así que una regla dependiente **confía en que la anter
 guardarla con un `if` es código muerto. Si la ausencia cambia la conclusión, esa decisión va dentro
 de la `Rule`.
 
+**El único `validar(...)` se mantiene aunque los argumentos no quepan o haya una lectura cara en
+medio.** Si pasan del tope de 7 parámetros, se agrupan en un `record` de entrada en
+`domain/{feature}/model/`; el método no se parte. Si un grupo de reglas necesita una lectura costosa o
+expuesta (descargar y analizar un archivo) que solo debe correr sobre una entrada que ya pasó las
+demás, ese grupo es un **segundo `Validator`**, cuyo `validar(...)` recibe el resultado de esa lectura:
+el tipo de su entrada impide llamarlo antes de tiempo. Un `validarCarga` + `validarContenido` en la
+misma interfaz parece lo mismo, pero nada obliga a un llamador nuevo a invocar los dos.
+
 **Todos los `Finder`s de un comando corren antes del `Validator`, y lo que la escritura o el evento
 leen de un `Finder` lo decidió antes una `Rule`.** Un `Finder` consultado después de `validar(...)`
 devuelve su `VACIO` sin lanzar y ya nada lo detiene: se persiste o se publica con campos vacíos, y
