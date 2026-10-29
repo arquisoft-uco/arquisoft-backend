@@ -110,7 +110,62 @@ const PERMITIDOS = [
   ],
 ];
 
+const BACKEND = 'C:/workspace/Arquisoft/arquisoft-backend';
+const DOCS = 'C:/workspace/Arquisoft/arquisoft-docs';
+const REPOSITORIOS = {
+  [BACKEND]: { nombre: 'arquisoft-backend', rama: 'develop' },
+  [DOCS]: { nombre: 'arquisoft-docs', rama: 'main' },
+  '/c/workspace/Arquisoft/arquisoft-docs': { nombre: 'arquisoft-docs', rama: 'main' },
+  [`${BACKEND}/../arquisoft-docs`]: { nombre: 'arquisoft-docs', rama: 'main' },
+};
+const repositorioEn = (directorio) => REPOSITORIOS[directorio ?? BACKEND];
+const ramaPorDirectorio = (directorio) => repositorioEn(directorio)?.rama ?? null;
+const nombrePorDirectorio = (directorio) => repositorioEn(directorio)?.nombre ?? null;
+
+const PROHIBIDOS_POR_REPOSITORIO = [
+  ['commit sobre develop del backend sin cd', 'git commit -m "feat: x"'],
+  ['commit tras volver al backend con cd', `cd ${DOCS} && cd ${BACKEND} && git commit -m "feat: x"`],
+  ['push forzado en arquisoft-docs', `cd ${DOCS} && git push --force origin main`],
+  ['push forzado por refspec en arquisoft-docs', `git -C ${DOCS} push origin +main`],
+  ['borrar una rama remota de arquisoft-docs', `cd ${DOCS} && git push origin --delete vieja`],
+  ['add de .workspace en arquisoft-docs', `cd ${DOCS} && git add .workspace/notas.md`],
+];
+
+const PERMITIDOS_POR_REPOSITORIO = [
+  ['commit sobre main de arquisoft-docs con cd', `cd ${DOCS} && git commit -m "docs(mer): x"`],
+  ['commit sobre main de arquisoft-docs con -C', `git -C ${DOCS} commit -m "docs(mer): x"`],
+  [
+    'commit con cd en ruta MSYS de Git Bash',
+    'cd /c/workspace/Arquisoft/arquisoft-docs && git add mer/x.sql && git commit -m "docs: x"',
+  ],
+  ['commit con cd entre comillas', `cd "${DOCS}" && git commit -m "docs: x"`],
+  ['commit con Set-Location de PowerShell', `Set-Location ${DOCS}; git commit -m "docs: x"`],
+  ['commit con cd relativo', `cd ${BACKEND} && cd ../arquisoft-docs && git commit -m "docs: x"`],
+  ['push a main de arquisoft-docs', `cd ${DOCS} && git push origin main`],
+  ['push sin destino desde main de arquisoft-docs', `cd ${DOCS} && git pull --ff-only && git push`],
+];
+
 describe('guardia-bash', () => {
+  for (const [nombre, comando] of PROHIBIDOS_POR_REPOSITORIO) {
+    it(`rechaza ${nombre}`, () => {
+      // Act
+      const veredicto = evaluarComando(comando, ramaPorDirectorio, nombrePorDirectorio);
+
+      // Assert
+      assert.equal(veredicto?.decision, 'deny');
+    });
+  }
+
+  for (const [nombre, comando] of PERMITIDOS_POR_REPOSITORIO) {
+    it(`permite ${nombre}`, () => {
+      // Act
+      const veredicto = evaluarComando(comando, ramaPorDirectorio, nombrePorDirectorio);
+
+      // Assert
+      assert.equal(veredicto, null);
+    });
+  }
+
   for (const [nombre, comando, rama] of PROHIBIDOS) {
     it(`rechaza ${nombre}`, () => {
       // Act
