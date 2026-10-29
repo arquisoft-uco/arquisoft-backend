@@ -103,14 +103,18 @@ class SolicitudRespondidaEventTest {
     }
 
     @Test
-    void debeLanzarTipoNoEncontrado_cuandoElTipoNoTieneEventoDeRespuesta() {
+    void debeExponerElTemaYElTipoDeEventoDeRegistroModificacionUsuarios_cuandoElTipoEsRegistroYModificacionDeUsuarios() {
         // Arrange
-        var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "contenido");
+        var respuesta = RespuestaDomain.crear(UtilUUID.generarNuevoUUID(), "Se aprueba el registro");
 
-        // Act & Assert
-        assertThatThrownBy(() -> new SolicitudRespondidaEvent(
-                TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, respuesta, REMITENTE, RESPONSABLE))
-                .isInstanceOf(TipoSolicitudNoEncontradoException.class);
+        // Act
+        var evento = new SolicitudRespondidaEvent(
+                TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, respuesta, REMITENTE, RESPONSABLE);
+
+        // Assert
+        assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA);
+        assertThat(evento.getTemaEvento()).isEqualTo("solicitudes.respuesta.registro_modificacion_usuarios_respondida");
+        assertThat(evento.getTipoEvento()).isEqualTo("SolicitudRegistroModificacionUsuariosRespondidaEvent");
     }
 
     @Test

@@ -41,6 +41,9 @@ public class NotificacionesSolicitudesQueueConfig {
     public static final String AMPLIACION_PLAZO_RESPONDIDA_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.AMPLIACION_PLAZO_RESPONDIDA;
 
+    public static final String REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA;
+
     public static final String NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_COORDINADOR_ESTADO_MODIFICADO;
 
@@ -115,6 +118,17 @@ public class NotificacionesSolicitudesQueueConfig {
         return ColaEvento.declarar(
                 AMPLIACION_PLAZO_RESPONDIDA_QUEUE,
                 EventTopics.Solicitudes.AMPLIACION_PLAZO_RESPONDIDA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesSolicitudRegistroModificacionUsuariosRespondidaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA_QUEUE,
+                EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

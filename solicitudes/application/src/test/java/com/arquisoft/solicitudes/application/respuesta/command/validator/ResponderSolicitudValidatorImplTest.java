@@ -10,6 +10,7 @@ import com.arquisoft.solicitudes.domain.respuesta.exception.SolicitudYaRespondid
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAmpliacionPlazoException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideRegistroModificacionUsuariosException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideCambioAsesorException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
@@ -228,5 +229,25 @@ class ResponderSolicitudValidatorImplTest {
                 resumen(true, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), REMITENTE, responsable),
                 usuario(REMITENTE), usuario(responsable), false))
                 .isInstanceOf(SolicitudTipoNoCoincideAmpliacionPlazoException.class);
+    }
+
+    @Test
+    void debePasar_cuandoSeEsperabaRegistroModificacionUsuariosYLaSolicitudEsDeEseTipo() {
+        var responsable = UtilUUID.generarNuevoUUID();
+
+        assertThatCode(() -> validator.validar(entrada(responsable, TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS),
+                resumen(true, TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS.getId(), REMITENTE, responsable),
+                usuario(REMITENTE), usuario(responsable), false))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarTipoNoCoincideRegistroModificacionUsuarios_cuandoSeEsperabaRegistroModificacionUsuariosYLaSolicitudEsDeOtroTipo() {
+        var responsable = UtilUUID.generarNuevoUUID();
+
+        assertThatThrownBy(() -> validator.validar(entrada(responsable, TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS),
+                resumen(true, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId(), REMITENTE, responsable),
+                usuario(REMITENTE), usuario(responsable), false))
+                .isInstanceOf(SolicitudTipoNoCoincideRegistroModificacionUsuariosException.class);
     }
 }
