@@ -55,5 +55,14 @@ public final class EntregablesApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Un campo de filtro u orden no es válido, un operador no aplica al campo, un identificador no es un UUID "
                         + "o el tamaño de página está fuera de rango";
+        public static final String CONSULTAR_JURADO_SUMMARY = "Filtrar los entregables que deben ser evaluados";
+        public static final String CONSULTAR_JURADO_DESCRIPTION =
+                "El jurado lista, de forma paginada, los entregables disponibles para evaluación o en evaluación y los "
+                        + "filtra por proyecto de grado, asesor y estado, entre otros campos. Cada elemento trae la versión, "
+                        + "el proyecto, el asesor y el estado";
+        public static final String CONSULTAR_JURADO_RESP_200 = "Página de entregables de proyecto de grado por evaluar";
+        public static final String CONSULTAR_JURADO_RESP_400 =
+                "Un campo de filtro u orden no es válido, un operador no aplica al campo, un identificador no es un UUID "
+                        + "o el tamaño de página está fuera de rango";
     }
 }

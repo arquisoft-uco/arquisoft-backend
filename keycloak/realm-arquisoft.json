@@ -123,6 +123,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "entregables:entregable-proyecto-grado-jurado:view",
               "evaluaciones:evaluacion-cuantitativa-jurado:delete",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:evaluacion-cuantitativa-jurado:update",
@@ -1112,6 +1113,15 @@
         {
           "id": "231a7606-0d3e-4436-8f92-46071d4f91b1",
           "name": "entregables:entregable-proyecto-grado-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "ff2468d4-bbf2-4e51-bc64-410ad2676e9d",
+          "name": "entregables:entregable-proyecto-grado-jurado:view",
           "description": "",
           "composite": false,
           "clientRole": true,

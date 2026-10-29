@@ -14,3 +14,4 @@ rutas:
       base: /entregables-proyecto-grado
       estado: /{entregableProyectoGradoId}/estado
       asesor: /asesor
+      jurado: /jurado
