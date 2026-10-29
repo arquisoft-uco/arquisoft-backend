@@ -62,6 +62,8 @@ public final class MapasRutaCodes {
                 "PLAN_ESTIMADO_DESCRIPCION_DEMASIADO_LARGA";
         public static final String PLAN_ESTIMADO_DUPLICADO = "PLAN_ESTIMADO_DUPLICADO";
         public static final String PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO = "PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO";
+        public static final String PLAN_ESTIMADO_REQUERIDO = "PLAN_ESTIMADO_REQUERIDO";
+        public static final String PLAN_ESTIMADO_NO_ENCONTRADO = "PLAN_ESTIMADO_NO_ENCONTRADO";
     }
 
     public static final class AsignacionAsesor {

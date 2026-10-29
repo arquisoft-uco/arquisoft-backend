@@ -34,5 +34,6 @@ public final class MapasRutaFields {
         public static final String TAREA = "tarea";
         public static final String TIEMPO_ESTIMADO_DIAS = "tiempoEstimadoDias";
         public static final String DESCRIPCION_ESTIMADO = "descripcionEstimado";
+        public static final String PLAN_ESTIMADO = "planEstimado";
     }
 }

@@ -166,6 +166,7 @@ security:
         - {method: PATCH, path: "/api/solicitudes/novedad-coordinador/{solicitudId}/respuesta/estado", role: "solicitudes:respuesta-novedad-coordinador:update"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios", role: "solicitudes:solicitud-registro-modificacion-usuarios:create"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/enviadas", role: "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view"}
+        - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/recibidas", role: "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view"}
         - {method: DELETE, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}", role: "solicitudes:solicitud-registro-modificacion-usuarios:delete"}
         - {method: GET, path: "/api/solicitudes/tipos-solicitud", role: "solicitudes:tipo-solicitud:view"}
         # repositorio_artefactos
@@ -187,6 +188,7 @@ security:
         - {method: POST, path: "/api/artefactos", role: "artefactos:artefacto:create"}
         - {method: POST, path: "/api/artefactos/asesor", role: "artefactos:artefacto-asesor:view"}
         - {method: GET, path: "/api/artefactos/estudiante/participaciones", role: "artefactos:artefacto-participacion-estudiante:view"}
+        - {method: POST, path: "/api/artefactos/estudiante", role: "artefactos:artefacto-estudiante:view"}
         - {method: POST, path: "/api/versiones-artefacto/asesor", role: "artefactos:version-artefacto-asesor:view"}
         - {method: POST, path: "/api/artefactos/{artefactoId}/versiones/cargas", role: "artefactos:version-artefacto:upload"}
         - {method: POST, path: "/api/artefactos/{artefactoId}/versiones", role: "artefactos:version-artefacto:upload"}
@@ -206,6 +208,7 @@ security:
         - {method: DELETE, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:delete"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados", role: "mapas-ruta:plan-estimado:create"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados/estudiante", role: "mapas-ruta:plan-estimado-tarea-estudiante:view"}
+        - {method: PATCH, path: "/api/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:update"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
         # entregables
         - {method: GET, path: "/api/estados-entregable", role: "entregables:estado-entregable:view"}

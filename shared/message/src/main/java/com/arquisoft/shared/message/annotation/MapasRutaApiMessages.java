@@ -136,6 +136,13 @@ public final class MapasRutaApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de planes estimados de la tarea";
         public static final String CONSULTAR_RESP_400 =
                 "Identificador de tarea inválido, o filtro u ordenamiento no permitido";
+        public static final String MODIFICAR_SUMMARY = "Modificar un plan estimado";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica la descripción de un plan estimado existente. La descripción es opcional: si no llega "
+                        + "o llega en blanco, el plan queda sin descripción. El tiempo estimado no se modifica";
+        public static final String MODIFICAR_RESP_204 = "Plan estimado modificado";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 = "Plan estimado inexistente";
     }
 
     public static final class EstadoItem {
