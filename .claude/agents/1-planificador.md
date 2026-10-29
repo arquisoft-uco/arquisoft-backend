@@ -270,8 +270,8 @@ acción necesita*). Sin ese caso, el mapper devuelve el domain directo.
 - **Rutas (sección 8):** el path identifica, el body transporta. `POST /padres/{padreId}/hijos`;
   sub-recurso con PK propia sin anidar; identidad compuesta `DELETE /padres/{p}/hijos/{h}`; cambio
   de referencia `PATCH /padres/{id}/{campo}`. PATCH por defecto (no hay PUT). Sin `/api`. La base es
-  el recurso sin prefijo de contexto (`arquisoft-arquitectura` → *Rutas y autorización viven en
-  constantes*). Anota la ruta efectiva y la clave `rutas.{contexto}.{recurso}…`.
+  la del contexto, de la tabla de `arquisoft-arquitectura` → *Rutas en placeholders y autorización
+  fuera del controlador*, y todo cuelga de ella. Anota la ruta efectiva y la clave `rutas.{contexto}.{recurso}…`.
 - **Logs y catálogo:** cada punto de log es entregable de la sección 6 (nivel, clave con aridad,
   línea de catálogo); la estructura por flujo está en `arquisoft-estandares`. Un correo en un log va
   enmascarado y se dice. Sin textos nuevos: "Sin cambios al catálogo de mensajes".
