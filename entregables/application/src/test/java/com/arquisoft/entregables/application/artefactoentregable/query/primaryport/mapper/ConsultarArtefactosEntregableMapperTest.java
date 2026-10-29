@@ -9,15 +9,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ConsultarArtefactosEntregableMapperTest {
 
     @Test
-    void debeLlevarElEntregableAlCriteria() {
+    void debeLlevarEntregableYAsesorAlCriteria() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
-        var query = ConsultarArtefactosEntregableQuery.crear(entregable);
+        var asesor = UtilUUID.generarNuevoUUID();
+        var query = ConsultarArtefactosEntregableQuery.crear(entregable, asesor);
 
         // Act
         var criteria = ConsultarArtefactosEntregableMapper.toCriteria(query);
 
         // Assert
         assertThat(criteria.entregableProyectoGrado()).isEqualTo(entregable);
+        assertThat(criteria.asesor()).isEqualTo(asesor);
     }
 }

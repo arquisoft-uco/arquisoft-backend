@@ -221,6 +221,7 @@ Lo que exige el espejo (decisión tomada):
    excepción (iría a la DLQ un borrado ya cumplido).
 4. **Sin borrado en cascada entre contextos.** Un veto al borrar es regla del dueño, no un `DELETE`
    propagado.
+5. **Una réplica valida estructura, no formato.** `Command.crear` y `Domain.crear` de una réplica comprueban solo lo que necesitan para correlacionar y persistir (UUID parseable, presencia, colección no vacía y sin duplicados), sin longitud, patrón, rango ni normalización del texto. El productor ya validó el formato: repetir sus límites acopla la réplica a él, y un rechazo termina igual en la DLQ que un fallo del `INSERT`. Referencia: `AgregarAsesorCommand` + `AsesorDomain`.
 
 **El orden no está garantizado:** `application.yml` declara `concurrency: 5` por cola, así que dos
 eventos de la misma entidad pueden procesarse a la vez. Por eso se versiona por `ocurridoEn`.

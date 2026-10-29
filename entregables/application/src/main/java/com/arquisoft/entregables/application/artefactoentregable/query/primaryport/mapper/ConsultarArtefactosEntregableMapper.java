@@ -8,6 +8,6 @@ public final class ConsultarArtefactosEntregableMapper {
     private ConsultarArtefactosEntregableMapper() {}
 
     public static ArtefactoEntregableCriteria toCriteria(ConsultarArtefactosEntregableQuery query) {
-        return new ArtefactoEntregableCriteria(query.entregableProyectoGrado());
+        return new ArtefactoEntregableCriteria(query.entregableProyectoGrado(), query.asesor());
     }
 }

@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EntregablesApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,13 +54,17 @@ public class ConsultarArtefactosEntregableController {
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
                     description = EntregablesApiMessages.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = EntregablesApiMessages.Comun.RESP_403)
+                    description = EntregablesApiMessages.Comun.RESP_403),
+            @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
+                    description = EntregablesApiMessages.ArtefactoEntregable.CONSULTAR_RESP_422,
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<List<ArtefactoEntregableResponseDTO>> consultarArtefactosEntregable(
-            @PathVariable UUID entregableProyectoGradoId) {
+            @PathVariable UUID entregableProyectoGradoId,
+            IdentidadActual identidad) {
 
         var artefactos = consultarArtefactosEntregableInteractor.ejecutar(
-                ConsultarArtefactosEntregableRequestMapper.toQuery(entregableProyectoGradoId));
+                ConsultarArtefactosEntregableRequestMapper.toQuery(entregableProyectoGradoId, identidad));
 
         return ResponseEntity.ok(artefactos.stream()
                 .map(ArtefactoEntregableResponseMapper::toResponse)

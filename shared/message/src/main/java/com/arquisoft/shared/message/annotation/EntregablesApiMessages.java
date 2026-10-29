@@ -86,9 +86,10 @@ public final class EntregablesApiMessages {
         public static final String TAG_DESCRIPTION = "Consulta de los artefactos vinculados a un entregable de proyecto de grado";
         public static final String CONSULTAR_SUMMARY = "Consultar los artefactos de un entregable";
         public static final String CONSULTAR_DESCRIPTION =
-                "El asesor consulta los artefactos vinculados a un entregable de proyecto de grado. "
+                "El asesor consulta los artefactos vinculados a un entregable de proyecto de grado suyo. "
                         + "Cada elemento trae el documento, el repositorio y la URI del archivo";
         public static final String CONSULTAR_RESP_200 = "Artefactos del entregable; lista vacía si no tiene ninguno";
         public static final String CONSULTAR_RESP_400 = "El identificador del entregable no es un UUID válido";
+        public static final String CONSULTAR_RESP_422 = "El entregable no existe o no es del asesor autenticado";
     }
 }

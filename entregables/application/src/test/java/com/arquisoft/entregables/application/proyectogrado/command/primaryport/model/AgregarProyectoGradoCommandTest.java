@@ -1,8 +1,6 @@
 package com.arquisoft.entregables.application.proyectogrado.command.primaryport.model;
 
-import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.message.constant.EntregablesFields;
-import com.arquisoft.shared.message.constant.EntregablesLimits;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
@@ -13,12 +11,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AgregarProyectoGradoCommandTest {
 
     @Test
-    void debeCrearConNombreRecortado_cuandoDatosValidos() {
+    void debeCrearConNombreTalCual_cuandoDatosValidos() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
 
         // Act
-        var command = AgregarProyectoGradoCommand.crear(id.toString(), "  Sistema de gestion  ");
+        var command = AgregarProyectoGradoCommand.crear(id.toString(), "Sistema de gestion");
 
         // Assert
         assertThat(command.proyectoGrado()).isEqualTo(id);
@@ -37,17 +35,15 @@ class AgregarProyectoGradoCommandTest {
     }
 
     @Test
-    void debeRechazar_cuandoElNombreSuperaElMaximo() {
+    void debeCrear_cuandoElNombreEsMuyLargo() {
         // Arrange
-        var id = UtilUUID.generarNuevoUUID().toString();
-        var nombre = "a".repeat(EntregablesLimits.ProyectoGrado.NOMBRE_MAX + 1);
+        var id = UtilUUID.generarNuevoUUID();
+        var nombre = "a".repeat(500);
 
-        // Act & Assert
-        assertThatThrownBy(() -> AgregarProyectoGradoCommand.crear(id, nombre))
-                .isInstanceOf(ApplicationValidationException.class)
-                .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
-                        .singleElement()
-                        .satisfies(error -> assertThat(error.codigoError())
-                                .isEqualTo(EntregablesCodes.ProyectoGrado.NOMBRE_LONGITUD_MAXIMA)));
+        // Act
+        var command = AgregarProyectoGradoCommand.crear(id.toString(), nombre);
+
+        // Assert
+        assertThat(command.nombre()).isEqualTo(nombre);
     }
 }

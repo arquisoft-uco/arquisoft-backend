@@ -2,13 +2,15 @@ package com.arquisoft.entregables.infrastructure.artefactoentregable.query.prima
 
 import com.arquisoft.entregables.application.artefactoentregable.query.primaryport.model.ConsultarArtefactosEntregableQuery;
 
+import com.arquisoft.shared.web.identidad.IdentidadActual;
+
 import java.util.UUID;
 
 public final class ConsultarArtefactosEntregableRequestMapper {
 
     private ConsultarArtefactosEntregableRequestMapper() {}
 
-    public static ConsultarArtefactosEntregableQuery toQuery(UUID entregableProyectoGrado) {
-        return ConsultarArtefactosEntregableQuery.crear(entregableProyectoGrado);
+    public static ConsultarArtefactosEntregableQuery toQuery(UUID entregableProyectoGrado, IdentidadActual identidad) {
+        return ConsultarArtefactosEntregableQuery.crear(entregableProyectoGrado, identidad.id());
     }
 }
