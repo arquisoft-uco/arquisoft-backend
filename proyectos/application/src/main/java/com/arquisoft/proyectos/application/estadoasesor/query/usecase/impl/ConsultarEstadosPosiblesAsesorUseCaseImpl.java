@@ -1,14 +1,14 @@
 package com.arquisoft.proyectos.application.estadoasesor.query.usecase.impl;
 
-import com.arquisoft.proyectos.application.estadoasesor.query.criteria.EstadoAsesorCriteria;
 import com.arquisoft.proyectos.application.estadoasesor.query.readmodel.EstadoAsesorReadModel;
 import com.arquisoft.proyectos.application.estadoasesor.query.secondaryport.EstadoAsesorQueryOutputPort;
 import com.arquisoft.proyectos.application.estadoasesor.query.usecase.ConsultarEstadosPosiblesAsesorUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.EstadoAsesorKey;
-import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -18,15 +18,10 @@ public class ConsultarEstadosPosiblesAsesorUseCaseImpl implements ConsultarEstad
     private final AppLogger logger;
 
     @Override
-    public PaginatedResult<EstadoAsesorReadModel> ejecutar(EstadoAsesorCriteria entrada) {
-        logger.debug(EstadoAsesorKey.LOG_CONSULTANDO,
-                entrada.getPagina(), entrada.getTamanio(),
-                entrada.tieneFiltros(), entrada.tieneOrden());
+    public List<EstadoAsesorReadModel> ejecutar() {
+        var resultado = estadoAsesorQueryOutputPort.consultarTodos();
 
-        var resultado = estadoAsesorQueryOutputPort.consultarTodos(entrada);
-
-        logger.debug(EstadoAsesorKey.LOG_CONSULTA_COMPLETADA,
-                resultado.getTotalElements(), entrada.getPagina(), entrada.getTamanio());
+        logger.debug(EstadoAsesorKey.LOG_CONSULTA_COMPLETADA, resultado.size());
         return resultado;
     }
 }

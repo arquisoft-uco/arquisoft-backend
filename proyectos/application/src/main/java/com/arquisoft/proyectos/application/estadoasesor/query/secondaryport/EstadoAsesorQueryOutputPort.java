@@ -1,10 +1,10 @@
 package com.arquisoft.proyectos.application.estadoasesor.query.secondaryport;
 
-import com.arquisoft.proyectos.application.estadoasesor.query.criteria.EstadoAsesorCriteria;
 import com.arquisoft.proyectos.application.estadoasesor.query.readmodel.EstadoAsesorReadModel;
-import com.arquisoft.shared.query.pagination.PaginatedResult;
+
+import java.util.List;
 
 public interface EstadoAsesorQueryOutputPort {
 
-    PaginatedResult<EstadoAsesorReadModel> consultarTodos(EstadoAsesorCriteria criteria);
+    List<EstadoAsesorReadModel> consultarTodos();
 }

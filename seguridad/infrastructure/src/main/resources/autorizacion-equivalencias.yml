@@ -83,7 +83,7 @@ security:
         - {method: POST, path: "/api/proyectos-grado/asesor", role: "proyectos:proyecto-grado-asesor:view"}
         - {method: POST, path: "/api/proyectos-grado/coordinador", role: "proyectos:proyecto-grado-coordinador:view"}
         - {method: GET, path: "/api/proyectos-grado/estudiante", role: "proyectos:proyecto-grado-estudiante:view"}
-        - {method: POST, path: "/api/proyectos-grado/estados-asesor", role: "proyectos:estado-asesor:view"}
+        - {method: GET, path: "/api/proyectos-grado/estados-asesor", role: "proyectos:estado-asesor:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/asesor", role: "proyectos:proyecto-grado-asesor-detalle:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/asesores", role: "proyectos:asesor-proyecto-grado-coordinador:view"}
         - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/asesores", role: "proyectos:asesor-proyecto-grado:create"}
