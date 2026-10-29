@@ -19,3 +19,4 @@ rutas:
       proyectos-asesor: /asesor
       proyecto-asesor: /{proyectoGradoId}/asesor
       asesor-estado: /{proyectoGradoId}/asesores/{asesorId}/estado
+      estados-asesor: /estados-asesor

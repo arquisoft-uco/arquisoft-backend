@@ -87,6 +87,7 @@
               "fichas:item-ficha-perfil-coordinador:view",
               "solicitudes:estado-respuesta:view",
               "proyectos:asesor-proyecto-grado:update-estado",
+              "proyectos:estado-asesor:view",
               "usuarios:asesor-vigente:view",
               "proyectos:estudiante-proyecto-grado-coordinador:view",
               "evaluaciones:item-cualitativo-jurado:delete",
@@ -1353,6 +1354,15 @@
         {
           "id": "ffaeac40-94b6-4d4a-8765-655de4fd8570",
           "name": "proyectos:asesor-proyecto-grado:update-estado",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a479045b-c5ee-44f3-91c5-1b1fc5475adc",
+          "name": "proyectos:estado-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
