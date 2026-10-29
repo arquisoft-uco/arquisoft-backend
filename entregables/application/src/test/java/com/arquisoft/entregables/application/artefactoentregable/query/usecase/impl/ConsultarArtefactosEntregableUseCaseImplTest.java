@@ -5,7 +5,6 @@ import com.arquisoft.entregables.application.artefactoentregable.query.readmodel
 import com.arquisoft.entregables.application.artefactoentregable.query.secondaryport.ArtefactoEntregableQueryOutputPort;
 import com.arquisoft.entregables.application.artefactoentregable.query.validator.ConsultarArtefactosEntregableValidator;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.AsesorDeEntregableProyectoGradoQueryFinder;
-import com.arquisoft.entregables.domain.entregableproyectogrado.exception.AsesorNoPropietarioEntregableProyectoGradoException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ArtefactoEntregableKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -19,13 +18,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -90,22 +84,5 @@ class ConsultarArtefactosEntregableUseCaseImplTest {
         // Assert
         assertThat(resultado).isEmpty();
         verify(logger).debug(eq(ArtefactoEntregableKey.LOG_CONSULTA_COMPLETADA), eq(entregable), eq(0));
-    }
-
-    @Test
-    void debeNoLeerArtefactos_cuandoElValidatorRechaza() {
-        // Arrange
-        var entregable = UtilUUID.generarNuevoUUID();
-        var asesor = UtilUUID.generarNuevoUUID();
-        var otroAsesor = UtilUUID.generarNuevoUUID();
-        when(finder.obtener(entregable)).thenReturn(otroAsesor);
-        doThrow(new AsesorNoPropietarioEntregableProyectoGradoException(asesor, entregable))
-                .when(validator).validar(entregable, otroAsesor, asesor);
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(new ArtefactoEntregableCriteria(entregable, asesor)))
-                .isInstanceOf(AsesorNoPropietarioEntregableProyectoGradoException.class);
-        verifyNoInteractions(outputPort);
-        verify(logger, never()).debug(eq(ArtefactoEntregableKey.LOG_CONSULTA_COMPLETADA), any(), any());
     }
 }

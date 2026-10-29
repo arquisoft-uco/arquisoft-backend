@@ -1,6 +1,7 @@
 package com.arquisoft.entregables.infrastructure.entregableproyectogrado.query.secondaryadapter.repository;
 
 import com.arquisoft.entregables.application.entregableproyectogrado.query.criteria.EntregableProyectoGradoCriteria;
+import com.arquisoft.shared.util.UtilObjeto;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -19,7 +20,7 @@ final class EntregableProyectoGradoSortMapper {
                 case VERSION_ENTREGABLE -> "versionEntregable";
                 case PROYECTO_GRADO_ID, ASESOR_ID, ESTADO_ENTREGABLE -> null;
             };
-            if (ruta != null) {
+            if (UtilObjeto.noEsNulo(ruta)) {
                 m.put(campo.getClave(), ruta);
             }
         }

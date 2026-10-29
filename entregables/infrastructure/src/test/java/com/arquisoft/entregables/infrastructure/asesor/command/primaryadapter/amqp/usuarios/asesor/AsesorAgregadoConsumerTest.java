@@ -1,6 +1,7 @@
 package com.arquisoft.entregables.infrastructure.asesor.command.primaryadapter.amqp.usuarios.asesor;
 
 import com.arquisoft.entregables.application.asesor.command.primaryport.interactor.AgregarAsesorInteractor;
+import com.arquisoft.entregables.application.asesor.command.primaryport.model.AgregarAsesorCommand;
 import com.arquisoft.entregables.application.asesor.command.result.AgregacionAsesorResult;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.AsesorKey;
@@ -11,6 +12,7 @@ import com.rabbitmq.client.Channel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.core.Message;
@@ -19,7 +21,9 @@ import org.springframework.amqp.core.MessageProperties;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
@@ -53,6 +57,10 @@ class AsesorAgregadoConsumerTest {
     }
 
     private Message mensajeCon(String idEvento, long deliveryTag) {
+        return mensajeCon(idEvento, UtilUUID.generarNuevoUUID(), deliveryTag);
+    }
+
+    private Message mensajeCon(String idEvento, UUID usuario, long deliveryTag) {
         var payloadJson = """
                 {
                     "idEvento": "%s",
@@ -62,7 +70,7 @@ class AsesorAgregadoConsumerTest {
                     "nombre": "Ana Perez",
                     "email": "ana@uco.edu.co"
                 }
-                """.formatted(idEvento, UtilUUID.generarNuevoUUID());
+                """.formatted(idEvento, usuario);
 
         var props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
@@ -73,20 +81,21 @@ class AsesorAgregadoConsumerTest {
     }
 
     @Test
-    void debeInvocarElInteractor_cuandoLlegaElEvento() throws Exception {
+    void debeInvocarElInteractorConElPayloadYConfirmar_cuandoLlegaElEvento() throws Exception {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+
         // Act
-        adapter.onAsesorAgregado(mensajeCon(UtilUUID.generarNuevoUUID().toString(), 1L), channel);
+        adapter.onAsesorAgregado(mensajeCon(UtilUUID.generarNuevoUUID().toString(), usuario, 1L), channel);
 
         // Assert
-        verify(agregarAsesorInteractor).ejecutar(any());
-    }
-
-    @Test
-    void debeConfirmarElMensaje_cuandoElProcesamientoTermina() throws Exception {
-        // Act
-        adapter.onAsesorAgregado(mensajeCon(UtilUUID.generarNuevoUUID().toString(), 1L), channel);
-
-        // Assert
+        var captor = ArgumentCaptor.forClass(AgregarAsesorCommand.class);
+        verify(agregarAsesorInteractor).ejecutar(captor.capture());
+        assertThat(captor.getValue().id()).isEqualTo(usuario);
+        assertThat(captor.getValue().identificador()).isEqualTo("20161020123");
+        assertThat(captor.getValue().nombre()).isEqualTo("Ana Perez");
+        assertThat(captor.getValue().email()).isEqualTo("ana@uco.edu.co");
+        assertThat(captor.getValue().ocurridoEn()).isEqualTo(Instant.parse("2026-09-12T10:00:00Z"));
         verify(channel).basicAck(1L, false);
     }
 
