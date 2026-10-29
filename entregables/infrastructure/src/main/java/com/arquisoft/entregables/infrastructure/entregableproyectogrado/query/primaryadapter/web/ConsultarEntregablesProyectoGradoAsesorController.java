@@ -10,6 +10,7 @@ import com.arquisoft.shared.message.annotation.EntregablesApiMessages;
 import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -54,10 +55,11 @@ public class ConsultarEntregablesProyectoGradoAsesorController {
                     description = EntregablesApiMessages.Comun.RESP_403)
     })
     public ResponseEntity<PageResponseDTO<EntregableProyectoGradoResponseDTO>> consultarEntregablesAsesor(
-            @RequestBody(required = false) QueryCriteriaRequestDTO request) {
+            @RequestBody(required = false) QueryCriteriaRequestDTO request,
+            IdentidadActual identidad) {
 
         var resultado = consultarEntregablesProyectoGradoAsesorInteractor.ejecutar(
-                ConsultarEntregablesProyectoGradoAsesorRequestMapper.toQuery(request));
+                ConsultarEntregablesProyectoGradoAsesorRequestMapper.toQuery(request, identidad));
 
         return ResponseEntity.ok(PageResponseDTO.from(
                 resultado.map(EntregableProyectoGradoResponseMapper::toResponse)));
