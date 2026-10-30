@@ -40,6 +40,7 @@ public final class ConsultarRespuestasAmpliacionPlazoRecibidasMapper {
                 .tamanio(criterio.tamanio())
                 .ordenamiento(ordenamiento(criterio.ordenamiento()))
                 .raiz(raizFinal)
+                .tipoSolicitud(TipoSolicitud.AMPLIACION_DE_PLAZO.getId())
                 .build();
     }
 

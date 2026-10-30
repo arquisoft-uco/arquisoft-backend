@@ -129,4 +129,18 @@ class ConsultarSolicitudesRegistroModificacionUsuariosEnviadasMapperTest {
                 query(coordinador, criterio)))
                 .isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debeFijarElTipoSolicitudDelCriteria_cuandoSeConvierteLaConsulta() {
+        // Arrange
+        var coordinador = UtilUUID.generarNuevoUUID();
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
+
+        // Act
+        var criteria = ConsultarSolicitudesRegistroModificacionUsuariosEnviadasMapper.toCriteria(
+                query(coordinador, criterio));
+
+        // Assert
+        assertThat(criteria.getTipoSolicitud()).isEqualTo(TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS.getId());
+    }
 }
