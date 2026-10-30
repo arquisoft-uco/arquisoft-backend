@@ -48,6 +48,10 @@ public enum RespuestaKey implements ClaveMensaje {
             "solicitudes.aplicacion.respuesta.log.consultando-ampliacion-plazo-enviadas", 4),
     LOG_CONSULTA_AMPLIACION_PLAZO_ENVIADAS_COMPLETADA(
             "solicitudes.aplicacion.respuesta.log.consulta-ampliacion-plazo-enviadas-completada", 3),
+    LOG_CONSULTANDO_REGISTRO_MODIFICACION_USUARIOS_RECIBIDAS(
+            "solicitudes.aplicacion.respuesta.log.consultando-registro-modificacion-usuarios-recibidas", 4),
+    LOG_CONSULTA_REGISTRO_MODIFICACION_USUARIOS_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-registro-modificacion-usuarios-recibidas-completada", 3),
     LOG_CONSULTANDO_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS(
             "solicitudes.aplicacion.respuesta.log.consultando-registro-modificacion-usuarios-enviadas", 4),
     LOG_CONSULTA_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS_COMPLETADA(

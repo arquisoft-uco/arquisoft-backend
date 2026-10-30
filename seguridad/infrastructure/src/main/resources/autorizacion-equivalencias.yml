@@ -172,6 +172,7 @@ security:
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios", role: "solicitudes:solicitud-registro-modificacion-usuarios:create"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/enviadas", role: "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/recibidas", role: "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view"}
+        - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/respuestas/recibidas", role: "solicitudes:respuesta-registro-modificacion-usuarios-recibida:view"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/respuestas/enviadas", role: "solicitudes:respuesta-registro-modificacion-usuarios-enviada:view"}
         - {method: DELETE, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}", role: "solicitudes:solicitud-registro-modificacion-usuarios:delete"}
         - {method: GET, path: "/api/solicitudes/tipos-solicitud", role: "solicitudes:tipo-solicitud:view"}

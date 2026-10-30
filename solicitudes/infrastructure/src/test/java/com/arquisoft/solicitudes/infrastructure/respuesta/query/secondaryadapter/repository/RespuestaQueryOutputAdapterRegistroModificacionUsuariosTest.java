@@ -135,4 +135,38 @@ class RespuestaQueryOutputAdapterRegistroModificacionUsuariosTest {
                 .containsExactly("respuesta registro uno");
         assertThat(resultado.getContent().get(0).solicitud().tipoSolicitudId()).isEqualTo(TIPO_REGISTRO);
     }
+
+    @Test
+    void debeRetornarSoloRespuestasDeRegistroModificacionUsuariosDelCoordinadorRemitente_cuandoElCriteriaFuerzaRemitenteYTipo() {
+        // Arrange
+        var coordUno = sembrarRemitente("Coord Uno", "COORD-1", "coord1@uco.edu.co");
+        var coordDos = sembrarRemitente("Coord Dos", "COORD-2", "coord2@uco.edu.co");
+        var admin = sembrarDestinatario("Admin", "ADMIN-1", "admin1@uco.edu.co");
+        var fecha = LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC);
+        var fechaRespuesta = LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC);
+        var registroUno = sembrarSolicitud(coordUno, admin, TIPO_REGISTRO, fecha, "registro uno");
+        var registroDos = sembrarSolicitud(coordDos, admin, TIPO_REGISTRO, fecha, "registro dos");
+        var novedadUno = sembrarSolicitud(coordUno, admin, TIPO_NOVEDAD, fecha, "novedad uno");
+        sembrarRespuesta(registroUno, fechaRespuesta, "respuesta registro uno");
+        sembrarRespuesta(registroDos, fechaRespuesta, "respuesta registro dos");
+        sembrarRespuesta(novedadUno, fechaRespuesta, "respuesta novedad uno");
+        entityManager.flush();
+        entityManager.clear();
+
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
+                                coordUno.getUsuarioId().toString()),
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_REGISTRO))))
+                .build();
+
+        // Act
+        var resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(RespuestaReadModel::contenido)
+                .containsExactly("respuesta registro uno");
+        assertThat(resultado.getContent().get(0).solicitud().tipoSolicitudId()).isEqualTo(TIPO_REGISTRO);
+    }
 }

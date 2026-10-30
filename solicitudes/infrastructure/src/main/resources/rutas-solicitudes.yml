@@ -49,4 +49,5 @@ rutas:
       cambio-asesor-enviadas: /cambio-asesor/respuestas/enviadas
       ampliacion-plazo-enviadas: /ampliacion-plazo/respuestas/enviadas
       registro-modificacion-usuarios-enviadas: /registro-modificacion-usuarios/respuestas/enviadas
+      registro-modificacion-usuarios-recibidas: /registro-modificacion-usuarios/respuestas/recibidas
       estados-respuesta: /estados-respuesta
