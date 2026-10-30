@@ -17,6 +17,7 @@ public final class ArtefactoEstudianteResponseMapper {
                 readModel.versionDocumento(),
                 readModel.nombreRepositorio(),
                 readModel.asesor(),
-                readModel.nombreAsesor());
+                readModel.nombreAsesor(),
+                readModel.omitido());
     }
 }

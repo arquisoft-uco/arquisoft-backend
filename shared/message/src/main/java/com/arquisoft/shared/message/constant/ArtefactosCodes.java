@@ -57,6 +57,7 @@ public final class ArtefactosCodes {
         public static final String ESTUDIANTE_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ESTUDIANTE_NO_PROPIETARIO";
         public static final String ASESOR_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ASESOR_NO_PROPIETARIO";
         public static final String CERRADO = "ARTEFACTOS_ARTEFACTO_CERRADO";
+        public static final String OMITIDO = "ARTEFACTOS_ARTEFACTO_OMITIDO";
     }
 
     public static final class ProyectoGrado {
@@ -186,6 +187,8 @@ public final class ArtefactosCodes {
                 "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_NO_VINCULADO_PROYECTO_GRADO";
         public static final String PROYECTO_GRADO_REQUERIDO = "ESTUDIANTE_ARTEFACTO_PROYECTO_GRADO_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_REQUERIDO";
+        public static final String ESTUDIANTES_SUPERAN_PROYECTO =
+                "ESTUDIANTE_ARTEFACTO_ESTUDIANTES_SUPERAN_PROYECTO";
     }
 
     public static final class Estudiante {

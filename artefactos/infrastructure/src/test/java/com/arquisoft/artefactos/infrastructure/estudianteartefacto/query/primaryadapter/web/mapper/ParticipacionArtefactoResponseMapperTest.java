@@ -12,7 +12,7 @@ class ParticipacionArtefactoResponseMapperTest {
     void debeMapearTodosLosCampos_cuandoReadModelCompleto() {
         // Arrange
         var readModel = new ParticipacionArtefactoReadModel(UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), "Proyecto Alfa", UtilUUID.generarNuevoUUID(), "Informe", 3, "Repo");
+                UtilUUID.generarNuevoUUID(), "Proyecto Alfa", UtilUUID.generarNuevoUUID(), "Informe", 3, "Repo", true);
 
         // Act
         var dto = ParticipacionArtefactoResponseMapper.toResponse(readModel);
@@ -25,5 +25,6 @@ class ParticipacionArtefactoResponseMapperTest {
         assertThat(dto.nombreDocumento()).isEqualTo("Informe");
         assertThat(dto.versionDocumento()).isEqualTo(3);
         assertThat(dto.nombreRepositorio()).isEqualTo("Repo");
+        assertThat(dto.omitido()).isTrue();
     }
 }

@@ -7,9 +7,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public interface EstudianteCommandRepository extends JpaRepository<EstudianteJpaEntity, UUID> {
+
+    @Query("""
+            SELECT e
+            FROM EstudianteJpaEntity e
+            WHERE e.eliminadoEn IS NULL
+              AND e.id IN (SELECT ea.estudiante FROM EstudianteArtefactoJpaEntity ea WHERE ea.artefacto = :artefacto)
+            """)
+    List<EstudianteJpaEntity> buscarVigentesVinculadosAlArtefacto(@Param("artefacto") UUID artefacto);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE EstudianteJpaEntity c SET c.eliminadoEn = :ocurridoEn, c.ocurridoEn = :ocurridoEn WHERE c.id = :id")

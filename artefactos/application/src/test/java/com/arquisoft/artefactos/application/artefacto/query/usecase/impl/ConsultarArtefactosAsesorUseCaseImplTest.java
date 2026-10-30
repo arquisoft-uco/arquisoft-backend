@@ -39,7 +39,7 @@ class ConsultarArtefactosAsesorUseCaseImplTest {
         var criteria = ArtefactoAsesorCriteria.builder().pagina(0).tamanio(10).build();
         var artefacto = new ArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto",
-                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio");
+                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", false);
         var resultadoEsperado = PaginatedResult.of(List.of(artefacto), 0, 10, 1L);
         when(artefactoQueryOutputPort.consultarTodosAsesor(criteria)).thenReturn(resultadoEsperado);
 

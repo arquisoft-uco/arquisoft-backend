@@ -76,7 +76,7 @@ class ConsultarArtefactosEstudianteControllerTest {
         // Arrange
         var artefacto = new ArtefactoEstudianteReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto Alfa",
-                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", UtilUUID.generarNuevoUUID(), "Ana");
+                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", UtilUUID.generarNuevoUUID(), "Ana", false);
         when(consultarArtefactosEstudianteInteractor.ejecutar(any(ConsultarArtefactosEstudianteQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(artefacto), 0, 10, 1L));
         var body = """

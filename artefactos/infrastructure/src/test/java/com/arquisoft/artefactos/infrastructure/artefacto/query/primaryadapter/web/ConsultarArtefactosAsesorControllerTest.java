@@ -76,7 +76,7 @@ class ConsultarArtefactosAsesorControllerTest {
         // Arrange
         var artefacto = new ArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto Alfa",
-                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio");
+                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", false);
         when(consultarArtefactosAsesorInteractor.ejecutar(any(ConsultarArtefactosAsesorQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(artefacto), 0, 10, 1L));
         var body = """

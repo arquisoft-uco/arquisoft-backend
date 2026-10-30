@@ -67,7 +67,7 @@ class CambiarAsesorArtefactoUseCaseImplTest {
         proyecto = UtilUUID.generarNuevoUUID();
         cambio = CambioAsesorArtefactoDomain.crear(artefactoId, asesorId);
         artefacto = ArtefactoDomain.reconstruir(
-                artefactoId, proyecto, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+                artefactoId, proyecto, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
     }
 
     @Test

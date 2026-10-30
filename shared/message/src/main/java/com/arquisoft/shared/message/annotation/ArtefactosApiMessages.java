@@ -203,8 +203,11 @@ public final class ArtefactosApiMessages {
                 "Vincula al proyecto de grado una versión de repositorio de artefactos como artefacto suyo "
                         + "y le asigna uno o varios estudiantes del proyecto, todo o nada. Cada estudiante recibe "
                         + "un correo. El asesor del artefacto es el del token y debe tener asignado el proyecto. "
-                        + "El proyecto no puede tener ya un artefacto de ese repositorio. Responde con el id del "
-                        + "artefacto creado.";
+                        + "El proyecto no puede tener ya un artefacto activo de ese repositorio. Si tiene uno "
+                        + "omitido de ese repositorio, lo reactiva con el asesor del token, conserva la versión "
+                        + "guardada del repositorio y deja como estudiantes del artefacto exactamente los enviados: "
+                        + "desvincula a los previos que no vienen y vincula solo a los que aún no lo estaban. "
+                        + "Responde con el id del artefacto creado o reactivado.";
         public static final String ASIGNAR_RESP_201 = "Artefacto asignado al proyecto de grado";
         public static final String ASIGNAR_RESP_400 =
                 "Datos mal formados: identificador de proyecto, versión o estudiante inválido";
@@ -219,6 +222,17 @@ public final class ArtefactosApiMessages {
         public static final String CAMBIAR_ASESOR_RESP_422 =
                 "El artefacto no existe, o el asesor no existe, está dado de baja o no está asignado "
                         + "al proyecto de grado del artefacto";
+        public static final String OMITIR_SUMMARY = "Omitir un artefacto de un proyecto de grado";
+        public static final String OMITIR_DESCRIPTION =
+                "Omite un artefacto del proyecto de grado: conserva sus versiones, revisiones, observaciones "
+                        + "y vínculos, y avisa por correo a los estudiantes vinculados. Solo lo puede hacer el "
+                        + "asesor responsable. Un artefacto omitido no admite cambios hasta que el asesor lo "
+                        + "vuelva a asignar. Se omite un artefacto por llamada.";
+        public static final String OMITIR_RESP_204 = "Artefacto omitido";
+        public static final String OMITIR_RESP_400 = "Identificador del artefacto inválido";
+        public static final String OMITIR_RESP_422 =
+                "El artefacto o el asesor no existe, el asesor no es el responsable del artefacto "
+                        + "o el artefacto ya está omitido";
         public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar los artefactos asignados al asesor";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Devuelve, de forma paginada, los artefactos a cargo del asesor autenticado con su proyecto "

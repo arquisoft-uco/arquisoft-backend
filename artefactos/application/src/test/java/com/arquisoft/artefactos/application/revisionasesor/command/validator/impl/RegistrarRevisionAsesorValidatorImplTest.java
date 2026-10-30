@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.application.revisionasesor.command.validator.im
 
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontradoException;
+import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.revisionasesor.RegistroRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
@@ -36,7 +37,7 @@ class RegistrarRevisionAsesorValidatorImplTest {
         registro = RegistroRevisionAsesorDomain.crear(RevisionAsesorDomain.crear(versionId), asesorId);
         version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 3, Instant.now(), "versiones/uri");
         artefacto = ArtefactoDomain.reconstruir(artefactoId, UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), asesorId);
+                UtilUUID.generarNuevoUUID(), asesorId, null);
     }
 
     @Test
@@ -69,6 +70,17 @@ class RegistrarRevisionAsesorValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(ajeno, version, artefacto, true, false))
                 .isInstanceOf(AsesorNoPropietarioArtefactoException.class);
+    }
+
+    @Test
+    void debeLanzarArtefactoOmitido_antesQueLaVersionNoEsUltima_cuandoElArtefactoEstaOmitido() {
+        // Arrange
+        var omitido = ArtefactoDomain.reconstruir(artefacto.getId(), artefacto.getProyectoGrado(),
+                artefacto.getVersionRepositorioArtefacto(), asesorId, Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(registro, version, omitido, false, true))
+                .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
     @Test

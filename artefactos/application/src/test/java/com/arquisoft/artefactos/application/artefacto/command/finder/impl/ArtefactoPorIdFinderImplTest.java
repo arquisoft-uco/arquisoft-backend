@@ -32,7 +32,7 @@ class ArtefactoPorIdFinderImplTest {
         var version = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
         when(artefactoOutputPort.obtenerPorId(id))
-                .thenReturn(Optional.of(new ArtefactoEntity(id, proyecto, version, asesor)));
+                .thenReturn(Optional.of(new ArtefactoEntity(id, proyecto, version, asesor, null)));
 
         // Act
         var resultado = finder.obtener(id);

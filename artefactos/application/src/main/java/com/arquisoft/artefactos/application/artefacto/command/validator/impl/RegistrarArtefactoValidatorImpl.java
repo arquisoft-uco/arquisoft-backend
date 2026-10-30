@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.application.artefacto.command.validator.impl;
 
-import com.arquisoft.artefactos.application.artefacto.command.validator.AsignarArtefactoValidator;
+import com.arquisoft.artefactos.application.artefacto.command.validator.RegistrarArtefactoValidator;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.model.DisponibilidadRepositorioProyecto;
 import com.arquisoft.artefactos.domain.artefacto.rules.RepositorioArtefactoUnicoEnProyectoRule;
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
-public class AsignarArtefactoValidatorImpl implements AsignarArtefactoValidator {
+public class RegistrarArtefactoValidatorImpl implements RegistrarArtefactoValidator {
 
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
     private final AsesorExisteRule asesorExisteRule;
@@ -34,7 +34,7 @@ public class AsignarArtefactoValidatorImpl implements AsignarArtefactoValidator 
     private final VersionRepositorioArtefactoExisteRule versionRepositorioArtefactoExisteRule;
     private final RepositorioArtefactoUnicoEnProyectoRule repositorioArtefactoUnicoEnProyectoRule;
 
-    public AsignarArtefactoValidatorImpl() {
+    public RegistrarArtefactoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.asesorAsignadoProyectoGradoRule = new AsesorAsignadoProyectoGradoRuleImpl();

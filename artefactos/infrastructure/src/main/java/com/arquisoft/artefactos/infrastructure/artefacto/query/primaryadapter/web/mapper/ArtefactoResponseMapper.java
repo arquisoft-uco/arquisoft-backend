@@ -15,6 +15,7 @@ public final class ArtefactoResponseMapper {
                 readModel.versionRepositorioArtefacto(),
                 readModel.nombreDocumento(),
                 readModel.versionDocumento(),
-                readModel.nombreRepositorio());
+                readModel.nombreRepositorio(),
+                readModel.omitido());
     }
 }

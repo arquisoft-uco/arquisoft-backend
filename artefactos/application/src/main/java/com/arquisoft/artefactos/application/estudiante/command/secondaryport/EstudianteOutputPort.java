@@ -11,6 +11,8 @@ public interface EstudianteOutputPort {
 
     List<EstudianteEntity> obtenerPorIds(List<UUID> ids);
 
+    List<EstudianteEntity> obtenerVigentesVinculadosAlArtefacto(UUID artefacto);
+
     void guardar(EstudianteEntity estudiante);
 
     void eliminarLogica(UUID id, Instant ocurridoEn);

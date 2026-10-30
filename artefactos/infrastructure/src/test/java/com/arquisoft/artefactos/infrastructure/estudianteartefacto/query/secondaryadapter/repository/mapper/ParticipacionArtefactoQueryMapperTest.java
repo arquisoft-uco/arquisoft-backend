@@ -21,6 +21,7 @@ class ParticipacionArtefactoQueryMapperTest {
                 .nombreDocumento("Informe")
                 .versionDocumento(2)
                 .nombreRepositorio("Repo")
+                .omitido(true)
                 .build();
 
         // Act
@@ -34,5 +35,6 @@ class ParticipacionArtefactoQueryMapperTest {
         assertThat(readModel.nombreDocumento()).isEqualTo("Informe");
         assertThat(readModel.versionDocumento()).isEqualTo(2);
         assertThat(readModel.nombreRepositorio()).isEqualTo("Repo");
+        assertThat(readModel.omitido()).isTrue();
     }
 }

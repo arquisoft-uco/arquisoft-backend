@@ -8,7 +8,7 @@ import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionReposi
 import java.util.List;
 import java.util.UUID;
 
-public interface AsignarArtefactoValidator {
+public interface RegistrarArtefactoValidator {
 
     void validar(
             AsignacionArtefactoDomain registro,

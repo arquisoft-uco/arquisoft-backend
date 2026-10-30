@@ -34,7 +34,7 @@ class ConsultarParticipacionesArtefactoUseCaseImplTest {
 
     private static ParticipacionArtefactoReadModel readModel(String documento) {
         return new ParticipacionArtefactoReadModel(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                "Proyecto", UtilUUID.generarNuevoUUID(), documento, 1, "Repo");
+                "Proyecto", UtilUUID.generarNuevoUUID(), documento, 1, "Repo", false);
     }
 
     @Test
