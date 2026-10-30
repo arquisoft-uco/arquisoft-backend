@@ -25,13 +25,16 @@ import java.util.UUID;
                vra.nombre_documento               AS nombre_documento,
                vra.version_documento              AS version_documento,
                vra.nombre_repositorio             AS nombre_repositorio,
+               a.asesor_id                        AS asesor_id,
+               s.nombre                           AS nombre_asesor,
                (a.omitido_en IS NOT NULL)         AS omitido
         FROM estudiante_artefacto ea
                  JOIN artefacto a ON a.id = ea.artefacto_id
                  JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
                  JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
+                 JOIN asesor s ON s.id = a.asesor_id
         """)
-@Synchronize({"estudiante_artefacto", "artefacto", "proyecto_grado", "version_repositorio_artefacto"})
+@Synchronize({"estudiante_artefacto", "artefacto", "proyecto_grado", "version_repositorio_artefacto", "asesor"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -65,6 +68,12 @@ public class ParticipacionArtefactoJpaQueryEntity {
 
     @Column(name = "nombre_repositorio")
     private String nombreRepositorio;
+
+    @Column(name = "asesor_id", columnDefinition = "uuid")
+    private UUID asesorId;
+
+    @Column(name = "nombre_asesor")
+    private String nombreAsesor;
 
     @Column(name = "omitido")
     private boolean omitido;

@@ -21,6 +21,8 @@ class ParticipacionArtefactoQueryMapperTest {
                 .nombreDocumento("Informe")
                 .versionDocumento(2)
                 .nombreRepositorio("Repo")
+                .asesorId(UtilUUID.generarNuevoUUID())
+                .nombreAsesor("Ana Asesora")
                 .omitido(true)
                 .build();
 
@@ -35,6 +37,8 @@ class ParticipacionArtefactoQueryMapperTest {
         assertThat(readModel.nombreDocumento()).isEqualTo("Informe");
         assertThat(readModel.versionDocumento()).isEqualTo(2);
         assertThat(readModel.nombreRepositorio()).isEqualTo("Repo");
+        assertThat(readModel.asesor()).isEqualTo(entity.getAsesorId());
+        assertThat(readModel.nombreAsesor()).isEqualTo("Ana Asesora");
         assertThat(readModel.omitido()).isTrue();
     }
 }
