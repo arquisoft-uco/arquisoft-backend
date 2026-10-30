@@ -15,7 +15,7 @@ class VersionArtefactoResponseMapperTest {
         // Arrange
         var readModel = new VersionArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 4,
-                Instant.parse("2026-10-20T10:00:00Z"), "artefactos/v4.pdf");
+                Instant.parse("2026-10-20T10:00:00Z"), "artefactos/v4.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno");
 
         // Act
         var response = VersionArtefactoResponseMapper.toResponse(readModel);
@@ -25,6 +25,6 @@ class VersionArtefactoResponseMapperTest {
         assertThat(response.artefacto()).isEqualTo(readModel.artefacto());
         assertThat(response.version()).isEqualTo(4);
         assertThat(response.fechaCreacion()).isEqualTo(readModel.fechaCreacion());
-        assertThat(response.uriArchivo()).isEqualTo("artefactos/v4.pdf");
+        assertThat(response.uriArchivo()).isEqualTo("artefactos/v4.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno");
     }
 }

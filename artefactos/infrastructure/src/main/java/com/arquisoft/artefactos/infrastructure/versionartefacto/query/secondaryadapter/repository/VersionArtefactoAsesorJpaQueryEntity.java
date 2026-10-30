@@ -22,11 +22,20 @@ import java.util.UUID;
                va.version_artefacto AS version,
                va.fecha_creacion    AS fecha_creacion,
                va.uri_archivo       AS uri_archivo,
-               a.asesor_id          AS asesor_id
+               a.asesor_id          AS asesor_id,
+               pg.id                  AS proyecto_grado_id,
+               pg.nombre              AS nombre_proyecto,
+               vra.nombre_documento   AS nombre_documento,
+               vra.version_documento  AS version_documento,
+               vra.nombre_repositorio AS nombre_repositorio,
+               ase.nombre             AS nombre_asesor
         FROM version_artefacto va
                  JOIN artefacto a ON a.id = va.artefacto_id
+                 JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
+                 JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
+                 JOIN asesor ase ON ase.id = a.asesor_id
         """)
-@Synchronize({"version_artefacto", "artefacto"})
+@Synchronize({"version_artefacto", "artefacto", "proyecto_grado", "version_repositorio_artefacto", "asesor"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -51,4 +60,22 @@ public class VersionArtefactoAsesorJpaQueryEntity {
 
     @Column(name = "asesor_id", columnDefinition = "uuid")
     private UUID asesorId;
+
+    @Column(name = "proyecto_grado_id", columnDefinition = "uuid")
+    private UUID proyectoGradoId;
+
+    @Column(name = "nombre_proyecto")
+    private String nombreProyecto;
+
+    @Column(name = "nombre_documento")
+    private String nombreDocumento;
+
+    @Column(name = "version_documento")
+    private int versionDocumento;
+
+    @Column(name = "nombre_repositorio")
+    private String nombreRepositorio;
+
+    @Column(name = "nombre_asesor")
+    private String nombreAsesor;
 }

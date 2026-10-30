@@ -19,6 +19,9 @@ class VersionArtefactoAsesorJpaSpecification extends QueryJpaSpecification<Versi
         for (var campo : VersionArtefactoAsesorCriteria.Campo.values()) {
             CampoSpec<VersionArtefactoAsesorJpaQueryEntity> spec = switch (campo) {
                 case ARTEFACTO      -> CampoSpec.uuid(root -> root.get("artefactoId"));
+                case PROYECTO_GRADO   -> CampoSpec.uuid(root -> root.get("proyectoGradoId"));
+                case NOMBRE_PROYECTO  -> CampoSpec.texto(root -> root.get("nombreProyecto"));
+                case NOMBRE_DOCUMENTO -> CampoSpec.texto(root -> root.get("nombreDocumento"));
                 case VERSION        -> CampoSpec.entero(root -> root.get("version"));
                 case FECHA_CREACION -> CampoSpec.fechaHora(root -> root.get("fechaCreacion"));
                 case ASESOR_ID      -> CampoSpec.uuid(root -> root.get("asesorId"));

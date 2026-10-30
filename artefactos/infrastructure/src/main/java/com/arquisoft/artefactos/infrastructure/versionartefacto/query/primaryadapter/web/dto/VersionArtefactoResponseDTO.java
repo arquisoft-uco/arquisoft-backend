@@ -11,6 +11,11 @@ public record VersionArtefactoResponseDTO(
         UUID artefacto,
         int version,
         Instant fechaCreacion,
-        String uriArchivo
+        String uriArchivo,
+        String nombreProyecto,
+        String nombreDocumento,
+        int versionDocumento,
+        String nombreRepositorio,
+        String nombreAsesor
 ) {
 }
