@@ -174,7 +174,20 @@ public final class ArtefactosApiMessages {
         private Observacion() {}
 
         public static final String TAG_NAME = "Observaciones de revisiones";
-        public static final String TAG_DESCRIPTION = "Consulta de las observaciones realizadas en una revisión del asesor";
+        public static final String TAG_DESCRIPTION =
+                "Registro y consulta de las observaciones realizadas en una revisión del asesor";
+        public static final String REGISTRAR_SUMMARY = "Registrar una observación en una revisión";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Agrega a la revisión una observación con la descripción recibida, en estado NUEVA. El asesor "
+                        + "se toma del token y debe ser el responsable del artefacto. La revisión debe estar "
+                        + "PENDIENTE, es decir, aún no enviada al estudiante, y no puede tener otra observación "
+                        + "con la misma descripción. No envía correos.";
+        public static final String REGISTRAR_RESP_201 = "Observación registrada";
+        public static final String REGISTRAR_RESP_400 =
+                "Identificador de la revisión mal formado o descripción vacía o demasiado larga";
+        public static final String REGISTRAR_RESP_422 =
+                "La revisión o su artefacto no existen, el asesor no es el responsable del artefacto, el "
+                        + "artefacto fue omitido, la revisión ya no está pendiente o la descripción está repetida";
         public static final String CONSULTAR_SUMMARY = "Consultar las observaciones realizadas a una revisión";
         public static final String CONSULTAR_DESCRIPTION =
                 "Devuelve, sin paginar y ordenadas por descripción, las observaciones de la revisión con su "

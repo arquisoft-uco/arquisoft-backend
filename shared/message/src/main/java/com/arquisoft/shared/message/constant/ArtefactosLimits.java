@@ -22,6 +22,13 @@ public final class ArtefactosLimits {
         public static final int TIPO_CONTENIDO_MAX = 100;
     }
 
+    public static final class Observacion {
+
+        private Observacion() {}
+
+        public static final int DESCRIPCION_MAX = 1000;
+    }
+
     public static final class ProyectoGrado {
 
         private ProyectoGrado() {}
