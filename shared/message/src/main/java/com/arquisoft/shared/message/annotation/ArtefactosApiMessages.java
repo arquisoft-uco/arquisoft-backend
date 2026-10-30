@@ -79,9 +79,11 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_SUMMARY =
                 "Filtrar las versiones de los artefactos asignados al asesor";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
-                "Devuelve, de forma paginada, las versiones de los artefactos a cargo del asesor autenticado. "
-                        + "Se puede filtrar por el artefacto (artefacto), la versión (version) y la fecha de "
-                        + "creación (fechaCreacion), y ordenar por version y fechaCreacion; por defecto, la más "
+                "Devuelve, de forma paginada, las versiones de los artefactos a cargo del asesor autenticado, "
+                        + "con proyecto, documento, repositorio y asesor. "
+                        + "Se puede filtrar por el artefacto (artefacto), el proyecto (proyectoGrado, nombreProyecto), el "
+                        + "documento (nombreDocumento), la versión (version) y la fecha de creación (fechaCreacion), "
+                        + "y ordenar por version y fechaCreacion; por defecto, la más "
                         + "reciente primero. El asesor se toma del token, nunca del cuerpo.";
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de versiones de los artefactos del asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 =
@@ -92,9 +94,11 @@ public final class ArtefactosApiMessages {
                 "Consultar las versiones de los artefactos en los que participa el estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Devuelve, de forma paginada, las versiones de los artefactos en los que participa el estudiante "
-                        + "autenticado. Se puede filtrar por el artefacto (artefacto), la versión (version) y la "
-                        + "fecha de creación (fechaCreacion), y ordenar por version y fechaCreacion; por defecto, "
-                        + "la más reciente primero. El estudiante se toma del token, nunca del cuerpo.";
+                        + "autenticado, con proyecto, documento, repositorio y asesor. Se puede filtrar por el artefacto "
+                        + "(artefacto), el proyecto (proyectoGrado, nombreProyecto), el documento (nombreDocumento), la "
+                        + "versión (version) y la fecha de creación (fechaCreacion), y ordenar por version y "
+                        + "fechaCreacion; por defecto, la más reciente primero. El estudiante se toma del token, nunca "
+                        + "del cuerpo.";
         public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
                 "Página de versiones de los artefactos del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 =

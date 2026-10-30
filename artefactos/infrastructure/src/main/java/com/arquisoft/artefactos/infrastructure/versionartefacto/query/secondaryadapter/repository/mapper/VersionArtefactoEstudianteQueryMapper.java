@@ -13,6 +13,11 @@ public final class VersionArtefactoEstudianteQueryMapper {
                 entity.getArtefactoId(),
                 entity.getVersion(),
                 entity.getFechaCreacion(),
-                entity.getUriArchivo());
+                entity.getUriArchivo(),
+                entity.getNombreProyecto(),
+                entity.getNombreDocumento(),
+                entity.getVersionDocumento(),
+                entity.getNombreRepositorio(),
+                entity.getNombreAsesor());
     }
 }

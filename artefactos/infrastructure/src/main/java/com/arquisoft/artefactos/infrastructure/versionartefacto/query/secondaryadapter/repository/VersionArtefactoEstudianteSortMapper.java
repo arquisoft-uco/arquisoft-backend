@@ -16,6 +16,9 @@ final class VersionArtefactoEstudianteSortMapper {
         for (var campo : VersionArtefactoEstudianteCriteria.Campo.values()) {
             var ruta = switch (campo) {
                 case ARTEFACTO      -> null;
+                case PROYECTO_GRADO   -> null;
+                case NOMBRE_PROYECTO  -> null;
+                case NOMBRE_DOCUMENTO -> null;
                 case VERSION        -> "version";
                 case FECHA_CREACION -> "fechaCreacion";
                 case ESTUDIANTE_ID      -> null;

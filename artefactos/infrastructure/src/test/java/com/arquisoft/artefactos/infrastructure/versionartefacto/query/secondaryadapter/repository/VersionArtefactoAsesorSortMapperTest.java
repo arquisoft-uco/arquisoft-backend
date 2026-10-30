@@ -36,4 +36,12 @@ class VersionArtefactoAsesorSortMapperTest {
         assertThat(ordenables).allSatisfy(clave ->
                 assertThat(VersionArtefactoAsesorSortMapper.traducir(clave)).isNotNull());
     }
+
+    @Test
+    void debeRetornarNulo_cuandoClaveNuevaNoEsOrdenable() {
+        // Act & Assert
+        assertThat(VersionArtefactoAsesorSortMapper.traducir("proyectoGrado")).isNull();
+        assertThat(VersionArtefactoAsesorSortMapper.traducir("nombreProyecto")).isNull();
+        assertThat(VersionArtefactoAsesorSortMapper.traducir("nombreDocumento")).isNull();
+    }
 }
