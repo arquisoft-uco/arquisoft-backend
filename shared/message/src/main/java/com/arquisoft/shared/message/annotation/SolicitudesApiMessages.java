@@ -384,6 +384,20 @@ public final class SolicitudesApiMessages {
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
                         + "encontrada o ya no está en revisión";
 
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_SUMMARY =
+                "Eliminar respuesta de solicitud para registro y modificación de usuarios";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_DESCRIPTION =
+                "Permite a un administrador eliminar definitivamente la respuesta que registró para una "
+                        + "solicitud para registro y modificación de usuarios, mientras siga en revisión.";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_RESP_204 = "Respuesta eliminada";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_RESP_403 =
+                "Sin permisos para eliminar respuestas de solicitudes de registro y modificación de usuarios";
+        public static final String ELIMINAR_REGISTRO_MODIFICACION_USUARIOS_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro administrador; respuesta no "
+                        + "encontrada o ya no está en revisión";
+
         public static final String ELIMINAR_NOVEDAD_ASESOR_SUMMARY =
                 "Eliminar respuesta de solicitud de novedad para el asesor";
         public static final String ELIMINAR_NOVEDAD_ASESOR_DESCRIPTION =

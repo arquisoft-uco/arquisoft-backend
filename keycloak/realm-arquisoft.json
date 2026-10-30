@@ -198,6 +198,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "solicitudes:respuesta-registro-modificacion-usuarios:delete",
               "solicitudes:respuesta-registro-modificacion-usuarios:create",
               "solicitudes:respuesta-registro-modificacion-usuarios:update",
               "solicitudes:respuesta-registro-modificacion-usuarios-enviada:view",
@@ -2316,6 +2317,15 @@
         {
           "id": "ad76f5c8-3562-4832-8b0c-693f6c89a8e9",
           "name": "solicitudes:respuesta-cambio-asesor:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7c1e5a42-3b9d-4f60-a8e1-5d2f9b0c6a73",
+          "name": "solicitudes:respuesta-registro-modificacion-usuarios:delete",
           "description": "",
           "composite": false,
           "clientRole": true,
