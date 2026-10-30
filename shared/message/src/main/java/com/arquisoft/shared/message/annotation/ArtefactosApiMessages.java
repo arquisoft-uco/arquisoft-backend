@@ -137,7 +137,8 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_PARTICIPACION_DESCRIPTION =
                 "Devuelve, sin paginar y ordenados por proyecto de grado, documento y versión, los artefactos "
                         + "a los que está vinculado el estudiante autenticado, con su proyecto de grado y su "
-                        + "documento. Un estudiante sin vínculos recibe una lista vacía.";
+                        + "documento y el asesor del artefacto (identificador y nombre). Un estudiante sin vínculos "
+                        + "recibe una lista vacía.";
         public static final String CONSULTAR_PARTICIPACION_RESP_200 =
                 "Listado de artefactos en los que participa el estudiante";
         public static final String CONSULTAR_PARTICIPACION_RESP_403 =

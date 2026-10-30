@@ -1,6 +1,7 @@
 package com.arquisoft.artefactos.infrastructure.estudianteartefacto.query.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
 import com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secondaryadapter.entity.EstudianteArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.estudianteartefacto.support.EstudianteTestEntity;
 import com.arquisoft.artefactos.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
@@ -70,9 +71,20 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         return id;
     }
 
+    private UUID sembrarAsesor(String nombre) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new AsesorJpaEntity(id, "ID-" + nombre, nombre, nombre.toLowerCase() + "@uco.edu.co",
+                Instant.now(), null));
+        return id;
+    }
+
     private UUID sembrarParticipacion(UUID estudiante, UUID proyecto, UUID version) {
+        return sembrarParticipacion(estudiante, proyecto, version, sembrarAsesor("Ana"));
+    }
+
+    private UUID sembrarParticipacion(UUID estudiante, UUID proyecto, UUID version, UUID asesor) {
         var artefacto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ArtefactoJpaEntity(artefacto, proyecto, version, UtilUUID.generarNuevoUUID(), null));
+        entityManager.persist(new ArtefactoJpaEntity(artefacto, proyecto, version, asesor, null));
         entityManager.persist(new EstudianteArtefactoJpaEntity(UtilUUID.generarNuevoUUID(), artefacto, estudiante));
         return artefacto;
     }
@@ -105,7 +117,7 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         var activo = sembrarParticipacion(estudiante, proyecto, version);
         var omitido = UtilUUID.generarNuevoUUID();
         entityManager.persist(new ArtefactoJpaEntity(
-                omitido, proyecto, version, UtilUUID.generarNuevoUUID(), Instant.now()));
+                omitido, proyecto, version, sembrarAsesor("Beto"), Instant.now()));
         entityManager.persist(new EstudianteArtefactoJpaEntity(UtilUUID.generarNuevoUUID(), omitido, estudiante));
         entityManager.flush();
         entityManager.clear();
@@ -147,7 +159,8 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         var estudiante = UtilUUID.generarNuevoUUID();
         var proyecto = sembrarProyecto("Proyecto Alfa");
         var version = sembrarVersion("Informe", 3, "Repo Uno");
-        var artefacto = sembrarParticipacion(estudiante, proyecto, version);
+        var asesor = sembrarAsesor("Carla");
+        var artefacto = sembrarParticipacion(estudiante, proyecto, version, asesor);
         entityManager.flush();
         entityManager.clear();
 
@@ -164,6 +177,29 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         assertThat(readModel.nombreDocumento()).isEqualTo("Informe");
         assertThat(readModel.versionDocumento()).isEqualTo(3);
         assertThat(readModel.nombreRepositorio()).isEqualTo("Repo Uno");
+        assertThat(readModel.asesor()).isEqualTo(asesor);
+        assertThat(readModel.nombreAsesor()).isEqualTo("Carla");
+    }
+
+    @Test
+    void debeIncluirElAsesorDeCadaArtefacto_cuandoLosArtefactosTienenAsesoresDistintos() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var proyecto = sembrarProyecto("Alfa");
+        var asesorUno = sembrarAsesor("Diana");
+        var asesorDos = sembrarAsesor("Elena");
+        var primero = sembrarParticipacion(estudiante, proyecto, sembrarVersion("Anteproyecto", 1, "Repo"), asesorUno);
+        var segundo = sembrarParticipacion(estudiante, proyecto, sembrarVersion("Informe", 1, "Repo"), asesorDos);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
+
+        // Assert
+        assertThat(resultado).extracting("id").containsExactly(primero, segundo);
+        assertThat(resultado).extracting("asesor").containsExactly(asesorUno, asesorDos);
+        assertThat(resultado).extracting("nombreAsesor").containsExactly("Diana", "Elena");
     }
 
     @Test

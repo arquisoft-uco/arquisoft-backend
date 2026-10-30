@@ -10,6 +10,8 @@ public record ParticipacionArtefactoReadModel(
         String nombreDocumento,
         int versionDocumento,
         String nombreRepositorio,
+        UUID asesor,
+        String nombreAsesor,
         boolean omitido
 ) {
 }

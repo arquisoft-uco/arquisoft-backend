@@ -16,6 +16,8 @@ public final class ParticipacionArtefactoResponseMapper {
                 readModel.nombreDocumento(),
                 readModel.versionDocumento(),
                 readModel.nombreRepositorio(),
+                readModel.asesor(),
+                readModel.nombreAsesor(),
                 readModel.omitido());
     }
 }
