@@ -137,6 +137,7 @@ security:
         - {method: DELETE, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}", role: "solicitudes:solicitud-ampliacion-plazo:delete"}
         - {method: DELETE, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}/respuesta", role: "solicitudes:respuesta-ampliacion-plazo:delete"}
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}/respuesta", role: "solicitudes:respuesta-ampliacion-plazo:create"}
+        - {method: DELETE, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}/respuesta", role: "solicitudes:respuesta-registro-modificacion-usuarios:delete"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}/respuesta", role: "solicitudes:respuesta-registro-modificacion-usuarios:create"}
         - {method: PATCH, path: "/api/solicitudes/ampliacion-plazo/{solicitudId}/respuesta/estado", role: "solicitudes:respuesta-ampliacion-plazo:update"}
         - {method: PATCH, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}/respuesta/estado", role: "solicitudes:respuesta-registro-modificacion-usuarios:update"}
