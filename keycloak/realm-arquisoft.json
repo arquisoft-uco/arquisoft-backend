@@ -278,6 +278,7 @@
               "solicitudes:respuesta-ampliacion-plazo-recibida:view",
               "solicitudes:solicitud-novedad-asesor:delete",
               "solicitudes:respuesta-novedad-coordinador-recibida:view",
+              "evaluaciones:observacion-item-jurado-estudiante:view",
               "fichas:ficha-perfil-estudiante:view",
               "fichas:estado-observacion-revision-estudiante:view",
               "solicitudes:solicitud-novedad-coordinador-enviada:view",
@@ -845,6 +846,15 @@
         {
           "id": "bfe9ecf2-8738-4648-9716-8925e7d01029",
           "name": "evaluaciones:observacion-item-jurado-jurado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "bdcf3275-fb36-4c02-9712-cd1c0941b93e",
+          "name": "evaluaciones:observacion-item-jurado-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
