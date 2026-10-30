@@ -48,7 +48,8 @@ public class ReactivarArtefactoUseCaseImpl implements ReactivarArtefactoUseCase 
         reactivarArtefactoValidator.validar(reactivacion, asesor, vinculosMasRecientes, cupo);
 
         artefactoOutputPort.reactivar(reactivacion.getArtefacto(), reactivacion.getAsesor());
-        depurarEstudiantesArtefactoUseCase.ejecutar(DepuracionEstudiantesArtefactoDomain.crear(reactivacion.getArtefacto()));
+        depurarEstudiantesArtefactoUseCase.ejecutar(DepuracionEstudiantesArtefactoDomain.crear(
+                reactivacion.getArtefacto(), reactivacion.getEstudiantes()));
 
         var nuevos = cupo.nuevos();
         if (!UtilColeccion.esVaciaONula(nuevos)) {

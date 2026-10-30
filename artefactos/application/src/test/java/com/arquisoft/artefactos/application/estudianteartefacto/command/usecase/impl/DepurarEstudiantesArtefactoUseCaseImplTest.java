@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,15 +27,17 @@ class DepurarEstudiantesArtefactoUseCaseImplTest {
     private DepurarEstudiantesArtefactoUseCaseImpl useCase;
 
     @Test
-    void debeEliminarLosVinculosNoVigentes_cuandoSeDepuraElArtefacto() {
+    void debeEliminarTodoExceptoLosConservados_cuandoSeDepuraElArtefacto() {
         // Arrange
         var artefacto = UtilUUID.generarNuevoUUID();
+        var primero = UtilUUID.generarNuevoUUID();
+        var segundo = UtilUUID.generarNuevoUUID();
 
         // Act
-        useCase.ejecutar(DepuracionEstudiantesArtefactoDomain.crear(artefacto));
+        useCase.ejecutar(DepuracionEstudiantesArtefactoDomain.crear(artefacto, List.of(primero, segundo)));
 
         // Assert
-        verify(logger).debug(EstudianteArtefactoKey.LOG_DEPURANDO, artefacto);
-        verify(estudianteArtefactoOutputPort).eliminarNoVigentesDelArtefacto(artefacto);
+        verify(logger).debug(EstudianteArtefactoKey.LOG_DEPURANDO, artefacto, 2);
+        verify(estudianteArtefactoOutputPort).eliminarExceptoConservados(artefacto, List.of(primero, segundo));
     }
 }

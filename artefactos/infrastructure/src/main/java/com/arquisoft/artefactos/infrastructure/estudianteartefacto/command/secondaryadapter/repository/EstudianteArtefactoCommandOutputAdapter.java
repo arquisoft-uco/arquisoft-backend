@@ -45,8 +45,8 @@ public class EstudianteArtefactoCommandOutputAdapter implements EstudianteArtefa
     }
 
     @Override
-    public void eliminarNoVigentesDelArtefacto(UUID artefacto) {
-        estudianteArtefactoCommandRepository.eliminarNoVigentesDelArtefacto(artefacto);
+    public void eliminarExceptoConservados(UUID artefacto, List<UUID> conservar) {
+        estudianteArtefactoCommandRepository.eliminarExceptoConservados(artefacto, conservar);
         logger.debug(EstudianteArtefactoKey.LOG_VINCULOS_DEPURADOS, artefacto);
     }
 

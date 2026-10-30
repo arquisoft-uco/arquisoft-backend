@@ -113,25 +113,31 @@ class ReactivarArtefactoUseCaseImplTest {
         orden.verify(depurarEstudiantesArtefactoUseCase).ejecutar(depuracionCaptor.capture());
         orden.verify(asignarEstudiantesArtefactoUseCase).ejecutar(agregacionCaptor.capture());
         assertThat(depuracionCaptor.getValue().getArtefacto()).isEqualTo(artefacto);
+        assertThat(depuracionCaptor.getValue().getConservar()).containsExactly(conservado, nuevo);
         assertThat(agregacionCaptor.getValue().getArtefacto()).isEqualTo(artefacto);
         assertThat(agregacionCaptor.getValue().getAsesor()).isEqualTo(asesor);
         assertThat(agregacionCaptor.getValue().getEstudiantes()).containsExactly(nuevo);
     }
 
     @Test
-    void debeReactivarSinVincularEstudiantes_cuandoTodosYaEstabanVinculados() {
+    void debeConservarSoloLosEnviados_cuandoSeEnviaUnoDeTresPrevios() {
         // Arrange
-        var conservado = UtilUUID.generarNuevoUUID();
-        var reactivacion = ReactivacionArtefactoDomain.crear(artefacto, proyecto, asesor, List.of(conservado));
-        when(estudiantesVigentesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of(conservado));
-        when(estudiantesVigentesVinculadosArtefactoFinder.obtener(artefacto)).thenReturn(List.of(conservado));
+        var enviado = UtilUUID.generarNuevoUUID();
+        var previoUno = UtilUUID.generarNuevoUUID();
+        var previoDos = UtilUUID.generarNuevoUUID();
+        var reactivacion = ReactivacionArtefactoDomain.crear(artefacto, proyecto, asesor, List.of(enviado));
+        when(estudiantesVigentesProyectoGradoFinder.obtener(proyecto))
+                .thenReturn(List.of(enviado, previoUno, previoDos));
+        when(estudiantesVigentesVinculadosArtefactoFinder.obtener(artefacto))
+                .thenReturn(List.of(enviado, previoUno, previoDos));
 
         // Act
         useCase.ejecutar(reactivacion);
 
         // Assert
         verify(artefactoOutputPort).reactivar(artefacto, asesor);
-        verify(depurarEstudiantesArtefactoUseCase).ejecutar(any());
+        verify(depurarEstudiantesArtefactoUseCase).ejecutar(depuracionCaptor.capture());
+        assertThat(depuracionCaptor.getValue().getConservar()).containsExactly(enviado);
         verify(asignarEstudiantesArtefactoUseCase, never()).ejecutar(any());
     }
 

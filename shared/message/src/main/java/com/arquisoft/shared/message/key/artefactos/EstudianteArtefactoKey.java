@@ -15,7 +15,7 @@ public enum EstudianteArtefactoKey implements ClaveMensaje {
     LOG_GUARDADOS("artefactos.infraestructura.estudianteartefacto.log.guardados", 1),
     LOG_DESVINCULANDO("artefactos.aplicacion.estudianteartefacto.log.desvinculando", 2),
     LOG_DESVINCULADOS("artefactos.infraestructura.estudianteartefacto.log.desvinculados", 2),
-    LOG_DEPURANDO("artefactos.aplicacion.estudianteartefacto.log.depurando", 1),
+    LOG_DEPURANDO("artefactos.aplicacion.estudianteartefacto.log.depurando", 2),
     LOG_VINCULOS_DEPURADOS("artefactos.infraestructura.estudianteartefacto.log.vinculos-depurados", 1),
     ERROR_SUPERAN_PROYECTO("artefactos.dominio.estudianteartefacto.error.superan-proyecto", 1),
     ERROR_SUPERAN_PROYECTO_DETALLE("artefactos.dominio.estudianteartefacto.error.superan-proyecto-detalle", 2),

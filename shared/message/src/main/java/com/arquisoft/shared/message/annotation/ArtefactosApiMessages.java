@@ -205,8 +205,9 @@ public final class ArtefactosApiMessages {
                         + "un correo. El asesor del artefacto es el del token y debe tener asignado el proyecto. "
                         + "El proyecto no puede tener ya un artefacto activo de ese repositorio. Si tiene uno "
                         + "omitido de ese repositorio, lo reactiva con el asesor del token, conserva la versión "
-                        + "guardada del repositorio y a los estudiantes que siguen en el proyecto, y vincula solo "
-                        + "a los que aún no lo están. Responde con el id del artefacto creado o reactivado.";
+                        + "guardada del repositorio y deja como estudiantes del artefacto exactamente los enviados: "
+                        + "desvincula a los previos que no vienen y vincula solo a los que aún no lo estaban. "
+                        + "Responde con el id del artefacto creado o reactivado.";
         public static final String ASIGNAR_RESP_201 = "Artefacto asignado al proyecto de grado";
         public static final String ASIGNAR_RESP_400 =
                 "Datos mal formados: identificador de proyecto, versión o estudiante inválido";

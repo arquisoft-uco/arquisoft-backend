@@ -17,8 +17,9 @@ public class DepurarEstudiantesArtefactoUseCaseImpl implements DepurarEstudiante
 
     @Override
     public void ejecutar(DepuracionEstudiantesArtefactoDomain depuracion) {
-        logger.debug(EstudianteArtefactoKey.LOG_DEPURANDO, depuracion.getArtefacto());
+        logger.debug(EstudianteArtefactoKey.LOG_DEPURANDO,
+                depuracion.getArtefacto(), depuracion.getConservar().size());
 
-        estudianteArtefactoOutputPort.eliminarNoVigentesDelArtefacto(depuracion.getArtefacto());
+        estudianteArtefactoOutputPort.eliminarExceptoConservados(depuracion.getArtefacto(), depuracion.getConservar());
     }
 }

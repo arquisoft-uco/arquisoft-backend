@@ -78,7 +78,8 @@ class ReactivarArtefactoValidatorImplTest {
     void debeLanzarEstudiantesSuperanProyecto_cuandoElCupoExcedeAlProyecto() {
         // Arrange
         var vinculado = UtilUUID.generarNuevoUUID();
-        var cupoExcedido = new CupoEstudiantesArtefacto(List.of(estudiante), List.of(vinculado), List.of(vinculado));
+        var cupoExcedido = new CupoEstudiantesArtefacto(
+                List.of(estudiante, vinculado), List.of(vinculado), List.of(vinculado));
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(reactivacion, asesorVigente, List.of(vinculoVigente), cupoExcedido))

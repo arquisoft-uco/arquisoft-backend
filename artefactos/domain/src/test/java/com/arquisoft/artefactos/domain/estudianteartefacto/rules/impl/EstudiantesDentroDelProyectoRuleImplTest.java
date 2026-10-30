@@ -17,32 +17,35 @@ class EstudiantesDentroDelProyectoRuleImplTest {
     private final EstudiantesDentroDelProyectoRuleImpl rule = new EstudiantesDentroDelProyectoRuleImpl();
 
     @Test
-    void debePasar_cuandoLaUnionIgualaALosEstudiantesDelProyecto() {
-        // Arrange
-        var conservado = UtilUUID.generarNuevoUUID();
-        var nuevo = UtilUUID.generarNuevoUUID();
-        var cupo = new CupoEstudiantesArtefacto(List.of(nuevo), List.of(conservado), List.of(conservado, nuevo));
-
-        // Act & Assert
-        assertThatCode(() -> rule.validar(cupo)).doesNotThrowAnyException();
-    }
-
-    @Test
-    void debePasar_cuandoUnSolicitadoYaEstaVinculado() {
-        // Arrange
-        var repetido = UtilUUID.generarNuevoUUID();
-        var cupo = new CupoEstudiantesArtefacto(List.of(repetido), List.of(repetido), List.of(repetido));
-
-        // Act & Assert
-        assertThatCode(() -> rule.validar(cupo)).doesNotThrowAnyException();
-    }
-
-    @Test
-    void debeLanzarEstudiantesSuperanProyecto_cuandoLaUnionSuperaAlProyecto() {
+    void debePasar_cuandoLosEnviadosIgualanALosEstudiantesDelProyecto() {
         // Arrange
         var primero = UtilUUID.generarNuevoUUID();
         var segundo = UtilUUID.generarNuevoUUID();
-        var cupo = new CupoEstudiantesArtefacto(List.of(segundo), List.of(primero), List.of(primero));
+        var cupo = new CupoEstudiantesArtefacto(List.of(primero, segundo), List.of(), List.of(primero, segundo));
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(cupo)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debePasar_cuandoLosPreviosNoEnviadosSuperanElTope() {
+        // Arrange
+        var enviado = UtilUUID.generarNuevoUUID();
+        var previoUno = UtilUUID.generarNuevoUUID();
+        var previoDos = UtilUUID.generarNuevoUUID();
+        var cupo = new CupoEstudiantesArtefacto(
+                List.of(enviado), List.of(enviado, previoUno, previoDos), List.of(enviado));
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(cupo)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarEstudiantesSuperanProyecto_cuandoLosEnviadosSuperanAlProyecto() {
+        // Arrange
+        var primero = UtilUUID.generarNuevoUUID();
+        var segundo = UtilUUID.generarNuevoUUID();
+        var cupo = new CupoEstudiantesArtefacto(List.of(primero, segundo), List.of(primero), List.of(primero));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(cupo))

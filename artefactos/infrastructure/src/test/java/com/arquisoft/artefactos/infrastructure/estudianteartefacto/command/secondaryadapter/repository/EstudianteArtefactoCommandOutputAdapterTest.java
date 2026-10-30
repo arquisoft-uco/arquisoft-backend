@@ -180,35 +180,41 @@ class EstudianteArtefactoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeEliminarSoloLosVinculosSinPertenenciaVigente_cuandoSeDepuraElArtefacto() {
+    void debeConservarSoloLosEnviadosVigentes_cuandoSeEliminaElResto() {
         // Arrange
         var logger = mock(AppLogger.class);
         var adapter = new EstudianteArtefactoCommandOutputAdapter(repository, logger);
         var proyecto = UtilUUID.generarNuevoUUID();
         var artefacto = sembrarArtefacto(proyecto);
         var otroArtefacto = sembrarArtefacto(proyecto);
-        var vigente = UtilUUID.generarNuevoUUID();
-        var destituido = UtilUUID.generarNuevoUUID();
-        var sinPertenencia = UtilUUID.generarNuevoUUID();
-        sembrarPertenencia(vigente, proyecto, null);
-        sembrarPertenencia(destituido, proyecto, Instant.now());
-        sembrar(artefacto, vigente);
-        sembrar(artefacto, destituido);
-        sembrar(artefacto, sinPertenencia);
-        sembrar(otroArtefacto, destituido);
+        var enviadoVigente = UtilUUID.generarNuevoUUID();
+        var noEnviadoVigente = UtilUUID.generarNuevoUUID();
+        var enviadoDestituido = UtilUUID.generarNuevoUUID();
+        var enviadoSinPertenencia = UtilUUID.generarNuevoUUID();
+        sembrarPertenencia(enviadoVigente, proyecto, null);
+        sembrarPertenencia(noEnviadoVigente, proyecto, null);
+        sembrarPertenencia(enviadoDestituido, proyecto, UtilFecha.generarInstanteActual());
+        sembrar(artefacto, enviadoVigente);
+        sembrar(artefacto, noEnviadoVigente);
+        sembrar(artefacto, enviadoDestituido);
+        sembrar(artefacto, enviadoSinPertenencia);
+        sembrar(otroArtefacto, noEnviadoVigente);
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        adapter.eliminarNoVigentesDelArtefacto(artefacto);
+        adapter.eliminarExceptoConservados(
+                artefacto, List.of(enviadoVigente, enviadoDestituido, enviadoSinPertenencia));
 
         // Assert
-        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, vigente)).isTrue();
-        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, destituido)).isFalse();
-        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, sinPertenencia)).isFalse();
-        assertThat(adapter.existePorArtefactoYEstudiante(otroArtefacto, destituido)).isTrue();
+        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, enviadoVigente)).isTrue();
+        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, noEnviadoVigente)).isFalse();
+        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, enviadoDestituido)).isFalse();
+        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, enviadoSinPertenencia)).isFalse();
+        assertThat(adapter.existePorArtefactoYEstudiante(otroArtefacto, noEnviadoVigente)).isTrue();
         verify(logger).debug(EstudianteArtefactoKey.LOG_VINCULOS_DEPURADOS, artefacto);
     }
+
 
     @Test
     void debeDevolverLosVigentesVinculados_cuandoHayBajasYOtrosArtefactos() {

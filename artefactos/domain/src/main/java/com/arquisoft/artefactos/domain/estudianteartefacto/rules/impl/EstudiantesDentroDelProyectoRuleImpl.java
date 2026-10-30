@@ -10,8 +10,7 @@ public class EstudiantesDentroDelProyectoRuleImpl implements EstudiantesDentroDe
 
     @Override
     public void validar(CupoEstudiantesArtefacto cupo) {
-        var resultado = new HashSet<>(cupo.vinculadosVigentes());
-        resultado.addAll(cupo.solicitados());
+        var resultado = new HashSet<>(cupo.solicitados());
         var maximo = cupo.vigentesProyecto().size();
         if (resultado.size() > maximo) {
             throw new EstudiantesSuperanProyectoException(maximo, resultado.size());
