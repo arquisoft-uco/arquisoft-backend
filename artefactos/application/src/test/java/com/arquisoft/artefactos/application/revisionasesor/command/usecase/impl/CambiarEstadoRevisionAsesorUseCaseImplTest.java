@@ -1,6 +1,8 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
+import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorDeRevisionAsesorFinder;
+import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantePorIdFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.EstudianteParticipaRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
@@ -57,6 +59,8 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
     @Mock
     private VersionPosteriorARevisionFinder versionPosteriorARevisionFinder;
     @Mock
+    private ArtefactoPorRevisionAsesorFinder artefactoPorRevisionAsesorFinder;
+    @Mock
     private CambiarEstadoRevisionAsesorValidator validator;
     @Mock
     private EventPublisher eventPublisher;
@@ -70,10 +74,13 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
     private UUID estudianteId;
     private AsesorDomain asesor;
     private EstudianteDomain estudiante;
+    private ArtefactoDomain artefacto;
 
     @BeforeEach
     void prepararReplicas() {
         revisionId = UtilUUID.generarNuevoUUID();
+        artefacto = ArtefactoDomain.reconstruir(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
         estudianteId = UtilUUID.generarNuevoUUID();
         asesor = AsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), "20161020123", "Ana", "ana@uco.edu.co",
                 Instant.now(), null);
@@ -89,6 +96,7 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
         when(estudiantePorIdFinder.obtener(estudianteId)).thenReturn(estudiante);
         when(estudianteParticipaRevisionAsesorFinder.obtener(any())).thenReturn(true);
         when(versionPosteriorARevisionFinder.obtener(revisionId)).thenReturn(true);
+        when(artefactoPorRevisionAsesorFinder.obtener(revisionId)).thenReturn(artefacto);
     }
 
     @Test
@@ -110,7 +118,7 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
         orden.verify(estudianteParticipaRevisionAsesorFinder, times(1)).obtener(cambio);
         orden.verify(versionPosteriorARevisionFinder, times(1)).obtener(revisionId);
         orden.verify(validator).validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante),
-                eq(true), eq(true));
+                eq(true), eq(true), eq(artefacto));
         orden.verify(revisionAsesorOutputPort).actualizarEstado(revisionId, "RESUELTA");
         var captor = ArgumentCaptor.forClass(RevisionAsesorEstadoCambiadoEvent.class);
         orden.verify(eventPublisher).publish(captor.capture());
@@ -128,7 +136,7 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
         stubearFinders(EstadoRevisionAsesor.PENDIENTE);
         var cambio = CambioEstadoRevisionAsesorDomain.crear(revisionId, "RESUELTA", estudianteId);
         doThrow(new RevisionAsesorPendienteException(revisionId)).when(validator)
-                .validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante), eq(true), eq(true));
+                .validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante), eq(true), eq(true), eq(artefacto));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(cambio)).isInstanceOf(RevisionAsesorPendienteException.class);
@@ -147,7 +155,7 @@ class CambiarEstadoRevisionAsesorUseCaseImplTest {
         useCase.ejecutar(cambio);
 
         // Assert
-        verify(validator).validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante), eq(true), eq(true));
+        verify(validator).validar(eq(cambio), any(RevisionAsesorDomain.class), eq(asesor), eq(estudiante), eq(true), eq(true), eq(artefacto));
         verify(revisionAsesorOutputPort, never()).actualizarEstado(any(), anyString());
         verify(eventPublisher, never()).publish(any());
         verify(logger).info(CambiarEstadoRevisionAsesorKey.LOG_ESTADO_SIN_CAMBIO, revisionId, "RESUELTA");

@@ -115,7 +115,7 @@ class GenerarVersionArtefactoUseCaseImplTest {
         var asesorId = UtilUUID.generarNuevoUUID();
         var versionRepositorioId = UtilUUID.generarNuevoUUID();
         artefacto = ArtefactoDomain.reconstruir(generacion.getArtefacto(), UtilUUID.generarNuevoUUID(),
-                versionRepositorioId, asesorId);
+                versionRepositorioId, asesorId, null);
         asesor = AsesorDomain.reconstruir(asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co",
                 Instant.now(), null);
         versionRepositorio = VersionRepositorioArtefactoDomain.reconstruir(versionRepositorioId, "Formato A", 1,

@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.infrastructure.estudiante.command.secondaryadap
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.artefactos.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import com.arquisoft.artefactos.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
+import com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secondaryadapter.entity.EstudianteArtefactoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EstudianteKey;
 import com.arquisoft.shared.util.UtilFecha;
@@ -170,6 +171,40 @@ class EstudianteCommandOutputAdapterTest {
         assertThat(deLaura.email()).isEqualTo("Laura@uco.edu.co");
         assertThat(deLaura.eliminadoEn()).isEqualTo(UtilFecha.VACIO);
         assertThat(dePedro.eliminadoEn()).isEqualTo(baja);
+    }
+
+    @Test
+    void debeDevolverSoloLosVinculadosVigentesDelArtefacto_cuandoHayBajasYOtrosArtefactos() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var otroArtefacto = UtilUUID.generarNuevoUUID();
+        var vigente = UtilUUID.generarNuevoUUID();
+        var segundoVigente = UtilUUID.generarNuevoUUID();
+        var eliminado = UtilUUID.generarNuevoUUID();
+        var deOtroArtefacto = UtilUUID.generarNuevoUUID();
+        sembrar(vigente, "Laura", null);
+        sembrar(segundoVigente, "Sara", null);
+        sembrar(eliminado, "Pedro", Instant.now());
+        sembrar(deOtroArtefacto, "Ajeno", null);
+        vincular(artefacto, vigente);
+        vincular(artefacto, segundoVigente);
+        vincular(artefacto, eliminado);
+        vincular(otroArtefacto, deOtroArtefacto);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerVigentesVinculadosAlArtefacto(artefacto);
+
+        // Assert
+        assertThat(resultado).extracting(EstudianteEntity::id).containsExactlyInAnyOrder(vigente, segundoVigente);
+        assertThat(adapter.obtenerVigentesVinculadosAlArtefacto(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    private void vincular(UUID artefacto, UUID estudiante) {
+        entityManager.persist(EstudianteArtefactoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID()).artefacto(artefacto).estudiante(estudiante).build());
     }
 
     private void sembrar(UUID id, String nombre, Instant eliminadoEn) {

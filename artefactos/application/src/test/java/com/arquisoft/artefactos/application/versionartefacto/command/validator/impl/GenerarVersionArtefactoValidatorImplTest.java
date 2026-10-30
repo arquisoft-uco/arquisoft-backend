@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.application.versionartefacto.command.validator.
 
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontradoException;
+import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.EstudianteNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoVigenteException;
@@ -52,7 +53,7 @@ class GenerarVersionArtefactoValidatorImplTest {
         var asesorId = UtilUUID.generarNuevoUUID();
         var versionId = UtilUUID.generarNuevoUUID();
         artefacto = ArtefactoDomain.reconstruir(generacion.getArtefacto(), UtilUUID.generarNuevoUUID(),
-                versionId, asesorId);
+                versionId, asesorId, null);
         asesor = AsesorDomain.reconstruir(asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co",
                 Instant.now(), null);
         versionRepositorio = VersionRepositorioArtefactoDomain.reconstruir(versionId, "Formato A", 1,
@@ -101,6 +102,18 @@ class GenerarVersionArtefactoValidatorImplTest {
         assertThatThrownBy(() -> validarPrecondiciones(artefacto, false, AsesorDomain.VACIO,
                 VersionRepositorioArtefactoDomain.VACIO, CargaPendienteDomain.VACIO, 1L))
                 .isInstanceOf(EstudianteNoPropietarioArtefactoException.class);
+    }
+
+    @Test
+    void debeLanzarArtefactoOmitido_antesQueElAsesor_cuandoElArtefactoEstaOmitido() {
+        // Arrange
+        var omitido = ArtefactoDomain.reconstruir(artefacto.getId(), artefacto.getProyectoGrado(),
+                artefacto.getVersionRepositorioArtefacto(), artefacto.getAsesor(), Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> validarPrecondiciones(omitido, true, AsesorDomain.VACIO,
+                VersionRepositorioArtefactoDomain.VACIO, CargaPendienteDomain.VACIO, 1L))
+                .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
     @Test

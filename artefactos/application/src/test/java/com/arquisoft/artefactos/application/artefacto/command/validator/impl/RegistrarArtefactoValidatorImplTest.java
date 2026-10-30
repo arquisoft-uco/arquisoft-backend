@@ -24,9 +24,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class AsignarArtefactoValidatorImplTest {
+class RegistrarArtefactoValidatorImplTest {
 
-    private final AsignarArtefactoValidatorImpl validator = new AsignarArtefactoValidatorImpl();
+    private final RegistrarArtefactoValidatorImpl validator = new RegistrarArtefactoValidatorImpl();
 
     private UUID proyecto;
     private UUID asesorId;

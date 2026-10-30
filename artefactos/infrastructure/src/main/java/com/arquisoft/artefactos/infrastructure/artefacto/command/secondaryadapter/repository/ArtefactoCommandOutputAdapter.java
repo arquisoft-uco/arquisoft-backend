@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,5 +51,31 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     public void cambiarAsesor(UUID artefacto, UUID asesor) {
         artefactoCommandRepository.cambiarAsesor(artefacto, asesor);
         logger.debug(ArtefactoKey.LOG_ASESOR_ACTUALIZADO, artefacto);
+    }
+
+    @Override
+    public void omitir(UUID artefacto, Instant omitidoEn) {
+        artefactoCommandRepository.omitir(artefacto, omitidoEn);
+        logger.debug(ArtefactoKey.LOG_OMITIDO_ACTUALIZADO, artefacto);
+    }
+
+    @Override
+    public void reactivar(UUID artefacto, UUID asesor) {
+        artefactoCommandRepository.reactivar(artefacto, asesor);
+        logger.debug(ArtefactoKey.LOG_REACTIVADO_ACTUALIZADO, artefacto);
+    }
+
+    @Override
+    public Optional<ArtefactoEntity> obtenerOmitidoPorProyectoYRepositorio(
+            UUID proyectoGrado, UUID versionRepositorioArtefacto) {
+        return artefactoCommandRepository
+                .buscarOmitidoPorProyectoYRepositorio(proyectoGrado, versionRepositorioArtefacto)
+                .map(ArtefactoJpaMapper::toEntity);
+    }
+
+    @Override
+    public Optional<ArtefactoEntity> obtenerPorRevisionAsesor(UUID revisionAsesor) {
+        return artefactoCommandRepository.buscarPorRevisionAsesor(revisionAsesor)
+                .map(ArtefactoJpaMapper::toEntity);
     }
 }

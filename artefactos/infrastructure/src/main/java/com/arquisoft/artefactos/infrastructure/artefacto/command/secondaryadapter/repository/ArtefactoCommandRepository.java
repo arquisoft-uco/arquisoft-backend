@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
 
     @Modifying
     @Query("UPDATE ArtefactoJpaEntity a SET a.asesor = :asesor "
-            + "WHERE a.proyectoGrado = :proyectoGrado AND a.asesor <> :asesor")
+            + "WHERE a.proyectoGrado = :proyectoGrado AND a.asesor <> :asesor AND a.omitidoEn IS NULL")
     int traspasarAsesorDeProyecto(@Param("proyectoGrado") UUID proyectoGrado, @Param("asesor") UUID asesor);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -34,4 +35,34 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
     @Modifying
     @Query("UPDATE ArtefactoJpaEntity a SET a.asesor = :asesor WHERE a.id = :id")
     int cambiarAsesor(@Param("id") UUID id, @Param("asesor") UUID asesor);
+
+    @Modifying
+    @Query("UPDATE ArtefactoJpaEntity a SET a.omitidoEn = :omitidoEn WHERE a.id = :id")
+    int omitir(@Param("id") UUID id, @Param("omitidoEn") Instant omitidoEn);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE ArtefactoJpaEntity a SET a.omitidoEn = NULL, a.asesor = :asesor WHERE a.id = :id")
+    int reactivar(@Param("id") UUID id, @Param("asesor") UUID asesor);
+
+    @Query("""
+            SELECT a
+            FROM ArtefactoJpaEntity a, VersionRepositorioArtefactoJpaEntity v, VersionRepositorioArtefactoJpaEntity n
+            WHERE a.proyectoGrado = :proyectoGrado
+              AND a.omitidoEn IS NOT NULL
+              AND v.id = a.versionRepositorioArtefacto
+              AND n.id = :versionRepositorioArtefacto
+              AND v.repositorioArtefacto = n.repositorioArtefacto
+            """)
+    Optional<ArtefactoJpaEntity> buscarOmitidoPorProyectoYRepositorio(
+            @Param("proyectoGrado") UUID proyectoGrado,
+            @Param("versionRepositorioArtefacto") UUID versionRepositorioArtefacto);
+
+    @Query("""
+            SELECT a
+            FROM ArtefactoJpaEntity a, VersionArtefactoJpaEntity va, RevisionAsesorJpaEntity r
+            WHERE r.id = :revisionAsesor
+              AND va.id = r.versionArtefacto
+              AND a.id = va.artefacto
+            """)
+    Optional<ArtefactoJpaEntity> buscarPorRevisionAsesor(@Param("revisionAsesor") UUID revisionAsesor);
 }

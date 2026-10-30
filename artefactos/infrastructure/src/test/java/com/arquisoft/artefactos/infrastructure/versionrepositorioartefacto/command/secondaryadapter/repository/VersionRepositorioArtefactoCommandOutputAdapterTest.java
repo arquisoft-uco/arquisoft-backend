@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -223,6 +224,60 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
         // Assert
         assertThat(repositorios).containsExactlyInAnyOrder(repositorioUno, repositorioDos);
         assertThat(sinArtefactos).isEmpty();
+    }
+
+    @Test
+    void debeIgnorarLosArtefactosOmitidos_cuandoConsultaLosRepositoriosAsignados() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var repositorioActivo = UtilUUID.generarNuevoUUID();
+        var repositorioOmitido = UtilUUID.generarNuevoUUID();
+        var versionActiva = UtilUUID.generarNuevoUUID();
+        var versionOmitida = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadDeRepositorio(versionActiva, repositorioActivo, "Activo"));
+        adapter.guardar(entidadDeRepositorio(versionOmitida, repositorioOmitido, "Omitido"));
+        sembrarArtefacto(proyecto, versionActiva);
+        entityManager.persist(ArtefactoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .proyectoGrado(proyecto)
+                .versionRepositorioArtefacto(versionOmitida)
+                .asesor(UtilUUID.generarNuevoUUID())
+                .omitidoEn(Instant.now())
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var repositorios = adapter.consultarRepositoriosAsignados(proyecto);
+
+        // Assert
+        assertThat(repositorios).containsExactly(repositorioActivo);
+    }
+
+    @Test
+    void debeObtenerLaVersionDelArtefacto_cuandoExiste() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var version = UtilUUID.generarNuevoUUID();
+        var otraVersion = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadDeRepositorio(version, UtilUUID.generarNuevoUUID(), "Uno"));
+        adapter.guardar(entidadDeRepositorio(otraVersion, UtilUUID.generarNuevoUUID(), "Dos"));
+        var artefacto = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ArtefactoJpaEntity.builder()
+                .id(artefacto)
+                .proyectoGrado(proyecto)
+                .versionRepositorioArtefacto(version)
+                .asesor(UtilUUID.generarNuevoUUID())
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrada = adapter.obtenerPorArtefacto(artefacto);
+
+        // Assert
+        assertThat(encontrada).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(version));
+        assertThat(adapter.obtenerPorArtefacto(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 
     private void sembrarArtefacto(UUID proyecto, UUID version) {

@@ -182,6 +182,8 @@ public final class EventTopics {
                 "artefactos.estudiante_artefacto.asignados";
         public static final String REVISION_ASESOR_ESTADO_CAMBIADO =
                 "artefactos.revision_asesor.estado_cambiado";
+        public static final String ARTEFACTO_OMITIDO =
+                "artefactos.artefacto.omitido";
     }
 
     public static final class MapasRuta {

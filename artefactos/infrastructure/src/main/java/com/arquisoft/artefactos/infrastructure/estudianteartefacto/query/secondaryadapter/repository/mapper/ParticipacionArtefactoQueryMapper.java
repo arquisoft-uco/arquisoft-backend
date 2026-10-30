@@ -15,6 +15,7 @@ public final class ParticipacionArtefactoQueryMapper {
                 entity.getVersionRepositorioArtefactoId(),
                 entity.getNombreDocumento(),
                 entity.getVersionDocumento(),
-                entity.getNombreRepositorio());
+                entity.getNombreRepositorio(),
+                entity.isOmitido());
     }
 }

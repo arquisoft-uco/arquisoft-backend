@@ -67,7 +67,7 @@ class ConsultarParticipacionesArtefactoControllerTest {
         // Arrange
         var estudiante = UtilUUID.generarNuevoUUID();
         var readModel = new ParticipacionArtefactoReadModel(UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), "Proyecto Alfa", UtilUUID.generarNuevoUUID(), "Informe", 2, "Repo");
+                UtilUUID.generarNuevoUUID(), "Proyecto Alfa", UtilUUID.generarNuevoUUID(), "Informe", 2, "Repo", false);
         when(interactor.ejecutar(any(ConsultarParticipacionesArtefactoQuery.class))).thenReturn(List.of(readModel));
 
         // Act & Assert

@@ -23,4 +23,29 @@ public interface EstudianteArtefactoCommandRepository extends JpaRepository<Estu
             """)
     int eliminarPorProyectoGradoYEstudiante(
             @Param("proyectoGrado") UUID proyectoGrado, @Param("estudiante") UUID estudiante);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("""
+            DELETE FROM EstudianteArtefactoJpaEntity ea
+            WHERE ea.artefacto = :artefacto
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM ArtefactoJpaEntity a, EstudianteProyectoGradoJpaEntity epg
+                  WHERE a.id = ea.artefacto
+                    AND epg.proyectoGradoId = a.proyectoGrado
+                    AND epg.estudianteId = ea.estudiante
+                    AND epg.destituidoEn IS NULL)
+            """)
+    int eliminarNoVigentesDelArtefacto(@Param("artefacto") UUID artefacto);
+
+    @Query("""
+            SELECT ea.estudiante
+            FROM EstudianteArtefactoJpaEntity ea, ArtefactoJpaEntity a, EstudianteProyectoGradoJpaEntity epg
+            WHERE ea.artefacto = :artefacto
+              AND a.id = ea.artefacto
+              AND epg.proyectoGradoId = a.proyectoGrado
+              AND epg.estudianteId = ea.estudiante
+              AND epg.destituidoEn IS NULL
+            """)
+    List<UUID> buscarVigentesVinculados(@Param("artefacto") UUID artefacto);
 }

@@ -20,7 +20,7 @@ class ArtefactoExisteRuleImplTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var encontrado = ArtefactoDomain.reconstruir(
-                id, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+                id, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(new ExistenciaArtefacto(id, encontrado))).doesNotThrowAnyException();

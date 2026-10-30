@@ -6,6 +6,7 @@ import com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secon
 import com.arquisoft.artefactos.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.estudianteproyectogrado.command.secondaryadapter.repository.EstudianteProyectoGradoCommandRepository;
 import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
@@ -176,6 +177,76 @@ class EstudianteArtefactoCommandOutputAdapterTest {
         var persistido = entityManager.find(EstudianteProyectoGradoJpaEntity.class, vinculo.getId());
         assertThat(persistido.getDestituidoEn()).isEqualTo(destituidoEn);
         assertThat(persistido.getOcurridoEn()).isEqualTo(destituidoEn);
+    }
+
+    @Test
+    void debeEliminarSoloLosVinculosSinPertenenciaVigente_cuandoSeDepuraElArtefacto() {
+        // Arrange
+        var logger = mock(AppLogger.class);
+        var adapter = new EstudianteArtefactoCommandOutputAdapter(repository, logger);
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var artefacto = sembrarArtefacto(proyecto);
+        var otroArtefacto = sembrarArtefacto(proyecto);
+        var vigente = UtilUUID.generarNuevoUUID();
+        var destituido = UtilUUID.generarNuevoUUID();
+        var sinPertenencia = UtilUUID.generarNuevoUUID();
+        sembrarPertenencia(vigente, proyecto, null);
+        sembrarPertenencia(destituido, proyecto, Instant.now());
+        sembrar(artefacto, vigente);
+        sembrar(artefacto, destituido);
+        sembrar(artefacto, sinPertenencia);
+        sembrar(otroArtefacto, destituido);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarNoVigentesDelArtefacto(artefacto);
+
+        // Assert
+        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, vigente)).isTrue();
+        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, destituido)).isFalse();
+        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, sinPertenencia)).isFalse();
+        assertThat(adapter.existePorArtefactoYEstudiante(otroArtefacto, destituido)).isTrue();
+        verify(logger).debug(EstudianteArtefactoKey.LOG_VINCULOS_DEPURADOS, artefacto);
+    }
+
+    @Test
+    void debeDevolverLosVigentesVinculados_cuandoHayBajasYOtrosArtefactos() {
+        // Arrange
+        var adapter = new EstudianteArtefactoCommandOutputAdapter(repository, mock(AppLogger.class));
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var artefacto = sembrarArtefacto(proyecto);
+        var otroArtefacto = sembrarArtefacto(proyecto);
+        var vigente = UtilUUID.generarNuevoUUID();
+        var destituido = UtilUUID.generarNuevoUUID();
+        var sinPertenencia = UtilUUID.generarNuevoUUID();
+        var deOtroArtefacto = UtilUUID.generarNuevoUUID();
+        sembrarPertenencia(vigente, proyecto, null);
+        sembrarPertenencia(destituido, proyecto, UtilFecha.generarInstanteActual());
+        sembrarPertenencia(deOtroArtefacto, proyecto, null);
+        sembrar(artefacto, vigente);
+        sembrar(artefacto, destituido);
+        sembrar(artefacto, sinPertenencia);
+        sembrar(otroArtefacto, deOtroArtefacto);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerVigentesVinculados(artefacto);
+
+        // Assert
+        assertThat(resultado).containsExactly(vigente);
+        assertThat(adapter.obtenerVigentesVinculados(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    private void sembrarPertenencia(UUID estudiante, UUID proyecto, Instant destituidoEn) {
+        entityManager.persist(EstudianteProyectoGradoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .estudianteId(estudiante)
+                .proyectoGradoId(proyecto)
+                .ocurridoEn(Instant.now())
+                .destituidoEn(destituidoEn)
+                .build());
     }
 
     private UUID sembrarArtefacto(UUID proyecto) {

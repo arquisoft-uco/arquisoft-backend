@@ -21,6 +21,13 @@ public class EstudianteCommandOutputAdapter implements EstudianteOutputPort {
     private final AppLogger logger;
 
     @Override
+    public List<EstudianteEntity> obtenerVigentesVinculadosAlArtefacto(UUID artefacto) {
+        return estudianteCommandRepository.buscarVigentesVinculadosAlArtefacto(artefacto).stream()
+                .map(EstudianteJpaMapper::toEntity)
+                .toList();
+    }
+
+    @Override
     public List<EstudianteEntity> obtenerPorIds(List<UUID> ids) {
         return estudianteCommandRepository.findAllById(ids).stream()
                 .map(EstudianteJpaMapper::toEntity)

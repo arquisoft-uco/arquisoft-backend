@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -31,4 +32,7 @@ public class ArtefactoJpaEntity {
 
     @Column(name = "asesor_id", nullable = false, columnDefinition = "UUID")
     private UUID asesor;
+
+    @Column(name = "omitido_en")
+    private Instant omitidoEn;
 }

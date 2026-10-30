@@ -2,6 +2,8 @@ package com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapt
 
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
 
 public final class ArtefactoJpaMapper {
 
@@ -13,6 +15,7 @@ public final class ArtefactoJpaMapper {
                 .proyectoGrado(entity.proyectoGrado())
                 .versionRepositorioArtefacto(entity.versionRepositorioArtefacto())
                 .asesor(entity.asesor())
+                .omitidoEn(UtilFecha.VACIO.equals(entity.omitidoEn()) ? null : entity.omitidoEn())
                 .build();
     }
 
@@ -21,6 +24,7 @@ public final class ArtefactoJpaMapper {
                 jpaEntity.getId(),
                 jpaEntity.getProyectoGrado(),
                 jpaEntity.getVersionRepositorioArtefacto(),
-                jpaEntity.getAsesor());
+                jpaEntity.getAsesor(),
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getOmitidoEn(), UtilFecha.VACIO));
     }
 }

@@ -6,7 +6,7 @@ public enum CambiarEstadoRevisionAsesorKey implements ClaveMensaje {
 
     LOG_CAMBIANDO_ESTADO("artefactos.aplicacion.cambiarestadorevisionasesor.log.cambiando-estado", 2),
     LOG_VERIFICACION_CAMBIO_ESTADO(
-            "artefactos.aplicacion.cambiarestadorevisionasesor.log.verificacion-cambio-estado", 5),
+            "artefactos.aplicacion.cambiarestadorevisionasesor.log.verificacion-cambio-estado", 6),
     LOG_ESTADO_CAMBIADO("artefactos.aplicacion.cambiarestadorevisionasesor.log.estado-cambiado", 2),
     LOG_ESTADO_SIN_CAMBIO("artefactos.aplicacion.cambiarestadorevisionasesor.log.estado-sin-cambio", 2),
     LOG_ESTADO_ACTUALIZADO(

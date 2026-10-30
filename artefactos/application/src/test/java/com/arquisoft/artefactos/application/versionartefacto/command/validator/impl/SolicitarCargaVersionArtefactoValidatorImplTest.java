@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.application.versionartefacto.command.validator.
 
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontradoException;
+import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.EstudianteNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.ArtefactoCerradoException;
@@ -36,7 +37,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
         solicitud = SolicitudCargaVersionArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), "informe.pdf", "application/pdf", 2048L);
         artefacto = ArtefactoDomain.reconstruir(solicitud.getArtefacto(), UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
     }
 
     private RevisionAsesorDomain revisionEn(EstadoRevisionAsesor estado) {
@@ -75,6 +76,18 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(
                 solicitud, artefacto, false, 1L, 2, RevisionAsesorDomain.VACIO))
                 .isInstanceOf(EstudianteNoPropietarioArtefactoException.class);
+    }
+
+    @Test
+    void debeLanzarArtefactoOmitido_antesQueLaPoliticaDeSubida_cuandoElArtefactoEstaOmitido() {
+        // Arrange
+        var omitido = ArtefactoDomain.reconstruir(artefacto.getId(), artefacto.getProyectoGrado(),
+                artefacto.getVersionRepositorioArtefacto(), artefacto.getAsesor(), Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                solicitud, omitido, true, MAXIMO, 2, RevisionAsesorDomain.VACIO))
+                .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
     @Test

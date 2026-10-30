@@ -24,6 +24,7 @@ rutas:
       asesor: /asesor
       estudiante: /estudiante
       cambiar-asesor: /{artefactoId}/asesor
+      omitir: /{artefactoId}
       revisiones-version: /versiones/{versionArtefactoId}/revisiones
       estado-revision: /revisiones/{revisionAsesorId}/estado
     estados-revision-asesor:

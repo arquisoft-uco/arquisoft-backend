@@ -25,6 +25,11 @@ public class EstudianteProyectoGradoCommandOutputAdapter implements EstudiantePr
     }
 
     @Override
+    public List<UUID> obtenerVigentesPorProyectoGrado(UUID proyectoGrado) {
+        return estudianteProyectoGradoCommandRepository.buscarVigentesPorProyectoGrado(proyectoGrado);
+    }
+
+    @Override
     public List<EstudianteProyectoGradoEntity> obtenerPorProyectoGradoYEstudiantes(
             UUID proyectoGrado, List<UUID> estudiantes) {
         return estudianteProyectoGradoCommandRepository

@@ -14,6 +14,7 @@ public record ArtefactoEstudianteResponseDTO(
         int versionDocumento,
         String nombreRepositorio,
         UUID asesor,
-        String nombreAsesor
+        String nombreAsesor,
+        boolean omitido
 ) {
 }

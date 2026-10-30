@@ -2,11 +2,14 @@ package com.arquisoft.artefactos.application.revisionasesor.command.validator.im
 
 import com.arquisoft.artefactos.application.revisionasesor.command.validator.RegistrarRevisionAsesorValidator;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
+import com.arquisoft.artefactos.domain.artefacto.model.ActividadArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.model.ExistenciaArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.model.PropiedadArtefactoAsesor;
 import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoExisteRule;
+import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoNoOmitidoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.AsesorPropietarioArtefactoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoExisteRuleImpl;
+import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoNoOmitidoRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.AsesorPropietarioArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.RegistroRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.UnicidadRevisionAbiertaVersion;
@@ -27,6 +30,7 @@ public class RegistrarRevisionAsesorValidatorImpl implements RegistrarRevisionAs
     private final VersionArtefactoExisteRule versionArtefactoExisteRule;
     private final ArtefactoExisteRule artefactoExisteRule;
     private final AsesorPropietarioArtefactoRule asesorPropietarioArtefactoRule;
+    private final ArtefactoNoOmitidoRule artefactoNoOmitidoRule;
     private final VersionArtefactoEsUltimaRule versionArtefactoEsUltimaRule;
     private final RevisionAsesorUnicaAbiertaPorVersionRule revisionAsesorUnicaAbiertaPorVersionRule;
 
@@ -34,6 +38,7 @@ public class RegistrarRevisionAsesorValidatorImpl implements RegistrarRevisionAs
         this.versionArtefactoExisteRule = new VersionArtefactoExisteRuleImpl();
         this.artefactoExisteRule = new ArtefactoExisteRuleImpl();
         this.asesorPropietarioArtefactoRule = new AsesorPropietarioArtefactoRuleImpl();
+        this.artefactoNoOmitidoRule = new ArtefactoNoOmitidoRuleImpl();
         this.versionArtefactoEsUltimaRule = new VersionArtefactoEsUltimaRuleImpl();
         this.revisionAsesorUnicaAbiertaPorVersionRule = new RevisionAsesorUnicaAbiertaPorVersionRuleImpl();
     }
@@ -46,6 +51,7 @@ public class RegistrarRevisionAsesorValidatorImpl implements RegistrarRevisionAs
         versionArtefactoExisteRule.validar(new ExistenciaVersionArtefacto(versionArtefacto, version));
         artefactoExisteRule.validar(new ExistenciaArtefacto(version.getArtefacto(), artefacto));
         asesorPropietarioArtefactoRule.validar(new PropiedadArtefactoAsesor(registro.getAsesor(), artefacto));
+        artefactoNoOmitidoRule.validar(new ActividadArtefacto(artefacto));
         versionArtefactoEsUltimaRule.validar(
                 new VigenciaVersionArtefacto(versionArtefacto, version.getNumeroVersion(), esUltima));
         revisionAsesorUnicaAbiertaPorVersionRule.validar(

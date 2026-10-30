@@ -9,6 +9,7 @@ public record ArtefactoReadModel(
         UUID versionRepositorioArtefacto,
         String nombreDocumento,
         int versionDocumento,
-        String nombreRepositorio
+        String nombreRepositorio,
+        boolean omitido
 ) {
 }
