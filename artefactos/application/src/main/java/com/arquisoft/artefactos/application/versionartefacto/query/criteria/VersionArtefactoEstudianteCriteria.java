@@ -15,7 +15,8 @@ public final class VersionArtefactoEstudianteCriteria extends QueryCriteria {
         NOMBRE_DOCUMENTO("nombreDocumento", true, false),
         VERSION        ("version",       true, true),
         FECHA_CREACION ("fechaCreacion", true, true),
-        ESTUDIANTE_ID      ("estudianteId",      true, false);
+        ESTUDIANTE_ID      ("estudianteId",      true, false),
+        ESTADO_REVISION("estadoRevision", true, true);
 
         private final String  clave;
         private final boolean filtrable;

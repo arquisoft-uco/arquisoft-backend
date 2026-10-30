@@ -73,4 +73,11 @@ class VersionArtefactoEstudianteCriteriaTest {
         // Act & Assert
         assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debeDeclararFiltrableYOrdenable_estadoRevision() {
+        // Arrange & Act & Assert
+        assertThat(VersionArtefactoEstudianteCriteria.Campo.esValidoParaFiltrar("estadoRevision")).isTrue();
+        assertThat(VersionArtefactoEstudianteCriteria.Campo.esValidoParaOrdenar("estadoRevision")).isTrue();
+    }
 }

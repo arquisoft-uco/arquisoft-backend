@@ -25,6 +25,7 @@ class VersionArtefactoAsesorJpaSpecification extends QueryJpaSpecification<Versi
                 case VERSION        -> CampoSpec.entero(root -> root.get("version"));
                 case FECHA_CREACION -> CampoSpec.fechaHora(root -> root.get("fechaCreacion"));
                 case ASESOR_ID      -> CampoSpec.uuid(root -> root.get("asesorId"));
+                case ESTADO_REVISION -> CampoSpec.texto(root -> root.get("estadoRevisionId"));
             };
             m.put(campo.getClave(), spec);
         }

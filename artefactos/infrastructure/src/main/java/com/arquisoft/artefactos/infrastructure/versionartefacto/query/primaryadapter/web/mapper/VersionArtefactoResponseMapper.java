@@ -18,6 +18,9 @@ public final class VersionArtefactoResponseMapper {
                 readModel.nombreDocumento(),
                 readModel.versionDocumento(),
                 readModel.nombreRepositorio(),
-                readModel.nombreAsesor());
+                readModel.nombreAsesor(),
+                readModel.revisionAsesor(),
+                readModel.estadoRevision(),
+                readModel.nombreEstadoRevision());
     }
 }

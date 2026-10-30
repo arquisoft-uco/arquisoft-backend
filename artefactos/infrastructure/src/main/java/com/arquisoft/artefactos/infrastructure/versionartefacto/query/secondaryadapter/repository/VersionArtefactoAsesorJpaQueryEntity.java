@@ -28,14 +28,26 @@ import java.util.UUID;
                vra.nombre_documento   AS nombre_documento,
                vra.version_documento  AS version_documento,
                vra.nombre_repositorio AS nombre_repositorio,
-               ase.nombre             AS nombre_asesor
+               ase.nombre             AS nombre_asesor,
+               ra.id                  AS revision_asesor_id,
+               ra.estado_revision_asesor_id AS estado_revision_id,
+               er.nombre              AS nombre_estado_revision,
+               er.orden               AS orden_estado_revision
         FROM version_artefacto va
                  JOIN artefacto a ON a.id = va.artefacto_id
                  JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
                  JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
                  JOIN asesor ase ON ase.id = a.asesor_id
+                 LEFT JOIN revision_asesor ra ON ra.id = (
+                         SELECT r.id FROM revision_asesor r
+                         WHERE r.version_artefacto_id = va.id
+                         ORDER BY r.fecha_creacion DESC, r.id DESC
+                         FETCH FIRST 1 ROW ONLY)
+                 LEFT JOIN estado_revision_asesor er ON er.id = ra.estado_revision_asesor_id
         """)
-@Synchronize({"version_artefacto", "artefacto", "proyecto_grado", "version_repositorio_artefacto", "asesor"})
+@Synchronize({
+        "version_artefacto", "artefacto", "proyecto_grado", "version_repositorio_artefacto", "asesor",
+        "revision_asesor", "estado_revision_asesor"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -78,4 +90,16 @@ public class VersionArtefactoAsesorJpaQueryEntity {
 
     @Column(name = "nombre_asesor")
     private String nombreAsesor;
+
+    @Column(name = "revision_asesor_id", columnDefinition = "uuid")
+    private UUID revisionAsesorId;
+
+    @Column(name = "estado_revision_id")
+    private String estadoRevisionId;
+
+    @Column(name = "nombre_estado_revision")
+    private String nombreEstadoRevision;
+
+    @Column(name = "orden_estado_revision")
+    private Integer ordenEstadoRevision;
 }
