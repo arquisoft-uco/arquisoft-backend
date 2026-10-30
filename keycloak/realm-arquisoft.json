@@ -384,7 +384,8 @@
               "artefactos:artefacto:update-asesor",
               "artefactos:artefacto:omit",
               "artefactos:estudiante-artefacto:create",
-              "artefactos:revision-asesor:create"
+              "artefactos:revision-asesor:create",
+              "artefactos:observacion-revision:create"
             ]
           }
         },
@@ -2403,6 +2404,15 @@
         {
           "id": "97d6f448-046f-4107-b113-94886e86afc1",
           "name": "artefactos:estudiante-artefacto:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "aa921f81-4412-4272-b454-2c77564303b0",
+          "name": "artefactos:observacion-revision:create",
           "description": "",
           "composite": false,
           "clientRole": true,

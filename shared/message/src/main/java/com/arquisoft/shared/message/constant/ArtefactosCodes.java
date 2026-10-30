@@ -139,6 +139,7 @@ public final class ArtefactosCodes {
                 "REVISION_ASESOR_VERSION_ANTERIOR_NO_EN_PROGRESO";
         public static final String PENDIENTE = "REVISION_ASESOR_PENDIENTE";
         public static final String SIN_VERSION_POSTERIOR = "REVISION_ASESOR_SIN_VERSION_POSTERIOR";
+        public static final String NO_ADMITE_OBSERVACIONES = "REVISION_ASESOR_NO_ADMITE_OBSERVACIONES";
     }
 
     public static final class VersionArtefacto {
@@ -211,5 +212,11 @@ public final class ArtefactosCodes {
         private Observacion() {}
 
         public static final String REVISION_ASESOR_ID_REQUERIDO = "OBSERVACION_REVISION_ASESOR_ID_REQUERIDO";
+        public static final String ID_REQUERIDO = "OBSERVACION_ID_REQUERIDO";
+        public static final String ASESOR_REQUERIDO = "OBSERVACION_ASESOR_REQUERIDO";
+        public static final String DESCRIPCION_REQUERIDA = "OBSERVACION_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_LONGITUD_EXCEDIDA = "OBSERVACION_DESCRIPCION_LONGITUD_EXCEDIDA";
+        public static final String ESTADO_INVALIDO = "OBSERVACION_ESTADO_INVALIDO";
+        public static final String DUPLICADA = "OBSERVACION_DUPLICADA";
     }
 }
