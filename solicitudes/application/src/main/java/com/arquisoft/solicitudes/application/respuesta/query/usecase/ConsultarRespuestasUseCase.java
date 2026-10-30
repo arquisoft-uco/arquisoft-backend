@@ -5,5 +5,5 @@ import com.arquisoft.solicitudes.application.respuesta.query.readmodel.Respuesta
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.usecase.UseCase;
 
-public interface ConsultarRespuestasNovedadAsesorEnviadasUseCase
+public interface ConsultarRespuestasUseCase
         extends UseCase<RespuestaCriteria, PaginatedResult<RespuestaReadModel>> {}

@@ -128,4 +128,18 @@ class ConsultarSolicitudesNovedadCoordinadorRecibidasMapperTest {
                 query(coordinador, criterio)))
                 .isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debeFijarElTipoSolicitudDelCriteria_cuandoSeConvierteLaConsulta() {
+        // Arrange
+        var coordinador = UUID.randomUUID();
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
+
+        // Act
+        var criteria = ConsultarSolicitudesNovedadCoordinadorRecibidasMapper.toCriteria(
+                query(coordinador, criterio));
+
+        // Assert
+        assertThat(criteria.getTipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
+    }
 }

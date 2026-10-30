@@ -5,6 +5,7 @@ import com.arquisoft.solicitudes.application.remitente.query.readmodel.Remitente
 import com.arquisoft.solicitudes.application.solicitud.query.criteria.SolicitudCriteria;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
 import com.arquisoft.solicitudes.application.solicitud.query.secondaryport.SolicitudQueryOutputPort;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarSolicitudesNovedadCoordinadorEnviadasUseCaseImplTest {
+class ConsultarSolicitudesUseCaseImplTest {
 
     @Mock
     private SolicitudQueryOutputPort solicitudQueryOutputPort;
@@ -34,26 +35,23 @@ class ConsultarSolicitudesNovedadCoordinadorEnviadasUseCaseImplTest {
     private AppLogger logger;
 
     @InjectMocks
-    private ConsultarSolicitudesNovedadCoordinadorEnviadasUseCaseImpl useCase;
+    private ConsultarSolicitudesUseCaseImpl useCase;
 
     private static SolicitudCriteria criteria() {
         return SolicitudCriteria.builder().pagina(0).tamanio(10).build();
-    }
-
-    private static SolicitudReadModel solicitud() {
-        var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana", "ana@uco.edu.co");
-        var destinatario = new DestinatarioReadModel(
-                UUID.randomUUID(), "COORD-1", "Coordinadora", "coord@uco.edu.co");
-        return new SolicitudReadModel(UUID.randomUUID(), "una novedad",
-                Instant.now(), "NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
-                remitente, destinatario);
     }
 
     @Test
     void debeConsultarElPuertoYRetornarSuResultado_cuandoSeEjecuta() {
         // Arrange
         var criteria = criteria();
-        var esperado = PaginatedResult.of(List.of(solicitud()), 0, 10, 1L);
+        var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana", "ana@uco.edu.co");
+        var destinatario = new DestinatarioReadModel(
+                UUID.randomUUID(), "COORD-1", "Coordinadora", "coord@uco.edu.co");
+        var solicitud = new SolicitudReadModel(UUID.randomUUID(), "una novedad",
+                Instant.now(), "NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
+                remitente, destinatario);
+        var esperado = PaginatedResult.of(List.of(solicitud), 0, 10, 1L);
         when(solicitudQueryOutputPort.consultar(criteria)).thenReturn(esperado);
 
         // Act
@@ -81,9 +79,10 @@ class ConsultarSolicitudesNovedadCoordinadorEnviadasUseCaseImplTest {
     }
 
     @Test
-    void debeLoguearEntradaYCierre_conSolicitudKey() {
+    void debeLoguearEntradaYCierre_conLaClaveGenericaYElTipo() {
         // Arrange
-        var criteria = criteria();
+        var tipo = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId();
+        var criteria = SolicitudCriteria.builder().pagina(0).tamanio(10).tipoSolicitud(tipo).build();
         var vacio = PaginatedResult.of(List.<SolicitudReadModel>of(), 0, 10, 0L);
         when(solicitudQueryOutputPort.consultar(criteria)).thenReturn(vacio);
 
@@ -91,9 +90,9 @@ class ConsultarSolicitudesNovedadCoordinadorEnviadasUseCaseImplTest {
         useCase.ejecutar(criteria);
 
         // Assert
-        verify(logger).debug(eq(SolicitudKey.LOG_CONSULTANDO_NOVEDAD_COORDINADOR_ENVIADAS),
-                eq(0), eq(10), eq(criteria.tieneFiltros()), eq(criteria.tieneOrden()));
-        verify(logger).debug(eq(SolicitudKey.LOG_CONSULTA_NOVEDAD_COORDINADOR_ENVIADAS_COMPLETADA),
-                eq(0L), eq(0), eq(10));
+        verify(logger).debug(eq(SolicitudKey.LOG_CONSULTANDO),
+                eq(tipo), eq(0), eq(10), eq(false), eq(false));
+        verify(logger).debug(eq(SolicitudKey.LOG_CONSULTA_COMPLETADA),
+                eq(tipo), eq(0L), eq(0), eq(10));
     }
 }

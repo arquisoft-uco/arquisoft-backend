@@ -64,4 +64,22 @@ class RespuestaCriteriaTest {
         // Act & Assert
         assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debeTenerTipoSolicitudVacio_cuandoNoSeFija() {
+        // Arrange & Act
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10).build();
+
+        // Assert
+        assertThat(criteria.getTipoSolicitud()).isEmpty();
+    }
+
+    @Test
+    void debeExponerElTipoSolicitud_cuandoSeFijaEnElBuilder() {
+        // Arrange & Act
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10).tipoSolicitud("CAMBIO_DE_ASESOR").build();
+
+        // Assert
+        assertThat(criteria.getTipoSolicitud()).isEqualTo("CAMBIO_DE_ASESOR");
+    }
 }

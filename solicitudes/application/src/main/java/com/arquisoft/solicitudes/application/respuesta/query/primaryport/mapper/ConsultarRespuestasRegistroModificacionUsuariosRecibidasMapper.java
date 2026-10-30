@@ -40,6 +40,7 @@ public final class ConsultarRespuestasRegistroModificacionUsuariosRecibidasMappe
                 .tamanio(criterio.tamanio())
                 .ordenamiento(ordenamiento(criterio.ordenamiento()))
                 .raiz(raizFinal)
+                .tipoSolicitud(TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS.getId())
                 .build();
     }
 

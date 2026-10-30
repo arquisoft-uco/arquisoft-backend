@@ -129,4 +129,18 @@ class ConsultarSolicitudesCambioAsesorEnviadasMapperTest {
                 query(estudiante, criterio)))
                 .isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debeFijarElTipoSolicitudDelCriteria_cuandoSeConvierteLaConsulta() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
+
+        // Act
+        var criteria = ConsultarSolicitudesCambioAsesorEnviadasMapper.toCriteria(
+                query(estudiante, criterio));
+
+        // Assert
+        assertThat(criteria.getTipoSolicitud()).isEqualTo(TipoSolicitud.CAMBIO_DE_ASESOR.getId());
+    }
 }

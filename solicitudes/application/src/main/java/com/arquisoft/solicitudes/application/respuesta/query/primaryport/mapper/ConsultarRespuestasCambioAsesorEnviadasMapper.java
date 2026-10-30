@@ -40,6 +40,7 @@ public final class ConsultarRespuestasCambioAsesorEnviadasMapper {
                 .tamanio(criterio.tamanio())
                 .ordenamiento(ordenamiento(criterio.ordenamiento()))
                 .raiz(raizFinal)
+                .tipoSolicitud(TipoSolicitud.CAMBIO_DE_ASESOR.getId())
                 .build();
     }
 

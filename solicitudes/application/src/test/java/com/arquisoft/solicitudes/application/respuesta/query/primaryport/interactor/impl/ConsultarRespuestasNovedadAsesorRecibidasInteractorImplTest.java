@@ -3,7 +3,7 @@ package com.arquisoft.solicitudes.application.respuesta.query.primaryport.intera
 import com.arquisoft.solicitudes.application.respuesta.query.criteria.RespuestaCriteria;
 import com.arquisoft.solicitudes.application.respuesta.query.primaryport.model.ConsultarRespuestasNovedadAsesorRecibidasQuery;
 import com.arquisoft.solicitudes.application.respuesta.query.readmodel.RespuestaReadModel;
-import com.arquisoft.solicitudes.application.respuesta.query.usecase.ConsultarRespuestasNovedadAsesorRecibidasUseCase;
+import com.arquisoft.solicitudes.application.respuesta.query.usecase.ConsultarRespuestasUseCase;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.FiltroConector;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class ConsultarRespuestasNovedadAsesorRecibidasInteractorImplTest {
 
     @Mock
-    private ConsultarRespuestasNovedadAsesorRecibidasUseCase useCase;
+    private ConsultarRespuestasUseCase useCase;
 
     @Captor
     private ArgumentCaptor<RespuestaCriteria> criteriaCaptor;

@@ -129,4 +129,18 @@ class ConsultarSolicitudesAmpliacionPlazoRecibidasMapperTest {
                 query(coordinador, criterio)))
                 .isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debeFijarElTipoSolicitudDelCriteria_cuandoSeConvierteLaConsulta() {
+        // Arrange
+        var coordinador = UtilUUID.generarNuevoUUID();
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
+
+        // Act
+        var criteria = ConsultarSolicitudesAmpliacionPlazoRecibidasMapper.toCriteria(
+                query(coordinador, criterio));
+
+        // Assert
+        assertThat(criteria.getTipoSolicitud()).isEqualTo(TipoSolicitud.AMPLIACION_DE_PLAZO.getId());
+    }
 }

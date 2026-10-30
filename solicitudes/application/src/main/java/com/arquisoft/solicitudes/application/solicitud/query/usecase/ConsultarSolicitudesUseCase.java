@@ -5,5 +5,5 @@ import com.arquisoft.solicitudes.application.solicitud.query.readmodel.Solicitud
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.usecase.UseCase;
 
-public interface ConsultarSolicitudesCambioAsesorRecibidasUseCase
+public interface ConsultarSolicitudesUseCase
         extends UseCase<SolicitudCriteria, PaginatedResult<SolicitudReadModel>> {}

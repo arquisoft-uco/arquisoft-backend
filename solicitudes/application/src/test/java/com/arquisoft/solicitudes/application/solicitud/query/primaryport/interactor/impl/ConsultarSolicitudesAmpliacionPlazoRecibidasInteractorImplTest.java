@@ -4,7 +4,7 @@ import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.solicitud.query.criteria.SolicitudCriteria;
 import com.arquisoft.solicitudes.application.solicitud.query.primaryport.model.ConsultarSolicitudesAmpliacionPlazoRecibidasQuery;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
-import com.arquisoft.solicitudes.application.solicitud.query.usecase.ConsultarSolicitudesAmpliacionPlazoRecibidasUseCase;
+import com.arquisoft.solicitudes.application.solicitud.query.usecase.ConsultarSolicitudesUseCase;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.FiltroConector;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class ConsultarSolicitudesAmpliacionPlazoRecibidasInteractorImplTest {
 
     @Mock
-    private ConsultarSolicitudesAmpliacionPlazoRecibidasUseCase useCase;
+    private ConsultarSolicitudesUseCase useCase;
 
     @Captor
     private ArgumentCaptor<SolicitudCriteria> criteriaCaptor;

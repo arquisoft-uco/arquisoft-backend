@@ -6,6 +6,7 @@ import com.arquisoft.solicitudes.application.respuesta.query.criteria.RespuestaC
 import com.arquisoft.solicitudes.application.respuesta.query.readmodel.RespuestaReadModel;
 import com.arquisoft.solicitudes.application.respuesta.query.secondaryport.RespuestaQueryOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
+import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
@@ -26,7 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarRespuestasCambioAsesorEnviadasUseCaseImplTest {
+class ConsultarRespuestasUseCaseImplTest {
 
     @Mock
     private RespuestaQueryOutputPort respuestaQueryOutputPort;
@@ -35,7 +36,7 @@ class ConsultarRespuestasCambioAsesorEnviadasUseCaseImplTest {
     private AppLogger logger;
 
     @InjectMocks
-    private ConsultarRespuestasCambioAsesorEnviadasUseCaseImpl useCase;
+    private ConsultarRespuestasUseCaseImpl useCase;
 
     private static RespuestaCriteria criteria() {
         return RespuestaCriteria.builder().pagina(0).tamanio(10).build();
@@ -45,8 +46,8 @@ class ConsultarRespuestasCambioAsesorEnviadasUseCaseImplTest {
         var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana", "ana@uco.edu.co");
         var destinatario = new DestinatarioReadModel(
                 UUID.randomUUID(), "COORD-1", "Coordinadora", "coord@uco.edu.co");
-        var solicitud = new SolicitudReadModel(UUID.randomUUID(), "un cambio de asesor",
-                Instant.now(), "CAMBIO_DE_ASESOR", "Cambio de asesor",
+        var solicitud = new SolicitudReadModel(UUID.randomUUID(), "una novedad",
+                Instant.now(), "NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
                 remitente, destinatario);
         return new RespuestaReadModel(UUID.randomUUID(), "contenido de la respuesta",
                 Instant.now(), "EN_REVISION", "En revisión", solicitud);
@@ -84,9 +85,10 @@ class ConsultarRespuestasCambioAsesorEnviadasUseCaseImplTest {
     }
 
     @Test
-    void debeLoguearEntradaYCierre_conRespuestaKey() {
+    void debeLoguearEntradaYCierre_conLaClaveGenericaYElTipo() {
         // Arrange
-        var criteria = criteria();
+        var tipo = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId();
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10).tipoSolicitud(tipo).build();
         var vacio = PaginatedResult.of(List.<RespuestaReadModel>of(), 0, 10, 0L);
         when(respuestaQueryOutputPort.consultar(criteria)).thenReturn(vacio);
 
@@ -94,9 +96,9 @@ class ConsultarRespuestasCambioAsesorEnviadasUseCaseImplTest {
         useCase.ejecutar(criteria);
 
         // Assert
-        verify(logger).debug(eq(RespuestaKey.LOG_CONSULTANDO_CAMBIO_ASESOR_ENVIADAS),
-                eq(0), eq(10), eq(criteria.tieneFiltros()), eq(criteria.tieneOrden()));
-        verify(logger).debug(eq(RespuestaKey.LOG_CONSULTA_CAMBIO_ASESOR_ENVIADAS_COMPLETADA),
-                eq(0L), eq(0), eq(10));
+        verify(logger).debug(eq(RespuestaKey.LOG_CONSULTANDO),
+                eq(tipo), eq(0), eq(10), eq(false), eq(false));
+        verify(logger).debug(eq(RespuestaKey.LOG_CONSULTA_COMPLETADA),
+                eq(tipo), eq(0L), eq(0), eq(10));
     }
 }
