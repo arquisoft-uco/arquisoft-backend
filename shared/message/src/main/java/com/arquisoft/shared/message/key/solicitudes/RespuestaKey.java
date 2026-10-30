@@ -16,6 +16,10 @@ public enum RespuestaKey implements ClaveMensaje {
     LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.respuesta.log.verificacion-eliminacion", 2),
     LOG_ELIMINADA("solicitudes.aplicacion.respuesta.log.eliminada", 2),
     LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.respuesta.log.eliminada", 1),
+    LOG_CONSULTANDO(
+            "solicitudes.aplicacion.respuesta.log.consultando", 5),
+    LOG_CONSULTA_COMPLETADA(
+            "solicitudes.aplicacion.respuesta.log.consulta-completada", 4),
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
             "solicitudes.aplicacion.respuesta.log.consultando-novedad-coordinador-recibidas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_RECIBIDAS_COMPLETADA(
