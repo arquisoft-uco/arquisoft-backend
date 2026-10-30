@@ -56,6 +56,20 @@ public class NotificacionesSolicitudesQueueConfig {
     public static final String AMPLIACION_PLAZO_ESTADO_MODIFICADO_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.AMPLIACION_PLAZO_ESTADO_MODIFICADO;
 
+    public static final String REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO;
+
+    @Bean
+    public Declarables notificacionesSolicitudRegistroModificacionUsuariosEstadoModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO_QUEUE,
+                EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     @Bean
     public Declarables notificacionesSolicitudAmpliacionPlazoEstadoModificadoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,

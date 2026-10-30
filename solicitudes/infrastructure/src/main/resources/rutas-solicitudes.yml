@@ -39,6 +39,7 @@ rutas:
       novedad-asesor-estado: /novedad-asesor/{solicitudId}/respuesta/estado
       cambio-asesor-estado: /cambio-asesor/{solicitudId}/respuesta/estado
       ampliacion-plazo-estado: /ampliacion-plazo/{solicitudId}/respuesta/estado
+      registro-modificacion-usuarios-estado: /registro-modificacion-usuarios/{solicitudId}/respuesta/estado
       novedad-coordinador-recibidas: /novedad-coordinador/respuestas/recibidas
       novedad-asesor-recibidas: /novedad-asesor/respuestas/recibidas
       cambio-asesor-recibidas: /cambio-asesor/respuestas/recibidas
