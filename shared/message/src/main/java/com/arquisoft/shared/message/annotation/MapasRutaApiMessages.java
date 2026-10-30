@@ -143,6 +143,11 @@ public final class MapasRutaApiMessages {
         public static final String MODIFICAR_RESP_204 = "Plan estimado modificado";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "Plan estimado inexistente";
+        public static final String REMOVER_SUMMARY = "Remover un plan estimado";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve un plan estimado existente; la tarea queda libre para recibir otro plan estimado";
+        public static final String REMOVER_RESP_204 = "Plan estimado removido";
+        public static final String REMOVER_RESP_422 = "Plan estimado inexistente";
     }
 
     public static final class EstadoItem {
