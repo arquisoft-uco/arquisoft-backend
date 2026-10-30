@@ -23,7 +23,7 @@ public class VersionArtefactoQueryOutputAdapter implements VersionArtefactoQuery
 
     @Override
     public PaginatedResult<VersionArtefactoReadModel> consultarTodasAsesor(VersionArtefactoAsesorCriteria criteria) {
-        var pageable = PageableMapper.toPageable(criteria, VersionArtefactoAsesorSortMapper::traducir);
+        var pageable = PageableMapper.toPageable(criteria, VersionArtefactoAsesorSortMapper::traducir, "id");
         var spec = asesorSpecification.desdeCriteria(criteria);
 
         return PaginationMapper.toResult(
@@ -34,7 +34,7 @@ public class VersionArtefactoQueryOutputAdapter implements VersionArtefactoQuery
     @Override
     public PaginatedResult<VersionArtefactoReadModel> consultarTodasEstudiante(
             VersionArtefactoEstudianteCriteria criteria) {
-        var pageable = PageableMapper.toPageable(criteria, VersionArtefactoEstudianteSortMapper::traducir);
+        var pageable = PageableMapper.toPageable(criteria, VersionArtefactoEstudianteSortMapper::traducir, "id");
         var spec = estudianteSpecification.desdeCriteria(criteria);
 
         return PaginationMapper.toResult(

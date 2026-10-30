@@ -13,6 +13,9 @@ public record VersionArtefactoReadModel(
         String nombreDocumento,
         int versionDocumento,
         String nombreRepositorio,
-        String nombreAsesor
+        String nombreAsesor,
+        UUID revisionAsesor,
+        String estadoRevision,
+        String nombreEstadoRevision
 ) {
 }

@@ -44,4 +44,10 @@ class VersionArtefactoAsesorSortMapperTest {
         assertThat(VersionArtefactoAsesorSortMapper.traducir("nombreProyecto")).isNull();
         assertThat(VersionArtefactoAsesorSortMapper.traducir("nombreDocumento")).isNull();
     }
+
+    @Test
+    void debeTraducirEstadoRevisionAOrdenEstadoRevision_cuandoClaveEsEstadoRevision() {
+        // Act & Assert
+        assertThat(VersionArtefactoAsesorSortMapper.traducir("estadoRevision")).isEqualTo("ordenEstadoRevision");
+    }
 }

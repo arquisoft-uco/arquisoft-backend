@@ -18,6 +18,9 @@ public final class VersionArtefactoAsesorQueryMapper {
                 entity.getNombreDocumento(),
                 entity.getVersionDocumento(),
                 entity.getNombreRepositorio(),
-                entity.getNombreAsesor());
+                entity.getNombreAsesor(),
+                entity.getRevisionAsesorId(),
+                entity.getEstadoRevisionId(),
+                entity.getNombreEstadoRevision());
     }
 }

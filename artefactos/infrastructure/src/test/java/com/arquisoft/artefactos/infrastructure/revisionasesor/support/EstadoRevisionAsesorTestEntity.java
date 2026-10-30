@@ -25,7 +25,12 @@ public class EstadoRevisionAsesorTestEntity {
     protected EstadoRevisionAsesorTestEntity() {}
 
     public EstadoRevisionAsesorTestEntity(String id, String nombre) {
+        this(id, nombre, null);
+    }
+
+    public EstadoRevisionAsesorTestEntity(String id, String nombre, Integer orden) {
         this.id = id;
         this.nombre = nombre;
+        this.orden = orden;
     }
 }

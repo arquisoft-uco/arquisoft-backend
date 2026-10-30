@@ -25,6 +25,7 @@ class VersionArtefactoEstudianteJpaSpecification extends QueryJpaSpecification<V
                 case VERSION        -> CampoSpec.entero(root -> root.get("version"));
                 case FECHA_CREACION -> CampoSpec.fechaHora(root -> root.get("fechaCreacion"));
                 case ESTUDIANTE_ID      -> CampoSpec.uuid(root -> root.get("estudianteId"));
+                case ESTADO_REVISION -> CampoSpec.texto(root -> root.get("estadoRevisionId"));
             };
             m.put(campo.getClave(), spec);
         }

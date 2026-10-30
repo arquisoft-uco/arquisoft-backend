@@ -22,6 +22,7 @@ final class VersionArtefactoAsesorSortMapper {
                 case VERSION        -> "version";
                 case FECHA_CREACION -> "fechaCreacion";
                 case ASESOR_ID      -> null;
+                case ESTADO_REVISION -> "ordenEstadoRevision";
             };
             if (UtilObjeto.noEsNulo(ruta)) {
                 m.put(campo.getClave(), ruta);
