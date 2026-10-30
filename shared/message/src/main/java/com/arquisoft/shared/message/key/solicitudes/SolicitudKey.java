@@ -36,47 +36,7 @@ public enum SolicitudKey implements ClaveMensaje {
     LOG_CONSULTANDO(
             "solicitudes.aplicacion.solicitud.log.consultando", 5),
     LOG_CONSULTA_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-completada", 4),
-    LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-recibidas", 4),
-    LOG_CONSULTA_NOVEDAD_COORDINADOR_RECIBIDAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-novedad-coordinador-recibidas-completada", 3),
-    LOG_CONSULTANDO_CAMBIO_ASESOR_RECIBIDAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-cambio-asesor-recibidas", 4),
-    LOG_CONSULTA_CAMBIO_ASESOR_RECIBIDAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-cambio-asesor-recibidas-completada", 3),
-    LOG_CONSULTANDO_AMPLIACION_PLAZO_RECIBIDAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-ampliacion-plazo-recibidas", 4),
-    LOG_CONSULTA_AMPLIACION_PLAZO_RECIBIDAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-ampliacion-plazo-recibidas-completada", 3),
-    LOG_CONSULTANDO_NOVEDAD_ASESOR_RECIBIDAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-novedad-asesor-recibidas", 4),
-    LOG_CONSULTA_NOVEDAD_ASESOR_RECIBIDAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-novedad-asesor-recibidas-completada", 3),
-    LOG_CONSULTANDO_NOVEDAD_COORDINADOR_ENVIADAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-enviadas", 4),
-    LOG_CONSULTA_NOVEDAD_COORDINADOR_ENVIADAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-novedad-coordinador-enviadas-completada", 3),
-    LOG_CONSULTANDO_NOVEDAD_ASESOR_ENVIADAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-novedad-asesor-enviadas", 4),
-    LOG_CONSULTA_NOVEDAD_ASESOR_ENVIADAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-novedad-asesor-enviadas-completada", 3),
-    LOG_CONSULTANDO_CAMBIO_ASESOR_ENVIADAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-cambio-asesor-enviadas", 4),
-    LOG_CONSULTA_CAMBIO_ASESOR_ENVIADAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-cambio-asesor-enviadas-completada", 3),
-    LOG_CONSULTANDO_AMPLIACION_PLAZO_ENVIADAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-ampliacion-plazo-enviadas", 4),
-    LOG_CONSULTA_AMPLIACION_PLAZO_ENVIADAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-ampliacion-plazo-enviadas-completada", 3),
-    LOG_CONSULTANDO_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-registro-modificacion-usuarios-enviadas", 4),
-    LOG_CONSULTA_REGISTRO_MODIFICACION_USUARIOS_ENVIADAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-registro-modificacion-usuarios-enviadas-completada", 3),
-    LOG_CONSULTANDO_REGISTRO_MODIFICACION_USUARIOS_RECIBIDAS(
-            "solicitudes.aplicacion.solicitud.log.consultando-registro-modificacion-usuarios-recibidas", 4),
-    LOG_CONSULTA_REGISTRO_MODIFICACION_USUARIOS_RECIBIDAS_COMPLETADA(
-            "solicitudes.aplicacion.solicitud.log.consulta-registro-modificacion-usuarios-recibidas-completada", 3);
+            "solicitudes.aplicacion.solicitud.log.consulta-completada", 4);
 
     private final String clave;
     private final int parametros;
