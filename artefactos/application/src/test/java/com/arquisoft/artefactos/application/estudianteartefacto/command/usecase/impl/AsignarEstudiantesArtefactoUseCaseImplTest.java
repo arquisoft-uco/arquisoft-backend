@@ -103,7 +103,7 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
                 asesorId, EstudianteArtefactoDomain.crear(artefactoId, idsEstudiantes));
         var version = version("Anteproyecto");
         var artefacto = ArtefactoDomain.reconstruir(
-                artefactoId, UtilUUID.generarNuevoUUID(), version.getId(), asesorId);
+                artefactoId, UtilUUID.generarNuevoUUID(), version.getId(), asesorId, null);
         var asesor = AsesorDomain.reconstruir(asesorId, "1", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
         var estudiantes = idsEstudiantes.stream()
                 .map(id -> EstudianteDomain.reconstruir(id, "2", "Est-" + id, id + "@uco.edu.co", Instant.EPOCH, null))

@@ -12,7 +12,8 @@ public final class ArtefactoMapper {
                 artefacto.getId(),
                 artefacto.getProyectoGrado(),
                 artefacto.getVersionRepositorioArtefacto(),
-                artefacto.getAsesor());
+                artefacto.getAsesor(),
+                artefacto.getOmitidoEn());
     }
 
     public static ArtefactoDomain toDomain(ArtefactoEntity entity) {
@@ -20,6 +21,7 @@ public final class ArtefactoMapper {
                 entity.id(),
                 entity.proyectoGrado(),
                 entity.versionRepositorioArtefacto(),
-                entity.asesor());
+                entity.asesor(),
+                entity.omitidoEn());
     }
 }

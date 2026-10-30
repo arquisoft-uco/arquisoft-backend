@@ -28,4 +28,12 @@ public interface EstudianteProyectoGradoCommandRepository
             """)
     List<UUID> buscarEstudiantesVigentesDelArtefacto(
             @Param("artefacto") UUID artefacto, @Param("estudiantes") List<UUID> estudiantes);
+
+    @Query("""
+            SELECT epg.estudianteId
+            FROM EstudianteProyectoGradoJpaEntity epg
+            WHERE epg.proyectoGradoId = :proyectoGrado
+              AND epg.destituidoEn IS NULL
+            """)
+    List<UUID> buscarVigentesPorProyectoGrado(@Param("proyectoGrado") UUID proyectoGrado);
 }

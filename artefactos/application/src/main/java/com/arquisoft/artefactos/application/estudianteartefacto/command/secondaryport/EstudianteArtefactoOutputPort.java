@@ -14,4 +14,8 @@ public interface EstudianteArtefactoOutputPort {
     List<EstudianteArtefactoEntity> obtenerVinculados(UUID artefacto, List<UUID> estudiantes);
 
     void eliminarPorProyectoGradoYEstudiante(UUID proyectoGrado, UUID estudiante);
+
+    void eliminarExceptoConservados(UUID artefacto, List<UUID> conservar);
+
+    List<UUID> obtenerVigentesVinculados(UUID artefacto);
 }

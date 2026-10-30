@@ -25,7 +25,8 @@ import java.util.UUID;
                vra.nombre_repositorio             AS nombre_repositorio,
                a.asesor_id                        AS asesor_id,
                s.nombre                           AS nombre_asesor,
-               epg.estudiante_id                  AS estudiante_id
+               epg.estudiante_id                  AS estudiante_id,
+               (a.omitido_en IS NOT NULL)         AS omitido
         FROM artefacto a
                  JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
                  JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
@@ -70,4 +71,7 @@ public class ArtefactoEstudianteJpaQueryEntity {
 
     @Column(name = "estudiante_id", columnDefinition = "uuid")
     private UUID estudianteId;
+
+    @Column(name = "omitido")
+    private boolean omitido;
 }

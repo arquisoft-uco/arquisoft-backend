@@ -1,5 +1,6 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
+import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorDeRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantePorIdFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.EstudianteParticipaRevisionAsesorFinder;
@@ -26,6 +27,7 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
     private final EstudiantePorIdFinder estudiantePorIdFinder;
     private final EstudianteParticipaRevisionAsesorFinder estudianteParticipaRevisionAsesorFinder;
     private final VersionPosteriorARevisionFinder versionPosteriorARevisionFinder;
+    private final ArtefactoPorRevisionAsesorFinder artefactoPorRevisionAsesorFinder;
     private final CambiarEstadoRevisionAsesorValidator cambiarEstadoRevisionAsesorValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
@@ -42,12 +44,14 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
         var estudiante = estudiantePorIdFinder.obtener(cambio.getEstudiante());
         var participa = estudianteParticipaRevisionAsesorFinder.obtener(cambio);
         var existeVersionPosterior = versionPosteriorARevisionFinder.obtener(revisionAsesor);
+        var artefacto = artefactoPorRevisionAsesorFinder.obtener(revisionAsesor);
 
         logger.debug(CambiarEstadoRevisionAsesorKey.LOG_VERIFICACION_CAMBIO_ESTADO,
-                !revision.esVacio(), !asesor.esVacio(), !estudiante.esVacio(), participa, existeVersionPosterior);
+                !revision.esVacio(), !asesor.esVacio(), !estudiante.esVacio(), participa, existeVersionPosterior,
+                !artefacto.esVacio());
 
         cambiarEstadoRevisionAsesorValidator.validar(
-                cambio, revision, asesor, estudiante, participa, existeVersionPosterior);
+                cambio, revision, asesor, estudiante, participa, existeVersionPosterior, artefacto);
 
         if (revision.tieneEstado(estadoNuevo)) {
             logger.info(CambiarEstadoRevisionAsesorKey.LOG_ESTADO_SIN_CAMBIO, revisionAsesor, estadoNuevo.getId());

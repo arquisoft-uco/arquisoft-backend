@@ -136,6 +136,29 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
         verify(logger).debug(EstudianteProyectoGradoKey.LOG_GUARDADOS, 2);
     }
 
+    @Test
+    void debeDevolverSoloLosEstudiantesVigentesDelProyecto_cuandoHayDestituidosYDeOtroProyecto() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var primero = UtilUUID.generarNuevoUUID();
+        var segundo = UtilUUID.generarNuevoUUID();
+        var destituido = UtilUUID.generarNuevoUUID();
+        var deOtroProyecto = UtilUUID.generarNuevoUUID();
+        sembrarVinculo(primero, proyecto, null);
+        sembrarVinculo(segundo, proyecto, null);
+        sembrarVinculo(destituido, proyecto, Instant.now());
+        sembrarVinculo(deOtroProyecto, UtilUUID.generarNuevoUUID(), null);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerVigentesPorProyectoGrado(proyecto);
+
+        // Assert
+        assertThat(resultado).containsExactlyInAnyOrder(primero, segundo);
+        assertThat(adapter.obtenerVigentesPorProyectoGrado(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
     private UUID sembrarArtefacto(UUID proyecto) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(ArtefactoJpaEntity.builder()

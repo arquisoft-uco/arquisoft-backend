@@ -1,11 +1,14 @@
 package com.arquisoft.artefactos.application.versionartefacto.command.validator.impl;
 
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoValidator;
+import com.arquisoft.artefactos.domain.artefacto.model.ActividadArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.model.ExistenciaArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.model.PropiedadArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoExisteRule;
+import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoNoOmitidoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.EstudiantePropietarioArtefactoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoExisteRuleImpl;
+import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoNoOmitidoRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.EstudiantePropietarioArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.asesor.model.ExistenciaAsesor;
 import com.arquisoft.artefactos.domain.asesor.model.VigenciaAsesor;
@@ -40,6 +43,7 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
 
     private final ArtefactoExisteRule artefactoExisteRule;
     private final EstudiantePropietarioArtefactoRule estudiantePropietarioArtefactoRule;
+    private final ArtefactoNoOmitidoRule artefactoNoOmitidoRule;
     private final AsesorExisteRule asesorExisteRule;
     private final AsesorVigenteRule asesorVigenteRule;
     private final VersionRepositorioArtefactoExisteRule versionRepositorioArtefactoExisteRule;
@@ -53,6 +57,7 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
     public GenerarVersionArtefactoValidatorImpl() {
         this.artefactoExisteRule = new ArtefactoExisteRuleImpl();
         this.estudiantePropietarioArtefactoRule = new EstudiantePropietarioArtefactoRuleImpl();
+        this.artefactoNoOmitidoRule = new ArtefactoNoOmitidoRuleImpl();
         this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.asesorVigenteRule = new AsesorVigenteRuleImpl();
         this.versionRepositorioArtefactoExisteRule = new VersionRepositorioArtefactoExisteRuleImpl();
@@ -72,6 +77,7 @@ public class GenerarVersionArtefactoValidatorImpl implements GenerarVersionArtef
         artefactoExisteRule.validar(new ExistenciaArtefacto(generacion.getArtefacto(), artefacto));
         estudiantePropietarioArtefactoRule.validar(new PropiedadArtefacto(
                 generacion.getSolicitante(), generacion.getArtefacto(), previas.estudianteVinculado()));
+        artefactoNoOmitidoRule.validar(new ActividadArtefacto(artefacto));
         asesorExisteRule.validar(new ExistenciaAsesor(artefacto.getAsesor(), previas.asesor()));
         asesorVigenteRule.validar(new VigenciaAsesor(artefacto.getAsesor(), previas.asesor()));
         versionRepositorioArtefactoExisteRule.validar(new ExistenciaVersionRepositorioArtefacto(

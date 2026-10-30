@@ -72,7 +72,7 @@ class EstudianteArtefactoQueryOutputAdapterTest {
 
     private UUID sembrarParticipacion(UUID estudiante, UUID proyecto, UUID version) {
         var artefacto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ArtefactoJpaEntity(artefacto, proyecto, version, UtilUUID.generarNuevoUUID()));
+        entityManager.persist(new ArtefactoJpaEntity(artefacto, proyecto, version, UtilUUID.generarNuevoUUID(), null));
         entityManager.persist(new EstudianteArtefactoJpaEntity(UtilUUID.generarNuevoUUID(), artefacto, estudiante));
         return artefacto;
     }
@@ -94,6 +94,30 @@ class EstudianteArtefactoQueryOutputAdapterTest {
 
         // Assert
         assertThat(resultado).extracting("id").containsExactly(propio);
+    }
+
+    @Test
+    void debeMarcarOmitidoEnLasParticipaciones_cuandoElArtefactoFueOmitido() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var proyecto = sembrarProyecto("Alfa");
+        var version = sembrarVersion("Informe", 1, "Repo");
+        var activo = sembrarParticipacion(estudiante, proyecto, version);
+        var omitido = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ArtefactoJpaEntity(
+                omitido, proyecto, version, UtilUUID.generarNuevoUUID(), Instant.now()));
+        entityManager.persist(new EstudianteArtefactoJpaEntity(UtilUUID.generarNuevoUUID(), omitido, estudiante));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
+
+        // Assert
+        assertThat(resultado).filteredOn(participacion -> participacion.omitido())
+                .extracting("id").containsExactly(omitido);
+        assertThat(resultado).filteredOn(participacion -> !participacion.omitido())
+                .extracting("id").containsExactly(activo);
     }
 
     @Test

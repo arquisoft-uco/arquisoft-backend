@@ -383,6 +383,7 @@
               "artefactos:version-artefacto-asesor:view",
               "artefactos:artefacto-asesor:view",
               "artefactos:artefacto:update-asesor",
+              "artefactos:artefacto:omit",
               "artefactos:estudiante-artefacto:create",
               "artefactos:revision-asesor:create"
             ]
@@ -2502,6 +2503,15 @@
         {
           "id": "c47d2a96-3e18-4b5f-9a0d-7f1e6b83d2c5",
           "name": "artefactos:artefacto:update-asesor",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "d9ef0bbf-2726-4f4f-94e0-05ef9e2e9848",
+          "name": "artefactos:artefacto:omit",
           "description": "",
           "composite": false,
           "clientRole": true,

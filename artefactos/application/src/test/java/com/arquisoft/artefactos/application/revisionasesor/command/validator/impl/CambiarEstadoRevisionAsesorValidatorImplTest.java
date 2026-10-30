@@ -1,5 +1,7 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.validator.impl;
 
+import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
+import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.exception.AsesorDeRevisionNoEncontradoException;
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
@@ -26,6 +28,9 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
 
     private final CambiarEstadoRevisionAsesorValidatorImpl validator = new CambiarEstadoRevisionAsesorValidatorImpl();
 
+    private final ArtefactoDomain artefacto = ArtefactoDomain.reconstruir(
+            UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+            UtilUUID.generarNuevoUUID(), null);
     private final UUID revisionId = UtilUUID.generarNuevoUUID();
     private final UUID estudianteId = UtilUUID.generarNuevoUUID();
     private final AsesorDomain asesor = AsesorDomain.reconstruir(
@@ -49,7 +54,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.EN_PROGRESO);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(cambio, revision, asesor, estudiante, true, true))
+        assertThatCode(() -> validator.validar(cambio, revision, asesor, estudiante, true, true, artefacto))
                 .doesNotThrowAnyException();
     }
 
@@ -59,7 +64,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var cambio = cambio("RESUELTA");
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, RevisionAsesorDomain.VACIO, asesor, estudiante, true, true))
+        assertThatThrownBy(() -> validator.validar(cambio, RevisionAsesorDomain.VACIO, asesor, estudiante, true, true, artefacto))
                 .isInstanceOf(RevisionAsesorNoEncontradaException.class);
     }
 
@@ -70,7 +75,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.PENDIENTE);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, EstudianteDomain.VACIO, true, true))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, EstudianteDomain.VACIO, true, true, artefacto))
                 .isInstanceOf(EstudianteNoEncontradoException.class);
     }
 
@@ -81,7 +86,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.PENDIENTE);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, AsesorDomain.VACIO, estudiante, true, true))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, AsesorDomain.VACIO, estudiante, true, true, artefacto))
                 .isInstanceOf(AsesorDeRevisionNoEncontradoException.class);
     }
 
@@ -92,8 +97,21 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.PENDIENTE);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, false, true))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, false, true, artefacto))
                 .isInstanceOf(EstudianteNoParticipaArtefactoException.class);
+    }
+
+    @Test
+    void debeLanzarArtefactoOmitido_antesQueLaRevisionCerrada_cuandoElArtefactoEstaOmitido() {
+        // Arrange
+        var cambio = cambio("RESUELTA");
+        var revision = revision(EstadoRevisionAsesor.CERRADA);
+        var omitido = ArtefactoDomain.reconstruir(artefacto.getId(), artefacto.getProyectoGrado(),
+                artefacto.getVersionRepositorioArtefacto(), artefacto.getAsesor(), Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true, omitido))
+                .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
     @Test
@@ -103,7 +121,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.CERRADA);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true, artefacto))
                 .isInstanceOf(RevisionAsesorCerradaException.class);
     }
 
@@ -114,7 +132,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.EN_PROGRESO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true, artefacto))
                 .isInstanceOf(EstadoDestinoRevisionAsesorNoPermitidoException.class);
     }
 
@@ -125,7 +143,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.EN_PROGRESO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true, artefacto))
                 .isInstanceOf(EstadoDestinoRevisionAsesorNoPermitidoException.class);
     }
 
@@ -136,7 +154,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.PENDIENTE);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true, artefacto))
                 .isInstanceOf(RevisionAsesorPendienteException.class);
     }
 
@@ -147,7 +165,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.EN_PROGRESO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, false))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, false, artefacto))
                 .isInstanceOf(VersionPosteriorARevisionNoExisteException.class);
     }
 
@@ -158,7 +176,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.PENDIENTE);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, false))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, false, artefacto))
                 .isInstanceOf(RevisionAsesorPendienteException.class);
     }
 
@@ -169,7 +187,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.EN_PROGRESO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, false))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, false, artefacto))
                 .isInstanceOf(EstadoDestinoRevisionAsesorNoPermitidoException.class);
     }
 
@@ -180,7 +198,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, RevisionAsesorDomain.VACIO, AsesorDomain.VACIO, EstudianteDomain.VACIO, false, true))
+                cambio, RevisionAsesorDomain.VACIO, AsesorDomain.VACIO, EstudianteDomain.VACIO, false, true, artefacto))
                 .isInstanceOf(RevisionAsesorNoEncontradaException.class);
     }
 
@@ -191,7 +209,7 @@ class CambiarEstadoRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.CERRADA);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true))
+        assertThatThrownBy(() -> validator.validar(cambio, revision, asesor, estudiante, true, true, artefacto))
                 .isInstanceOf(RevisionAsesorCerradaException.class);
     }
 }

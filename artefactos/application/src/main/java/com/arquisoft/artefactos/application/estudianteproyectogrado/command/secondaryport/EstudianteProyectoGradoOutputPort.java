@@ -10,6 +10,8 @@ public interface EstudianteProyectoGradoOutputPort {
 
     List<UUID> obtenerEstudiantesVigentesDelArtefacto(UUID artefacto, List<UUID> estudiantes);
 
+    List<UUID> obtenerVigentesPorProyectoGrado(UUID proyectoGrado);
+
     List<EstudianteProyectoGradoEntity> obtenerPorProyectoGradoYEstudiantes(
             UUID proyectoGrado, List<UUID> estudiantes);
 

@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.application.estudianteartefacto.command.validat
 
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontradoException;
+import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoEncontradoException;
@@ -44,7 +45,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
         estudianteId = UtilUUID.generarNuevoUUID();
         var versionId = UtilUUID.generarNuevoUUID();
         artefacto = ArtefactoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), versionId, asesorId);
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), versionId, asesorId, null);
         entrada = AgregacionEstudiantesArtefactoDomain.crear(
                 asesorId, EstudianteArtefactoDomain.crear(artefacto.getId(), List.of(estudianteId)));
         asesor = AsesorDomain.reconstruir(asesorId, "1", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
@@ -92,7 +93,7 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
         // Arrange
         var ajeno = ArtefactoDomain.reconstruir(
                 artefacto.getId(), artefacto.getProyectoGrado(), artefacto.getVersionRepositorioArtefacto(),
-                UtilUUID.generarNuevoUUID());
+                UtilUUID.generarNuevoUUID(), null);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
@@ -105,13 +106,27 @@ class AsignarEstudiantesArtefactoValidatorImplTest {
         // Arrange
         var ajeno = ArtefactoDomain.reconstruir(
                 artefacto.getId(), artefacto.getProyectoGrado(), artefacto.getVersionRepositorioArtefacto(),
-                UtilUUID.generarNuevoUUID());
+                UtilUUID.generarNuevoUUID(), null);
         var eliminado = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", Instant.EPOCH, Instant.now());
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 entrada, ajeno, asesor, version, List.of(eliminado), List.of(estudianteId), List.of()))
                 .isInstanceOf(AsesorNoPropietarioArtefactoException.class);
+    }
+
+    @Test
+    void debeLanzarArtefactoOmitido_antesQueLaVigenciaDelEstudiante_cuandoElArtefactoEstaOmitido() {
+        // Arrange
+        var omitido = ArtefactoDomain.reconstruir(
+                artefacto.getId(), artefacto.getProyectoGrado(), artefacto.getVersionRepositorioArtefacto(),
+                asesorId, Instant.now());
+        var eliminado = EstudianteDomain.reconstruir(estudianteId, "2", "Laura Gomez", "l@uco.edu.co", Instant.EPOCH, Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                entrada, omitido, asesor, version, List.of(eliminado), List.of(), List.of()))
+                .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
     @Test
