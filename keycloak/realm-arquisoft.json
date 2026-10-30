@@ -84,6 +84,7 @@
               "solicitudes:solicitud-registro-modificacion-usuarios:create",
               "solicitudes:solicitud-registro-modificacion-usuarios:delete",
               "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
+              "solicitudes:respuesta-registro-modificacion-usuarios-recibida:view",
               "fichas:item-ficha-perfil-coordinador:view",
               "solicitudes:estado-respuesta:view",
               "proyectos:asesor-proyecto-grado:update-estado",
@@ -1563,6 +1564,15 @@
         {
           "id": "07affacc-5233-44a3-a9c4-1588dc7fbcdf",
           "name": "solicitudes:respuesta-ampliacion-plazo-enviada:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "013b2307-d184-43e6-aadd-0d3a75488156",
+          "name": "solicitudes:respuesta-registro-modificacion-usuarios-recibida:view",
           "description": "",
           "composite": false,
           "clientRole": true,
