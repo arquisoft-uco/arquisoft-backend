@@ -76,6 +76,19 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 = "Filtro de nombre inválido";
     }
 
+    public static final class ItemCualitativoAsesor {
+
+        private ItemCualitativoAsesor() {}
+
+        public static final String TAG_NAME = "Ítems cualitativos del asesor";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de los ítems cualitativos usados por el asesor";
+        public static final String CONSULTAR_SUMMARY = "Consultar ítems cualitativos del asesor";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta todos los ítems cualitativos disponibles para el asesor, ordenados por nombre";
+        public static final String CONSULTAR_RESP_200 = "Listado de ítems cualitativos del asesor";
+    }
+
     public static final class ItemCuantitativoAsesor {
 
         private ItemCuantitativoAsesor() {}
