@@ -4,7 +4,7 @@ import com.arquisoft.solicitudes.application.respuesta.query.primaryport.interac
 import com.arquisoft.solicitudes.application.respuesta.query.primaryport.mapper.ConsultarRespuestasNovedadAsesorEnviadasMapper;
 import com.arquisoft.solicitudes.application.respuesta.query.primaryport.model.ConsultarRespuestasNovedadAsesorEnviadasQuery;
 import com.arquisoft.solicitudes.application.respuesta.query.readmodel.RespuestaReadModel;
-import com.arquisoft.solicitudes.application.respuesta.query.usecase.ConsultarRespuestasNovedadAsesorEnviadasUseCase;
+import com.arquisoft.solicitudes.application.respuesta.query.usecase.ConsultarRespuestasUseCase;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,14 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class ConsultarRespuestasNovedadAsesorEnviadasInteractorImpl
         implements ConsultarRespuestasNovedadAsesorEnviadasInteractor {
 
-    private final ConsultarRespuestasNovedadAsesorEnviadasUseCase
-            consultarRespuestasNovedadAsesorEnviadasUseCase;
+    private final ConsultarRespuestasUseCase consultarRespuestasUseCase;
 
     @Override
     @Transactional(readOnly = true, transactionManager = "solicitudesTransactionManager")
     public PaginatedResult<RespuestaReadModel> ejecutar(
             ConsultarRespuestasNovedadAsesorEnviadasQuery input) {
         var criteria = ConsultarRespuestasNovedadAsesorEnviadasMapper.toCriteria(input);
-        return consultarRespuestasNovedadAsesorEnviadasUseCase.ejecutar(criteria);
+        return consultarRespuestasUseCase.ejecutar(criteria);
     }
 }

@@ -4,7 +4,7 @@ import com.arquisoft.solicitudes.application.solicitud.query.primaryport.interac
 import com.arquisoft.solicitudes.application.solicitud.query.primaryport.mapper.ConsultarSolicitudesAmpliacionPlazoEnviadasMapper;
 import com.arquisoft.solicitudes.application.solicitud.query.primaryport.model.ConsultarSolicitudesAmpliacionPlazoEnviadasQuery;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
-import com.arquisoft.solicitudes.application.solicitud.query.usecase.ConsultarSolicitudesAmpliacionPlazoEnviadasUseCase;
+import com.arquisoft.solicitudes.application.solicitud.query.usecase.ConsultarSolicitudesUseCase;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,14 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class ConsultarSolicitudesAmpliacionPlazoEnviadasInteractorImpl
         implements ConsultarSolicitudesAmpliacionPlazoEnviadasInteractor {
 
-    private final ConsultarSolicitudesAmpliacionPlazoEnviadasUseCase
-            consultarSolicitudesAmpliacionPlazoEnviadasUseCase;
+    private final ConsultarSolicitudesUseCase consultarSolicitudesUseCase;
 
     @Override
     @Transactional(readOnly = true, transactionManager = "solicitudesTransactionManager")
     public PaginatedResult<SolicitudReadModel> ejecutar(
             ConsultarSolicitudesAmpliacionPlazoEnviadasQuery input) {
         var criteria = ConsultarSolicitudesAmpliacionPlazoEnviadasMapper.toCriteria(input);
-        return consultarSolicitudesAmpliacionPlazoEnviadasUseCase.ejecutar(criteria);
+        return consultarSolicitudesUseCase.ejecutar(criteria);
     }
 }
