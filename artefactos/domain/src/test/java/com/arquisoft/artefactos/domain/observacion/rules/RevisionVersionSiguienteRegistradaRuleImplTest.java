@@ -22,7 +22,7 @@ class RevisionVersionSiguienteRegistradaRuleImplTest {
     private static SituacionReaperturaObservacion situacion(
             EstadoObservacion destino, int version, int ultima, RevisionAsesorDomain siguiente) {
         return new SituacionReaperturaObservacion(
-                UtilUUID.generarNuevoUUID(), destino, EstadoRevisionAsesor.RESUELTA, version, ultima, siguiente);
+                UtilUUID.generarNuevoUUID(), destino, version, ultima, siguiente);
     }
 
     private static RevisionAsesorDomain revision() {
@@ -44,15 +44,6 @@ class RevisionVersionSiguienteRegistradaRuleImplTest {
     void noDebeLanzar_cuandoHayVersionSiguienteConRevision() {
         // Arrange
         var entrada = situacion(EstadoObservacion.REABIERTA, 1, 2, revision());
-
-        // Act & Assert
-        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
-    }
-
-    @Test
-    void noDebeLanzar_cuandoSeReabreEnSitio() {
-        // Arrange
-        var entrada = situacion(EstadoObservacion.REABIERTA, 2, 2, RevisionAsesorDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();

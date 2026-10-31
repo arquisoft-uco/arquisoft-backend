@@ -6,6 +6,7 @@ import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorAdmiteDecisionObservacionRuleImpl;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.util.UtilUUID;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -15,19 +16,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RevisionAsesorAdmiteDecisionObservacionRuleImplTest {
 
-    @ParameterizedTest
-    @EnumSource(value = EstadoRevisionAsesor.class, names = {"EN_PROGRESO", "RESUELTA"})
-    void noDebeLanzar_cuandoLaRevisionEstaEnProgresoOResuelta(EstadoRevisionAsesor estado) {
+    @Test
+    void noDebeLanzar_cuandoLaRevisionEstaResuelta() {
         // Arrange
         var regla = new RevisionAsesorAdmiteDecisionObservacionRuleImpl();
-        var entrada = new EstadoActualRevisionAsesor(UtilUUID.generarNuevoUUID(), estado);
+        var entrada = new EstadoActualRevisionAsesor(UtilUUID.generarNuevoUUID(), EstadoRevisionAsesor.RESUELTA);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
     }
 
     @ParameterizedTest
-    @EnumSource(value = EstadoRevisionAsesor.class, names = {"PENDIENTE", "CERRADA"})
+    @EnumSource(value = EstadoRevisionAsesor.class, names = {"PENDIENTE", "EN_PROGRESO", "CERRADA"})
     void debeLanzar_cuandoLaRevisionNoAdmiteDecision(EstadoRevisionAsesor estado) {
         // Arrange
         var regla = new RevisionAsesorAdmiteDecisionObservacionRuleImpl();

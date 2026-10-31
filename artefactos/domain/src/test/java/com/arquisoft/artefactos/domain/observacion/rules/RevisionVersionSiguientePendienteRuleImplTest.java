@@ -29,7 +29,7 @@ class RevisionVersionSiguientePendienteRuleImplTest {
     private static SituacionReaperturaObservacion situacion(
             EstadoObservacion destino, EstadoRevisionAsesor estadoSiguiente) {
         return new SituacionReaperturaObservacion(
-                UtilUUID.generarNuevoUUID(), destino, EstadoRevisionAsesor.RESUELTA, 1, 2, revision(estadoSiguiente));
+                UtilUUID.generarNuevoUUID(), destino, 1, 2, revision(estadoSiguiente));
     }
 
     @Test

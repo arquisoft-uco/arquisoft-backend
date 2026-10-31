@@ -9,8 +9,7 @@ public class RevisionAsesorAdmiteDecisionObservacionRuleImpl implements Revision
 
     @Override
     public void validar(EstadoActualRevisionAsesor entrada) {
-        if (entrada.estado() != EstadoRevisionAsesor.EN_PROGRESO
-                && entrada.estado() != EstadoRevisionAsesor.RESUELTA) {
+        if (entrada.estado() != EstadoRevisionAsesor.RESUELTA) {
             throw new RevisionAsesorNoAdmiteDecisionObservacionException(
                     entrada.revisionAsesor(), entrada.estado());
         }

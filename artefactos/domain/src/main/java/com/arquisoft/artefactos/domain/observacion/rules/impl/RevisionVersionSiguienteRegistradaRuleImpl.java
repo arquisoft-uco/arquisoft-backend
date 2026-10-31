@@ -6,12 +6,9 @@ import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionVersionS
 
 public class RevisionVersionSiguienteRegistradaRuleImpl implements RevisionVersionSiguienteRegistradaRule {
 
-    private static final int EN_LA_VERSION_ANTERIOR = 1;
-
     @Override
     public void validar(SituacionReaperturaObservacion entrada) {
         if (entrada.esReapertura()
-                && entrada.diferenciaVersiones() == EN_LA_VERSION_ANTERIOR
                 && entrada.revisionVersionSiguiente().esVacio()) {
             throw new RevisionVersionSiguienteNoRegistradaException(
                     entrada.observacion(), entrada.numeroVersion() + 1);

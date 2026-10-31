@@ -115,7 +115,7 @@ public class CambiarEstadoAsesorObservacionValidatorImpl implements CambiarEstad
                 new DestinoCambioEstadoObservacion(cambio.getObservacion(), cambio.getEstado()));
 
         var situacion = new SituacionReaperturaObservacion(
-                cambio.getObservacion(), cambio.getEstado(), revision.getEstado(),
+                cambio.getObservacion(), cambio.getEstado(),
                 versiones.version().getNumeroVersion(), versiones.numeroUltimaVersion(),
                 versiones.revisionVersionSiguiente());
         observacionReabribleEnVersionRule.validar(situacion);

@@ -183,13 +183,13 @@ class CambiarEstadoAsesorObservacionUseCaseImplTest {
                 versionRepositorio, versiones());
         orden.verify(observacionOutputPort).actualizarEstado(observacionId, "CERRADA");
         orden.verify(logger).info(
-                CambiarEstadoAsesorObservacionKey.LOG_ESTADO_CAMBIADO, observacionId, "CERRADA", false);
+                CambiarEstadoAsesorObservacionKey.LOG_ESTADO_CAMBIADO, observacionId, "CERRADA");
         verify(observacionOutputPort, never()).registrar(any());
         verify(eventPublisher, never()).publish(any());
     }
 
     @Test
-    void debeRegistrarContinuacionEnLaRevisionSiguiente_cuandoReabiertaConVersionPosterior() {
+    void debeRegistrarContinuacionEnLaRevisionSiguiente_cuandoReabierta() {
         // Arrange
         revision(EstadoRevisionAsesor.RESUELTA);
         var revisionSiguiente = RevisionAsesorDomain.reconstruir(
@@ -215,24 +215,14 @@ class CambiarEstadoAsesorObservacionUseCaseImplTest {
     }
 
     @Test
-    void debeReabrirEnSitioSinContinuacion_cuandoEsLaUltimaVersion() {
-        // Arrange
-        revision(EstadoRevisionAsesor.EN_PROGRESO);
-        when(estudiantesVinculadosArtefactoFinder.obtener(artefacto.getId())).thenReturn(estudiantes(1));
-
-        // Act
-        useCase.ejecutar(cambio("REABIERTA"));
-
-        // Assert
-        verify(observacionOutputPort).actualizarEstado(observacionId, "REABIERTA");
-        verify(observacionOutputPort, never()).registrar(any());
-        verify(eventPublisher, times(1)).publish(any(ObservacionReabiertaEvent.class));
-    }
-
-    @Test
     void debePublicarEventoConContactosYDescripcion_cuandoReabierta() {
         // Arrange
-        revision(EstadoRevisionAsesor.EN_PROGRESO);
+        revision(EstadoRevisionAsesor.RESUELTA);
+        var revisionSiguiente = RevisionAsesorDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), EstadoRevisionAsesor.PENDIENTE,
+                UtilFecha.generarInstanteActual());
+        lenient().when(revisionVersionSiguientePorObservacionFinder.obtener(observacionId))
+                .thenReturn(revisionSiguiente);
         when(estudiantesVinculadosArtefactoFinder.obtener(artefacto.getId())).thenReturn(estudiantes(3));
 
         // Act
@@ -267,6 +257,6 @@ class CambiarEstadoAsesorObservacionUseCaseImplTest {
         verify(observacionOutputPort, never()).actualizarEstado(any(), anyString());
         verify(observacionOutputPort, never()).registrar(any());
         verify(eventPublisher, never()).publish(any());
-        verify(logger, never()).info(eq(CambiarEstadoAsesorObservacionKey.LOG_ESTADO_CAMBIADO), any(), any(), any());
+        verify(logger, never()).info(eq(CambiarEstadoAsesorObservacionKey.LOG_ESTADO_CAMBIADO), any(), any());
     }
 }

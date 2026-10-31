@@ -29,6 +29,9 @@ import com.arquisoft.artefactos.domain.versionrepositorioartefacto.exception.Ver
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.UUID;
 
@@ -46,7 +49,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     private final UUID versionId = UtilUUID.generarNuevoUUID();
     private final UUID versionRepositorioId = UtilUUID.generarNuevoUUID();
     private final ObservacionDomain observacion = observacion(EstadoObservacion.SOLUCIONADA);
-    private final RevisionAsesorDomain revision = revision(EstadoRevisionAsesor.EN_PROGRESO);
+    private final RevisionAsesorDomain revision = revision(EstadoRevisionAsesor.RESUELTA);
     private final ArtefactoDomain artefacto = ArtefactoDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), versionRepositorioId, asesorId, null);
     private final AsesorDomain asesor = AsesorDomain.reconstruir(
@@ -64,7 +67,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     }
 
     private VersionesDeObservacion versiones(VersionArtefactoDomain version) {
-        return new VersionesDeObservacion(version, 1, RevisionAsesorDomain.VACIO, false);
+        return new VersionesDeObservacion(version, 2, revisionSiguiente(EstadoRevisionAsesor.PENDIENTE), false);
     }
 
     private RevisionAsesorDomain revision(EstadoRevisionAsesor estado) {
@@ -157,14 +160,17 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
                 .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
-    @Test
-    void debeLanzar_cuandoLaRevisionEstaPendiente() {
+    @ParameterizedTest
+    @CsvSource({"PENDIENTE,CERRADA", "PENDIENTE,REABIERTA", "EN_PROGRESO,CERRADA", "EN_PROGRESO,REABIERTA",
+            "CERRADA,CERRADA", "CERRADA,REABIERTA"})
+    void debeLanzar_cuandoLaRevisionNoEstaResuelta(EstadoRevisionAsesor estado, String destino) {
         // Arrange
-        var pendiente = revision(EstadoRevisionAsesor.PENDIENTE);
+        var cambioDestino = cambio(asesorId, destino);
+        var noResuelta = revision(estado);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, observacion, pendiente, artefacto, asesor, versionRepositorio, versiones(version)))
+                cambioDestino, observacion, noResuelta, artefacto, asesor, versionRepositorio, versiones(version)))
                 .isInstanceOf(RevisionAsesorNoAdmiteDecisionObservacionException.class);
     }
 
@@ -222,10 +228,11 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
                 versiones)).doesNotThrowAnyException();
     }
 
-    @Test
-    void debeLanzar_cuandoLaObservacionNoEsReabrible() {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 4})
+    void debeLanzar_cuandoLaObservacionNoEsReabrible(int ultima) {
         // Arrange
-        var versiones = versiones(4, RevisionAsesorDomain.VACIO, false);
+        var versiones = versiones(ultima, RevisionAsesorDomain.VACIO, false);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(

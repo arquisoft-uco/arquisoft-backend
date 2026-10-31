@@ -78,13 +78,9 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
 
         observacionOutputPort.actualizarEstado(observacionId, cambio.getEstado().getId());
 
-        var generaContinuacion = cambio.getEstado().esReabierta() && versiones.tieneVersionPosterior();
-        if (generaContinuacion) {
+        if (cambio.getEstado().esReabierta()) {
             var continuacion = ObservacionDomain.crearContinuacion(observacion, revisionVersionSiguiente.getId());
             observacionOutputPort.registrar(ObservacionMapper.toEntity(continuacion));
-        }
-
-        if (cambio.getEstado().esReabierta()) {
             eventPublisher.publish(new ObservacionReabiertaEvent(
                     versionRepositorio.getNombreDocumento(),
                     version.getNumeroVersion(),
@@ -96,6 +92,6 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
         }
 
         logger.info(CambiarEstadoAsesorObservacionKey.LOG_ESTADO_CAMBIADO,
-                observacionId, cambio.getEstado().getId(), generaContinuacion);
+                observacionId, cambio.getEstado().getId());
     }
 }
