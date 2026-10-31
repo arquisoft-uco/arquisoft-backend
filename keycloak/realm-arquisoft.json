@@ -390,7 +390,8 @@
               "artefactos:estudiante-artefacto:create",
               "artefactos:revision-asesor:create",
               "artefactos:observacion-revision:create",
-              "artefactos:observacion:delete"
+              "artefactos:observacion:delete",
+              "artefactos:revision-asesor:send"
             ]
           }
         },
@@ -2463,6 +2464,15 @@
         {
           "id": "65fbc180-d917-4e23-8812-09066e3caa26",
           "name": "artefactos:revision-asesor-estado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "d7c592ea-79d7-4f29-a336-dec2655af59d",
+          "name": "artefactos:revision-asesor:send",
           "description": "",
           "composite": false,
           "clientRole": true,

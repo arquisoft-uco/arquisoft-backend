@@ -10,6 +10,7 @@ public enum ObservacionKey implements ClaveMensaje {
     LOG_ELIMINADA("artefactos.infraestructura.observacion.log.eliminada", 1),
     ERROR_NO_ENCONTRADA("artefactos.dominio.observacion.error.no-encontrada", 0),
     ERROR_NO_ENCONTRADA_DETALLE("artefactos.dominio.observacion.error.no-encontrada-detalle", 1),
+    LOG_ESTADOS_ACTUALIZADOS("artefactos.infraestructura.observacion.log.estados-actualizados", 2),
     ERROR_DUPLICADA("artefactos.dominio.observacion.error.duplicada", 0),
     ERROR_DUPLICADA_DETALLE("artefactos.dominio.observacion.error.duplicada-detalle", 1),
     ERROR_ESTADO_INVALIDO("artefactos.dominio.observacion.error.estado-invalido", 1);

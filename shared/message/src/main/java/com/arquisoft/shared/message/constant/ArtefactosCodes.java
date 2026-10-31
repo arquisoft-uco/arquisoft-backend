@@ -142,6 +142,7 @@ public final class ArtefactosCodes {
         public static final String NO_ADMITE_OBSERVACIONES = "REVISION_ASESOR_NO_ADMITE_OBSERVACIONES";
         public static final String NO_ADMITE_ELIMINAR_OBSERVACIONES =
                 "REVISION_ASESOR_NO_ADMITE_ELIMINAR_OBSERVACIONES";
+        public static final String NO_ENVIABLE = "REVISION_ASESOR_NO_ENVIABLE";
     }
 
     public static final class VersionArtefacto {

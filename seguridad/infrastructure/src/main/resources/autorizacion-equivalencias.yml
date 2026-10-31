@@ -208,6 +208,7 @@ security:
         - {method: POST, path: "/api/artefactos/versiones/{versionArtefactoId}/revisiones", role: "artefactos:revision-asesor:create"}
         - {method: GET, path: "/api/artefactos/versiones/{versionArtefactoId}", role: "artefactos:version-artefacto:view"}
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/estado", role: "artefactos:revision-asesor-estado:update"}
+        - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/envio", role: "artefactos:revision-asesor:send"}
         # mapas_ruta
         - {method: POST, path: "/api/mapas-ruta", role: "mapas-ruta:mapa-ruta:create"}
         - {method: POST, path: "/api/mapas-ruta/coordinador", role: "mapas-ruta:mapa-ruta-coordinador:view"}
