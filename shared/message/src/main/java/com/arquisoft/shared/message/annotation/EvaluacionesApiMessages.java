@@ -332,6 +332,11 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 =
                 "El identificador no es válido o el filtro/orden solicitado no es aceptado";
         public static final String CONSULTAR_RESP_422 = "La evaluación cuantitativa del jurado no existe";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar observaciones (estudiante)";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Consulta, como estudiante, de forma paginada las observaciones registradas sobre una "
+                        + "evaluación cuantitativa del jurado, con filtro y orden por descripción "
+                        + "(por defecto, ascendente)";
         public static final String MODIFICAR_SUMMARY = "Modificar observación";
         public static final String MODIFICAR_DESCRIPTION =
                 "Modifica la descripción de una observación registrada sobre una evaluación cuantitativa "

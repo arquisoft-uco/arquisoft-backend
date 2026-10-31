@@ -43,6 +43,7 @@ rutas:
       puntaje: /{id}/puntaje
       observaciones: /{id}/observaciones
       observaciones-jurado: /{id}/observaciones/jurado
+      observaciones-estudiante: /{id}/observaciones/estudiante
     observaciones-item-jurado:
       base: /evaluaciones/observaciones-item-jurado
       por-id: /{observacionId}
