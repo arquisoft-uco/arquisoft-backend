@@ -15,12 +15,26 @@ import java.util.UUID;
 
 public final class ObservacionDomain {
 
+    public static final ObservacionDomain VACIO = reconstruir(
+            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
+            UtilTexto.VACIO, EstadoObservacion.VACIO);
+
     private UUID id;
     private UUID revisionAsesor;
     private String descripcion;
     private EstadoObservacion estado;
 
     private ObservacionDomain() {}
+
+    public static ObservacionDomain reconstruir(
+            UUID id, UUID revisionAsesor, String descripcion, EstadoObservacion estado) {
+        var observacion = new ObservacionDomain();
+        observacion.id = id;
+        observacion.revisionAsesor = revisionAsesor;
+        observacion.descripcion = descripcion;
+        observacion.estado = estado;
+        return observacion;
+    }
 
     public static ObservacionDomain crear(UUID revisionAsesor, String descripcion) {
         var observacion = new ObservacionDomain();
@@ -82,5 +96,9 @@ public final class ObservacionDomain {
 
     public EstadoObservacion getEstado() {
         return estado;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

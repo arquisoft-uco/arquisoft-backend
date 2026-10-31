@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.application.observacion.command.secondaryport.m
 
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.entity.ObservacionEntity;
 import com.arquisoft.artefactos.domain.observacion.ObservacionDomain;
+import com.arquisoft.artefactos.domain.observacion.model.EstadoObservacion;
 
 public final class ObservacionMapper {
 
@@ -13,5 +14,13 @@ public final class ObservacionMapper {
                 observacion.getRevisionAsesor(),
                 observacion.getDescripcion(),
                 observacion.getEstado().getId());
+    }
+
+    public static ObservacionDomain toDomain(ObservacionEntity entity) {
+        return ObservacionDomain.reconstruir(
+                entity.id(),
+                entity.revisionAsesor(),
+                entity.descripcion(),
+                EstadoObservacion.desde(entity.estado()));
     }
 }

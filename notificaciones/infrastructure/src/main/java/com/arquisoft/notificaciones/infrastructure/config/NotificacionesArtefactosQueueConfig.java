@@ -27,6 +27,9 @@ public class NotificacionesArtefactosQueueConfig {
     public static final String REVISION_ASESOR_ENVIADA_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Artefactos.REVISION_ASESOR_ENVIADA;
 
+    public static final String OBSERVACION_REABIERTA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Artefactos.OBSERVACION_REABIERTA;
+
     @Bean
     public Declarables notificacionesArtefactoOmitidoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
@@ -78,6 +81,17 @@ public class NotificacionesArtefactosQueueConfig {
         return ColaEvento.declarar(
                 REVISION_ASESOR_ENVIADA_QUEUE,
                 EventTopics.Artefactos.REVISION_ASESOR_ENVIADA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesObservacionReabiertaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                OBSERVACION_REABIERTA_QUEUE,
+                EventTopics.Artefactos.OBSERVACION_REABIERTA,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

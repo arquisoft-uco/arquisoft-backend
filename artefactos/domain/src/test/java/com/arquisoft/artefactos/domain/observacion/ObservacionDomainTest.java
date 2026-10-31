@@ -28,6 +28,31 @@ class ObservacionDomainTest {
     }
 
     @Test
+    void debeReconstruir_conTodosLosCampos() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var revision = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var observacion = ObservacionDomain.reconstruir(id, revision, "Texto", EstadoObservacion.SOLUCIONADA);
+
+        // Assert
+        assertThat(observacion.getId()).isEqualTo(id);
+        assertThat(observacion.getRevisionAsesor()).isEqualTo(revision);
+        assertThat(observacion.getDescripcion()).isEqualTo("Texto");
+        assertThat(observacion.getEstado()).isEqualTo(EstadoObservacion.SOLUCIONADA);
+        assertThat(observacion.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeSerVacio_cuandoEsElCentinela() {
+        // Act & Assert
+        assertThat(ObservacionDomain.VACIO.esVacio()).isTrue();
+        assertThat(UtilUUID.esPorDefecto(ObservacionDomain.VACIO.getId())).isTrue();
+        assertThat(ObservacionDomain.VACIO.getEstado()).isEqualTo(EstadoObservacion.VACIO);
+    }
+
+    @Test
     void debeAcumularFieldErrors_cuandoRevisionNulaYDescripcionEnBlanco() {
         // Act & Assert
         assertThatThrownBy(() -> ObservacionDomain.crear(null, "   "))

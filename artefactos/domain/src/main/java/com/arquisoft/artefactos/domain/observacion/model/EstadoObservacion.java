@@ -31,6 +31,10 @@ public enum EstadoObservacion {
         return nombre;
     }
 
+    public boolean esReabierta() {
+        return this == REABIERTA;
+    }
+
     public static EstadoObservacion desde(String id) {
         return delCatalogo(id).orElseThrow(() -> new EstadoObservacionNoEncontradoException(id));
     }
