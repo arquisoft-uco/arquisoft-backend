@@ -51,4 +51,33 @@ class VersionArtefactoAsesorCriteriaTest {
         // Act & Assert
         assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debeDeclararFiltrableYNoOrdenable_proyectoGradoNombreProyectoNombreDocumento() {
+        // Arrange
+        var claves = List.of("proyectoGrado", "nombreProyecto", "nombreDocumento");
+
+        // Act & Assert
+        assertThat(claves).allSatisfy(clave -> {
+            assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaFiltrar(clave)).isTrue();
+            assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaOrdenar(clave)).isFalse();
+        });
+    }
+
+    @Test
+    void debeLanzarFiltroException_cuandoOrdenaPorNombreProyecto() {
+        // Arrange
+        var ordenamiento = List.of(SortOrder.of("nombreProyecto", SortDirection.ASC));
+        var builder = VersionArtefactoAsesorCriteria.builder().pagina(0).tamanio(10);
+
+        // Act & Assert
+        assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
+    }
+
+    @Test
+    void debeDeclararFiltrableYOrdenable_estadoRevision() {
+        // Arrange & Act & Assert
+        assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaFiltrar("estadoRevision")).isTrue();
+        assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaOrdenar("estadoRevision")).isTrue();
+    }
 }

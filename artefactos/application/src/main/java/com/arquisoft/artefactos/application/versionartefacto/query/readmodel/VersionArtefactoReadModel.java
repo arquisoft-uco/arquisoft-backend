@@ -8,6 +8,14 @@ public record VersionArtefactoReadModel(
         UUID artefacto,
         int version,
         Instant fechaCreacion,
-        String uriArchivo
+        String uriArchivo,
+        String nombreProyecto,
+        String nombreDocumento,
+        int versionDocumento,
+        String nombreRepositorio,
+        String nombreAsesor,
+        UUID revisionAsesor,
+        String estadoRevision,
+        String nombreEstadoRevision
 ) {
 }

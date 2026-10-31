@@ -40,6 +40,12 @@ public class PlanEstimadoCommandOutputAdapter implements PlanEstimadoOutputPort 
     }
 
     @Override
+    public void eliminar(UUID planEstimado) {
+        repository.deleteById(planEstimado);
+        logger.debug(PlanEstimadoKey.LOG_ELIMINADO, planEstimado);
+    }
+
+    @Override
     public long sumarDiasEstimadosPorMapaRutaDeTarea(UUID tarea) {
         return repository.sumarDiasEstimadosPorMapaRutaDeTarea(tarea);
     }

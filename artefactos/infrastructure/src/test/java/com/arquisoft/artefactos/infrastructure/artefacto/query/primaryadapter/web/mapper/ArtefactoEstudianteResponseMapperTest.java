@@ -14,7 +14,7 @@ class ArtefactoEstudianteResponseMapperTest {
         var readModel = new ArtefactoEstudianteReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto Alfa",
                 UtilUUID.generarNuevoUUID(), "Documento", 3, "Repositorio",
-                UtilUUID.generarNuevoUUID(), "Ana");
+                UtilUUID.generarNuevoUUID(), "Ana", true);
 
         // Act
         var response = ArtefactoEstudianteResponseMapper.toResponse(readModel);
@@ -29,5 +29,6 @@ class ArtefactoEstudianteResponseMapperTest {
         assertThat(response.nombreRepositorio()).isEqualTo("Repositorio");
         assertThat(response.asesor()).isEqualTo(readModel.asesor());
         assertThat(response.nombreAsesor()).isEqualTo("Ana");
+        assertThat(response.omitido()).isTrue();
     }
 }

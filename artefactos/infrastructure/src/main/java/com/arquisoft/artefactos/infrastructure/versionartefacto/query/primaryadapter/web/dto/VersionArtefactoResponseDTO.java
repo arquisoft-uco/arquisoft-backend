@@ -11,6 +11,14 @@ public record VersionArtefactoResponseDTO(
         UUID artefacto,
         int version,
         Instant fechaCreacion,
-        String uriArchivo
+        String uriArchivo,
+        String nombreProyecto,
+        String nombreDocumento,
+        int versionDocumento,
+        String nombreRepositorio,
+        String nombreAsesor,
+        @JsonInclude(JsonInclude.Include.ALWAYS) UUID revisionAsesor,
+        @JsonInclude(JsonInclude.Include.ALWAYS) String estadoRevision,
+        @JsonInclude(JsonInclude.Include.ALWAYS) String nombreEstadoRevision
 ) {
 }

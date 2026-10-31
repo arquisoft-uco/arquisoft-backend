@@ -173,6 +173,7 @@ security:
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios", role: "solicitudes:solicitud-registro-modificacion-usuarios:create"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/enviadas", role: "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/recibidas", role: "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view"}
+        - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/respuestas/recibidas", role: "solicitudes:respuesta-registro-modificacion-usuarios-recibida:view"}
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/respuestas/enviadas", role: "solicitudes:respuesta-registro-modificacion-usuarios-enviada:view"}
         - {method: DELETE, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}", role: "solicitudes:solicitud-registro-modificacion-usuarios:delete"}
         - {method: GET, path: "/api/solicitudes/tipos-solicitud", role: "solicitudes:tipo-solicitud:view"}
@@ -201,7 +202,10 @@ security:
         - {method: POST, path: "/api/artefactos/{artefactoId}/versiones/cargas", role: "artefactos:version-artefacto:upload"}
         - {method: POST, path: "/api/artefactos/{artefactoId}/versiones", role: "artefactos:version-artefacto:upload"}
         - {method: PATCH, path: "/api/artefactos/{artefactoId}/asesor", role: "artefactos:artefacto:update-asesor"}
+        - {method: DELETE, path: "/api/artefactos/{artefactoId}", role: "artefactos:artefacto:omit"}
+        - {method: POST, path: "/api/artefactos/revisiones/{revisionAsesorId}/observaciones", role: "artefactos:observacion-revision:create"}
         - {method: POST, path: "/api/artefactos/versiones/{versionArtefactoId}/revisiones", role: "artefactos:revision-asesor:create"}
+        - {method: GET, path: "/api/artefactos/versiones/{versionArtefactoId}", role: "artefactos:version-artefacto:view"}
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/estado", role: "artefactos:revision-asesor-estado:update"}
         # mapas_ruta
         - {method: POST, path: "/api/mapas-ruta", role: "mapas-ruta:mapa-ruta:create"}
@@ -217,6 +221,7 @@ security:
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados", role: "mapas-ruta:plan-estimado:create"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados/estudiante", role: "mapas-ruta:plan-estimado-tarea-estudiante:view"}
         - {method: PATCH, path: "/api/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:update"}
+        - {method: DELETE, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:delete"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
         # entregables
         - {method: GET, path: "/api/estados-entregable", role: "entregables:estado-entregable:view"}

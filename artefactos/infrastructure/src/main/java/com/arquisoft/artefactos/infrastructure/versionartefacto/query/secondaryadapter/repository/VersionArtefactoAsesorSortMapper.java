@@ -16,9 +16,13 @@ final class VersionArtefactoAsesorSortMapper {
         for (var campo : VersionArtefactoAsesorCriteria.Campo.values()) {
             var ruta = switch (campo) {
                 case ARTEFACTO      -> null;
+                case PROYECTO_GRADO   -> null;
+                case NOMBRE_PROYECTO  -> null;
+                case NOMBRE_DOCUMENTO -> null;
                 case VERSION        -> "version";
                 case FECHA_CREACION -> "fechaCreacion";
                 case ASESOR_ID      -> null;
+                case ESTADO_REVISION -> "ordenEstadoRevision";
             };
             if (UtilObjeto.noEsNulo(ruta)) {
                 m.put(campo.getClave(), ruta);

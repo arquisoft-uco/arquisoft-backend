@@ -149,4 +149,18 @@ class ConsultarRespuestasNovedadAsesorRecibidasMapperTest {
                 query(estudiante, criterio)))
                 .isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debeFijarElTipoSolicitudDelCriteria_cuandoSeConvierteLaConsulta() {
+        // Arrange
+        var estudiante = UUID.randomUUID();
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
+
+        // Act
+        var criteria = ConsultarRespuestasNovedadAsesorRecibidasMapper.toCriteria(
+                query(estudiante, criterio));
+
+        // Assert
+        assertThat(criteria.getTipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId());
+    }
 }

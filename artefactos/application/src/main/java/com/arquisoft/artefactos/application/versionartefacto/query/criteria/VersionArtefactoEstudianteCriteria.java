@@ -10,9 +10,13 @@ public final class VersionArtefactoEstudianteCriteria extends QueryCriteria {
 
     public enum Campo {
         ARTEFACTO      ("artefacto",     true, false),
+        PROYECTO_GRADO  ("proyectoGrado",  true, false),
+        NOMBRE_PROYECTO ("nombreProyecto", true, false),
+        NOMBRE_DOCUMENTO("nombreDocumento", true, false),
         VERSION        ("version",       true, true),
         FECHA_CREACION ("fechaCreacion", true, true),
-        ESTUDIANTE_ID      ("estudianteId",      true, false);
+        ESTUDIANTE_ID      ("estudianteId",      true, false),
+        ESTADO_REVISION("estadoRevision", true, true);
 
         private final String  clave;
         private final boolean filtrable;

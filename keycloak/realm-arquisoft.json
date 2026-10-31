@@ -84,6 +84,7 @@
               "solicitudes:solicitud-registro-modificacion-usuarios:create",
               "solicitudes:solicitud-registro-modificacion-usuarios:delete",
               "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
+              "solicitudes:respuesta-registro-modificacion-usuarios-recibida:view",
               "fichas:item-ficha-perfil-coordinador:view",
               "solicitudes:estado-respuesta:view",
               "proyectos:asesor-proyecto-grado:update-estado",
@@ -291,6 +292,7 @@
               "mapas-ruta:tarea:delete",
               "mapas-ruta:plan-estimado:create",
               "mapas-ruta:plan-estimado:update",
+              "mapas-ruta:plan-estimado:delete",
               "mapas-ruta:plan-estimado-tarea-estudiante:view",
               "mapas-ruta:tarea-mapa-ruta-estudiante:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
@@ -324,6 +326,7 @@
               "artefactos:artefacto-estudiante:view",
               "artefactos:observacion-revision-estudiante:view",
               "artefactos:version-artefacto-estudiante:view",
+              "artefactos:version-artefacto:view",
               "artefactos:artefacto-participacion-estudiante:view",
               "artefactos:revision-asesor-estado:update",
               "fichas:item-ficha-perfil-estudiante:view",
@@ -380,10 +383,13 @@
               "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
               "artefactos:artefacto:create",
               "artefactos:version-artefacto-asesor:view",
+              "artefactos:version-artefacto:view",
               "artefactos:artefacto-asesor:view",
               "artefactos:artefacto:update-asesor",
+              "artefactos:artefacto:omit",
               "artefactos:estudiante-artefacto:create",
-              "artefactos:revision-asesor:create"
+              "artefactos:revision-asesor:create",
+              "artefactos:observacion-revision:create"
             ]
           }
         },
@@ -1572,6 +1578,15 @@
           "attributes": {}
         },
         {
+          "id": "013b2307-d184-43e6-aadd-0d3a75488156",
+          "name": "solicitudes:respuesta-registro-modificacion-usuarios-recibida:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "5d2c8e1a-7b4f-4a36-9c0e-3f1a6b8d2e47",
           "name": "solicitudes:respuesta-registro-modificacion-usuarios-enviada:view",
           "description": "",
@@ -2409,6 +2424,15 @@
           "attributes": {}
         },
         {
+          "id": "aa921f81-4412-4272-b454-2c77564303b0",
+          "name": "artefactos:observacion-revision:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "3e1b9d3f-18f3-43db-ac5f-bb29906eef6c",
           "name": "artefactos:observacion-revision:view",
           "description": "",
@@ -2472,6 +2496,15 @@
           "attributes": {}
         },
         {
+          "id": "f542d7f5-ae1e-4b00-933c-6c5df22474bb",
+          "name": "artefactos:version-artefacto:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "30c64d84-2b43-480e-893e-3eaff3a80240",
           "name": "artefactos:version-artefacto:upload",
           "description": "",
@@ -2492,6 +2525,15 @@
         {
           "id": "c47d2a96-3e18-4b5f-9a0d-7f1e6b83d2c5",
           "name": "artefactos:artefacto:update-asesor",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "d9ef0bbf-2726-4f4f-94e0-05ef9e2e9848",
+          "name": "artefactos:artefacto:omit",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2546,6 +2588,15 @@
         {
           "id": "7e3a9d52-1c6b-4f08-a2d4-b95e0c18f6a7",
           "name": "mapas-ruta:plan-estimado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a4d1c8e6-2b97-4f35-8c60-d1e7b3f90a52",
+          "name": "mapas-ruta:plan-estimado:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

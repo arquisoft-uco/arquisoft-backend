@@ -36,6 +36,9 @@ public enum RevisionAsesorKey implements ClaveMensaje {
     ERROR_PENDIENTE_DETALLE("artefactos.dominio.revisionasesor.error.pendiente-detalle", 1),
     ERROR_SIN_VERSION_POSTERIOR("artefactos.dominio.revisionasesor.error.sin-version-posterior", 0),
     ERROR_SIN_VERSION_POSTERIOR_DETALLE("artefactos.dominio.revisionasesor.error.sin-version-posterior-detalle", 1),
+    ERROR_NO_ADMITE_OBSERVACIONES("artefactos.dominio.revisionasesor.error.no-admite-observaciones", 0),
+    ERROR_NO_ADMITE_OBSERVACIONES_DETALLE(
+            "artefactos.dominio.revisionasesor.error.no-admite-observaciones-detalle", 2),
     LOG_GUARDADA("artefactos.infraestructura.revisionasesor.log.guardada", 1);
 
     private final String clave;

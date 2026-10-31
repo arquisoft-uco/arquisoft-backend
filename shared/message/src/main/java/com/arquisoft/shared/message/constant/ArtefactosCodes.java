@@ -57,6 +57,7 @@ public final class ArtefactosCodes {
         public static final String ESTUDIANTE_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ESTUDIANTE_NO_PROPIETARIO";
         public static final String ASESOR_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ASESOR_NO_PROPIETARIO";
         public static final String CERRADO = "ARTEFACTOS_ARTEFACTO_CERRADO";
+        public static final String OMITIDO = "ARTEFACTOS_ARTEFACTO_OMITIDO";
     }
 
     public static final class ProyectoGrado {
@@ -138,6 +139,7 @@ public final class ArtefactosCodes {
                 "REVISION_ASESOR_VERSION_ANTERIOR_NO_EN_PROGRESO";
         public static final String PENDIENTE = "REVISION_ASESOR_PENDIENTE";
         public static final String SIN_VERSION_POSTERIOR = "REVISION_ASESOR_SIN_VERSION_POSTERIOR";
+        public static final String NO_ADMITE_OBSERVACIONES = "REVISION_ASESOR_NO_ADMITE_OBSERVACIONES";
     }
 
     public static final class VersionArtefacto {
@@ -170,6 +172,11 @@ public final class ArtefactosCodes {
         public static final String TIPO_ARCHIVO_NO_COINCIDE = "VERSION_ARTEFACTO_TIPO_ARCHIVO_NO_COINCIDE";
         public static final String NO_ENCONTRADA = "VERSION_ARTEFACTO_NO_ENCONTRADA";
         public static final String NO_ES_ULTIMA = "VERSION_ARTEFACTO_NO_ES_ULTIMA";
+        public static final String VERSION_ARTEFACTO_REQUERIDA = "VERSION_ARTEFACTO_VERSION_ARTEFACTO_REQUERIDA";
+        public static final String ACTOR_REQUERIDO = "VERSION_ARTEFACTO_ACTOR_REQUERIDO";
+        public static final String ROLES_REQUERIDOS = "VERSION_ARTEFACTO_ROLES_REQUERIDOS";
+        public static final String ACCESO_DENEGADO = "VERSION_ARTEFACTO_ACCESO_DENEGADO";
+        public static final String NO_DISPONIBLE = "VERSION_ARTEFACTO_NO_DISPONIBLE";
     }
 
     public static final class EstudianteArtefacto {
@@ -186,6 +193,8 @@ public final class ArtefactosCodes {
                 "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_NO_VINCULADO_PROYECTO_GRADO";
         public static final String PROYECTO_GRADO_REQUERIDO = "ESTUDIANTE_ARTEFACTO_PROYECTO_GRADO_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_REQUERIDO";
+        public static final String ESTUDIANTES_SUPERAN_PROYECTO =
+                "ESTUDIANTE_ARTEFACTO_ESTUDIANTES_SUPERAN_PROYECTO";
     }
 
     public static final class Estudiante {
@@ -208,5 +217,11 @@ public final class ArtefactosCodes {
         private Observacion() {}
 
         public static final String REVISION_ASESOR_ID_REQUERIDO = "OBSERVACION_REVISION_ASESOR_ID_REQUERIDO";
+        public static final String ID_REQUERIDO = "OBSERVACION_ID_REQUERIDO";
+        public static final String ASESOR_REQUERIDO = "OBSERVACION_ASESOR_REQUERIDO";
+        public static final String DESCRIPCION_REQUERIDA = "OBSERVACION_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_LONGITUD_EXCEDIDA = "OBSERVACION_DESCRIPCION_LONGITUD_EXCEDIDA";
+        public static final String ESTADO_INVALIDO = "OBSERVACION_ESTADO_INVALIDO";
+        public static final String DUPLICADA = "OBSERVACION_DUPLICADA";
     }
 }

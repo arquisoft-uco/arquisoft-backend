@@ -2,7 +2,9 @@ package com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapt
 
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.RevisionAsesorTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
+import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.entity.VersionRepositorioArtefactoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,7 +47,7 @@ class ArtefactoCommandOutputAdapterTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
         var segundo = new ArtefactoEntity(
-                UtilUUID.generarNuevoUUID(), proyecto, UtilUUID.generarNuevoUUID(), asesor);
+                UtilUUID.generarNuevoUUID(), proyecto, UtilUUID.generarNuevoUUID(), asesor, null);
 
         // Act
         adapter.registrar(segundo);
@@ -212,5 +215,152 @@ class ArtefactoCommandOutputAdapterTest {
     void debeDevolverVacio_cuandoLaVersionNoExiste() {
         // Act & Assert
         assertThat(adapter.obtenerPorVersionArtefacto(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeOmitirSoloElArtefactoIndicado_yLoguear() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var objetivo = sembrar(proyecto, asesor);
+        var hermano = sembrar(proyecto, asesor);
+        entityManager.flush();
+        entityManager.clear();
+        var omitidoEn = Instant.parse("2026-10-29T10:00:00Z");
+
+        // Act
+        adapter.omitir(objetivo, omitidoEn);
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ArtefactoJpaEntity.class, objetivo).getOmitidoEn()).isEqualTo(omitidoEn);
+        assertThat(entityManager.find(ArtefactoJpaEntity.class, hermano).getOmitidoEn()).isNull();
+        verify(logger).debug(ArtefactoKey.LOG_OMITIDO_ACTUALIZADO, objetivo);
+    }
+
+    @Test
+    void debeLimpiarLaOmisionYCambiarElAsesor_cuandoSeReactiva() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var anterior = UtilUUID.generarNuevoUUID();
+        var nuevo = UtilUUID.generarNuevoUUID();
+        var objetivo = sembrarOmitido(proyecto, UtilUUID.generarNuevoUUID(), anterior);
+        var hermano = sembrarOmitido(proyecto, UtilUUID.generarNuevoUUID(), anterior);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.reactivar(objetivo, nuevo);
+        entityManager.clear();
+
+        // Assert
+        var reactivado = entityManager.find(ArtefactoJpaEntity.class, objetivo);
+        assertThat(reactivado.getOmitidoEn()).isNull();
+        assertThat(reactivado.getAsesor()).isEqualTo(nuevo);
+        var sinTocar = entityManager.find(ArtefactoJpaEntity.class, hermano);
+        assertThat(sinTocar.getOmitidoEn()).isNotNull();
+        assertThat(sinTocar.getAsesor()).isEqualTo(anterior);
+        verify(logger).debug(ArtefactoKey.LOG_REACTIVADO_ACTUALIZADO, objetivo);
+    }
+
+    @Test
+    void debeNoTocarLosArtefactosOmitidos_cuandoSeTraspasaElAsesorDelProyecto() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var anterior = UtilUUID.generarNuevoUUID();
+        var nuevo = UtilUUID.generarNuevoUUID();
+        var activo = sembrar(proyecto, anterior);
+        var omitido = sembrarOmitido(proyecto, UtilUUID.generarNuevoUUID(), anterior);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.traspasarAsesorDeProyecto(proyecto, nuevo);
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ArtefactoJpaEntity.class, activo).getAsesor()).isEqualTo(nuevo);
+        assertThat(entityManager.find(ArtefactoJpaEntity.class, omitido).getAsesor()).isEqualTo(anterior);
+        verify(logger).debug(ArtefactoKey.LOG_TRASPASADOS, 1);
+    }
+
+    @Test
+    void debeObtenerElOmitidoDelMismoRepositorio_cuandoLaVersionPedidaEsOtraDelMismoRepositorio() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var versionOmitida = sembrarVersionRepositorio(repositorio);
+        var versionNueva = sembrarVersionRepositorio(repositorio);
+        var versionOtroRepositorio = sembrarVersionRepositorio(UtilUUID.generarNuevoUUID());
+        var omitido = sembrarOmitido(proyecto, versionOmitida, UtilUUID.generarNuevoUUID());
+        sembrarOmitido(UtilUUID.generarNuevoUUID(), versionOmitida, UtilUUID.generarNuevoUUID());
+        sembrarOmitido(proyecto, versionOtroRepositorio, UtilUUID.generarNuevoUUID());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerOmitidoPorProyectoYRepositorio(proyecto, versionNueva);
+
+        // Assert
+        assertThat(encontrado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(omitido);
+            assertThat(entity.omitidoEn()).isNotNull();
+        });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoElRepositorioSoloTieneArtefactosActivosOEnOtroProyecto() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var versionActiva = sembrarVersionRepositorio(repositorio);
+        var versionNueva = sembrarVersionRepositorio(repositorio);
+        sembrarArtefactoDeVersion(proyecto, versionActiva);
+        sembrarOmitido(UtilUUID.generarNuevoUUID(), versionActiva, UtilUUID.generarNuevoUUID());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act & Assert
+        assertThat(adapter.obtenerOmitidoPorProyectoYRepositorio(proyecto, versionNueva)).isEmpty();
+    }
+
+    @Test
+    void debeObtenerPorRevisionAsesor_cuandoLaRevisionPerteneceAlArtefacto() {
+        // Arrange
+        var objetivo = sembrar(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var otro = sembrar(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var version = UtilUUID.generarNuevoUUID();
+        var revision = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new VersionArtefactoTestEntity(version, objetivo, 1));
+        entityManager.persist(new VersionArtefactoTestEntity(UtilUUID.generarNuevoUUID(), otro, 1));
+        entityManager.persist(new RevisionAsesorTestEntity(revision, version, "PENDIENTE"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorRevisionAsesor(revision);
+
+        // Assert
+        assertThat(encontrado).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(objetivo));
+        assertThat(adapter.obtenerPorRevisionAsesor(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    private UUID sembrarOmitido(UUID proyecto, UUID version, UUID asesor) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ArtefactoJpaEntity(id, proyecto, version, asesor, Instant.now()));
+        return id;
+    }
+
+    private UUID sembrarArtefactoDeVersion(UUID proyecto, UUID version) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ArtefactoJpaEntity(id, proyecto, version, UtilUUID.generarNuevoUUID(), null));
+        return id;
+    }
+
+    private UUID sembrarVersionRepositorio(UUID repositorio) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new VersionRepositorioArtefactoJpaEntity(
+                id, "Documento", 1, repositorio, "Repositorio", "archivo.pdf", "application/pdf", 10L));
+        return id;
     }
 }

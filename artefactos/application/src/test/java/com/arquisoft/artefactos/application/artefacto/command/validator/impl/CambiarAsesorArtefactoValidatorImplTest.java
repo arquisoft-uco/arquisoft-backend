@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.application.artefacto.command.validator.impl;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.CambioAsesorArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontradoException;
+import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoEncontradoException;
 import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoVigenteException;
@@ -37,7 +38,7 @@ class CambiarAsesorArtefactoValidatorImplTest {
         var artefactoId = UtilUUID.generarNuevoUUID();
         cambio = CambioAsesorArtefactoDomain.crear(artefactoId, asesorId);
         artefacto = ArtefactoDomain.reconstruir(
-                artefactoId, proyecto, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+                artefactoId, proyecto, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
         asesorVigente = AsesorDomain.reconstruir(
                 asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), null);
         vinculoVigente = AsesorProyectoGradoDomain.reconstruir(
@@ -49,6 +50,18 @@ class CambiarAsesorArtefactoValidatorImplTest {
         // Act & Assert
         assertThatCode(() -> validator.validar(cambio, artefacto, asesorVigente, List.of(vinculoVigente)))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarArtefactoOmitido_antesQueElAsesor_cuandoElArtefactoEstaOmitido() {
+        // Arrange
+        var omitido = ArtefactoDomain.reconstruir(
+                artefacto.getId(), proyecto, artefacto.getVersionRepositorioArtefacto(), artefacto.getAsesor(),
+                Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(cambio, omitido, AsesorDomain.VACIO, List.of()))
+                .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
     @Test

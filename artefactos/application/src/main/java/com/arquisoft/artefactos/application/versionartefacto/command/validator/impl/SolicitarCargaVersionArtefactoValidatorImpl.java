@@ -2,11 +2,14 @@ package com.arquisoft.artefactos.application.versionartefacto.command.validator.
 
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.SolicitarCargaVersionArtefactoValidator;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
+import com.arquisoft.artefactos.domain.artefacto.model.ActividadArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.model.ExistenciaArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.model.PropiedadArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoExisteRule;
+import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoNoOmitidoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.EstudiantePropietarioArtefactoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoExisteRuleImpl;
+import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoNoOmitidoRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.EstudiantePropietarioArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.RevisionVersionAnterior;
@@ -27,6 +30,7 @@ public class SolicitarCargaVersionArtefactoValidatorImpl implements SolicitarCar
 
     private final ArtefactoExisteRule artefactoExisteRule;
     private final EstudiantePropietarioArtefactoRule estudiantePropietarioArtefactoRule;
+    private final ArtefactoNoOmitidoRule artefactoNoOmitidoRule;
     private final VersionAnteriorRevisadaRule versionAnteriorRevisadaRule;
     private final ArtefactoNoCerradoRule artefactoNoCerradoRule;
     private final RevisionVersionAnteriorEnProgresoRule revisionVersionAnteriorEnProgresoRule;
@@ -35,6 +39,7 @@ public class SolicitarCargaVersionArtefactoValidatorImpl implements SolicitarCar
     public SolicitarCargaVersionArtefactoValidatorImpl() {
         this.artefactoExisteRule = new ArtefactoExisteRuleImpl();
         this.estudiantePropietarioArtefactoRule = new EstudiantePropietarioArtefactoRuleImpl();
+        this.artefactoNoOmitidoRule = new ArtefactoNoOmitidoRuleImpl();
         this.versionAnteriorRevisadaRule = new VersionAnteriorRevisadaRuleImpl();
         this.artefactoNoCerradoRule = new ArtefactoNoCerradoRuleImpl();
         this.revisionVersionAnteriorEnProgresoRule = new RevisionVersionAnteriorEnProgresoRuleImpl();
@@ -48,6 +53,7 @@ public class SolicitarCargaVersionArtefactoValidatorImpl implements SolicitarCar
         artefactoExisteRule.validar(new ExistenciaArtefacto(solicitud.getArtefacto(), artefacto));
         estudiantePropietarioArtefactoRule.validar(
                 new PropiedadArtefacto(solicitud.getSolicitante(), solicitud.getArtefacto(), estudianteVinculado));
+        artefactoNoOmitidoRule.validar(new ActividadArtefacto(artefacto));
         var versionAnterior = new RevisionVersionAnterior(ultimoNumeroVersion, revisionVigente);
         versionAnteriorRevisadaRule.validar(versionAnterior);
         artefactoNoCerradoRule.validar(versionAnterior);

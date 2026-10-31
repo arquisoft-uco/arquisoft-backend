@@ -12,6 +12,9 @@ public record ParticipacionArtefactoResponseDTO(
         UUID versionRepositorioArtefacto,
         String nombreDocumento,
         int versionDocumento,
-        String nombreRepositorio
+        String nombreRepositorio,
+        UUID asesor,
+        String nombreAsesor,
+        boolean omitido
 ) {
 }

@@ -75,7 +75,7 @@ class RegistrarRevisionAsesorUseCaseImplTest {
         registro = RegistroRevisionAsesorDomain.crear(RevisionAsesorDomain.crear(versionId), asesorId);
         version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 3, Instant.now(), "versiones/uri");
         artefacto = ArtefactoDomain.reconstruir(artefactoId, UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), asesorId);
+                UtilUUID.generarNuevoUUID(), asesorId, null);
         when(versionArtefactoPorIdFinder.obtener(versionId)).thenReturn(version);
         when(artefactoPorVersionArtefactoFinder.obtener(versionId)).thenReturn(artefacto);
         when(versionArtefactoEsUltimaFinder.obtener(versionId)).thenReturn(true);

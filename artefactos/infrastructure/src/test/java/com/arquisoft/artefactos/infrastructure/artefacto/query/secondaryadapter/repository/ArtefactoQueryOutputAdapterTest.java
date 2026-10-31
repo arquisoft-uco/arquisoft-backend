@@ -82,7 +82,7 @@ class ArtefactoQueryOutputAdapterTest {
 
     private UUID sembrarArtefacto(UUID proyecto, UUID version, UUID asesor) {
         var id = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ArtefactoJpaEntity(id, proyecto, version, asesor));
+        entityManager.persist(new ArtefactoJpaEntity(id, proyecto, version, asesor, null));
         return id;
     }
 
@@ -314,6 +314,28 @@ class ArtefactoQueryOutputAdapterTest {
                 .containsExactlyInAnyOrder(artefactoAlfa1, artefactoAlfa2, artefactoDeB);
         assertThat(idsEstudiante(deY.getContent())).containsExactly(artefactoBeta1);
         assertThat(deAjeno.getContent()).isEmpty();
+    }
+
+    @Test
+    void debeMarcarOmitidoEnLosListadosDeAsesorYEstudiante_cuandoElArtefactoFueOmitido() {
+        // Arrange
+        sembrarEscenarioEstudiante();
+        var omitido = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ArtefactoJpaEntity(omitido, proyectoAlfa, versionAlfaDoc1, asesorA, Instant.now()));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var deAsesor = adapter.consultarTodosAsesor(criteria(asesorA, null));
+        var deEstudiante = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, null));
+
+        // Assert
+        assertThat(deAsesor.getContent()).filteredOn(ArtefactoReadModel::omitido)
+                .extracting(ArtefactoReadModel::id).containsExactly(omitido);
+        assertThat(deAsesor.getContent()).filteredOn(a -> !a.omitido()).hasSize(3);
+        assertThat(deEstudiante.getContent()).filteredOn(ArtefactoEstudianteReadModel::omitido)
+                .extracting(ArtefactoEstudianteReadModel::id).containsExactly(omitido);
+        assertThat(deEstudiante.getContent()).filteredOn(a -> !a.omitido()).hasSize(3);
     }
 
     @Test

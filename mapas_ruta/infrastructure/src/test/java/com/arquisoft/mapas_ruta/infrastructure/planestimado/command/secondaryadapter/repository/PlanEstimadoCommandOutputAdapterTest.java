@@ -184,6 +184,43 @@ class PlanEstimadoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeEliminarPlan_cuandoExiste() {
+        // Arrange
+        var plan = sembrarPlanConDescripcion(UtilUUID.generarNuevoUUID(), 3, "Original");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminar(plan);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(PlanEstimadoJpaEntity.class, plan)).isNull();
+        verify(logger).debug(any(ClaveMensaje.class), eq(plan));
+    }
+
+    @Test
+    void debeDejarIntactosLosDemasPlanes_cuandoSeEliminaUno() {
+        // Arrange
+        var plan = sembrarPlanConDescripcion(UtilUUID.generarNuevoUUID(), 3, "Uno");
+        var otroPlan = sembrarPlanConDescripcion(UtilUUID.generarNuevoUUID(), 5, "Otro");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminar(plan);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var restante = entityManager.find(PlanEstimadoJpaEntity.class, otroPlan);
+        assertThat(restante).isNotNull();
+        assertThat(restante.getTiempoEstimadoDias()).isEqualTo(5);
+        assertThat(restante.getDescripcionEstimado()).isEqualTo("Otro");
+    }
+
+    @Test
     void debeDevolverCero_cuandoElMapaNoTienePlanes() {
         // Arrange
         var tarea = sembrarTarea(UtilUUID.generarNuevoUUID());

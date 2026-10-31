@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.domain.artefacto;
 
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
@@ -54,7 +55,7 @@ class ArtefactoDomainTest {
         var id = UtilUUID.generarNuevoUUID();
 
         // Act
-        var artefacto = ArtefactoDomain.reconstruir(id, null, null, null);
+        var artefacto = ArtefactoDomain.reconstruir(id, null, null, null, null);
 
         // Assert
         assertThat(artefacto.getId()).isEqualTo(id);
@@ -66,10 +67,49 @@ class ArtefactoDomainTest {
         // Arrange
         var reconstruido = ArtefactoDomain.reconstruir(
                 UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
-                UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto());
+                UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), null);
 
         // Act & Assert
         assertThat(ArtefactoDomain.VACIO.esVacio()).isTrue();
         assertThat(reconstruido.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeCrearActivo_cuandoEsNuevo() {
+        // Act
+        var artefacto = ArtefactoDomain.crear(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(artefacto.estaOmitido()).isFalse();
+        assertThat(artefacto.getOmitidoEn()).isEqualTo(UtilFecha.VACIO);
+    }
+
+    @Test
+    void debeMarcarOmitido_cuandoSeOmite() {
+        // Arrange
+        var artefacto = ArtefactoDomain.crear(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var instante = UtilFecha.generarInstanteActual();
+
+        // Act
+        artefacto.omitir(instante);
+
+        // Assert
+        assertThat(artefacto.estaOmitido()).isTrue();
+        assertThat(artefacto.getOmitidoEn()).isEqualTo(instante);
+    }
+
+    @Test
+    void debeReconstruirComoActivo_cuandoOmitidoEnEsNulo() {
+        // Act
+        var artefacto = ArtefactoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
+
+        // Assert
+        assertThat(artefacto.estaOmitido()).isFalse();
+        assertThat(artefacto.getOmitidoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(ArtefactoDomain.VACIO.estaOmitido()).isFalse();
     }
 }

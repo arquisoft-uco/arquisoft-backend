@@ -2,22 +2,26 @@ package com.arquisoft.artefactos.domain.artefacto;
 
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public final class ArtefactoDomain {
 
     public static final ArtefactoDomain VACIO = ArtefactoDomain.reconstruir(
             UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
-            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto());
+            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilFecha.VACIO);
 
     private UUID id;
     private UUID proyectoGrado;
     private UUID versionRepositorioArtefacto;
     private UUID asesor;
+    private Instant omitidoEn;
 
     private ArtefactoDomain() {}
 
@@ -28,18 +32,24 @@ public final class ArtefactoDomain {
         artefacto.setProyectoGrado(proyectoGrado, result);
         artefacto.setVersionRepositorioArtefacto(versionRepositorioArtefacto, result);
         artefacto.setAsesor(asesor, result);
+        artefacto.setOmitidoEn();
         result.lanzarSiTieneErrores();
         return artefacto;
     }
 
     public static ArtefactoDomain reconstruir(
-            UUID id, UUID proyectoGrado, UUID versionRepositorioArtefacto, UUID asesor) {
+            UUID id, UUID proyectoGrado, UUID versionRepositorioArtefacto, UUID asesor, Instant omitidoEn) {
         var artefacto = new ArtefactoDomain();
         artefacto.id = id;
         artefacto.proyectoGrado = proyectoGrado;
         artefacto.versionRepositorioArtefacto = versionRepositorioArtefacto;
         artefacto.asesor = asesor;
+        artefacto.omitidoEn = UtilObjeto.aplicarPorDefecto(omitidoEn, UtilFecha.VACIO);
         return artefacto;
+    }
+
+    public void omitir(Instant omitidoEn) {
+        this.omitidoEn = omitidoEn;
     }
 
     private void setId() {
@@ -73,8 +83,16 @@ public final class ArtefactoDomain {
         this.asesor = asesor;
     }
 
+    private void setOmitidoEn() {
+        this.omitidoEn = UtilFecha.VACIO;
+    }
+
     public boolean esVacio() {
         return this == VACIO;
+    }
+
+    public boolean estaOmitido() {
+        return !UtilFecha.VACIO.equals(omitidoEn);
     }
 
     public UUID getId() {
@@ -91,5 +109,9 @@ public final class ArtefactoDomain {
 
     public UUID getAsesor() {
         return asesor;
+    }
+
+    public Instant getOmitidoEn() {
+        return omitidoEn;
     }
 }

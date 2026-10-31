@@ -112,7 +112,7 @@ class FindersPoliticaRevisionTest {
         var id = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
         when(artefactoOutputPort.obtenerPorVersionArtefacto(version)).thenReturn(Optional.of(
-                new ArtefactoEntity(id, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), asesor)));
+                new ArtefactoEntity(id, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), asesor, null)));
 
         // Act
         var resultado = finder.obtener(version);

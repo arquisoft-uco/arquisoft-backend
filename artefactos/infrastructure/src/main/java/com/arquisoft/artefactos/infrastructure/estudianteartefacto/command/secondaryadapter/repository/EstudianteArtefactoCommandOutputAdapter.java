@@ -43,4 +43,15 @@ public class EstudianteArtefactoCommandOutputAdapter implements EstudianteArtefa
         estudianteArtefactoCommandRepository.eliminarPorProyectoGradoYEstudiante(proyectoGrado, estudiante);
         logger.debug(EstudianteArtefactoKey.LOG_DESVINCULADOS, proyectoGrado, estudiante);
     }
+
+    @Override
+    public void eliminarExceptoConservados(UUID artefacto, List<UUID> conservar) {
+        estudianteArtefactoCommandRepository.eliminarExceptoConservados(artefacto, conservar);
+        logger.debug(EstudianteArtefactoKey.LOG_VINCULOS_DEPURADOS, artefacto);
+    }
+
+    @Override
+    public List<UUID> obtenerVigentesVinculados(UUID artefacto) {
+        return estudianteArtefactoCommandRepository.buscarVigentesVinculados(artefacto);
+    }
 }

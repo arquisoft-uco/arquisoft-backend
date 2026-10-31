@@ -66,8 +66,10 @@ class ConsultarParticipacionesArtefactoControllerTest {
     void debe200ConLaLista_cuandoHayArtefactos() throws Exception {
         // Arrange
         var estudiante = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var readModel = new ParticipacionArtefactoReadModel(UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), "Proyecto Alfa", UtilUUID.generarNuevoUUID(), "Informe", 2, "Repo");
+                UtilUUID.generarNuevoUUID(), "Proyecto Alfa", UtilUUID.generarNuevoUUID(), "Informe", 2, "Repo",
+                asesor, "Ana Asesora", false);
         when(interactor.ejecutar(any(ConsultarParticipacionesArtefactoQuery.class))).thenReturn(List.of(readModel));
 
         // Act & Assert
@@ -82,7 +84,9 @@ class ConsultarParticipacionesArtefactoControllerTest {
                         .value(readModel.versionRepositorioArtefacto().toString()))
                 .andExpect(jsonPath("$[0].nombreDocumento").value("Informe"))
                 .andExpect(jsonPath("$[0].versionDocumento").value(2))
-                .andExpect(jsonPath("$[0].nombreRepositorio").value("Repo"));
+                .andExpect(jsonPath("$[0].nombreRepositorio").value("Repo"))
+                .andExpect(jsonPath("$[0].asesor").value(asesor.toString()))
+                .andExpect(jsonPath("$[0].nombreAsesor").value("Ana Asesora"));
     }
 
     @Test

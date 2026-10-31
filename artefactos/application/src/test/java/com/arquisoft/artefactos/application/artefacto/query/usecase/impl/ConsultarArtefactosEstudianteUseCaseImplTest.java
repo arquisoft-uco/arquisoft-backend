@@ -39,7 +39,7 @@ class ConsultarArtefactosEstudianteUseCaseImplTest {
         var criteria = ArtefactoEstudianteCriteria.builder().pagina(0).tamanio(10).build();
         var artefacto = new ArtefactoEstudianteReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto",
-                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", UtilUUID.generarNuevoUUID(), "Asesor");
+                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", UtilUUID.generarNuevoUUID(), "Asesor", false);
         var resultadoEsperado = PaginatedResult.of(List.of(artefacto), 0, 10, 1L);
         when(artefactoQueryOutputPort.consultarTodosEstudiante(criteria)).thenReturn(resultadoEsperado);
 

@@ -20,7 +20,7 @@ class AsesorPropietarioArtefactoRuleImplTest {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
         var propio = ArtefactoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), asesor);
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), asesor, null);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(new PropiedadArtefactoAsesor(asesor, propio)))
@@ -33,7 +33,7 @@ class AsesorPropietarioArtefactoRuleImplTest {
         var asesor = UtilUUID.generarNuevoUUID();
         var ajeno = ArtefactoDomain.reconstruir(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID());
+                UtilUUID.generarNuevoUUID(), null);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(new PropiedadArtefactoAsesor(asesor, ajeno)))

@@ -14,5 +14,7 @@ public interface PlanEstimadoOutputPort {
 
     void actualizarDescripcion(UUID planEstimado, String descripcionEstimado);
 
+    void eliminar(UUID planEstimado);
+
     long sumarDiasEstimadosPorMapaRutaDeTarea(UUID tarea);
 }

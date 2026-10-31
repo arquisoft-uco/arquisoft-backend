@@ -80,7 +80,7 @@ class SolicitarCargaVersionArtefactoUseCaseImplTest {
         solicitud = SolicitudCargaVersionArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), "informe.pdf", "application/pdf", 2048L);
         artefacto = ArtefactoDomain.reconstruir(solicitud.getArtefacto(), UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
     }
 
     private void prepararFinders() {

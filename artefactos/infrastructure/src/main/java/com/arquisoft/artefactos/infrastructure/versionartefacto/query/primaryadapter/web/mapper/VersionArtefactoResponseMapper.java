@@ -13,6 +13,14 @@ public final class VersionArtefactoResponseMapper {
                 readModel.artefacto(),
                 readModel.version(),
                 readModel.fechaCreacion(),
-                readModel.uriArchivo());
+                readModel.uriArchivo(),
+                readModel.nombreProyecto(),
+                readModel.nombreDocumento(),
+                readModel.versionDocumento(),
+                readModel.nombreRepositorio(),
+                readModel.nombreAsesor(),
+                readModel.revisionAsesor(),
+                readModel.estadoRevision(),
+                readModel.nombreEstadoRevision());
     }
 }

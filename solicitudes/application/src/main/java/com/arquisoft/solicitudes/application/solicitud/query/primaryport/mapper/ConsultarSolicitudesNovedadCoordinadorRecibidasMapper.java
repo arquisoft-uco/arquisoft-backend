@@ -40,6 +40,7 @@ public final class ConsultarSolicitudesNovedadCoordinadorRecibidasMapper {
                 .tamanio(criterio.tamanio())
                 .ordenamiento(ordenamiento(criterio.ordenamiento()))
                 .raiz(raizFinal)
+                .tipoSolicitud(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())
                 .build();
     }
 
