@@ -33,7 +33,7 @@ public class RemoverEstudianteArtefactoController {
 
     private final RemoverEstudianteArtefactoInteractor removerEstudianteArtefactoInteractor;
 
-    @DeleteMapping("${rutas.artefactos.artefactos.estudiante:/{artefactoId}/estudiantes/{estudianteId}}")
+    @DeleteMapping("${rutas.artefactos.artefactos.estudiante-artefacto:/{artefactoId}/estudiantes/{estudianteId}}")
     @Operation(
             summary = ArtefactosApiMessages.EstudianteArtefacto.REMOVER_SUMMARY,
             description = ArtefactosApiMessages.EstudianteArtefacto.REMOVER_DESCRIPTION,
