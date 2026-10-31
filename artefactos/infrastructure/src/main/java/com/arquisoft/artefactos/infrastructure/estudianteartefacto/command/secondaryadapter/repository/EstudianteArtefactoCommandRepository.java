@@ -18,6 +18,14 @@ public interface EstudianteArtefactoCommandRepository extends JpaRepository<Estu
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""
             DELETE FROM EstudianteArtefactoJpaEntity ea
+            WHERE ea.artefacto = :artefacto
+              AND ea.estudiante = :estudiante
+            """)
+    int eliminarPorArtefactoYEstudiante(@Param("artefacto") UUID artefacto, @Param("estudiante") UUID estudiante);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("""
+            DELETE FROM EstudianteArtefactoJpaEntity ea
             WHERE ea.estudiante = :estudiante
               AND ea.artefacto IN (SELECT a.id FROM ArtefactoJpaEntity a WHERE a.proyectoGrado = :proyectoGrado)
             """)

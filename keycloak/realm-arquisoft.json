@@ -388,6 +388,7 @@
               "artefactos:artefacto:update-asesor",
               "artefactos:artefacto:omit",
               "artefactos:estudiante-artefacto:create",
+              "artefactos:estudiante-artefacto:delete",
               "artefactos:revision-asesor:create",
               "artefactos:observacion-revision:create",
               "artefactos:observacion:delete",
@@ -2419,6 +2420,15 @@
         {
           "id": "97d6f448-046f-4107-b113-94886e86afc1",
           "name": "artefactos:estudiante-artefacto:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3f0c6a52-8b1e-4d7a-9c25-6e1d4b7a90f3",
+          "name": "artefactos:estudiante-artefacto:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

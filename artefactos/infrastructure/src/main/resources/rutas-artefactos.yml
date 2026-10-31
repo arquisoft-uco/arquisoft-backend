@@ -17,6 +17,7 @@ rutas:
     artefactos:
       base: /artefactos
       estudiantes: /{artefactoId}/estudiantes
+      estudiante-artefacto: /{artefactoId}/estudiantes/{estudianteId}
       estudiante-participaciones: /estudiante/participaciones
       cargas-version: /{artefactoId}/versiones/cargas
       versiones: /{artefactoId}/versiones
