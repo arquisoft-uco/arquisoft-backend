@@ -9,4 +9,6 @@ public interface ObservacionOutputPort {
     void registrar(ObservacionEntity observacion);
 
     boolean existePorRevisionAsesorYDescripcion(UUID revisionAsesor, String descripcion);
+
+    int avanzarEstadoPorRevisionAsesor(UUID revisionAsesor, String estadoOrigen, String estadoDestino);
 }

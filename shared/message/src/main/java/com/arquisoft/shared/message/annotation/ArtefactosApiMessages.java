@@ -55,6 +55,18 @@ public final class ArtefactosApiMessages {
                 "La versión o su artefacto no existen, el asesor no es el responsable del artefacto, la versión "
                         + "no es la más reciente o ya tiene una revisión sin cerrar";
 
+        public static final String ENVIAR_SUMMARY = "Enviar la revisión de la versión de un artefacto";
+        public static final String ENVIAR_DESCRIPTION =
+                "Confirma que el asesor terminó de registrar sus observaciones: la revisión PENDIENTE pasa a "
+                        + "EN_PROGRESO y sus observaciones nuevas también. El asesor se toma del token y debe ser "
+                        + "el responsable del artefacto. No exige un mínimo de observaciones. Los estudiantes "
+                        + "vinculados reciben un correo para atenderlas y subir una nueva versión.";
+        public static final String ENVIAR_RESP_204 = "Revisión enviada";
+        public static final String ENVIAR_RESP_400 = "Identificador de la revisión mal formado";
+        public static final String ENVIAR_RESP_422 =
+                "La revisión, su artefacto o el asesor no existen, el asesor no es el responsable del "
+                        + "artefacto, el artefacto está omitido o la revisión ya fue enviada";
+
         public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de una revisión del asesor";
         public static final String CAMBIAR_ESTADO_DESCRIPTION =
                 "Marca como RESUELTA una revisión EN_PROGRESO, siempre que el estudiante ya haya subido una "
