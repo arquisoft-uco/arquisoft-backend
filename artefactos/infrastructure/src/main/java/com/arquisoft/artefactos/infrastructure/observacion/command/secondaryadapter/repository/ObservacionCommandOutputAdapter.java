@@ -53,4 +53,10 @@ public class ObservacionCommandOutputAdapter implements ObservacionOutputPort {
         observacionCommandRepository.actualizarEstado(observacion, estado);
         logger.debug(ObservacionKey.LOG_ESTADO_ACTUALIZADO, observacion);
     }
+
+    @Override
+    public void devolverEstado(UUID observacion, String estadoActual, String estadoDestino) {
+        observacionCommandRepository.devolverEstado(observacion, estadoActual, estadoDestino);
+        logger.debug(ObservacionKey.LOG_ESTADO_ACTUALIZADO, observacion);
+    }
 }

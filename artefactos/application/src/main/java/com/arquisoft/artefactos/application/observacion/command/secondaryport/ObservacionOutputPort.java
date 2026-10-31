@@ -18,4 +18,6 @@ public interface ObservacionOutputPort {
     Optional<ObservacionEntity> obtenerPorId(UUID id);
 
     void actualizarEstado(UUID observacion, String estado);
+
+    void devolverEstado(UUID observacion, String estadoActual, String estadoDestino);
 }

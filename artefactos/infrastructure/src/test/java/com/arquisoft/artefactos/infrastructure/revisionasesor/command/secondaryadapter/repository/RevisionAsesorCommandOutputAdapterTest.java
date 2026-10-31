@@ -278,6 +278,80 @@ class RevisionAsesorCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerLaRevisionMasRecienteDeLaVersionSiguiente() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var versionUno = sembrarVersion(artefacto, 1);
+        var versionDos = sembrarVersion(artefacto, 2);
+        var versionTres = sembrarVersion(artefacto, 3);
+        var revisionOriginal = sembrarRevisionDeVersion(versionUno, "RESUELTA", FECHA);
+        sembrarRevisionDeVersion(versionDos, "CERRADA", FECHA);
+        var masReciente = sembrarRevisionDeVersion(versionDos, "PENDIENTE", FECHA.plusSeconds(60));
+        sembrarRevisionDeVersion(versionTres, "PENDIENTE", FECHA.plusSeconds(120));
+        var observacion = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ObservacionTestEntity(observacion, revisionOriginal, "Detalle", "SOLUCIONADA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerBloqueadaDeVersionSiguientePorObservacion(observacion);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(masReciente);
+            assertThat(entity.versionArtefacto()).isEqualTo(versionDos);
+        });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoNoHayVersionSiguienteONoTieneRevision() {
+        // Arrange
+        var artefactoSinSiguiente = UtilUUID.generarNuevoUUID();
+        var revisionUnica = sembrarRevision(artefactoSinSiguiente, "RESUELTA");
+        var observacionSinSiguiente = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ObservacionTestEntity(observacionSinSiguiente, revisionUnica, "Uno", "SOLUCIONADA"));
+        var artefactoSinRevision = UtilUUID.generarNuevoUUID();
+        var versionUno = sembrarVersion(artefactoSinRevision, 1);
+        sembrarVersion(artefactoSinRevision, 2);
+        var revisionUno = sembrarRevisionDeVersion(versionUno, "RESUELTA", FECHA);
+        var observacionSinRevision = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ObservacionTestEntity(observacionSinRevision, revisionUno, "Dos", "SOLUCIONADA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var sinSiguiente = adapter.obtenerBloqueadaDeVersionSiguientePorObservacion(observacionSinSiguiente);
+        var sinRevision = adapter.obtenerBloqueadaDeVersionSiguientePorObservacion(observacionSinRevision);
+        var inexistente = adapter.obtenerBloqueadaDeVersionSiguientePorObservacion(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(sinSiguiente).isEmpty();
+        assertThat(sinRevision).isEmpty();
+        assertThat(inexistente).isEmpty();
+    }
+
+    @Test
+    void debeIgnorarLaVersionDosPosterior_cuandoSoloEstaEsaTieneRevision() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var versionUno = sembrarVersion(artefacto, 1);
+        sembrarVersion(artefacto, 2);
+        var versionTres = sembrarVersion(artefacto, 3);
+        var revisionUno = sembrarRevisionDeVersion(versionUno, "RESUELTA", FECHA);
+        sembrarRevisionDeVersion(versionTres, "PENDIENTE", FECHA);
+        var observacion = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ObservacionTestEntity(observacion, revisionUno, "Detalle", "SOLUCIONADA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerBloqueadaDeVersionSiguientePorObservacion(observacion);
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
     void debeDevolverVacio_cuandoLaObservacionNoExiste() {
         // Act & Assert
         assertThat(adapter.obtenerBloqueadaPorObservacion(UtilUUID.generarNuevoUUID())).isEmpty();

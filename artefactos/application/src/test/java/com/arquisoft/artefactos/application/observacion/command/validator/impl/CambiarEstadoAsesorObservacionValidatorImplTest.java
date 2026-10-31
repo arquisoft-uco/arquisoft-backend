@@ -9,12 +9,17 @@ import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoEncontradoExcept
 import com.arquisoft.artefactos.domain.observacion.CambioEstadoAsesorObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.ObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.exception.EstadoDestinoObservacionNoPermitidoException;
+import com.arquisoft.artefactos.domain.observacion.exception.ObservacionDuplicadaException;
 import com.arquisoft.artefactos.domain.observacion.exception.ObservacionNoEncontradaException;
+import com.arquisoft.artefactos.domain.observacion.exception.ObservacionNoReabribleException;
 import com.arquisoft.artefactos.domain.observacion.exception.ObservacionNoSolucionadaException;
 import com.arquisoft.artefactos.domain.observacion.model.EstadoObservacion;
+import com.arquisoft.artefactos.domain.observacion.model.VersionesDeObservacion;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorNoAdmiteDecisionObservacionException;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorNoEncontradaException;
+import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionVersionSiguienteEnviadaException;
+import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionVersionSiguienteNoRegistradaException;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.artefactos.domain.versionartefacto.VersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.exception.VersionArtefactoNoEncontradaException;
@@ -54,7 +59,12 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     private final CambioEstadoAsesorObservacionDomain cambio = cambio(asesorId, "REABIERTA");
 
     private ObservacionDomain observacion(EstadoObservacion estado) {
-        return ObservacionDomain.reconstruir(observacionId, revisionId, "Texto", estado);
+        return ObservacionDomain.reconstruir(observacionId, revisionId, "Texto", estado,
+                UtilUUID.obtenerUUIDPorDefecto());
+    }
+
+    private VersionesDeObservacion versiones(VersionArtefactoDomain version) {
+        return new VersionesDeObservacion(version, 1, RevisionAsesorDomain.VACIO, false);
     }
 
     private RevisionAsesorDomain revision(EstadoRevisionAsesor estado) {
@@ -69,7 +79,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     void debePasar_cuandoTodoEsValido() {
         // Act & Assert
         assertThatCode(() -> validator.validar(
-                cambio, observacion, revision, artefacto, asesor, version, versionRepositorio))
+                cambio, observacion, revision, artefacto, asesor, versionRepositorio, versiones(version)))
                 .doesNotThrowAnyException();
     }
 
@@ -77,7 +87,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     void debeLanzar_cuandoLaObservacionNoExiste() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, ObservacionDomain.VACIO, revision, artefacto, asesor, version, versionRepositorio))
+                cambio, ObservacionDomain.VACIO, revision, artefacto, asesor, versionRepositorio, versiones(version)))
                 .isInstanceOf(ObservacionNoEncontradaException.class);
     }
 
@@ -85,7 +95,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     void debeLanzar_cuandoLaRevisionNoExiste() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, observacion, RevisionAsesorDomain.VACIO, artefacto, asesor, version, versionRepositorio))
+                cambio, observacion, RevisionAsesorDomain.VACIO, artefacto, asesor, versionRepositorio, versiones(version)))
                 .isInstanceOf(RevisionAsesorNoEncontradaException.class);
     }
 
@@ -93,7 +103,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     void debeLanzar_cuandoElArtefactoNoExiste() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, observacion, revision, ArtefactoDomain.VACIO, asesor, version, versionRepositorio))
+                cambio, observacion, revision, ArtefactoDomain.VACIO, asesor, versionRepositorio, versiones(version)))
                 .isInstanceOf(ArtefactoNoEncontradoException.class);
     }
 
@@ -101,7 +111,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     void debeLanzar_cuandoElAsesorNoExiste() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, observacion, revision, artefacto, AsesorDomain.VACIO, version, versionRepositorio))
+                cambio, observacion, revision, artefacto, AsesorDomain.VACIO, versionRepositorio, versiones(version)))
                 .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
@@ -109,7 +119,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     void debeLanzar_cuandoLaVersionNoExiste() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, observacion, revision, artefacto, asesor, VersionArtefactoDomain.VACIO, versionRepositorio))
+                cambio, observacion, revision, artefacto, asesor, versionRepositorio, versiones(VersionArtefactoDomain.VACIO)))
                 .isInstanceOf(VersionArtefactoNoEncontradaException.class);
     }
 
@@ -117,7 +127,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     void debeLanzar_cuandoElDocumentoNoExiste() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, observacion, revision, artefacto, asesor, version, VersionRepositorioArtefactoDomain.VACIO))
+                cambio, observacion, revision, artefacto, asesor, VersionRepositorioArtefactoDomain.VACIO, versiones(version)))
                 .isInstanceOf(VersionRepositorioArtefactoNoEncontradaException.class);
     }
 
@@ -131,7 +141,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambioAjeno, observacion, revision, artefacto, asesorAjeno, version, versionRepositorio))
+                cambioAjeno, observacion, revision, artefacto, asesorAjeno, versionRepositorio, versiones(version)))
                 .isInstanceOf(AsesorNoPropietarioArtefactoException.class);
     }
 
@@ -143,7 +153,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, observacion, revision, omitido, asesor, version, versionRepositorio))
+                cambio, observacion, revision, omitido, asesor, versionRepositorio, versiones(version)))
                 .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
@@ -154,7 +164,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, observacion, pendiente, artefacto, asesor, version, versionRepositorio))
+                cambio, observacion, pendiente, artefacto, asesor, versionRepositorio, versiones(version)))
                 .isInstanceOf(RevisionAsesorNoAdmiteDecisionObservacionException.class);
     }
 
@@ -165,7 +175,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, cerrada, revision, artefacto, asesor, version, versionRepositorio))
+                cambio, cerrada, revision, artefacto, asesor, versionRepositorio, versiones(version)))
                 .isInstanceOf(ObservacionNoSolucionadaException.class);
     }
 
@@ -176,16 +186,92 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambioInvalido, observacion, revision, artefacto, asesor, version, versionRepositorio))
+                cambioInvalido, observacion, revision, artefacto, asesor, versionRepositorio, versiones(version)))
                 .isInstanceOf(EstadoDestinoObservacionNoPermitidoException.class);
+    }
+
+    private VersionesDeObservacion versiones(int ultima, RevisionAsesorDomain siguiente, boolean repetida) {
+        return new VersionesDeObservacion(version, ultima, siguiente, repetida);
+    }
+
+    private RevisionAsesorDomain revisionSiguiente(EstadoRevisionAsesor estado) {
+        return RevisionAsesorDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), estado, UtilFecha.generarInstanteActual());
+    }
+
+    @Test
+    void debePasar_cuandoReabreConContinuacionEnRevisionSiguientePendiente() {
+        // Arrange
+        var versiones = versiones(2, revisionSiguiente(EstadoRevisionAsesor.PENDIENTE), false);
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(
+                cambio, observacion, revision(EstadoRevisionAsesor.RESUELTA), artefacto, asesor, versionRepositorio,
+                versiones)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debePermitirCerrar_fueraDeLaVentana() {
+        // Arrange
+        var cierre = cambio(asesorId, "CERRADA");
+        var versiones = versiones(5, RevisionAsesorDomain.VACIO, true);
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(
+                cierre, observacion, revision(EstadoRevisionAsesor.RESUELTA), artefacto, asesor, versionRepositorio,
+                versiones)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzar_cuandoLaObservacionNoEsReabrible() {
+        // Arrange
+        var versiones = versiones(4, RevisionAsesorDomain.VACIO, false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cambio, observacion, revision, artefacto, asesor, versionRepositorio, versiones))
+                .isInstanceOf(ObservacionNoReabribleException.class);
+    }
+
+    @Test
+    void debeLanzar_cuandoLaRevisionDeLaVersionSiguienteNoEstaRegistrada() {
+        // Arrange
+        var versiones = versiones(2, RevisionAsesorDomain.VACIO, false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cambio, observacion, revision, artefacto, asesor, versionRepositorio, versiones))
+                .isInstanceOf(RevisionVersionSiguienteNoRegistradaException.class);
+    }
+
+    @Test
+    void debeLanzar_cuandoLaRevisionDeLaVersionSiguienteYaSeEnvio() {
+        // Arrange
+        var versiones = versiones(2, revisionSiguiente(EstadoRevisionAsesor.EN_PROGRESO), false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cambio, observacion, revision, artefacto, asesor, versionRepositorio, versiones))
+                .isInstanceOf(RevisionVersionSiguienteEnviadaException.class);
+    }
+
+    @Test
+    void debeLanzar_cuandoLaDescripcionYaExisteEnLaRevisionSiguiente() {
+        // Arrange
+        var versiones = versiones(2, revisionSiguiente(EstadoRevisionAsesor.PENDIENTE), true);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cambio, observacion, revision, artefacto, asesor, versionRepositorio, versiones))
+                .isInstanceOf(ObservacionDuplicadaException.class);
     }
 
     @Test
     void debePriorizarExistenciaDeObservacion_cuandoFaltanVariasCosas() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, ObservacionDomain.VACIO, RevisionAsesorDomain.VACIO,
-                ArtefactoDomain.VACIO, AsesorDomain.VACIO, VersionArtefactoDomain.VACIO,
-                VersionRepositorioArtefactoDomain.VACIO))
+                ArtefactoDomain.VACIO, AsesorDomain.VACIO, VersionRepositorioArtefactoDomain.VACIO,
+                versiones(VersionArtefactoDomain.VACIO)))
                 .isInstanceOf(ObservacionNoEncontradaException.class);
     }
 }

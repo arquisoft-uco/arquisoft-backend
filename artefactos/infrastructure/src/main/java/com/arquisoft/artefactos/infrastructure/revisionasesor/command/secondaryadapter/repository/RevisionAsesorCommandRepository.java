@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.infrastructure.revisionasesor.command.secondary
 
 import com.arquisoft.artefactos.infrastructure.revisionasesor.command.secondaryadapter.entity.RevisionAsesorJpaEntity;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,14 +10,17 @@ import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface RevisionAsesorCommandRepository extends JpaRepository<RevisionAsesorJpaEntity, UUID> {
 
     // El estado leido es precondicion del cambio y no puede pasar a CERRADA antes del commit de esa
-    // escritura: el cierre por el asesor (HU-116) y el cambio de estado de una observacion por el
-    // estudiante (HU-021) deben tomar este mismo bloqueo en su transaccion.
+    // escritura: el cierre por el asesor (HU-116), el cambio de estado de una observacion por el
+    // estudiante (HU-021) y el envio de la revision (HU-292) deben tomar este mismo bloqueo. La
+    // reapertura (HU-137) bloquea ademas la revision de la version siguiente, siempre despues de la
+    // propia, para que su envio no deje una observacion nueva en una revision ya enviada.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM RevisionAsesorJpaEntity r WHERE r.id = :revisionAsesor")
     Optional<RevisionAsesorJpaEntity> buscarBloqueadaPorId(@Param("revisionAsesor") UUID revisionAsesor);
@@ -70,4 +74,20 @@ public interface RevisionAsesorCommandRepository extends JpaRepository<RevisionA
               AND r.id = o.revisionAsesor
             """)
     Optional<RevisionAsesorJpaEntity> buscarBloqueadaPorObservacion(@Param("observacion") UUID observacion);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT rs
+            FROM RevisionAsesorJpaEntity rs, VersionArtefactoJpaEntity vs, VersionArtefactoJpaEntity vo,
+                 RevisionAsesorJpaEntity r, ObservacionJpaEntity o
+            WHERE o.id = :observacion
+              AND r.id = o.revisionAsesor
+              AND vo.id = r.versionArtefacto
+              AND vs.artefacto = vo.artefacto
+              AND vs.numeroVersion = vo.numeroVersion + 1
+              AND rs.versionArtefacto = vs.id
+            ORDER BY rs.fechaCreacion DESC
+            """)
+    List<RevisionAsesorJpaEntity> buscarBloqueadaDeVersionSiguientePorObservacion(
+            @Param("observacion") UUID observacion, Limit limite);
 }

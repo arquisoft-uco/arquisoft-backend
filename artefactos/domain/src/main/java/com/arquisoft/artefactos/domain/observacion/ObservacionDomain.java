@@ -17,22 +17,24 @@ public final class ObservacionDomain {
 
     public static final ObservacionDomain VACIO = reconstruir(
             UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
-            UtilTexto.VACIO, EstadoObservacion.VACIO);
+            UtilTexto.VACIO, EstadoObservacion.VACIO, UtilUUID.obtenerUUIDPorDefecto());
 
     private UUID id;
     private UUID revisionAsesor;
     private String descripcion;
     private EstadoObservacion estado;
+    private UUID observacionOrigen;
 
     private ObservacionDomain() {}
 
     public static ObservacionDomain reconstruir(
-            UUID id, UUID revisionAsesor, String descripcion, EstadoObservacion estado) {
+            UUID id, UUID revisionAsesor, String descripcion, EstadoObservacion estado, UUID observacionOrigen) {
         var observacion = new ObservacionDomain();
         observacion.id = id;
         observacion.revisionAsesor = revisionAsesor;
         observacion.descripcion = descripcion;
         observacion.estado = estado;
+        observacion.observacionOrigen = observacionOrigen;
         return observacion;
     }
 
@@ -44,6 +46,21 @@ public final class ObservacionDomain {
         observacion.setRevisionAsesor(revisionAsesor, result);
         observacion.setDescripcion(descripcion, result);
         observacion.setEstadoInicial();
+        observacion.setObservacionOrigenInicial();
+
+        result.lanzarSiTieneErrores();
+        return observacion;
+    }
+
+    public static ObservacionDomain crearContinuacion(ObservacionDomain origen, UUID revisionAsesor) {
+        var observacion = new ObservacionDomain();
+        var result = new ValidationResult();
+
+        observacion.setId();
+        observacion.setRevisionAsesor(revisionAsesor, result);
+        observacion.setDescripcion(origen.getDescripcion(), result);
+        observacion.setEstadoInicial();
+        observacion.setObservacionOrigen(origen.getId());
 
         result.lanzarSiTieneErrores();
         return observacion;
@@ -82,6 +99,14 @@ public final class ObservacionDomain {
         this.estado = EstadoObservacion.NUEVA;
     }
 
+    private void setObservacionOrigenInicial() {
+        this.observacionOrigen = UtilUUID.obtenerUUIDPorDefecto();
+    }
+
+    private void setObservacionOrigen(UUID observacionOrigen) {
+        this.observacionOrigen = observacionOrigen;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -96,6 +121,14 @@ public final class ObservacionDomain {
 
     public EstadoObservacion getEstado() {
         return estado;
+    }
+
+    public UUID getObservacionOrigen() {
+        return observacionOrigen;
+    }
+
+    public boolean esContinuacion() {
+        return !UtilUUID.esPorDefecto(observacionOrigen);
     }
 
     public boolean esVacio() {

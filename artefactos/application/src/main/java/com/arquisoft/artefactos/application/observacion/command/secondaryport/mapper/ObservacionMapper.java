@@ -13,7 +13,8 @@ public final class ObservacionMapper {
                 observacion.getId(),
                 observacion.getRevisionAsesor(),
                 observacion.getDescripcion(),
-                observacion.getEstado().getId());
+                observacion.getEstado().getId(),
+                observacion.getObservacionOrigen());
     }
 
     public static ObservacionDomain toDomain(ObservacionEntity entity) {
@@ -21,6 +22,7 @@ public final class ObservacionMapper {
                 entity.id(),
                 entity.revisionAsesor(),
                 entity.descripcion(),
-                EstadoObservacion.desde(entity.estado()));
+                EstadoObservacion.desde(entity.estado()),
+                entity.observacionOrigen());
     }
 }

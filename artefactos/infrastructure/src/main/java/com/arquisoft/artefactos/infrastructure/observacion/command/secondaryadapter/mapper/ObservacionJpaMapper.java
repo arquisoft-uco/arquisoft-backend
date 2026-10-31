@@ -2,6 +2,8 @@ package com.arquisoft.artefactos.infrastructure.observacion.command.secondaryada
 
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.entity.ObservacionEntity;
 import com.arquisoft.artefactos.infrastructure.observacion.command.secondaryadapter.entity.ObservacionJpaEntity;
+import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilUUID;
 
 public final class ObservacionJpaMapper {
 
@@ -13,6 +15,7 @@ public final class ObservacionJpaMapper {
                 .revisionAsesor(entity.revisionAsesor())
                 .descripcion(entity.descripcion())
                 .estado(entity.estado())
+                .observacionOrigen(UtilUUID.esPorDefecto(entity.observacionOrigen()) ? null : entity.observacionOrigen())
                 .build();
     }
 
@@ -21,6 +24,7 @@ public final class ObservacionJpaMapper {
                 jpaEntity.getId(),
                 jpaEntity.getRevisionAsesor(),
                 jpaEntity.getDescripcion(),
-                jpaEntity.getEstado());
+                jpaEntity.getEstado(),
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getObservacionOrigen(), UtilUUID.obtenerUUIDPorDefecto()));
     }
 }

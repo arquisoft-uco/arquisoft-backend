@@ -6,8 +6,8 @@ public enum CambiarEstadoAsesorObservacionKey implements ClaveMensaje {
 
     LOG_CAMBIANDO_ESTADO("artefactos.aplicacion.cambiarestadoasesorobservacion.log.cambiando-estado", 3),
     LOG_VERIFICACION_CAMBIO_ESTADO(
-            "artefactos.aplicacion.cambiarestadoasesorobservacion.log.verificacion-cambio-estado", 7),
-    LOG_ESTADO_CAMBIADO("artefactos.aplicacion.cambiarestadoasesorobservacion.log.estado-cambiado", 2);
+            "artefactos.aplicacion.cambiarestadoasesorobservacion.log.verificacion-cambio-estado", 10),
+    LOG_ESTADO_CAMBIADO("artefactos.aplicacion.cambiarestadoasesorobservacion.log.estado-cambiado", 3);
 
     private final String clave;
     private final int parametros;

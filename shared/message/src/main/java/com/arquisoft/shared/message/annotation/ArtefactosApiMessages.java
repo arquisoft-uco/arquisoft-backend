@@ -221,7 +221,8 @@ public final class ArtefactosApiMessages {
         public static final String ELIMINAR_DESCRIPTION =
                 "Elimina por completo la observación indicada. El asesor se toma del token y debe ser el "
                         + "responsable del artefacto. La revisión debe estar PENDIENTE, es decir, aún no enviada "
-                        + "al estudiante. No envía correos.";
+                        + "al estudiante. Si la observación es la continuación de otra reabierta, esta vuelve a "
+                        + "SOLUCIONADA para que el asesor decida de nuevo. No envía correos.";
         public static final String ELIMINAR_RESP_204 = "Observación eliminada";
         public static final String ELIMINAR_RESP_400 = "Identificador de la observación mal formado";
         public static final String ELIMINAR_RESP_422 =
@@ -249,9 +250,13 @@ public final class ArtefactosApiMessages {
                 "Aceptar o reabrir una observación que el estudiante marcó como solucionada";
         public static final String CAMBIAR_ESTADO_ASESOR_DESCRIPTION =
                 "El asesor del artefacto deja la observación SOLUCIONADA en CERRADA (aceptada, estado final) o "
-                        + "REABIERTA (rechazada). La revisión debe estar EN_PROGRESO o RESUELTA; si se reabre con "
-                        + "la revisión RESUELTA, esta vuelve a EN_PROGRESO. Al reabrir, los estudiantes "
-                        + "vinculados reciben un correo. Cerrar no envía correos.";
+                        + "REABIERTA (rechazada). La revisión debe estar EN_PROGRESO o RESUELTA y no cambia de "
+                        + "estado. Si hay una versión posterior a la de la observación, solo se puede reabrir "
+                        + "cuando es la inmediatamente anterior a la última y esa versión ya tiene su revisión "
+                        + "pendiente de enviar: la observación queda REABIERTA y se crea en esa revisión una "
+                        + "observación NUEVA con la misma descripción. Si la observación es de la última "
+                        + "versión, se reabre en sitio. Al reabrir, los estudiantes vinculados reciben un "
+                        + "correo. Cerrar no envía correos.";
         public static final String CAMBIAR_ESTADO_ASESOR_RESP_204 = "Estado de la observación cambiado";
         public static final String CAMBIAR_ESTADO_ASESOR_RESP_400 =
                 "Identificador de la observación mal formado o estado ausente";
@@ -259,7 +264,9 @@ public final class ArtefactosApiMessages {
                 "La observación, su revisión, su artefacto o el asesor no existen, el asesor no es el "
                         + "responsable del artefacto, el artefacto está omitido, la revisión no admite la "
                         + "decisión, la observación no está solucionada, el estado está fuera del catálogo "
-                        + "o el estado destino no es permitido";
+                        + "o el estado destino no es permitido; al reabrir, la observación no es de una "
+                        + "versión reabrible, la revisión de la versión siguiente no existe o ya fue enviada, "
+                        + "o ya tiene una observación con esa descripción";
     }
 
     public static final class Artefacto {

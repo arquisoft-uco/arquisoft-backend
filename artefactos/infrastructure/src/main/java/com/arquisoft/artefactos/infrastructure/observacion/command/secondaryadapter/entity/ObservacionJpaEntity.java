@@ -31,4 +31,7 @@ public class ObservacionJpaEntity {
 
     @Column(name = "estado_observacion_id", nullable = false, length = 60)
     private String estado;
+
+    @Column(name = "observacion_origen_id", columnDefinition = "uuid")
+    private UUID observacionOrigen;
 }

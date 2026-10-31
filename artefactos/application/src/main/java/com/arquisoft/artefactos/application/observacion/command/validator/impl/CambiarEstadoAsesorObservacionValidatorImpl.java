@@ -20,12 +20,23 @@ import com.arquisoft.artefactos.domain.observacion.ObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.model.DestinoCambioEstadoObservacion;
 import com.arquisoft.artefactos.domain.observacion.model.EstadoActualObservacion;
 import com.arquisoft.artefactos.domain.observacion.model.ExistenciaObservacion;
+import com.arquisoft.artefactos.domain.observacion.model.SituacionReaperturaObservacion;
+import com.arquisoft.artefactos.domain.observacion.model.UnicidadContinuacionObservacion;
+import com.arquisoft.artefactos.domain.observacion.model.VersionesDeObservacion;
+import com.arquisoft.artefactos.domain.observacion.rules.ContinuacionObservacionUnicaRule;
 import com.arquisoft.artefactos.domain.observacion.rules.EstadoDestinoObservacionAsesorPermitidoRule;
 import com.arquisoft.artefactos.domain.observacion.rules.ObservacionExisteRule;
+import com.arquisoft.artefactos.domain.observacion.rules.ObservacionReabribleEnVersionRule;
 import com.arquisoft.artefactos.domain.observacion.rules.ObservacionSolucionadaRule;
+import com.arquisoft.artefactos.domain.observacion.rules.RevisionVersionSiguientePendienteRule;
+import com.arquisoft.artefactos.domain.observacion.rules.RevisionVersionSiguienteRegistradaRule;
+import com.arquisoft.artefactos.domain.observacion.rules.impl.ContinuacionObservacionUnicaRuleImpl;
 import com.arquisoft.artefactos.domain.observacion.rules.impl.EstadoDestinoObservacionAsesorPermitidoRuleImpl;
 import com.arquisoft.artefactos.domain.observacion.rules.impl.ObservacionExisteRuleImpl;
+import com.arquisoft.artefactos.domain.observacion.rules.impl.ObservacionReabribleEnVersionRuleImpl;
 import com.arquisoft.artefactos.domain.observacion.rules.impl.ObservacionSolucionadaRuleImpl;
+import com.arquisoft.artefactos.domain.observacion.rules.impl.RevisionVersionSiguientePendienteRuleImpl;
+import com.arquisoft.artefactos.domain.observacion.rules.impl.RevisionVersionSiguienteRegistradaRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoActualRevisionAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ExistenciaRevisionAsesor;
@@ -33,7 +44,6 @@ import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorAdmite
 import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorExisteRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorAdmiteDecisionObservacionRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorExisteRuleImpl;
-import com.arquisoft.artefactos.domain.versionartefacto.VersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.model.ExistenciaVersionArtefacto;
 import com.arquisoft.artefactos.domain.versionartefacto.rules.VersionArtefactoExisteRule;
 import com.arquisoft.artefactos.domain.versionartefacto.rules.impl.VersionArtefactoExisteRuleImpl;
@@ -57,6 +67,10 @@ public class CambiarEstadoAsesorObservacionValidatorImpl implements CambiarEstad
     private final RevisionAsesorAdmiteDecisionObservacionRule revisionAsesorAdmiteDecisionObservacionRule;
     private final ObservacionSolucionadaRule observacionSolucionadaRule;
     private final EstadoDestinoObservacionAsesorPermitidoRule estadoDestinoObservacionAsesorPermitidoRule;
+    private final ObservacionReabribleEnVersionRule observacionReabribleEnVersionRule;
+    private final RevisionVersionSiguienteRegistradaRule revisionVersionSiguienteRegistradaRule;
+    private final RevisionVersionSiguientePendienteRule revisionVersionSiguientePendienteRule;
+    private final ContinuacionObservacionUnicaRule continuacionObservacionUnicaRule;
 
     public CambiarEstadoAsesorObservacionValidatorImpl() {
         this.observacionExisteRule = new ObservacionExisteRuleImpl();
@@ -70,12 +84,16 @@ public class CambiarEstadoAsesorObservacionValidatorImpl implements CambiarEstad
         this.revisionAsesorAdmiteDecisionObservacionRule = new RevisionAsesorAdmiteDecisionObservacionRuleImpl();
         this.observacionSolucionadaRule = new ObservacionSolucionadaRuleImpl();
         this.estadoDestinoObservacionAsesorPermitidoRule = new EstadoDestinoObservacionAsesorPermitidoRuleImpl();
+        this.observacionReabribleEnVersionRule = new ObservacionReabribleEnVersionRuleImpl();
+        this.revisionVersionSiguienteRegistradaRule = new RevisionVersionSiguienteRegistradaRuleImpl();
+        this.revisionVersionSiguientePendienteRule = new RevisionVersionSiguientePendienteRuleImpl();
+        this.continuacionObservacionUnicaRule = new ContinuacionObservacionUnicaRuleImpl();
     }
 
     @Override
     public void validar(CambioEstadoAsesorObservacionDomain cambio, ObservacionDomain observacion,
                         RevisionAsesorDomain revision, ArtefactoDomain artefacto, AsesorDomain asesor,
-                        VersionArtefactoDomain version, VersionRepositorioArtefactoDomain versionRepositorio) {
+                        VersionRepositorioArtefactoDomain versionRepositorio, VersionesDeObservacion versiones) {
 
         observacionExisteRule.validar(new ExistenciaObservacion(cambio.getObservacion(), !observacion.esVacio()));
         revisionAsesorExisteRule.validar(
@@ -83,7 +101,7 @@ public class CambiarEstadoAsesorObservacionValidatorImpl implements CambiarEstad
         artefactoExisteRule.validar(new ExistenciaArtefacto(artefacto.getId(), artefacto));
         asesorExisteRule.validar(new ExistenciaAsesor(cambio.getAsesor(), asesor));
         versionArtefactoExisteRule.validar(
-                new ExistenciaVersionArtefacto(revision.getVersionArtefacto(), version));
+                new ExistenciaVersionArtefacto(revision.getVersionArtefacto(), versiones.version()));
         versionRepositorioArtefactoExisteRule.validar(new ExistenciaVersionRepositorioArtefacto(
                 artefacto.getVersionRepositorioArtefacto(), versionRepositorio));
 
@@ -95,5 +113,15 @@ public class CambiarEstadoAsesorObservacionValidatorImpl implements CambiarEstad
                 new EstadoActualObservacion(observacion.getId(), observacion.getEstado()));
         estadoDestinoObservacionAsesorPermitidoRule.validar(
                 new DestinoCambioEstadoObservacion(cambio.getObservacion(), cambio.getEstado()));
+
+        var situacion = new SituacionReaperturaObservacion(
+                cambio.getObservacion(), cambio.getEstado(), revision.getEstado(),
+                versiones.version().getNumeroVersion(), versiones.numeroUltimaVersion(),
+                versiones.revisionVersionSiguiente());
+        observacionReabribleEnVersionRule.validar(situacion);
+        revisionVersionSiguienteRegistradaRule.validar(situacion);
+        revisionVersionSiguientePendienteRule.validar(situacion);
+        continuacionObservacionUnicaRule.validar(new UnicidadContinuacionObservacion(
+                cambio.getEstado(), versiones.revisionVersionSiguiente().getId(), versiones.descripcionRepetida()));
     }
 }

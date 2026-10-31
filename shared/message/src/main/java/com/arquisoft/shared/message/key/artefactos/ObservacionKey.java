@@ -17,6 +17,8 @@ public enum ObservacionKey implements ClaveMensaje {
     LOG_ESTADO_ACTUALIZADO("artefactos.infraestructura.observacion.log.estado-actualizado", 1),
     ERROR_NO_SOLUCIONADA("artefactos.dominio.observacion.error.no-solucionada", 0),
     ERROR_NO_SOLUCIONADA_DETALLE("artefactos.dominio.observacion.error.no-solucionada-detalle", 2),
+    ERROR_NO_REABRIBLE("artefactos.dominio.observacion.error.no-reabrible", 0),
+    ERROR_NO_REABRIBLE_DETALLE("artefactos.dominio.observacion.error.no-reabrible-detalle", 4),
     ERROR_ESTADO_DESTINO_NO_PERMITIDO("artefactos.dominio.observacion.error.estado-destino-no-permitido", 1),
     ERROR_ESTADO_DESTINO_NO_PERMITIDO_DETALLE(
             "artefactos.dominio.observacion.error.estado-destino-no-permitido-detalle", 2);

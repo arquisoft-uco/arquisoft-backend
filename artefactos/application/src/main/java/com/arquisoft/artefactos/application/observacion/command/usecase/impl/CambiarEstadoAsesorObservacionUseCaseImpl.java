@@ -3,19 +3,24 @@ package com.arquisoft.artefactos.application.observacion.command.usecase.impl;
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorObservacionFinder;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
+import com.arquisoft.artefactos.application.observacion.command.finder.DescripcionObservacionEnRevisionExisteFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionPorIdFinder;
+import com.arquisoft.artefactos.application.observacion.command.finder.model.DescripcionEnRevision;
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.ObservacionOutputPort;
+import com.arquisoft.artefactos.application.observacion.command.secondaryport.mapper.ObservacionMapper;
 import com.arquisoft.artefactos.application.observacion.command.usecase.CambiarEstadoAsesorObservacionUseCase;
 import com.arquisoft.artefactos.application.observacion.command.validator.CambiarEstadoAsesorObservacionValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorPorObservacionFinder;
-import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
+import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVersionSiguientePorObservacionFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoPorIdFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.observacion.CambioEstadoAsesorObservacionDomain;
+import com.arquisoft.artefactos.domain.observacion.ObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.event.ObservacionReabiertaEvent;
+import com.arquisoft.artefactos.domain.observacion.model.VersionesDeObservacion;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ContactoAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ContactoEstudiante;
-import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.CambiarEstadoAsesorObservacionKey;
 import com.arquisoft.shared.publisher.EventPublisher;
@@ -33,9 +38,11 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
     private final VersionArtefactoPorIdFinder versionArtefactoPorIdFinder;
     private final VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
     private final EstudiantesVinculadosArtefactoFinder estudiantesVinculadosArtefactoFinder;
+    private final UltimoNumeroVersionArtefactoFinder ultimoNumeroVersionArtefactoFinder;
+    private final RevisionVersionSiguientePorObservacionFinder revisionVersionSiguientePorObservacionFinder;
+    private final DescripcionObservacionEnRevisionExisteFinder descripcionObservacionEnRevisionExisteFinder;
     private final CambiarEstadoAsesorObservacionValidator cambiarEstadoAsesorObservacionValidator;
     private final ObservacionOutputPort observacionOutputPort;
-    private final RevisionAsesorOutputPort revisionAsesorOutputPort;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
@@ -54,20 +61,30 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
         var versionRepositorio = versionRepositorioArtefactoPorIdFinder.obtener(
                 artefacto.getVersionRepositorioArtefacto());
         var estudiantes = estudiantesVinculadosArtefactoFinder.obtener(artefacto.getId());
+        var ultimoNumeroVersion = ultimoNumeroVersionArtefactoFinder.obtener(artefacto.getId());
+        var revisionVersionSiguiente = revisionVersionSiguientePorObservacionFinder.obtener(observacionId);
+        var descripcionRepetida = descripcionObservacionEnRevisionExisteFinder.obtener(
+                new DescripcionEnRevision(revisionVersionSiguiente.getId(), observacion.getDescripcion()));
+        var versiones = new VersionesDeObservacion(
+                version, ultimoNumeroVersion, revisionVersionSiguiente, descripcionRepetida);
 
         logger.debug(CambiarEstadoAsesorObservacionKey.LOG_VERIFICACION_CAMBIO_ESTADO,
                 !observacion.esVacio(), !revision.esVacio(), !artefacto.esVacio(), !asesor.esVacio(),
-                !version.esVacio(), !versionRepositorio.esVacio(), estudiantes.size());
+                !version.esVacio(), !versionRepositorio.esVacio(), estudiantes.size(),
+                ultimoNumeroVersion, !revisionVersionSiguiente.esVacio(), descripcionRepetida);
 
         cambiarEstadoAsesorObservacionValidator.validar(
-                cambio, observacion, revision, artefacto, asesor, version, versionRepositorio);
+                cambio, observacion, revision, artefacto, asesor, versionRepositorio, versiones);
 
         observacionOutputPort.actualizarEstado(observacionId, cambio.getEstado().getId());
 
+        var generaContinuacion = cambio.getEstado().esReabierta() && versiones.tieneVersionPosterior();
+        if (generaContinuacion) {
+            var continuacion = ObservacionDomain.crearContinuacion(observacion, revisionVersionSiguiente.getId());
+            observacionOutputPort.registrar(ObservacionMapper.toEntity(continuacion));
+        }
+
         if (cambio.getEstado().esReabierta()) {
-            if (revision.tieneEstado(EstadoRevisionAsesor.RESUELTA)) {
-                revisionAsesorOutputPort.actualizarEstado(revision.getId(), EstadoRevisionAsesor.EN_PROGRESO.getId());
-            }
             eventPublisher.publish(new ObservacionReabiertaEvent(
                     versionRepositorio.getNombreDocumento(),
                     version.getNumeroVersion(),
@@ -78,6 +95,7 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
                     observacion.getDescripcion()));
         }
 
-        logger.info(CambiarEstadoAsesorObservacionKey.LOG_ESTADO_CAMBIADO, observacionId, cambio.getEstado().getId());
+        logger.info(CambiarEstadoAsesorObservacionKey.LOG_ESTADO_CAMBIADO,
+                observacionId, cambio.getEstado().getId(), generaContinuacion);
     }
 }

@@ -145,6 +145,9 @@ public final class ArtefactosCodes {
         public static final String NO_ENVIABLE = "REVISION_ASESOR_NO_ENVIABLE";
         public static final String NO_ADMITE_DECISION_OBSERVACION =
                 "REVISION_ASESOR_NO_ADMITE_DECISION_OBSERVACION";
+        public static final String VERSION_SIGUIENTE_NO_REGISTRADA =
+                "REVISION_ASESOR_VERSION_SIGUIENTE_NO_REGISTRADA";
+        public static final String VERSION_SIGUIENTE_ENVIADA = "REVISION_ASESOR_VERSION_SIGUIENTE_ENVIADA";
     }
 
     public static final class VersionArtefacto {
@@ -230,6 +233,7 @@ public final class ArtefactosCodes {
         public static final String DUPLICADA = "OBSERVACION_DUPLICADA";
         public static final String NO_ENCONTRADA = "OBSERVACION_NO_ENCONTRADA";
         public static final String NO_SOLUCIONADA = "OBSERVACION_NO_SOLUCIONADA";
+        public static final String NO_REABRIBLE = "OBSERVACION_NO_REABRIBLE";
         public static final String ESTADO_DESTINO_NO_PERMITIDO = "OBSERVACION_ESTADO_DESTINO_NO_PERMITIDO";
         public static final String ESTADO_REQUERIDO = "OBSERVACION_ESTADO_REQUERIDO";
     }
