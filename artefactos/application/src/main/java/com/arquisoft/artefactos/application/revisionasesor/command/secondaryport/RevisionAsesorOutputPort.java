@@ -20,4 +20,6 @@ public interface RevisionAsesorOutputPort {
     Optional<RevisionAsesorEntity> obtenerMasRecienteDeUltimaVersion(UUID artefacto);
 
     boolean existeVersionPosterior(UUID revisionAsesor);
+
+    Optional<RevisionAsesorEntity> obtenerBloqueadaPorObservacion(UUID observacion);
 }

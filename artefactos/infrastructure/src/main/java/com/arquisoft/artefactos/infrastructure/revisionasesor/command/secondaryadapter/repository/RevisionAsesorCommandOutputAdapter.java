@@ -57,4 +57,10 @@ public class RevisionAsesorCommandOutputAdapter implements RevisionAsesorOutputP
     public boolean existeVersionPosterior(UUID revisionAsesor) {
         return revisionAsesorCommandRepository.existeVersionPosterior(revisionAsesor);
     }
+
+    @Override
+    public Optional<RevisionAsesorEntity> obtenerBloqueadaPorObservacion(UUID observacion) {
+        return revisionAsesorCommandRepository.buscarBloqueadaPorObservacion(observacion)
+                .map(RevisionAsesorJpaMapper::toEntity);
+    }
 }

@@ -78,4 +78,10 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
         return artefactoCommandRepository.buscarPorRevisionAsesor(revisionAsesor)
                 .map(ArtefactoJpaMapper::toEntity);
     }
+
+    @Override
+    public Optional<ArtefactoEntity> obtenerPorObservacion(UUID observacion) {
+        return artefactoCommandRepository.buscarPorObservacion(observacion)
+                .map(ArtefactoJpaMapper::toEntity);
+    }
 }

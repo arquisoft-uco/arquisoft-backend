@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapt
 
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.observacion.support.ObservacionTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.RevisionAsesorTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
 import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.entity.VersionRepositorioArtefactoJpaEntity;
@@ -343,6 +344,38 @@ class ArtefactoCommandOutputAdapterTest {
         // Assert
         assertThat(encontrado).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(objetivo));
         assertThat(adapter.obtenerPorRevisionAsesor(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeObtenerElArtefactoDeLaObservacion_cuandoLaObservacionExiste() {
+        // Arrange
+        var objetivo = sembrar(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var otro = sembrar(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var versionObjetivo = UtilUUID.generarNuevoUUID();
+        var versionOtro = UtilUUID.generarNuevoUUID();
+        var revisionObjetivo = UtilUUID.generarNuevoUUID();
+        var revisionOtro = UtilUUID.generarNuevoUUID();
+        var observacion = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new VersionArtefactoTestEntity(versionObjetivo, objetivo, 1));
+        entityManager.persist(new VersionArtefactoTestEntity(versionOtro, otro, 1));
+        entityManager.persist(new RevisionAsesorTestEntity(revisionObjetivo, versionObjetivo, "PENDIENTE"));
+        entityManager.persist(new RevisionAsesorTestEntity(revisionOtro, versionOtro, "PENDIENTE"));
+        entityManager.persist(new ObservacionTestEntity(observacion, revisionObjetivo, "Detalle", "NUEVA"));
+        entityManager.persist(new ObservacionTestEntity(UtilUUID.generarNuevoUUID(), revisionOtro, "Otro", "NUEVA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorObservacion(observacion);
+
+        // Assert
+        assertThat(encontrado).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(objetivo));
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaObservacionNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerPorObservacion(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 
     private UUID sembrarOmitido(UUID proyecto, UUID version, UUID asesor) {

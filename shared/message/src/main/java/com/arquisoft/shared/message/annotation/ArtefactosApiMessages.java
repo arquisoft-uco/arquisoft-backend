@@ -204,7 +204,7 @@ public final class ArtefactosApiMessages {
 
         public static final String TAG_NAME = "Observaciones de revisiones";
         public static final String TAG_DESCRIPTION =
-                "Registro y consulta de las observaciones realizadas en una revisión del asesor";
+                "Registro, consulta y eliminación de las observaciones realizadas en una revisión del asesor";
         public static final String REGISTRAR_SUMMARY = "Registrar una observación en una revisión";
         public static final String REGISTRAR_DESCRIPTION =
                 "Agrega a la revisión una observación con la descripción recibida, en estado NUEVA. El asesor "
@@ -217,6 +217,16 @@ public final class ArtefactosApiMessages {
         public static final String REGISTRAR_RESP_422 =
                 "La revisión o su artefacto no existen, el asesor no es el responsable del artefacto, el "
                         + "artefacto fue omitido, la revisión ya no está pendiente o la descripción está repetida";
+        public static final String ELIMINAR_SUMMARY = "Eliminar una observación de una revisión";
+        public static final String ELIMINAR_DESCRIPTION =
+                "Elimina por completo la observación indicada. El asesor se toma del token y debe ser el "
+                        + "responsable del artefacto. La revisión debe estar PENDIENTE, es decir, aún no enviada "
+                        + "al estudiante. No envía correos.";
+        public static final String ELIMINAR_RESP_204 = "Observación eliminada";
+        public static final String ELIMINAR_RESP_400 = "Identificador de la observación mal formado";
+        public static final String ELIMINAR_RESP_422 =
+                "La observación o su artefacto no existen, el asesor no es el responsable del artefacto, el "
+                        + "artefacto fue omitido o la revisión ya no está pendiente";
         public static final String CONSULTAR_SUMMARY = "Consultar las observaciones realizadas a una revisión";
         public static final String CONSULTAR_DESCRIPTION =
                 "Devuelve, sin paginar y ordenadas por descripción, las observaciones de la revisión con su "

@@ -65,4 +65,14 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
               AND a.id = va.artefacto
             """)
     Optional<ArtefactoJpaEntity> buscarPorRevisionAsesor(@Param("revisionAsesor") UUID revisionAsesor);
+
+    @Query("""
+            SELECT a
+            FROM ArtefactoJpaEntity a, VersionArtefactoJpaEntity va, RevisionAsesorJpaEntity r, ObservacionJpaEntity o
+            WHERE o.id = :observacion
+              AND r.id = o.revisionAsesor
+              AND va.id = r.versionArtefacto
+              AND a.id = va.artefacto
+            """)
+    Optional<ArtefactoJpaEntity> buscarPorObservacion(@Param("observacion") UUID observacion);
 }

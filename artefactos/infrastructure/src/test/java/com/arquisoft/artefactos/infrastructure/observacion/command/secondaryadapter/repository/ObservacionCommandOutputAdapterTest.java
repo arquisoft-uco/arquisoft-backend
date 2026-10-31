@@ -76,6 +76,28 @@ class ObservacionCommandOutputAdapterTest {
     }
 
     @Test
+    void debeEliminarSoloLaObservacionIndicada_yLogearLaEliminacion() {
+        // Arrange
+        var revision = UtilUUID.generarNuevoUUID();
+        var objetivo = UtilUUID.generarNuevoUUID();
+        var hermana = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ObservacionTestEntity(objetivo, revision, "Detalle", "NUEVA"));
+        entityManager.persist(new ObservacionTestEntity(hermana, revision, "Otro detalle", "NUEVA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminar(objetivo);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ObservacionJpaEntity.class, objetivo)).isNull();
+        assertThat(entityManager.find(ObservacionJpaEntity.class, hermana)).isNotNull();
+        verify(logger).debug(ObservacionKey.LOG_ELIMINADA, objetivo);
+    }
+
+    @Test
     void debeAvanzarSoloNuevasDeLaRevision_cuandoHayOtrasRevisionesYEstados() {
         // Arrange
         var revision = UtilUUID.generarNuevoUUID();

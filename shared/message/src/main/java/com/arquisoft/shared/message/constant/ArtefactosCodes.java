@@ -140,6 +140,8 @@ public final class ArtefactosCodes {
         public static final String PENDIENTE = "REVISION_ASESOR_PENDIENTE";
         public static final String SIN_VERSION_POSTERIOR = "REVISION_ASESOR_SIN_VERSION_POSTERIOR";
         public static final String NO_ADMITE_OBSERVACIONES = "REVISION_ASESOR_NO_ADMITE_OBSERVACIONES";
+        public static final String NO_ADMITE_ELIMINAR_OBSERVACIONES =
+                "REVISION_ASESOR_NO_ADMITE_ELIMINAR_OBSERVACIONES";
         public static final String NO_ENVIABLE = "REVISION_ASESOR_NO_ENVIABLE";
     }
 
@@ -224,5 +226,6 @@ public final class ArtefactosCodes {
         public static final String DESCRIPCION_LONGITUD_EXCEDIDA = "OBSERVACION_DESCRIPCION_LONGITUD_EXCEDIDA";
         public static final String ESTADO_INVALIDO = "OBSERVACION_ESTADO_INVALIDO";
         public static final String DUPLICADA = "OBSERVACION_DUPLICADA";
+        public static final String NO_ENCONTRADA = "OBSERVACION_NO_ENCONTRADA";
     }
 }

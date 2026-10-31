@@ -29,6 +29,12 @@ public class ObservacionCommandOutputAdapter implements ObservacionOutputPort {
     }
 
     @Override
+    public void eliminar(UUID observacion) {
+        observacionCommandRepository.deleteById(observacion);
+        logger.debug(ObservacionKey.LOG_ELIMINADA, observacion);
+    }
+
+    @Override
     public int avanzarEstadoPorRevisionAsesor(UUID revisionAsesor, String estadoOrigen, String estadoDestino) {
         var cantidad = observacionCommandRepository.avanzarEstadoPorRevisionAsesor(
                 revisionAsesor, estadoOrigen, estadoDestino);

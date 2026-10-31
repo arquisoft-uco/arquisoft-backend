@@ -60,4 +60,13 @@ public interface RevisionAsesorCommandRepository extends JpaRepository<RevisionA
             )
             """)
     boolean existeParticipacion(@Param("revisionAsesor") UUID revisionAsesor, @Param("estudiante") UUID estudiante);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT r
+            FROM RevisionAsesorJpaEntity r, ObservacionJpaEntity o
+            WHERE o.id = :observacion
+              AND r.id = o.revisionAsesor
+            """)
+    Optional<RevisionAsesorJpaEntity> buscarBloqueadaPorObservacion(@Param("observacion") UUID observacion);
 }
