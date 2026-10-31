@@ -12,6 +12,10 @@ public enum EstudianteArtefactoKey implements ClaveMensaje {
     LOG_ASIGNANDO("artefactos.aplicacion.estudianteartefacto.log.asignando", 2),
     LOG_VERIFICACION_ASIGNAR("artefactos.aplicacion.estudianteartefacto.log.verificacion-asignar", 6),
     LOG_ASIGNADOS("artefactos.aplicacion.estudianteartefacto.log.asignados", 2),
+    LOG_REMOVIENDO("artefactos.aplicacion.estudianteartefacto.log.removiendo", 3),
+    LOG_VERIFICACION_REMOVER("artefactos.aplicacion.estudianteartefacto.log.verificacion-remover", 5),
+    LOG_REMOVIDO("artefactos.aplicacion.estudianteartefacto.log.removido", 2),
+    LOG_VINCULO_ELIMINADO("artefactos.infraestructura.estudianteartefacto.log.vinculo-eliminado", 2),
     LOG_GUARDADOS("artefactos.infraestructura.estudianteartefacto.log.guardados", 1),
     LOG_DESVINCULANDO("artefactos.aplicacion.estudianteartefacto.log.desvinculando", 2),
     LOG_DESVINCULADOS("artefactos.infraestructura.estudianteartefacto.log.desvinculados", 2),
@@ -24,7 +28,10 @@ public enum EstudianteArtefactoKey implements ClaveMensaje {
     ERROR_NO_VINCULADO_PROYECTO_GRADO(
             "artefactos.dominio.estudianteartefacto.error.no-vinculado-proyecto-grado", 1),
     ERROR_NO_VINCULADO_PROYECTO_GRADO_DETALLE(
-            "artefactos.dominio.estudianteartefacto.error.no-vinculado-proyecto-grado-detalle", 1);
+            "artefactos.dominio.estudianteartefacto.error.no-vinculado-proyecto-grado-detalle", 1),
+    ERROR_NO_VINCULADO_ARTEFACTO("artefactos.dominio.estudianteartefacto.error.no-vinculado-artefacto", 1),
+    ERROR_NO_VINCULADO_ARTEFACTO_DETALLE(
+            "artefactos.dominio.estudianteartefacto.error.no-vinculado-artefacto-detalle", 2);
 
     private final String clave;
     private final int parametros;

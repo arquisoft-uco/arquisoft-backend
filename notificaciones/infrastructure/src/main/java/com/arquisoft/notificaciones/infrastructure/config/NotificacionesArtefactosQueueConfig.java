@@ -18,6 +18,9 @@ public class NotificacionesArtefactosQueueConfig {
     public static final String ESTUDIANTES_ARTEFACTO_ASIGNADOS_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Artefactos.ESTUDIANTES_ARTEFACTO_ASIGNADOS;
 
+    public static final String ESTUDIANTE_ARTEFACTO_REMOVIDO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Artefactos.ESTUDIANTE_ARTEFACTO_REMOVIDO;
+
     public static final String REVISION_ASESOR_ESTADO_CAMBIADO_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Artefactos.REVISION_ASESOR_ESTADO_CAMBIADO;
 
@@ -45,6 +48,17 @@ public class NotificacionesArtefactosQueueConfig {
         return ColaEvento.declarar(
                 ESTUDIANTES_ARTEFACTO_ASIGNADOS_QUEUE,
                 EventTopics.Artefactos.ESTUDIANTES_ARTEFACTO_ASIGNADOS,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesEstudianteArtefactoRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_ARTEFACTO_REMOVIDO_QUEUE,
+                EventTopics.Artefactos.ESTUDIANTE_ARTEFACTO_REMOVIDO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

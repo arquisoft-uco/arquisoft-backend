@@ -196,6 +196,15 @@ public final class ArtefactosApiMessages {
                 "El artefacto o algún estudiante no existe, el asesor no es el responsable del artefacto, "
                         + "algún estudiante está dado de baja, no pertenece al proyecto de grado o ya está "
                         + "vinculado al artefacto, o un estudiante está repetido en la solicitud";
+        public static final String REMOVER_SUMMARY = "Remover a un estudiante de un artefacto";
+        public static final String REMOVER_DESCRIPTION =
+                "Desvincula al estudiante de un artefacto del asesor autenticado. El estudiante recibe un "
+                        + "correo y el artefacto puede quedar sin estudiantes.";
+        public static final String REMOVER_RESP_204 = "Estudiante removido del artefacto";
+        public static final String REMOVER_RESP_400 = "Identificador de artefacto o de estudiante inválido";
+        public static final String REMOVER_RESP_422 =
+                "El artefacto o el estudiante no existe, el asesor no es el responsable del artefacto, el "
+                        + "artefacto está omitido o el estudiante no está vinculado al artefacto";
     }
 
     public static final class Observacion {
