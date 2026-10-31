@@ -74,4 +74,46 @@ class ObservacionCommandOutputAdapterTest {
         assertThat(otraDescripcion).isFalse();
         assertThat(otraRevision).isFalse();
     }
+
+    @Test
+    void debeAvanzarSoloNuevasDeLaRevision_cuandoHayOtrasRevisionesYEstados() {
+        // Arrange
+        var revision = UtilUUID.generarNuevoUUID();
+        var otraRevision = UtilUUID.generarNuevoUUID();
+        var nuevaUno = UtilUUID.generarNuevoUUID();
+        var nuevaDos = UtilUUID.generarNuevoUUID();
+        var yaEnProgreso = UtilUUID.generarNuevoUUID();
+        var nuevaAjena = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EstadoObservacionTestEntity("EN_PROGRESO", "En progreso"));
+        entityManager.persist(new ObservacionTestEntity(nuevaUno, revision, "Uno", "NUEVA"));
+        entityManager.persist(new ObservacionTestEntity(nuevaDos, revision, "Dos", "NUEVA"));
+        entityManager.persist(new ObservacionTestEntity(yaEnProgreso, revision, "Tres", "EN_PROGRESO"));
+        entityManager.persist(new ObservacionTestEntity(nuevaAjena, otraRevision, "Cuatro", "NUEVA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var cantidad = adapter.avanzarEstadoPorRevisionAsesor(revision, "NUEVA", "EN_PROGRESO");
+
+        // Assert
+        assertThat(cantidad).isEqualTo(2);
+        assertThat(entityManager.find(ObservacionJpaEntity.class, nuevaUno).getEstado()).isEqualTo("EN_PROGRESO");
+        assertThat(entityManager.find(ObservacionJpaEntity.class, nuevaDos).getEstado()).isEqualTo("EN_PROGRESO");
+        assertThat(entityManager.find(ObservacionJpaEntity.class, yaEnProgreso).getEstado())
+                .isEqualTo("EN_PROGRESO");
+        assertThat(entityManager.find(ObservacionJpaEntity.class, nuevaAjena).getEstado()).isEqualTo("NUEVA");
+        verify(logger).debug(ObservacionKey.LOG_ESTADOS_ACTUALIZADOS, revision, 2);
+    }
+
+    @Test
+    void debeDevolverCero_cuandoLaRevisionNoTieneObservaciones() {
+        // Arrange
+        var revision = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var cantidad = adapter.avanzarEstadoPorRevisionAsesor(revision, "NUEVA", "EN_PROGRESO");
+
+        // Assert
+        assertThat(cantidad).isZero();
+    }
 }
