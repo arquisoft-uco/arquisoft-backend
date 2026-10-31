@@ -15,7 +15,8 @@ import java.util.UUID;
 public interface RevisionAsesorCommandRepository extends JpaRepository<RevisionAsesorJpaEntity, UUID> {
 
     // El estado leido es precondicion del cambio y no puede pasar a CERRADA antes del commit de esa
-    // escritura: el cierre por el asesor (HU-116) debe tomar este mismo bloqueo en su transaccion.
+    // escritura: el cierre por el asesor (HU-116) y el cambio de estado de una observacion por el
+    // estudiante (HU-021) deben tomar este mismo bloqueo en su transaccion.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM RevisionAsesorJpaEntity r WHERE r.id = :revisionAsesor")
     Optional<RevisionAsesorJpaEntity> buscarBloqueadaPorId(@Param("revisionAsesor") UUID revisionAsesor);

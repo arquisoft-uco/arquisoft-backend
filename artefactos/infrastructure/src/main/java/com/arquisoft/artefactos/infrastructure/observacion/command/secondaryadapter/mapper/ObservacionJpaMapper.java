@@ -15,4 +15,12 @@ public final class ObservacionJpaMapper {
                 .estado(entity.estado())
                 .build();
     }
+
+    public static ObservacionEntity toEntity(ObservacionJpaEntity jpaEntity) {
+        return new ObservacionEntity(
+                jpaEntity.getId(),
+                jpaEntity.getRevisionAsesor(),
+                jpaEntity.getDescripcion(),
+                jpaEntity.getEstado());
+    }
 }

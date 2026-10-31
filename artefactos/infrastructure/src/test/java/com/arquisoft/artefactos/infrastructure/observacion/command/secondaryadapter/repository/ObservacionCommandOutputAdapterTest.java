@@ -128,6 +128,49 @@ class ObservacionCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var revision = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ObservacionTestEntity(id, revision, "Detalle", "NUEVA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(id);
+            assertThat(entity.revisionAsesor()).isEqualTo(revision);
+            assertThat(entity.descripcion()).isEqualTo("Detalle");
+            assertThat(entity.estado()).isEqualTo("NUEVA");
+        });
+        assertThat(adapter.obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeActualizarSoloElEstadoDeLaObservacion_cuandoSeActualiza() {
+        // Arrange
+        var revision = UtilUUID.generarNuevoUUID();
+        var objetivo = UtilUUID.generarNuevoUUID();
+        var hermana = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EstadoObservacionTestEntity("CERRADA", "Cerrada"));
+        entityManager.persist(new ObservacionTestEntity(objetivo, revision, "Uno", "NUEVA"));
+        entityManager.persist(new ObservacionTestEntity(hermana, revision, "Dos", "NUEVA"));
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(objetivo, "CERRADA");
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ObservacionJpaEntity.class, objetivo).getEstado()).isEqualTo("CERRADA");
+        assertThat(entityManager.find(ObservacionJpaEntity.class, hermana).getEstado()).isEqualTo("NUEVA");
+        verify(logger).debug(ObservacionKey.LOG_ESTADO_ACTUALIZADO, objetivo);
+    }
+
+    @Test
     void debeDevolverCero_cuandoLaRevisionNoTieneObservaciones() {
         // Arrange
         var revision = UtilUUID.generarNuevoUUID();

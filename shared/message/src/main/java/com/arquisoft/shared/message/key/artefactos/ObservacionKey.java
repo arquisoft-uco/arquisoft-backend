@@ -13,7 +13,13 @@ public enum ObservacionKey implements ClaveMensaje {
     LOG_ESTADOS_ACTUALIZADOS("artefactos.infraestructura.observacion.log.estados-actualizados", 2),
     ERROR_DUPLICADA("artefactos.dominio.observacion.error.duplicada", 0),
     ERROR_DUPLICADA_DETALLE("artefactos.dominio.observacion.error.duplicada-detalle", 1),
-    ERROR_ESTADO_INVALIDO("artefactos.dominio.observacion.error.estado-invalido", 1);
+    ERROR_ESTADO_INVALIDO("artefactos.dominio.observacion.error.estado-invalido", 1),
+    LOG_ESTADO_ACTUALIZADO("artefactos.infraestructura.observacion.log.estado-actualizado", 1),
+    ERROR_NO_SOLUCIONADA("artefactos.dominio.observacion.error.no-solucionada", 0),
+    ERROR_NO_SOLUCIONADA_DETALLE("artefactos.dominio.observacion.error.no-solucionada-detalle", 2),
+    ERROR_ESTADO_DESTINO_NO_PERMITIDO("artefactos.dominio.observacion.error.estado-destino-no-permitido", 1),
+    ERROR_ESTADO_DESTINO_NO_PERMITIDO_DETALLE(
+            "artefactos.dominio.observacion.error.estado-destino-no-permitido-detalle", 2);
 
     private final String clave;
     private final int parametros;

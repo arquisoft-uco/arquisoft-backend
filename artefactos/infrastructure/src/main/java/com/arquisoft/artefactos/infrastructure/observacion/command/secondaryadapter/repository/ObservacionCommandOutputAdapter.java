@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.artefactos.ObservacionKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -40,5 +41,16 @@ public class ObservacionCommandOutputAdapter implements ObservacionOutputPort {
                 revisionAsesor, estadoOrigen, estadoDestino);
         logger.debug(ObservacionKey.LOG_ESTADOS_ACTUALIZADOS, revisionAsesor, cantidad);
         return cantidad;
+    }
+
+    @Override
+    public Optional<ObservacionEntity> obtenerPorId(UUID id) {
+        return observacionCommandRepository.findById(id).map(ObservacionJpaMapper::toEntity);
+    }
+
+    @Override
+    public void actualizarEstado(UUID observacion, String estado) {
+        observacionCommandRepository.actualizarEstado(observacion, estado);
+        logger.debug(ObservacionKey.LOG_ESTADO_ACTUALIZADO, observacion);
     }
 }
