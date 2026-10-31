@@ -21,6 +21,7 @@ rutas:
       cargas-version: /{artefactoId}/versiones/cargas
       versiones: /{artefactoId}/versiones
       versiones-estudiante: /versiones/estudiante
+      version: /versiones/{versionArtefactoId}
       asesor: /asesor
       estudiante: /estudiante
       cambiar-asesor: /{artefactoId}/asesor

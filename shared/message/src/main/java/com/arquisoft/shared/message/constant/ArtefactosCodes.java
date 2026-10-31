@@ -172,6 +172,11 @@ public final class ArtefactosCodes {
         public static final String TIPO_ARCHIVO_NO_COINCIDE = "VERSION_ARTEFACTO_TIPO_ARCHIVO_NO_COINCIDE";
         public static final String NO_ENCONTRADA = "VERSION_ARTEFACTO_NO_ENCONTRADA";
         public static final String NO_ES_ULTIMA = "VERSION_ARTEFACTO_NO_ES_ULTIMA";
+        public static final String VERSION_ARTEFACTO_REQUERIDA = "VERSION_ARTEFACTO_VERSION_ARTEFACTO_REQUERIDA";
+        public static final String ACTOR_REQUERIDO = "VERSION_ARTEFACTO_ACTOR_REQUERIDO";
+        public static final String ROLES_REQUERIDOS = "VERSION_ARTEFACTO_ROLES_REQUERIDOS";
+        public static final String ACCESO_DENEGADO = "VERSION_ARTEFACTO_ACCESO_DENEGADO";
+        public static final String NO_DISPONIBLE = "VERSION_ARTEFACTO_NO_DISPONIBLE";
     }
 
     public static final class EstudianteArtefacto {

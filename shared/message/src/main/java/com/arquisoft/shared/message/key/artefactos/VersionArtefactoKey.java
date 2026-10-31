@@ -22,6 +22,10 @@ public enum VersionArtefactoKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADA_DETALLE("artefactos.dominio.versionartefacto.error.no-encontrada-detalle", 1),
     ERROR_NO_ES_ULTIMA("artefactos.dominio.versionartefacto.error.no-es-ultima", 1),
     ERROR_NO_ES_ULTIMA_DETALLE("artefactos.dominio.versionartefacto.error.no-es-ultima-detalle", 2),
+    ERROR_ACCESO_DENEGADO("artefactos.dominio.versionartefacto.error.acceso-denegado", 0),
+    ERROR_ACCESO_DENEGADO_DETALLE("artefactos.dominio.versionartefacto.error.acceso-denegado-detalle", 2),
+    ERROR_NO_DISPONIBLE("artefactos.infraestructura.versionartefacto.error.no-disponible", 0),
+    ERROR_NO_DISPONIBLE_DETALLE("artefactos.infraestructura.versionartefacto.error.no-disponible-detalle", 1),
     LOG_SOLICITANDO_CARGA("artefactos.aplicacion.versionartefacto.log.solicitando-carga", 2),
     LOG_VERIFICACION_SOLICITAR_CARGA("artefactos.aplicacion.versionartefacto.log.verificacion-solicitar-carga", 4),
     LOG_CARGA_SOLICITADA("artefactos.aplicacion.versionartefacto.log.carga-solicitada", 2),
@@ -33,6 +37,9 @@ public enum VersionArtefactoKey implements ClaveMensaje {
     LOG_CONSULTANDO_ESTUDIANTE("artefactos.aplicacion.versionartefacto.log.consultando-estudiante", 4),
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA(
             "artefactos.aplicacion.versionartefacto.log.consulta-estudiante-completada", 1),
+    LOG_CONSULTANDO_DETALLE("artefactos.aplicacion.versionartefacto.log.consultando-detalle", 2),
+    LOG_VERIFICACION_CONSULTA_DETALLE("artefactos.aplicacion.versionartefacto.log.verificacion-consulta-detalle", 2),
+    LOG_CONSULTA_DETALLE_COMPLETADA("artefactos.aplicacion.versionartefacto.log.consulta-detalle-completada", 1),
     LOG_GUARDADA("artefactos.infraestructura.versionartefacto.log.guardada", 1),
     LOG_CARGA_COPIADA("artefactos.infraestructura.versionartefacto.log.carga-copiada", 2),
     LOG_CARGA_ELIMINADA("artefactos.infraestructura.versionartefacto.log.carga-eliminada", 1);
