@@ -1,6 +1,7 @@
 package com.arquisoft.artefactos.infrastructure.revisionasesor.command.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.entity.RevisionAsesorEntity;
+import com.arquisoft.artefactos.infrastructure.observacion.support.ObservacionTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.command.secondaryadapter.entity.RevisionAsesorJpaEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.ArtefactoTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstudianteArtefactoTestEntity;
@@ -252,5 +253,33 @@ class RevisionAsesorCommandOutputAdapterTest {
 
         // Act & Assert
         assertThat(adapter.existeVersionPosterior(revision)).isFalse();
+    }
+
+    @Test
+    void debeObtenerLaRevisionDeLaObservacion_cuandoLaObservacionExiste() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var objetivo = sembrarRevision(artefacto, "PENDIENTE");
+        var otra = sembrarRevision(artefacto, "RESUELTA");
+        var observacion = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ObservacionTestEntity(observacion, objetivo, "Detalle", "NUEVA"));
+        entityManager.persist(new ObservacionTestEntity(UtilUUID.generarNuevoUUID(), otra, "Otro", "NUEVA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerBloqueadaPorObservacion(observacion);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(objetivo);
+            assertThat(entity.estado()).isEqualTo("PENDIENTE");
+        });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaObservacionNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerBloqueadaPorObservacion(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 }

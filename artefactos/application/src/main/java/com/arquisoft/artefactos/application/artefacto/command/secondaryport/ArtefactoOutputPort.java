@@ -28,4 +28,6 @@ public interface ArtefactoOutputPort {
             UUID proyectoGrado, UUID versionRepositorioArtefacto);
 
     Optional<ArtefactoEntity> obtenerPorRevisionAsesor(UUID revisionAsesor);
+
+    Optional<ArtefactoEntity> obtenerPorObservacion(UUID observacion);
 }

@@ -29,5 +29,6 @@ rutas:
       revisiones-version: /versiones/{versionArtefactoId}/revisiones
       estado-revision: /revisiones/{revisionAsesorId}/estado
       observaciones-revision: /revisiones/{revisionAsesorId}/observaciones
+      observacion: /observaciones/{observacionId}
     estados-revision-asesor:
       base: /estados-revision-asesor
