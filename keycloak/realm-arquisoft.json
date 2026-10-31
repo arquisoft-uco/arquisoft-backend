@@ -325,6 +325,7 @@
               "artefactos:artefacto-estudiante:view",
               "artefactos:observacion-revision-estudiante:view",
               "artefactos:version-artefacto-estudiante:view",
+              "artefactos:version-artefacto:view",
               "artefactos:artefacto-participacion-estudiante:view",
               "artefactos:revision-asesor-estado:update",
               "fichas:item-ficha-perfil-estudiante:view",
@@ -380,6 +381,7 @@
               "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
               "artefactos:artefacto:create",
               "artefactos:version-artefacto-asesor:view",
+              "artefactos:version-artefacto:view",
               "artefactos:artefacto-asesor:view",
               "artefactos:artefacto:update-asesor",
               "artefactos:artefacto:omit",
@@ -2476,6 +2478,15 @@
         {
           "id": "b4a7c1e9-5d28-4f36-9a0b-2e8d6c3f7a15",
           "name": "artefactos:version-artefacto-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "f542d7f5-ae1e-4b00-933c-6c5df22474bb",
+          "name": "artefactos:version-artefacto:view",
           "description": "",
           "composite": false,
           "clientRole": true,

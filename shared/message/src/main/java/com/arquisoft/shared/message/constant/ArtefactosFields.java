@@ -45,6 +45,9 @@ public final class ArtefactosFields {
         public static final String NOMBRE_ARCHIVO = "nombreArchivo";
         public static final String TIPO_CONTENIDO = "tipoContenido";
         public static final String TAMANO_BYTES = "tamanoBytes";
+        public static final String VERSION_ARTEFACTO = "versionArtefacto";
+        public static final String ACTOR = "actor";
+        public static final String ROLES = "roles";
     }
 
     public static final class EstudianteArtefacto {
