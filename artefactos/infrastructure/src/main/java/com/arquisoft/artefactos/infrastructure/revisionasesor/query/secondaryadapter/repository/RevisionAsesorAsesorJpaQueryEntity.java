@@ -11,6 +11,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 import org.hibernate.annotations.Synchronize;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -22,7 +23,8 @@ import java.util.UUID;
                va.version_artefacto         AS version,
                a.asesor_id                  AS asesor_id,
                ra.estado_revision_asesor_id AS estado_revision_asesor_id,
-               er.nombre                    AS estado_revision_asesor_nombre
+               er.nombre                    AS estado_revision_asesor_nombre,
+               ra.fecha_creacion            AS fecha_creacion
         FROM revision_asesor ra
                  JOIN version_artefacto va ON va.id = ra.version_artefacto_id
                  JOIN artefacto a ON a.id = va.artefacto_id
@@ -56,4 +58,7 @@ public class RevisionAsesorAsesorJpaQueryEntity {
 
     @Column(name = "estado_revision_asesor_nombre")
     private String estadoRevisionAsesorNombre;
+
+    @Column(name = "fecha_creacion")
+    private Instant fechaCreacion;
 }

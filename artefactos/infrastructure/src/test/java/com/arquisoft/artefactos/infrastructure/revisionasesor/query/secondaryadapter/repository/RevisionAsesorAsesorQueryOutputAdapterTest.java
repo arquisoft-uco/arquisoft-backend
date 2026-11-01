@@ -3,7 +3,7 @@ package com.arquisoft.artefactos.infrastructure.revisionasesor.query.secondaryad
 import com.arquisoft.artefactos.application.revisionasesor.query.criteria.RevisionAsesorAsesorCriteria;
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.mapper.ConsultarRevisionesAsesorAsesorMapper;
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.model.ConsultarRevisionesAsesorAsesorQuery;
-import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorReadModel;
+import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorAsesorReadModel;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.ArtefactoTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstadoRevisionAsesorTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.RevisionAsesorTestEntity;
@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +40,8 @@ class RevisionAsesorAsesorQueryOutputAdapterTest {
     private RevisionAsesorAsesorQueryRepository repository;
 
     private RevisionAsesorQueryOutputAdapter adapter;
+
+    private static final Instant FECHA_CREACION = Instant.parse("2026-10-01T10:00:00Z");
 
     private final UUID asesorA = UtilUUID.generarNuevoUUID();
     private final UUID asesorB = UtilUUID.generarNuevoUUID();
@@ -66,7 +69,7 @@ class RevisionAsesorAsesorQueryOutputAdapterTest {
 
     private UUID sembrarRevision(UUID version, String estado) {
         var revision = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new RevisionAsesorTestEntity(revision, version, estado));
+        entityManager.persist(new RevisionAsesorTestEntity(revision, version, estado, FECHA_CREACION));
         return revision;
     }
 
@@ -101,8 +104,8 @@ class RevisionAsesorAsesorQueryOutputAdapterTest {
         return criteria(asesor, raiz, List.of(), 0, 10);
     }
 
-    private static List<UUID> ids(List<RevisionAsesorReadModel> contenido) {
-        return contenido.stream().map(RevisionAsesorReadModel::id).toList();
+    private static List<UUID> ids(List<RevisionAsesorAsesorReadModel> contenido) {
+        return contenido.stream().map(RevisionAsesorAsesorReadModel::id).toList();
     }
 
     @Test
@@ -214,9 +217,9 @@ class RevisionAsesorAsesorQueryOutputAdapterTest {
         var descendente = adapter.consultarTodasAsesor(criteria(asesorA, null, desc, 0, 10));
 
         // Assert
-        assertThat(ascendente.getContent()).extracting(RevisionAsesorReadModel::estadoRevisionAsesor)
+        assertThat(ascendente.getContent()).extracting(RevisionAsesorAsesorReadModel::estadoRevisionAsesor)
                 .containsExactly("EN_PROGRESO", "PENDIENTE");
-        assertThat(descendente.getContent()).extracting(RevisionAsesorReadModel::estadoRevisionAsesor)
+        assertThat(descendente.getContent()).extracting(RevisionAsesorAsesorReadModel::estadoRevisionAsesor)
                 .containsExactly("PENDIENTE", "EN_PROGRESO");
     }
 
@@ -256,5 +259,6 @@ class RevisionAsesorAsesorQueryOutputAdapterTest {
         assertThat(revision.version()).isEqualTo(2);
         assertThat(revision.estadoRevisionAsesor()).isEqualTo("EN_PROGRESO");
         assertThat(revision.estadoRevisionAsesorNombre()).isEqualTo("En progreso");
+        assertThat(revision.fechaCreacion()).isEqualTo(FECHA_CREACION);
     }
 }

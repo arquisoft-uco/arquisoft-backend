@@ -37,7 +37,8 @@ public final class ArtefactosApiMessages {
                 "Devuelve, de forma paginada, las revisiones registradas sobre las versiones de los artefactos "
                         + "a cargo del asesor autenticado. Se puede filtrar por la versión del artefacto "
                         + "(versionArtefacto) y por el estado de la revisión (estadoRevisionAsesor), y ordenar por "
-                        + "estadoRevisionAsesor. El asesor se toma del token, nunca del cuerpo.";
+                        + "estadoRevisionAsesor. Cada revisión incluye su fecha de creación (fechaCreacion). "
+                        + "El asesor se toma del token, nunca del cuerpo.";
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de revisiones realizadas por el asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";

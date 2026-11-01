@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.infrastructure.revisionasesor.query.secondaryad
 
 import com.arquisoft.artefactos.application.revisionasesor.query.criteria.RevisionAsesorAsesorCriteria;
 import com.arquisoft.artefactos.application.revisionasesor.query.criteria.RevisionAsesorEstudianteCriteria;
+import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorAsesorReadModel;
 import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorReadModel;
 import com.arquisoft.artefactos.application.revisionasesor.query.secondaryport.RevisionAsesorQueryOutputPort;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.query.secondaryadapter.repository.mapper.RevisionAsesorAsesorQueryMapper;
@@ -32,7 +33,7 @@ public class RevisionAsesorQueryOutputAdapter implements RevisionAsesorQueryOutp
     }
 
     @Override
-    public PaginatedResult<RevisionAsesorReadModel> consultarTodasAsesor(RevisionAsesorAsesorCriteria criteria) {
+    public PaginatedResult<RevisionAsesorAsesorReadModel> consultarTodasAsesor(RevisionAsesorAsesorCriteria criteria) {
         var pageable = PageableMapper.toPageable(criteria, RevisionAsesorAsesorSortMapper::traducir);
         var spec = asesorSpecification.desdeCriteria(criteria);
 
