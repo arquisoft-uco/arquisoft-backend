@@ -41,6 +41,14 @@ class EstadoObservacionTest {
     }
 
     @Test
+    void debeResponderEsReabierta_soloParaReabierta() {
+        // Act & Assert
+        assertThat(EstadoObservacion.REABIERTA.esReabierta()).isTrue();
+        assertThat(EstadoObservacion.CERRADA.esReabierta()).isFalse();
+        assertThat(EstadoObservacion.SOLUCIONADA.esReabierta()).isFalse();
+    }
+
+    @Test
     void debeCoincidirConLasFilasDelMer_cuandoSeListanLosIds() {
         // Act
         var ids = Arrays.stream(EstadoObservacion.values())

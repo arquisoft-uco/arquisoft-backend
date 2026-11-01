@@ -44,7 +44,7 @@ class ObservacionCommandOutputAdapterTest {
         entityManager.flush();
 
         // Act
-        adapter.registrar(new ObservacionEntity(id, revision, "Detalle", "NUEVA"));
+        adapter.registrar(new ObservacionEntity(id, revision, "Detalle", "NUEVA", UtilUUID.obtenerUUIDPorDefecto()));
         entityManager.flush();
         entityManager.clear();
 
@@ -125,6 +125,107 @@ class ObservacionCommandOutputAdapterTest {
                 .isEqualTo("EN_PROGRESO");
         assertThat(entityManager.find(ObservacionJpaEntity.class, nuevaAjena).getEstado()).isEqualTo("NUEVA");
         verify(logger).debug(ObservacionKey.LOG_ESTADOS_ACTUALIZADOS, revision, 2);
+    }
+
+    @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var revision = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ObservacionTestEntity(id, revision, "Detalle", "NUEVA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(id);
+            assertThat(entity.revisionAsesor()).isEqualTo(revision);
+            assertThat(entity.descripcion()).isEqualTo("Detalle");
+            assertThat(entity.estado()).isEqualTo("NUEVA");
+        });
+        assertThat(adapter.obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeActualizarSoloElEstadoDeLaObservacion_cuandoSeActualiza() {
+        // Arrange
+        var revision = UtilUUID.generarNuevoUUID();
+        var objetivo = UtilUUID.generarNuevoUUID();
+        var hermana = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EstadoObservacionTestEntity("CERRADA", "Cerrada"));
+        entityManager.persist(new ObservacionTestEntity(objetivo, revision, "Uno", "NUEVA"));
+        entityManager.persist(new ObservacionTestEntity(hermana, revision, "Dos", "NUEVA"));
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(objetivo, "CERRADA");
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ObservacionJpaEntity.class, objetivo).getEstado()).isEqualTo("CERRADA");
+        assertThat(entityManager.find(ObservacionJpaEntity.class, hermana).getEstado()).isEqualTo("NUEVA");
+        verify(logger).debug(ObservacionKey.LOG_ESTADO_ACTUALIZADO, objetivo);
+    }
+
+    @Test
+    void debeGuardarYReconstruirConOrigen_cuandoEsContinuacion() {
+        // Arrange
+        var revision = UtilUUID.generarNuevoUUID();
+        var original = UtilUUID.generarNuevoUUID();
+        var continuacion = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EstadoObservacionTestEntity("REABIERTA", "Reabierta"));
+        entityManager.persist(new ObservacionTestEntity(original, revision, "Detalle", "REABIERTA"));
+        entityManager.flush();
+
+        // Act
+        adapter.registrar(new ObservacionEntity(
+                continuacion, UtilUUID.generarNuevoUUID(), "Detalle", "NUEVA", original));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ObservacionJpaEntity.class, continuacion).getObservacionOrigen())
+                .isEqualTo(original);
+    }
+
+    @Test
+    void debeDevolverEstado_cuandoElActualCoincide() {
+        // Arrange
+        var objetivo = UtilUUID.generarNuevoUUID();
+        var revision = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EstadoObservacionTestEntity("REABIERTA", "Reabierta"));
+        entityManager.persist(new EstadoObservacionTestEntity("SOLUCIONADA", "Solucionada"));
+        entityManager.persist(new ObservacionTestEntity(objetivo, revision, "Uno", "REABIERTA"));
+        entityManager.flush();
+
+        // Act
+        adapter.devolverEstado(objetivo, "REABIERTA", "SOLUCIONADA");
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ObservacionJpaEntity.class, objetivo).getEstado()).isEqualTo("SOLUCIONADA");
+    }
+
+    @Test
+    void noDebeCambiarEstado_cuandoElActualNoCoincide() {
+        // Arrange
+        var objetivo = UtilUUID.generarNuevoUUID();
+        var revision = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EstadoObservacionTestEntity("CERRADA", "Cerrada"));
+        entityManager.persist(new EstadoObservacionTestEntity("REABIERTA", "Reabierta"));
+        entityManager.persist(new EstadoObservacionTestEntity("SOLUCIONADA", "Solucionada"));
+        entityManager.persist(new ObservacionTestEntity(objetivo, revision, "Uno", "CERRADA"));
+        entityManager.flush();
+
+        // Act
+        adapter.devolverEstado(objetivo, "REABIERTA", "SOLUCIONADA");
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ObservacionJpaEntity.class, objetivo).getEstado()).isEqualTo("CERRADA");
     }
 
     @Test

@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum EliminarObservacionKey implements ClaveMensaje {
 
     LOG_ELIMINANDO("artefactos.aplicacion.eliminarobservacion.log.eliminando", 2),
-    LOG_VERIFICACION_ELIMINAR("artefactos.aplicacion.eliminarobservacion.log.verificacion-eliminar", 3),
+    LOG_VERIFICACION_ELIMINAR("artefactos.aplicacion.eliminarobservacion.log.verificacion-eliminar", 5),
     LOG_ELIMINADA("artefactos.aplicacion.eliminarobservacion.log.eliminada", 1);
 
     private final String clave;
