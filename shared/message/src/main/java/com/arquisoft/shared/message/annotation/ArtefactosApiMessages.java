@@ -346,6 +346,19 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar los artefactos del asesor";
+        public static final String SIN_AVANCE_SUMMARY = "Reporte de artefactos sin avance";
+        public static final String SIN_AVANCE_DESCRIPTION =
+                "Devuelve, de forma paginada, los artefactos a cargo del asesor autenticado cuya última versión "
+                        + "tiene más de diasSinAvance días (entre 1 y 365) o que aún no tienen ninguna versión; "
+                        + "los artefactos omitidos no aparecen. Se puede filtrar por proyectoGrado, nombreProyecto, "
+                        + "versionRepositorioArtefacto, nombreDocumento, versionDocumento, nombreRepositorio y "
+                        + "estadoUltimaRevision, y ordenar por nombreProyecto, nombreDocumento, versionDocumento, "
+                        + "nombreRepositorio, estadoUltimaRevision y fechaUltimaVersion; por defecto, nombreProyecto y "
+                        + "nombreDocumento ascendentes. El asesor se toma del token, nunca del cuerpo.";
+        public static final String SIN_AVANCE_RESP_200 = "Página de artefactos del asesor sin avance";
+        public static final String SIN_AVANCE_RESP_400 =
+                "Días sin avance ausentes o fuera de rango, o filtro, operador, valor u ordenamiento inválido";
+        public static final String SIN_AVANCE_RESP_403 = "Sin permiso para consultar los artefactos sin avance";
         public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Filtrar los artefactos de los proyectos de grado del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Devuelve, de forma paginada, los artefactos de los proyectos de grado a los que el estudiante "
