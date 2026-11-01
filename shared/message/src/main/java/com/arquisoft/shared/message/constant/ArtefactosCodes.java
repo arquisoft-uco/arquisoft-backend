@@ -203,6 +203,8 @@ public final class ArtefactosCodes {
         public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_REQUERIDO";
         public static final String ESTUDIANTES_SUPERAN_PROYECTO =
                 "ESTUDIANTE_ARTEFACTO_ESTUDIANTES_SUPERAN_PROYECTO";
+        public static final String ESTUDIANTE_NO_VINCULADO_ARTEFACTO =
+                "ESTUDIANTE_ARTEFACTO_ESTUDIANTE_NO_VINCULADO_ARTEFACTO";
     }
 
     public static final class Estudiante {

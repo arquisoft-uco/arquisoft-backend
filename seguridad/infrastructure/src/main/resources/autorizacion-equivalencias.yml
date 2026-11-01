@@ -109,6 +109,7 @@ security:
         - {method: POST, path: "/api/evaluaciones/estudiante", role: "evaluaciones:evaluacion-estudiante:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones", role: "evaluaciones:observacion-item-jurado:create"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/jurado", role: "evaluaciones:observacion-item-jurado-jurado:view"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/estudiante", role: "evaluaciones:observacion-item-jurado-estudiante:view"}
         - {method: PATCH, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/puntaje", role: "evaluaciones:evaluacion-cuantitativa-jurado:update"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-jurado/jurado", role: "evaluaciones:evaluacion-jurado-jurado:view"}
         - {method: DELETE, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-jurado:delete"}
@@ -191,6 +192,7 @@ security:
         - {method: POST, path: "/api/revisiones-asesor/asesor", role: "artefactos:revision-asesor-asesor:view"}
         - {method: GET, path: "/api/artefactos/{artefactoId}/estudiantes", role: "artefactos:estudiante-artefacto:view"}
         - {method: POST, path: "/api/artefactos/{artefactoId}/estudiantes", role: "artefactos:estudiante-artefacto:create"}
+        - {method: DELETE, path: "/api/artefactos/{artefactoId}/estudiantes/{estudianteId}", role: "artefactos:estudiante-artefacto:delete"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones", role: "artefactos:observacion-revision:view"}
         - {method: GET, path: "/api/revisiones-asesor/{revisionAsesorId}/observaciones/estudiante", role: "artefactos:observacion-revision-estudiante:view"}
         - {method: POST, path: "/api/artefactos", role: "artefactos:artefacto:create"}

@@ -112,6 +112,33 @@ class EstudianteArtefactoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeEliminarSoloElVinculoIndicado_yConservarLosDemas() {
+        // Arrange
+        var logger = mock(AppLogger.class);
+        var adapter = new EstudianteArtefactoCommandOutputAdapter(repository, logger);
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var otroArtefacto = UtilUUID.generarNuevoUUID();
+        var removido = UtilUUID.generarNuevoUUID();
+        var otroEstudiante = UtilUUID.generarNuevoUUID();
+        sembrar(artefacto, removido);
+        sembrar(artefacto, otroEstudiante);
+        sembrar(otroArtefacto, removido);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarPorArtefactoYEstudiante(artefacto, removido);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, removido)).isFalse();
+        assertThat(adapter.existePorArtefactoYEstudiante(artefacto, otroEstudiante)).isTrue();
+        assertThat(adapter.existePorArtefactoYEstudiante(otroArtefacto, removido)).isTrue();
+        verify(logger).debug(EstudianteArtefactoKey.LOG_VINCULO_ELIMINADO, artefacto, removido);
+    }
+
+    @Test
     void debeBorrarSoloLosVinculosDelEstudianteEnArtefactosDelProyecto_cuandoSeDesvincula() {
         // Arrange
         var logger = mock(AppLogger.class);
