@@ -6,8 +6,8 @@ import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontrado
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.CambioVersionRepositorioNoPermitidoException;
-import com.arquisoft.artefactos.domain.artefacto.exception.VersionRepositorioNoPosteriorException;
-import com.arquisoft.artefactos.domain.artefacto.exception.VersionRepositorioOtroRepositorioException;
+import com.arquisoft.artefactos.domain.artefacto.exception.VersionRepositorioIgualException;
+import com.arquisoft.artefactos.domain.artefacto.exception.VersionRepositorioOtroDocumentoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoEncontradoException;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
@@ -65,7 +65,11 @@ class CambiarVersionRepositorioArtefactoValidatorImplTest {
     }
 
     private static VersionRepositorioArtefactoDomain version(UUID id, int numero, UUID repositorio) {
-        return VersionRepositorioArtefactoDomain.reconstruir(id, "Formato A", numero, repositorio, "Repo",
+        return version(id, numero, repositorio, "Formato A");
+    }
+
+    private static VersionRepositorioArtefactoDomain version(UUID id, int numero, UUID repositorio, String documento) {
+        return VersionRepositorioArtefactoDomain.reconstruir(id, documento, numero, repositorio, "Repo",
                 new DatosArchivo("a.pdf", "application/pdf", 10L));
     }
 
@@ -135,24 +139,37 @@ class CambiarVersionRepositorioArtefactoValidatorImplTest {
     }
 
     @Test
-    void debeLanzarOtroRepositorio_antesQueNoPosterior_cuandoLaVersionEsDeOtroRepositorio() {
+    void debeLanzarOtroDocumento_antesQueLaIgualdad_cuandoLaVersionEsDeOtroDocumento() {
         // Arrange
+        var otroDocumento = version(elegida.getId(), 1, repositorioId, "Formato B");
         var otroRepositorio = version(elegida.getId(), 1, UtilUUID.generarNuevoUUID());
 
         // Act & Assert
+        assertThatThrownBy(() -> validator.validar(cambio, artefacto, asesor, actual, otroDocumento, pendiente))
+                .isInstanceOf(VersionRepositorioOtroDocumentoException.class);
         assertThatThrownBy(() -> validator.validar(cambio, artefacto, asesor, actual, otroRepositorio, pendiente))
-                .isInstanceOf(VersionRepositorioOtroRepositorioException.class);
+                .isInstanceOf(VersionRepositorioOtroDocumentoException.class);
     }
 
     @Test
-    void debeLanzarNoPosterior_antesQueElMomentoDelCiclo_cuandoLaVersionNoEsMayor() {
+    void debeLanzarIgualAActual_antesQueElMomentoDelCiclo_cuandoEsLaMismaVersion() {
         // Arrange
-        var igual = version(elegida.getId(), 1, repositorioId);
+        var misma = version(actual.getId(), 1, repositorioId);
         var resuelta = new RevisionVersionAnterior(2, revisionEn(EstadoRevisionAsesor.RESUELTA));
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, artefacto, asesor, actual, igual, resuelta))
-                .isInstanceOf(VersionRepositorioNoPosteriorException.class);
+        assertThatThrownBy(() -> validator.validar(cambio, artefacto, asesor, actual, misma, resuelta))
+                .isInstanceOf(VersionRepositorioIgualException.class);
+    }
+
+    @Test
+    void debePasar_cuandoLaVersionEsAnteriorDelMismoDocumento() {
+        // Arrange
+        var actualMayor = version(actual.getId(), 3, repositorioId);
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(cambio, artefacto, asesor, actualMayor, elegida, pendiente))
+                .doesNotThrowAnyException();
     }
 
     @Test

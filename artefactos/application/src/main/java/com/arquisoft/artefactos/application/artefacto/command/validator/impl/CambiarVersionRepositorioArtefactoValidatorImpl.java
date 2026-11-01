@@ -12,14 +12,14 @@ import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoExisteRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoNoOmitidoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.AsesorPropietarioArtefactoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.CambioVersionRepositorioPermitidoRule;
-import com.arquisoft.artefactos.domain.artefacto.rules.VersionRepositorioMismoRepositorioRule;
-import com.arquisoft.artefactos.domain.artefacto.rules.VersionRepositorioPosteriorRule;
+import com.arquisoft.artefactos.domain.artefacto.rules.VersionRepositorioMismoDocumentoRule;
+import com.arquisoft.artefactos.domain.artefacto.rules.VersionRepositorioDistintaRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoExisteRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoNoOmitidoRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.AsesorPropietarioArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.CambioVersionRepositorioPermitidoRuleImpl;
-import com.arquisoft.artefactos.domain.artefacto.rules.impl.VersionRepositorioMismoRepositorioRuleImpl;
-import com.arquisoft.artefactos.domain.artefacto.rules.impl.VersionRepositorioPosteriorRuleImpl;
+import com.arquisoft.artefactos.domain.artefacto.rules.impl.VersionRepositorioMismoDocumentoRuleImpl;
+import com.arquisoft.artefactos.domain.artefacto.rules.impl.VersionRepositorioDistintaRuleImpl;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.model.ExistenciaAsesor;
 import com.arquisoft.artefactos.domain.asesor.rules.AsesorExisteRule;
@@ -39,8 +39,8 @@ public class CambiarVersionRepositorioArtefactoValidatorImpl implements CambiarV
     private final VersionRepositorioArtefactoExisteRule versionRepositorioArtefactoExisteRule;
     private final AsesorPropietarioArtefactoRule asesorPropietarioArtefactoRule;
     private final ArtefactoNoOmitidoRule artefactoNoOmitidoRule;
-    private final VersionRepositorioMismoRepositorioRule versionRepositorioMismoRepositorioRule;
-    private final VersionRepositorioPosteriorRule versionRepositorioPosteriorRule;
+    private final VersionRepositorioMismoDocumentoRule versionRepositorioMismoDocumentoRule;
+    private final VersionRepositorioDistintaRule versionRepositorioDistintaRule;
     private final CambioVersionRepositorioPermitidoRule cambioVersionRepositorioPermitidoRule;
 
     public CambiarVersionRepositorioArtefactoValidatorImpl() {
@@ -49,8 +49,8 @@ public class CambiarVersionRepositorioArtefactoValidatorImpl implements CambiarV
         this.versionRepositorioArtefactoExisteRule = new VersionRepositorioArtefactoExisteRuleImpl();
         this.asesorPropietarioArtefactoRule = new AsesorPropietarioArtefactoRuleImpl();
         this.artefactoNoOmitidoRule = new ArtefactoNoOmitidoRuleImpl();
-        this.versionRepositorioMismoRepositorioRule = new VersionRepositorioMismoRepositorioRuleImpl();
-        this.versionRepositorioPosteriorRule = new VersionRepositorioPosteriorRuleImpl();
+        this.versionRepositorioMismoDocumentoRule = new VersionRepositorioMismoDocumentoRuleImpl();
+        this.versionRepositorioDistintaRule = new VersionRepositorioDistintaRuleImpl();
         this.cambioVersionRepositorioPermitidoRule = new CambioVersionRepositorioPermitidoRuleImpl();
     }
 
@@ -70,8 +70,8 @@ public class CambiarVersionRepositorioArtefactoValidatorImpl implements CambiarV
                 cambio.getVersionRepositorioArtefacto(), elegida));
         asesorPropietarioArtefactoRule.validar(new PropiedadArtefactoAsesor(cambio.getAsesor(), artefacto));
         artefactoNoOmitidoRule.validar(new ActividadArtefacto(artefacto));
-        versionRepositorioMismoRepositorioRule.validar(new CambioVersionRepositorio(actual, elegida));
-        versionRepositorioPosteriorRule.validar(new CambioVersionRepositorio(actual, elegida));
+        versionRepositorioMismoDocumentoRule.validar(new CambioVersionRepositorio(actual, elegida));
+        versionRepositorioDistintaRule.validar(new CambioVersionRepositorio(actual, elegida));
         cambioVersionRepositorioPermitidoRule.validar(new MomentoCambioVersionRepositorio(
                 cambio.getArtefacto(), actual.getNombreDocumento(), versionAnterior));
     }

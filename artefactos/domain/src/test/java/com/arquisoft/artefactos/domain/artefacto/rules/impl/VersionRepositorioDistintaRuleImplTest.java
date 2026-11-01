@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.domain.artefacto.rules.impl;
 
-import com.arquisoft.artefactos.domain.artefacto.exception.VersionRepositorioNoPosteriorException;
+import com.arquisoft.artefactos.domain.artefacto.exception.VersionRepositorioIgualException;
 import com.arquisoft.artefactos.domain.artefacto.model.CambioVersionRepositorio;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
@@ -14,9 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class VersionRepositorioPosteriorRuleImplTest {
+class VersionRepositorioDistintaRuleImplTest {
 
-    private final VersionRepositorioPosteriorRuleImpl rule = new VersionRepositorioPosteriorRuleImpl();
+    private final VersionRepositorioDistintaRuleImpl rule = new VersionRepositorioDistintaRuleImpl();
 
     private static VersionRepositorioArtefactoDomain version(int numero) {
         return VersionRepositorioArtefactoDomain.reconstruir(
@@ -24,32 +24,29 @@ class VersionRepositorioPosteriorRuleImplTest {
                 new DatosArchivo("a.pdf", "application/pdf", 10L));
     }
 
-    @Test
-    void debePasar_cuandoVersionMayor() {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 3})
+    void debePasar_cuandoVersionMenorOMayor(int numeroElegido) {
         // Arrange
-        var cambio = new CambioVersionRepositorio(version(2), version(3));
+        var cambio = new CambioVersionRepositorio(version(2), version(numeroElegido));
 
         // Act & Assert
         assertThatCode(() -> rule.validar(cambio)).doesNotThrowAnyException();
     }
 
-    @ParameterizedTest
-    @ValueSource(ints = {3, 1})
-    void debeLanzarSinUuidEnMensaje_cuandoVersionIgualOMenor(int numeroElegido) {
+    @Test
+    void debeLanzarSinUuidEnMensaje_cuandoEsLaMismaVersion() {
         // Arrange
-        var actual = version(3);
-        var elegida = version(numeroElegido);
+        var actual = version(2);
 
         // Act & Assert
-        assertThatThrownBy(() -> rule.validar(new CambioVersionRepositorio(actual, elegida)))
-                .isInstanceOf(VersionRepositorioNoPosteriorException.class)
+        assertThatThrownBy(() -> rule.validar(new CambioVersionRepositorio(actual, actual)))
+                .isInstanceOf(VersionRepositorioIgualException.class)
                 .satisfies(ex -> {
-                    var excepcion = (VersionRepositorioNoPosteriorException) ex;
+                    var excepcion = (VersionRepositorioIgualException) ex;
                     assertThat(excepcion.getCodigoError())
-                            .isEqualTo(ArtefactosCodes.Artefacto.VERSION_REPOSITORIO_NO_POSTERIOR);
-                    assertThat(excepcion.getError().getMessage())
-                            .doesNotContain(actual.getId().toString())
-                            .doesNotContain(elegida.getId().toString());
+                            .isEqualTo(ArtefactosCodes.Artefacto.VERSION_REPOSITORIO_IGUAL_A_ACTUAL);
+                    assertThat(excepcion.getError().getMessage()).doesNotContain(actual.getId().toString());
                 });
     }
 }

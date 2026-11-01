@@ -35,11 +35,11 @@ public enum ArtefactoKey implements ClaveMensaje {
             "artefactos.dominio.artefacto.error.cambio-version-repositorio-no-permitido", 1),
     ERROR_CAMBIO_VERSION_REPOSITORIO_NO_PERMITIDO_DETALLE(
             "artefactos.dominio.artefacto.error.cambio-version-repositorio-no-permitido-detalle", 2),
-    ERROR_VERSION_OTRO_REPOSITORIO("artefactos.dominio.artefacto.error.version-otro-repositorio", 1),
-    ERROR_VERSION_OTRO_REPOSITORIO_DETALLE(
-            "artefactos.dominio.artefacto.error.version-otro-repositorio-detalle", 2),
-    ERROR_VERSION_NO_POSTERIOR("artefactos.dominio.artefacto.error.version-no-posterior", 3),
-    ERROR_VERSION_NO_POSTERIOR_DETALLE("artefactos.dominio.artefacto.error.version-no-posterior-detalle", 2),
+    ERROR_VERSION_OTRO_DOCUMENTO("artefactos.dominio.artefacto.error.version-otro-documento", 2),
+    ERROR_VERSION_OTRO_DOCUMENTO_DETALLE(
+            "artefactos.dominio.artefacto.error.version-otro-documento-detalle", 2),
+    ERROR_VERSION_IGUAL_A_ACTUAL("artefactos.dominio.artefacto.error.version-igual-a-actual", 2),
+    ERROR_VERSION_IGUAL_A_ACTUAL_DETALLE("artefactos.dominio.artefacto.error.version-igual-a-actual-detalle", 1),
     LOG_REACTIVADO_ACTUALIZADO("artefactos.infraestructura.artefacto.log.reactivado-actualizado", 1),
     ERROR_OMITIDO("artefactos.dominio.artefacto.error.omitido", 0),
     ERROR_OMITIDO_DETALLE("artefactos.dominio.artefacto.error.omitido-detalle", 1),
