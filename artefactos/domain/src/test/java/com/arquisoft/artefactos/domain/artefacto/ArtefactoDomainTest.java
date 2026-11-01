@@ -101,6 +101,20 @@ class ArtefactoDomainTest {
     }
 
     @Test
+    void debeAsignarVersionRepositorio_cuandoCambiarVersionRepositorio() {
+        // Arrange
+        var artefacto = ArtefactoDomain.crear(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var nueva = UtilUUID.generarNuevoUUID();
+
+        // Act
+        artefacto.cambiarVersionRepositorio(nueva);
+
+        // Assert
+        assertThat(artefacto.getVersionRepositorioArtefacto()).isEqualTo(nueva);
+    }
+
+    @Test
     void debeReconstruirComoActivo_cuandoOmitidoEnEsNulo() {
         // Act
         var artefacto = ArtefactoDomain.reconstruir(

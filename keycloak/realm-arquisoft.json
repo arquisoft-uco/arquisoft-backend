@@ -389,6 +389,7 @@
               "artefactos:artefacto-sin-avance:view",
               "artefactos:artefacto:update-asesor",
               "artefactos:artefacto:omit",
+              "artefactos:artefacto:update-version-repositorio",
               "artefactos:estudiante-artefacto:create",
               "artefactos:estudiante-artefacto:delete",
               "artefactos:revision-asesor:create",
@@ -2605,6 +2606,15 @@
         {
           "id": "d9ef0bbf-2726-4f4f-94e0-05ef9e2e9848",
           "name": "artefactos:artefacto:omit",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5b7e2c91-3f4a-4d68-a1c0-9e8d6f2b7a43",
+          "name": "artefactos:artefacto:update-version-repositorio",
           "description": "",
           "composite": false,
           "clientRole": true,

@@ -27,6 +27,9 @@ public class NotificacionesArtefactosQueueConfig {
     public static final String ARTEFACTO_OMITIDO_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Artefactos.ARTEFACTO_OMITIDO;
 
+    public static final String ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Artefactos.ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA;
+
     public static final String REVISION_ASESOR_ENVIADA_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Artefactos.REVISION_ASESOR_ENVIADA;
 
@@ -43,6 +46,17 @@ public class NotificacionesArtefactosQueueConfig {
         return ColaEvento.declarar(
                 ARTEFACTO_OMITIDO_QUEUE,
                 EventTopics.Artefactos.ARTEFACTO_OMITIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesArtefactoVersionRepositorioCambiadaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA_QUEUE,
+                EventTopics.Artefactos.ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

@@ -40,6 +40,12 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
     @Query("UPDATE ArtefactoJpaEntity a SET a.omitidoEn = :omitidoEn WHERE a.id = :id")
     int omitir(@Param("id") UUID id, @Param("omitidoEn") Instant omitidoEn);
 
+    @Modifying
+    @Query("UPDATE ArtefactoJpaEntity a SET a.versionRepositorioArtefacto = :versionRepositorioArtefacto "
+            + "WHERE a.id = :id")
+    int cambiarVersionRepositorio(
+            @Param("id") UUID id, @Param("versionRepositorioArtefacto") UUID versionRepositorioArtefacto);
+
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE ArtefactoJpaEntity a SET a.omitidoEn = NULL, a.asesor = :asesor WHERE a.id = :id")
     int reactivar(@Param("id") UUID id, @Param("asesor") UUID asesor);

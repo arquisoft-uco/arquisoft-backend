@@ -136,6 +136,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.artefacto-omitido", 1),
     CUERPO_ARTEFACTO_OMITIDO(
             "notificaciones.aplicacion.plantilla.cuerpo.artefacto-omitido", 3),
+    ASUNTO_ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA(
+            "notificaciones.aplicacion.plantilla.asunto.artefacto-version-repositorio-cambiada", 1),
+    CUERPO_ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA(
+            "notificaciones.aplicacion.plantilla.cuerpo.artefacto-version-repositorio-cambiada", 5),
     ASUNTO_REVISION_ASESOR_ENVIADA(
             "notificaciones.aplicacion.plantilla.asunto.revision-asesor-enviada", 2),
     CUERPO_REVISION_ASESOR_ENVIADA(

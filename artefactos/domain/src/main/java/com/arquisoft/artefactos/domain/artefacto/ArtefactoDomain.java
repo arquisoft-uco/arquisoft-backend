@@ -52,6 +52,10 @@ public final class ArtefactoDomain {
         this.omitidoEn = omitidoEn;
     }
 
+    public void cambiarVersionRepositorio(UUID versionRepositorioArtefacto) {
+        this.versionRepositorioArtefacto = versionRepositorioArtefacto;
+    }
+
     private void setId() {
         this.id = UtilUUID.generarNuevoUUID();
     }

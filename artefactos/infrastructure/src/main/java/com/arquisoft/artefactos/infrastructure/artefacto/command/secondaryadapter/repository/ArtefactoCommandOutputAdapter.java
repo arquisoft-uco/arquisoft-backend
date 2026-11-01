@@ -60,6 +60,12 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     }
 
     @Override
+    public void cambiarVersionRepositorio(UUID artefacto, UUID versionRepositorioArtefacto) {
+        artefactoCommandRepository.cambiarVersionRepositorio(artefacto, versionRepositorioArtefacto);
+        logger.debug(ArtefactoKey.LOG_VERSION_REPOSITORIO_ACTUALIZADA, artefacto);
+    }
+
+    @Override
     public void reactivar(UUID artefacto, UUID asesor) {
         artefactoCommandRepository.reactivar(artefacto, asesor);
         logger.debug(ArtefactoKey.LOG_REACTIVADO_ACTUALIZADO, artefacto);

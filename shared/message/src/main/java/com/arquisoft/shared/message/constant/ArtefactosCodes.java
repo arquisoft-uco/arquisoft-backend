@@ -61,6 +61,12 @@ public final class ArtefactosCodes {
         public static final String ASESOR_NO_PROPIETARIO = "ARTEFACTOS_ARTEFACTO_ASESOR_NO_PROPIETARIO";
         public static final String CERRADO = "ARTEFACTOS_ARTEFACTO_CERRADO";
         public static final String OMITIDO = "ARTEFACTOS_ARTEFACTO_OMITIDO";
+        public static final String VERSION_REPOSITORIO_OTRO_REPOSITORIO =
+                "ARTEFACTOS_ARTEFACTO_VERSION_REPOSITORIO_OTRO_REPOSITORIO";
+        public static final String VERSION_REPOSITORIO_NO_POSTERIOR =
+                "ARTEFACTOS_ARTEFACTO_VERSION_REPOSITORIO_NO_POSTERIOR";
+        public static final String CAMBIO_VERSION_REPOSITORIO_NO_PERMITIDO =
+                "ARTEFACTOS_ARTEFACTO_CAMBIO_VERSION_REPOSITORIO_NO_PERMITIDO";
     }
 
     public static final class ProyectoGrado {

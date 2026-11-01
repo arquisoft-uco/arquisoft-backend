@@ -348,6 +348,24 @@ public final class ArtefactosApiMessages {
         public static final String OMITIR_RESP_422 =
                 "El artefacto o el asesor no existe, el asesor no es el responsable del artefacto "
                         + "o el artefacto ya está omitido";
+        public static final String CAMBIAR_VERSION_REPOSITORIO_SUMMARY =
+                "Cambiar la versión del repositorio de un artefacto";
+        public static final String CAMBIAR_VERSION_REPOSITORIO_DESCRIPTION =
+                "Cambia la versión del repositorio que se desarrolla en un artefacto por otra versión posterior "
+                        + "del mismo repositorio, y avisa por correo a los estudiantes vinculados. Solo lo puede "
+                        + "hacer el asesor responsable. Se permite mientras el artefacto no tenga versiones "
+                        + "subidas o la revisión más reciente de su última versión esté pendiente o en progreso. "
+                        + "No se permite si el artefacto está omitido, si la última versión no tiene revisión, "
+                        + "o si esa revisión está resuelta o cerrada. No modifica versiones, revisiones ni "
+                        + "observaciones.";
+        public static final String CAMBIAR_VERSION_REPOSITORIO_RESP_204 =
+                "Versión del repositorio del artefacto cambiada";
+        public static final String CAMBIAR_VERSION_REPOSITORIO_RESP_400 =
+                "Identificador del artefacto o de la versión del repositorio ausente o inválido";
+        public static final String CAMBIAR_VERSION_REPOSITORIO_RESP_422 =
+                "El artefacto, el asesor o alguna de las versiones no existe, el asesor no es el responsable, "
+                        + "el artefacto está omitido, la versión elegida es de otro repositorio o no es posterior "
+                        + "a la actual, o el momento de la revisión no admite el cambio";
         public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar los artefactos asignados al asesor";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Devuelve, de forma paginada, los artefactos a cargo del asesor autenticado con su proyecto "
