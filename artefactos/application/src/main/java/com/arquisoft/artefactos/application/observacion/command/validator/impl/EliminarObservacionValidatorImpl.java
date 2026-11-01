@@ -12,6 +12,7 @@ import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoExisteRuleI
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoNoOmitidoRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.AsesorPropietarioArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.observacion.EliminacionObservacionDomain;
+import com.arquisoft.artefactos.domain.observacion.ObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.model.ExistenciaObservacion;
 import com.arquisoft.artefactos.domain.observacion.rules.ObservacionExisteRule;
 import com.arquisoft.artefactos.domain.observacion.rules.impl.ObservacionExisteRuleImpl;
@@ -44,9 +45,9 @@ public class EliminarObservacionValidatorImpl implements EliminarObservacionVali
     }
 
     @Override
-    public void validar(EliminacionObservacionDomain eliminacion, RevisionAsesorDomain revision,
-                        ArtefactoDomain artefacto) {
-        observacionExisteRule.validar(new ExistenciaObservacion(eliminacion.getObservacion(), !revision.esVacio()));
+    public void validar(EliminacionObservacionDomain eliminacion, ObservacionDomain observacion,
+                        RevisionAsesorDomain revision, ArtefactoDomain artefacto) {
+        observacionExisteRule.validar(new ExistenciaObservacion(eliminacion.getObservacion(), !observacion.esVacio()));
         revisionAsesorExisteRule.validar(new ExistenciaRevisionAsesor(revision.getId(), !revision.esVacio()));
         artefactoExisteRule.validar(new ExistenciaArtefacto(artefacto.getId(), artefacto));
         asesorPropietarioArtefactoRule.validar(new PropiedadArtefactoAsesor(eliminacion.getAsesor(), artefacto));

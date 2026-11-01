@@ -394,7 +394,8 @@
               "artefactos:observacion-revision:create",
               "artefactos:observacion:delete",
               "artefactos:revision-asesor:send",
-              "artefactos:revision-asesor:delete"
+              "artefactos:revision-asesor:delete",
+              "artefactos:observacion-estado-asesor:update"
             ]
           }
         },
@@ -2503,6 +2504,15 @@
         {
           "id": "82485e44-5316-47a7-956f-d842bd30cc4f",
           "name": "artefactos:revision-asesor:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3b9a5c1e-6f42-4d7a-9e18-2c0f7a4b8d65",
+          "name": "artefactos:observacion-estado-asesor:update",
           "description": "",
           "composite": false,
           "clientRole": true,

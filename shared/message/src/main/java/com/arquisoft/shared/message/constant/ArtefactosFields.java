@@ -69,6 +69,8 @@ public final class ArtefactosFields {
         public static final String ID = "observacion";
         public static final String DESCRIPCION = "descripcion";
         public static final String ASESOR = "asesor";
+        public static final String ESTADO = "estado";
+        public static final String ESTUDIANTE = "estudiante";
     }
 
     public static final class Artefacto {

@@ -2,5 +2,6 @@ package com.arquisoft.artefactos.application.observacion.command.secondaryport.e
 
 import java.util.UUID;
 
-public record ObservacionEntity(UUID id, UUID revisionAsesor, String descripcion, String estado) {
+public record ObservacionEntity(
+        UUID id, UUID revisionAsesor, String descripcion, String estado, UUID observacionOrigen) {
 }

@@ -4,6 +4,8 @@ import com.arquisoft.artefactos.infrastructure.revisionasesor.query.secondaryada
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RevisionAsesorAsesorQueryMapperTest {
@@ -19,6 +21,7 @@ class RevisionAsesorAsesorQueryMapperTest {
                 .asesorId(UtilUUID.generarNuevoUUID())
                 .estadoRevisionAsesorId("RESUELTA")
                 .estadoRevisionAsesorNombre("Resuelta")
+                .fechaCreacion(Instant.parse("2026-10-01T10:00:00Z"))
                 .build();
 
         // Act
@@ -31,5 +34,6 @@ class RevisionAsesorAsesorQueryMapperTest {
         assertThat(readModel.version()).isEqualTo(3);
         assertThat(readModel.estadoRevisionAsesor()).isEqualTo("RESUELTA");
         assertThat(readModel.estadoRevisionAsesorNombre()).isEqualTo("Resuelta");
+        assertThat(readModel.fechaCreacion()).isEqualTo(entity.getFechaCreacion());
     }
 }

@@ -22,7 +22,7 @@ public class ConsultarObservacionesRevisionUseCaseImpl implements ConsultarObser
     public List<ObservacionReadModel> ejecutar(ObservacionCriteria entrada) {
         logger.debug(ObservacionKey.LOG_CONSULTANDO, entrada.revisionAsesor());
 
-        var observaciones = observacionQueryOutputPort.consultarPorRevisionAsesor(entrada.revisionAsesor());
+        var observaciones = observacionQueryOutputPort.consultarDeAsesor(entrada.revisionAsesor(), entrada.asesor());
 
         logger.debug(ObservacionKey.LOG_CONSULTA_COMPLETADA, observaciones.size());
         return observaciones;

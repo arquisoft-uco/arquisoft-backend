@@ -5,7 +5,9 @@ import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontrado
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.observacion.EliminacionObservacionDomain;
+import com.arquisoft.artefactos.domain.observacion.ObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.exception.ObservacionNoEncontradaException;
+import com.arquisoft.artefactos.domain.observacion.model.EstadoObservacion;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorNoAdmiteEliminarObservacionesException;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
@@ -28,6 +30,10 @@ class EliminarObservacionValidatorImplTest {
     private final ArtefactoDomain artefacto = ArtefactoDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), asesorId, null);
 
+    private final ObservacionDomain observacion = ObservacionDomain.reconstruir(
+            eliminacion.getObservacion(), UtilUUID.generarNuevoUUID(), "Texto", EstadoObservacion.NUEVA,
+            UtilUUID.obtenerUUIDPorDefecto());
+
     private RevisionAsesorDomain revision(EstadoRevisionAsesor estado) {
         return RevisionAsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), estado,
                 UtilFecha.generarInstanteActual());
@@ -39,13 +45,14 @@ class EliminarObservacionValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.PENDIENTE);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(eliminacion, revision, artefacto)).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validar(eliminacion, observacion, revision, artefacto)).doesNotThrowAnyException();
     }
 
     @Test
     void debeLanzarObservacionNoEncontrada_antesQueElResto_cuandoTodoFalta() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(eliminacion, RevisionAsesorDomain.VACIO, ArtefactoDomain.VACIO))
+        assertThatThrownBy(() -> validator.validar(
+                eliminacion, ObservacionDomain.VACIO, RevisionAsesorDomain.VACIO, ArtefactoDomain.VACIO))
                 .isInstanceOf(ObservacionNoEncontradaException.class);
     }
 
@@ -55,7 +62,7 @@ class EliminarObservacionValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.PENDIENTE);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(eliminacion, revision, ArtefactoDomain.VACIO))
+        assertThatThrownBy(() -> validator.validar(eliminacion, observacion, revision, ArtefactoDomain.VACIO))
                 .isInstanceOf(ArtefactoNoEncontradoException.class);
     }
 
@@ -67,7 +74,7 @@ class EliminarObservacionValidatorImplTest {
                 artefacto.getVersionRepositorioArtefacto(), UtilUUID.generarNuevoUUID(), null);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(eliminacion, revision, ajeno))
+        assertThatThrownBy(() -> validator.validar(eliminacion, observacion, revision, ajeno))
                 .isInstanceOf(AsesorNoPropietarioArtefactoException.class);
     }
 
@@ -79,7 +86,7 @@ class EliminarObservacionValidatorImplTest {
                 artefacto.getVersionRepositorioArtefacto(), asesorId, UtilFecha.generarInstanteActual());
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(eliminacion, revision, omitido))
+        assertThatThrownBy(() -> validator.validar(eliminacion, observacion, revision, omitido))
                 .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
@@ -89,7 +96,7 @@ class EliminarObservacionValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.EN_PROGRESO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(eliminacion, revision, artefacto))
+        assertThatThrownBy(() -> validator.validar(eliminacion, observacion, revision, artefacto))
                 .isInstanceOf(RevisionAsesorNoAdmiteEliminarObservacionesException.class);
     }
 }

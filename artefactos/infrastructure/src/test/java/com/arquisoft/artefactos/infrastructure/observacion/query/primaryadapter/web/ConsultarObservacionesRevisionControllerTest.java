@@ -7,6 +7,7 @@ import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,11 +35,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarObservacionesRevisionController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
-        ConsultarObservacionesRevisionControllerTest.TestSecurityConfig.class})
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class,
+        TrazabilidadConfig.class, ConsultarObservacionesRevisionControllerTest.TestSecurityConfig.class})
 class ConsultarObservacionesRevisionControllerTest {
 
     private static final String RUTA = "/revisiones-asesor/{id}/observaciones";
+
+    private static final UUID ASESOR_ID = UtilUUID.generarNuevoUUID();
 
     @TestConfiguration
     @EnableWebSecurity
@@ -60,6 +64,10 @@ class ConsultarObservacionesRevisionControllerTest {
     @MockitoBean
     private ConsultarObservacionesRevisionInteractor consultarObservacionesRevisionInteractor;
 
+    private static org.springframework.test.web.servlet.request.RequestPostProcessor tokenAsesor() {
+        return SecurityMockMvcRequestPostProcessors.jwt().jwt(j -> j.subject(ASESOR_ID.toString()));
+    }
+
     @Test
     void debe200ConLaLista_cuandoHayObservaciones() throws Exception {
         // Arrange
@@ -70,7 +78,7 @@ class ConsultarObservacionesRevisionControllerTest {
                 .thenReturn(List.of(observacion));
 
         // Act & Assert
-        mockMvc.perform(get(RUTA, revision).with(SecurityMockMvcRequestPostProcessors.jwt()))
+        mockMvc.perform(get(RUTA, revision).with(tokenAsesor()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(observacion.id().toString()))
                 .andExpect(jsonPath("$[0].revisionAsesor").value(revision.toString()))
@@ -81,6 +89,7 @@ class ConsultarObservacionesRevisionControllerTest {
         var captor = ArgumentCaptor.forClass(ConsultarObservacionesRevisionQuery.class);
         verify(consultarObservacionesRevisionInteractor).ejecutar(captor.capture());
         assertThat(captor.getValue().revisionAsesor()).isEqualTo(revision);
+        assertThat(captor.getValue().asesor()).isEqualTo(ASESOR_ID);
     }
 
     @Test
@@ -90,7 +99,7 @@ class ConsultarObservacionesRevisionControllerTest {
                 .thenReturn(List.of());
 
         // Act & Assert
-        mockMvc.perform(get(RUTA, UtilUUID.generarNuevoUUID()).with(SecurityMockMvcRequestPostProcessors.jwt()))
+        mockMvc.perform(get(RUTA, UtilUUID.generarNuevoUUID()).with(tokenAsesor()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
     }
@@ -98,7 +107,7 @@ class ConsultarObservacionesRevisionControllerTest {
     @Test
     void debe400_cuandoRevisionAsesorIdNoEsUuid() throws Exception {
         // Act & Assert
-        mockMvc.perform(get(RUTA, "no-es-uuid").with(SecurityMockMvcRequestPostProcessors.jwt()))
+        mockMvc.perform(get(RUTA, "no-es-uuid").with(tokenAsesor()))
                 .andExpect(status().isBadRequest());
 
         verify(consultarObservacionesRevisionInteractor, never()).ejecutar(any());

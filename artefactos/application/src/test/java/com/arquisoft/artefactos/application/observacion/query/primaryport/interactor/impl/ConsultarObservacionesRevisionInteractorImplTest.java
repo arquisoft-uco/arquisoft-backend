@@ -30,9 +30,10 @@ class ConsultarObservacionesRevisionInteractorImplTest {
     void debeDelegarEnElUseCaseConElCriteria_cuandoEjecuta() {
         // Arrange
         var revision = UtilUUID.generarNuevoUUID();
-        var query = ConsultarObservacionesRevisionQuery.crear(revision);
+        var asesor = UtilUUID.generarNuevoUUID();
+        var query = ConsultarObservacionesRevisionQuery.crear(revision, asesor);
         List<ObservacionReadModel> esperado = List.of();
-        when(consultarObservacionesRevisionUseCase.ejecutar(new ObservacionCriteria(revision)))
+        when(consultarObservacionesRevisionUseCase.ejecutar(new ObservacionCriteria(revision, asesor)))
                 .thenReturn(esperado);
 
         // Act
@@ -40,6 +41,6 @@ class ConsultarObservacionesRevisionInteractorImplTest {
 
         // Assert
         assertThat(resultado).isSameAs(esperado);
-        verify(consultarObservacionesRevisionUseCase).ejecutar(new ObservacionCriteria(revision));
+        verify(consultarObservacionesRevisionUseCase).ejecutar(new ObservacionCriteria(revision, asesor));
     }
 }

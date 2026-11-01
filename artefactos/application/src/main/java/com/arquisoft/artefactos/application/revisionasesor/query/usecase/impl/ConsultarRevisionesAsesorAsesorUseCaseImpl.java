@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.application.revisionasesor.query.usecase.impl;
 
 import com.arquisoft.artefactos.application.revisionasesor.query.criteria.RevisionAsesorAsesorCriteria;
-import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorReadModel;
+import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorAsesorReadModel;
 import com.arquisoft.artefactos.application.revisionasesor.query.secondaryport.RevisionAsesorQueryOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.query.usecase.ConsultarRevisionesAsesorAsesorUseCase;
 import com.arquisoft.shared.logger.AppLogger;
@@ -18,7 +18,7 @@ public class ConsultarRevisionesAsesorAsesorUseCaseImpl implements ConsultarRevi
     private final AppLogger logger;
 
     @Override
-    public PaginatedResult<RevisionAsesorReadModel> ejecutar(RevisionAsesorAsesorCriteria entrada) {
+    public PaginatedResult<RevisionAsesorAsesorReadModel> ejecutar(RevisionAsesorAsesorCriteria entrada) {
         logger.debug(RevisionAsesorKey.LOG_CONSULTANDO_ASESOR,
                 entrada.getPagina(), entrada.getTamanio(), entrada.tieneFiltros(), entrada.tieneOrden());
 

@@ -19,4 +19,16 @@ public interface ObservacionCommandRepository extends JpaRepository<ObservacionJ
             @Param("revisionAsesor") UUID revisionAsesor,
             @Param("estadoOrigen") String estadoOrigen,
             @Param("estadoDestino") String estadoDestino);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ObservacionJpaEntity o SET o.estado = :estado WHERE o.id = :observacion")
+    int actualizarEstado(@Param("observacion") UUID observacion, @Param("estado") String estado);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ObservacionJpaEntity o SET o.estado = :estadoDestino "
+            + "WHERE o.id = :observacion AND o.estado = :estadoActual")
+    int devolverEstado(
+            @Param("observacion") UUID observacion,
+            @Param("estadoActual") String estadoActual,
+            @Param("estadoDestino") String estadoDestino);
 }

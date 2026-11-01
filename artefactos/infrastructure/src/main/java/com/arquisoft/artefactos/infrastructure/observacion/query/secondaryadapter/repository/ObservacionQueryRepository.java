@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface ObservacionQueryRepository extends QueryRepository<ObservacionJpaQueryEntity, UUID> {
 
-    List<ObservacionJpaQueryEntity> findByRevisionAsesorOrderByDescripcionAscIdAsc(UUID revisionAsesor);
+    List<ObservacionJpaQueryEntity> findByRevisionAsesorAndAsesorOrderByDescripcionAscIdAsc(
+            UUID revisionAsesor, UUID asesor);
 }

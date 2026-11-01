@@ -12,12 +12,14 @@ class ConsultarObservacionesRevisionMapperTest {
     void debeConstruirCriteria_cuandoQueryValida() {
         // Arrange
         var revision = UtilUUID.generarNuevoUUID();
-        var query = ConsultarObservacionesRevisionQuery.crear(revision);
+        var asesor = UtilUUID.generarNuevoUUID();
+        var query = ConsultarObservacionesRevisionQuery.crear(revision, asesor);
 
         // Act
         var criteria = ConsultarObservacionesRevisionMapper.toCriteria(query);
 
         // Assert
         assertThat(criteria.revisionAsesor()).isEqualTo(revision);
+        assertThat(criteria.asesor()).isEqualTo(asesor);
     }
 }

@@ -31,6 +31,7 @@ rutas:
       revision: /revisiones/{revisionAsesorId}
       estado-revision: /revisiones/{revisionAsesorId}/estado
       envio-revision: /revisiones/{revisionAsesorId}/envio
+      estado-asesor-observacion: /observaciones/{observacionId}/estado-asesor
       observaciones-revision: /revisiones/{revisionAsesorId}/observaciones
       observacion: /observaciones/{observacionId}
     estados-revision-asesor:

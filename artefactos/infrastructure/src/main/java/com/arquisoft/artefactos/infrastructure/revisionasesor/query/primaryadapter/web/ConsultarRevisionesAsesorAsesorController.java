@@ -1,9 +1,9 @@
 package com.arquisoft.artefactos.infrastructure.revisionasesor.query.primaryadapter.web;
 
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.interactor.ConsultarRevisionesAsesorAsesorInteractor;
-import com.arquisoft.artefactos.infrastructure.revisionasesor.query.primaryadapter.web.dto.RevisionAsesorResponseDTO;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.query.primaryadapter.web.dto.RevisionAsesorAsesorResponseDTO;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.query.primaryadapter.web.mapper.ConsultarRevisionesAsesorAsesorRequestMapper;
-import com.arquisoft.artefactos.infrastructure.revisionasesor.query.primaryadapter.web.mapper.RevisionAsesorResponseMapper;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.query.primaryadapter.web.mapper.RevisionAsesorAsesorResponseMapper;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ArtefactosApiMessages;
@@ -53,7 +53,7 @@ public class ConsultarRevisionesAsesorAsesorController {
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
                     description = ArtefactosApiMessages.RevisionAsesor.CONSULTAR_ASESOR_RESP_403)
     })
-    public ResponseEntity<PageResponseDTO<RevisionAsesorResponseDTO>> consultarRevisionesRealizadas(
+    public ResponseEntity<PageResponseDTO<RevisionAsesorAsesorResponseDTO>> consultarRevisionesRealizadas(
             @RequestBody(required = false) QueryCriteriaRequestDTO request,
             IdentidadActual identidad) {
 
@@ -62,6 +62,6 @@ public class ConsultarRevisionesAsesorAsesorController {
                 ConsultarRevisionesAsesorAsesorRequestMapper.toQuery(request, asesor));
 
         return ResponseEntity.ok(PageResponseDTO.from(
-                resultado.map(RevisionAsesorResponseMapper::toResponse)));
+                resultado.map(RevisionAsesorAsesorResponseMapper::toResponse)));
     }
 }

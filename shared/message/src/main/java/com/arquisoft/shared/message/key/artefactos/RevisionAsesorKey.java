@@ -48,6 +48,17 @@ public enum RevisionAsesorKey implements ClaveMensaje {
     ERROR_NO_ELIMINABLE("artefactos.dominio.revisionasesor.error.no-eliminable", 0),
     ERROR_NO_ELIMINABLE_DETALLE("artefactos.dominio.revisionasesor.error.no-eliminable-detalle", 2),
     LOG_ELIMINADA("artefactos.infraestructura.revisionasesor.log.eliminada", 1),
+    ERROR_NO_ADMITE_DECISION_OBSERVACION(
+            "artefactos.dominio.revisionasesor.error.no-admite-decision-observacion", 0),
+    ERROR_NO_ADMITE_DECISION_OBSERVACION_DETALLE(
+            "artefactos.dominio.revisionasesor.error.no-admite-decision-observacion-detalle", 2),
+    ERROR_VERSION_SIGUIENTE_NO_REGISTRADA(
+            "artefactos.dominio.revisionasesor.error.version-siguiente-no-registrada", 0),
+    ERROR_VERSION_SIGUIENTE_NO_REGISTRADA_DETALLE(
+            "artefactos.dominio.revisionasesor.error.version-siguiente-no-registrada-detalle", 2),
+    ERROR_VERSION_SIGUIENTE_ENVIADA("artefactos.dominio.revisionasesor.error.version-siguiente-enviada", 0),
+    ERROR_VERSION_SIGUIENTE_ENVIADA_DETALLE(
+            "artefactos.dominio.revisionasesor.error.version-siguiente-enviada-detalle", 2),
     LOG_GUARDADA("artefactos.infraestructura.revisionasesor.log.guardada", 1);
 
     private final String clave;

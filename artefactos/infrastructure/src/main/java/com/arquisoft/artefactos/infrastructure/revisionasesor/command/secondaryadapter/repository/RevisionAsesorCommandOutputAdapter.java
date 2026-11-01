@@ -7,6 +7,7 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.CambiarEstadoRevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -68,5 +69,14 @@ public class RevisionAsesorCommandOutputAdapter implements RevisionAsesorOutputP
     public void eliminar(UUID revisionAsesor) {
         revisionAsesorCommandRepository.deleteById(revisionAsesor);
         logger.debug(RevisionAsesorKey.LOG_ELIMINADA, revisionAsesor);
+    }
+
+    @Override
+    public Optional<RevisionAsesorEntity> obtenerBloqueadaDeVersionSiguientePorObservacion(UUID observacion) {
+        return revisionAsesorCommandRepository
+                .buscarBloqueadaDeVersionSiguientePorObservacion(observacion, Limit.of(1))
+                .stream()
+                .findFirst()
+                .map(RevisionAsesorJpaMapper::toEntity);
     }
 }

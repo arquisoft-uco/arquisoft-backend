@@ -2,7 +2,7 @@ package com.arquisoft.artefactos.application.revisionasesor.query.primaryport.in
 
 import com.arquisoft.artefactos.application.revisionasesor.query.criteria.RevisionAsesorAsesorCriteria;
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.model.ConsultarRevisionesAsesorAsesorQuery;
-import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorReadModel;
+import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorAsesorReadModel;
 import com.arquisoft.artefactos.application.revisionasesor.query.usecase.ConsultarRevisionesAsesorAsesorUseCase;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.FiltroOperador;
@@ -42,7 +42,7 @@ class ConsultarRevisionesAsesorAsesorInteractorImplTest {
         var asesor = UtilUUID.generarNuevoUUID();
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
         var query = ConsultarRevisionesAsesorAsesorQuery.crear(asesor, criterio);
-        var resultadoEsperado = PaginatedResult.<RevisionAsesorReadModel>of(List.of(), 0, 10, 0L);
+        var resultadoEsperado = PaginatedResult.<RevisionAsesorAsesorReadModel>of(List.of(), 0, 10, 0L);
         when(consultarRevisionesAsesorAsesorUseCase.ejecutar(any(RevisionAsesorAsesorCriteria.class)))
                 .thenReturn(resultadoEsperado);
 
