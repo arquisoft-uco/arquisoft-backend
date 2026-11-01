@@ -22,4 +22,6 @@ public interface RevisionAsesorOutputPort {
     boolean existeVersionPosterior(UUID revisionAsesor);
 
     Optional<RevisionAsesorEntity> obtenerBloqueadaPorObservacion(UUID observacion);
+
+    void eliminar(UUID revisionAsesor);
 }

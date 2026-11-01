@@ -28,6 +28,7 @@ rutas:
       cambiar-asesor: /{artefactoId}/asesor
       omitir: /{artefactoId}
       revisiones-version: /versiones/{versionArtefactoId}/revisiones
+      revision: /revisiones/{revisionAsesorId}
       estado-revision: /revisiones/{revisionAsesorId}/estado
       envio-revision: /revisiones/{revisionAsesorId}/envio
       observaciones-revision: /revisiones/{revisionAsesorId}/observaciones

@@ -63,4 +63,10 @@ public class RevisionAsesorCommandOutputAdapter implements RevisionAsesorOutputP
         return revisionAsesorCommandRepository.buscarBloqueadaPorObservacion(observacion)
                 .map(RevisionAsesorJpaMapper::toEntity);
     }
+
+    @Override
+    public void eliminar(UUID revisionAsesor) {
+        revisionAsesorCommandRepository.deleteById(revisionAsesor);
+        logger.debug(RevisionAsesorKey.LOG_ELIMINADA, revisionAsesor);
+    }
 }
