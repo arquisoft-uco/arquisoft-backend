@@ -386,6 +386,7 @@
               "artefactos:version-artefacto-asesor:view",
               "artefactos:version-artefacto:view",
               "artefactos:artefacto-asesor:view",
+              "artefactos:artefacto-sin-avance:view",
               "artefactos:artefacto:update-asesor",
               "artefactos:artefacto:omit",
               "artefactos:estudiante-artefacto:create",
@@ -395,6 +396,7 @@
               "artefactos:observacion:delete",
               "artefactos:revision-asesor:send",
               "artefactos:revision-asesor:close",
+              "artefactos:revision-asesor:delete",
               "artefactos:observacion-estado-asesor:update"
             ]
           }
@@ -2511,6 +2513,15 @@
           "attributes": {}
         },
         {
+          "id": "82485e44-5316-47a7-956f-d842bd30cc4f",
+          "name": "artefactos:revision-asesor:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "3b9a5c1e-6f42-4d7a-9e18-2c0f7a4b8d65",
           "name": "artefactos:observacion-estado-asesor:update",
           "description": "",
@@ -2567,6 +2578,15 @@
         {
           "id": "3b9c1e5a-6d24-4f87-a1c3-9e2d7b405f18",
           "name": "artefactos:artefacto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8617b4c8-5137-4981-87ab-db4fcb2d57dd",
+          "name": "artefactos:artefacto-sin-avance:view",
           "description": "",
           "composite": false,
           "clientRole": true,

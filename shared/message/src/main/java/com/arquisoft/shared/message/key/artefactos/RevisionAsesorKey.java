@@ -53,6 +53,9 @@ public enum RevisionAsesorKey implements ClaveMensaje {
             "artefactos.dominio.revisionasesor.error.observaciones-version-anterior-sin-cerrar", 0),
     ERROR_OBSERVACIONES_VERSION_ANTERIOR_SIN_CERRAR_DETALLE(
             "artefactos.dominio.revisionasesor.error.observaciones-version-anterior-sin-cerrar-detalle", 1),
+    ERROR_NO_ELIMINABLE("artefactos.dominio.revisionasesor.error.no-eliminable", 0),
+    ERROR_NO_ELIMINABLE_DETALLE("artefactos.dominio.revisionasesor.error.no-eliminable-detalle", 2),
+    LOG_ELIMINADA("artefactos.infraestructura.revisionasesor.log.eliminada", 1),
     ERROR_NO_ADMITE_DECISION_OBSERVACION(
             "artefactos.dominio.revisionasesor.error.no-admite-decision-observacion", 0),
     ERROR_NO_ADMITE_DECISION_OBSERVACION_DETALLE(

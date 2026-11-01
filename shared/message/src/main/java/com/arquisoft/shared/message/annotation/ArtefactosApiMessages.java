@@ -37,7 +37,8 @@ public final class ArtefactosApiMessages {
                 "Devuelve, de forma paginada, las revisiones registradas sobre las versiones de los artefactos "
                         + "a cargo del asesor autenticado. Se puede filtrar por la versión del artefacto "
                         + "(versionArtefacto) y por el estado de la revisión (estadoRevisionAsesor), y ordenar por "
-                        + "estadoRevisionAsesor. El asesor se toma del token, nunca del cuerpo.";
+                        + "estadoRevisionAsesor. Cada revisión incluye su fecha de creación (fechaCreacion). "
+                        + "El asesor se toma del token, nunca del cuerpo.";
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de revisiones realizadas por el asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
@@ -54,6 +55,17 @@ public final class ArtefactosApiMessages {
         public static final String REGISTRAR_RESP_422 =
                 "La versión o su artefacto no existen, el asesor no es el responsable del artefacto, la versión "
                         + "no es la más reciente o ya tiene una revisión sin cerrar";
+
+        public static final String ELIMINAR_SUMMARY = "Eliminar una revisión de la versión de un artefacto";
+        public static final String ELIMINAR_DESCRIPTION =
+                "Elimina por completo la revisión indicada junto con sus observaciones. El asesor se toma del "
+                        + "token y debe ser el responsable del artefacto. La revisión debe estar PENDIENTE, es "
+                        + "decir, aún no enviada al estudiante. No envía correos.";
+        public static final String ELIMINAR_RESP_204 = "Revisión eliminada";
+        public static final String ELIMINAR_RESP_400 = "Identificador de la revisión mal formado";
+        public static final String ELIMINAR_RESP_422 =
+                "La revisión o su artefacto no existen, el asesor no es el responsable del artefacto, el "
+                        + "artefacto fue omitido o la revisión ya no está pendiente";
 
         public static final String ENVIAR_SUMMARY = "Enviar la revisión de la versión de un artefacto";
         public static final String ENVIAR_DESCRIPTION =
@@ -348,6 +360,19 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar los artefactos del asesor";
+        public static final String SIN_AVANCE_SUMMARY = "Reporte de artefactos sin avance";
+        public static final String SIN_AVANCE_DESCRIPTION =
+                "Devuelve, de forma paginada, los artefactos a cargo del asesor autenticado cuya última versión "
+                        + "tiene más de diasSinAvance días (entre 1 y 365) o que aún no tienen ninguna versión; "
+                        + "los artefactos omitidos no aparecen. Se puede filtrar por proyectoGrado, nombreProyecto, "
+                        + "versionRepositorioArtefacto, nombreDocumento, versionDocumento, nombreRepositorio y "
+                        + "estadoUltimaRevision, y ordenar por nombreProyecto, nombreDocumento, versionDocumento, "
+                        + "nombreRepositorio, estadoUltimaRevision y fechaUltimaVersion; por defecto, nombreProyecto y "
+                        + "nombreDocumento ascendentes. El asesor se toma del token, nunca del cuerpo.";
+        public static final String SIN_AVANCE_RESP_200 = "Página de artefactos del asesor sin avance";
+        public static final String SIN_AVANCE_RESP_400 =
+                "Días sin avance ausentes o fuera de rango, o filtro, operador, valor u ordenamiento inválido";
+        public static final String SIN_AVANCE_RESP_403 = "Sin permiso para consultar los artefactos sin avance";
         public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Filtrar los artefactos de los proyectos de grado del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Devuelve, de forma paginada, los artefactos de los proyectos de grado a los que el estudiante "

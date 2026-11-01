@@ -13,6 +13,8 @@ public enum ArtefactoKey implements ClaveMensaje {
     LOG_TRASPASANDO("artefactos.aplicacion.artefacto.log.traspasando", 2),
     LOG_CONSULTANDO_ASESOR("artefactos.aplicacion.artefacto.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("artefactos.aplicacion.artefacto.log.consulta-asesor-completada", 1),
+    LOG_CONSULTANDO_SIN_AVANCE("artefactos.aplicacion.artefacto.log.consultando-sin-avance", 4),
+    LOG_CONSULTA_SIN_AVANCE_COMPLETADA("artefactos.aplicacion.artefacto.log.consulta-sin-avance-completada", 1),
     LOG_CONSULTANDO_ESTUDIANTE("artefactos.aplicacion.artefacto.log.consultando-estudiante", 4),
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("artefactos.aplicacion.artefacto.log.consulta-estudiante-completada", 1),
     LOG_CAMBIANDO_ASESOR("artefactos.aplicacion.artefacto.log.cambiando-asesor", 2),

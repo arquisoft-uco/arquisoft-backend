@@ -49,6 +49,9 @@ public final class ArtefactosCodes {
         public static final String ID_REQUERIDO = "ARTEFACTOS_ARTEFACTO_ID_REQUERIDO";
         public static final String PROYECTO_GRADO_REQUERIDO = "ARTEFACTOS_ARTEFACTO_PROYECTO_GRADO_REQUERIDO";
         public static final String ASESOR_REQUERIDO = "ARTEFACTOS_ARTEFACTO_ASESOR_REQUERIDO";
+        public static final String DIAS_SIN_AVANCE_REQUERIDO = "ARTEFACTOS_ARTEFACTO_DIAS_SIN_AVANCE_REQUERIDO";
+        public static final String DIAS_SIN_AVANCE_FUERA_DE_RANGO =
+                "ARTEFACTOS_ARTEFACTO_DIAS_SIN_AVANCE_FUERA_DE_RANGO";
         public static final String ESTUDIANTE_REQUERIDO = "ARTEFACTOS_ARTEFACTO_ESTUDIANTE_REQUERIDO";
         public static final String VERSION_REPOSITORIO_ARTEFACTO_REQUERIDA =
                 "ARTEFACTOS_ARTEFACTO_VERSION_REPOSITORIO_ARTEFACTO_REQUERIDA";
@@ -147,6 +150,7 @@ public final class ArtefactosCodes {
         public static final String CON_OBSERVACIONES = "REVISION_ASESOR_CON_OBSERVACIONES";
         public static final String OBSERVACIONES_VERSION_ANTERIOR_SIN_CERRAR =
                 "REVISION_ASESOR_OBSERVACIONES_VERSION_ANTERIOR_SIN_CERRAR";
+        public static final String NO_ELIMINABLE = "REVISION_ASESOR_NO_ELIMINABLE";
         public static final String NO_ADMITE_DECISION_OBSERVACION =
                 "REVISION_ASESOR_NO_ADMITE_DECISION_OBSERVACION";
         public static final String VERSION_SIGUIENTE_NO_REGISTRADA =
