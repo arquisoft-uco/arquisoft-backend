@@ -2,7 +2,7 @@
 # --platform=$BUILDPLATFORM: el jar es bytecode agnóstico de arquitectura, así que
 # esta etapa siempre corre nativa en el runner (evita compilar bajo emulación QEMU
 # cuando el target es arm64, que sería órdenes de magnitud más lento).
-FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk-alpine AS builder
+FROM --platform=$BUILDPLATFORM eclipse-temurin:24-jdk-alpine AS builder
 WORKDIR /build
 
 # Copiar todo el proyecto (.dockerignore excluye secretos, .git, build/, *.bat, etc.)
@@ -18,7 +18,7 @@ RUN sed -i 's/\r$//' gradlew && chmod +x gradlew && \
 
 # ==================== STAGE 2: RUNTIME ====================
 # JRE-only: reduce superficie de ataque al eliminar el compilador y herramientas de build
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:24-jre-alpine
 WORKDIR /app
 
 # Crear grupo y usuario de sistema sin contraseña ni shell interactivo (OWASP A05)
