@@ -219,6 +219,34 @@ class ArtefactoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeActualizarSoloLaVersionRepositorio_cuandoCambiarVersionRepositorio() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var objetivo = sembrar(proyecto, asesor);
+        var hermano = sembrar(proyecto, asesor);
+        entityManager.flush();
+        entityManager.clear();
+        var versionHermano = entityManager.find(ArtefactoJpaEntity.class, hermano).getVersionRepositorioArtefacto();
+        var asesorObjetivo = entityManager.find(ArtefactoJpaEntity.class, objetivo).getAsesor();
+        entityManager.clear();
+        var nueva = UtilUUID.generarNuevoUUID();
+
+        // Act
+        adapter.cambiarVersionRepositorio(objetivo, nueva);
+        entityManager.clear();
+
+        // Assert
+        var cambiado = entityManager.find(ArtefactoJpaEntity.class, objetivo);
+        assertThat(cambiado.getVersionRepositorioArtefacto()).isEqualTo(nueva);
+        assertThat(cambiado.getAsesor()).isEqualTo(asesorObjetivo);
+        assertThat(cambiado.getOmitidoEn()).isNull();
+        assertThat(entityManager.find(ArtefactoJpaEntity.class, hermano).getVersionRepositorioArtefacto())
+                .isEqualTo(versionHermano);
+        verify(logger).debug(ArtefactoKey.LOG_VERSION_REPOSITORIO_ACTUALIZADA, objetivo);
+    }
+
+    @Test
     void debeOmitirSoloElArtefactoIndicado_yLoguear() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();

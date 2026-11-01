@@ -184,6 +184,8 @@ public final class EventTopics {
                 "artefactos.revision_asesor.estado_cambiado";
         public static final String ARTEFACTO_OMITIDO =
                 "artefactos.artefacto.omitido";
+        public static final String ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA =
+                "artefactos.artefacto.version_repositorio_cambiada";
         public static final String REVISION_ASESOR_ENVIADA =
                 "artefactos.revision_asesor.enviada";
         public static final String REVISION_ASESOR_CERRADA =

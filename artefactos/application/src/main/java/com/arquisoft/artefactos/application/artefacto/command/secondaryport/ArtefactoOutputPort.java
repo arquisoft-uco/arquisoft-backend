@@ -22,6 +22,8 @@ public interface ArtefactoOutputPort {
 
     void omitir(UUID artefacto, Instant omitidoEn);
 
+    void cambiarVersionRepositorio(UUID artefacto, UUID versionRepositorioArtefacto);
+
     void reactivar(UUID artefacto, UUID asesor);
 
     Optional<ArtefactoEntity> obtenerOmitidoPorProyectoYRepositorio(
