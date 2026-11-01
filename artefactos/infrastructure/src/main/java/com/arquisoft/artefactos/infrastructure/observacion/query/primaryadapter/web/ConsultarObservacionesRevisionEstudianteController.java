@@ -1,13 +1,14 @@
 package com.arquisoft.artefactos.infrastructure.observacion.query.primaryadapter.web;
 
-import com.arquisoft.artefactos.application.observacion.query.primaryport.interactor.ConsultarObservacionesRevisionInteractor;
+import com.arquisoft.artefactos.application.observacion.query.primaryport.interactor.ConsultarObservacionesRevisionEstudianteInteractor;
 import com.arquisoft.artefactos.infrastructure.observacion.query.primaryadapter.web.dto.ObservacionResponseDTO;
-import com.arquisoft.artefactos.infrastructure.observacion.query.primaryadapter.web.mapper.ConsultarObservacionesRevisionRequestMapper;
+import com.arquisoft.artefactos.infrastructure.observacion.query.primaryadapter.web.mapper.ConsultarObservacionesRevisionEstudianteRequestMapper;
 import com.arquisoft.artefactos.infrastructure.observacion.query.primaryadapter.web.mapper.ObservacionResponseMapper;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ArtefactosApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,7 +35,7 @@ import java.util.UUID;
         description = ArtefactosApiMessages.Observacion.TAG_DESCRIPTION)
 public class ConsultarObservacionesRevisionEstudianteController {
 
-    private final ConsultarObservacionesRevisionInteractor consultarObservacionesRevisionInteractor;
+    private final ConsultarObservacionesRevisionEstudianteInteractor consultarObservacionesRevisionEstudianteInteractor;
 
     @GetMapping("${rutas.artefactos.observaciones.listar-estudiante:/{revisionAsesorId}/observaciones/estudiante}")
     @Operation(
@@ -60,10 +61,12 @@ public class ConsultarObservacionesRevisionEstudianteController {
                     description = ArtefactosApiMessages.Observacion.CONSULTAR_ESTUDIANTE_RESP_403)
     })
     public ResponseEntity<List<ObservacionResponseDTO>> consultarObservacionesDeLaRevisionComoEstudiante(
-            @PathVariable("revisionAsesorId") UUID revisionAsesorId) {
+            @PathVariable("revisionAsesorId") UUID revisionAsesorId,
+            IdentidadActual identidad) {
 
-        var observaciones = consultarObservacionesRevisionInteractor.ejecutar(
-                ConsultarObservacionesRevisionRequestMapper.toQuery(revisionAsesorId));
+        var estudiante = identidad.id();
+        var observaciones = consultarObservacionesRevisionEstudianteInteractor.ejecutar(
+                ConsultarObservacionesRevisionEstudianteRequestMapper.toQuery(revisionAsesorId, estudiante));
 
         return ResponseEntity.ok(observaciones.stream()
                 .map(ObservacionResponseMapper::toResponse)

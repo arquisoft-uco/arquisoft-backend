@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ArtefactosApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -60,10 +61,12 @@ public class ConsultarObservacionesRevisionController {
                     description = ArtefactosApiMessages.Observacion.CONSULTAR_RESP_403)
     })
     public ResponseEntity<List<ObservacionResponseDTO>> consultarObservacionesDeLaRevision(
-            @PathVariable("revisionAsesorId") UUID revisionAsesorId) {
+            @PathVariable("revisionAsesorId") UUID revisionAsesorId,
+            IdentidadActual identidad) {
 
+        var asesor = identidad.id();
         var observaciones = consultarObservacionesRevisionInteractor.ejecutar(
-                ConsultarObservacionesRevisionRequestMapper.toQuery(revisionAsesorId));
+                ConsultarObservacionesRevisionRequestMapper.toQuery(revisionAsesorId, asesor));
 
         return ResponseEntity.ok(observaciones.stream()
                 .map(ObservacionResponseMapper::toResponse)

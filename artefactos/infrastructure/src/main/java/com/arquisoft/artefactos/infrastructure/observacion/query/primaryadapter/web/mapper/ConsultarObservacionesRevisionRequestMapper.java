@@ -8,7 +8,7 @@ public final class ConsultarObservacionesRevisionRequestMapper {
 
     private ConsultarObservacionesRevisionRequestMapper() {}
 
-    public static ConsultarObservacionesRevisionQuery toQuery(UUID revisionAsesorId) {
-        return ConsultarObservacionesRevisionQuery.crear(revisionAsesorId);
+    public static ConsultarObservacionesRevisionQuery toQuery(UUID revisionAsesorId, UUID asesor) {
+        return ConsultarObservacionesRevisionQuery.crear(revisionAsesorId, asesor);
     }
 }
