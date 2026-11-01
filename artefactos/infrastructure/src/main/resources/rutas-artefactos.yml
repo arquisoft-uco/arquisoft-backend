@@ -24,6 +24,7 @@ rutas:
       versiones-estudiante: /versiones/estudiante
       version: /versiones/{versionArtefactoId}
       asesor: /asesor
+      asesor-sin-avance: /asesor/sin-avance
       estudiante: /estudiante
       cambiar-asesor: /{artefactoId}/asesor
       omitir: /{artefactoId}

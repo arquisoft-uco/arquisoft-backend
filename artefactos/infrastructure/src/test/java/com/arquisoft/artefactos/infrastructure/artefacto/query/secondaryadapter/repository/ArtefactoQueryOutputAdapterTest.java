@@ -43,6 +43,9 @@ class ArtefactoQueryOutputAdapterTest {
     @Autowired
     private ArtefactoEstudianteQueryRepository estudianteRepository;
 
+    @Autowired
+    private ArtefactoSinAvanceQueryRepository sinAvanceRepository;
+
     private ArtefactoQueryOutputAdapter adapter;
 
     private final UUID asesorA = UtilUUID.generarNuevoUUID();
@@ -63,7 +66,8 @@ class ArtefactoQueryOutputAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new ArtefactoQueryOutputAdapter(repository, new ArtefactoAsesorJpaSpecification(),
-                estudianteRepository, new ArtefactoEstudianteJpaSpecification());
+                estudianteRepository, new ArtefactoEstudianteJpaSpecification(),
+                sinAvanceRepository, new ArtefactoSinAvanceJpaSpecification());
     }
 
     private UUID sembrarProyecto(String nombre) {

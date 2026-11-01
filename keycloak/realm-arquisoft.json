@@ -386,6 +386,7 @@
               "artefactos:version-artefacto-asesor:view",
               "artefactos:version-artefacto:view",
               "artefactos:artefacto-asesor:view",
+              "artefactos:artefacto-sin-avance:view",
               "artefactos:artefacto:update-asesor",
               "artefactos:artefacto:omit",
               "artefactos:estudiante-artefacto:create",
@@ -2567,6 +2568,15 @@
         {
           "id": "3b9c1e5a-6d24-4f87-a1c3-9e2d7b405f18",
           "name": "artefactos:artefacto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8617b4c8-5137-4981-87ab-db4fcb2d57dd",
+          "name": "artefactos:artefacto-sin-avance:view",
           "description": "",
           "composite": false,
           "clientRole": true,
