@@ -140,6 +140,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.revision-asesor-enviada", 2),
     CUERPO_REVISION_ASESOR_ENVIADA(
             "notificaciones.aplicacion.plantilla.cuerpo.revision-asesor-enviada", 4),
+    ASUNTO_REVISION_ASESOR_CERRADA(
+            "notificaciones.aplicacion.plantilla.asunto.revision-asesor-cerrada", 2),
+    CUERPO_REVISION_ASESOR_CERRADA(
+            "notificaciones.aplicacion.plantilla.cuerpo.revision-asesor-cerrada", 4),
     ASUNTO_OBSERVACION_REABIERTA(
             "notificaciones.aplicacion.plantilla.asunto.observacion-reabierta", 2),
     CUERPO_OBSERVACION_REABIERTA(

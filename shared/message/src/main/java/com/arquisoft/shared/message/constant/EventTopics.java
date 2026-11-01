@@ -186,6 +186,8 @@ public final class EventTopics {
                 "artefactos.artefacto.omitido";
         public static final String REVISION_ASESOR_ENVIADA =
                 "artefactos.revision_asesor.enviada";
+        public static final String REVISION_ASESOR_CERRADA =
+                "artefactos.revision_asesor.cerrada";
         public static final String OBSERVACION_REABIERTA =
                 "artefactos.observacion.reabierta";
         public static final String ESTUDIANTE_ARTEFACTO_REMOVIDO =

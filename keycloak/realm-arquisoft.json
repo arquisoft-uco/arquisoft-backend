@@ -394,6 +394,7 @@
               "artefactos:observacion-revision:create",
               "artefactos:observacion:delete",
               "artefactos:revision-asesor:send",
+              "artefactos:revision-asesor:close",
               "artefactos:observacion-estado-asesor:update"
             ]
           }
@@ -2494,6 +2495,15 @@
         {
           "id": "d7c592ea-79d7-4f29-a336-dec2655af59d",
           "name": "artefactos:revision-asesor:send",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "8e2f4a6c-1b3d-4f57-a9c0-5d7e1f2b3a46",
+          "name": "artefactos:revision-asesor:close",
           "description": "",
           "composite": false,
           "clientRole": true,
