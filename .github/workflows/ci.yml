@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Historial completo: el check de inmutabilidad compara contra la rama destino.
           fetch-depth: 0
@@ -48,7 +48,7 @@ jobs:
     steps:
       # ── Checkout ──
       - name: Checkout código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # ── Setup Java 21 ──
       - name: Setup Java 21 (Temurin)
