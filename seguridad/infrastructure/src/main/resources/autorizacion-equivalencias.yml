@@ -212,6 +212,7 @@ security:
         - {method: GET, path: "/api/artefactos/versiones/{versionArtefactoId}", role: "artefactos:version-artefacto:view"}
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/estado", role: "artefactos:revision-asesor-estado:update"}
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/envio", role: "artefactos:revision-asesor:send"}
+        - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/cierre", role: "artefactos:revision-asesor:close"}
         - {method: DELETE, path: "/api/artefactos/revisiones/{revisionAsesorId}", role: "artefactos:revision-asesor:delete"}
         - {method: PATCH, path: "/api/artefactos/observaciones/{observacionId}/estado-asesor", role: "artefactos:observacion-estado-asesor:update"}
         # mapas_ruta

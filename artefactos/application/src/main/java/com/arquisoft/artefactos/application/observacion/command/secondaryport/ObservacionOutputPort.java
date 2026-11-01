@@ -11,6 +11,10 @@ public interface ObservacionOutputPort {
 
     boolean existePorRevisionAsesorYDescripcion(UUID revisionAsesor, String descripcion);
 
+    boolean existenPorRevisionAsesor(UUID revisionAsesor);
+
+    boolean existenNoCerradasDeVersionAnterior(UUID revisionAsesor, String estadoCerrada);
+
     void eliminar(UUID observacion);
 
     int avanzarEstadoPorRevisionAsesor(UUID revisionAsesor, String estadoOrigen, String estadoDestino);

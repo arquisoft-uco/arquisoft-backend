@@ -30,6 +30,16 @@ public class ObservacionCommandOutputAdapter implements ObservacionOutputPort {
     }
 
     @Override
+    public boolean existenPorRevisionAsesor(UUID revisionAsesor) {
+        return observacionCommandRepository.existsByRevisionAsesor(revisionAsesor);
+    }
+
+    @Override
+    public boolean existenNoCerradasDeVersionAnterior(UUID revisionAsesor, String estadoCerrada) {
+        return observacionCommandRepository.existenNoCerradasDeVersionAnterior(revisionAsesor, estadoCerrada);
+    }
+
+    @Override
     public void eliminar(UUID observacion) {
         observacionCommandRepository.deleteById(observacion);
         logger.debug(ObservacionKey.LOG_ELIMINADA, observacion);

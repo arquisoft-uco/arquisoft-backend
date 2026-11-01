@@ -79,6 +79,20 @@ public final class ArtefactosApiMessages {
                 "La revisión, su artefacto o el asesor no existen, el asesor no es el responsable del "
                         + "artefacto, el artefacto está omitido o la revisión ya fue enviada";
 
+        public static final String CERRAR_SUMMARY = "Cerrar la revisión de la versión de un artefacto sin enviarla";
+        public static final String CERRAR_DESCRIPTION =
+                "Cierra la revisión PENDIENTE de la última versión sin enviarla: el artefacto queda completado "
+                        + "y no admite nuevas versiones mientras la revisión siga cerrada. El asesor se toma del "
+                        + "token y debe ser el responsable del artefacto. La revisión no puede tener observaciones "
+                        + "y las de la versión anterior deben estar todas cerradas. Los estudiantes vinculados "
+                        + "reciben un correo.";
+        public static final String CERRAR_RESP_204 = "Revisión cerrada";
+        public static final String CERRAR_RESP_400 = "Identificador de la revisión mal formado";
+        public static final String CERRAR_RESP_422 =
+                "La revisión, su artefacto o el asesor no existen, el asesor no es el responsable del "
+                        + "artefacto, el artefacto está omitido, la revisión no está PENDIENTE, tiene observaciones "
+                        + "o quedan observaciones de la versión anterior sin cerrar";
+
         public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de una revisión del asesor";
         public static final String CAMBIAR_ESTADO_DESCRIPTION =
                 "Marca como RESUELTA una revisión EN_PROGRESO, siempre que el estudiante ya haya subido una "
