@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.application.revisionasesor.query.usecase.impl;
 
 import com.arquisoft.artefactos.application.revisionasesor.query.criteria.RevisionAsesorAsesorCriteria;
-import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorReadModel;
+import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorAsesorReadModel;
 import com.arquisoft.artefactos.application.revisionasesor.query.secondaryport.RevisionAsesorQueryOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,9 +38,9 @@ class ConsultarRevisionesAsesorAsesorUseCaseImplTest {
     void debeConsultarPuertoUnaVezYRetornarResultado_cuandoHayCoincidencias() {
         // Arrange
         var criteria = RevisionAsesorAsesorCriteria.builder().pagina(0).tamanio(10).build();
-        var revision = new RevisionAsesorReadModel(
+        var revision = new RevisionAsesorAsesorReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                2, "PENDIENTE", "Pendiente");
+                2, "PENDIENTE", "Pendiente", Instant.parse("2026-10-01T10:00:00Z"));
         var resultadoEsperado = PaginatedResult.of(List.of(revision), 0, 10, 1L);
         when(revisionAsesorQueryOutputPort.consultarTodasAsesor(criteria)).thenReturn(resultadoEsperado);
 

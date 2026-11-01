@@ -2,7 +2,7 @@ package com.arquisoft.artefactos.infrastructure.revisionasesor.query.primaryadap
 
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.interactor.ConsultarRevisionesAsesorAsesorInteractor;
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.model.ConsultarRevisionesAsesorAsesorQuery;
-import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorReadModel;
+import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorAsesorReadModel;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
@@ -26,6 +26,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,9 +75,9 @@ class ConsultarRevisionesAsesorAsesorControllerTest {
     @Test
     void debeRetornar200ConResponseDTO_yConsultarConElSubjectDelToken() throws Exception {
         // Arrange
-        var revision = new RevisionAsesorReadModel(
+        var revision = new RevisionAsesorAsesorReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                2, "PENDIENTE", "Pendiente");
+                2, "PENDIENTE", "Pendiente", Instant.parse("2026-10-01T10:00:00Z"));
         when(consultarRevisionesAsesorAsesorInteractor.ejecutar(any(ConsultarRevisionesAsesorAsesorQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(revision), 0, 10, 1L));
         var body = """
@@ -98,6 +99,7 @@ class ConsultarRevisionesAsesorAsesorControllerTest {
                 .andExpect(jsonPath("$.content[0].version").value(2))
                 .andExpect(jsonPath("$.content[0].estadoRevisionAsesor").value("PENDIENTE"))
                 .andExpect(jsonPath("$.content[0].estadoRevisionAsesorNombre").value("Pendiente"))
+                .andExpect(jsonPath("$.content[0].fechaCreacion").value("2026-10-01T10:00:00Z"))
                 .andExpect(jsonPath("$.totalElements").value(1));
 
         var captor = ArgumentCaptor.forClass(ConsultarRevisionesAsesorAsesorQuery.class);
