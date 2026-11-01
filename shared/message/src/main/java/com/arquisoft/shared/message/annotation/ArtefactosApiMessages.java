@@ -240,8 +240,9 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_SUMMARY = "Consultar las observaciones realizadas a una revisión";
         public static final String CONSULTAR_DESCRIPTION =
                 "Devuelve, sin paginar y ordenadas por descripción, las observaciones de la revisión con su "
-                        + "descripción y su estado. Una revisión sin observaciones o inexistente devuelve "
-                        + "una lista vacía.";
+                        + "descripción y su estado, siempre que el artefacto de la revisión sea del asesor "
+                        + "autenticado. Una revisión sin observaciones, inexistente o de un artefacto de otro "
+                        + "asesor devuelve una lista vacía.";
         public static final String CONSULTAR_RESP_200 = "Listado de observaciones de la revisión";
         public static final String CONSULTAR_RESP_400 = "Identificador de revisión inválido";
         public static final String CONSULTAR_RESP_403 = "Sin permisos para consultar las observaciones de la revisión";
@@ -249,8 +250,9 @@ public final class ArtefactosApiMessages {
                 "Consultar las observaciones realizadas a una revisión del asesor sobre el artefacto";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Devuelve, sin paginar y ordenadas por descripción, las observaciones de la revisión con su "
-                        + "descripción y su estado. Una revisión sin observaciones o inexistente devuelve "
-                        + "una lista vacía.";
+                        + "descripción y su estado, siempre que el estudiante autenticado participe en el "
+                        + "artefacto de la revisión. Una revisión sin observaciones, inexistente o de un "
+                        + "artefacto en el que no participa devuelve una lista vacía.";
         public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Listado de observaciones de la revisión";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador de revisión inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =

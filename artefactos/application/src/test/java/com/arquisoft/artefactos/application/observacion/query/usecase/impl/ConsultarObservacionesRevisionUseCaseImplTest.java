@@ -34,28 +34,30 @@ class ConsultarObservacionesRevisionUseCaseImplTest {
     void debeRetornarLosReadModels_cuandoHayObservaciones() {
         // Arrange
         var revision = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var observaciones = List.of(
                 new ObservacionReadModel(UtilUUID.generarNuevoUUID(), revision, "A", "NUEVA", "Nueva"),
                 new ObservacionReadModel(UtilUUID.generarNuevoUUID(), revision, "B", "CERRADA", "Cerrada"),
                 new ObservacionReadModel(UtilUUID.generarNuevoUUID(), revision, "C", "NUEVA", "Nueva"));
-        when(observacionQueryOutputPort.consultarPorRevisionAsesor(revision)).thenReturn(observaciones);
+        when(observacionQueryOutputPort.consultarDeAsesor(revision, asesor)).thenReturn(observaciones);
 
         // Act
-        var resultado = useCase.ejecutar(new ObservacionCriteria(revision));
+        var resultado = useCase.ejecutar(new ObservacionCriteria(revision, asesor));
 
         // Assert
         assertThat(resultado).isSameAs(observaciones);
-        verify(observacionQueryOutputPort, times(1)).consultarPorRevisionAsesor(revision);
+        verify(observacionQueryOutputPort, times(1)).consultarDeAsesor(revision, asesor);
     }
 
     @Test
     void debeRetornarListaVacia_cuandoNoHayObservaciones() {
         // Arrange
         var revision = UtilUUID.generarNuevoUUID();
-        when(observacionQueryOutputPort.consultarPorRevisionAsesor(revision)).thenReturn(List.of());
+        var asesor = UtilUUID.generarNuevoUUID();
+        when(observacionQueryOutputPort.consultarDeAsesor(revision, asesor)).thenReturn(List.of());
 
         // Act
-        var resultado = useCase.ejecutar(new ObservacionCriteria(revision));
+        var resultado = useCase.ejecutar(new ObservacionCriteria(revision, asesor));
 
         // Assert
         assertThat(resultado).isEmpty();

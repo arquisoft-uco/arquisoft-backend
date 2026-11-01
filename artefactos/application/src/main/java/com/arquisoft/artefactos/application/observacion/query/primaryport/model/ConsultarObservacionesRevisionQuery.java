@@ -7,17 +7,20 @@ import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.UUID;
 
-public record ConsultarObservacionesRevisionQuery(UUID revisionAsesor) {
+public record ConsultarObservacionesRevisionQuery(UUID revisionAsesor, UUID asesor) {
 
-    public static ConsultarObservacionesRevisionQuery crear(UUID revisionAsesor) {
+    public static ConsultarObservacionesRevisionQuery crear(UUID revisionAsesor, UUID asesor) {
         var result = new ValidationResult();
 
         ValidatorObjeto.noNulo(revisionAsesor,
                 ArtefactosFields.Observacion.REVISION_ASESOR,
                 ArtefactosCodes.Observacion.REVISION_ASESOR_ID_REQUERIDO, result);
+        ValidatorObjeto.noNulo(asesor,
+                ArtefactosFields.Observacion.ASESOR,
+                ArtefactosCodes.Observacion.ASESOR_REQUERIDO, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new ConsultarObservacionesRevisionQuery(revisionAsesor);
+        return new ConsultarObservacionesRevisionQuery(revisionAsesor, asesor);
     }
 }

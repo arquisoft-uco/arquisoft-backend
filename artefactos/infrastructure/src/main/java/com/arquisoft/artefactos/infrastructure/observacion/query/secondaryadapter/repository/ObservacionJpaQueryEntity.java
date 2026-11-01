@@ -18,13 +18,17 @@ import java.util.UUID;
 @Subselect("""
         SELECT o.id                      AS id,
                o.revision_asesor_id      AS revision_asesor_id,
+               a.asesor_id               AS asesor_id,
                o.descripcion             AS descripcion,
                o.estado_observacion_id   AS estado_id,
                eo.nombre                 AS estado_nombre
         FROM observacion o
                  JOIN estado_observacion eo ON eo.id = o.estado_observacion_id
+                 JOIN revision_asesor ra ON ra.id = o.revision_asesor_id
+                 JOIN version_artefacto va ON va.id = ra.version_artefacto_id
+                 JOIN artefacto a ON a.id = va.artefacto_id
         """)
-@Synchronize({"observacion", "estado_observacion"})
+@Synchronize({"observacion", "estado_observacion", "revision_asesor", "version_artefacto", "artefacto"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,6 +41,9 @@ public class ObservacionJpaQueryEntity {
 
     @Column(name = "revision_asesor_id", columnDefinition = "uuid")
     private UUID revisionAsesor;
+
+    @Column(name = "asesor_id", columnDefinition = "uuid")
+    private UUID asesor;
 
     @Column(name = "descripcion")
     private String descripcion;

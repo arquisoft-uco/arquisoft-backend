@@ -8,6 +8,6 @@ public final class ConsultarObservacionesRevisionMapper {
     private ConsultarObservacionesRevisionMapper() {}
 
     public static ObservacionCriteria toCriteria(ConsultarObservacionesRevisionQuery query) {
-        return new ObservacionCriteria(query.revisionAsesor());
+        return new ObservacionCriteria(query.revisionAsesor(), query.asesor());
     }
 }

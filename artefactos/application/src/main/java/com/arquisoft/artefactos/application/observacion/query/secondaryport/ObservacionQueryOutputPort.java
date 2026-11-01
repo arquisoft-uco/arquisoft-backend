@@ -7,5 +7,7 @@ import java.util.UUID;
 
 public interface ObservacionQueryOutputPort {
 
-    List<ObservacionReadModel> consultarPorRevisionAsesor(UUID revisionAsesor);
+    List<ObservacionReadModel> consultarDeAsesor(UUID revisionAsesor, UUID asesor);
+
+    List<ObservacionReadModel> consultarDeEstudiante(UUID revisionAsesor, UUID estudiante);
 }
