@@ -278,6 +278,25 @@ class RevisionAsesorCommandOutputAdapterTest {
     }
 
     @Test
+    void debeEliminarLaFila_yLogear_cuandoSeEliminaLaRevision() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var objetivo = sembrarRevision(artefacto, "PENDIENTE");
+        var otra = sembrarRevision(artefacto, "PENDIENTE");
+        entityManager.flush();
+
+        // Act
+        adapter.eliminar(objetivo);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(RevisionAsesorJpaEntity.class, objetivo)).isNull();
+        assertThat(entityManager.find(RevisionAsesorJpaEntity.class, otra)).isNotNull();
+        verify(logger).debug(RevisionAsesorKey.LOG_ELIMINADA, objetivo);
+    }
+
+    @Test
     void debeObtenerLaRevisionMasRecienteDeLaVersionSiguiente() {
         // Arrange
         var artefacto = UtilUUID.generarNuevoUUID();

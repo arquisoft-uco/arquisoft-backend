@@ -66,6 +66,12 @@ public class RevisionAsesorCommandOutputAdapter implements RevisionAsesorOutputP
     }
 
     @Override
+    public void eliminar(UUID revisionAsesor) {
+        revisionAsesorCommandRepository.deleteById(revisionAsesor);
+        logger.debug(RevisionAsesorKey.LOG_ELIMINADA, revisionAsesor);
+    }
+
+    @Override
     public Optional<RevisionAsesorEntity> obtenerBloqueadaDeVersionSiguientePorObservacion(UUID observacion) {
         return revisionAsesorCommandRepository
                 .buscarBloqueadaDeVersionSiguientePorObservacion(observacion, Limit.of(1))

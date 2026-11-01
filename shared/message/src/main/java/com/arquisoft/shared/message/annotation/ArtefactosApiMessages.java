@@ -56,6 +56,17 @@ public final class ArtefactosApiMessages {
                 "La versión o su artefacto no existen, el asesor no es el responsable del artefacto, la versión "
                         + "no es la más reciente o ya tiene una revisión sin cerrar";
 
+        public static final String ELIMINAR_SUMMARY = "Eliminar una revisión de la versión de un artefacto";
+        public static final String ELIMINAR_DESCRIPTION =
+                "Elimina por completo la revisión indicada junto con sus observaciones. El asesor se toma del "
+                        + "token y debe ser el responsable del artefacto. La revisión debe estar PENDIENTE, es "
+                        + "decir, aún no enviada al estudiante. No envía correos.";
+        public static final String ELIMINAR_RESP_204 = "Revisión eliminada";
+        public static final String ELIMINAR_RESP_400 = "Identificador de la revisión mal formado";
+        public static final String ELIMINAR_RESP_422 =
+                "La revisión o su artefacto no existen, el asesor no es el responsable del artefacto, el "
+                        + "artefacto fue omitido o la revisión ya no está pendiente";
+
         public static final String ENVIAR_SUMMARY = "Enviar la revisión de la versión de un artefacto";
         public static final String ENVIAR_DESCRIPTION =
                 "Confirma que el asesor terminó de registrar sus observaciones: la revisión PENDIENTE pasa a "
