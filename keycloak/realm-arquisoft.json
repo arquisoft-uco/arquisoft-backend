@@ -201,6 +201,7 @@
             "arquisoft-api": [
               "evaluaciones:item-cuantitativo-asesor:view",
               "evaluaciones:item-cualitativo-asesor:view",
+              "evaluaciones:criterio-item-cualitativo-asesor:view",
               "solicitudes:respuesta-registro-modificacion-usuarios:delete",
               "solicitudes:respuesta-registro-modificacion-usuarios:create",
               "solicitudes:respuesta-registro-modificacion-usuarios:update",
@@ -369,6 +370,7 @@
               "evaluaciones:categoria-item-cuantitativo-asesor:view",
               "evaluaciones:item-cuantitativo-asesor:view",
               "evaluaciones:item-cualitativo-asesor:view",
+              "evaluaciones:criterio-item-cualitativo-asesor:view",
               "proyectos:proyecto-grado-asesor:view",
               "solicitudes:respuesta-novedad-asesor:create",
               "usuarios:estudiante-vigente:view",
@@ -1850,6 +1852,15 @@
         {
           "id": "94131b5e-899d-4c29-995a-84a39954e434",
           "name": "evaluaciones:categoria-item-cuantitativo-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "d5adc4ff-da15-4722-a211-68ab7d81f1e5",
+          "name": "evaluaciones:criterio-item-cualitativo-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
