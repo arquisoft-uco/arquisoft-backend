@@ -40,6 +40,7 @@ public final class ArtefactosCodes {
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_TAMANO_BYTES_INVALIDO";
         public static final String VERSION_NO_ENCONTRADA =
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_VERSION_NO_ENCONTRADA";
+        public static final String EN_USO = "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_EN_USO";
     }
 
     public static final class Artefacto {

@@ -6,6 +6,7 @@ import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.comma
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersionRepositorioArtefactoKey;
+import com.arquisoft.shared.message.key.artefactos.EliminarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -280,6 +281,58 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
         // Assert
         assertThat(encontrada).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(version));
         assertThat(adapter.obtenerPorArtefacto(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeObtenerLaVersionBloqueada_cuandoExiste() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var buscada = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadDeRepositorio(buscada, repositorio, "Doc uno"));
+        adapter.guardar(entidadDeRepositorio(UtilUUID.generarNuevoUUID(), repositorio, "Doc dos"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrada = adapter.obtenerBloqueadaPorId(buscada);
+
+        // Assert
+        assertThat(encontrada).hasValueSatisfying(version -> {
+            assertThat(version.id()).isEqualTo(buscada);
+            assertThat(version.nombreDocumento()).isEqualTo("Doc uno");
+            assertThat(version.repositorioArtefacto()).isEqualTo(repositorio);
+        });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaVersionBloqueadaNoExiste() {
+        // Act
+        var encontrada = adapter.obtenerBloqueadaPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrada).isEmpty();
+    }
+
+    @Test
+    void debeEliminarSoloLaFilaIndicada_yLoguear() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var eliminada = UtilUUID.generarNuevoUUID();
+        var conservada = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadDeRepositorio(eliminada, repositorio, "Doc uno"));
+        adapter.guardar(entidadDeRepositorio(conservada, repositorio, "Doc dos"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminar(eliminada);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(VersionRepositorioArtefactoJpaEntity.class, eliminada)).isNull();
+        assertThat(entityManager.find(VersionRepositorioArtefactoJpaEntity.class, conservada)).isNotNull();
+        verify(logger).debug(EliminarVersionRepositorioArtefactoKey.LOG_ELIMINADO, eliminada);
     }
 
     private void sembrarArtefacto(UUID proyecto, UUID version) {

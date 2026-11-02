@@ -65,7 +65,18 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.descarga-generada", 2),
     LOG_GUARDADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.guardada", 1),
     LOG_CARGA_COPIADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-copiada", 2),
-    LOG_CARGA_ELIMINADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-eliminada", 1);
+    LOG_CARGA_ELIMINADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-eliminada", 1),
+    LOG_ELIMINACION_RECIBIDA(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminacion-recibida", 2),
+    LOG_VERIFICACION_ELIMINAR(
+            "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.verificacion-eliminar", 2),
+    LOG_VERSION_ELIMINADA(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.version-eliminada", 1),
+    LOG_VERSION_INEXISTENTE(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.version-inexistente", 1),
+    LOG_ARCHIVO_ELIMINADO(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.archivo-eliminado", 1),
+    LOG_ELIMINADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminada", 1);
 
     private final String clave;
     private final int parametros;

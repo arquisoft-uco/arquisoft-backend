@@ -30,6 +30,7 @@ rutas:
       cambiar-asesor: /{artefactoId}/asesor
       omitir: /{artefactoId}
       cambiar-version-repositorio: /{artefactoId}/version-repositorio
+      version-repositorio: /versiones-repositorio/{versionRepositorioArtefactoId}
       revisiones-version: /versiones/{versionArtefactoId}/revisiones
       revision: /revisiones/{revisionAsesorId}
       estado-revision: /revisiones/{revisionAsesorId}/estado

@@ -210,6 +210,7 @@ security:
         - {method: PATCH, path: "/api/artefactos/{artefactoId}/asesor", role: "artefactos:artefacto:update-asesor"}
         - {method: DELETE, path: "/api/artefactos/{artefactoId}", role: "artefactos:artefacto:omit"}
         - {method: PATCH, path: "/api/artefactos/{artefactoId}/version-repositorio", role: "artefactos:artefacto:update-version-repositorio"}
+        - {method: DELETE, path: "/api/artefactos/versiones-repositorio/{versionRepositorioArtefactoId}", role: "artefactos:version-repositorio-artefacto:delete"}
         - {method: POST, path: "/api/artefactos/revisiones/{revisionAsesorId}/observaciones", role: "artefactos:observacion-revision:create"}
         - {method: DELETE, path: "/api/artefactos/observaciones/{observacionId}", role: "artefactos:observacion:delete"}
         - {method: POST, path: "/api/artefactos/versiones/{versionArtefactoId}/revisiones", role: "artefactos:revision-asesor:create"}

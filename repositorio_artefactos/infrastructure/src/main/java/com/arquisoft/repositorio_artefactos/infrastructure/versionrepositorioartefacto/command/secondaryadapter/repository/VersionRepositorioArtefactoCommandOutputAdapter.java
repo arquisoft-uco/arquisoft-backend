@@ -32,4 +32,16 @@ public class VersionRepositorioArtefactoCommandOutputAdapter implements VersionR
                         repositorio, nombreDocumento)
                 .map(VersionRepositorioArtefactoJpaMapper::toEntity);
     }
+
+    @Override
+    public Optional<VersionRepositorioArtefactoEntity> obtenerPorId(UUID id) {
+        return versionRepositorioArtefactoCommandRepository.findById(id)
+                .map(VersionRepositorioArtefactoJpaMapper::toEntity);
+    }
+
+    @Override
+    public void eliminar(UUID id) {
+        versionRepositorioArtefactoCommandRepository.deleteById(id);
+        logger.debug(VersionRepositorioArtefactoKey.LOG_ELIMINADA, id);
+    }
 }

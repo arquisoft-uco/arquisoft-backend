@@ -8,7 +8,7 @@ import com.arquisoft.artefactos.application.estudiante.command.finder.Estudiante
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorArtefactoFinder;
-import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.CambioVersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.event.ArtefactoVersionRepositorioCambiadaEvent;
@@ -39,8 +39,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.eq;import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -57,7 +56,7 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
     @Mock
     private VersionRepositorioArtefactoPorArtefactoFinder versionRepositorioArtefactoPorArtefactoFinder;
     @Mock
-    private VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
+    private VersionRepositorioArtefactoBloqueadaPorIdFinder versionRepositorioArtefactoBloqueadaPorIdFinder;
     @Mock
     private UltimoNumeroVersionArtefactoFinder ultimoNumeroVersionArtefactoFinder;
     @Mock
@@ -94,7 +93,7 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
     void setUp() {
         useCase = new CambiarVersionRepositorioArtefactoUseCaseImpl(
                 artefactoBloqueadoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorArtefactoFinder,
-                versionRepositorioArtefactoPorIdFinder, ultimoNumeroVersionArtefactoFinder,
+                versionRepositorioArtefactoBloqueadaPorIdFinder, ultimoNumeroVersionArtefactoFinder,
                 revisionVigenteUltimaVersionFinder, estudiantesVinculadosArtefactoFinder,
                 cambiarVersionRepositorioArtefactoValidator, artefactoOutputPort, eventPublisher, logger);
         artefactoId = UtilUUID.generarNuevoUUID();
@@ -123,7 +122,7 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
         when(artefactoBloqueadoPorIdFinder.obtener(artefactoId)).thenReturn(artefacto);
         when(asesorPorIdFinder.obtener(asesorId)).thenReturn(asesor);
         when(versionRepositorioArtefactoPorArtefactoFinder.obtener(artefactoId)).thenReturn(actual);
-        when(versionRepositorioArtefactoPorIdFinder.obtener(elegidaId)).thenReturn(elegida);
+        when(versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(elegidaId)).thenReturn(elegida);
         when(ultimoNumeroVersionArtefactoFinder.obtener(artefactoId)).thenReturn(2);
         when(revisionVigenteUltimaVersionFinder.obtener(artefactoId)).thenReturn(revision);
         when(estudiantesVinculadosArtefactoFinder.obtener(artefactoId)).thenReturn(estudiantes);
@@ -136,7 +135,7 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
 
         // Assert
         var orden = inOrder(artefactoBloqueadoPorIdFinder, asesorPorIdFinder,
-                versionRepositorioArtefactoPorArtefactoFinder, versionRepositorioArtefactoPorIdFinder,
+                versionRepositorioArtefactoPorArtefactoFinder, versionRepositorioArtefactoBloqueadaPorIdFinder,
                 ultimoNumeroVersionArtefactoFinder, revisionVigenteUltimaVersionFinder,
                 estudiantesVinculadosArtefactoFinder, cambiarVersionRepositorioArtefactoValidator,
                 artefactoOutputPort, eventPublisher, logger);
@@ -144,7 +143,7 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
         orden.verify(artefactoBloqueadoPorIdFinder, times(1)).obtener(artefactoId);
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesorId);
         orden.verify(versionRepositorioArtefactoPorArtefactoFinder, times(1)).obtener(artefactoId);
-        orden.verify(versionRepositorioArtefactoPorIdFinder, times(1)).obtener(elegidaId);
+        orden.verify(versionRepositorioArtefactoBloqueadaPorIdFinder, times(1)).obtener(elegidaId);
         orden.verify(ultimoNumeroVersionArtefactoFinder, times(1)).obtener(artefactoId);
         orden.verify(revisionVigenteUltimaVersionFinder, times(1)).obtener(artefactoId);
         orden.verify(estudiantesVinculadosArtefactoFinder, times(1)).obtener(artefactoId);

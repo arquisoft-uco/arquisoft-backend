@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -107,6 +108,55 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
 
         // Act & Assert
         assertThat(adapter().obtenerUltimaVersionDocumento(otro, "Formato A")).isEmpty();
+    }
+
+    @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var entity = version(UtilUUID.generarNuevoUUID(), "Formato A", 1);
+        adapter().registrar(entity);
+        adapter().registrar(version(UtilUUID.generarNuevoUUID(), "Formato B", 1));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrada = adapter().obtenerPorId(entity.id());
+
+        // Assert
+        assertThat(encontrada).hasValueSatisfying(version -> {
+            assertThat(version.id()).isEqualTo(entity.id());
+            assertThat(version.nombreDocumento()).isEqualTo("Formato A");
+            assertThat(version.uriArchivo()).isEqualTo("versiones/x");
+            assertThat(version.nombreArchivo()).isEqualTo("formato.pdf");
+        });
+        assertThat(adapter().obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeEliminarLaFila_cuandoSeElimina() {
+        // Arrange
+        var eliminada = version(UtilUUID.generarNuevoUUID(), "Formato A", 1);
+        var conservada = version(UtilUUID.generarNuevoUUID(), "Formato B", 1);
+        adapter().registrar(eliminada);
+        adapter().registrar(conservada);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter().eliminar(eliminada.id());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(repository.findById(eliminada.id())).isEmpty();
+        assertThat(repository.findById(conservada.id())).isPresent();
+        verify(logger).debug(VersionRepositorioArtefactoKey.LOG_ELIMINADA, eliminada.id());
+    }
+
+    @Test
+    void debeNoFallar_cuandoLaFilaNoExiste() {
+        // Act & Assert
+        assertThatCode(() -> adapter().eliminar(UtilUUID.generarNuevoUUID())).doesNotThrowAnyException();
     }
 
     @Test

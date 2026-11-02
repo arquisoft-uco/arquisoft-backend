@@ -77,6 +77,12 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
     }
 
     @Override
+    public void eliminarArchivo(String uriArchivo) {
+        almacenamientoObjetos.eliminar(propiedades.getBucket(), uriArchivo);
+        logger.debug(VersionRepositorioArtefactoKey.LOG_ARCHIVO_ELIMINADO, uriArchivo);
+    }
+
+    @Override
     public long tamanoMaximoBytes() {
         return propiedades.getTamanoMaximoBytes();
     }

@@ -6,6 +6,7 @@ import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.comma
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersionRepositorioArtefactoKey;
+import com.arquisoft.shared.message.key.artefactos.EliminarVersionRepositorioArtefactoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +39,12 @@ public class VersionRepositorioArtefactoCommandOutputAdapter implements VersionR
     }
 
     @Override
+    public Optional<VersionRepositorioArtefactoEntity> obtenerBloqueadaPorId(UUID id) {
+        return versionRepositorioArtefactoCommandRepository.bloquearPorId(id)
+                .map(VersionRepositorioArtefactoJpaMapper::toEntity);
+    }
+
+    @Override
     public Optional<VersionRepositorioArtefactoEntity> obtenerPorArtefacto(UUID artefacto) {
         return versionRepositorioArtefactoCommandRepository.buscarPorArtefacto(artefacto)
                 .map(VersionRepositorioArtefactoJpaMapper::toEntity);
@@ -56,5 +63,11 @@ public class VersionRepositorioArtefactoCommandOutputAdapter implements VersionR
                 repositorioArtefacto, nombreRepositorio);
         logger.debug(CambiarNombreRepositorioVersionRepositorioArtefactoKey.LOG_NOMBRE_ACTUALIZADO,
                 repositorioArtefacto);
+    }
+
+    @Override
+    public void eliminar(UUID id) {
+        versionRepositorioArtefactoCommandRepository.deleteById(id);
+        logger.debug(EliminarVersionRepositorioArtefactoKey.LOG_ELIMINADO, id);
     }
 }

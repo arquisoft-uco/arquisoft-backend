@@ -9,7 +9,7 @@ import com.arquisoft.artefactos.application.estudiante.command.finder.Estudiante
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorArtefactoFinder;
-import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.CambioVersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.event.ArtefactoVersionRepositorioCambiadaEvent;
 import com.arquisoft.artefactos.domain.artefacto.model.ContactoAsesor;
@@ -28,7 +28,7 @@ public class CambiarVersionRepositorioArtefactoUseCaseImpl implements CambiarVer
     private final ArtefactoBloqueadoPorIdFinder artefactoBloqueadoPorIdFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
     private final VersionRepositorioArtefactoPorArtefactoFinder versionRepositorioArtefactoPorArtefactoFinder;
-    private final VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
+    private final VersionRepositorioArtefactoBloqueadaPorIdFinder versionRepositorioArtefactoBloqueadaPorIdFinder;
     private final UltimoNumeroVersionArtefactoFinder ultimoNumeroVersionArtefactoFinder;
     private final RevisionVigenteUltimaVersionFinder revisionVigenteUltimaVersionFinder;
     private final EstudiantesVinculadosArtefactoFinder estudiantesVinculadosArtefactoFinder;
@@ -44,7 +44,7 @@ public class CambiarVersionRepositorioArtefactoUseCaseImpl implements CambiarVer
         var artefacto = artefactoBloqueadoPorIdFinder.obtener(cambio.getArtefacto());
         var asesor = asesorPorIdFinder.obtener(cambio.getAsesor());
         var actual = versionRepositorioArtefactoPorArtefactoFinder.obtener(cambio.getArtefacto());
-        var elegida = versionRepositorioArtefactoPorIdFinder.obtener(cambio.getVersionRepositorioArtefacto());
+        var elegida = versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(cambio.getVersionRepositorioArtefacto());
         var ultimoNumero = ultimoNumeroVersionArtefactoFinder.obtener(cambio.getArtefacto());
         var revisionVigente = revisionVigenteUltimaVersionFinder.obtener(cambio.getArtefacto());
         var estudiantes = estudiantesVinculadosArtefactoFinder.obtener(cambio.getArtefacto());

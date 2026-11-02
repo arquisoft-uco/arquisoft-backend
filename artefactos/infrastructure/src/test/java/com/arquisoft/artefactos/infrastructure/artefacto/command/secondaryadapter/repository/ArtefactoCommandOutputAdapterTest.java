@@ -439,6 +439,41 @@ class ArtefactoCommandOutputAdapterTest {
         assertThat(adapter.obtenerPorObservacion(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 
+    @Test
+    void debeExistir_cuandoUnArtefactoActivoReferenciaLaVersion_yOmitidoTambien() {
+        // Arrange
+        var versionActiva = sembrarVersionRepositorio(UtilUUID.generarNuevoUUID(), "Activa");
+        var versionOmitida = sembrarVersionRepositorio(UtilUUID.generarNuevoUUID(), "Omitida");
+        sembrarArtefactoDeVersion(UtilUUID.generarNuevoUUID(), versionActiva);
+        sembrarOmitido(UtilUUID.generarNuevoUUID(), versionOmitida, UtilUUID.generarNuevoUUID());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var activaReferenciada = adapter.existePorVersionRepositorioArtefacto(versionActiva);
+        var omitidaReferenciada = adapter.existePorVersionRepositorioArtefacto(versionOmitida);
+
+        // Assert
+        assertThat(activaReferenciada).isTrue();
+        assertThat(omitidaReferenciada).isTrue();
+    }
+
+    @Test
+    void debeNoExistir_cuandoNingunArtefactoReferenciaLaVersion() {
+        // Arrange
+        var referenciada = sembrarVersionRepositorio(UtilUUID.generarNuevoUUID(), "Referenciada");
+        var libre = sembrarVersionRepositorio(UtilUUID.generarNuevoUUID(), "Libre");
+        sembrarArtefactoDeVersion(UtilUUID.generarNuevoUUID(), referenciada);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var existe = adapter.existePorVersionRepositorioArtefacto(libre);
+
+        // Assert
+        assertThat(existe).isFalse();
+    }
+
     private UUID sembrarOmitido(UUID proyecto, UUID version, UUID asesor) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(new ArtefactoJpaEntity(id, proyecto, version, asesor, Instant.now()));

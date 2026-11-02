@@ -155,6 +155,16 @@ class AlmacenamientoVersionMinioOutputAdapterTest {
     }
 
     @Test
+    void debeEliminarElObjetoEnElBucketConfigurado() {
+        // Act
+        adaptador.eliminarArchivo("versiones/abc");
+
+        // Assert
+        verify(almacenamientoObjetos).eliminar(BUCKET, "versiones/abc");
+        verify(logger).debug(VersionRepositorioArtefactoKey.LOG_ARCHIVO_ELIMINADO, "versiones/abc");
+    }
+
+    @Test
     void debeExponerElMaximoConfigurado() {
         // Act & Assert
         assertThat(adaptador.tamanoMaximoBytes()).isEqualTo(MAXIMO);

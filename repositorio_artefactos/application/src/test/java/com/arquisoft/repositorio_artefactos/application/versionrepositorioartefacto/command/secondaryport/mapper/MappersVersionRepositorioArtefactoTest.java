@@ -53,6 +53,20 @@ class MappersVersionRepositorioArtefactoTest {
     }
 
     @Test
+    void debeMapearElArchivoDomain() {
+        // Arrange
+        var version = version(1);
+        var entity = VersionRepositorioArtefactoMapper.toEntity(version);
+
+        // Act
+        var archivo = VersionRepositorioArtefactoMapper.toArchivoDomain(entity);
+
+        // Assert
+        assertThat(archivo.getUriArchivo()).isEqualTo(version.getUriArchivo());
+        assertThat(archivo.getNombreArchivo()).isEqualTo("formato.pdf");
+    }
+
+    @Test
     void solicitudDebeConservarLosSeisCampos() {
         // Arrange
         var solicitud = SolicitudCargaVersionRepositorioArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
