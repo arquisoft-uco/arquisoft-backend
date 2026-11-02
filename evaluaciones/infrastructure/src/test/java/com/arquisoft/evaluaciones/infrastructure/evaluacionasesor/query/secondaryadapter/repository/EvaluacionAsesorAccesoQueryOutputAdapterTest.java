@@ -62,4 +62,34 @@ class EvaluacionAsesorAccesoQueryOutputAdapterTest {
         // Assert
         assertThat(resultado).isEmpty();
     }
+
+    @Test
+    void debeDevolverElIdDeLaEvaluacionAsesor_cuandoLaEvaluacionLaTiene() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        entityManager.createNativeQuery(
+                        "INSERT INTO evaluacion_asesor (id, evaluacion_id, asesor_id) VALUES (?, ?, ?)")
+                .setParameter(1, evaluacionAsesor)
+                .setParameter(2, evaluacion)
+                .setParameter(3, UtilUUID.generarNuevoUUID())
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorEvaluacion(evaluacion);
+
+        // Assert
+        assertThat(resultado).contains(evaluacionAsesor);
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaEvaluacionNoLaTiene() {
+        // Act
+        var resultado = adapter.obtenerPorEvaluacion(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
 }

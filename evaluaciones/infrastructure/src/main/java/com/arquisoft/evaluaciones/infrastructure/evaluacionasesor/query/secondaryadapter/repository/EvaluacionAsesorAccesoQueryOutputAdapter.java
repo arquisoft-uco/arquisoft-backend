@@ -17,4 +17,9 @@ public class EvaluacionAsesorAccesoQueryOutputAdapter implements EvaluacionAseso
     public Optional<UUID> obtenerAsesorPorId(UUID evaluacionAsesor) {
         return repository.findById(evaluacionAsesor).map(EvaluacionAsesorAccesoJpaQueryEntity::getAsesorId);
     }
+
+    @Override
+    public Optional<UUID> obtenerPorEvaluacion(UUID evaluacion) {
+        return repository.findByEvaluacionId(evaluacion).map(EvaluacionAsesorAccesoJpaQueryEntity::getId);
+    }
 }

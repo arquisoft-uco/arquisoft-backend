@@ -396,6 +396,22 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del jurado";
     }
 
+    public static final class EvaluacionAsesor {
+
+        private EvaluacionAsesor() {}
+
+        public static final String TAG_NAME = "Evaluación del asesor";
+        public static final String TAG_DESCRIPTION = "Consulta de la evaluación que el asesor hizo de una evaluación";
+        public static final String CONSULTAR_SUMMARY = "Consultar evaluación del asesor";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta la evaluación del asesor de una evaluación con su identificador y los datos del asesor "
+                        + "(identificador, nombre y correo)";
+        public static final String CONSULTAR_RESP_200 = "Evaluación del asesor con los datos del asesor";
+        public static final String CONSULTAR_RESP_400 = "El identificador de la evaluación no es válido";
+        public static final String CONSULTAR_RESP_422 =
+                "La evaluación no existe o aún no tiene una evaluación del asesor";
+    }
+
     public static final class EstadoEvaluacion {
 
         private EstadoEvaluacion() {}

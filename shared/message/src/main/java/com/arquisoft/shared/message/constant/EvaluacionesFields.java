@@ -130,6 +130,13 @@ public final class EvaluacionesFields {
         public static final String JURADO = "jurado";
     }
 
+    public static final class EvaluacionAsesor {
+
+        private EvaluacionAsesor() {}
+
+        public static final String EVALUACION = "evaluacion";
+    }
+
     public static final class AsignacionJuradosEvaluacion {
 
         private AsignacionJuradosEvaluacion() {}

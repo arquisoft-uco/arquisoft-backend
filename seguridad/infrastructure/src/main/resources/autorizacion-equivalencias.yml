@@ -96,6 +96,7 @@ security:
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/estudiantes-asesorados", role: "proyectos:estudiante-proyecto-grado-asesor:view"}
         - {method: DELETE, path: "/api/proyectos-grado/{proyectoGradoId}/estudiantes/{estudianteId}", role: "proyectos:estudiante-proyecto-grado:delete"}
         # evaluaciones
+        - {method: GET, path: "/api/evaluaciones/{evaluacionId}/evaluacion-asesor", role: "evaluaciones:evaluacion-asesor-estudiante:view"}
         - {method: GET, path: "/api/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor-asesor:view"}
         - {method: POST, path: "/api/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor:create"}
         - {method: POST, path: "/api/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor:create"}
