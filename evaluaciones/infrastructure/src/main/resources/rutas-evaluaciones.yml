@@ -31,6 +31,8 @@ rutas:
       base: /evaluaciones-asesor
       cualitativas: /{evaluacionAsesorId}/cualitativas
       cuantitativas: /{evaluacionAsesorId}/cuantitativas
+    criterios-item-cualitativo-asesor:
+      base: /evaluaciones/criterios-item-cualitativo-asesor
     items-cualitativos-asesor:
       base: /evaluaciones/items-cualitativos-asesor
     items-cuantitativos-asesor:

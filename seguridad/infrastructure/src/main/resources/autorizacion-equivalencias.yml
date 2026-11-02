@@ -122,6 +122,7 @@ security:
         - {method: DELETE, path: "/api/evaluaciones/items-cualitativos-jurado/{itemId}", role: "evaluaciones:item-cualitativo-jurado:delete"}
         - {method: PATCH, path: "/api/evaluaciones/items-cualitativos-jurado/{itemId}", role: "evaluaciones:item-cualitativo-jurado:update"}
         - {method: GET, path: "/api/evaluaciones/items-cualitativos-asesor", role: "evaluaciones:item-cualitativo-asesor:view"}
+        - {method: GET, path: "/api/evaluaciones/criterios-item-cualitativo-asesor", role: "evaluaciones:criterio-item-cualitativo-asesor:view"}
         - {method: GET, path: "/api/evaluaciones/items-cuantitativos-asesor", role: "evaluaciones:item-cuantitativo-asesor:view"}
         - {method: GET, path: "/api/evaluaciones/items-cuantitativos-jurado", role: "evaluaciones:item-cuantitativo-jurado:view"}
         - {method: POST, path: "/api/evaluaciones/items-cuantitativos-jurado", role: "evaluaciones:item-cuantitativo-jurado:create"}
