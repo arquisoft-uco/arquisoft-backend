@@ -330,6 +330,7 @@
               "artefactos:observacion-revision-estudiante:view",
               "artefactos:version-artefacto-estudiante:view",
               "artefactos:version-artefacto:view",
+              "artefactos:version-artefacto:download",
               "artefactos:artefacto-participacion-estudiante:view",
               "artefactos:revision-asesor-estado:update",
               "artefactos:observacion-estado-estudiante:update",
@@ -391,6 +392,7 @@
               "artefactos:artefacto:create",
               "artefactos:version-artefacto-asesor:view",
               "artefactos:version-artefacto:view",
+              "artefactos:version-artefacto:download",
               "artefactos:artefacto-asesor:view",
               "artefactos:artefacto-sin-avance:view",
               "artefactos:artefacto:update-asesor",
@@ -2621,6 +2623,15 @@
         {
           "id": "30c64d84-2b43-480e-893e-3eaff3a80240",
           "name": "artefactos:version-artefacto:upload",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "85321764-37cc-44cf-b318-f6446c4684f6",
+          "name": "artefactos:version-artefacto:download",
           "description": "",
           "composite": false,
           "clientRole": true,

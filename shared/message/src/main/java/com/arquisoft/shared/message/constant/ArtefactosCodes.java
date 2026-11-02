@@ -202,6 +202,7 @@ public final class ArtefactosCodes {
         public static final String ROLES_REQUERIDOS = "VERSION_ARTEFACTO_ROLES_REQUERIDOS";
         public static final String ACCESO_DENEGADO = "VERSION_ARTEFACTO_ACCESO_DENEGADO";
         public static final String NO_DISPONIBLE = "VERSION_ARTEFACTO_NO_DISPONIBLE";
+        public static final String ARCHIVO_NO_DISPONIBLE = "VERSION_ARTEFACTO_ARCHIVO_NO_DISPONIBLE";
     }
 
     public static final class EstudianteArtefacto {

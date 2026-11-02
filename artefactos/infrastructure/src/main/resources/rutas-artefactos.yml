@@ -23,6 +23,7 @@ rutas:
       versiones: /{artefactoId}/versiones
       versiones-estudiante: /versiones/estudiante
       version: /versiones/{versionArtefactoId}
+      descarga-version: /versiones/{versionArtefactoId}/descarga
       asesor: /asesor
       asesor-sin-avance: /asesor/sin-avance
       estudiante: /estudiante
