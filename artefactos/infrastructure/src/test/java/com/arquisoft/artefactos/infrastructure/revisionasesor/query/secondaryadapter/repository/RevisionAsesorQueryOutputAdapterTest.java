@@ -4,11 +4,14 @@ import com.arquisoft.artefactos.application.revisionasesor.query.criteria.Revisi
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.mapper.ConsultarRevisionesAsesorEstudianteMapper;
 import com.arquisoft.artefactos.application.revisionasesor.query.primaryport.model.ConsultarRevisionesAsesorEstudianteQuery;
 import com.arquisoft.artefactos.application.revisionasesor.query.readmodel.RevisionAsesorReadModel;
-import com.arquisoft.artefactos.infrastructure.revisionasesor.support.ArtefactoTestEntity;
+import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import com.arquisoft.artefactos.infrastructure.observacion.support.ObservacionTestEntity;
+import com.arquisoft.artefactos.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstadoRevisionAsesorTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstudianteArtefactoTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.RevisionAsesorTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
+import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.entity.VersionRepositorioArtefactoJpaEntity;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.FiltroOperador;
@@ -21,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,6 +58,7 @@ class RevisionAsesorQueryOutputAdapterTest {
     private UUID revisionB;
     private UUID revisionC;
     private UUID artefactoCompartido;
+    private UUID artefactoB;
 
     @BeforeEach
     void setUp() {
@@ -65,9 +71,15 @@ class RevisionAsesorQueryOutputAdapterTest {
         entityManager.persist(new EstadoRevisionAsesorTestEntity("EN_PROGRESO", "En progreso"));
     }
 
-    private UUID sembrarArtefacto(UUID... estudiantes) {
+    private UUID sembrarArtefacto(String proyecto, String documento, int versionDocumento, UUID... estudiantes) {
+        var proyectoId = UUID.randomUUID();
+        entityManager.persist(new ProyectoGradoJpaEntity(proyectoId, proyecto));
+        var documentoId = UUID.randomUUID();
+        entityManager.persist(new VersionRepositorioArtefactoJpaEntity(
+                documentoId, documento, versionDocumento, UUID.randomUUID(), "Repo",
+                "archivo.pdf", "application/pdf", 10L));
         var artefacto = UUID.randomUUID();
-        entityManager.persist(new ArtefactoTestEntity(artefacto));
+        entityManager.persist(new ArtefactoJpaEntity(artefacto, proyectoId, documentoId, UUID.randomUUID(), null));
         for (var estudiante : estudiantes) {
             entityManager.persist(new EstudianteArtefactoTestEntity(UUID.randomUUID(), artefacto, estudiante));
         }
@@ -80,28 +92,32 @@ class RevisionAsesorQueryOutputAdapterTest {
         return version;
     }
 
-    private UUID sembrarRevision(UUID version, String estado) {
+    private UUID sembrarRevision(UUID version, String estado, String fecha) {
         var revision = UUID.randomUUID();
-        entityManager.persist(new RevisionAsesorTestEntity(revision, version, estado));
+        entityManager.persist(new RevisionAsesorTestEntity(revision, version, estado, Instant.parse(fecha)));
         return revision;
     }
 
-    // Artefacto compartido (A y B) con dos versiones, artefacto solo de B y artefacto solo de C.
+    private void sembrarObservacion(UUID revision, String descripcion, String estado) {
+        entityManager.persist(new ObservacionTestEntity(UUID.randomUUID(), revision, descripcion, estado));
+    }
+
+    // Artefacto compartido (A y B), artefacto solo de B y artefacto solo de C.
     private void sembrarEscenario() {
         sembrarCatalogo();
-        artefactoCompartido = sembrarArtefacto(estudianteA, estudianteB);
-        var artefactoB = sembrarArtefacto(estudianteB);
-        var artefactoC = sembrarArtefacto(estudianteC);
+        artefactoCompartido = sembrarArtefacto("Alfa", "Anteproyecto", 1, estudianteA, estudianteB);
+        artefactoB = sembrarArtefacto("Beta", "Informe", 2, estudianteB);
+        var artefactoC = sembrarArtefacto("Alfa", "Anteproyecto", 1, estudianteC);
 
         versionA1 = sembrarVersion(artefactoCompartido, 1);
         versionA2 = sembrarVersion(artefactoCompartido, 2);
         versionB = sembrarVersion(artefactoB, 1);
         versionC = sembrarVersion(artefactoC, 1);
 
-        revisionA1 = sembrarRevision(versionA1, "PENDIENTE");
-        revisionA2 = sembrarRevision(versionA2, "EN_PROGRESO");
-        revisionB = sembrarRevision(versionB, "PENDIENTE");
-        revisionC = sembrarRevision(versionC, "PENDIENTE");
+        revisionA1 = sembrarRevision(versionA1, "PENDIENTE", "2026-10-01T10:00:00Z");
+        revisionA2 = sembrarRevision(versionA2, "EN_PROGRESO", "2026-10-02T10:00:00Z");
+        revisionB = sembrarRevision(versionB, "PENDIENTE", "2026-10-03T10:00:00Z");
+        revisionC = sembrarRevision(versionC, "PENDIENTE", "2026-10-04T10:00:00Z");
         entityManager.flush();
         entityManager.clear();
     }
@@ -287,5 +303,132 @@ class RevisionAsesorQueryOutputAdapterTest {
         assertThat(revision.version()).isEqualTo(2);
         assertThat(revision.estadoRevisionAsesor()).isEqualTo("EN_PROGRESO");
         assertThat(revision.estadoRevisionAsesorNombre()).isEqualTo("En progreso");
+    }
+
+    @Test
+    void debeProyectarFechaProyectoDocumentoYVersionDocumento_cuandoLaRevisionExiste() {
+        // Arrange
+        sembrarEscenario();
+        var raiz = NodoFiltro.predicado("versionArtefacto", FiltroOperador.ES, versionB.toString());
+
+        // Act
+        var resultado = adapter.consultarTodasEstudiante(criteria(estudianteB, raiz));
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        var revision = resultado.getContent().get(0);
+        assertThat(revision.fechaCreacion()).isEqualTo(Instant.parse("2026-10-03T10:00:00Z"));
+        assertThat(revision.nombreProyecto()).isEqualTo("Beta");
+        assertThat(revision.nombreDocumento()).isEqualTo("Informe");
+        assertThat(revision.versionDocumento()).isEqualTo(2);
+    }
+
+    @Test
+    void debeContarObservacionesAbiertasYTotal_cuandoLaRevisionTieneObservacionesEnDistintosEstados() {
+        // Arrange
+        sembrarCatalogo();
+        var artefacto = sembrarArtefacto("Alfa", "Anteproyecto", 1, estudianteA);
+        var version = sembrarVersion(artefacto, 1);
+        var revision = sembrarRevision(version, "PENDIENTE", "2026-10-01T10:00:00Z");
+        sembrarObservacion(revision, "uno", "NUEVA");
+        sembrarObservacion(revision, "dos", "EN_PROGRESO");
+        sembrarObservacion(revision, "tres", "REABIERTA");
+        sembrarObservacion(revision, "cuatro", "SOLUCIONADA");
+        sembrarObservacion(revision, "cinco", "CERRADA");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarTodasEstudiante(criteria(estudianteA, null));
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(resultado.getContent().get(0).observacionesAbiertas()).isEqualTo(3);
+        assertThat(resultado.getContent().get(0).totalObservaciones()).isEqualTo(5);
+    }
+
+    @Test
+    void debeRetornarCeroObservaciones_cuandoLaRevisionNoTiene() {
+        // Arrange
+        sembrarEscenario();
+
+        // Act
+        var resultado = adapter.consultarTodasEstudiante(criteria(estudianteA, null));
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(2)
+                .allSatisfy(revision -> {
+                    assertThat(revision.observacionesAbiertas()).isZero();
+                    assertThat(revision.totalObservaciones()).isZero();
+                });
+    }
+
+    @Test
+    void debeFiltrarPorArtefactoYPorNombreDocumento_cuandoElCriteriaTraeEsosPredicados() {
+        // Arrange
+        sembrarEscenario();
+        var porArtefacto = NodoFiltro.predicado("artefacto", FiltroOperador.ES, artefactoB.toString());
+        var porDocumento = NodoFiltro.predicado("nombreDocumento", FiltroOperador.CONTIENE, "INFORM");
+
+        // Act
+        var conArtefacto = adapter.consultarTodasEstudiante(criteria(estudianteB, porArtefacto));
+        var conDocumento = adapter.consultarTodasEstudiante(criteria(estudianteB, porDocumento));
+        var artefactoAjeno = adapter.consultarTodasEstudiante(criteria(estudianteA, porArtefacto));
+
+        // Assert
+        assertThat(ids(conArtefacto.getContent())).containsExactly(revisionB);
+        assertThat(ids(conDocumento.getContent())).containsExactly(revisionB);
+        assertThat(artefactoAjeno.getContent()).isEmpty();
+    }
+
+    @Test
+    void debeFiltrarPorRangoDeFechaCreacion_cuandoUsaMayorIgualYMenorIgual() {
+        // Arrange
+        sembrarEscenario();
+        var rango = NodoFiltro.grupo(FiltroConector.AND, List.of(
+                NodoFiltro.predicado("fechaCreacion", FiltroOperador.MAYOR_IGUAL_QUE, "2026-10-02T00:00:00"),
+                NodoFiltro.predicado("fechaCreacion", FiltroOperador.MENOR_IGUAL_QUE, "2026-10-02T23:59:59")));
+
+        // Act
+        var resultado = adapter.consultarTodasEstudiante(criteria(estudianteB, rango));
+
+        // Assert
+        assertThat(ids(resultado.getContent())).containsExactly(revisionA2);
+    }
+
+    @Test
+    void debeOrdenarPorVersionYPorFechaCreacion_cuandoSePideDescendente() {
+        // Arrange
+        sembrarEscenario();
+        var porVersion = List.of(SortOrder.of("version", SortDirection.DESC));
+        var porFecha = List.of(SortOrder.of("fechaCreacion", SortDirection.DESC));
+
+        // Act
+        var conVersion = adapter.consultarTodasEstudiante(criteria(estudianteB, null, porVersion, 0, 10));
+        var conFecha = adapter.consultarTodasEstudiante(criteria(estudianteB, null, porFecha, 0, 10));
+
+        // Assert
+        assertThat(conVersion.getContent()).extracting(RevisionAsesorReadModel::version)
+                .containsExactly(2, 1, 1);
+        assertThat(ids(conFecha.getContent())).containsExactly(revisionB, revisionA2, revisionA1);
+    }
+
+    @Test
+    void debePaginarSinRepetirFilas_cuandoOrdenaPorVersionConEmpates() {
+        // Arrange
+        sembrarEscenario();
+        var porVersion = List.of(SortOrder.of("version", SortDirection.ASC));
+
+        // Act
+        var primera = adapter.consultarTodasEstudiante(criteria(estudianteB, null, porVersion, 0, 1));
+        var segunda = adapter.consultarTodasEstudiante(criteria(estudianteB, null, porVersion, 1, 1));
+        var tercera = adapter.consultarTodasEstudiante(criteria(estudianteB, null, porVersion, 2, 1));
+
+        // Assert
+        var recorridas = new ArrayList<UUID>();
+        recorridas.addAll(ids(primera.getContent()));
+        recorridas.addAll(ids(segunda.getContent()));
+        recorridas.addAll(ids(tercera.getContent()));
+        assertThat(recorridas).containsExactlyInAnyOrder(revisionA1, revisionA2, revisionB).doesNotHaveDuplicates();
     }
 }

@@ -50,4 +50,10 @@ class VersionArtefactoEstudianteSortMapperTest {
         // Act & Assert
         assertThat(VersionArtefactoEstudianteSortMapper.traducir("estadoRevision")).isEqualTo("ordenEstadoRevision");
     }
+
+    @Test
+    void debeTraducirFechaCreacionRevision_cuandoCampoOrdenable() {
+        // Act & Assert
+        assertThat(VersionArtefactoEstudianteSortMapper.traducir("fechaCreacionRevision")).isEqualTo("fechaCreacionRevision");
+    }
 }

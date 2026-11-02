@@ -11,7 +11,11 @@ public final class RevisionAsesorEstudianteCriteria extends QueryCriteria {
     public enum Campo {
         VERSION_ARTEFACTO      ("versionArtefacto",     true,  false),
         ESTADO_REVISION_ASESOR ("estadoRevisionAsesor", true,  true),
-        ESTUDIANTE_ID          ("estudianteId",         true,  false);
+        ESTUDIANTE_ID          ("estudianteId",         true,  false),
+        ARTEFACTO              ("artefacto",            true,  false),
+        FECHA_CREACION         ("fechaCreacion",        true,  true),
+        NOMBRE_DOCUMENTO       ("nombreDocumento",      true,  false),
+        VERSION                ("version",              false, true);
 
         private final String  clave;
         private final boolean filtrable;

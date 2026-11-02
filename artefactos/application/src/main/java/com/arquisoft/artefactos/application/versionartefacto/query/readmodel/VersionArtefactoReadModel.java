@@ -16,6 +16,7 @@ public record VersionArtefactoReadModel(
         String nombreAsesor,
         UUID revisionAsesor,
         String estadoRevision,
-        String nombreEstadoRevision
+        String nombreEstadoRevision,
+        Instant fechaCreacionRevision
 ) {
 }

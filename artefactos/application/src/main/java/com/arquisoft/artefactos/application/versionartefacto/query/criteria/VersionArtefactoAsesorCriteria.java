@@ -16,7 +16,8 @@ public final class VersionArtefactoAsesorCriteria extends QueryCriteria {
         VERSION        ("version",       true, true),
         FECHA_CREACION ("fechaCreacion", true, true),
         ASESOR_ID      ("asesorId",      true, false),
-        ESTADO_REVISION("estadoRevision", true, true);
+        ESTADO_REVISION("estadoRevision", true, true),
+        FECHA_CREACION_REVISION("fechaCreacionRevision", true, true);
 
         private final String  clave;
         private final boolean filtrable;

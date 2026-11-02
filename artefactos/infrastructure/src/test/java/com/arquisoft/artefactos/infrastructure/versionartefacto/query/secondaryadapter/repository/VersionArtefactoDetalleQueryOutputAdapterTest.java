@@ -109,6 +109,7 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
         assertThat(resultado.revisionAsesor()).isEqualTo(reciente);
         assertThat(resultado.estadoRevision()).isEqualTo("RESUELTA");
         assertThat(resultado.nombreEstadoRevision()).isEqualTo("Resuelta");
+        assertThat(resultado.fechaCreacionRevision()).isEqualTo(Instant.parse("2026-10-22T10:00:00Z"));
     }
 
     @Test
@@ -126,6 +127,7 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
         assertThat(resultado.revisionAsesor()).isNull();
         assertThat(resultado.estadoRevision()).isNull();
         assertThat(resultado.nombreEstadoRevision()).isNull();
+        assertThat(resultado.fechaCreacionRevision()).isNull();
     }
 
     @Test

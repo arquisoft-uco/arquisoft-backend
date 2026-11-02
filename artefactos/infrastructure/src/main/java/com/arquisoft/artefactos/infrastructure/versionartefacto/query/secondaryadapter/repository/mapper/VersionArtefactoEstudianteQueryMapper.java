@@ -21,6 +21,7 @@ public final class VersionArtefactoEstudianteQueryMapper {
                 entity.getNombreAsesor(),
                 entity.getRevisionAsesorId(),
                 entity.getEstadoRevisionId(),
-                entity.getNombreEstadoRevision());
+                entity.getNombreEstadoRevision(),
+                entity.getFechaCreacionRevision());
     }
 }

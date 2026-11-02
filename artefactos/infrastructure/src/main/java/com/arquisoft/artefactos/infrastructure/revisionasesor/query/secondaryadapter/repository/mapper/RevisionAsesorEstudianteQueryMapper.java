@@ -14,6 +14,12 @@ public final class RevisionAsesorEstudianteQueryMapper {
                 entity.getArtefactoId(),
                 entity.getVersion(),
                 entity.getEstadoRevisionAsesorId(),
-                entity.getEstadoRevisionAsesorNombre());
+                entity.getEstadoRevisionAsesorNombre(),
+                entity.getFechaCreacion(),
+                entity.getNombreProyecto(),
+                entity.getNombreDocumento(),
+                entity.getVersionDocumento(),
+                entity.getObservacionesAbiertas(),
+                entity.getTotalObservaciones());
     }
 }

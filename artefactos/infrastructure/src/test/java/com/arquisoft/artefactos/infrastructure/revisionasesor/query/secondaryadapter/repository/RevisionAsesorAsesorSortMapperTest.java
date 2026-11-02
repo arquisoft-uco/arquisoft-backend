@@ -22,4 +22,11 @@ class RevisionAsesorAsesorSortMapperTest {
         assertThat(RevisionAsesorAsesorSortMapper.traducir("asesorId")).isNull();
         assertThat(RevisionAsesorAsesorSortMapper.traducir("campoInexistente")).isNull();
     }
+
+    @Test
+    void debeTraducirFechaCreacion_yRetornarNullParaArtefacto() {
+        // Act & Assert
+        assertThat(RevisionAsesorAsesorSortMapper.traducir("fechaCreacion")).isEqualTo("fechaCreacion");
+        assertThat(RevisionAsesorAsesorSortMapper.traducir("artefacto")).isNull();
+    }
 }
