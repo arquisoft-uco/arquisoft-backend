@@ -199,6 +199,15 @@ public final class EvaluacionesCodes {
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_JURADO_ESTADO_NO_ENCONTRADO";
     }
 
+    public static final class EvaluacionAsesor {
+
+        private EvaluacionAsesor() {}
+
+        public static final String EVALUACION_REQUERIDO = "EVALUACION_ASESOR_EVALUACION_REQUERIDO";
+        public static final String SIN_EVALUACION_ASESOR = "EVALUACION_ASESOR_SIN_EVALUACION_ASESOR";
+        public static final String NO_DISPONIBLE = "EVALUACION_ASESOR_NO_DISPONIBLE";
+    }
+
     public static final class AsignacionJuradosEvaluacion {
 
         private AsignacionJuradosEvaluacion() {}

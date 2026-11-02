@@ -335,7 +335,8 @@
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create",
               "fichas:estudiante-ficha-perfil-estudiante:view",
-              "evaluaciones:evaluacion-estudiante:view"
+              "evaluaciones:evaluacion-estudiante:view",
+              "evaluaciones:evaluacion-asesor-estudiante:view"
             ]
           }
         },
@@ -943,6 +944,15 @@
         {
           "id": "3b7d5f0e-9c42-4a6e-8d1f-6a2e4c9b7f15",
           "name": "evaluaciones:evaluacion-jurado-jurado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "bfde29cc-5410-4bda-bd54-2728b2cd23cf",
+          "name": "evaluaciones:evaluacion-asesor-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
