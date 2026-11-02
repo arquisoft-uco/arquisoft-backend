@@ -80,7 +80,8 @@ public final class RepositorioArtefactosApiMessages {
         public static final String PARAM_VERSION = "Identificador de la versión del repositorio de artefactos";
         public static final String DESCARGAR_SUMMARY = "Descargar el archivo de una versión del repositorio de artefactos";
         public static final String DESCARGAR_DESCRIPTION =
-                "Entrega una URL de descarga de vida corta del archivo original de cualquier versión";
+                "Entrega, al administrador, al asesor y al estudiante, una URL de descarga de vida corta "
+                        + "del archivo original de cualquier versión";
         public static final String DESCARGAR_RESP_200 = "Enlace de descarga generado";
         public static final String DESCARGAR_RESP_400 = "Identificador de versión inválido";
         public static final String DESCARGAR_RESP_422 = "La versión solicitada no existe";
