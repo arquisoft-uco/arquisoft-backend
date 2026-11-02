@@ -39,13 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(DescargarArchivoVersionRepositorioArtefactoAdministradorController.class)
+@WebMvcTest(DescargarArchivoVersionRepositorioArtefactoController.class)
 @Import({IdentidadActualTestConfig.class,
         AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
-        DescargarArchivoVersionRepositorioArtefactoAdministradorControllerTest.TestSecurityConfig.class
+        DescargarArchivoVersionRepositorioArtefactoControllerTest.TestSecurityConfig.class
 })
-class DescargarArchivoVersionRepositorioArtefactoAdministradorControllerTest {
+class DescargarArchivoVersionRepositorioArtefactoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
@@ -75,7 +75,7 @@ class DescargarArchivoVersionRepositorioArtefactoAdministradorControllerTest {
     private GestorTraza gestorTraza;
 
     private static String ruta(Object version) {
-        return "/repositorio-artefactos/versiones/administrador/" + version + "/descarga";
+        return "/repositorio-artefactos/versiones/" + version + "/descarga";
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwt() {

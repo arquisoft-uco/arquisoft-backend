@@ -33,15 +33,15 @@ import java.util.UUID;
 @Tag(
         name = RepositorioArtefactosApiMessages.VersionRepositorioArtefacto.TAG_NAME,
         description = RepositorioArtefactosApiMessages.VersionRepositorioArtefacto.TAG_DESCRIPTION)
-public class DescargarArchivoVersionRepositorioArtefactoAsesorController {
+public class DescargarArchivoVersionRepositorioArtefactoController {
 
     private final DescargarArchivoVersionRepositorioArtefactoInteractor interactor;
 
-    @GetMapping("${rutas.repositorio-artefactos.repositorio-artefactos.descarga-version-asesor:"
-            + "/versiones/asesor/{versionRepositorioArtefactoId}/descarga}")
+    @GetMapping("${rutas.repositorio-artefactos.repositorio-artefactos.descarga-version:"
+            + "/versiones/{versionRepositorioArtefactoId}/descarga}")
     @Operation(
-            summary = RepositorioArtefactosApiMessages.VersionRepositorioArtefacto.DESCARGAR_ASESOR_SUMMARY,
-            description = RepositorioArtefactosApiMessages.VersionRepositorioArtefacto.DESCARGAR_ASESOR_DESCRIPTION,
+            summary = RepositorioArtefactosApiMessages.VersionRepositorioArtefacto.DESCARGAR_SUMMARY,
+            description = RepositorioArtefactosApiMessages.VersionRepositorioArtefacto.DESCARGAR_DESCRIPTION,
             security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH))
     @ApiResponses({
             @ApiResponse(
