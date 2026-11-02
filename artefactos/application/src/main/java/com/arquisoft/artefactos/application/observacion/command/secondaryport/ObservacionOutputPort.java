@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.application.observacion.command.secondaryport;
 
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.entity.ObservacionEntity;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,6 +15,10 @@ public interface ObservacionOutputPort {
     boolean existenPorRevisionAsesor(UUID revisionAsesor);
 
     boolean existenNoCerradasDeVersionAnterior(UUID revisionAsesor, String estadoCerrada);
+
+    boolean existeParticipacionEstudiante(UUID observacion, UUID estudiante);
+
+    boolean existenPorRevisionAsesorYEstados(UUID revisionAsesor, Collection<String> estados);
 
     void eliminar(UUID observacion);
 

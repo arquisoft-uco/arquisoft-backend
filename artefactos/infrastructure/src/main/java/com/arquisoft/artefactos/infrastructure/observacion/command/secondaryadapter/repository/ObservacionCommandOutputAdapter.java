@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.artefactos.ObservacionKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,6 +38,16 @@ public class ObservacionCommandOutputAdapter implements ObservacionOutputPort {
     @Override
     public boolean existenNoCerradasDeVersionAnterior(UUID revisionAsesor, String estadoCerrada) {
         return observacionCommandRepository.existenNoCerradasDeVersionAnterior(revisionAsesor, estadoCerrada);
+    }
+
+    @Override
+    public boolean existeParticipacionEstudiante(UUID observacion, UUID estudiante) {
+        return observacionCommandRepository.existeParticipacionEstudiante(observacion, estudiante);
+    }
+
+    @Override
+    public boolean existenPorRevisionAsesorYEstados(UUID revisionAsesor, Collection<String> estados) {
+        return observacionCommandRepository.existsByRevisionAsesorAndEstadoIn(revisionAsesor, estados);
     }
 
     @Override

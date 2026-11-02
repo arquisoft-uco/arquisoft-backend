@@ -1,39 +1,39 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.validator.impl;
 
 import com.arquisoft.artefactos.application.revisionasesor.command.validator.CambiarEstadoRevisionAsesorValidator;
-import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.model.ActividadArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.model.ExistenciaArtefacto;
 import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoExisteRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.ArtefactoNoOmitidoRule;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoExisteRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoNoOmitidoRuleImpl;
-import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.model.ExistenciaAsesorDeRevision;
 import com.arquisoft.artefactos.domain.asesor.rules.AsesorDeRevisionExisteRule;
 import com.arquisoft.artefactos.domain.asesor.rules.impl.AsesorDeRevisionExisteRuleImpl;
-import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
 import com.arquisoft.artefactos.domain.estudiante.model.ExistenciaEstudiante;
 import com.arquisoft.artefactos.domain.estudiante.rules.EstudianteExisteRule;
 import com.arquisoft.artefactos.domain.estudiante.rules.impl.EstudianteExisteRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.CambioEstadoRevisionAsesorDomain;
-import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.DestinoCambioEstado;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoActualRevisionAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ExistenciaRevisionAsesor;
+import com.arquisoft.artefactos.domain.revisionasesor.model.ObservacionesAbiertasRevision;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ParticipacionEstudianteArtefacto;
+import com.arquisoft.artefactos.domain.revisionasesor.model.PrecondicionesCambioEstadoRevisionAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.VersionPosteriorRevision;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.EstadoDestinoRevisionAsesorPermitidoRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.EstudianteParticipaArtefactoRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorExisteRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorNoCerradaRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorNoPendienteRule;
+import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorSinObservacionesAbiertasRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.VersionPosteriorARevisionExisteRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.EstadoDestinoRevisionAsesorPermitidoRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.EstudianteParticipaArtefactoRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorExisteRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorNoCerradaRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorNoPendienteRuleImpl;
+import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorSinObservacionesAbiertasRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.VersionPosteriorARevisionExisteRuleImpl;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +50,7 @@ public class CambiarEstadoRevisionAsesorValidatorImpl implements CambiarEstadoRe
     private final RevisionAsesorNoPendienteRule revisionAsesorNoPendienteRule;
     private final EstadoDestinoRevisionAsesorPermitidoRule estadoDestinoRevisionAsesorPermitidoRule;
     private final VersionPosteriorARevisionExisteRule versionPosteriorARevisionExisteRule;
+    private final RevisionAsesorSinObservacionesAbiertasRule revisionAsesorSinObservacionesAbiertasRule;
 
     public CambiarEstadoRevisionAsesorValidatorImpl() {
         this.revisionAsesorExisteRule = new RevisionAsesorExisteRuleImpl();
@@ -62,21 +63,23 @@ public class CambiarEstadoRevisionAsesorValidatorImpl implements CambiarEstadoRe
         this.revisionAsesorNoPendienteRule = new RevisionAsesorNoPendienteRuleImpl();
         this.estadoDestinoRevisionAsesorPermitidoRule = new EstadoDestinoRevisionAsesorPermitidoRuleImpl();
         this.versionPosteriorARevisionExisteRule = new VersionPosteriorARevisionExisteRuleImpl();
+        this.revisionAsesorSinObservacionesAbiertasRule = new RevisionAsesorSinObservacionesAbiertasRuleImpl();
     }
 
     @Override
-    public void validar(CambioEstadoRevisionAsesorDomain cambio, RevisionAsesorDomain revision, AsesorDomain asesor,
-                        EstudianteDomain estudiante, boolean participa, boolean existeVersionPosterior,
-                        ArtefactoDomain artefacto) {
+    public void validar(CambioEstadoRevisionAsesorDomain cambio,
+                        PrecondicionesCambioEstadoRevisionAsesor precondiciones) {
+        var revision = precondiciones.revision();
+        var artefacto = precondiciones.artefacto();
 
         revisionAsesorExisteRule.validar(
                 new ExistenciaRevisionAsesor(cambio.getRevisionAsesor(), !revision.esVacio()));
         estudianteExisteRule.validar(
-                new ExistenciaEstudiante(cambio.getEstudiante(), !estudiante.esVacio()));
+                new ExistenciaEstudiante(cambio.getEstudiante(), !precondiciones.estudiante().esVacio()));
         asesorDeRevisionExisteRule.validar(
-                new ExistenciaAsesorDeRevision(cambio.getRevisionAsesor(), !asesor.esVacio()));
-        estudianteParticipaArtefactoRule.validar(
-                new ParticipacionEstudianteArtefacto(cambio.getRevisionAsesor(), cambio.getEstudiante(), participa));
+                new ExistenciaAsesorDeRevision(cambio.getRevisionAsesor(), !precondiciones.asesor().esVacio()));
+        estudianteParticipaArtefactoRule.validar(new ParticipacionEstudianteArtefacto(
+                cambio.getRevisionAsesor(), cambio.getEstudiante(), precondiciones.participa()));
         artefactoExisteRule.validar(new ExistenciaArtefacto(artefacto.getId(), artefacto));
         artefactoNoOmitidoRule.validar(new ActividadArtefacto(artefacto));
 
@@ -86,7 +89,9 @@ public class CambiarEstadoRevisionAsesorValidatorImpl implements CambiarEstadoRe
                 new EstadoActualRevisionAsesor(revision.getId(), revision.getEstado()));
         estadoDestinoRevisionAsesorPermitidoRule.validar(
                 new DestinoCambioEstado(cambio.getRevisionAsesor(), cambio.getEstado()));
-        versionPosteriorARevisionExisteRule.validar(
-                new VersionPosteriorRevision(cambio.getRevisionAsesor(), existeVersionPosterior));
+        versionPosteriorARevisionExisteRule.validar(new VersionPosteriorRevision(
+                cambio.getRevisionAsesor(), precondiciones.existeVersionPosterior()));
+        revisionAsesorSinObservacionesAbiertasRule.validar(new ObservacionesAbiertasRevision(
+                cambio.getRevisionAsesor(), revision.getEstado(), precondiciones.existenObservacionesAbiertas()));
     }
 }

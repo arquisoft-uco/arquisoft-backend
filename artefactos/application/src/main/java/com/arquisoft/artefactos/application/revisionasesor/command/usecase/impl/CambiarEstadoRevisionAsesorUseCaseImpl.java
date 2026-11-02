@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorDeRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantePorIdFinder;
+import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesAbiertasDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.EstudianteParticipaRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.VersionPosteriorARevisionFinder;
@@ -11,6 +12,7 @@ import com.arquisoft.artefactos.application.revisionasesor.command.usecase.Cambi
 import com.arquisoft.artefactos.application.revisionasesor.command.validator.CambiarEstadoRevisionAsesorValidator;
 import com.arquisoft.artefactos.domain.revisionasesor.CambioEstadoRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.event.RevisionAsesorEstadoCambiadoEvent;
+import com.arquisoft.artefactos.domain.revisionasesor.model.PrecondicionesCambioEstadoRevisionAsesor;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.CambiarEstadoRevisionAsesorKey;
 import com.arquisoft.shared.publisher.EventPublisher;
@@ -28,6 +30,7 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
     private final EstudianteParticipaRevisionAsesorFinder estudianteParticipaRevisionAsesorFinder;
     private final VersionPosteriorARevisionFinder versionPosteriorARevisionFinder;
     private final ArtefactoPorRevisionAsesorFinder artefactoPorRevisionAsesorFinder;
+    private final ObservacionesAbiertasDeRevisionExistenFinder observacionesAbiertasDeRevisionExistenFinder;
     private final CambiarEstadoRevisionAsesorValidator cambiarEstadoRevisionAsesorValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
@@ -45,13 +48,15 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
         var participa = estudianteParticipaRevisionAsesorFinder.obtener(cambio);
         var existeVersionPosterior = versionPosteriorARevisionFinder.obtener(revisionAsesor);
         var artefacto = artefactoPorRevisionAsesorFinder.obtener(revisionAsesor);
+        var existenObservacionesAbiertas = observacionesAbiertasDeRevisionExistenFinder.obtener(revisionAsesor);
 
         logger.debug(CambiarEstadoRevisionAsesorKey.LOG_VERIFICACION_CAMBIO_ESTADO,
                 !revision.esVacio(), !asesor.esVacio(), !estudiante.esVacio(), participa, existeVersionPosterior,
-                !artefacto.esVacio());
+                !artefacto.esVacio(), existenObservacionesAbiertas);
 
-        cambiarEstadoRevisionAsesorValidator.validar(
-                cambio, revision, asesor, estudiante, participa, existeVersionPosterior, artefacto);
+        cambiarEstadoRevisionAsesorValidator.validar(cambio, new PrecondicionesCambioEstadoRevisionAsesor(
+                revision, asesor, estudiante, artefacto, participa, existeVersionPosterior,
+                existenObservacionesAbiertas));
 
         if (revision.tieneEstado(estadoNuevo)) {
             logger.info(CambiarEstadoRevisionAsesorKey.LOG_ESTADO_SIN_CAMBIO, revisionAsesor, estadoNuevo.getId());

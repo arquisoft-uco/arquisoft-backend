@@ -331,6 +331,7 @@
               "artefactos:version-artefacto:view",
               "artefactos:artefacto-participacion-estudiante:view",
               "artefactos:revision-asesor-estado:update",
+              "artefactos:observacion-estado-estudiante:update",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create",
@@ -2546,6 +2547,15 @@
         {
           "id": "3b9a5c1e-6f42-4d7a-9e18-2c0f7a4b8d65",
           "name": "artefactos:observacion-estado-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "6d1e8b3a-4c92-47f5-b0a7-9e2c5f1d8a34",
+          "name": "artefactos:observacion-estado-estudiante:update",
           "description": "",
           "composite": false,
           "clientRole": true,

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.UUID;
 
 public interface ObservacionCommandRepository extends JpaRepository<ObservacionJpaEntity, UUID> {
@@ -14,6 +15,21 @@ public interface ObservacionCommandRepository extends JpaRepository<ObservacionJ
     boolean existsByRevisionAsesorAndDescripcion(UUID revisionAsesor, String descripcion);
 
     boolean existsByRevisionAsesor(UUID revisionAsesor);
+
+    boolean existsByRevisionAsesorAndEstadoIn(UUID revisionAsesor, Collection<String> estados);
+
+    @NativeQuery("""
+            SELECT EXISTS (
+                SELECT 1
+                FROM observacion o
+                JOIN revision_asesor ra ON ra.id = o.revision_asesor_id
+                JOIN version_artefacto va ON va.id = ra.version_artefacto_id
+                JOIN estudiante_artefacto ea ON ea.artefacto_id = va.artefacto_id
+                WHERE o.id = :observacion AND ea.estudiante_id = :estudiante
+            )
+            """)
+    boolean existeParticipacionEstudiante(
+            @Param("observacion") UUID observacion, @Param("estudiante") UUID estudiante);
 
     @NativeQuery("""
             SELECT EXISTS (
