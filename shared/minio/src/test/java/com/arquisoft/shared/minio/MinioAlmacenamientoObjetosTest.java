@@ -267,6 +267,18 @@ class MinioAlmacenamientoObjetosTest {
     }
 
     @Test
+    void debeCopiarSinReemplazarMetadatos_cuandoCopia() throws Exception {
+        // Act
+        almacenamiento.copiar(BUCKET, "pendientes/c-1", "versiones/v-1", "abc");
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(CopyObjectArgs.class);
+        verify(minioClient).copyObject(captor.capture());
+        assertThat(captor.getValue().metadataDirective()).isNull();
+        assertThat(captor.getValue().headers().containsKey("x-amz-metadata-directive")).isFalse();
+    }
+
+    @Test
     void debeLanzarMinioOperationException_cuandoLaCopiaCondicionadaSeRechaza() throws Exception {
         // Arrange
         when(minioClient.copyObject(any(CopyObjectArgs.class))).thenThrow(errorS3("PreconditionFailed"));

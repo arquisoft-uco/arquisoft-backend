@@ -161,6 +161,20 @@ public final class ArtefactosApiMessages {
                 "Sin permiso para consultar la información de la versión del artefacto";
         public static final String CONSULTAR_DETALLE_RESP_422 =
                 "La versión del artefacto no existe o el solicitante no tiene acceso a ella";
+        public static final String PARAM_VERSION = "Identificador de la versión del artefacto";
+        public static final String DESCARGAR_SUMMARY = "Descargar el archivo de una versión del artefacto";
+        public static final String DESCARGAR_DESCRIPTION =
+                "Entrega una URL de descarga de vida corta del archivo que se subió en la versión, con el nombre "
+                        + "con el que se subió. La puede pedir el asesor del artefacto o un estudiante vinculado a "
+                        + "él, según los roles del token; también si el artefacto está omitido.";
+        public static final String DESCARGAR_RESP_200 = "Enlace de descarga generado";
+        public static final String DESCARGAR_RESP_400 =
+                "Identificador de versión inválido o token sin roles de asesor ni estudiante";
+        public static final String DESCARGAR_RESP_403 = "Sin permiso para descargar el archivo de la versión";
+        public static final String DESCARGAR_RESP_422 =
+                "La versión del artefacto no existe o el solicitante no tiene acceso a ella";
+        public static final String DESCARGAR_RESP_503 =
+                "El archivo de la versión no está disponible o el almacenamiento de objetos no responde";
         public static final String SOLICITAR_CARGA_SUMMARY = "Solicitar la carga de una versión del artefacto";
         public static final String SOLICITAR_CARGA_DESCRIPTION =
                 "Entrega un formulario firmado para subir el archivo de la nueva versión directamente al "
