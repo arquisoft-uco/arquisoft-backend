@@ -172,14 +172,18 @@ spring.mail:
 # ==================== MINIO (Object Storage) ====================
 # El archivo nunca pasa por el backend: este firma un formulario POST con politica y el navegador sube
 # directo a MinIO. endpoint-publico es el host que alcanza el navegador (el endpoint del backend, p. ej.
-# http://minio:9000 en compose, no); la firma de un POST con politica no cubre el host.
+# http://minio:9000 en compose, no); la firma de un POST con politica no cubre el host, la de un GET si:
+# el enlace de descarga se firma con endpoint-publico y region explicita (sin ella el SDK consulta la
+# region por red). descarga-minutos admite de 1 a 5.
 minio:
   endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
   endpoint-publico: ${MINIO_PUBLIC_ENDPOINT:http://localhost:9000}
+  region: ${MINIO_REGION:us-east-1}
   access-key: ${MINIO_ACCESS_KEY:minioadmin}
   secret-key: ${MINIO_SECRET_KEY:minioadmin}
   presigned-url-expiry:
     formulario-carga-minutos: ${MINIO_UPLOAD_EXPIRY_MINUTES:15}
+    descarga-minutos: ${MINIO_DOWNLOAD_EXPIRY_MINUTES:5}
 
 # ==================== REPOSITORIO DE ARTEFACTOS (almacenamiento) ====================
 # El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (5 MB); los 50 MB

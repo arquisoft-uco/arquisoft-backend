@@ -1,20 +1,26 @@
 package com.arquisoft.shared.minio;
 
+import com.arquisoft.shared.minio.config.MinioClientFirmante;
 import com.arquisoft.shared.minio.config.MinioProperties;
 import com.arquisoft.shared.minio.exception.MinioOperationException;
+import com.arquisoft.shared.minio.model.EnlaceDescarga;
 import com.arquisoft.shared.minio.model.FormularioCarga;
 import com.arquisoft.shared.minio.model.LecturaObjeto;
 import com.arquisoft.shared.minio.model.MetadatosObjeto;
+import com.arquisoft.shared.minio.model.SolicitudEnlaceDescarga;
 import com.arquisoft.shared.minio.model.SolicitudFormularioCarga;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilObjeto;
 import io.minio.CopyObjectArgs;
 import io.minio.CopySource;
 import io.minio.GetObjectArgs;
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PostPolicy;
 import io.minio.RemoveObjectArgs;
 import io.minio.StatObjectArgs;
 import io.minio.errors.ErrorResponseException;
+import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,11 +29,14 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
@@ -42,8 +51,15 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
     private static final String SEPARADOR_RUTA = "/";
     private static final String SIN_TEXTO = "";
     private static final long TAMANO_MINIMO_BYTES = 1L;
+    private static final String PARAMETRO_CONTENT_DISPOSITION = "response-content-disposition";
+    private static final String CARACTER_REEMPLAZO = "_";
+    private static final char BARRA_INVERTIDA = '\\';
+    private static final Pattern CARACTERES_PROHIBIDOS_NOMBRE = Pattern.compile("[\"\\r\\n;]");
+    private static final int ASCII_IMPRIMIBLE_MINIMO = 0x20;
+    private static final int ASCII_IMPRIMIBLE_MAXIMO = 0x7e;
 
     private final MinioClient minioClient;
+    private final MinioClientFirmante minioClientFirmante;
     private final MinioProperties properties;
 
     @Override
@@ -66,6 +82,24 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             return new FormularioCarga(urlPublica(solicitud.bucket()), campos, expiraEn.toInstant());
         } catch (Exception e) {
             throw fallo(MinioOperationException::formularioCargaFallido, e);
+        }
+    }
+
+    @Override
+    public EnlaceDescarga generarEnlaceDescarga(SolicitudEnlaceDescarga solicitud) {
+        try {
+            var minutos = properties.getPresignedUrlExpiry().getDescargaMinutos();
+            var url = minioClientFirmante.cliente().getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
+                    .method(Method.GET)
+                    .bucket(solicitud.bucket())
+                    .object(solicitud.key())
+                    .expiry(minutos, TimeUnit.MINUTES)
+                    .extraQueryParams(Map.of(PARAMETRO_CONTENT_DISPOSITION,
+                            armarContentDisposition(solicitud.nombreArchivo())))
+                    .build());
+            return new EnlaceDescarga(url, UtilFecha.generarInstanteActual().plus(minutos, ChronoUnit.MINUTES));
+        } catch (Exception e) {
+            throw fallo(MinioOperationException::enlaceDescargaFallido, e);
         }
     }
 
@@ -130,6 +164,16 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
         var endpoint = properties.getEndpointPublico();
         var base = endpoint.endsWith(SEPARADOR_RUTA) ? endpoint.substring(0, endpoint.length() - 1) : endpoint;
         return base + SEPARADOR_RUTA + bucket;
+    }
+
+    private static String armarContentDisposition(String nombreArchivo) {
+        var nombre = CARACTERES_PROHIBIDOS_NOMBRE.matcher(nombreArchivo).replaceAll(SIN_TEXTO);
+        var respaldo = new StringBuilder();
+        nombre.chars().forEach(caracter -> respaldo.append(
+                caracter < ASCII_IMPRIMIBLE_MINIMO || caracter > ASCII_IMPRIMIBLE_MAXIMO || caracter == BARRA_INVERTIDA
+                        ? CARACTER_REEMPLAZO : String.valueOf((char) caracter)));
+        var codificado = URLEncoder.encode(nombre, StandardCharsets.UTF_8).replace("+", "%20").replace("*", "%2A");
+        return "attachment; filename=\"" + respaldo + "\"; filename*=UTF-8''" + codificado;
     }
 
     private static boolean esObjetoInexistente(ErrorResponseException e) {

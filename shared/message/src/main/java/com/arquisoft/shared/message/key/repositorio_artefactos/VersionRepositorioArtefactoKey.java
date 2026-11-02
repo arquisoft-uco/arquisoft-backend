@@ -52,6 +52,17 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA(
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.consulta-asesor-completada", 3),
+    ERROR_VERSION_NO_ENCONTRADA(
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.version-no-encontrada", 0),
+    ERROR_VERSION_NO_ENCONTRADA_DETALLE(
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.version-no-encontrada-detalle", 1),
+    ERROR_ARCHIVO_NO_DISPONIBLE(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.error.archivo-no-disponible", 0),
+    ERROR_ARCHIVO_NO_DISPONIBLE_DETALLE(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.error.archivo-no-disponible-detalle", 2),
+    LOG_DESCARGANDO("repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.descargando", 1),
+    LOG_DESCARGA_GENERADA(
+            "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.descarga-generada", 2),
     LOG_GUARDADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.guardada", 1),
     LOG_CARGA_COPIADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-copiada", 2),
     LOG_CARGA_ELIMINADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-eliminada", 1);
