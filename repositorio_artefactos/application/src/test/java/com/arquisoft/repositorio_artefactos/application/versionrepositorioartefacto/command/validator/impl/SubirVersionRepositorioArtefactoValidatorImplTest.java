@@ -6,6 +6,7 @@ import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.Reposito
 import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.exception.RepositorioArtefactoNoEncontradoException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.CargaPendienteDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.UltimaVersionDocumento;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.CargaNoCorrespondeException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.CargaPendienteNoEncontradaException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.DocumentoNoExisteException;
@@ -46,8 +47,13 @@ class SubirVersionRepositorioArtefactoValidatorImplTest {
                 subida.getSolicitante(), "formato.pdf", TIPO, 2048L, ETAG);
     }
 
+    private UltimaVersionDocumento ultimaVersion(int ultimoNumero) {
+        return ultimoNumero == 0
+                ? UltimaVersionDocumento.VACIO : new UltimaVersionDocumento(subida.getNombreDocumento(), ultimoNumero);
+    }
+
     private void validar(int ultimoNumero) {
-        validator.validar(subida, administrador, repositorio, carga, MAXIMO, ultimoNumero);
+        validator.validar(subida, administrador, repositorio, carga, MAXIMO, ultimaVersion(ultimoNumero));
     }
 
     @Test

@@ -11,7 +11,7 @@ public class VersionRepositorioMismoDocumentoRuleImpl implements VersionReposito
         var actual = cambio.actual();
         var elegida = cambio.elegida();
         if (!actual.getRepositorioArtefacto().equals(elegida.getRepositorioArtefacto())
-                || !actual.getNombreDocumento().equals(elegida.getNombreDocumento())) {
+                || !actual.getNombreDocumento().equalsIgnoreCase(elegida.getNombreDocumento())) {
             throw new VersionRepositorioOtroDocumentoException(
                     actual.getNombreDocumento(), actual.getNombreRepositorio(), elegida.getId(), actual.getId());
         }

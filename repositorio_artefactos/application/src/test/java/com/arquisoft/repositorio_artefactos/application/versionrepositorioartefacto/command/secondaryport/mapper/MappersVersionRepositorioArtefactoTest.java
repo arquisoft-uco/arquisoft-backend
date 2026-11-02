@@ -10,6 +10,7 @@ import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.C
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SolicitudCargaVersionRepositorioArtefactoDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.UltimaVersionDocumento;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,8 @@ class MappersVersionRepositorioArtefactoTest {
         var carga = CargaPendienteDomain.reconstruir(subida.getCarga(), subida.getRepositorio(),
                 subida.getSolicitante(), "formato.pdf", "application/pdf", 2048L, "etag");
         var analisis = AnalisisArchivoDomain.reconstruir("application/pdf", "a".repeat(64), "etag");
-        return VersionRepositorioArtefactoDomain.crear(subida, ultimoNumeroVersion, carga, analisis);
+        return VersionRepositorioArtefactoDomain.crear(
+                subida, new UltimaVersionDocumento("Formato A", ultimoNumeroVersion), carga, analisis);
     }
 
     @Test

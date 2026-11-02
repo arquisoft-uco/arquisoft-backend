@@ -4,10 +4,11 @@ import com.arquisoft.repositorio_artefactos.domain.administrador.AdministradorDo
 import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.RepositorioArtefactoDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.CargaPendienteDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.UltimaVersionDocumento;
 
 public interface SubirVersionRepositorioArtefactoValidator {
 
     void validar(SubidaVersionRepositorioArtefactoDomain subida, AdministradorDomain administrador,
                  RepositorioArtefactoDomain repositorio, CargaPendienteDomain carga,
-                 long tamanoMaximoBytes, int ultimoNumeroVersion);
+                 long tamanoMaximoBytes, UltimaVersionDocumento ultimaVersion);
 }

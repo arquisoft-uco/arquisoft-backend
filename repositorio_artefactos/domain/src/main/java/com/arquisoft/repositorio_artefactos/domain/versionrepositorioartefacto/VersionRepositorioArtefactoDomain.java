@@ -1,5 +1,6 @@
 package com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto;
 
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.UltimaVersionDocumento;
 import com.arquisoft.shared.message.constant.RepositorioArtefactosAlmacenamiento;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
@@ -23,14 +24,14 @@ public final class VersionRepositorioArtefactoDomain {
     private VersionRepositorioArtefactoDomain() {}
 
     public static VersionRepositorioArtefactoDomain crear(
-            SubidaVersionRepositorioArtefactoDomain subida, int ultimoNumeroVersion,
+            SubidaVersionRepositorioArtefactoDomain subida, UltimaVersionDocumento ultimaVersion,
             CargaPendienteDomain carga, AnalisisArchivoDomain analisis) {
         var version = new VersionRepositorioArtefactoDomain();
 
         version.setId();
         version.setRepositorioArtefacto(subida.getRepositorio());
-        version.setNombreDocumento(subida.getNombreDocumento());
-        version.setNumeroVersion(ultimoNumeroVersion);
+        version.setNombreDocumento(subida, ultimaVersion);
+        version.setNumeroVersion(ultimaVersion);
         version.setFechaCreacion();
         version.setUriArchivo();
         version.setNombreArchivo(carga.getNombreArchivo());
@@ -49,12 +50,13 @@ public final class VersionRepositorioArtefactoDomain {
         this.repositorioArtefacto = repositorioArtefacto;
     }
 
-    private void setNombreDocumento(String nombreDocumento) {
-        this.nombreDocumento = nombreDocumento;
+    private void setNombreDocumento(
+            SubidaVersionRepositorioArtefactoDomain subida, UltimaVersionDocumento ultimaVersion) {
+        this.nombreDocumento = ultimaVersion.esVacio() ? subida.getNombreDocumento() : ultimaVersion.nombreDocumento();
     }
 
-    private void setNumeroVersion(int ultimoNumeroVersion) {
-        this.numeroVersion = ultimoNumeroVersion + 1;
+    private void setNumeroVersion(UltimaVersionDocumento ultimaVersion) {
+        this.numeroVersion = ultimaVersion.numeroVersion() + 1;
     }
 
     private void setFechaCreacion() {

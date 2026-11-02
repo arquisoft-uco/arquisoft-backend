@@ -26,7 +26,7 @@ public interface ArtefactoOutputPort {
 
     void reactivar(UUID artefacto, UUID asesor);
 
-    Optional<ArtefactoEntity> obtenerOmitidoPorProyectoYRepositorio(
+    Optional<ArtefactoEntity> obtenerOmitidoPorProyectoYDocumento(
             UUID proyectoGrado, UUID versionRepositorioArtefacto);
 
     Optional<ArtefactoEntity> obtenerPorRevisionAsesor(UUID revisionAsesor);
