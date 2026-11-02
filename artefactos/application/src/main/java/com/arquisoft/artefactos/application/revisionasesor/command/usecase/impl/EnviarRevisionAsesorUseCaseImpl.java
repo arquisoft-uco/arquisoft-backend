@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
+import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.usecase.AvanzarObservacionesRevisionUseCase;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
@@ -15,6 +16,7 @@ import com.arquisoft.artefactos.domain.revisionasesor.event.RevisionAsesorEnviad
 import com.arquisoft.artefactos.domain.revisionasesor.model.ContactoAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ContactoEstudiante;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
+import com.arquisoft.artefactos.domain.revisionasesor.model.ObservacionesDeRevision;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EnviarRevisionAsesorKey;
 import com.arquisoft.shared.publisher.EventPublisher;
@@ -31,6 +33,7 @@ public class EnviarRevisionAsesorUseCaseImpl implements EnviarRevisionAsesorUseC
     private final VersionArtefactoPorIdFinder versionArtefactoPorIdFinder;
     private final VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
     private final EstudiantesVinculadosArtefactoFinder estudiantesVinculadosArtefactoFinder;
+    private final ObservacionesDeRevisionExistenFinder observacionesDeRevisionExistenFinder;
     private final EnviarRevisionAsesorValidator enviarRevisionAsesorValidator;
     private final RevisionAsesorOutputPort revisionAsesorOutputPort;
     private final AvanzarObservacionesRevisionUseCase avanzarObservacionesRevisionUseCase;
@@ -50,12 +53,14 @@ public class EnviarRevisionAsesorUseCaseImpl implements EnviarRevisionAsesorUseC
         var versionRepositorio = versionRepositorioArtefactoPorIdFinder.obtener(
                 artefacto.getVersionRepositorioArtefacto());
         var estudiantes = estudiantesVinculadosArtefactoFinder.obtener(artefacto.getId());
+        var observacionesExisten = observacionesDeRevisionExistenFinder.obtener(revisionAsesor);
 
         logger.debug(EnviarRevisionAsesorKey.LOG_VERIFICACION_ENVIO,
                 !revision.esVacio(), !artefacto.esVacio(), !asesor.esVacio(), !version.esVacio(),
-                !versionRepositorio.esVacio(), estudiantes.size());
+                !versionRepositorio.esVacio(), estudiantes.size(), observacionesExisten);
 
-        enviarRevisionAsesorValidator.validar(envio, revision, artefacto, asesor, version, versionRepositorio);
+        enviarRevisionAsesorValidator.validar(envio, revision, artefacto, asesor, version, versionRepositorio,
+                new ObservacionesDeRevision(revisionAsesor, observacionesExisten));
 
         revisionAsesorOutputPort.actualizarEstado(revisionAsesor, EstadoRevisionAsesor.EN_PROGRESO.getId());
         avanzarObservacionesRevisionUseCase.ejecutar(envio.getObservaciones());

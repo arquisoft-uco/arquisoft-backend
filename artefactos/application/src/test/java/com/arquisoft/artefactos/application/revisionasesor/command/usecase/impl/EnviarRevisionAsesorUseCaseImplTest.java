@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
+import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.usecase.AvanzarObservacionesRevisionUseCase;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
@@ -18,6 +19,7 @@ import com.arquisoft.artefactos.domain.revisionasesor.EnvioRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.event.RevisionAsesorEnviadaEvent;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
+import com.arquisoft.artefactos.domain.revisionasesor.model.ObservacionesDeRevision;
 import com.arquisoft.artefactos.domain.versionartefacto.VersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
@@ -64,6 +66,8 @@ class EnviarRevisionAsesorUseCaseImplTest {
     private VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
     @Mock
     private EstudiantesVinculadosArtefactoFinder estudiantesVinculadosArtefactoFinder;
+    @Mock
+    private ObservacionesDeRevisionExistenFinder observacionesDeRevisionExistenFinder;
     @Mock
     private EnviarRevisionAsesorValidator validator;
     @Mock
@@ -114,6 +118,7 @@ class EnviarRevisionAsesorUseCaseImplTest {
         when(asesorPorIdFinder.obtener(asesorId)).thenReturn(asesor);
         when(versionArtefactoPorIdFinder.obtener(versionId)).thenReturn(version);
         when(versionRepositorioArtefactoPorIdFinder.obtener(versionRepositorioId)).thenReturn(versionRepositorio);
+        when(observacionesDeRevisionExistenFinder.obtener(revisionId)).thenReturn(true);
     }
 
     private List<EstudianteDomain> estudiantes(int cantidad) {
@@ -134,7 +139,7 @@ class EnviarRevisionAsesorUseCaseImplTest {
         // Assert
         var orden = inOrder(revisionAsesorFinder, artefactoPorRevisionAsesorFinder, asesorPorIdFinder,
                 versionArtefactoPorIdFinder, versionRepositorioArtefactoPorIdFinder,
-                estudiantesVinculadosArtefactoFinder, validator, revisionAsesorOutputPort,
+                estudiantesVinculadosArtefactoFinder, observacionesDeRevisionExistenFinder, validator, revisionAsesorOutputPort,
                 avanzarObservacionesRevisionUseCase, eventPublisher, logger);
         orden.verify(logger).info(EnviarRevisionAsesorKey.LOG_ENVIANDO, revisionId, asesorId);
         orden.verify(revisionAsesorFinder, times(1)).obtener(revisionId);
@@ -143,7 +148,9 @@ class EnviarRevisionAsesorUseCaseImplTest {
         orden.verify(versionArtefactoPorIdFinder, times(1)).obtener(versionId);
         orden.verify(versionRepositorioArtefactoPorIdFinder, times(1)).obtener(versionRepositorioId);
         orden.verify(estudiantesVinculadosArtefactoFinder, times(1)).obtener(artefacto.getId());
-        orden.verify(validator).validar(envio, revision, artefacto, asesor, version, versionRepositorio);
+        orden.verify(observacionesDeRevisionExistenFinder, times(1)).obtener(revisionId);
+        orden.verify(validator).validar(envio, revision, artefacto, asesor, version, versionRepositorio,
+                new ObservacionesDeRevision(revisionId, true));
         orden.verify(revisionAsesorOutputPort).actualizarEstado(revisionId, "EN_PROGRESO");
         orden.verify(avanzarObservacionesRevisionUseCase).ejecutar(envio.getObservaciones());
         var captor = ArgumentCaptor.forClass(RevisionAsesorEnviadaEvent.class);
@@ -180,7 +187,8 @@ class EnviarRevisionAsesorUseCaseImplTest {
         // Arrange
         when(estudiantesVinculadosArtefactoFinder.obtener(artefacto.getId())).thenReturn(estudiantes(1));
         doThrow(new AsesorNoPropietarioArtefactoException(asesorId, artefacto.getId())).when(validator)
-                .validar(envio, revision, artefacto, asesor, version, versionRepositorio);
+                .validar(envio, revision, artefacto, asesor, version, versionRepositorio,
+                        new ObservacionesDeRevision(revisionId, true));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(envio))

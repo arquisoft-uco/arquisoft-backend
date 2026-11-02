@@ -49,6 +49,8 @@ public enum RevisionAsesorKey implements ClaveMensaje {
     ERROR_NO_CERRABLE_DETALLE("artefactos.dominio.revisionasesor.error.no-cerrable-detalle", 2),
     ERROR_CON_OBSERVACIONES("artefactos.dominio.revisionasesor.error.con-observaciones", 0),
     ERROR_CON_OBSERVACIONES_DETALLE("artefactos.dominio.revisionasesor.error.con-observaciones-detalle", 1),
+    ERROR_SIN_OBSERVACIONES("artefactos.dominio.revisionasesor.error.sin-observaciones", 0),
+    ERROR_SIN_OBSERVACIONES_DETALLE("artefactos.dominio.revisionasesor.error.sin-observaciones-detalle", 1),
     ERROR_OBSERVACIONES_VERSION_ANTERIOR_SIN_CERRAR(
             "artefactos.dominio.revisionasesor.error.observaciones-version-anterior-sin-cerrar", 0),
     ERROR_OBSERVACIONES_VERSION_ANTERIOR_SIN_CERRAR_DETALLE(
