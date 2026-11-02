@@ -387,7 +387,7 @@
               "artefactos:observacion-revision:view",
               "artefactos:revision-asesor-asesor:view",
               "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
-              "repositorio-artefactos:version-repositorio-artefacto:download",
+              "repositorio-artefactos:version-repositorio-artefacto:download-asesor",
               "artefactos:artefacto:create",
               "artefactos:version-artefacto-asesor:view",
               "artefactos:version-artefacto:view",
@@ -866,6 +866,15 @@
         {
           "id": "f4d8692f-0494-43f9-9bfe-d80ead4a72aa",
           "name": "repositorio-artefactos:version-repositorio-artefacto:download",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "9b1e4c2a-6d3f-4a8e-b5c7-2e0f1a9d8c34",
+          "name": "repositorio-artefactos:version-repositorio-artefacto:download-asesor",
           "description": "",
           "composite": false,
           "clientRole": true,
