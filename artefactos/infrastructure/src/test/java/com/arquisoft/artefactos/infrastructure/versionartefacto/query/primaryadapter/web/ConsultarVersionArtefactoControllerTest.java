@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -84,7 +86,8 @@ class ConsultarVersionArtefactoControllerTest {
         var version = new VersionArtefactoReadModel(
                 versionId, UtilUUID.generarNuevoUUID(), 2, Instant.parse("2026-10-20T10:00:00Z"),
                 "artefactos/v2.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno",
-                UtilUUID.generarNuevoUUID(), "PENDIENTE", "Pendiente");
+                UtilUUID.generarNuevoUUID(), "PENDIENTE", "Pendiente",
+                Instant.parse("2026-10-21T10:00:00Z"));
         when(consultarVersionArtefactoInteractor.ejecutar(any(ConsultarVersionArtefactoQuery.class)))
                 .thenReturn(version);
 
@@ -95,7 +98,8 @@ class ConsultarVersionArtefactoControllerTest {
                 .andExpect(jsonPath("$.version").value(2))
                 .andExpect(jsonPath("$.uriArchivo").value("artefactos/v2.pdf"))
                 .andExpect(jsonPath("$.nombreProyecto").value("Proyecto Uno"))
-                .andExpect(jsonPath("$.estadoRevision").value("PENDIENTE"));
+                .andExpect(jsonPath("$.estadoRevision").value("PENDIENTE"))
+                .andExpect(jsonPath("$.fechaCreacionRevision").value("2026-10-21T10:00:00Z"));
 
         var captor = ArgumentCaptor.forClass(ConsultarVersionArtefactoQuery.class);
         verify(consultarVersionArtefactoInteractor).ejecutar(captor.capture());
@@ -153,5 +157,23 @@ class ConsultarVersionArtefactoControllerTest {
         mockMvc.perform(get(RUTA, versionId).with(token(UsuariosRoles.ESTUDIANTE)))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(ArtefactosCodes.VersionArtefacto.ACCESO_DENEGADO));
+    }
+
+    @Test
+    void debeSerializarFechaCreacionRevisionComoNullExplicito_cuandoLaVersionNoTieneRevision() throws Exception {
+        // Arrange
+        var versionId = UtilUUID.generarNuevoUUID();
+        var version = new VersionArtefactoReadModel(
+                versionId, UtilUUID.generarNuevoUUID(), 1, Instant.parse("2026-10-20T10:00:00Z"),
+                "artefactos/v1.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno",
+                null, null, null, null);
+        when(consultarVersionArtefactoInteractor.ejecutar(any(ConsultarVersionArtefactoQuery.class)))
+                .thenReturn(version);
+
+        // Act & Assert
+        mockMvc.perform(get(RUTA, versionId).with(token(UsuariosRoles.ASESOR)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(hasKey("fechaCreacionRevision")))
+                .andExpect(jsonPath("$.fechaCreacionRevision").value(nullValue()));
     }
 }

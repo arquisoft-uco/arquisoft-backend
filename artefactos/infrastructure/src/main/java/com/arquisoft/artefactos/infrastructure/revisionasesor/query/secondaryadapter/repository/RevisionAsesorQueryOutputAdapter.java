@@ -24,7 +24,7 @@ public class RevisionAsesorQueryOutputAdapter implements RevisionAsesorQueryOutp
 
     @Override
     public PaginatedResult<RevisionAsesorReadModel> consultarTodasEstudiante(RevisionAsesorEstudianteCriteria criteria) {
-        var pageable = PageableMapper.toPageable(criteria, RevisionAsesorEstudianteSortMapper::traducir);
+        var pageable = PageableMapper.toPageable(criteria, RevisionAsesorEstudianteSortMapper::traducir, "id");
         var spec = estudianteSpecification.desdeCriteria(criteria);
 
         return PaginationMapper.toResult(
@@ -34,7 +34,7 @@ public class RevisionAsesorQueryOutputAdapter implements RevisionAsesorQueryOutp
 
     @Override
     public PaginatedResult<RevisionAsesorAsesorReadModel> consultarTodasAsesor(RevisionAsesorAsesorCriteria criteria) {
-        var pageable = PageableMapper.toPageable(criteria, RevisionAsesorAsesorSortMapper::traducir);
+        var pageable = PageableMapper.toPageable(criteria, RevisionAsesorAsesorSortMapper::traducir, "id");
         var spec = asesorSpecification.desdeCriteria(criteria);
 
         return PaginationMapper.toResult(

@@ -14,6 +14,12 @@ public final class RevisionAsesorResponseMapper {
                 readModel.artefacto(),
                 readModel.version(),
                 readModel.estadoRevisionAsesor(),
-                readModel.estadoRevisionAsesorNombre());
+                readModel.estadoRevisionAsesorNombre(),
+                readModel.fechaCreacion(),
+                readModel.nombreProyecto(),
+                readModel.nombreDocumento(),
+                readModel.versionDocumento(),
+                readModel.observacionesAbiertas(),
+                readModel.totalObservaciones());
     }
 }

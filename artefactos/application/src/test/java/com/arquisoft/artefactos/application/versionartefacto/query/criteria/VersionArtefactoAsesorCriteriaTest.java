@@ -80,4 +80,11 @@ class VersionArtefactoAsesorCriteriaTest {
         assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaFiltrar("estadoRevision")).isTrue();
         assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaOrdenar("estadoRevision")).isTrue();
     }
+
+    @Test
+    void debeDeclararFiltrableYOrdenable_cuandoCampoEsFechaCreacionRevision() {
+        // Arrange & Act & Assert
+        assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaFiltrar("fechaCreacionRevision")).isTrue();
+        assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaOrdenar("fechaCreacionRevision")).isTrue();
+    }
 }

@@ -19,6 +19,7 @@ public record VersionArtefactoResponseDTO(
         String nombreAsesor,
         @JsonInclude(JsonInclude.Include.ALWAYS) UUID revisionAsesor,
         @JsonInclude(JsonInclude.Include.ALWAYS) String estadoRevision,
-        @JsonInclude(JsonInclude.Include.ALWAYS) String nombreEstadoRevision
+        @JsonInclude(JsonInclude.Include.ALWAYS) String nombreEstadoRevision,
+        @JsonInclude(JsonInclude.Include.ALWAYS) Instant fechaCreacionRevision
 ) {
 }

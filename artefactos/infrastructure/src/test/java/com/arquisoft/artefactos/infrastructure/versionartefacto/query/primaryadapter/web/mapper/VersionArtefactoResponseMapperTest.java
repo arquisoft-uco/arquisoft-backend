@@ -16,7 +16,8 @@ class VersionArtefactoResponseMapperTest {
         var readModel = new VersionArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 4,
                 Instant.parse("2026-10-20T10:00:00Z"), "artefactos/v4.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno",
-                UtilUUID.generarNuevoUUID(), "RESUELTA", "Resuelta");
+                UtilUUID.generarNuevoUUID(), "RESUELTA", "Resuelta",
+                Instant.parse("2026-10-21T10:00:00Z"));
 
         // Act
         var response = VersionArtefactoResponseMapper.toResponse(readModel);
@@ -35,6 +36,7 @@ class VersionArtefactoResponseMapperTest {
         assertThat(response.revisionAsesor()).isEqualTo(readModel.revisionAsesor());
         assertThat(response.estadoRevision()).isEqualTo("RESUELTA");
         assertThat(response.nombreEstadoRevision()).isEqualTo("Resuelta");
+        assertThat(response.fechaCreacionRevision()).isEqualTo(Instant.parse("2026-10-21T10:00:00Z"));
     }
 
     @Test
@@ -43,7 +45,7 @@ class VersionArtefactoResponseMapperTest {
         var readModel = new VersionArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 1,
                 Instant.parse("2026-10-20T10:00:00Z"), "artefactos/v1.pdf", "Proyecto Uno", "Documento Uno", 1,
-                "repo-uno", "Asesor Uno", null, null, null);
+                "repo-uno", "Asesor Uno", null, null, null, null);
 
         // Act
         var response = VersionArtefactoResponseMapper.toResponse(readModel);
@@ -52,5 +54,6 @@ class VersionArtefactoResponseMapperTest {
         assertThat(response.revisionAsesor()).isNull();
         assertThat(response.estadoRevision()).isNull();
         assertThat(response.nombreEstadoRevision()).isNull();
+        assertThat(response.fechaCreacionRevision()).isNull();
     }
 }

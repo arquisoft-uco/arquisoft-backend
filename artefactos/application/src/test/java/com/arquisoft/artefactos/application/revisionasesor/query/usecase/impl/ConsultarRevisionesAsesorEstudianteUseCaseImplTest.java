@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +39,8 @@ class ConsultarRevisionesAsesorEstudianteUseCaseImplTest {
         // Arrange
         var criteria = RevisionAsesorEstudianteCriteria.builder().pagina(0).tamanio(10).build();
         var revision = new RevisionAsesorReadModel(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 2, "PENDIENTE", "Pendiente");
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 2, "PENDIENTE", "Pendiente",
+                Instant.now(), "Proyecto Uno", "Documento Uno", 1, 2, 3);
         var resultadoEsperado = PaginatedResult.of(List.of(revision), 0, 10, 1L);
         when(revisionAsesorQueryOutputPort.consultarTodasEstudiante(criteria)).thenReturn(resultadoEsperado);
 

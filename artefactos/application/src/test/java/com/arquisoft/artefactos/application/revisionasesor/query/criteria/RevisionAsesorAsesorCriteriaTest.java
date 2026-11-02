@@ -26,14 +26,14 @@ class RevisionAsesorAsesorCriteriaTest {
         assertThat(RevisionAsesorAsesorCriteria.Campo.esValidoParaFiltrar("asesorId")).isTrue();
         assertThat(RevisionAsesorAsesorCriteria.Campo.esValidoParaOrdenar("asesorId")).isFalse();
 
-        assertThat(RevisionAsesorAsesorCriteria.Campo.esValidoParaFiltrar("artefacto")).isFalse();
+        assertThat(RevisionAsesorAsesorCriteria.Campo.esValidoParaFiltrar("campoInexistente")).isFalse();
         assertThat(RevisionAsesorAsesorCriteria.Campo.esValidoParaOrdenar("campoInexistente")).isFalse();
     }
 
     @Test
     void debeLanzarFiltroException_cuandoRaizFiltraPorCampoNoDeclarado() {
         // Arrange
-        var raiz = NodoFiltro.predicado("artefacto", FiltroOperador.ES, "valor");
+        var raiz = NodoFiltro.predicado("campoInexistente", FiltroOperador.ES, "valor");
         var builder = RevisionAsesorAsesorCriteria.builder().pagina(0).tamanio(10);
 
         // Act & Assert
@@ -48,5 +48,19 @@ class RevisionAsesorAsesorCriteriaTest {
 
         // Act & Assert
         assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
+    }
+
+    @Test
+    void debeDeclararFiltrableYNoOrdenable_cuandoCampoEsArtefacto() {
+        // Arrange & Act & Assert
+        assertThat(RevisionAsesorAsesorCriteria.Campo.esValidoParaFiltrar("artefacto")).isTrue();
+        assertThat(RevisionAsesorAsesorCriteria.Campo.esValidoParaOrdenar("artefacto")).isFalse();
+    }
+
+    @Test
+    void debeDeclararFiltrableYOrdenable_cuandoCampoEsFechaCreacion() {
+        // Arrange & Act & Assert
+        assertThat(RevisionAsesorAsesorCriteria.Campo.esValidoParaFiltrar("fechaCreacion")).isTrue();
+        assertThat(RevisionAsesorAsesorCriteria.Campo.esValidoParaOrdenar("fechaCreacion")).isTrue();
     }
 }

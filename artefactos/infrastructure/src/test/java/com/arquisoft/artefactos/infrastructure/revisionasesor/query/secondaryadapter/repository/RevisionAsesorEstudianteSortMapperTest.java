@@ -22,4 +22,13 @@ class RevisionAsesorEstudianteSortMapperTest {
         assertThat(RevisionAsesorEstudianteSortMapper.traducir("estudianteId")).isNull();
         assertThat(RevisionAsesorEstudianteSortMapper.traducir("campoInexistente")).isNull();
     }
+
+    @Test
+    void debeTraducirFechaCreacionYVersion_yRetornarNullParaClavesSoloFiltrables() {
+        // Act & Assert
+        assertThat(RevisionAsesorEstudianteSortMapper.traducir("fechaCreacion")).isEqualTo("fechaCreacion");
+        assertThat(RevisionAsesorEstudianteSortMapper.traducir("version")).isEqualTo("version");
+        assertThat(RevisionAsesorEstudianteSortMapper.traducir("artefacto")).isNull();
+        assertThat(RevisionAsesorEstudianteSortMapper.traducir("nombreDocumento")).isNull();
+    }
 }
