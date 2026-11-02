@@ -276,6 +276,7 @@
           "client": {
             "arquisoft-api": [
               "artefactos:version-artefacto:upload",
+              "repositorio-artefactos:version-repositorio-artefacto:download",
               "entregables:entregable-proyecto-grado-estudiante:view",
               "solicitudes:respuesta-cambio-asesor-recibida:view",
               "solicitudes:respuesta-ampliacion-plazo-recibida:view",
