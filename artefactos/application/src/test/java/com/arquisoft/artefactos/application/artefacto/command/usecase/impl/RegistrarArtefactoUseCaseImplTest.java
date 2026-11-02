@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.application.artefacto.command.usecase.impl;
 
-import com.arquisoft.artefactos.application.artefacto.command.finder.RepositoriosAsignadosProyectoFinder;
+import com.arquisoft.artefactos.application.artefacto.command.finder.VersionesAsignadasProyectoFinder;
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.ArtefactoOutputPort;
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 import com.arquisoft.artefactos.application.artefacto.command.validator.RegistrarArtefactoValidator;
@@ -54,7 +54,7 @@ class RegistrarArtefactoUseCaseImplTest {
     @Mock
     private VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
     @Mock
-    private RepositoriosAsignadosProyectoFinder repositoriosAsignadosProyectoFinder;
+    private VersionesAsignadasProyectoFinder versionesAsignadasProyectoFinder;
     @Mock
     private RegistrarArtefactoValidator registrarArtefactoValidator;
     @Mock
@@ -73,7 +73,7 @@ class RegistrarArtefactoUseCaseImplTest {
     void setUp() {
         useCase = new RegistrarArtefactoUseCaseImpl(
                 proyectoGradoExisteFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
-                versionRepositorioArtefactoPorIdFinder, repositoriosAsignadosProyectoFinder,
+                versionRepositorioArtefactoPorIdFinder, versionesAsignadasProyectoFinder,
                 registrarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase, logger);
     }
 
@@ -96,7 +96,7 @@ class RegistrarArtefactoUseCaseImplTest {
         when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
         when(versionRepositorioArtefactoPorIdFinder.obtener(version))
                 .thenReturn(VersionRepositorioArtefactoDomain.VACIO);
-        when(repositoriosAsignadosProyectoFinder.obtener(proyecto)).thenReturn(List.of());
+        when(versionesAsignadasProyectoFinder.obtener(proyecto)).thenReturn(List.of());
 
         // Act
         var id = useCase.ejecutar(registro);
@@ -104,13 +104,13 @@ class RegistrarArtefactoUseCaseImplTest {
         // Assert
         assertThat(id).isEqualTo(registro.getArtefacto().getId());
         var orden = inOrder(proyectoGradoExisteFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
-                versionRepositorioArtefactoPorIdFinder, repositoriosAsignadosProyectoFinder, logger,
+                versionRepositorioArtefactoPorIdFinder, versionesAsignadasProyectoFinder, logger,
                 registrarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase);
         orden.verify(proyectoGradoExisteFinder, times(1)).obtener(proyecto);
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesor);
         orden.verify(vinculosMasRecientesProyectoGradoFinder, times(1)).obtener(proyecto);
         orden.verify(versionRepositorioArtefactoPorIdFinder, times(1)).obtener(version);
-        orden.verify(repositoriosAsignadosProyectoFinder, times(1)).obtener(proyecto);
+        orden.verify(versionesAsignadasProyectoFinder, times(1)).obtener(proyecto);
         orden.verify(logger).debug(ArtefactoKey.LOG_VERIFICACION_REGISTRAR, true, false, 0, false, 0);
         orden.verify(registrarArtefactoValidator).validar(
                 registro, true, AsesorDomain.VACIO, List.of(), VersionRepositorioArtefactoDomain.VACIO, List.of());
@@ -130,7 +130,7 @@ class RegistrarArtefactoUseCaseImplTest {
         when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
         when(versionRepositorioArtefactoPorIdFinder.obtener(any()))
                 .thenReturn(VersionRepositorioArtefactoDomain.VACIO);
-        when(repositoriosAsignadosProyectoFinder.obtener(proyecto)).thenReturn(List.of());
+        when(versionesAsignadasProyectoFinder.obtener(proyecto)).thenReturn(List.of());
         doThrow(new ProyectoGradoNoEncontradoException(proyecto)).when(registrarArtefactoValidator)
                 .validar(any(), eq(false), any(), any(), any(), anyList());
 

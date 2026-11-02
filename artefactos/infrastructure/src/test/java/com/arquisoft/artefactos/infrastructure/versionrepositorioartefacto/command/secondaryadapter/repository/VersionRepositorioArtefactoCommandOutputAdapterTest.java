@@ -198,7 +198,7 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeConsultarSoloLosRepositoriosDelProyecto_cuandoHayVersionesDeVariosRepositorios() {
+    void debeConsultarSoloLasVersionesDelProyecto() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var otroProyecto = UtilUUID.generarNuevoUUID();
@@ -218,16 +218,17 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var repositorios = adapter.consultarRepositoriosAsignados(proyecto);
-        var sinArtefactos = adapter.consultarRepositoriosAsignados(UtilUUID.generarNuevoUUID());
+        var versiones = adapter.consultarVersionesAsignadas(proyecto);
+        var sinArtefactos = adapter.consultarVersionesAsignadas(UtilUUID.generarNuevoUUID());
 
         // Assert
-        assertThat(repositorios).containsExactlyInAnyOrder(repositorioUno, repositorioDos);
+        assertThat(versiones).extracting(VersionRepositorioArtefactoEntity::id)
+                .containsExactlyInAnyOrder(versionUno, versionDos);
         assertThat(sinArtefactos).isEmpty();
     }
 
     @Test
-    void debeIgnorarLosArtefactosOmitidos_cuandoConsultaLosRepositoriosAsignados() {
+    void debeIgnorarLosArtefactosOmitidos_cuandoConsultaLasVersionesAsignadas() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var repositorioActivo = UtilUUID.generarNuevoUUID();
@@ -248,10 +249,11 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var repositorios = adapter.consultarRepositoriosAsignados(proyecto);
+        var versiones = adapter.consultarVersionesAsignadas(proyecto);
 
         // Assert
-        assertThat(repositorios).containsExactly(repositorioActivo);
+        assertThat(versiones).extracting(VersionRepositorioArtefactoEntity::repositorioArtefacto)
+                .containsExactly(repositorioActivo);
     }
 
     @Test

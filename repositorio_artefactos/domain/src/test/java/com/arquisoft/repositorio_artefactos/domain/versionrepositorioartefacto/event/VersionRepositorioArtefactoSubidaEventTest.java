@@ -3,6 +3,7 @@ package com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.AnalisisArchivoDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.CargaPendienteDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.UltimaVersionDocumento;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.shared.message.constant.EventTopics;
 import com.arquisoft.shared.util.UtilUUID;
@@ -20,7 +21,7 @@ class VersionRepositorioArtefactoSubidaEventTest {
         var carga = CargaPendienteDomain.reconstruir(subida.getCarga(), subida.getRepositorio(),
                 subida.getSolicitante(), "formato.pdf", "application/pdf", 2048L, "etag");
         var analisis = AnalisisArchivoDomain.reconstruir("application/pdf", "a".repeat(64), "etag");
-        return VersionRepositorioArtefactoDomain.crear(subida, 2, carga, analisis);
+        return VersionRepositorioArtefactoDomain.crear(subida, new UltimaVersionDocumento("Formato A", 2), carga, analisis);
     }
 
     @Test

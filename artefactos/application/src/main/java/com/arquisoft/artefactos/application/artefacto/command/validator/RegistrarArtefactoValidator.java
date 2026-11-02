@@ -6,7 +6,6 @@ import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDo
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface RegistrarArtefactoValidator {
 
@@ -16,5 +15,5 @@ public interface RegistrarArtefactoValidator {
             AsesorDomain asesor,
             List<AsesorProyectoGradoDomain> vinculosMasRecientes,
             VersionRepositorioArtefactoDomain versionRepositorio,
-            List<UUID> repositoriosAsignados);
+            List<VersionRepositorioArtefactoDomain> versionesAsignadas);
 }

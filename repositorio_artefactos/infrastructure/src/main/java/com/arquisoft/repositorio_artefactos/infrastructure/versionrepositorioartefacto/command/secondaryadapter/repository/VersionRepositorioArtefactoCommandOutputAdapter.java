@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.repositorio_artefactos.VersionRepositori
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -24,7 +25,11 @@ public class VersionRepositorioArtefactoCommandOutputAdapter implements VersionR
     }
 
     @Override
-    public int obtenerUltimoNumeroVersion(UUID repositorio, String nombreDocumento) {
-        return versionRepositorioArtefactoCommandRepository.obtenerUltimoNumeroVersion(repositorio, nombreDocumento);
+    public Optional<VersionRepositorioArtefactoEntity> obtenerUltimaVersionDocumento(
+            UUID repositorio, String nombreDocumento) {
+        return versionRepositorioArtefactoCommandRepository
+                .findFirstByRepositorioArtefactoAndNombreDocumentoIgnoreCaseOrderByNumeroVersionDesc(
+                        repositorio, nombreDocumento)
+                .map(VersionRepositorioArtefactoJpaMapper::toEntity);
     }
 }

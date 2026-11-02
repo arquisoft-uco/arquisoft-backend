@@ -2,9 +2,9 @@ package com.arquisoft.artefactos.application.artefacto.command.validator.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.validator.RegistrarArtefactoValidator;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
-import com.arquisoft.artefactos.domain.artefacto.model.DisponibilidadRepositorioProyecto;
-import com.arquisoft.artefactos.domain.artefacto.rules.RepositorioArtefactoUnicoEnProyectoRule;
-import com.arquisoft.artefactos.domain.artefacto.rules.impl.RepositorioArtefactoUnicoEnProyectoRuleImpl;
+import com.arquisoft.artefactos.domain.artefacto.model.DisponibilidadDocumentoProyecto;
+import com.arquisoft.artefactos.domain.artefacto.rules.DocumentoArtefactoUnicoEnProyectoRule;
+import com.arquisoft.artefactos.domain.artefacto.rules.impl.DocumentoArtefactoUnicoEnProyectoRuleImpl;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.model.ExistenciaAsesor;
 import com.arquisoft.artefactos.domain.asesor.rules.AsesorExisteRule;
@@ -23,7 +23,6 @@ import com.arquisoft.artefactos.domain.versionrepositorioartefacto.rules.impl.Ve
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class RegistrarArtefactoValidatorImpl implements RegistrarArtefactoValidator {
@@ -32,14 +31,14 @@ public class RegistrarArtefactoValidatorImpl implements RegistrarArtefactoValida
     private final AsesorExisteRule asesorExisteRule;
     private final AsesorAsignadoProyectoGradoRule asesorAsignadoProyectoGradoRule;
     private final VersionRepositorioArtefactoExisteRule versionRepositorioArtefactoExisteRule;
-    private final RepositorioArtefactoUnicoEnProyectoRule repositorioArtefactoUnicoEnProyectoRule;
+    private final DocumentoArtefactoUnicoEnProyectoRule documentoArtefactoUnicoEnProyectoRule;
 
     public RegistrarArtefactoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.asesorAsignadoProyectoGradoRule = new AsesorAsignadoProyectoGradoRuleImpl();
         this.versionRepositorioArtefactoExisteRule = new VersionRepositorioArtefactoExisteRuleImpl();
-        this.repositorioArtefactoUnicoEnProyectoRule = new RepositorioArtefactoUnicoEnProyectoRuleImpl();
+        this.documentoArtefactoUnicoEnProyectoRule = new DocumentoArtefactoUnicoEnProyectoRuleImpl();
     }
 
     @Override
@@ -49,7 +48,7 @@ public class RegistrarArtefactoValidatorImpl implements RegistrarArtefactoValida
             AsesorDomain asesor,
             List<AsesorProyectoGradoDomain> vinculosMasRecientes,
             VersionRepositorioArtefactoDomain versionRepositorio,
-            List<UUID> repositoriosAsignados) {
+            List<VersionRepositorioArtefactoDomain> versionesAsignadas) {
         var artefacto = registro.getArtefacto();
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(artefacto.getProyectoGrado(), proyectoExiste));
         asesorExisteRule.validar(new ExistenciaAsesor(artefacto.getAsesor(), asesor));
@@ -57,7 +56,7 @@ public class RegistrarArtefactoValidatorImpl implements RegistrarArtefactoValida
                 artefacto.getAsesor(), asesor.getNombre(), artefacto.getProyectoGrado(), vinculosMasRecientes));
         versionRepositorioArtefactoExisteRule.validar(new ExistenciaVersionRepositorioArtefacto(
                 artefacto.getVersionRepositorioArtefacto(), versionRepositorio));
-        repositorioArtefactoUnicoEnProyectoRule.validar(
-                new DisponibilidadRepositorioProyecto(versionRepositorio, repositoriosAsignados));
+        documentoArtefactoUnicoEnProyectoRule.validar(
+                new DisponibilidadDocumentoProyecto(versionRepositorio, versionesAsignadas));
     }
 }

@@ -39,6 +39,17 @@ class VersionRepositorioMismoDocumentoRuleImplTest {
     }
 
     @Test
+    void debePasar_cuandoElNombreSoloDifiereEnMayusculas() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var cambio = new CambioVersionRepositorio(
+                version(repositorio, "Formato A", 1), version(repositorio, "FORMATO a", 2));
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(cambio)).doesNotThrowAnyException();
+    }
+
+    @Test
     void debeLanzarSinUuidEnMensaje_cuandoOtroDocumentoDelMismoRepositorio() {
         // Arrange
         var repositorio = UtilUUID.generarNuevoUUID();

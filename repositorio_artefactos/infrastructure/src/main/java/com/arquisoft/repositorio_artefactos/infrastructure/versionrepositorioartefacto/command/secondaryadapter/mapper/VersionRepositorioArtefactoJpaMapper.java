@@ -21,4 +21,18 @@ public final class VersionRepositorioArtefactoJpaMapper {
                 .hashSha256(entity.hashSha256())
                 .build();
     }
+
+    public static VersionRepositorioArtefactoEntity toEntity(VersionRepositorioArtefactoJpaEntity jpaEntity) {
+        return new VersionRepositorioArtefactoEntity(
+                jpaEntity.getId(),
+                jpaEntity.getNombreDocumento(),
+                jpaEntity.getNumeroVersion(),
+                jpaEntity.getFechaCreacion(),
+                jpaEntity.getRepositorioArtefacto(),
+                jpaEntity.getUriArchivo(),
+                jpaEntity.getTipoContenido(),
+                jpaEntity.getTamanoBytes(),
+                jpaEntity.getNombreArchivo(),
+                jpaEntity.getHashSha256());
+    }
 }

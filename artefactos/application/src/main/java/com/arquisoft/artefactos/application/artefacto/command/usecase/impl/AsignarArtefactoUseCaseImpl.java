@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.application.artefacto.command.usecase.impl;
 
-import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoOmitidoDelRepositorioFinder;
+import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoOmitidoDelDocumentoFinder;
 import com.arquisoft.artefactos.application.artefacto.command.usecase.AsignarArtefactoUseCase;
 import com.arquisoft.artefactos.application.artefacto.command.usecase.ReactivarArtefactoUseCase;
 import com.arquisoft.artefactos.application.artefacto.command.usecase.RegistrarArtefactoUseCase;
@@ -17,7 +17,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AsignarArtefactoUseCaseImpl implements AsignarArtefactoUseCase {
 
-    private final ArtefactoOmitidoDelRepositorioFinder artefactoOmitidoDelRepositorioFinder;
+    private final ArtefactoOmitidoDelDocumentoFinder artefactoOmitidoDelDocumentoFinder;
     private final RegistrarArtefactoUseCase registrarArtefactoUseCase;
     private final ReactivarArtefactoUseCase reactivarArtefactoUseCase;
     private final AppLogger logger;
@@ -27,7 +27,7 @@ public class AsignarArtefactoUseCaseImpl implements AsignarArtefactoUseCase {
         var artefacto = registro.getArtefacto();
         logger.info(ArtefactoKey.LOG_ASIGNANDO, artefacto.getProyectoGrado(), artefacto.getAsesor());
 
-        var omitido = artefactoOmitidoDelRepositorioFinder.obtener(artefacto);
+        var omitido = artefactoOmitidoDelDocumentoFinder.obtener(artefacto);
         logger.debug(ArtefactoKey.LOG_VERIFICACION_ASIGNAR, !omitido.esVacio());
 
         var asignado = omitido.getId();

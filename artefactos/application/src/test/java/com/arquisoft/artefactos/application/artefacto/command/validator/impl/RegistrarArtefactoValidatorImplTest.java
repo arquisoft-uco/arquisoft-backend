@@ -4,7 +4,7 @@ import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
-import com.arquisoft.artefactos.domain.artefacto.exception.RepositorioArtefactoYaAsignadoException;
+import com.arquisoft.artefactos.domain.artefacto.exception.DocumentoArtefactoYaAsignadoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesor.exception.AsesorNoEncontradoException;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
@@ -71,7 +71,7 @@ class RegistrarArtefactoValidatorImplTest {
     void debeLanzarProyectoNoEncontrado_antesQueElAsesor() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, false, AsesorDomain.VACIO, List.of(), VersionRepositorioArtefactoDomain.VACIO, List.of(repositorio)))
+                asignacion, false, AsesorDomain.VACIO, List.of(), VersionRepositorioArtefactoDomain.VACIO, List.of(version)))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
 
@@ -91,23 +91,36 @@ class RegistrarArtefactoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(otroAsesor), VersionRepositorioArtefactoDomain.VACIO, List.of(repositorio)))
+                asignacion, true, asesorVigente, List.of(otroAsesor), VersionRepositorioArtefactoDomain.VACIO, List.of(version)))
                 .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
     }
 
     @Test
-    void debeLanzarVersionNoEncontrada_antesQueElRepositorio() {
+    void debeLanzarVersionNoEncontrada_antesQueLaUnicidad() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(vinculoVigente), VersionRepositorioArtefactoDomain.VACIO, List.of(repositorio)))
+                asignacion, true, asesorVigente, List.of(vinculoVigente), VersionRepositorioArtefactoDomain.VACIO, List.of(version)))
                 .isInstanceOf(VersionRepositorioArtefactoNoEncontradaException.class);
     }
 
     @Test
-    void debeLanzarRepositorioYaAsignado_cuandoElProyectoYaTieneElRepositorio() {
+    void debePasar_cuandoSoloTieneOtroDocumentoDelMismoRepositorio() {
+        // Arrange
+        var otroDocumento = VersionRepositorioArtefactoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), "Otro Doc", 1, repositorio, "Repo",
+                new DatosArchivo("b.pdf", "application/pdf", 10L));
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(
+                asignacion, true, asesorVigente, List.of(vinculoVigente), version, List.of(otroDocumento)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarDocumentoYaAsignado_cuandoElProyectoYaTieneElDocumento() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                asignacion, true, asesorVigente, List.of(vinculoVigente), version, List.of(repositorio)))
-                .isInstanceOf(RepositorioArtefactoYaAsignadoException.class);
+                asignacion, true, asesorVigente, List.of(vinculoVigente), version, List.of(version)))
+                .isInstanceOf(DocumentoArtefactoYaAsignadoException.class);
     }
 }

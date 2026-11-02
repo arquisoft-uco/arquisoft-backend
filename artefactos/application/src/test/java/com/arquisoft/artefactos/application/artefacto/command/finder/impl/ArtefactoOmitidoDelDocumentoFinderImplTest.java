@@ -17,13 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ArtefactoOmitidoDelRepositorioFinderImplTest {
+class ArtefactoOmitidoDelDocumentoFinderImplTest {
 
     @Mock
     private ArtefactoOutputPort artefactoOutputPort;
 
     @InjectMocks
-    private ArtefactoOmitidoDelRepositorioFinderImpl finder;
+    private ArtefactoOmitidoDelDocumentoFinderImpl finder;
 
     @Test
     void debeDevolverElOmitido_cuandoElProyectoTieneUnoDelMismoRepositorio() {
@@ -33,7 +33,7 @@ class ArtefactoOmitidoDelRepositorioFinderImplTest {
         var nuevo = ArtefactoDomain.crear(proyecto, UtilUUID.generarNuevoUUID(), version);
         var omitidoEn = UtilFecha.generarInstanteActual();
         var idOmitido = UtilUUID.generarNuevoUUID();
-        when(artefactoOutputPort.obtenerOmitidoPorProyectoYRepositorio(proyecto, version)).thenReturn(Optional.of(
+        when(artefactoOutputPort.obtenerOmitidoPorProyectoYDocumento(proyecto, version)).thenReturn(Optional.of(
                 new ArtefactoEntity(idOmitido, proyecto, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                         omitidoEn)));
 
@@ -51,7 +51,7 @@ class ArtefactoOmitidoDelRepositorioFinderImplTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var version = UtilUUID.generarNuevoUUID();
         var nuevo = ArtefactoDomain.crear(proyecto, UtilUUID.generarNuevoUUID(), version);
-        when(artefactoOutputPort.obtenerOmitidoPorProyectoYRepositorio(proyecto, version))
+        when(artefactoOutputPort.obtenerOmitidoPorProyectoYDocumento(proyecto, version))
                 .thenReturn(Optional.empty());
 
         // Act
