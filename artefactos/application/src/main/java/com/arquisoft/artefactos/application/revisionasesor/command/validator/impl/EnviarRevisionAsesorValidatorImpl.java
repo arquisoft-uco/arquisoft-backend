@@ -18,9 +18,12 @@ import com.arquisoft.artefactos.domain.asesor.rules.impl.AsesorExisteRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.EnvioRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoActualRevisionAsesor;
+import com.arquisoft.artefactos.domain.revisionasesor.model.ObservacionesDeRevision;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ExistenciaRevisionAsesor;
+import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorConObservacionesRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorEnviableRule;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.RevisionAsesorExisteRule;
+import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorConObservacionesRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorEnviableRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.impl.RevisionAsesorExisteRuleImpl;
 import com.arquisoft.artefactos.domain.versionartefacto.VersionArtefactoDomain;
@@ -44,6 +47,7 @@ public class EnviarRevisionAsesorValidatorImpl implements EnviarRevisionAsesorVa
     private final AsesorPropietarioArtefactoRule asesorPropietarioArtefactoRule;
     private final ArtefactoNoOmitidoRule artefactoNoOmitidoRule;
     private final RevisionAsesorEnviableRule revisionAsesorEnviableRule;
+    private final RevisionAsesorConObservacionesRule revisionAsesorConObservacionesRule;
 
     public EnviarRevisionAsesorValidatorImpl() {
         this.revisionAsesorExisteRule = new RevisionAsesorExisteRuleImpl();
@@ -54,12 +58,14 @@ public class EnviarRevisionAsesorValidatorImpl implements EnviarRevisionAsesorVa
         this.asesorPropietarioArtefactoRule = new AsesorPropietarioArtefactoRuleImpl();
         this.artefactoNoOmitidoRule = new ArtefactoNoOmitidoRuleImpl();
         this.revisionAsesorEnviableRule = new RevisionAsesorEnviableRuleImpl();
+        this.revisionAsesorConObservacionesRule = new RevisionAsesorConObservacionesRuleImpl();
     }
 
     @Override
     public void validar(EnvioRevisionAsesorDomain envio, RevisionAsesorDomain revision, ArtefactoDomain artefacto,
                         AsesorDomain asesor, VersionArtefactoDomain version,
-                        VersionRepositorioArtefactoDomain versionRepositorio) {
+                        VersionRepositorioArtefactoDomain versionRepositorio,
+                        ObservacionesDeRevision observaciones) {
 
         revisionAsesorExisteRule.validar(
                 new ExistenciaRevisionAsesor(envio.getRevisionAsesor(), !revision.esVacio()));
@@ -74,5 +80,6 @@ public class EnviarRevisionAsesorValidatorImpl implements EnviarRevisionAsesorVa
         artefactoNoOmitidoRule.validar(new ActividadArtefacto(artefacto));
         revisionAsesorEnviableRule.validar(
                 new EstadoActualRevisionAsesor(revision.getId(), revision.getEstado()));
+        revisionAsesorConObservacionesRule.validar(observaciones);
     }
 }

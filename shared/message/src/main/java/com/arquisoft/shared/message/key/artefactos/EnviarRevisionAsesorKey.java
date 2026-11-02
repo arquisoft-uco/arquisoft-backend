@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum EnviarRevisionAsesorKey implements ClaveMensaje {
 
     LOG_ENVIANDO("artefactos.aplicacion.enviarrevisionasesor.log.enviando", 2),
-    LOG_VERIFICACION_ENVIO("artefactos.aplicacion.enviarrevisionasesor.log.verificacion-envio", 6),
+    LOG_VERIFICACION_ENVIO("artefactos.aplicacion.enviarrevisionasesor.log.verificacion-envio", 7),
     LOG_ENVIADA("artefactos.aplicacion.enviarrevisionasesor.log.enviada", 2);
 
     private final String clave;

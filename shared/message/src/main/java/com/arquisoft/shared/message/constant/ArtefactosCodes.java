@@ -154,6 +154,7 @@ public final class ArtefactosCodes {
         public static final String NO_ENVIABLE = "REVISION_ASESOR_NO_ENVIABLE";
         public static final String NO_CERRABLE = "REVISION_ASESOR_NO_CERRABLE";
         public static final String CON_OBSERVACIONES = "REVISION_ASESOR_CON_OBSERVACIONES";
+        public static final String SIN_OBSERVACIONES = "REVISION_ASESOR_SIN_OBSERVACIONES";
         public static final String OBSERVACIONES_VERSION_ANTERIOR_SIN_CERRAR =
                 "REVISION_ASESOR_OBSERVACIONES_VERSION_ANTERIOR_SIN_CERRAR";
         public static final String NO_ELIMINABLE = "REVISION_ASESOR_NO_ELIMINABLE";

@@ -11,7 +11,9 @@ import com.arquisoft.artefactos.domain.revisionasesor.EnvioRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorNoEncontradaException;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorNoEnviableException;
+import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorSinObservacionesException;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
+import com.arquisoft.artefactos.domain.revisionasesor.model.ObservacionesDeRevision;
 import com.arquisoft.artefactos.domain.versionartefacto.VersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.exception.VersionArtefactoNoEncontradaException;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
@@ -46,6 +48,8 @@ class EnviarRevisionAsesorValidatorImplTest {
     private final EnvioRevisionAsesorDomain envio = EnvioRevisionAsesorDomain.crear(
             revisionId, asesorId, AvanceObservacionesRevisionDomain.crear(revisionId));
 
+    private final ObservacionesDeRevision observaciones = new ObservacionesDeRevision(revisionId, true);
+
     private RevisionAsesorDomain revision(EstadoRevisionAsesor estado) {
         return RevisionAsesorDomain.reconstruir(revisionId, versionId, estado, UtilFecha.generarInstanteActual());
     }
@@ -56,7 +60,8 @@ class EnviarRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.PENDIENTE);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(envio, revision, artefacto, asesor, version, versionRepositorio))
+        assertThatCode(() -> validator.validar(
+                envio, revision, artefacto, asesor, version, versionRepositorio, observaciones))
                 .doesNotThrowAnyException();
     }
 
@@ -64,7 +69,7 @@ class EnviarRevisionAsesorValidatorImplTest {
     void debeLanzar_cuandoLaRevisionNoExiste() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                envio, RevisionAsesorDomain.VACIO, artefacto, asesor, version, versionRepositorio))
+                envio, RevisionAsesorDomain.VACIO, artefacto, asesor, version, versionRepositorio, observaciones))
                 .isInstanceOf(RevisionAsesorNoEncontradaException.class);
     }
 
@@ -75,7 +80,7 @@ class EnviarRevisionAsesorValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                envio, revision, ArtefactoDomain.VACIO, asesor, version, versionRepositorio))
+                envio, revision, ArtefactoDomain.VACIO, asesor, version, versionRepositorio, observaciones))
                 .isInstanceOf(ArtefactoNoEncontradoException.class);
     }
 
@@ -86,7 +91,7 @@ class EnviarRevisionAsesorValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                envio, revision, artefacto, AsesorDomain.VACIO, version, versionRepositorio))
+                envio, revision, artefacto, AsesorDomain.VACIO, version, versionRepositorio, observaciones))
                 .isInstanceOf(AsesorNoEncontradoException.class);
     }
 
@@ -97,7 +102,7 @@ class EnviarRevisionAsesorValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                envio, revision, artefacto, asesor, VersionArtefactoDomain.VACIO, versionRepositorio))
+                envio, revision, artefacto, asesor, VersionArtefactoDomain.VACIO, versionRepositorio, observaciones))
                 .isInstanceOf(VersionArtefactoNoEncontradaException.class);
     }
 
@@ -108,7 +113,8 @@ class EnviarRevisionAsesorValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                envio, revision, artefacto, asesor, version, VersionRepositorioArtefactoDomain.VACIO))
+                envio, revision, artefacto, asesor, version, VersionRepositorioArtefactoDomain.VACIO,
+                observaciones))
                 .isInstanceOf(VersionRepositorioArtefactoNoEncontradaException.class);
     }
 
@@ -124,7 +130,7 @@ class EnviarRevisionAsesorValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                envioAjeno, revision, artefacto, asesorAjeno, version, versionRepositorio))
+                envioAjeno, revision, artefacto, asesorAjeno, version, versionRepositorio, observaciones))
                 .isInstanceOf(AsesorNoPropietarioArtefactoException.class);
     }
 
@@ -136,7 +142,8 @@ class EnviarRevisionAsesorValidatorImplTest {
                 versionRepositorioId, asesorId, UtilFecha.generarInstanteActual());
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(envio, revision, omitido, asesor, version, versionRepositorio))
+        assertThatThrownBy(() -> validator.validar(
+                envio, revision, omitido, asesor, version, versionRepositorio, observaciones))
                 .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
@@ -146,7 +153,8 @@ class EnviarRevisionAsesorValidatorImplTest {
         var revision = revision(EstadoRevisionAsesor.EN_PROGRESO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(envio, revision, artefacto, asesor, version, versionRepositorio))
+        assertThatThrownBy(() -> validator.validar(
+                envio, revision, artefacto, asesor, version, versionRepositorio, observaciones))
                 .isInstanceOf(RevisionAsesorNoEnviableException.class);
     }
 
@@ -154,7 +162,8 @@ class EnviarRevisionAsesorValidatorImplTest {
     void debePriorizarExistenciaDeRevision_cuandoTodoEstaVacio() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(envio, RevisionAsesorDomain.VACIO, ArtefactoDomain.VACIO,
-                AsesorDomain.VACIO, VersionArtefactoDomain.VACIO, VersionRepositorioArtefactoDomain.VACIO))
+                AsesorDomain.VACIO, VersionArtefactoDomain.VACIO, VersionRepositorioArtefactoDomain.VACIO,
+                observaciones))
                 .isInstanceOf(RevisionAsesorNoEncontradaException.class);
     }
 
@@ -170,7 +179,31 @@ class EnviarRevisionAsesorValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                envioAjeno, revision, artefacto, asesorAjeno, version, versionRepositorio))
+                envioAjeno, revision, artefacto, asesorAjeno, version, versionRepositorio, observaciones))
                 .isInstanceOf(AsesorNoPropietarioArtefactoException.class);
+    }
+
+    @Test
+    void debeLanzar_cuandoLaRevisionNoTieneObservaciones() {
+        // Arrange
+        var revision = revision(EstadoRevisionAsesor.PENDIENTE);
+        var sinObservaciones = new ObservacionesDeRevision(revisionId, false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                envio, revision, artefacto, asesor, version, versionRepositorio, sinObservaciones))
+                .isInstanceOf(RevisionAsesorSinObservacionesException.class);
+    }
+
+    @Test
+    void debePriorizarEstadoSobreObservaciones_cuandoLaRevisionNoEstaPendienteYNoTieneObservaciones() {
+        // Arrange
+        var revision = revision(EstadoRevisionAsesor.EN_PROGRESO);
+        var sinObservaciones = new ObservacionesDeRevision(revisionId, false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                envio, revision, artefacto, asesor, version, versionRepositorio, sinObservaciones))
+                .isInstanceOf(RevisionAsesorNoEnviableException.class);
     }
 }
