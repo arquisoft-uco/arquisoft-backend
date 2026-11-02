@@ -137,4 +137,19 @@ class ObservacionDomainTest {
                 });
         assertThat(ObservacionDomain.crear(revision, limite).getDescripcion()).hasSize(1000);
     }
+
+    @Test
+    void debeIndicarSiTieneElEstado_segunElEstadoActual() {
+        // Arrange
+        var observacion = ObservacionDomain.reconstruir(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                "Texto", EstadoObservacion.EN_PROGRESO, UtilUUID.obtenerUUIDPorDefecto());
+
+        // Act
+        var coincide = observacion.tieneEstado(EstadoObservacion.EN_PROGRESO);
+        var noCoincide = observacion.tieneEstado(EstadoObservacion.SOLUCIONADA);
+
+        // Assert
+        assertThat(coincide).isTrue();
+        assertThat(noCoincide).isFalse();
+    }
 }

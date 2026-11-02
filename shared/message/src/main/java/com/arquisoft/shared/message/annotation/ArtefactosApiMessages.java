@@ -97,14 +97,15 @@ public final class ArtefactosApiMessages {
         public static final String CAMBIAR_ESTADO_DESCRIPTION =
                 "Marca como RESUELTA una revisión EN_PROGRESO, siempre que el estudiante ya haya subido una "
                         + "versión posterior a la revisada. El estudiante se toma del token y debe participar del "
-                        + "artefacto de la revisión. Cualquier otro estado destino se rechaza. El asesor recibe un "
+                        + "artefacto de la revisión. Todas sus observaciones deben estar SOLUCIONADA o CERRADA. "
+                        + "Cualquier otro estado destino se rechaza. El asesor recibe un "
                         + "correo; si el estado coincide con el actual, no se realiza ningún cambio.";
         public static final String CAMBIAR_ESTADO_RESP_204 = "Estado de la revisión cambiado";
         public static final String CAMBIAR_ESTADO_RESP_400 = "Identificador o estado de la revisión mal formado";
         public static final String CAMBIAR_ESTADO_RESP_422 =
                 "La revisión o el estudiante no existen, el estudiante no participa del artefacto, la revisión "
                         + "está cerrada o pendiente, el estado es desconocido o no está permitido, o aún no hay una "
-                        + "versión posterior a la revisada";
+                        + "versión posterior a la revisada, o quedan observaciones nuevas, en progreso o reabiertas";
     }
 
     public static final class VersionArtefacto {
@@ -283,6 +284,22 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador de revisión inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "Sin permisos para consultar las observaciones de la revisión como estudiante";
+        public static final String CAMBIAR_ESTADO_ESTUDIANTE_SUMMARY =
+                "Llevar una observación entre en progreso y solucionada";
+        public static final String CAMBIAR_ESTADO_ESTUDIANTE_DESCRIPTION =
+                "El estudiante vinculado al artefacto deja la observación en EN_PROGRESO o SOLUCIONADA, y puede "
+                        + "deshacer SOLUCIONADA mientras la revisión siga EN_PROGRESO. El estudiante se toma del "
+                        + "token. Una observación CERRADA o REABIERTA no se puede modificar y cualquier otro "
+                        + "estado destino se rechaza. Si el estado coincide con el actual no se realiza ningún "
+                        + "cambio. No envía correos.";
+        public static final String CAMBIAR_ESTADO_ESTUDIANTE_RESP_204 = "Estado de la observación cambiado";
+        public static final String CAMBIAR_ESTADO_ESTUDIANTE_RESP_400 =
+                "Identificador de la observación mal formado o estado ausente";
+        public static final String CAMBIAR_ESTADO_ESTUDIANTE_RESP_422 =
+                "La observación, su revisión o su artefacto no existen, el estudiante no está vinculado al "
+                        + "artefacto, el artefacto está omitido, la revisión no está en progreso, la observación "
+                        + "está cerrada o reabierta, el estado está fuera del catálogo o el estado destino no es "
+                        + "permitido";
         public static final String CAMBIAR_ESTADO_ASESOR_SUMMARY =
                 "Aceptar o reabrir una observación que el estudiante marcó como solucionada";
         public static final String CAMBIAR_ESTADO_ASESOR_DESCRIPTION =

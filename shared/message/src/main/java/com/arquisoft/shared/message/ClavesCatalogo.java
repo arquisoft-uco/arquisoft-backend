@@ -11,6 +11,7 @@ import com.arquisoft.shared.message.key.artefactos.ObservacionKey;
 import com.arquisoft.shared.message.key.artefactos.RevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.CambiarEstadoRevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.CambiarEstadoAsesorObservacionKey;
+import com.arquisoft.shared.message.key.artefactos.CambiarEstadoEstudianteObservacionKey;
 import com.arquisoft.shared.message.key.artefactos.CerrarRevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.EnviarRevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.AvanzarObservacionesRevisionKey;
@@ -222,6 +223,7 @@ public final class ClavesCatalogo {
             EnviarRevisionAsesorKey.class,
             CerrarRevisionAsesorKey.class,
             CambiarEstadoAsesorObservacionKey.class,
+            CambiarEstadoEstudianteObservacionKey.class,
             AvanzarObservacionesRevisionKey.class,
             RegistrarRevisionAsesorKey.class,
             RegistrarObservacionKey.class,

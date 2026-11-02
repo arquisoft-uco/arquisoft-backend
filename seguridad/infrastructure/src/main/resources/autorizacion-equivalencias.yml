@@ -218,6 +218,7 @@ security:
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/cierre", role: "artefactos:revision-asesor:close"}
         - {method: DELETE, path: "/api/artefactos/revisiones/{revisionAsesorId}", role: "artefactos:revision-asesor:delete"}
         - {method: PATCH, path: "/api/artefactos/observaciones/{observacionId}/estado-asesor", role: "artefactos:observacion-estado-asesor:update"}
+        - {method: PATCH, path: "/api/artefactos/observaciones/{observacionId}/estado-estudiante", role: "artefactos:observacion-estado-estudiante:update"}
         # mapas_ruta
         - {method: POST, path: "/api/mapas-ruta", role: "mapas-ruta:mapa-ruta:create"}
         - {method: POST, path: "/api/mapas-ruta/coordinador", role: "mapas-ruta:mapa-ruta-coordinador:view"}

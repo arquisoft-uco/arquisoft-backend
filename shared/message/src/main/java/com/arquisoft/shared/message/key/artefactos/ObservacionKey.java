@@ -21,7 +21,14 @@ public enum ObservacionKey implements ClaveMensaje {
     ERROR_NO_REABRIBLE_DETALLE("artefactos.dominio.observacion.error.no-reabrible-detalle", 3),
     ERROR_ESTADO_DESTINO_NO_PERMITIDO("artefactos.dominio.observacion.error.estado-destino-no-permitido", 1),
     ERROR_ESTADO_DESTINO_NO_PERMITIDO_DETALLE(
-            "artefactos.dominio.observacion.error.estado-destino-no-permitido-detalle", 2);
+            "artefactos.dominio.observacion.error.estado-destino-no-permitido-detalle", 2),
+    ERROR_NO_EDITABLE_ESTUDIANTE("artefactos.dominio.observacion.error.no-editable-estudiante", 0),
+    ERROR_NO_EDITABLE_ESTUDIANTE_DETALLE(
+            "artefactos.dominio.observacion.error.no-editable-estudiante-detalle", 2),
+    ERROR_ESTADO_DESTINO_ESTUDIANTE_NO_PERMITIDO(
+            "artefactos.dominio.observacion.error.estado-destino-estudiante-no-permitido", 1),
+    ERROR_ESTADO_DESTINO_ESTUDIANTE_NO_PERMITIDO_DETALLE(
+            "artefactos.dominio.observacion.error.estado-destino-estudiante-no-permitido-detalle", 2);
 
     private final String clave;
     private final int parametros;

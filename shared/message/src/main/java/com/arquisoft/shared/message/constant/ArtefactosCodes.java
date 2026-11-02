@@ -163,6 +163,8 @@ public final class ArtefactosCodes {
         public static final String VERSION_SIGUIENTE_NO_REGISTRADA =
                 "REVISION_ASESOR_VERSION_SIGUIENTE_NO_REGISTRADA";
         public static final String VERSION_SIGUIENTE_ENVIADA = "REVISION_ASESOR_VERSION_SIGUIENTE_ENVIADA";
+        public static final String NO_ADMITE_AVANCE_OBSERVACION = "REVISION_ASESOR_NO_ADMITE_AVANCE_OBSERVACION";
+        public static final String CON_OBSERVACIONES_ABIERTAS = "REVISION_ASESOR_CON_OBSERVACIONES_ABIERTAS";
     }
 
     public static final class VersionArtefacto {
@@ -254,5 +256,8 @@ public final class ArtefactosCodes {
         public static final String NO_REABRIBLE = "OBSERVACION_NO_REABRIBLE";
         public static final String ESTADO_DESTINO_NO_PERMITIDO = "OBSERVACION_ESTADO_DESTINO_NO_PERMITIDO";
         public static final String ESTADO_REQUERIDO = "OBSERVACION_ESTADO_REQUERIDO";
+        public static final String NO_EDITABLE_ESTUDIANTE = "OBSERVACION_NO_EDITABLE_ESTUDIANTE";
+        public static final String ESTADO_DESTINO_ESTUDIANTE_NO_PERMITIDO =
+                "OBSERVACION_ESTADO_DESTINO_ESTUDIANTE_NO_PERMITIDO";
     }
 }

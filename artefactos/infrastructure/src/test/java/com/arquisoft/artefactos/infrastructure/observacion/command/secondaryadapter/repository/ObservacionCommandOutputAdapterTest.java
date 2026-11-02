@@ -4,6 +4,10 @@ import com.arquisoft.artefactos.application.observacion.command.secondaryport.en
 import com.arquisoft.artefactos.infrastructure.observacion.command.secondaryadapter.entity.ObservacionJpaEntity;
 import com.arquisoft.artefactos.infrastructure.observacion.support.EstadoObservacionTestEntity;
 import com.arquisoft.artefactos.infrastructure.observacion.support.ObservacionTestEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.command.secondaryadapter.entity.RevisionAsesorJpaEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.ArtefactoTestEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstudianteArtefactoTestEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ObservacionKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -12,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+
+import java.time.Instant;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -226,6 +233,64 @@ class ObservacionCommandOutputAdapterTest {
 
         // Assert
         assertThat(entityManager.find(ObservacionJpaEntity.class, objetivo).getEstado()).isEqualTo("CERRADA");
+    }
+
+    @Test
+    void debeResolverParticipacionDelEstudiante_cuandoSeConsultaPorObservacion() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var otroArtefacto = UtilUUID.generarNuevoUUID();
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var estudianteAjeno = UtilUUID.generarNuevoUUID();
+        var version = UtilUUID.generarNuevoUUID();
+        var revision = UtilUUID.generarNuevoUUID();
+        var observacion = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ArtefactoTestEntity(artefacto));
+        entityManager.persist(new ArtefactoTestEntity(otroArtefacto));
+        entityManager.persist(new EstudianteArtefactoTestEntity(UtilUUID.generarNuevoUUID(), artefacto, estudiante));
+        entityManager.persist(
+                new EstudianteArtefactoTestEntity(UtilUUID.generarNuevoUUID(), otroArtefacto, estudianteAjeno));
+        entityManager.persist(new VersionArtefactoTestEntity(version, artefacto, 1));
+        entityManager.persist(RevisionAsesorJpaEntity.builder().id(revision).versionArtefacto(version)
+                .estado("EN_PROGRESO").fechaCreacion(Instant.parse("2026-10-28T10:00:00Z")).build());
+        entityManager.persist(new ObservacionTestEntity(observacion, revision, "Detalle", "NUEVA"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var vinculado = adapter.existeParticipacionEstudiante(observacion, estudiante);
+        var noVinculado = adapter.existeParticipacionEstudiante(observacion, estudianteAjeno);
+        var observacionInexistente = adapter.existeParticipacionEstudiante(UtilUUID.generarNuevoUUID(), estudiante);
+
+        // Assert
+        assertThat(vinculado).isTrue();
+        assertThat(noVinculado).isFalse();
+        assertThat(observacionInexistente).isFalse();
+    }
+
+    @Test
+    void debeDiscriminarPorRevisionYEstados_cuandoSeConsultaSiExistenAbiertas() {
+        // Arrange
+        var revision = UtilUUID.generarNuevoUUID();
+        var otraRevision = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EstadoObservacionTestEntity("SOLUCIONADA", "Solucionada"));
+        entityManager.persist(new EstadoObservacionTestEntity("EN_PROGRESO", "En progreso"));
+        entityManager.persist(new ObservacionTestEntity(UtilUUID.generarNuevoUUID(), revision, "Uno", "SOLUCIONADA"));
+        entityManager.persist(
+                new ObservacionTestEntity(UtilUUID.generarNuevoUUID(), otraRevision, "Dos", "EN_PROGRESO"));
+        entityManager.flush();
+        entityManager.clear();
+        var abiertas = List.of("NUEVA", "EN_PROGRESO", "REABIERTA");
+
+        // Act
+        var sinAbiertas = adapter.existenPorRevisionAsesorYEstados(revision, abiertas);
+        var conSolucionada = adapter.existenPorRevisionAsesorYEstados(revision, List.of("SOLUCIONADA"));
+        var abiertaEnOtraRevision = adapter.existenPorRevisionAsesorYEstados(otraRevision, abiertas);
+
+        // Assert
+        assertThat(sinAbiertas).isFalse();
+        assertThat(conSolucionada).isTrue();
+        assertThat(abiertaEnOtraRevision).isTrue();
     }
 
     @Test

@@ -127,6 +127,10 @@ public final class ObservacionDomain {
         return observacionOrigen;
     }
 
+    public boolean tieneEstado(EstadoObservacion otro) {
+        return estado == otro;
+    }
+
     public boolean esContinuacion() {
         return !UtilUUID.esPorDefecto(observacionOrigen);
     }
