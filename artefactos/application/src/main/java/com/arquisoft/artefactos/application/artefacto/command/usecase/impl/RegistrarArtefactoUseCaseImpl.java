@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.application.artefacto.command.usecase.impl;
 
-import com.arquisoft.artefactos.application.artefacto.command.finder.RepositoriosAsignadosProyectoFinder;
+import com.arquisoft.artefactos.application.artefacto.command.finder.VersionesAsignadasProyectoFinder;
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.ArtefactoOutputPort;
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.mapper.ArtefactoMapper;
 import com.arquisoft.artefactos.application.artefacto.command.usecase.RegistrarArtefactoUseCase;
@@ -26,7 +26,7 @@ public class RegistrarArtefactoUseCaseImpl implements RegistrarArtefactoUseCase 
     private final AsesorPorIdFinder asesorPorIdFinder;
     private final VinculosMasRecientesProyectoGradoFinder vinculosMasRecientesProyectoGradoFinder;
     private final VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
-    private final RepositoriosAsignadosProyectoFinder repositoriosAsignadosProyectoFinder;
+    private final VersionesAsignadasProyectoFinder versionesAsignadasProyectoFinder;
     private final RegistrarArtefactoValidator registrarArtefactoValidator;
     private final ArtefactoOutputPort artefactoOutputPort;
     private final AsignarEstudiantesArtefactoUseCase asignarEstudiantesArtefactoUseCase;
@@ -41,13 +41,13 @@ public class RegistrarArtefactoUseCaseImpl implements RegistrarArtefactoUseCase 
         var vinculosMasRecientes = vinculosMasRecientesProyectoGradoFinder.obtener(artefacto.getProyectoGrado());
         var versionRepositorio = versionRepositorioArtefactoPorIdFinder.obtener(
                 artefacto.getVersionRepositorioArtefacto());
-        var repositoriosAsignados = repositoriosAsignadosProyectoFinder.obtener(artefacto.getProyectoGrado());
+        var versionesAsignadas = versionesAsignadasProyectoFinder.obtener(artefacto.getProyectoGrado());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_REGISTRAR,
                 proyectoExiste, !asesor.esVacio() && !asesor.estaEliminado(),
-                vinculosMasRecientes.size(), !versionRepositorio.esVacio(), repositoriosAsignados.size());
+                vinculosMasRecientes.size(), !versionRepositorio.esVacio(), versionesAsignadas.size());
 
         registrarArtefactoValidator.validar(
-                registro, proyectoExiste, asesor, vinculosMasRecientes, versionRepositorio, repositoriosAsignados);
+                registro, proyectoExiste, asesor, vinculosMasRecientes, versionRepositorio, versionesAsignadas);
 
         artefactoOutputPort.registrar(ArtefactoMapper.toEntity(artefacto));
         asignarEstudiantesArtefactoUseCase.ejecutar(registro.getEstudiantes());

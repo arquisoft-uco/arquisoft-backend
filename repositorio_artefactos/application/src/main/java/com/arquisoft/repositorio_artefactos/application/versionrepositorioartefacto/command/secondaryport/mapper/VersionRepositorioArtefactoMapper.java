@@ -2,6 +2,7 @@ package com.arquisoft.repositorio_artefactos.application.versionrepositorioartef
 
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.entity.VersionRepositorioArtefactoEntity;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.UltimaVersionDocumento;
 
 public final class VersionRepositorioArtefactoMapper {
 
@@ -19,5 +20,9 @@ public final class VersionRepositorioArtefactoMapper {
                 version.getTamanoBytes(),
                 version.getNombreArchivo(),
                 version.getHashSha256());
+    }
+
+    public static UltimaVersionDocumento toUltimaVersion(VersionRepositorioArtefactoEntity entity) {
+        return new UltimaVersionDocumento(entity.nombreDocumento(), entity.numeroVersion());
     }
 }

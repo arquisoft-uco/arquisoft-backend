@@ -58,8 +58,9 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
               AND v.id = a.versionRepositorioArtefacto
               AND n.id = :versionRepositorioArtefacto
               AND v.repositorioArtefacto = n.repositorioArtefacto
+              AND lower(v.nombreDocumento) = lower(n.nombreDocumento)
             """)
-    Optional<ArtefactoJpaEntity> buscarOmitidoPorProyectoYRepositorio(
+    Optional<ArtefactoJpaEntity> buscarOmitidoPorProyectoYDocumento(
             @Param("proyectoGrado") UUID proyectoGrado,
             @Param("versionRepositorioArtefacto") UUID versionRepositorioArtefacto);
 

@@ -44,8 +44,10 @@ public class VersionRepositorioArtefactoCommandOutputAdapter implements VersionR
     }
 
     @Override
-    public List<UUID> consultarRepositoriosAsignados(UUID proyectoGrado) {
-        return versionRepositorioArtefactoCommandRepository.consultarRepositoriosAsignados(proyectoGrado);
+    public List<VersionRepositorioArtefactoEntity> consultarVersionesAsignadas(UUID proyectoGrado) {
+        return versionRepositorioArtefactoCommandRepository.consultarVersionesAsignadas(proyectoGrado).stream()
+                .map(VersionRepositorioArtefactoJpaMapper::toEntity)
+                .toList();
     }
 
     @Override

@@ -5,7 +5,7 @@ import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.com
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.AnalisisCargaFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.CargaPendienteFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.TamanoMaximoArchivoFinder;
-import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.UltimoNumeroVersionDocumentoFinder;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.UltimaVersionDocumentoFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.AlmacenamientoVersionOutputPort;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.VersionRepositorioArtefactoOutputPort;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.entity.VersionRepositorioArtefactoEntity;
@@ -16,6 +16,7 @@ import com.arquisoft.repositorio_artefactos.domain.repositorioartefacto.Reposito
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.AnalisisArchivoDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.CargaPendienteDomain;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.UltimaVersionDocumento;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.event.VersionRepositorioArtefactoSubidaEvent;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.TamanoArchivoExcedidoException;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.exception.TipoArchivoNoCoincideException;
@@ -37,7 +38,6 @@ import java.time.Instant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -65,7 +65,7 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     @Mock
     private AnalisisCargaFinder analisisCargaFinder;
     @Mock
-    private UltimoNumeroVersionDocumentoFinder ultimoNumeroVersionDocumentoFinder;
+    private UltimaVersionDocumentoFinder ultimaVersionDocumentoFinder;
     @Mock
     private TamanoMaximoArchivoFinder tamanoMaximoArchivoFinder;
     @Mock
@@ -93,7 +93,7 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
     void setUp() {
         useCase = new SubirVersionRepositorioArtefactoUseCaseImpl(administradorPorIdFinder,
                 repositorioArtefactoBloqueadoPorIdFinder, cargaPendienteFinder, analisisCargaFinder,
-                ultimoNumeroVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator, contenidoValidator,
+                ultimaVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator, contenidoValidator,
                 almacenamiento, versionOutputPort, eventPublisher, logger);
         subida = SubidaVersionRepositorioArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Formato A", false);
@@ -110,7 +110,8 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
         when(administradorPorIdFinder.obtener(subida.getSolicitante())).thenReturn(administrador);
         when(repositorioArtefactoBloqueadoPorIdFinder.obtener(subida.getRepositorio())).thenReturn(repositorio);
         when(cargaPendienteFinder.obtener(subida.getCarga())).thenReturn(carga);
-        when(ultimoNumeroVersionDocumentoFinder.obtener(subida)).thenReturn(ultimoNumero);
+        when(ultimaVersionDocumentoFinder.obtener(subida)).thenReturn(ultimoNumero == 0
+                ? UltimaVersionDocumento.VACIO : new UltimaVersionDocumento(subida.getNombreDocumento(), ultimoNumero));
         when(tamanoMaximoArchivoFinder.obtener()).thenReturn(MAXIMO);
     }
 
@@ -130,21 +131,22 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
         // Assert
         var captorVersion = ArgumentCaptor.forClass(VersionRepositorioArtefactoEntity.class);
         var ordenFinders = inOrder(administradorPorIdFinder, repositorioArtefactoBloqueadoPorIdFinder,
-                cargaPendienteFinder, ultimoNumeroVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator,
+                cargaPendienteFinder, ultimaVersionDocumentoFinder, tamanoMaximoArchivoFinder, validator,
                 analisisCargaFinder, contenidoValidator);
         ordenFinders.verify(administradorPorIdFinder).obtener(subida.getSolicitante());
         ordenFinders.verify(repositorioArtefactoBloqueadoPorIdFinder).obtener(subida.getRepositorio());
         ordenFinders.verify(cargaPendienteFinder).obtener(subida.getCarga());
-        ordenFinders.verify(ultimoNumeroVersionDocumentoFinder).obtener(subida);
+        ordenFinders.verify(ultimaVersionDocumentoFinder).obtener(subida);
         ordenFinders.verify(tamanoMaximoArchivoFinder).obtener();
-        ordenFinders.verify(validator).validar(subida, administrador, repositorio, carga, MAXIMO, 4);
+        ordenFinders.verify(validator).validar(subida, administrador, repositorio, carga, MAXIMO,
+                new UltimaVersionDocumento(subida.getNombreDocumento(), 4));
         ordenFinders.verify(analisisCargaFinder).obtener(subida.getCarga());
         ordenFinders.verify(contenidoValidator).validar(subida, carga, analisis);
         verify(administradorPorIdFinder, times(1)).obtener(any());
         verify(repositorioArtefactoBloqueadoPorIdFinder, times(1)).obtener(any());
         verify(cargaPendienteFinder, times(1)).obtener(any());
         verify(analisisCargaFinder, times(1)).obtener(any());
-        verify(ultimoNumeroVersionDocumentoFinder, times(1)).obtener(any());
+        verify(ultimaVersionDocumentoFinder, times(1)).obtener(any());
         verify(tamanoMaximoArchivoFinder, times(1)).obtener();
         var orden = inOrder(validator, almacenamiento, versionOutputPort, eventPublisher);
         orden.verify(almacenamiento).copiarCargaAUri(eq(subida.getCarga()), eq(ETAG), any());
@@ -160,7 +162,7 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
         // Arrange
         prepararFindersDeCarga(0);
         doThrow(new TamanoArchivoExcedidoException("plantilla.docx", MAXIMO + 1, MAXIMO))
-                .when(validator).validar(any(), any(), any(), any(), anyLong(), anyInt());
+                .when(validator).validar(any(), any(), any(), any(), anyLong(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(subida)).isInstanceOf(TamanoArchivoExcedidoException.class);
@@ -231,6 +233,26 @@ class SubirVersionRepositorioArtefactoUseCaseImplTest {
         assertThat(entity.nombreDocumento()).isEqualTo("Formato A");
         assertThat(entity.uriArchivo()).isEqualTo("versiones/" + entity.id());
         assertThat(entity.tamanoBytes()).isEqualTo(2048L);
+    }
+
+    @Test
+    void debeGuardarYPublicarConElNombreDelDocumentoExistente_cuandoLaSubidaDifiereEnMayusculas() {
+        // Arrange
+        prepararFinders(0);
+        when(ultimaVersionDocumentoFinder.obtener(subida)).thenReturn(new UltimaVersionDocumento("FORMATO a", 3));
+
+        // Act
+        useCase.ejecutar(subida);
+
+        // Assert
+        var captorEntidad = ArgumentCaptor.forClass(VersionRepositorioArtefactoEntity.class);
+        verify(versionOutputPort).registrar(captorEntidad.capture());
+        assertThat(captorEntidad.getValue().nombreDocumento()).isEqualTo("FORMATO a");
+        assertThat(captorEntidad.getValue().numeroVersion()).isEqualTo(4);
+        var captorEvento = ArgumentCaptor.forClass(DomainEvent.class);
+        verify(eventPublisher).publish(captorEvento.capture());
+        var evento = (VersionRepositorioArtefactoSubidaEvent) captorEvento.getValue();
+        assertThat(evento.getNombreDocumento()).isEqualTo("FORMATO a");
     }
 
     @Test

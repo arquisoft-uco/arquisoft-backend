@@ -5,6 +5,7 @@ import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefa
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.VersionRepositorioArtefactoOutputPort;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.entity.AnalisisArchivoEntity;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.entity.CargaPendienteEntity;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.entity.VersionRepositorioArtefactoEntity;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,25 +84,33 @@ class FindersVersionRepositorioArtefactoTest {
     }
 
     @Test
-    void debeRetornarCero_cuandoNoHayVersiones() {
+    void debeRetornarVacio_cuandoNoHayVersiones() {
         // Arrange
         var subida = SubidaVersionRepositorioArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Formato", true);
-        when(versionOutputPort.obtenerUltimoNumeroVersion(subida.getRepositorio(), "Formato")).thenReturn(0);
+        when(versionOutputPort.obtenerUltimaVersionDocumento(subida.getRepositorio(), "Formato"))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThat(new UltimoNumeroVersionDocumentoFinderImpl(versionOutputPort).obtener(subida)).isZero();
+        assertThat(new UltimaVersionDocumentoFinderImpl(versionOutputPort).obtener(subida).esVacio()).isTrue();
     }
 
     @Test
-    void debeRetornarElUltimoNumero_cuandoHayVersiones() {
+    void debeRetornarLaUltimaVersion_cuandoHayVersiones() {
         // Arrange
         var subida = SubidaVersionRepositorioArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Formato", false);
-        when(versionOutputPort.obtenerUltimoNumeroVersion(subida.getRepositorio(), "Formato")).thenReturn(6);
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "formato", false);
+        var entity = new VersionRepositorioArtefactoEntity(UtilUUID.generarNuevoUUID(), "Formato", 6,
+                Instant.now(), subida.getRepositorio(), "versiones/x", "application/pdf", 10L, "a.pdf", "h");
+        when(versionOutputPort.obtenerUltimaVersionDocumento(subida.getRepositorio(), "formato"))
+                .thenReturn(Optional.of(entity));
 
-        // Act & Assert
-        assertThat(new UltimoNumeroVersionDocumentoFinderImpl(versionOutputPort).obtener(subida)).isEqualTo(6);
+        // Act
+        var ultima = new UltimaVersionDocumentoFinderImpl(versionOutputPort).obtener(subida);
+
+        // Assert
+        assertThat(ultima.nombreDocumento()).isEqualTo("Formato");
+        assertThat(ultima.numeroVersion()).isEqualTo(6);
     }
 
     @Test

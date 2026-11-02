@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.application.artefacto.command.usecase.impl;
 
-import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoOmitidoDelRepositorioFinder;
+import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoOmitidoDelDocumentoFinder;
 import com.arquisoft.artefactos.application.artefacto.command.usecase.ReactivarArtefactoUseCase;
 import com.arquisoft.artefactos.application.artefacto.command.usecase.RegistrarArtefactoUseCase;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 class AsignarArtefactoUseCaseImplTest {
 
     @Mock
-    private ArtefactoOmitidoDelRepositorioFinder artefactoOmitidoDelRepositorioFinder;
+    private ArtefactoOmitidoDelDocumentoFinder artefactoOmitidoDelDocumentoFinder;
     @Mock
     private RegistrarArtefactoUseCase registrarArtefactoUseCase;
     @Mock
@@ -51,7 +51,7 @@ class AsignarArtefactoUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new AsignarArtefactoUseCaseImpl(
-                artefactoOmitidoDelRepositorioFinder, registrarArtefactoUseCase, reactivarArtefactoUseCase, logger);
+                artefactoOmitidoDelDocumentoFinder, registrarArtefactoUseCase, reactivarArtefactoUseCase, logger);
     }
 
     private static AsignacionArtefactoDomain registro(List<UUID> estudiantes) {
@@ -67,7 +67,7 @@ class AsignarArtefactoUseCaseImplTest {
         // Arrange
         var registro = registro(List.of(UtilUUID.generarNuevoUUID()));
         var artefacto = registro.getArtefacto();
-        when(artefactoOmitidoDelRepositorioFinder.obtener(artefacto)).thenReturn(ArtefactoDomain.VACIO);
+        when(artefactoOmitidoDelDocumentoFinder.obtener(artefacto)).thenReturn(ArtefactoDomain.VACIO);
         when(registrarArtefactoUseCase.ejecutar(registro)).thenReturn(artefacto.getId());
 
         // Act
@@ -75,9 +75,9 @@ class AsignarArtefactoUseCaseImplTest {
 
         // Assert
         assertThat(id).isEqualTo(artefacto.getId());
-        var orden = inOrder(logger, artefactoOmitidoDelRepositorioFinder, registrarArtefactoUseCase);
+        var orden = inOrder(logger, artefactoOmitidoDelDocumentoFinder, registrarArtefactoUseCase);
         orden.verify(logger).info(ArtefactoKey.LOG_ASIGNANDO, artefacto.getProyectoGrado(), artefacto.getAsesor());
-        orden.verify(artefactoOmitidoDelRepositorioFinder, times(1)).obtener(artefacto);
+        orden.verify(artefactoOmitidoDelDocumentoFinder, times(1)).obtener(artefacto);
         orden.verify(logger).debug(ArtefactoKey.LOG_VERIFICACION_ASIGNAR, false);
         orden.verify(registrarArtefactoUseCase).ejecutar(registro);
         orden.verify(logger).info(ArtefactoKey.LOG_ASIGNADO, id, artefacto.getProyectoGrado());
@@ -93,7 +93,7 @@ class AsignarArtefactoUseCaseImplTest {
         var omitido = ArtefactoDomain.reconstruir(UtilUUID.generarNuevoUUID(), artefacto.getProyectoGrado(),
                 artefacto.getVersionRepositorioArtefacto(), UtilUUID.generarNuevoUUID(),
                 UtilFecha.generarInstanteActual());
-        when(artefactoOmitidoDelRepositorioFinder.obtener(artefacto)).thenReturn(omitido);
+        when(artefactoOmitidoDelDocumentoFinder.obtener(artefacto)).thenReturn(omitido);
 
         // Act
         var id = useCase.ejecutar(registro);

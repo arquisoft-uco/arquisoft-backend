@@ -15,6 +15,7 @@ import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.m
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.ExistenciaCargaPendiente;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.ExistenciaDocumento;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.LimiteTamanoArchivo;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.UltimaVersionDocumento;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.rules.CargaCorrespondeASolicitudRule;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.rules.CargaPendienteExistenteRule;
 import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.rules.DocumentoPreviamenteCreadoRule;
@@ -51,9 +52,9 @@ public class SubirVersionRepositorioArtefactoValidatorImpl implements SubirVersi
     @Override
     public void validar(SubidaVersionRepositorioArtefactoDomain subida, AdministradorDomain administrador,
                         RepositorioArtefactoDomain repositorio, CargaPendienteDomain carga,
-                        long tamanoMaximoBytes, int ultimoNumeroVersion) {
+                        long tamanoMaximoBytes, UltimaVersionDocumento ultimaVersion) {
         var existenciaDocumento = new ExistenciaDocumento(
-                subida.getNombreDocumento(), subida.isNuevoDocumento(), ultimoNumeroVersion);
+                subida.getNombreDocumento(), subida.isNuevoDocumento(), ultimaVersion.numeroVersion());
 
         administradorVigenteRule.validar(new VigenciaAdministrador(subida.getSolicitante(), administrador));
         repositorioArtefactoExistenteRule.validar(

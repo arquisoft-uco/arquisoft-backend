@@ -314,21 +314,21 @@ class ArtefactoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeObtenerElOmitidoDelMismoRepositorio_cuandoLaVersionPedidaEsOtraDelMismoRepositorio() {
+    void debeObtenerElOmitidoDelMismoDocumento_cuandoLaVersionPedidaEsOtraDelMismoDocumento() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var repositorio = UtilUUID.generarNuevoUUID();
-        var versionOmitida = sembrarVersionRepositorio(repositorio);
-        var versionNueva = sembrarVersionRepositorio(repositorio);
-        var versionOtroRepositorio = sembrarVersionRepositorio(UtilUUID.generarNuevoUUID());
+        var versionOmitida = sembrarVersionRepositorio(repositorio, "Documento");
+        var versionNueva = sembrarVersionRepositorio(repositorio, "Documento");
+        var versionOtroDocumento = sembrarVersionRepositorio(repositorio, "Otro documento");
         var omitido = sembrarOmitido(proyecto, versionOmitida, UtilUUID.generarNuevoUUID());
         sembrarOmitido(UtilUUID.generarNuevoUUID(), versionOmitida, UtilUUID.generarNuevoUUID());
-        sembrarOmitido(proyecto, versionOtroRepositorio, UtilUUID.generarNuevoUUID());
+        sembrarOmitido(proyecto, versionOtroDocumento, UtilUUID.generarNuevoUUID());
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        var encontrado = adapter.obtenerOmitidoPorProyectoYRepositorio(proyecto, versionNueva);
+        var encontrado = adapter.obtenerOmitidoPorProyectoYDocumento(proyecto, versionNueva);
 
         // Assert
         assertThat(encontrado).hasValueSatisfying(entity -> {
@@ -338,19 +338,52 @@ class ArtefactoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeDevolverVacio_cuandoElRepositorioSoloTieneArtefactosActivosOEnOtroProyecto() {
+    void debeDevolverVacio_cuandoElOmitidoEsOtroDocumentoDelMismoRepositorio() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var repositorio = UtilUUID.generarNuevoUUID();
-        var versionActiva = sembrarVersionRepositorio(repositorio);
-        var versionNueva = sembrarVersionRepositorio(repositorio);
+        var versionOmitida = sembrarVersionRepositorio(repositorio, "Otro documento");
+        var versionPedida = sembrarVersionRepositorio(repositorio, "Documento");
+        sembrarOmitido(proyecto, versionOmitida, UtilUUID.generarNuevoUUID());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act & Assert
+        assertThat(adapter.obtenerOmitidoPorProyectoYDocumento(proyecto, versionPedida)).isEmpty();
+    }
+
+    @Test
+    void debeObtenerElOmitido_cuandoElNombreDifiereEnMayusculas() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var versionOmitida = sembrarVersionRepositorio(repositorio, "Plantilla A");
+        var versionPedida = sembrarVersionRepositorio(repositorio, "plantilla a");
+        var omitido = sembrarOmitido(proyecto, versionOmitida, UtilUUID.generarNuevoUUID());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerOmitidoPorProyectoYDocumento(proyecto, versionPedida);
+
+        // Assert
+        assertThat(encontrado).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(omitido));
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoSoloHayActivosOOtroProyecto() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var versionActiva = sembrarVersionRepositorio(repositorio, "Documento");
+        var versionNueva = sembrarVersionRepositorio(repositorio, "Documento");
         sembrarArtefactoDeVersion(proyecto, versionActiva);
         sembrarOmitido(UtilUUID.generarNuevoUUID(), versionActiva, UtilUUID.generarNuevoUUID());
         entityManager.flush();
         entityManager.clear();
 
         // Act & Assert
-        assertThat(adapter.obtenerOmitidoPorProyectoYRepositorio(proyecto, versionNueva)).isEmpty();
+        assertThat(adapter.obtenerOmitidoPorProyectoYDocumento(proyecto, versionNueva)).isEmpty();
     }
 
     @Test
@@ -418,10 +451,10 @@ class ArtefactoCommandOutputAdapterTest {
         return id;
     }
 
-    private UUID sembrarVersionRepositorio(UUID repositorio) {
+    private UUID sembrarVersionRepositorio(UUID repositorio, String documento) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(new VersionRepositorioArtefactoJpaEntity(
-                id, "Documento", 1, repositorio, "Repositorio", "archivo.pdf", "application/pdf", 10L));
+                id, documento, 1, repositorio, "Repositorio", "archivo.pdf", "application/pdf", 10L));
         return id;
     }
 }

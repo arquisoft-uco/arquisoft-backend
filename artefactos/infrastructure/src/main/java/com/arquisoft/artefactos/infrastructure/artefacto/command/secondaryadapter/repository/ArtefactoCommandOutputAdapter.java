@@ -72,10 +72,10 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     }
 
     @Override
-    public Optional<ArtefactoEntity> obtenerOmitidoPorProyectoYRepositorio(
+    public Optional<ArtefactoEntity> obtenerOmitidoPorProyectoYDocumento(
             UUID proyectoGrado, UUID versionRepositorioArtefacto) {
         return artefactoCommandRepository
-                .buscarOmitidoPorProyectoYRepositorio(proyectoGrado, versionRepositorioArtefacto)
+                .buscarOmitidoPorProyectoYDocumento(proyectoGrado, versionRepositorioArtefacto)
                 .map(ArtefactoJpaMapper::toEntity);
     }
 

@@ -14,13 +14,13 @@ public interface VersionRepositorioArtefactoCommandRepository
         extends JpaRepository<VersionRepositorioArtefactoJpaEntity, UUID> {
 
     @Query("""
-            SELECT v.repositorioArtefacto
+            SELECT v
             FROM VersionRepositorioArtefactoJpaEntity v
             WHERE v.id IN (
                 SELECT a.versionRepositorioArtefacto FROM ArtefactoJpaEntity a
                 WHERE a.proyectoGrado = :proyectoGrado AND a.omitidoEn IS NULL)
             """)
-    List<UUID> consultarRepositoriosAsignados(@Param("proyectoGrado") UUID proyectoGrado);
+    List<VersionRepositorioArtefactoJpaEntity> consultarVersionesAsignadas(@Param("proyectoGrado") UUID proyectoGrado);
 
     @Query("""
             SELECT v

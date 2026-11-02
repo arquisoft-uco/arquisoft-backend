@@ -1,5 +1,6 @@
 package com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto;
 
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.UltimaVersionDocumento;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,12 @@ class VersionRepositorioArtefactoDomainTest {
     private static final AnalisisArchivoDomain ANALISIS = AnalisisArchivoDomain.reconstruir(TIPO, HASH, "etag");
 
     private static VersionRepositorioArtefactoDomain crear(int ultimo) {
-        return VersionRepositorioArtefactoDomain.crear(SUBIDA, ultimo, CARGA, ANALISIS);
+        var ultima = ultimo == 0 ? UltimaVersionDocumento.VACIO : new UltimaVersionDocumento("Formato A", ultimo);
+        return crearConUltima(ultima);
+    }
+
+    private static VersionRepositorioArtefactoDomain crearConUltima(UltimaVersionDocumento ultima) {
+        return VersionRepositorioArtefactoDomain.crear(SUBIDA, ultima, CARGA, ANALISIS);
     }
 
     @Test
@@ -61,5 +67,25 @@ class VersionRepositorioArtefactoDomainTest {
         assertThat(version.getTipoContenido()).isEqualTo(CARGA.getTipoContenido());
         assertThat(version.getTamanoBytes()).isEqualTo(CARGA.getTamanoBytes());
         assertThat(version.getHashSha256()).isEqualTo(ANALISIS.getHashSha256());
+    }
+
+    @Test
+    void debeUsarElNombreDelDocumentoExistente_cuandoLaUltimaVersionNoEsVacia() {
+        // Act
+        var version = crearConUltima(new UltimaVersionDocumento("formato a", 3));
+
+        // Assert
+        assertThat(version.getNombreDocumento()).isEqualTo("formato a");
+        assertThat(version.getNumeroVersion()).isEqualTo(4);
+    }
+
+    @Test
+    void debeUsarElNombreDeLaSubida_cuandoLaUltimaVersionEsVacia() {
+        // Act
+        var version = crearConUltima(UltimaVersionDocumento.VACIO);
+
+        // Assert
+        assertThat(version.getNombreDocumento()).isEqualTo(SUBIDA.getNombreDocumento());
+        assertThat(version.getNumeroVersion()).isEqualTo(1);
     }
 }

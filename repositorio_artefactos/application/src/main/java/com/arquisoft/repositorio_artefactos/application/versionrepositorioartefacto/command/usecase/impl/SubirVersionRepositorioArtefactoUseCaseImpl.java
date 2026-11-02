@@ -5,7 +5,7 @@ import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.com
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.AnalisisCargaFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.CargaPendienteFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.TamanoMaximoArchivoFinder;
-import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.UltimoNumeroVersionDocumentoFinder;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.UltimaVersionDocumentoFinder;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.VersionRepositorioArtefactoSubidaResult;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.mapper.VersionRepositorioArtefactoSubidaResultMapper;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.AlmacenamientoVersionOutputPort;
@@ -31,7 +31,7 @@ public class SubirVersionRepositorioArtefactoUseCaseImpl implements SubirVersion
     private final RepositorioArtefactoBloqueadoPorIdFinder repositorioArtefactoBloqueadoPorIdFinder;
     private final CargaPendienteFinder cargaPendienteFinder;
     private final AnalisisCargaFinder analisisCargaFinder;
-    private final UltimoNumeroVersionDocumentoFinder ultimoNumeroVersionDocumentoFinder;
+    private final UltimaVersionDocumentoFinder ultimaVersionDocumentoFinder;
     private final TamanoMaximoArchivoFinder tamanoMaximoArchivoFinder;
     private final SubirVersionRepositorioArtefactoValidator subirVersionValidator;
     private final SubirVersionRepositorioArtefactoContenidoValidator subirVersionContenidoValidator;
@@ -48,18 +48,18 @@ public class SubirVersionRepositorioArtefactoUseCaseImpl implements SubirVersion
         var administrador = administradorPorIdFinder.obtener(subida.getSolicitante());
         var repositorio = repositorioArtefactoBloqueadoPorIdFinder.obtener(subida.getRepositorio());
         var carga = cargaPendienteFinder.obtener(subida.getCarga());
-        var ultimoNumero = ultimoNumeroVersionDocumentoFinder.obtener(subida);
+        var ultimaVersion = ultimaVersionDocumentoFinder.obtener(subida);
         var tamanoMaximo = tamanoMaximoArchivoFinder.obtener();
         logger.debug(VersionRepositorioArtefactoKey.LOG_VERIFICACION_SUBIR,
                 !administrador.esVacio(), !repositorio.esVacio(), !carga.esVacio(),
-                subida.isNuevoDocumento(), ultimoNumero);
+                subida.isNuevoDocumento(), ultimaVersion.numeroVersion());
 
-        subirVersionValidator.validar(subida, administrador, repositorio, carga, tamanoMaximo, ultimoNumero);
+        subirVersionValidator.validar(subida, administrador, repositorio, carga, tamanoMaximo, ultimaVersion);
 
         var analisis = analisisCargaFinder.obtener(subida.getCarga());
         subirVersionContenidoValidator.validar(subida, carga, analisis);
 
-        var version = VersionRepositorioArtefactoDomain.crear(subida, ultimoNumero, carga, analisis);
+        var version = VersionRepositorioArtefactoDomain.crear(subida, ultimaVersion, carga, analisis);
 
         almacenamientoVersionOutputPort.copiarCargaAUri(carga.getCarga(), carga.getEtag(), version.getUriArchivo());
         versionRepositorioArtefactoOutputPort.registrar(VersionRepositorioArtefactoMapper.toEntity(version));

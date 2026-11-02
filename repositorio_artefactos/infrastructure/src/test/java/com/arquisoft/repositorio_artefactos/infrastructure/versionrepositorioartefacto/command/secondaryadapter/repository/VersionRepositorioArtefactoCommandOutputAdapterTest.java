@@ -61,13 +61,13 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarCero_cuandoNoHayVersiones() {
+    void debeDevolverVacio_cuandoNoHayVersiones() {
         // Act & Assert
-        assertThat(adapter().obtenerUltimoNumeroVersion(UtilUUID.generarNuevoUUID(), "Formato A")).isZero();
+        assertThat(adapter().obtenerUltimaVersionDocumento(UtilUUID.generarNuevoUUID(), "Formato A")).isEmpty();
     }
 
     @Test
-    void debeRetornarMaximo_porRepositorioYNombre() {
+    void debeDevolverLaDeMayorNumero_cuandoHayVarias() {
         // Arrange
         var repositorio = UtilUUID.generarNuevoUUID();
         adapter().registrar(version(repositorio, "Formato A", 1));
@@ -76,12 +76,29 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
         entityManager.flush();
 
         // Act & Assert
-        assertThat(adapter().obtenerUltimoNumeroVersion(repositorio, "Formato A")).isEqualTo(2);
-        assertThat(adapter().obtenerUltimoNumeroVersion(repositorio, "Formato B")).isEqualTo(7);
+        assertThat(adapter().obtenerUltimaVersionDocumento(repositorio, "Formato A"))
+                .hasValueSatisfying(ultima -> assertThat(ultima.numeroVersion()).isEqualTo(2));
+        assertThat(adapter().obtenerUltimaVersionDocumento(repositorio, "Formato B"))
+                .hasValueSatisfying(ultima -> assertThat(ultima.numeroVersion()).isEqualTo(7));
     }
 
     @Test
-    void debeAislarNumeracion_entreRepositorios() {
+    void debeEncontrarLaUltimaVersion_cuandoElNombreDifiereEnMayusculas() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        adapter().registrar(version(repositorio, "Plantilla A", 3));
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().obtenerUltimaVersionDocumento(repositorio, "plantilla a"))
+                .hasValueSatisfying(ultima -> {
+                    assertThat(ultima.nombreDocumento()).isEqualTo("Plantilla A");
+                    assertThat(ultima.numeroVersion()).isEqualTo(3);
+                });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoElDocumentoEsDeOtroRepositorio() {
         // Arrange
         var uno = UtilUUID.generarNuevoUUID();
         var otro = UtilUUID.generarNuevoUUID();
@@ -89,7 +106,7 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
         entityManager.flush();
 
         // Act & Assert
-        assertThat(adapter().obtenerUltimoNumeroVersion(otro, "Formato A")).isZero();
+        assertThat(adapter().obtenerUltimaVersionDocumento(otro, "Formato A")).isEmpty();
     }
 
     @Test
