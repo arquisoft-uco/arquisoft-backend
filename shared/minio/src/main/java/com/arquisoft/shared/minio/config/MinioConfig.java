@@ -16,4 +16,14 @@ public class MinioConfig {
                 .credentials(properties.getAccessKey(), properties.getSecretKey())
                 .build();
     }
+
+    @Bean
+    public MinioClientFirmante minioClientFirmante(MinioProperties properties) {
+        var cliente = MinioClient.builder()
+                .endpoint(properties.getEndpointPublico())
+                .credentials(properties.getAccessKey(), properties.getSecretKey())
+                .region(properties.getRegion())
+                .build();
+        return new MinioClientFirmante(cliente);
+    }
 }

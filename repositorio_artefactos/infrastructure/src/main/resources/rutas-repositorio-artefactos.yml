@@ -10,3 +10,5 @@ rutas:
       cargas-version: /{repositorioId}/versiones/cargas
       versiones: /{repositorioId}/versiones
       versiones-asesor: /versiones/asesor
+      descarga-version-administrador: /versiones/administrador/{versionRepositorioArtefactoId}/descarga
+      descarga-version-asesor: /versiones/asesor/{versionRepositorioArtefactoId}/descarga

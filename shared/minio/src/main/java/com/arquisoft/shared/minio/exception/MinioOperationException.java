@@ -17,6 +17,11 @@ public final class MinioOperationException extends InfrastructureException {
                 AlmacenamientoKey.ERROR_FORMULARIO_CARGA_DETALLE, cause);
     }
 
+    public static MinioOperationException enlaceDescargaFallido(Throwable cause) {
+        return crear(AppCodes.Minio.URL_DESCARGA_FALLIDA, AlmacenamientoKey.ERROR_URL_DESCARGA,
+                AlmacenamientoKey.ERROR_URL_DESCARGA_DETALLE, cause);
+    }
+
     public static MinioOperationException consultaFallida(Throwable cause) {
         return crear(AppCodes.Minio.CONSULTA_FALLIDA, AlmacenamientoKey.ERROR_CONSULTA,
                 AlmacenamientoKey.ERROR_CONSULTA_DETALLE, cause);

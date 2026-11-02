@@ -64,5 +64,8 @@ public final class RepositorioArtefactosCodes {
         public static final String TIPO_ARCHIVO_NO_COINCIDE = "TIPO_ARCHIVO_NO_COINCIDE";
         public static final String DOCUMENTO_YA_EXISTE = "DOCUMENTO_YA_EXISTE";
         public static final String DOCUMENTO_NO_EXISTE = "DOCUMENTO_NO_EXISTE";
+        public static final String VERSION_REQUERIDA = "VERSION_REPOSITORIO_ARTEFACTO_VERSION_REQUERIDA";
+        public static final String VERSION_NO_ENCONTRADA = "VERSION_REPOSITORIO_ARTEFACTO_NO_ENCONTRADA";
+        public static final String ARCHIVO_NO_DISPONIBLE = "VERSION_REPOSITORIO_ARTEFACTO_ARCHIVO_NO_DISPONIBLE";
     }
 }

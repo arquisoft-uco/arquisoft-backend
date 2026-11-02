@@ -1,11 +1,16 @@
 package com.arquisoft.shared.minio;
 
+import com.arquisoft.shared.message.constant.AppCodes;
+import com.arquisoft.shared.minio.config.MinioClientFirmante;
 import com.arquisoft.shared.minio.config.MinioProperties;
 import com.arquisoft.shared.minio.exception.MinioOperationException;
+import com.arquisoft.shared.minio.model.SolicitudEnlaceDescarga;
 import com.arquisoft.shared.minio.model.SolicitudFormularioCarga;
 import io.minio.CopyObjectArgs;
 import io.minio.GetObjectArgs;
 import io.minio.GetObjectResponse;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.http.Method;
 import io.minio.MinioClient;
 import io.minio.PostPolicy;
 import io.minio.RemoveObjectArgs;
@@ -25,6 +30,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -50,7 +57,7 @@ class MinioAlmacenamientoObjetosTest {
         var propiedades = new MinioProperties();
         propiedades.setEndpointPublico("https://s3.arquisoft.test/");
         propiedades.getPresignedUrlExpiry().setFormularioCargaMinutos(15);
-        almacenamiento = new MinioAlmacenamientoObjetos(minioClient, propiedades);
+        almacenamiento = new MinioAlmacenamientoObjetos(minioClient, new MinioClientFirmante(minioClient), propiedades);
     }
 
     private static ErrorResponseException errorS3(String codigo) {
@@ -289,5 +296,97 @@ class MinioAlmacenamientoObjetosTest {
         // Act & Assert
         assertThatThrownBy(() -> almacenamiento.eliminar(BUCKET, "pendientes/c-1"))
                 .isInstanceOf(MinioOperationException.class);
+    }
+
+    private GetPresignedObjectUrlArgs firmar(String nombreArchivo) throws Exception {
+        when(minioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class)))
+                .thenReturn("https://s3.arquisoft.test/firmada");
+        almacenamiento.generarEnlaceDescarga(new SolicitudEnlaceDescarga(BUCKET, "versiones/v-1", nombreArchivo));
+        var captor = ArgumentCaptor.forClass(GetPresignedObjectUrlArgs.class);
+        verify(minioClient).getPresignedObjectUrl(captor.capture());
+        return captor.getValue();
+    }
+
+    private static String contentDisposition(GetPresignedObjectUrlArgs args) {
+        return args.extraQueryParams().get("response-content-disposition").iterator().next();
+    }
+
+    @Test
+    void debeGenerarUrlDeDescarga_conGetBucketKeyYExpiracion() throws Exception {
+        // Arrange
+        when(minioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class)))
+                .thenReturn("https://s3.arquisoft.test/firmada");
+
+        // Act
+        var enlace = almacenamiento.generarEnlaceDescarga(
+                new SolicitudEnlaceDescarga(BUCKET, "versiones/v-1", "formato.pdf"));
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(GetPresignedObjectUrlArgs.class);
+        verify(minioClient).getPresignedObjectUrl(captor.capture());
+        assertThat(captor.getValue().method()).isEqualTo(Method.GET);
+        assertThat(captor.getValue().bucket()).isEqualTo(BUCKET);
+        assertThat(captor.getValue().object()).isEqualTo("versiones/v-1");
+        assertThat(captor.getValue().expiry()).isEqualTo(5 * 60);
+        assertThat(enlace.url()).isEqualTo("https://s3.arquisoft.test/firmada");
+    }
+
+    @Test
+    void debeCalcularExpiraEn_conLosMinutosConfigurados() throws Exception {
+        // Arrange
+        when(minioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class))).thenReturn("https://x");
+        var antes = Instant.now();
+
+        // Act
+        var enlace = almacenamiento.generarEnlaceDescarga(
+                new SolicitudEnlaceDescarga(BUCKET, "versiones/v-1", "formato.pdf"));
+
+        // Assert
+        var despues = Instant.now();
+        assertThat(enlace.expiraEn())
+                .isBetween(antes.plus(5, ChronoUnit.MINUTES), despues.plus(5, ChronoUnit.MINUTES));
+    }
+
+    @Test
+    void debeIncluirContentDispositionAttachment_conNombreOriginal() throws Exception {
+        // Act
+        var args = firmar("formato final.pdf");
+
+        // Assert
+        assertThat(contentDisposition(args))
+                .isEqualTo("attachment; filename=\"formato final.pdf\"; filename*=UTF-8''formato%20final.pdf");
+    }
+
+    @Test
+    void debeQuitarComillasSaltosYPuntoYComa_delNombreDeArchivo() throws Exception {
+        // Act
+        var args = firmar("for\"ma\r\nto;.pdf");
+
+        // Assert
+        assertThat(contentDisposition(args))
+                .isEqualTo("attachment; filename=\"formato.pdf\"; filename*=UTF-8''formato.pdf");
+    }
+
+    @Test
+    void debeUsarFallbackAscii_cuandoElNombreTraeCaracteresEspeciales() throws Exception {
+        // Act
+        var args = firmar("Guía\\final.pdf");
+
+        // Assert
+        assertThat(contentDisposition(args))
+                .isEqualTo("attachment; filename=\"Gu_a_final.pdf\"; filename*=UTF-8''Gu%C3%ADa%5Cfinal.pdf");
+    }
+
+    @Test
+    void debeLanzarEnlaceDescargaFallido_cuandoElClienteFalla() throws Exception {
+        // Arrange
+        when(minioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class)))
+                .thenThrow(new IOException("caido"));
+
+        // Act & Assert
+        assertThatThrownBy(() -> almacenamiento.generarEnlaceDescarga(
+                new SolicitudEnlaceDescarga(BUCKET, "versiones/v-1", "formato.pdf")))
+                .isInstanceOfSatisfying(MinioOperationException.class, excepcion ->
+                        assertThat(excepcion.getCodigoError()).isEqualTo(AppCodes.Minio.URL_DESCARGA_FALLIDA));
     }
 }

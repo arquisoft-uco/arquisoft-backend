@@ -1,0 +1,8 @@
+package com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.query.primaryport.interactor;
+
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.query.primaryport.model.DescargarArchivoVersionRepositorioArtefactoQuery;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.query.readmodel.EnlaceDescargaVersionReadModel;
+import com.arquisoft.shared.interactor.Interactor;
+
+public interface DescargarArchivoVersionRepositorioArtefactoInteractor
+        extends Interactor<DescargarArchivoVersionRepositorioArtefactoQuery, EnlaceDescargaVersionReadModel> {}

@@ -1,0 +1,8 @@
+package com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.query.usecase;
+
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.query.criteria.ArchivoVersionRepositorioArtefactoCriteria;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.query.readmodel.EnlaceDescargaVersionReadModel;
+import com.arquisoft.shared.usecase.UseCase;
+
+public interface DescargarArchivoVersionRepositorioArtefactoUseCase
+        extends UseCase<ArchivoVersionRepositorioArtefactoCriteria, EnlaceDescargaVersionReadModel> {}
