@@ -78,11 +78,8 @@ public final class RepositorioArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_ASESOR_RESP_400 = "Filtro, operador, campo o valor inválido";
         public static final String PARAM_VERSION = "Identificador de la versión del repositorio de artefactos";
-        public static final String DESCARGAR_ADMINISTRADOR_SUMMARY = "Descargar el archivo de una versión como administrador";
-        public static final String DESCARGAR_ADMINISTRADOR_DESCRIPTION =
-                "Entrega una URL de descarga de vida corta del archivo original de la versión";
-        public static final String DESCARGAR_ASESOR_SUMMARY = "Descargar el archivo de una versión como asesor";
-        public static final String DESCARGAR_ASESOR_DESCRIPTION =
+        public static final String DESCARGAR_SUMMARY = "Descargar el archivo de una versión del repositorio de artefactos";
+        public static final String DESCARGAR_DESCRIPTION =
                 "Entrega una URL de descarga de vida corta del archivo original de cualquier versión";
         public static final String DESCARGAR_RESP_200 = "Enlace de descarga generado";
         public static final String DESCARGAR_RESP_400 = "Identificador de versión inválido";
