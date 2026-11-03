@@ -12,6 +12,26 @@ public final class ArtefactosApiMessages {
         public static final String RESP_403 = "Sin permisos para realizar la operación";
     }
 
+    public static final class VersionRepositorioArtefacto {
+
+        private VersionRepositorioArtefacto() {}
+
+        public static final String TAG_NAME = "Versiones del repositorio de artefactos";
+        public static final String TAG_DESCRIPTION =
+                "Gestión de las versiones del repositorio de artefactos desde el contexto de artefactos";
+        public static final String ELIMINAR_SUMMARY = "Eliminar una versión del repositorio de artefactos";
+        public static final String ELIMINAR_DESCRIPTION =
+                "Elimina una versión de una plantilla del repositorio de artefactos cuando se subió por error "
+                        + "o dejó de ser válida. Solo se puede eliminar si ningún artefacto de proyecto de grado "
+                        + "la usa, esté omitido o no. La versión y su archivo desaparecen del repositorio de "
+                        + "forma definitiva, poco después de responder. No notifica a nadie.";
+        public static final String ELIMINAR_RESP_204 = "Eliminación de la versión autorizada";
+        public static final String ELIMINAR_RESP_400 = "Identificador de la versión inválido";
+        public static final String ELIMINAR_RESP_422 =
+                "La versión no existe o está en uso por artefactos de proyectos de grado";
+        public static final String PARAM_VERSION = "Identificador de la versión del repositorio de artefactos";
+    }
+
     public static final class RevisionAsesor {
 
         private RevisionAsesor() {}

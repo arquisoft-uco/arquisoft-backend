@@ -1,0 +1,9 @@
+package com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.primaryport.interactor;
+
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.primaryport.model.EliminarVersionRepositorioArtefactoCommand;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.EliminacionVersionRepositorioArtefactoResult;
+import com.arquisoft.shared.interactor.Interactor;
+
+public interface EliminarVersionRepositorioArtefactoInteractor
+        extends Interactor<EliminarVersionRepositorioArtefactoCommand, EliminacionVersionRepositorioArtefactoResult> {
+}

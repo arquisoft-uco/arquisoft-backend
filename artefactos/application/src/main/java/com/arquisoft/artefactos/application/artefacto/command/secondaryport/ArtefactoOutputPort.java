@@ -32,4 +32,6 @@ public interface ArtefactoOutputPort {
     Optional<ArtefactoEntity> obtenerPorRevisionAsesor(UUID revisionAsesor);
 
     Optional<ArtefactoEntity> obtenerPorObservacion(UUID observacion);
+
+    boolean existePorVersionRepositorioArtefacto(UUID versionRepositorioArtefacto);
 }

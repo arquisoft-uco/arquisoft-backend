@@ -9,7 +9,7 @@ import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFin
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
 import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoExisteFinder;
-import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
@@ -25,7 +25,7 @@ public class RegistrarArtefactoUseCaseImpl implements RegistrarArtefactoUseCase 
     private final ProyectoGradoExisteFinder proyectoGradoExisteFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
     private final VinculosMasRecientesProyectoGradoFinder vinculosMasRecientesProyectoGradoFinder;
-    private final VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
+    private final VersionRepositorioArtefactoBloqueadaPorIdFinder versionRepositorioArtefactoBloqueadaPorIdFinder;
     private final VersionesAsignadasProyectoFinder versionesAsignadasProyectoFinder;
     private final RegistrarArtefactoValidator registrarArtefactoValidator;
     private final ArtefactoOutputPort artefactoOutputPort;
@@ -39,7 +39,7 @@ public class RegistrarArtefactoUseCaseImpl implements RegistrarArtefactoUseCase 
         var proyectoExiste = proyectoGradoExisteFinder.obtener(artefacto.getProyectoGrado());
         var asesor = asesorPorIdFinder.obtener(artefacto.getAsesor());
         var vinculosMasRecientes = vinculosMasRecientesProyectoGradoFinder.obtener(artefacto.getProyectoGrado());
-        var versionRepositorio = versionRepositorioArtefactoPorIdFinder.obtener(
+        var versionRepositorio = versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(
                 artefacto.getVersionRepositorioArtefacto());
         var versionesAsignadas = versionesAsignadasProyectoFinder.obtener(artefacto.getProyectoGrado());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_REGISTRAR,

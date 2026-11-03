@@ -241,7 +241,8 @@
               "usuarios:coordinador:delete",
               "repositorio-artefactos:version-repositorio-artefacto:upload",
               "repositorio-artefactos:version-repositorio-artefacto:view",
-              "repositorio-artefactos:version-repositorio-artefacto:download"
+              "repositorio-artefactos:version-repositorio-artefacto:download",
+              "artefactos:version-repositorio-artefacto:delete"
             ]
           }
         },
@@ -2669,6 +2670,15 @@
         {
           "id": "5b7e2c91-3f4a-4d68-a1c0-9e8d6f2b7a43",
           "name": "artefactos:artefacto:update-version-repositorio",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "0fbaa314-2cb8-4d93-99aa-9aaa45f779da",
+          "name": "artefactos:version-repositorio-artefacto:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

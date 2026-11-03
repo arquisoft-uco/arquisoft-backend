@@ -194,6 +194,8 @@ public final class EventTopics {
                 "artefactos.observacion.reabierta";
         public static final String ESTUDIANTE_ARTEFACTO_REMOVIDO =
                 "artefactos.estudiante_artefacto.removido";
+        public static final String VERSION_REPOSITORIO_ARTEFACTO_ELIMINACION_AUTORIZADA =
+                "artefactos.version_repositorio_artefacto.eliminacion_autorizada";
     }
 
     public static final class MapasRuta {

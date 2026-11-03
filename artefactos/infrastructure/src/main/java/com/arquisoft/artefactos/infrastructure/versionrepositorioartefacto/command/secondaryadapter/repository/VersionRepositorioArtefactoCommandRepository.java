@@ -1,7 +1,9 @@
 package com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.entity.VersionRepositorioArtefactoJpaEntity;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +14,10 @@ import java.util.UUID;
 
 public interface VersionRepositorioArtefactoCommandRepository
         extends JpaRepository<VersionRepositorioArtefactoJpaEntity, UUID> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT v FROM VersionRepositorioArtefactoJpaEntity v WHERE v.id = :id")
+    Optional<VersionRepositorioArtefactoJpaEntity> bloquearPorId(@Param("id") UUID id);
 
     @Query("""
             SELECT v
