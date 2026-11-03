@@ -1,7 +1,9 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativaasesor.query.primaryadapter.web.mapper;
 
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.query.readmodel.EvaluacionCualitativaAsesorReadModel;
+import com.arquisoft.evaluaciones.infrastructure.criterioitemcualitativoasesor.query.primaryadapter.web.mapper.CriterioItemCualitativoAsesorResponseMapper;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativaasesor.query.primaryadapter.web.dto.EvaluacionCualitativaAsesorResponseDTO;
+import com.arquisoft.evaluaciones.infrastructure.itemcualitativoasesor.query.primaryadapter.web.mapper.ItemCualitativoAsesorResponseMapper;
 
 public final class EvaluacionCualitativaAsesorResponseMapper {
 
@@ -10,13 +12,7 @@ public final class EvaluacionCualitativaAsesorResponseMapper {
     public static EvaluacionCualitativaAsesorResponseDTO toResponse(EvaluacionCualitativaAsesorReadModel readModel) {
         return new EvaluacionCualitativaAsesorResponseDTO(
                 readModel.id(),
-                new EvaluacionCualitativaAsesorResponseDTO.ItemDTO(
-                        readModel.item().id(),
-                        readModel.item().nombre(),
-                        readModel.item().descripcion()),
-                new EvaluacionCualitativaAsesorResponseDTO.CriterioDTO(
-                        readModel.criterio().id(),
-                        readModel.criterio().nombre(),
-                        readModel.criterio().descripcion()));
+                ItemCualitativoAsesorResponseMapper.toResponse(readModel.item()),
+                CriterioItemCualitativoAsesorResponseMapper.toResponse(readModel.criterio()));
     }
 }

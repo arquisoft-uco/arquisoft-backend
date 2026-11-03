@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("${rutas.evaluaciones.evaluaciones-asesor.base:/evaluaciones-asesor}")
+@RequestMapping("${rutas.evaluaciones.evaluaciones.base:/evaluaciones/evaluaciones-asesor}")
 @RequiredArgsConstructor
 @Tag(
         name = EvaluacionesApiMessages.EvaluacionCualitativaAsesor.TAG_NAME,
@@ -36,7 +36,7 @@ public class RegistrarEvaluacionesCualitativasAsesorController {
 
     private final RegistrarEvaluacionesCualitativasAsesorInteractor interactor;
 
-    @PostMapping("${rutas.evaluaciones.evaluaciones-asesor.cualitativas:/{evaluacionAsesorId}/cualitativas}")
+    @PostMapping("${rutas.evaluaciones.evaluaciones.cualitativas:/{evaluacionAsesorId}/cualitativas}")
     @Operation(
             summary = EvaluacionesApiMessages.EvaluacionCualitativaAsesor.REGISTRAR_SUMMARY,
             description = EvaluacionesApiMessages.EvaluacionCualitativaAsesor.REGISTRAR_DESCRIPTION,

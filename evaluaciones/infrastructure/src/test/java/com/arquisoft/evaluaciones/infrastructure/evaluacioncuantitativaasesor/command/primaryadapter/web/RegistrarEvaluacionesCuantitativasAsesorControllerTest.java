@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RegistrarEvaluacionesCuantitativasAsesorControllerTest {
 
     private static final UUID EVALUACION_ASESOR_ID = UtilUUID.generarNuevoUUID();
-    private static final String RUTA = "/evaluaciones-asesor/" + EVALUACION_ASESOR_ID + "/cuantitativas";
+    private static final String RUTA = "/evaluaciones/evaluaciones-asesor/" + EVALUACION_ASESOR_ID + "/cuantitativas";
 
     @TestConfiguration
     @EnableWebSecurity
