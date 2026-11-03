@@ -364,6 +364,7 @@
               "entregables:entregable-proyecto-grado-asesor:view",
               "entregables:artefacto-entregable:view",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
+              "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
               "solicitudes:respuesta-novedad-asesor:update",
               "solicitudes:respuesta-novedad-asesor:delete",
@@ -718,6 +719,15 @@
         {
           "id": "6b0f2d4e-8a31-4c57-9e1d-3a7c5b92f4a8",
           "name": "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "4e5f2162-5000-43b9-ab62-a715fe03b10d",
+          "name": "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
