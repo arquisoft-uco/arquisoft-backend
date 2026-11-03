@@ -68,6 +68,8 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
     LOG_CARGA_ELIMINADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-eliminada", 1),
     LOG_ELIMINACION_RECIBIDA(
             "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminacion-recibida", 2),
+    LOG_ELIMINACION_REINTENTO_PROGRAMADO(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminacion-reintento-programado", 4),
     LOG_VERIFICACION_ELIMINAR(
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.verificacion-eliminar", 2),
     LOG_VERSION_ELIMINADA(

@@ -66,10 +66,7 @@ public abstract class AbstractEventConsumer {
 
         boolean transitorio = esTransitorio(ex);
 
-        if (transitorio && !Boolean.TRUE.equals(message.getMessageProperties().isRedelivered())) {
-            logger.warn(MensajeriaKey.LOG_EVENTO_REENCOLADO,
-                    deliveryTag, ex.getMessage(), ex);
-            channel.basicNack(deliveryTag, false, true);
+        if (transitorio && reintentarTransitorio(message, channel, deliveryTag, ex)) {
             return;
         }
 
@@ -78,6 +75,19 @@ public abstract class AbstractEventConsumer {
                 : MensajeriaKey.LOG_EVENTO_A_DLQ;
         logger.error(clave, ex, deliveryTag, ex.getMessage());
         channel.basicNack(deliveryTag, false, false);
+    }
+
+    // Punto de extension para una cola que necesite esperar entre reintentos en vez de reencolar
+    // al instante. Quien lo sobrescribe queda a cargo de confirmar o rechazar la entrega cuando
+    // devuelve true; si devuelve false, el mensaje va a la cola de descarte.
+    protected boolean reintentarTransitorio(Message message, Channel channel, long deliveryTag, Exception ex)
+            throws IOException {
+        if (Boolean.TRUE.equals(message.getMessageProperties().isRedelivered())) {
+            return false;
+        }
+        logger.warn(MensajeriaKey.LOG_EVENTO_REENCOLADO, deliveryTag, ex.getMessage(), ex);
+        channel.basicNack(deliveryTag, false, true);
+        return true;
     }
 
     private static boolean esTransitorio(Throwable ex) {

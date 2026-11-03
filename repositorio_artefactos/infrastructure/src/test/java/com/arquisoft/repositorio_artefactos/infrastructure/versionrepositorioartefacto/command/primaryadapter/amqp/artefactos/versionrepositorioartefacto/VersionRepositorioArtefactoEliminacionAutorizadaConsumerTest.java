@@ -3,6 +3,7 @@ package com.arquisoft.repositorio_artefactos.infrastructure.versionrepositorioar
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.primaryport.interactor.EliminarVersionRepositorioArtefactoInteractor;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.primaryport.model.EliminarVersionRepositorioArtefactoCommand;
 import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.EliminacionVersionRepositorioArtefactoResult;
+import com.arquisoft.repositorio_artefactos.infrastructure.config.RepositorioArtefactosArtefactosQueueConfig;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.repositorio_artefactos.VersionRepositorioArtefactoKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.MessageProperties;
@@ -26,6 +28,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
@@ -45,6 +48,8 @@ class VersionRepositorioArtefactoEliminacionAutorizadaConsumerTest {
     private Channel channel;
     @Mock
     private AppLogger logger;
+    @Mock
+    private AmqpTemplate amqpTemplate;
 
     private VersionRepositorioArtefactoEliminacionAutorizadaConsumer consumer;
 
@@ -55,6 +60,7 @@ class VersionRepositorioArtefactoEliminacionAutorizadaConsumerTest {
         consumer = new VersionRepositorioArtefactoEliminacionAutorizadaConsumer(
                 eliminarVersionRepositorioArtefactoInteractor,
                 new ObjectMapper(),
+                amqpTemplate,
                 logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
         version = UtilUUID.generarNuevoUUID();
@@ -119,29 +125,83 @@ class VersionRepositorioArtefactoEliminacionAutorizadaConsumerTest {
         verify(channel, never()).basicAck(3L, false);
     }
 
-    @Test
-    void debeReencolarUnaVez_cuandoFalloTransitorio() throws Exception {
-        // Arrange
+    private Message mensajeConReintentos(long deliveryTag, int reintentos) {
+        var mensaje = mensaje(version.toString(), deliveryTag, false);
+        mensaje.getMessageProperties().setHeader("x-reintentos-eliminacion", reintentos);
+        return mensaje;
+    }
+
+    private void fallaTransitorio() {
         doThrow(new QueryTimeoutException("timeout")).when(eliminarVersionRepositorioArtefactoInteractor)
                 .ejecutar(any());
+    }
+
+    @Test
+    void debeProgramarReintentoEnColaDeUnMinuto_cuandoPrimerFalloTransitorio() throws Exception {
+        // Arrange
+        fallaTransitorio();
 
         // Act
         consumer.onVersionRepositorioArtefactoEliminacionAutorizada(mensaje(version.toString(), 4L, false), channel);
 
         // Assert
-        verify(channel).basicNack(4L, false, true);
+        var captor = ArgumentCaptor.forClass(Message.class);
+        verify(amqpTemplate).send(eq(""),
+                eq(RepositorioArtefactosArtefactosQueueConfig
+                        .VERSION_REPOSITORIO_ARTEFACTO_ELIMINACION_AUTORIZADA_ESPERA_1M_QUEUE),
+                captor.capture());
+        assertThat((Integer) captor.getValue().getMessageProperties().getHeader("x-reintentos-eliminacion"))
+                .isEqualTo(1);
+        verify(channel).basicAck(4L, false);
+        verify(channel, never()).basicNack(eq(4L), eq(false), anyBoolean());
     }
 
     @Test
-    void debeEnviarADlq_cuandoFalloTransitorioYaReentregado() throws Exception {
+    void debeProgramarReintentoEnColaDeCincoMinutos_cuandoSegundoFalloTransitorio() throws Exception {
         // Arrange
-        doThrow(new QueryTimeoutException("timeout")).when(eliminarVersionRepositorioArtefactoInteractor)
-                .ejecutar(any());
+        fallaTransitorio();
 
         // Act
-        consumer.onVersionRepositorioArtefactoEliminacionAutorizada(mensaje(version.toString(), 5L, true), channel);
+        consumer.onVersionRepositorioArtefactoEliminacionAutorizada(mensajeConReintentos(5L, 1), channel);
 
         // Assert
-        verify(channel).basicNack(5L, false, false);
+        var captor = ArgumentCaptor.forClass(Message.class);
+        verify(amqpTemplate).send(eq(""),
+                eq(RepositorioArtefactosArtefactosQueueConfig
+                        .VERSION_REPOSITORIO_ARTEFACTO_ELIMINACION_AUTORIZADA_ESPERA_5M_QUEUE),
+                captor.capture());
+        assertThat((Integer) captor.getValue().getMessageProperties().getHeader("x-reintentos-eliminacion"))
+                .isEqualTo(2);
+        verify(channel).basicAck(5L, false);
+    }
+
+    @Test
+    void debeEnviarADlq_cuandoSeAgotanLosReintentos() throws Exception {
+        // Arrange
+        fallaTransitorio();
+
+        // Act
+        consumer.onVersionRepositorioArtefactoEliminacionAutorizada(mensajeConReintentos(6L, 2), channel);
+
+        // Assert
+        verify(amqpTemplate, never()).send(any(String.class), any(String.class), any(Message.class));
+        verify(channel).basicNack(6L, false, false);
+        verify(channel, never()).basicAck(6L, false);
+    }
+
+    @Test
+    void debeProgramarReintento_cuandoFalloTransitorioYBrokerReentrego() throws Exception {
+        // Arrange
+        fallaTransitorio();
+
+        // Act
+        consumer.onVersionRepositorioArtefactoEliminacionAutorizada(mensaje(version.toString(), 7L, true), channel);
+
+        // Assert
+        verify(amqpTemplate).send(eq(""),
+                eq(RepositorioArtefactosArtefactosQueueConfig
+                        .VERSION_REPOSITORIO_ARTEFACTO_ELIMINACION_AUTORIZADA_ESPERA_1M_QUEUE),
+                any(Message.class));
+        verify(channel).basicAck(7L, false);
     }
 }

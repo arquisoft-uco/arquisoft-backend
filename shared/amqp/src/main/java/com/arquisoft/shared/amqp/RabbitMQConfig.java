@@ -37,6 +37,8 @@ public class RabbitMQConfig {
 
     public static final String ARG_MESSAGE_TTL = "x-message-ttl";
 
+    public static final String EXCHANGE_POR_DEFECTO = "";
+
     // Una cola de descarte sin caducidad crece sin techo. Catorce dias cubren de sobra el
     // tiempo entre que un mensaje muere y alguien lo revisa, sin volverse un deposito eterno.
     public static final int TTL_COLA_DEAD_LETTER = 14 * 24 * 60 * 60 * 1000;
