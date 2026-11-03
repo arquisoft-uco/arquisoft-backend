@@ -4,6 +4,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.secondarypo
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.entity.VersionArtefactoEntity;
 import com.arquisoft.artefactos.infrastructure.versionartefacto.command.secondaryadapter.mapper.VersionArtefactoJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.artefactos.EliminarVersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -37,5 +38,21 @@ public class VersionArtefactoCommandOutputAdapter implements VersionArtefactoOut
     @Override
     public boolean esUltimaDeSuArtefacto(UUID versionArtefacto) {
         return versionArtefactoCommandRepository.esUltimaDeSuArtefacto(versionArtefacto);
+    }
+
+    @Override
+    public Optional<VersionArtefactoEntity> obtenerBloqueadaPorId(UUID id) {
+        return versionArtefactoCommandRepository.bloquearPorId(id).map(VersionArtefactoJpaMapper::toEntity);
+    }
+
+    @Override
+    public boolean existeParticipacion(UUID versionArtefacto, UUID estudiante) {
+        return versionArtefactoCommandRepository.existeParticipacion(versionArtefacto, estudiante);
+    }
+
+    @Override
+    public void eliminar(UUID versionArtefacto) {
+        versionArtefactoCommandRepository.deleteById(versionArtefacto);
+        logger.debug(EliminarVersionArtefactoKey.LOG_ELIMINADO, versionArtefacto);
     }
 }

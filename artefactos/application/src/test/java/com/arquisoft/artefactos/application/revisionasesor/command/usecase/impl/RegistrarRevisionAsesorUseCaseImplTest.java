@@ -6,7 +6,7 @@ import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.entity.RevisionAsesorEntity;
 import com.arquisoft.artefactos.application.revisionasesor.command.validator.RegistrarRevisionAsesorValidator;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoEsUltimaFinder;
-import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoPorIdFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RegistroRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
 class RegistrarRevisionAsesorUseCaseImplTest {
 
     @Mock
-    private VersionArtefactoPorIdFinder versionArtefactoPorIdFinder;
+    private VersionArtefactoBloqueadaPorIdFinder versionArtefactoBloqueadaPorIdFinder;
     @Mock
     private ArtefactoPorVersionArtefactoFinder artefactoPorVersionArtefactoFinder;
     @Mock
@@ -76,7 +76,7 @@ class RegistrarRevisionAsesorUseCaseImplTest {
         version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 3, Instant.now(), "versiones/uri");
         artefacto = ArtefactoDomain.reconstruir(artefactoId, UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), asesorId, null);
-        when(versionArtefactoPorIdFinder.obtener(versionId)).thenReturn(version);
+        when(versionArtefactoBloqueadaPorIdFinder.obtener(versionId)).thenReturn(version);
         when(artefactoPorVersionArtefactoFinder.obtener(versionId)).thenReturn(artefacto);
         when(versionArtefactoEsUltimaFinder.obtener(versionId)).thenReturn(true);
         when(revisionAsesorAbiertaPorVersionFinder.obtener(versionId)).thenReturn(false);
@@ -88,17 +88,17 @@ class RegistrarRevisionAsesorUseCaseImplTest {
         var resultado = useCase.ejecutar(registro);
 
         // Assert
-        var orden = inOrder(versionArtefactoPorIdFinder, artefactoPorVersionArtefactoFinder,
+        var orden = inOrder(versionArtefactoBloqueadaPorIdFinder, artefactoPorVersionArtefactoFinder,
                 versionArtefactoEsUltimaFinder, revisionAsesorAbiertaPorVersionFinder, validator,
                 revisionAsesorOutputPort);
-        orden.verify(versionArtefactoPorIdFinder).obtener(versionId);
+        orden.verify(versionArtefactoBloqueadaPorIdFinder).obtener(versionId);
         orden.verify(artefactoPorVersionArtefactoFinder).obtener(versionId);
         orden.verify(versionArtefactoEsUltimaFinder).obtener(versionId);
         orden.verify(revisionAsesorAbiertaPorVersionFinder).obtener(versionId);
         orden.verify(validator).validar(registro, version, artefacto, true, false);
         var captor = ArgumentCaptor.forClass(RevisionAsesorEntity.class);
         orden.verify(revisionAsesorOutputPort).registrar(captor.capture());
-        verify(versionArtefactoPorIdFinder, times(1)).obtener(any());
+        verify(versionArtefactoBloqueadaPorIdFinder, times(1)).obtener(any());
         verify(artefactoPorVersionArtefactoFinder, times(1)).obtener(any());
         verify(versionArtefactoEsUltimaFinder, times(1)).obtener(any());
         verify(revisionAsesorAbiertaPorVersionFinder, times(1)).obtener(any());
