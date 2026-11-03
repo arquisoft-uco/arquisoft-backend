@@ -1,0 +1,1 @@
+CREATE INDEX idx_artefacto_version_repositorio ON artefacto (version_repositorio_artefacto_id);

@@ -22,6 +22,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -260,5 +261,90 @@ class RevisionAsesorAsesorQueryOutputAdapterTest {
         assertThat(revision.estadoRevisionAsesor()).isEqualTo("EN_PROGRESO");
         assertThat(revision.estadoRevisionAsesorNombre()).isEqualTo("En progreso");
         assertThat(revision.fechaCreacion()).isEqualTo(FECHA_CREACION);
+    }
+
+    private UUID otraRevision;
+    private UUID otroArtefacto;
+
+    private void sembrarRevisionDeOtroArtefactoDelAsesor() {
+        otroArtefacto = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ArtefactoTestEntity(otroArtefacto, asesorA));
+        var version = sembrarVersion(otroArtefacto, 1);
+        otraRevision = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new RevisionAsesorTestEntity(
+                otraRevision, version, "PENDIENTE", Instant.parse("2026-10-10T10:00:00Z")));
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    @Test
+    void debeFiltrarPorArtefacto_yExcluirArtefactosDeOtroAsesor() {
+        // Arrange
+        sembrarEscenario();
+        sembrarRevisionDeOtroArtefactoDelAsesor();
+
+        // Act
+        var propio = adapter.consultarTodasAsesor(criteria(asesorA,
+                NodoFiltro.predicado("artefacto", FiltroOperador.ES, otroArtefacto.toString())));
+        var compartido = adapter.consultarTodasAsesor(criteria(asesorA,
+                NodoFiltro.predicado("artefacto", FiltroOperador.ES, artefactoA.toString())));
+        var ajeno = adapter.consultarTodasAsesor(criteria(asesorB,
+                NodoFiltro.predicado("artefacto", FiltroOperador.ES, otroArtefacto.toString())));
+
+        // Assert
+        assertThat(ids(propio.getContent())).containsExactly(otraRevision);
+        assertThat(ids(compartido.getContent())).containsExactlyInAnyOrder(revisionA1, revisionA2);
+        assertThat(ajeno.getContent()).isEmpty();
+    }
+
+    @Test
+    void debeFiltrarPorRangoDeFechaCreacion_cuandoUsaMayorIgualYMenorIgual() {
+        // Arrange
+        sembrarEscenario();
+        sembrarRevisionDeOtroArtefactoDelAsesor();
+        var desde = NodoFiltro.predicado("fechaCreacion", FiltroOperador.MAYOR_IGUAL_QUE, "2026-10-05T00:00:00");
+        var hasta = NodoFiltro.predicado("fechaCreacion", FiltroOperador.MENOR_IGUAL_QUE, "2026-10-05T00:00:00");
+
+        // Act
+        var conDesde = adapter.consultarTodasAsesor(criteria(asesorA, desde));
+        var conHasta = adapter.consultarTodasAsesor(criteria(asesorA, hasta));
+
+        // Assert
+        assertThat(ids(conDesde.getContent())).containsExactly(otraRevision);
+        assertThat(ids(conHasta.getContent())).containsExactlyInAnyOrder(revisionA1, revisionA2);
+    }
+
+    @Test
+    void debeOrdenarPorFechaCreacionDescendente() {
+        // Arrange
+        sembrarEscenario();
+        sembrarRevisionDeOtroArtefactoDelAsesor();
+        var desc = List.of(SortOrder.of("fechaCreacion", SortDirection.DESC));
+
+        // Act
+        var resultado = adapter.consultarTodasAsesor(criteria(asesorA, null, desc, 0, 10));
+
+        // Assert
+        assertThat(resultado.getContent().get(0).id()).isEqualTo(otraRevision);
+    }
+
+    @Test
+    void debePaginarSinRepetirFilas_cuandoOrdenaPorFechaConEmpates() {
+        // Arrange
+        sembrarEscenario();
+        sembrarRevisionDeOtroArtefactoDelAsesor();
+        var asc = List.of(SortOrder.of("fechaCreacion", SortDirection.ASC));
+
+        // Act
+        var primera = adapter.consultarTodasAsesor(criteria(asesorA, null, asc, 0, 1));
+        var segunda = adapter.consultarTodasAsesor(criteria(asesorA, null, asc, 1, 1));
+        var tercera = adapter.consultarTodasAsesor(criteria(asesorA, null, asc, 2, 1));
+
+        // Assert
+        var recorridas = new ArrayList<UUID>();
+        recorridas.addAll(ids(primera.getContent()));
+        recorridas.addAll(ids(segunda.getContent()));
+        recorridas.addAll(ids(tercera.getContent()));
+        assertThat(recorridas).containsExactlyInAnyOrder(revisionA1, revisionA2, otraRevision).doesNotHaveDuplicates();
     }
 }

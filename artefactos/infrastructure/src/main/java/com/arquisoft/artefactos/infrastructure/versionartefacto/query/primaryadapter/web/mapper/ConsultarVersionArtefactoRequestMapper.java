@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public final class ConsultarVersionArtefactoRequestMapper {
 
-    private static final Map<String, RolConsultaVersionArtefacto> ROLES_NEGOCIO_POR_ROL_IDENTIDAD = Map.of(
+    static final Map<String, RolConsultaVersionArtefacto> ROLES_NEGOCIO_POR_ROL_IDENTIDAD = Map.of(
             UsuariosRoles.ASESOR, RolConsultaVersionArtefacto.ASESOR,
             UsuariosRoles.ESTUDIANTE, RolConsultaVersionArtefacto.ESTUDIANTE);
 

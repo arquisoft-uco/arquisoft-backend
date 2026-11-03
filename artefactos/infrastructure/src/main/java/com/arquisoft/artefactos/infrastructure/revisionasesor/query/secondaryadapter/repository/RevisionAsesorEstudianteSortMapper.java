@@ -18,6 +18,10 @@ final class RevisionAsesorEstudianteSortMapper {
                 case VERSION_ARTEFACTO      -> null;
                 case ESTADO_REVISION_ASESOR -> "estadoRevisionAsesorNombre";
                 case ESTUDIANTE_ID          -> null;
+                case ARTEFACTO              -> null;
+                case FECHA_CREACION         -> "fechaCreacion";
+                case NOMBRE_DOCUMENTO       -> null;
+                case VERSION                -> "version";
             };
             if (UtilObjeto.noEsNulo(ruta)) {
                 m.put(campo.getClave(), ruta);

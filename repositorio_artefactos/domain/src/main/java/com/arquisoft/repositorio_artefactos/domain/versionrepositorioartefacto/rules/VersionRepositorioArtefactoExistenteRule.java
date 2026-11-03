@@ -1,0 +1,7 @@
+package com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.rules;
+
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.model.ExistenciaVersionRepositorioArtefacto;
+import com.arquisoft.shared.rules.DomainRule;
+
+public interface VersionRepositorioArtefactoExistenteRule extends DomainRule<ExistenciaVersionRepositorioArtefacto> {
+}

@@ -189,6 +189,7 @@ security:
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
         - {method: POST, path: "/api/repositorio-artefactos/{repositorioId}/versiones/cargas", role: "repositorio-artefactos:version-repositorio-artefacto:upload"}
         - {method: POST, path: "/api/repositorio-artefactos/versiones/asesor", role: "repositorio-artefactos:version-repositorio-artefacto:view-asesor"}
+        - {method: GET, path: "/api/repositorio-artefactos/versiones/{versionRepositorioArtefactoId}/descarga", role: "repositorio-artefactos:version-repositorio-artefacto:download"}
         # artefactos
         - {method: GET, path: "/api/estados-revision-asesor", role: "artefactos:estado-revision-asesor:view"}
         - {method: POST, path: "/api/revisiones-asesor/estudiante", role: "artefactos:revision-asesor-estudiante:view"}
@@ -210,10 +211,12 @@ security:
         - {method: PATCH, path: "/api/artefactos/{artefactoId}/asesor", role: "artefactos:artefacto:update-asesor"}
         - {method: DELETE, path: "/api/artefactos/{artefactoId}", role: "artefactos:artefacto:omit"}
         - {method: PATCH, path: "/api/artefactos/{artefactoId}/version-repositorio", role: "artefactos:artefacto:update-version-repositorio"}
+        - {method: DELETE, path: "/api/artefactos/versiones-repositorio/{versionRepositorioArtefactoId}", role: "artefactos:version-repositorio-artefacto:delete"}
         - {method: POST, path: "/api/artefactos/revisiones/{revisionAsesorId}/observaciones", role: "artefactos:observacion-revision:create"}
         - {method: DELETE, path: "/api/artefactos/observaciones/{observacionId}", role: "artefactos:observacion:delete"}
         - {method: POST, path: "/api/artefactos/versiones/{versionArtefactoId}/revisiones", role: "artefactos:revision-asesor:create"}
         - {method: GET, path: "/api/artefactos/versiones/{versionArtefactoId}", role: "artefactos:version-artefacto:view"}
+        - {method: GET, path: "/api/artefactos/versiones/{versionArtefactoId}/descarga", role: "artefactos:version-artefacto:download"}
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/estado", role: "artefactos:revision-asesor-estado:update"}
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/envio", role: "artefactos:revision-asesor:send"}
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/cierre", role: "artefactos:revision-asesor:close"}

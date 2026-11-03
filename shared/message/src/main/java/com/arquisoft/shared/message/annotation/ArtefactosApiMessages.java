@@ -12,6 +12,26 @@ public final class ArtefactosApiMessages {
         public static final String RESP_403 = "Sin permisos para realizar la operación";
     }
 
+    public static final class VersionRepositorioArtefacto {
+
+        private VersionRepositorioArtefacto() {}
+
+        public static final String TAG_NAME = "Versiones del repositorio de artefactos";
+        public static final String TAG_DESCRIPTION =
+                "Gestión de las versiones del repositorio de artefactos desde el contexto de artefactos";
+        public static final String ELIMINAR_SUMMARY = "Eliminar una versión del repositorio de artefactos";
+        public static final String ELIMINAR_DESCRIPTION =
+                "Elimina una versión de una plantilla del repositorio de artefactos cuando se subió por error "
+                        + "o dejó de ser válida. Solo se puede eliminar si ningún artefacto de proyecto de grado "
+                        + "la usa, esté omitido o no. La versión y su archivo desaparecen del repositorio de "
+                        + "forma definitiva, poco después de responder. No notifica a nadie.";
+        public static final String ELIMINAR_RESP_204 = "Eliminación de la versión autorizada";
+        public static final String ELIMINAR_RESP_400 = "Identificador de la versión inválido";
+        public static final String ELIMINAR_RESP_422 =
+                "La versión no existe o está en uso por artefactos de proyectos de grado";
+        public static final String PARAM_VERSION = "Identificador de la versión del repositorio de artefactos";
+    }
+
     public static final class RevisionAsesor {
 
         private RevisionAsesor() {}
@@ -24,8 +44,11 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Devuelve, de forma paginada, las revisiones del asesor sobre las versiones de los artefactos "
                         + "en los que participa el estudiante autenticado. Se puede filtrar por la versión del "
-                        + "artefacto (versionArtefacto) y por el estado de la revisión (estadoRevisionAsesor), y "
-                        + "ordenar por estadoRevisionAsesor. El estudiante se toma del token, nunca del cuerpo.";
+                        + "artefacto (versionArtefacto), el artefacto (artefacto), la fecha de creación "
+                        + "(fechaCreacion, con rango), el nombre del documento (nombreDocumento) y el estado de la revisión "
+                        + "(estadoRevisionAsesor), y ordenar por estadoRevisionAsesor, fechaCreacion y version. Cada revisión "
+                        + "incluye fechaCreacion, nombreProyecto, nombreDocumento, versionDocumento, observacionesAbiertas "
+                        + "y totalObservaciones. El estudiante se toma del token, nunca del cuerpo.";
         public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Página de revisiones del asesor del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de estudiante inválido";
@@ -36,8 +59,9 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Devuelve, de forma paginada, las revisiones registradas sobre las versiones de los artefactos "
                         + "a cargo del asesor autenticado. Se puede filtrar por la versión del artefacto "
-                        + "(versionArtefacto) y por el estado de la revisión (estadoRevisionAsesor), y ordenar por "
-                        + "estadoRevisionAsesor. Cada revisión incluye su fecha de creación (fechaCreacion). "
+                        + "(versionArtefacto), el artefacto (artefacto), la fecha de creación (fechaCreacion, con rango) y el "
+                        + "estado de la revisión (estadoRevisionAsesor), y ordenar por estadoRevisionAsesor y fechaCreacion. "
+                        + "Cada revisión incluye su fecha de creación (fechaCreacion). "
                         + "El asesor se toma del token, nunca del cuerpo.";
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de revisiones realizadas por el asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 =
@@ -120,11 +144,11 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Devuelve, de forma paginada, las versiones de los artefactos a cargo del asesor autenticado, "
                         + "con proyecto, documento, repositorio, asesor y el estado de la revisión más reciente "
-                        + "(revisionAsesor, estadoRevision, nombreEstadoRevision; nulos si no tiene revisión). "
+                        + "(revisionAsesor, estadoRevision, nombreEstadoRevision, fechaCreacionRevision; nulos si no tiene revisión). "
                         + "Se puede filtrar por el artefacto (artefacto), el proyecto (proyectoGrado, nombreProyecto), el "
                         + "documento (nombreDocumento), la versión (version), la fecha de creación (fechaCreacion) "
-                        + "y el estado de la revisión (estadoRevision; ES_NULO para las versiones sin revisión), "
-                        + "y ordenar por version, fechaCreacion y estadoRevision (en orden de flujo); por defecto, la más "
+                        + "y el estado y la fecha de la revisión (estadoRevision, fechaCreacionRevision; ES_NULO para las versiones sin revisión), "
+                        + "y ordenar por version, fechaCreacion y estadoRevision (en orden de flujo) y fechaCreacionRevision; por defecto, la más "
                         + "reciente primero. El asesor se toma del token, nunca del cuerpo.";
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de versiones de los artefactos del asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 =
@@ -136,11 +160,12 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Devuelve, de forma paginada, las versiones de los artefactos en los que participa el estudiante "
                         + "autenticado, con proyecto, documento, repositorio, asesor y el estado de la revisión más "
-                        + "reciente (revisionAsesor, estadoRevision, nombreEstadoRevision; nulos si no tiene revisión). "
+                        + "reciente (revisionAsesor, estadoRevision, nombreEstadoRevision, fechaCreacionRevision; nulos si no tiene revisión). "
                         + "Se puede filtrar por el artefacto (artefacto), el proyecto (proyectoGrado, nombreProyecto), el "
                         + "documento (nombreDocumento), la versión (version), la fecha de creación (fechaCreacion) y el "
-                        + "estado de la revisión (estadoRevision; ES_NULO para las versiones sin revisión), y ordenar por "
-                        + "version, fechaCreacion y estadoRevision (en orden de flujo); por defecto, la más reciente "
+                        + "estado y la fecha de la revisión (estadoRevision, fechaCreacionRevision; ES_NULO para las versiones "
+                        + "sin revisión), y ordenar por "
+                        + "version, fechaCreacion, estadoRevision (en orden de flujo) y fechaCreacionRevision; por defecto, la más reciente "
                         + "primero. El estudiante se toma del token, nunca del cuerpo.";
         public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
                 "Página de versiones de los artefactos del estudiante";
@@ -152,7 +177,7 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_DETALLE_DESCRIPTION =
                 "Devuelve la versión del artefacto con proyecto, documento, repositorio, asesor, número, fecha de "
                         + "creación, uriArchivo y la revisión más reciente (revisionAsesor, estadoRevision, "
-                        + "nombreEstadoRevision; nulos si no tiene revisión). La puede consultar el asesor del "
+                        + "nombreEstadoRevision, fechaCreacionRevision; nulos si no tiene revisión). La puede consultar el asesor del "
                         + "artefacto o un estudiante vinculado a él, según los roles del token.";
         public static final String CONSULTAR_DETALLE_RESP_200 = "Información de la versión del artefacto";
         public static final String CONSULTAR_DETALLE_RESP_400 =
@@ -161,6 +186,20 @@ public final class ArtefactosApiMessages {
                 "Sin permiso para consultar la información de la versión del artefacto";
         public static final String CONSULTAR_DETALLE_RESP_422 =
                 "La versión del artefacto no existe o el solicitante no tiene acceso a ella";
+        public static final String PARAM_VERSION = "Identificador de la versión del artefacto";
+        public static final String DESCARGAR_SUMMARY = "Descargar el archivo de una versión del artefacto";
+        public static final String DESCARGAR_DESCRIPTION =
+                "Entrega una URL de descarga de vida corta del archivo que se subió en la versión, con el nombre "
+                        + "con el que se subió. La puede pedir el asesor del artefacto o un estudiante vinculado a "
+                        + "él, según los roles del token; también si el artefacto está omitido.";
+        public static final String DESCARGAR_RESP_200 = "Enlace de descarga generado";
+        public static final String DESCARGAR_RESP_400 =
+                "Identificador de versión inválido o token sin roles de asesor ni estudiante";
+        public static final String DESCARGAR_RESP_403 = "Sin permiso para descargar el archivo de la versión";
+        public static final String DESCARGAR_RESP_422 =
+                "La versión del artefacto no existe o el solicitante no tiene acceso a ella";
+        public static final String DESCARGAR_RESP_503 =
+                "El archivo de la versión no está disponible o el almacenamiento de objetos no responde";
         public static final String SOLICITAR_CARGA_SUMMARY = "Solicitar la carga de una versión del artefacto";
         public static final String SOLICITAR_CARGA_DESCRIPTION =
                 "Entrega un formulario firmado para subir el archivo de la nueva versión directamente al "

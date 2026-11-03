@@ -32,7 +32,8 @@ import java.util.UUID;
                ra.id                  AS revision_asesor_id,
                ra.estado_revision_asesor_id AS estado_revision_id,
                er.nombre              AS nombre_estado_revision,
-               er.orden               AS orden_estado_revision
+               er.orden               AS orden_estado_revision,
+               ra.fecha_creacion        AS fecha_creacion_revision
         FROM version_artefacto va
                  JOIN artefacto a ON a.id = va.artefacto_id
                  JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
@@ -102,4 +103,7 @@ public class VersionArtefactoAsesorJpaQueryEntity {
 
     @Column(name = "orden_estado_revision")
     private Integer ordenEstadoRevision;
+
+    @Column(name = "fecha_creacion_revision")
+    private Instant fechaCreacionRevision;
 }

@@ -80,7 +80,8 @@ class ConsultarVersionesArtefactoEstudianteControllerTest {
         var version = new VersionArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2,
                 Instant.parse("2026-10-20T10:00:00Z"), "artefactos/v2.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno",
-                UtilUUID.generarNuevoUUID(), "PENDIENTE", "Pendiente");
+                UtilUUID.generarNuevoUUID(), "PENDIENTE", "Pendiente",
+                Instant.parse("2026-10-21T10:00:00Z"));
         when(consultarVersionesArtefactoEstudianteInteractor.ejecutar(any(ConsultarVersionesArtefactoEstudianteQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(version), 0, 10, 1L));
         var body = """
@@ -109,6 +110,7 @@ class ConsultarVersionesArtefactoEstudianteControllerTest {
                 .andExpect(jsonPath("$.content[0].revisionAsesor").value(version.revisionAsesor().toString()))
                 .andExpect(jsonPath("$.content[0].estadoRevision").value("PENDIENTE"))
                 .andExpect(jsonPath("$.content[0].nombreEstadoRevision").value("Pendiente"))
+                .andExpect(jsonPath("$.content[0].fechaCreacionRevision").exists())
                 .andExpect(jsonPath("$.totalElements").value(1));
 
         var captor = ArgumentCaptor.forClass(ConsultarVersionesArtefactoEstudianteQuery.class);
@@ -193,7 +195,7 @@ class ConsultarVersionesArtefactoEstudianteControllerTest {
         var version = new VersionArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2,
                 Instant.parse("2026-10-20T10:00:00Z"), "artefactos/v2.pdf", "Proyecto Uno", "Documento Uno", 1,
-                "repo-uno", "Asesor Uno", null, null, null);
+                "repo-uno", "Asesor Uno", null, null, null, null);
         when(consultarVersionesArtefactoEstudianteInteractor.ejecutar(any(ConsultarVersionesArtefactoEstudianteQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(version), 0, 10, 1L));
 
@@ -206,6 +208,8 @@ class ConsultarVersionesArtefactoEstudianteControllerTest {
                 .andExpect(jsonPath("$.content[0]").value(hasKey("revisionAsesor")))
                 .andExpect(jsonPath("$.content[0]").value(hasKey("estadoRevision")))
                 .andExpect(jsonPath("$.content[0]").value(hasKey("nombreEstadoRevision")))
+                .andExpect(jsonPath("$.content[0]").value(hasKey("fechaCreacionRevision")))
+                .andExpect(jsonPath("$.content[0].fechaCreacionRevision").value(nullValue()))
                 .andExpect(jsonPath("$.content[0].revisionAsesor").value(nullValue()))
                 .andExpect(jsonPath("$.content[0].estadoRevision").value(nullValue()))
                 .andExpect(jsonPath("$.content[0].nombreEstadoRevision").value(nullValue()));

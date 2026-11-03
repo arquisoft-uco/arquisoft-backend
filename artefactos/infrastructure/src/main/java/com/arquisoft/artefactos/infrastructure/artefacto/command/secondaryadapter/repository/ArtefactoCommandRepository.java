@@ -24,6 +24,8 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
     @Query("SELECT a FROM ArtefactoJpaEntity a WHERE a.id = :id")
     Optional<ArtefactoJpaEntity> bloquearPorId(@Param("id") UUID id);
 
+    boolean existsByVersionRepositorioArtefacto(UUID versionRepositorioArtefacto);
+
     @NativeQuery("""
             SELECT a.*
             FROM artefacto a

@@ -25,6 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,7 +76,8 @@ class ConsultarRevisionesAsesorEstudianteControllerTest {
     void debeRetornar200ConResponseDTO_cuandoConsultaValida() throws Exception {
         // Arrange
         var revision = new RevisionAsesorReadModel(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 2, "PENDIENTE", "Pendiente");
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 2, "PENDIENTE", "Pendiente",
+                Instant.parse("2026-10-21T10:00:00Z"), "Proyecto Uno", "Documento Uno", 1, 2, 3);
         when(consultarRevisionesAsesorEstudianteInteractor.ejecutar(any(ConsultarRevisionesAsesorEstudianteQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(revision), 0, 10, 1L));
         var body = """
@@ -97,6 +99,12 @@ class ConsultarRevisionesAsesorEstudianteControllerTest {
                 .andExpect(jsonPath("$.content[0].version").value(2))
                 .andExpect(jsonPath("$.content[0].estadoRevisionAsesor").value("PENDIENTE"))
                 .andExpect(jsonPath("$.content[0].estadoRevisionAsesorNombre").value("Pendiente"))
+                .andExpect(jsonPath("$.content[0].fechaCreacion").exists())
+                .andExpect(jsonPath("$.content[0].nombreProyecto").value("Proyecto Uno"))
+                .andExpect(jsonPath("$.content[0].nombreDocumento").value("Documento Uno"))
+                .andExpect(jsonPath("$.content[0].versionDocumento").value(1))
+                .andExpect(jsonPath("$.content[0].observacionesAbiertas").value(2))
+                .andExpect(jsonPath("$.content[0].totalObservaciones").value(3))
                 .andExpect(jsonPath("$.totalElements").value(1));
 
         var captor = ArgumentCaptor.forClass(ConsultarRevisionesAsesorEstudianteQuery.class);
@@ -123,14 +131,14 @@ class ConsultarRevisionesAsesorEstudianteControllerTest {
     void debeRetornar400_cuandoElArbolDeFiltrosReferenciaUnCampoNoDeclarado() throws Exception {
         // Arrange
         when(consultarRevisionesAsesorEstudianteInteractor.ejecutar(any(ConsultarRevisionesAsesorEstudianteQuery.class)))
-                .thenThrow(new FiltroException("campo no permitido: artefacto", "artefactos.consulta.campo-no-permitido"));
+                .thenThrow(new FiltroException("campo no permitido: campoInexistente", "artefactos.consulta.campo-no-permitido"));
         var body = """
                 {
                   "pagina": 0,
                   "tamanio": 10,
                   "filtros": {
                     "tipo": "PREDICADO",
-                    "campo": "artefacto",
+                    "campo": "campoInexistente",
                     "operador": "ES",
                     "valor": "cualquiera"
                   }

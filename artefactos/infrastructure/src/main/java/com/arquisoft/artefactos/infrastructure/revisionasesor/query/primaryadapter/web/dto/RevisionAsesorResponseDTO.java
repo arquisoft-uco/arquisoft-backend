@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.infrastructure.revisionasesor.query.primaryadap
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -11,6 +12,12 @@ public record RevisionAsesorResponseDTO(
         UUID artefacto,
         int version,
         String estadoRevisionAsesor,
-        String estadoRevisionAsesorNombre
+        String estadoRevisionAsesorNombre,
+        Instant fechaCreacion,
+        String nombreProyecto,
+        String nombreDocumento,
+        int versionDocumento,
+        int observacionesAbiertas,
+        int totalObservaciones
 ) {
 }

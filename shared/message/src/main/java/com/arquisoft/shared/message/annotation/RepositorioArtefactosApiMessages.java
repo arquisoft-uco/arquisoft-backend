@@ -77,5 +77,15 @@ public final class RepositorioArtefactosApiMessages {
                         + "junto con el repositorio al que pertenecen";
         public static final String CONSULTAR_ASESOR_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_ASESOR_RESP_400 = "Filtro, operador, campo o valor inválido";
+        public static final String PARAM_VERSION = "Identificador de la versión del repositorio de artefactos";
+        public static final String DESCARGAR_SUMMARY = "Descargar el archivo de una versión del repositorio de artefactos";
+        public static final String DESCARGAR_DESCRIPTION =
+                "Entrega, al administrador, al asesor y al estudiante, una URL de descarga de vida corta "
+                        + "del archivo original de cualquier versión";
+        public static final String DESCARGAR_RESP_200 = "Enlace de descarga generado";
+        public static final String DESCARGAR_RESP_400 = "Identificador de versión inválido";
+        public static final String DESCARGAR_RESP_422 = "La versión solicitada no existe";
+        public static final String DESCARGAR_RESP_503 =
+                "El archivo no está disponible o el almacenamiento de objetos no responde";
     }
 }

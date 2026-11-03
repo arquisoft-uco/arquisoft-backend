@@ -35,6 +35,9 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
     @Autowired
     private VersionArtefactoEstudianteQueryRepository estudianteRepository;
 
+    @Autowired
+    private ArchivoVersionArtefactoQueryRepository archivoRepository;
+
     private VersionArtefactoQueryOutputAdapter detalleAdapter;
     private VersionArtefactoAccesoQueryOutputAdapter accesoAdapter;
 
@@ -47,7 +50,8 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
         detalleAdapter = new VersionArtefactoQueryOutputAdapter(
                 asesorRepository, new VersionArtefactoAsesorJpaSpecification(),
                 estudianteRepository, new VersionArtefactoEstudianteJpaSpecification());
-        accesoAdapter = new VersionArtefactoAccesoQueryOutputAdapter(asesorRepository, estudianteRepository);
+        accesoAdapter = new VersionArtefactoAccesoQueryOutputAdapter(
+                asesorRepository, estudianteRepository, archivoRepository);
     }
 
     private UUID sembrarArtefacto(Instant omitidoEn) {
@@ -105,6 +109,7 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
         assertThat(resultado.revisionAsesor()).isEqualTo(reciente);
         assertThat(resultado.estadoRevision()).isEqualTo("RESUELTA");
         assertThat(resultado.nombreEstadoRevision()).isEqualTo("Resuelta");
+        assertThat(resultado.fechaCreacionRevision()).isEqualTo(Instant.parse("2026-10-22T10:00:00Z"));
     }
 
     @Test
@@ -122,6 +127,7 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
         assertThat(resultado.revisionAsesor()).isNull();
         assertThat(resultado.estadoRevision()).isNull();
         assertThat(resultado.nombreEstadoRevision()).isNull();
+        assertThat(resultado.fechaCreacionRevision()).isNull();
     }
 
     @Test
@@ -150,6 +156,48 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
         // Assert
         assertThat(existente).contains(asesor);
         assertThat(ausente).isEmpty();
+    }
+
+    @Test
+    void debeDevolverArchivo_cuandoLaVersionExiste() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(sembrarArtefacto(null), 3);
+        confirmarSiembra();
+
+        // Act
+        var resultado = accesoAdapter.obtenerArchivoPorId(version);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(archivo -> {
+            assertThat(archivo.asesor()).isEqualTo(asesor);
+            assertThat(archivo.uriArchivo()).isEqualTo("artefactos/" + version + ".pdf");
+            assertThat(archivo.numeroVersion()).isEqualTo(3);
+            assertThat(archivo.nombreDocumento()).isEqualTo("Anteproyecto");
+        });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaVersionNoExiste() {
+        // Act
+        var resultado = accesoAdapter.obtenerArchivoPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeDevolverArchivo_cuandoElArtefactoEstaOmitido() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(sembrarArtefacto(Instant.parse("2026-10-25T10:00:00Z")), 1);
+        confirmarSiembra();
+
+        // Act
+        var resultado = accesoAdapter.obtenerArchivoPorId(version);
+
+        // Assert
+        assertThat(resultado).isPresent();
     }
 
     @Test

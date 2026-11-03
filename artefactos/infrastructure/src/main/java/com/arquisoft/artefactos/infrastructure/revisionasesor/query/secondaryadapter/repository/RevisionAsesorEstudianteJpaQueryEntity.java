@@ -11,6 +11,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 import org.hibernate.annotations.Synchronize;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -22,13 +23,27 @@ import java.util.UUID;
                va.version_artefacto         AS version,
                ea.estudiante_id             AS estudiante_id,
                ra.estado_revision_asesor_id AS estado_revision_asesor_id,
-               er.nombre                    AS estado_revision_asesor_nombre
+               er.nombre                    AS estado_revision_asesor_nombre,
+               ra.fecha_creacion            AS fecha_creacion,
+               pg.nombre                    AS nombre_proyecto,
+               vra.nombre_documento         AS nombre_documento,
+               vra.version_documento        AS version_documento,
+               CAST((SELECT COUNT(*) FROM observacion o
+                     WHERE o.revision_asesor_id = ra.id
+                       AND o.estado_observacion_id IN ('NUEVA', 'EN_PROGRESO', 'REABIERTA'))
+                    AS INTEGER)             AS observaciones_abiertas,
+               CAST((SELECT COUNT(*) FROM observacion o
+                     WHERE o.revision_asesor_id = ra.id) AS INTEGER) AS total_observaciones
         FROM revision_asesor ra
                  JOIN version_artefacto va ON va.id = ra.version_artefacto_id
                  JOIN estudiante_artefacto ea ON ea.artefacto_id = va.artefacto_id
+                 JOIN artefacto a ON a.id = va.artefacto_id
+                 JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
+                 JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
                  JOIN estado_revision_asesor er ON er.id = ra.estado_revision_asesor_id
         """)
-@Synchronize({"revision_asesor", "version_artefacto", "estudiante_artefacto", "estado_revision_asesor"})
+@Synchronize({"revision_asesor", "version_artefacto", "estudiante_artefacto", "estado_revision_asesor",
+        "artefacto", "proyecto_grado", "version_repositorio_artefacto", "observacion"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -56,4 +71,22 @@ public class RevisionAsesorEstudianteJpaQueryEntity {
 
     @Column(name = "estado_revision_asesor_nombre")
     private String estadoRevisionAsesorNombre;
+
+    @Column(name = "fecha_creacion")
+    private Instant fechaCreacion;
+
+    @Column(name = "nombre_proyecto")
+    private String nombreProyecto;
+
+    @Column(name = "nombre_documento")
+    private String nombreDocumento;
+
+    @Column(name = "version_documento")
+    private int versionDocumento;
+
+    @Column(name = "observaciones_abiertas")
+    private int observacionesAbiertas;
+
+    @Column(name = "total_observaciones")
+    private int totalObservaciones;
 }

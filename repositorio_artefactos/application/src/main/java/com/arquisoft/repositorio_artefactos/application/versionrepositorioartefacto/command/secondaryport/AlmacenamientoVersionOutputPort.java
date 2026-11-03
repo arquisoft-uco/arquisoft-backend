@@ -17,5 +17,7 @@ public interface AlmacenamientoVersionOutputPort {
 
     void eliminarCarga(UUID carga);
 
+    void eliminarArchivo(String uriArchivo);
+
     long tamanoMaximoBytes();
 }

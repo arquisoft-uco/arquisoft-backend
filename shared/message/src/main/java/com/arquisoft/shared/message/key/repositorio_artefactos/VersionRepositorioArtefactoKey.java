@@ -52,9 +52,33 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA(
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.consulta-asesor-completada", 3),
+    ERROR_VERSION_NO_ENCONTRADA(
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.version-no-encontrada", 0),
+    ERROR_VERSION_NO_ENCONTRADA_DETALLE(
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.version-no-encontrada-detalle", 1),
+    ERROR_ARCHIVO_NO_DISPONIBLE(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.error.archivo-no-disponible", 0),
+    ERROR_ARCHIVO_NO_DISPONIBLE_DETALLE(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.error.archivo-no-disponible-detalle", 2),
+    LOG_DESCARGANDO("repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.descargando", 1),
+    LOG_DESCARGA_GENERADA(
+            "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.descarga-generada", 2),
     LOG_GUARDADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.guardada", 1),
     LOG_CARGA_COPIADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-copiada", 2),
-    LOG_CARGA_ELIMINADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-eliminada", 1);
+    LOG_CARGA_ELIMINADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.carga-eliminada", 1),
+    LOG_ELIMINACION_RECIBIDA(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminacion-recibida", 2),
+    LOG_ELIMINACION_REINTENTO_PROGRAMADO(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminacion-reintento-programado", 4),
+    LOG_VERIFICACION_ELIMINAR(
+            "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.verificacion-eliminar", 2),
+    LOG_VERSION_ELIMINADA(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.version-eliminada", 1),
+    LOG_VERSION_INEXISTENTE(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.version-inexistente", 1),
+    LOG_ARCHIVO_ELIMINADO(
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.archivo-eliminado", 1),
+    LOG_ELIMINADA("repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminada", 1);
 
     private final String clave;
     private final int parametros;

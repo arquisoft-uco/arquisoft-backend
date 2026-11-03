@@ -21,6 +21,10 @@ class RevisionAsesorEstudianteJpaSpecification extends QueryJpaSpecification<Rev
                 case VERSION_ARTEFACTO      -> CampoSpec.uuid(root -> root.get("versionArtefactoId"));
                 case ESTADO_REVISION_ASESOR -> CampoSpec.texto(root -> root.get("estadoRevisionAsesorId"));
                 case ESTUDIANTE_ID          -> CampoSpec.uuid(root -> root.get("estudianteId"));
+                case ARTEFACTO              -> CampoSpec.uuid(root -> root.get("artefactoId"));
+                case FECHA_CREACION         -> CampoSpec.fechaHora(root -> root.get("fechaCreacion"));
+                case NOMBRE_DOCUMENTO       -> CampoSpec.texto(root -> root.get("nombreDocumento"));
+                case VERSION                -> CampoSpec.entero(root -> root.get("version"));
             };
             m.put(campo.getClave(), spec);
         }

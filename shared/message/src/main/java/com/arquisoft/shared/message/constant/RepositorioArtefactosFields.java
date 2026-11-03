@@ -37,5 +37,6 @@ public final class RepositorioArtefactosFields {
         public static final String NOMBRE_ARCHIVO = "nombreArchivo";
         public static final String TIPO_CONTENIDO = "tipoContenido";
         public static final String TAMANO_BYTES = "tamanoBytes";
+        public static final String VERSION = "version";
     }
 }

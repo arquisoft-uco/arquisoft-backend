@@ -240,7 +240,9 @@
               "evaluaciones:criterio-item-cualitativo-jurado:view",
               "usuarios:coordinador:delete",
               "repositorio-artefactos:version-repositorio-artefacto:upload",
-              "repositorio-artefactos:version-repositorio-artefacto:view"
+              "repositorio-artefactos:version-repositorio-artefacto:view",
+              "repositorio-artefactos:version-repositorio-artefacto:download",
+              "artefactos:version-repositorio-artefacto:delete"
             ]
           }
         },
@@ -275,6 +277,7 @@
           "client": {
             "arquisoft-api": [
               "artefactos:version-artefacto:upload",
+              "repositorio-artefactos:version-repositorio-artefacto:download",
               "entregables:entregable-proyecto-grado-estudiante:view",
               "solicitudes:respuesta-cambio-asesor-recibida:view",
               "solicitudes:respuesta-ampliacion-plazo-recibida:view",
@@ -329,6 +332,7 @@
               "artefactos:observacion-revision-estudiante:view",
               "artefactos:version-artefacto-estudiante:view",
               "artefactos:version-artefacto:view",
+              "artefactos:version-artefacto:download",
               "artefactos:artefacto-participacion-estudiante:view",
               "artefactos:revision-asesor-estado:update",
               "artefactos:observacion-estado-estudiante:update",
@@ -387,9 +391,11 @@
               "artefactos:observacion-revision:view",
               "artefactos:revision-asesor-asesor:view",
               "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
+              "repositorio-artefactos:version-repositorio-artefacto:download",
               "artefactos:artefacto:create",
               "artefactos:version-artefacto-asesor:view",
               "artefactos:version-artefacto:view",
+              "artefactos:version-artefacto:download",
               "artefactos:artefacto-asesor:view",
               "artefactos:artefacto-sin-avance:view",
               "artefactos:artefacto:update-asesor",
@@ -856,6 +862,15 @@
         {
           "id": "26e3ba74-1b09-4ff0-9b67-2cfe2490df57",
           "name": "repositorio-artefactos:version-repositorio-artefacto:view-asesor",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "f4d8692f-0494-43f9-9bfe-d80ead4a72aa",
+          "name": "repositorio-artefactos:version-repositorio-artefacto:download",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2618,6 +2633,15 @@
           "attributes": {}
         },
         {
+          "id": "85321764-37cc-44cf-b318-f6446c4684f6",
+          "name": "artefactos:version-artefacto:download",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "3b9c1e5a-6d24-4f87-a1c3-9e2d7b405f18",
           "name": "artefactos:artefacto-asesor:view",
           "description": "",
@@ -2656,6 +2680,15 @@
         {
           "id": "5b7e2c91-3f4a-4d68-a1c0-9e8d6f2b7a43",
           "name": "artefactos:artefacto:update-version-repositorio",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "0fbaa314-2cb8-4d93-99aa-9aaa45f779da",
+          "name": "artefactos:version-repositorio-artefacto:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

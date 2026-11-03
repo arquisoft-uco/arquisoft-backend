@@ -40,6 +40,7 @@ public final class ArtefactosCodes {
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_TAMANO_BYTES_INVALIDO";
         public static final String VERSION_NO_ENCONTRADA =
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_VERSION_NO_ENCONTRADA";
+        public static final String EN_USO = "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_EN_USO";
     }
 
     public static final class Artefacto {
@@ -202,6 +203,7 @@ public final class ArtefactosCodes {
         public static final String ROLES_REQUERIDOS = "VERSION_ARTEFACTO_ROLES_REQUERIDOS";
         public static final String ACCESO_DENEGADO = "VERSION_ARTEFACTO_ACCESO_DENEGADO";
         public static final String NO_DISPONIBLE = "VERSION_ARTEFACTO_NO_DISPONIBLE";
+        public static final String ARCHIVO_NO_DISPONIBLE = "VERSION_ARTEFACTO_ARCHIVO_NO_DISPONIBLE";
     }
 
     public static final class EstudianteArtefacto {

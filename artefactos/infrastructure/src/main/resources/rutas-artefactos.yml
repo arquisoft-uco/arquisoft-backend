@@ -23,12 +23,14 @@ rutas:
       versiones: /{artefactoId}/versiones
       versiones-estudiante: /versiones/estudiante
       version: /versiones/{versionArtefactoId}
+      descarga-version: /versiones/{versionArtefactoId}/descarga
       asesor: /asesor
       asesor-sin-avance: /asesor/sin-avance
       estudiante: /estudiante
       cambiar-asesor: /{artefactoId}/asesor
       omitir: /{artefactoId}
       cambiar-version-repositorio: /{artefactoId}/version-repositorio
+      version-repositorio: /versiones-repositorio/{versionRepositorioArtefactoId}
       revisiones-version: /versiones/{versionArtefactoId}/revisiones
       revision: /revisiones/{revisionAsesorId}
       estado-revision: /revisiones/{revisionAsesorId}/estado
