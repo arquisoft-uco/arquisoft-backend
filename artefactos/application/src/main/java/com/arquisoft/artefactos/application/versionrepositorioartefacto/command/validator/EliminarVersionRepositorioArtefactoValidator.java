@@ -8,5 +8,6 @@ public interface EliminarVersionRepositorioArtefactoValidator {
     void validar(
             EliminacionVersionRepositorioArtefactoDomain eliminacion,
             VersionRepositorioArtefactoDomain version,
+            int ultimaVersionDocumento,
             boolean enUso);
 }
