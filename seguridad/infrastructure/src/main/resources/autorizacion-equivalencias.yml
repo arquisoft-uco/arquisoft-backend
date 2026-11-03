@@ -98,9 +98,10 @@ security:
         # evaluaciones
         - {method: GET, path: "/api/evaluaciones/{evaluacionId}/evaluacion-asesor", role: "evaluaciones:evaluacion-asesor-estudiante:view"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}", role: "evaluaciones:evaluacion-asesor-detalle:view"}
-        - {method: GET, path: "/api/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor-asesor:view"}
-        - {method: POST, path: "/api/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor:create"}
-        - {method: POST, path: "/api/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor:create"}
+        - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor-asesor:view"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor:create"}
+        - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor:create"}
         - {method: POST, path: "/api/evaluaciones-jurado/{evaluacionJuradoId}/evaluaciones-cualitativas", role: "evaluaciones:evaluacion-cualitativa-jurado:create"}
         - {method: POST, path: "/api/evaluaciones/asesor", role: "evaluaciones:evaluacion-asesor:view"}
         - {method: GET, path: "/api/evaluaciones/categorias-item-cuantitativo-asesor", role: "evaluaciones:categoria-item-cuantitativo-asesor:view"}
@@ -216,6 +217,7 @@ security:
         - {method: DELETE, path: "/api/artefactos/observaciones/{observacionId}", role: "artefactos:observacion:delete"}
         - {method: POST, path: "/api/artefactos/versiones/{versionArtefactoId}/revisiones", role: "artefactos:revision-asesor:create"}
         - {method: GET, path: "/api/artefactos/versiones/{versionArtefactoId}", role: "artefactos:version-artefacto:view"}
+        - {method: DELETE, path: "/api/artefactos/versiones/{versionArtefactoId}", role: "artefactos:version-artefacto:delete"}
         - {method: GET, path: "/api/artefactos/versiones/{versionArtefactoId}/descarga", role: "artefactos:version-artefacto:download"}
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/estado", role: "artefactos:revision-asesor-estado:update"}
         - {method: PATCH, path: "/api/artefactos/revisiones/{revisionAsesorId}/envio", role: "artefactos:revision-asesor:send"}

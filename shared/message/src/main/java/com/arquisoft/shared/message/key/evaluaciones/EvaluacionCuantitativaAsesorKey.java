@@ -19,7 +19,9 @@ public enum EvaluacionCuantitativaAsesorKey implements ClaveMensaje {
     LOG_REGISTRANDO_LOTE("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.registrando-lote", 2),
     LOG_VERIFICACION_LOTE("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.verificacion-lote", 4),
     LOG_LOTE_REGISTRADO("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.lote-registrado", 3),
-    LOG_LOTE_GUARDADO("evaluaciones.infraestructura.evaluacioncuantitativaasesor.log.lote-guardado", 1);
+    LOG_LOTE_GUARDADO("evaluaciones.infraestructura.evaluacioncuantitativaasesor.log.lote-guardado", 1),
+    LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.consultando", 1),
+    LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.consulta-completada", 1);
 
     private final String clave;
     private final int parametros;

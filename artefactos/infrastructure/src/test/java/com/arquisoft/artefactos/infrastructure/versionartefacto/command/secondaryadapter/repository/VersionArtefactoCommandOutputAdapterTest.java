@@ -1,7 +1,9 @@
 package com.arquisoft.artefactos.infrastructure.versionartefacto.command.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.entity.VersionArtefactoEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstudianteArtefactoTestEntity;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.artefactos.EliminarVersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -122,5 +124,65 @@ class VersionArtefactoCommandOutputAdapterTest {
 
         // Act & Assert
         assertThat(adapter().esUltimaDeSuArtefacto(primera.id())).isFalse();
+    }
+
+    @Test
+    void debeObtenerBloqueada_cuandoExisteYVacioCuandoNo() {
+        // Arrange
+        var entity = version(UtilUUID.generarNuevoUUID(), 3);
+        adapter().registrar(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var existente = adapter().obtenerBloqueadaPorId(entity.id());
+        var ausente = adapter().obtenerBloqueadaPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(existente).hasValueSatisfying(encontrada -> {
+            assertThat(encontrada.id()).isEqualTo(entity.id());
+            assertThat(encontrada.numeroVersion()).isEqualTo(3);
+            assertThat(encontrada.uriArchivo()).isEqualTo(entity.uriArchivo());
+        });
+        assertThat(ausente).isEmpty();
+    }
+
+    @Test
+    void debeExistirParticipacionSoloDelEstudianteVinculado() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var vinculado = UtilUUID.generarNuevoUUID();
+        var ajeno = UtilUUID.generarNuevoUUID();
+        var entity = version(artefacto, 1);
+        adapter().registrar(entity);
+        entityManager.persist(new EstudianteArtefactoTestEntity(UtilUUID.generarNuevoUUID(), artefacto, vinculado));
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().existeParticipacion(entity.id(), vinculado)).isTrue();
+        assertThat(adapter().existeParticipacion(entity.id(), ajeno)).isFalse();
+        assertThat(adapter().existeParticipacion(UtilUUID.generarNuevoUUID(), vinculado)).isFalse();
+    }
+
+    @Test
+    void debeEliminarSoloLaVersionIndicada_yReutilizarElNumero() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var primera = version(artefacto, 1);
+        var segunda = version(artefacto, 2);
+        adapter().registrar(primera);
+        adapter().registrar(segunda);
+        entityManager.flush();
+
+        // Act
+        adapter().eliminar(segunda.id());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(repository.findById(segunda.id())).isEmpty();
+        assertThat(repository.findById(primera.id())).isPresent();
+        assertThat(adapter().ultimoNumeroPorArtefacto(artefacto)).isEqualTo(1);
+        verify(logger).debug(EliminarVersionArtefactoKey.LOG_ELIMINADO, segunda.id());
     }
 }

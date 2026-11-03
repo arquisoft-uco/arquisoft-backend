@@ -29,10 +29,10 @@ rutas:
       cualitativas-jurado: /{evaluacionJuradoId}/cualitativas/jurado
       cuantitativas: /{evaluacionJuradoId}/cuantitativas
       jurado: /jurado
-    evaluaciones-asesor:
-      base: /evaluaciones-asesor
-      cualitativas: /{evaluacionAsesorId}/cualitativas
+    evaluaciones:
+      base: /evaluaciones/evaluaciones-asesor
       cuantitativas: /{evaluacionAsesorId}/cuantitativas
+      cualitativas: /{evaluacionAsesorId}/cualitativas
     criterios-item-cualitativo-asesor:
       base: /evaluaciones/criterios-item-cualitativo-asesor
     items-cualitativos-asesor:

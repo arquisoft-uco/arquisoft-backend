@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.infrastructure.versionartefacto.command.seconda
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.entity.SolicitudCargaEntity;
 import com.arquisoft.artefactos.infrastructure.config.ArtefactosAlmacenamientoProperties;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.artefactos.EliminarVersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
 import com.arquisoft.shared.minio.model.FormularioCarga;
@@ -153,5 +154,15 @@ class AlmacenamientoVersionMinioOutputAdapterTest {
         // Assert
         verify(almacenamientoObjetos).eliminar(BUCKET, "pendientes/" + carga);
         verify(logger).debug(VersionArtefactoKey.LOG_CARGA_ELIMINADA, carga);
+    }
+
+    @Test
+    void debeEliminarElObjetoEnElBucketConfigurado() {
+        // Act
+        adaptador.eliminarArchivo("versiones/abc");
+
+        // Assert
+        verify(almacenamientoObjetos).eliminar(BUCKET, "versiones/abc");
+        verify(logger).debug(EliminarVersionArtefactoKey.LOG_ARCHIVO_ELIMINADO, "versiones/abc");
     }
 }

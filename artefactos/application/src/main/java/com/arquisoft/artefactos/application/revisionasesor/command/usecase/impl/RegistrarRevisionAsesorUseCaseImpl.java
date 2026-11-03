@@ -7,7 +7,7 @@ import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport
 import com.arquisoft.artefactos.application.revisionasesor.command.usecase.RegistrarRevisionAsesorUseCase;
 import com.arquisoft.artefactos.application.revisionasesor.command.validator.RegistrarRevisionAsesorValidator;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoEsUltimaFinder;
-import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoPorIdFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.revisionasesor.RegistroRevisionAsesorDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.RegistrarRevisionAsesorKey;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RegistrarRevisionAsesorUseCaseImpl implements RegistrarRevisionAsesorUseCase {
 
-    private final VersionArtefactoPorIdFinder versionArtefactoPorIdFinder;
+    private final VersionArtefactoBloqueadaPorIdFinder versionArtefactoBloqueadaPorIdFinder;
     private final ArtefactoPorVersionArtefactoFinder artefactoPorVersionArtefactoFinder;
     private final VersionArtefactoEsUltimaFinder versionArtefactoEsUltimaFinder;
     private final RevisionAsesorAbiertaPorVersionFinder revisionAsesorAbiertaPorVersionFinder;
@@ -35,7 +35,7 @@ public class RegistrarRevisionAsesorUseCaseImpl implements RegistrarRevisionAses
 
         logger.info(RegistrarRevisionAsesorKey.LOG_REGISTRANDO, versionArtefacto, registro.getAsesor());
 
-        var version = versionArtefactoPorIdFinder.obtener(versionArtefacto);
+        var version = versionArtefactoBloqueadaPorIdFinder.obtener(versionArtefacto);
         var artefacto = artefactoPorVersionArtefactoFinder.obtener(versionArtefacto);
         var esUltima = versionArtefactoEsUltimaFinder.obtener(versionArtefacto);
         var existeAbierta = revisionAsesorAbiertaPorVersionFinder.obtener(versionArtefacto);

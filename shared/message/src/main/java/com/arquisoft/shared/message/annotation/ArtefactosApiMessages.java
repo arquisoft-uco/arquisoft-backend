@@ -222,6 +222,19 @@ public final class ArtefactosApiMessages {
                         + "pendiente, resuelta o cerrada)";
         public static final String GENERAR_RESP_503 = "Almacenamiento de objetos no disponible";
         public static final String PARAM_ARTEFACTO = "Identificador del artefacto";
+        public static final String ELIMINAR_SUMMARY = "Eliminar una versión del artefacto";
+        public static final String ELIMINAR_DESCRIPTION =
+                "Elimina la última versión del artefacto, y su archivo, cuando se subió por error: el estudiante "
+                        + "debe estar vinculado al artefacto, el artefacto no puede estar omitido, la versión no "
+                        + "puede tener ninguna revisión del asesor y la revisión de la versión anterior, si existe, "
+                        + "debe estar en progreso. La siguiente carga reutiliza el número de la versión eliminada.";
+        public static final String ELIMINAR_RESP_204 = "Versión del artefacto eliminada";
+        public static final String ELIMINAR_RESP_400 = "Identificador de la versión mal formado";
+        public static final String ELIMINAR_RESP_422 =
+                "La versión no existe, el estudiante no está vinculado al artefacto, el artefacto está omitido, la "
+                        + "versión no es la última, ya tiene una revisión del asesor o la revisión de la versión "
+                        + "anterior no está en progreso";
+        public static final String ELIMINAR_RESP_503 = "Almacenamiento de objetos no disponible";
     }
 
     public static final class EstudianteArtefacto {

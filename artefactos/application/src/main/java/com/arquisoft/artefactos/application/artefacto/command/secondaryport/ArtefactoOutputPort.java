@@ -18,6 +18,8 @@ public interface ArtefactoOutputPort {
 
     Optional<ArtefactoEntity> obtenerPorVersionArtefacto(UUID versionArtefacto);
 
+    Optional<ArtefactoEntity> obtenerBloqueadoPorVersionArtefacto(UUID versionArtefacto);
+
     void cambiarAsesor(UUID artefacto, UUID asesor);
 
     void omitir(UUID artefacto, Instant omitidoEn);

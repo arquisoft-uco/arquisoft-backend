@@ -208,7 +208,14 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones cuantitativas del asesor";
         public static final String TAG_DESCRIPTION =
-                "Registro de las evaluaciones cuantitativas asociadas a una evaluación de asesor";
+                "Registro y consulta de las evaluaciones cuantitativas asociadas a una evaluación de asesor";
+        public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cuantitativas del asesor";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta las evaluaciones cuantitativas realizadas por el asesor autenticado en una evaluación suya";
+        public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cuantitativas del asesor";
+        public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String CONSULTAR_RESP_422 =
+                "La evaluación de asesor no existe o no pertenece al asesor autenticado";
         public static final String REGISTRAR_SUMMARY = "Registrar evaluaciones cuantitativas del asesor";
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra en un solo lote el puntaje que el asesor autenticado asigna a cada ítem cuantitativo "

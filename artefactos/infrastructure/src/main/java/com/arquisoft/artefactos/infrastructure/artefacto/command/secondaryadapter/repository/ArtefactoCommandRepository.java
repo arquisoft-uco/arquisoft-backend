@@ -34,6 +34,17 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
             """)
     Optional<ArtefactoJpaEntity> buscarPorVersionArtefacto(@Param("versionArtefacto") UUID versionArtefacto);
 
+    // FOR UPDATE OF a: el bloqueo recae sobre el artefacto y no sobre la version del JOIN, que se
+    // bloquea despues y de forma explicita; asi el orden artefacto -> revision -> version se respeta.
+    @NativeQuery("""
+            SELECT a.*
+            FROM artefacto a
+            JOIN version_artefacto va ON va.artefacto_id = a.id
+            WHERE va.id = :versionArtefacto
+            FOR UPDATE OF a
+            """)
+    Optional<ArtefactoJpaEntity> bloquearPorVersionArtefacto(@Param("versionArtefacto") UUID versionArtefacto);
+
     @Modifying
     @Query("UPDATE ArtefactoJpaEntity a SET a.asesor = :asesor WHERE a.id = :id")
     int cambiarAsesor(@Param("id") UUID id, @Param("asesor") UUID asesor);

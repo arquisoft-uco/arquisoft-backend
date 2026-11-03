@@ -14,4 +14,10 @@ public interface VersionArtefactoOutputPort {
     Optional<VersionArtefactoEntity> obtenerPorId(UUID id);
 
     boolean esUltimaDeSuArtefacto(UUID versionArtefacto);
+
+    Optional<VersionArtefactoEntity> obtenerBloqueadaPorId(UUID id);
+
+    boolean existeParticipacion(UUID versionArtefacto, UUID estudiante);
+
+    void eliminar(UUID versionArtefacto);
 }

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("${rutas.evaluaciones.evaluaciones-asesor.base:/evaluaciones-asesor}")
+@RequestMapping("${rutas.evaluaciones.evaluaciones.base:/evaluaciones/evaluaciones-asesor}")
 @RequiredArgsConstructor
 @Tag(
         name = EvaluacionesApiMessages.EvaluacionCualitativaAsesor.TAG_NAME,
@@ -36,7 +36,7 @@ public class ConsultarEvaluacionesCualitativasAsesorController {
 
     private final ConsultarEvaluacionesCualitativasAsesorInteractor interactor;
 
-    @GetMapping("${rutas.evaluaciones.evaluaciones-asesor.cualitativas:/{evaluacionAsesorId}/cualitativas}")
+    @GetMapping("${rutas.evaluaciones.evaluaciones.cualitativas:/{evaluacionAsesorId}/cualitativas}")
     @Operation(
             summary = EvaluacionesApiMessages.EvaluacionCualitativaAsesor.CONSULTAR_SUMMARY,
             description = EvaluacionesApiMessages.EvaluacionCualitativaAsesor.CONSULTAR_DESCRIPTION,
