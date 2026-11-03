@@ -7,6 +7,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.secondarypo
 import com.arquisoft.artefactos.infrastructure.config.ArtefactosAlmacenamientoProperties;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.ArtefactosAlmacenamiento;
+import com.arquisoft.shared.message.key.artefactos.EliminarVersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
 import com.arquisoft.shared.minio.model.SolicitudFormularioCarga;
@@ -74,6 +75,12 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
     public void eliminarCarga(UUID carga) {
         almacenamientoObjetos.eliminar(propiedades.getBucket(), keyPendiente(carga));
         logger.debug(VersionArtefactoKey.LOG_CARGA_ELIMINADA, carga);
+    }
+
+    @Override
+    public void eliminarArchivo(String uriArchivo) {
+        almacenamientoObjetos.eliminar(propiedades.getBucket(), uriArchivo);
+        logger.debug(EliminarVersionArtefactoKey.LOG_ARCHIVO_ELIMINADO, uriArchivo);
     }
 
     @Override

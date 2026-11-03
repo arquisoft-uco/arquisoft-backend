@@ -277,6 +277,7 @@
           "client": {
             "arquisoft-api": [
               "artefactos:version-artefacto:upload",
+              "artefactos:version-artefacto:delete",
               "repositorio-artefactos:version-repositorio-artefacto:download",
               "entregables:entregable-proyecto-grado-estudiante:view",
               "solicitudes:respuesta-cambio-asesor-recibida:view",
@@ -2616,6 +2617,15 @@
         {
           "id": "30c64d84-2b43-480e-893e-3eaff3a80240",
           "name": "artefactos:version-artefacto:upload",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "451a5f13-95e0-4315-8afe-71a0b985f1a0",
+          "name": "artefactos:version-artefacto:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

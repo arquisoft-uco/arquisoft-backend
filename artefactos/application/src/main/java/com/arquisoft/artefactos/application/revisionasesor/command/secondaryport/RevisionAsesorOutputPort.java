@@ -26,4 +26,8 @@ public interface RevisionAsesorOutputPort {
     void eliminar(UUID revisionAsesor);
 
     Optional<RevisionAsesorEntity> obtenerBloqueadaDeVersionSiguientePorObservacion(UUID observacion);
+
+    Optional<RevisionAsesorEntity> obtenerBloqueadaMasRecienteDeVersionAnterior(UUID versionArtefacto);
+
+    boolean existePorVersionArtefacto(UUID versionArtefacto);
 }

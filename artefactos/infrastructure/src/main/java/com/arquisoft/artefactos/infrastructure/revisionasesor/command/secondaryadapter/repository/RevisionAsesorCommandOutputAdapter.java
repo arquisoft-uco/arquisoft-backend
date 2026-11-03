@@ -72,6 +72,20 @@ public class RevisionAsesorCommandOutputAdapter implements RevisionAsesorOutputP
     }
 
     @Override
+    public Optional<RevisionAsesorEntity> obtenerBloqueadaMasRecienteDeVersionAnterior(UUID versionArtefacto) {
+        return revisionAsesorCommandRepository
+                .buscarBloqueadaMasRecienteDeVersionAnterior(versionArtefacto, Limit.of(1))
+                .stream()
+                .findFirst()
+                .map(RevisionAsesorJpaMapper::toEntity);
+    }
+
+    @Override
+    public boolean existePorVersionArtefacto(UUID versionArtefacto) {
+        return revisionAsesorCommandRepository.existsByVersionArtefacto(versionArtefacto);
+    }
+
+    @Override
     public Optional<RevisionAsesorEntity> obtenerBloqueadaDeVersionSiguientePorObservacion(UUID observacion) {
         return revisionAsesorCommandRepository
                 .buscarBloqueadaDeVersionSiguientePorObservacion(observacion, Limit.of(1))

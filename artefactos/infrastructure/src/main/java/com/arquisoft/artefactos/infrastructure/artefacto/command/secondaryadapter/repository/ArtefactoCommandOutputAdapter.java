@@ -48,6 +48,12 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     }
 
     @Override
+    public Optional<ArtefactoEntity> obtenerBloqueadoPorVersionArtefacto(UUID versionArtefacto) {
+        return artefactoCommandRepository.bloquearPorVersionArtefacto(versionArtefacto)
+                .map(ArtefactoJpaMapper::toEntity);
+    }
+
+    @Override
     public void cambiarAsesor(UUID artefacto, UUID asesor) {
         artefactoCommandRepository.cambiarAsesor(artefacto, asesor);
         logger.debug(ArtefactoKey.LOG_ASESOR_ACTUALIZADO, artefacto);

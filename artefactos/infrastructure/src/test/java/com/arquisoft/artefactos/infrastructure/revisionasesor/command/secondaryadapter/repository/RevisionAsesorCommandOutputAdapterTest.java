@@ -375,4 +375,53 @@ class RevisionAsesorCommandOutputAdapterTest {
         // Act & Assert
         assertThat(adapter.obtenerBloqueadaPorObservacion(UtilUUID.generarNuevoUUID())).isEmpty();
     }
+
+    @Test
+    void debeObtenerLaMasRecienteDeLaVersionAnterior_cuandoHayVarias() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var versionUno = sembrarVersion(artefacto, 1);
+        var versionDos = sembrarVersion(artefacto, 2);
+        sembrarRevisionDeVersion(versionUno, "CERRADA", FECHA);
+        var reciente = sembrarRevisionDeVersion(versionUno, "EN_PROGRESO", FECHA.plusSeconds(60));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerBloqueadaMasRecienteDeVersionAnterior(versionDos);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(reciente);
+            assertThat(entity.estado()).isEqualTo("EN_PROGRESO");
+        });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoEsLaPrimeraVersionOLaAnteriorNoTieneRevision() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var versionUno = sembrarVersion(artefacto, 1);
+        var versionDos = sembrarVersion(artefacto, 2);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act & Assert
+        assertThat(adapter.obtenerBloqueadaMasRecienteDeVersionAnterior(versionUno)).isEmpty();
+        assertThat(adapter.obtenerBloqueadaMasRecienteDeVersionAnterior(versionDos)).isEmpty();
+    }
+
+    @Test
+    void debeExistirPorVersion_soloCuandoTieneRevisionEnCualquierEstado() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var conRevision = sembrarVersion(artefacto, 1);
+        var sinRevision = sembrarVersion(artefacto, 2);
+        sembrarRevisionDeVersion(conRevision, "CERRADA", FECHA);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.existePorVersionArtefacto(conRevision)).isTrue();
+        assertThat(adapter.existePorVersionArtefacto(sinRevision)).isFalse();
+    }
 }

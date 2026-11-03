@@ -90,4 +90,19 @@ public interface RevisionAsesorCommandRepository extends JpaRepository<RevisionA
             """)
     List<RevisionAsesorJpaEntity> buscarBloqueadaDeVersionSiguientePorObservacion(
             @Param("observacion") UUID observacion, Limit limite);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT r
+            FROM RevisionAsesorJpaEntity r, VersionArtefactoJpaEntity v, VersionArtefactoJpaEntity vp
+            WHERE v.id = :versionArtefacto
+              AND vp.artefacto = v.artefacto
+              AND vp.numeroVersion = v.numeroVersion - 1
+              AND r.versionArtefacto = vp.id
+            ORDER BY r.fechaCreacion DESC
+            """)
+    List<RevisionAsesorJpaEntity> buscarBloqueadaMasRecienteDeVersionAnterior(
+            @Param("versionArtefacto") UUID versionArtefacto, Limit limite);
+
+    boolean existsByVersionArtefacto(UUID versionArtefacto);
 }
