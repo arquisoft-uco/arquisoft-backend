@@ -386,6 +386,7 @@
               "proyectos:proyecto-grado-asesor-detalle:view",
               "artefactos:estado-revision-asesor:view",
               "evaluaciones:evaluacion-asesor:view",
+              "evaluaciones:evaluacion-asesor-detalle:view",
               "evaluaciones:evaluacion-cualitativa-asesor:create",
               "evaluaciones:evaluacion-cuantitativa-asesor:create",
               "artefactos:estudiante-artefacto:view",
@@ -2132,6 +2133,15 @@
         {
           "id": "7c2e5a1d-3b9f-4d6a-8e41-5f0a9c3d2b17",
           "name": "evaluaciones:evaluacion-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a9a9a449-36e2-4b65-9cc1-738241f54845",
+          "name": "evaluaciones:evaluacion-asesor-detalle:view",
           "description": "",
           "composite": false,
           "clientRole": true,
