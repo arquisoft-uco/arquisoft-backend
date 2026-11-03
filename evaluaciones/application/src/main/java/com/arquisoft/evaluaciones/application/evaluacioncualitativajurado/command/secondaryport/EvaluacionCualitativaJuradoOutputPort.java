@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comma
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.secondaryport.entity.EvaluacionCualitativaJuradoEntity;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,4 +18,8 @@ public interface EvaluacionCualitativaJuradoOutputPort {
     Set<UUID> consultarIdsPorEvaluacionJurado(UUID evaluacionJurado, Set<UUID> evaluaciones);
 
     void eliminarPorIds(UUID evaluacionJurado, Set<UUID> evaluaciones);
+
+    Optional<EvaluacionCualitativaJuradoEntity> obtenerPorId(UUID id);
+
+    void actualizar(EvaluacionCualitativaJuradoEntity entity);
 }

@@ -85,6 +85,14 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACIONES_NO_ENCONTRADAS";
         public static final String EVALUACION_JURADO_FINALIZADA =
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_FINALIZADA";
+        public static final String ID_REQUERIDO =
+                "EVALUACION_CUALITATIVA_JURADO_ID_REQUERIDO";
+        public static final String NO_ENCONTRADA =
+                "EVALUACION_CUALITATIVA_JURADO_NO_ENCONTRADA";
+        public static final String CAMBIO_CRITERIO_EVALUACION_JURADO_FINALIZADA =
+                "EVALUACION_CUALITATIVA_JURADO_CAMBIO_CRITERIO_EVALUACION_JURADO_FINALIZADA";
+        public static final String CRITERIO_SIN_CAMBIO =
+                "EVALUACION_CUALITATIVA_JURADO_CRITERIO_SIN_CAMBIO";
     }
 
     public static final class EvaluacionCualitativaAsesor {

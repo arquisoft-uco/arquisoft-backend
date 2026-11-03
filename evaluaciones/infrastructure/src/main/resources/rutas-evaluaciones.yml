@@ -43,6 +43,9 @@ rutas:
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
       por-id: /{itemId}
+    evaluaciones-cualitativas-jurado:
+      base: /evaluaciones/evaluaciones-cualitativas-jurado
+      criterio: /{id}/criterio
     evaluaciones-cuantitativas-jurado:
       base: /evaluaciones/evaluaciones-cuantitativas-jurado
       puntaje: /{id}/puntaje
