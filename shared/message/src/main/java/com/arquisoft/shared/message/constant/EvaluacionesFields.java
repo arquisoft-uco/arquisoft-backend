@@ -118,6 +118,7 @@ public final class EvaluacionesFields {
         public static final String EVALUACION = "evaluacion";
         public static final String ESTADO = "estado";
         public static final String ASESOR = "asesor";
+        public static final String JURADO = "jurado";
         public static final String ESTUDIANTE = "estudiante";
     }
 
