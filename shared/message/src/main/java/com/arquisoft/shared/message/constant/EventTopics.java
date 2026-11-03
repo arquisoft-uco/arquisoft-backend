@@ -106,6 +106,8 @@ public final class EventTopics {
 
         public static final String EVALUACIONES_CUALITATIVAS_JURADO_REGISTRADAS =
                 "evaluaciones.evaluacion_cualitativa_jurado.registradas";
+        public static final String CRITERIO_EVALUACION_CUALITATIVA_JURADO_CAMBIADO =
+                "evaluaciones.evaluacion_cualitativa_jurado.criterio_cambiado";
         public static final String EVALUACIONES_CUALITATIVAS_ASESOR_REGISTRADAS =
                 "evaluaciones.evaluacion_cualitativa_asesor.registradas";
         public static final String EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS =

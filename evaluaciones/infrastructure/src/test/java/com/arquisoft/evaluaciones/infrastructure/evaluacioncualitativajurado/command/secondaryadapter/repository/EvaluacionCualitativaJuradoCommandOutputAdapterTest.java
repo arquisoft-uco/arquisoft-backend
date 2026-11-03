@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -110,5 +111,52 @@ class EvaluacionCualitativaJuradoCommandOutputAdapterTest {
         // Assert
         verify(repository).eliminarPorIds(evaluacionJurado, evaluaciones);
         verify(logger).debug(any(ClaveMensaje.class), eq(2));
+    }
+
+    @Test
+    void debeObtenerEntityPorId_cuandoLaEvaluacionExiste() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var evaluacionJurado = UUID.randomUUID();
+        var item = UUID.randomUUID();
+        var criterio = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.of(EvaluacionCualitativaJuradoJpaEntity.builder()
+                .id(id).evaluacionJurado(evaluacionJurado).item(item).criterio(criterio).build()));
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).contains(new EvaluacionCualitativaJuradoEntity(id, evaluacionJurado, item, criterio));
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaEvaluacionNoExiste() {
+        // Arrange
+        var id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeGuardarConElCriterioNuevoYLogear_cuandoActualiza() {
+        // Arrange
+        var entidad = new EvaluacionCualitativaJuradoEntity(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+
+        // Act
+        adapter.actualizar(entidad);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(EvaluacionCualitativaJuradoJpaEntity.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo(entidad.id());
+        assertThat(captor.getValue().getCriterio()).isEqualTo(entidad.criterio());
+        verify(logger).debug(any(ClaveMensaje.class), eq(entidad.id()));
     }
 }

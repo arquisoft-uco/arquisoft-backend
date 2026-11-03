@@ -175,6 +175,15 @@ public final class EvaluacionesApiMessages {
         public static final String OMITIR_RESP_422 =
                 "La evaluación de jurado no existe, está finalizada, "
                         + "o alguna evaluación cualitativa no existe en ella o está repetida";
+        public static final String CAMBIAR_CRITERIO_SUMMARY = "Cambiar criterio de evaluación cualitativa del jurado";
+        public static final String CAMBIAR_CRITERIO_DESCRIPTION =
+                "Reemplaza el criterio de una evaluación cualitativa del jurado autenticado mientras su "
+                        + "evaluación de jurado no esté finalizada";
+        public static final String CAMBIAR_CRITERIO_RESP_204 = "Criterio actualizado";
+        public static final String CAMBIAR_CRITERIO_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_CRITERIO_RESP_422 =
+                "La evaluación cualitativa o el criterio no existen, pertenece a otro jurado, "
+                        + "está finalizada o el criterio ya es el actual";
     }
 
     public static final class EvaluacionCualitativaAsesor {
