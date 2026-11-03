@@ -424,6 +424,16 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 = "El identificador de la evaluación no es válido";
         public static final String CONSULTAR_RESP_422 =
                 "La evaluación no existe o aún no tiene una evaluación del asesor";
+        public static final String CONSULTAR_REALIZADA_SUMMARY = "Consultar información de la evaluación del asesor";
+        public static final String CONSULTAR_REALIZADA_DESCRIPTION =
+                "Consulta el detalle de una evaluación realizada por el asesor autenticado: la evaluación con su "
+                        + "entregable y estado, y los datos del asesor";
+        public static final String CONSULTAR_REALIZADA_RESP_200 =
+                "Detalle de la evaluación del asesor con su entregable, estado y datos del asesor";
+        public static final String CONSULTAR_REALIZADA_RESP_400 =
+                "El identificador de la evaluación del asesor no es válido";
+        public static final String CONSULTAR_REALIZADA_RESP_422 =
+                "La evaluación del asesor no existe o pertenece a otro asesor";
     }
 
     public static final class EstadoEvaluacion {

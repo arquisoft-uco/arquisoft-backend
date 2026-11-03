@@ -136,6 +136,8 @@ public final class EvaluacionesFields {
         private EvaluacionAsesor() {}
 
         public static final String EVALUACION = "evaluacion";
+        public static final String EVALUACION_ASESOR = "evaluacionAsesor";
+        public static final String ASESOR = "asesor";
     }
 
     public static final class AsignacionJuradosEvaluacion {
