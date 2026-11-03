@@ -133,6 +133,8 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_ASESOR_ASESOR_REQUERIDO";
         public static final String ITEM_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_ASESOR_ITEM_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_ASESOR_ESTUDIANTE_REQUERIDO";
         public static final String ITEM_INVALIDO =
                 "EVALUACION_CUANTITATIVA_ASESOR_ITEM_INVALIDO";
         public static final String PUNTAJE_REQUERIDO =
@@ -206,6 +208,7 @@ public final class EvaluacionesCodes {
         public static final String EVALUACION_REQUERIDO = "EVALUACION_ASESOR_EVALUACION_REQUERIDO";
         public static final String SIN_EVALUACION_ASESOR = "EVALUACION_ASESOR_SIN_EVALUACION_ASESOR";
         public static final String NO_DISPONIBLE = "EVALUACION_ASESOR_NO_DISPONIBLE";
+        public static final String NO_PERTENECE_ESTUDIANTE = "EVALUACION_ASESOR_NO_PERTENECE_ESTUDIANTE";
     }
 
     public static final class AsignacionJuradosEvaluacion {

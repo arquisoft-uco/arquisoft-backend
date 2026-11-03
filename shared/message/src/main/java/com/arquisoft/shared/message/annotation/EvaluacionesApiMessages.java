@@ -216,6 +216,13 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
         public static final String CONSULTAR_RESP_422 =
                 "La evaluación de asesor no existe o no pertenece al asesor autenticado";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
+                "Consultar evaluaciones cuantitativas del asesor como estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Consulta las evaluaciones cuantitativas que el asesor registró en una evaluación del "
+                        + "proyecto de grado del estudiante autenticado";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_422 =
+                "La evaluación de asesor no existe o no corresponde a un proyecto del estudiante autenticado";
         public static final String REGISTRAR_SUMMARY = "Registrar evaluaciones cuantitativas del asesor";
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra en un solo lote el puntaje que el asesor autenticado asigna a cada ítem cuantitativo "
