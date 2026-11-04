@@ -23,7 +23,13 @@ public enum UsuarioReplicaKey implements ClaveMensaje {
     LOG_ACTUALIZACION_NO_REPLICADO(
             "solicitudes.infraestructura.usuarioreplica.log.actualizacion-no-replicado", 1),
     LOG_ADMINISTRADOR_REMOVIDO_RECIBIDO_STUB(
-            "solicitudes.infraestructura.usuarioreplica.log.administrador-removido-recibido-stub", 2);
+            "solicitudes.infraestructura.usuarioreplica.log.administrador-removido-recibido-stub", 2),
+    LOG_ESTUDIANTE_REMOVIDO_RECIBIDO_STUB(
+            "solicitudes.infraestructura.usuarioreplica.log.estudiante-removido-recibido-stub", 2),
+    LOG_COORDINADOR_REMOVIDO_RECIBIDO_STUB(
+            "solicitudes.infraestructura.usuarioreplica.log.coordinador-removido-recibido-stub", 2),
+    LOG_ASESOR_REMOVIDO_RECIBIDO_STUB(
+            "solicitudes.infraestructura.usuarioreplica.log.asesor-removido-recibido-stub", 2);
 
     private final String clave;
     private final int parametros;
