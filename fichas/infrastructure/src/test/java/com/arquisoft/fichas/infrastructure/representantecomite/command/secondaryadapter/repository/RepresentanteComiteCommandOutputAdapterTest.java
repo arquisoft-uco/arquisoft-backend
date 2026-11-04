@@ -128,7 +128,7 @@ class RepresentanteComiteCommandOutputAdapterTest {
         assertThat(guardado.getEmail()).isEqualTo("actualizada@uco.edu.co");
         assertThat(guardado.getOcurridoEn()).isEqualTo(DESPUES);
         assertThat(guardado.getEliminadoEn()).isEqualTo(ANTES);
-        verify(logger).debug(RepresentanteComiteKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(RepresentanteComiteKey.LOG_FILA_ACTUALIZADA, id);
     }
 
     @Test
@@ -147,7 +147,7 @@ class RepresentanteComiteCommandOutputAdapterTest {
         assertThat(guardado.getIdentificador()).isEqualTo("20161020123");
         assertThat(adapter.existeVigentePorId(id)).isFalse();
         assertThat(adapter.existeVigentePorId(otro)).isTrue();
-        verify(logger).debug(RepresentanteComiteKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(RepresentanteComiteKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Test
@@ -167,6 +167,6 @@ class RepresentanteComiteCommandOutputAdapterTest {
         assertThat(guardado.getEmail()).isEqualTo("reactivada@uco.edu.co");
         assertThat(guardado.getOcurridoEn()).isEqualTo(DESPUES);
         assertThat(adapter.existeVigentePorId(id)).isTrue();
-        verify(logger).debug(RepresentanteComiteKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(RepresentanteComiteKey.LOG_FILA_REACTIVADA, id);
     }
 }

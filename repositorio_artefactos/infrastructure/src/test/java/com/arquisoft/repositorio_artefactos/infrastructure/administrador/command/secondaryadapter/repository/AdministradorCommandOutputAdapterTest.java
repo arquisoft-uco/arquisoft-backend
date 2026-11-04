@@ -94,7 +94,7 @@ class AdministradorCommandOutputAdapterTest {
         assertThat(resultado.get().identificador()).isEqualTo("20161020999");
         assertThat(resultado.get().nombre()).isEqualTo("Ana Actualizada");
         assertThat(resultado.get().ocurridoEn()).isEqualTo(nuevoOcurridoEn);
-        verify(logger).debug(AdministradorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AdministradorKey.LOG_FILA_ACTUALIZADA, id);
     }
 
     @Test
@@ -115,7 +115,7 @@ class AdministradorCommandOutputAdapterTest {
         assertThat(persistido.getEliminadoEn()).isEqualTo(ocurridoEn);
         assertThat(persistido.getOcurridoEn()).isEqualTo(ocurridoEn);
         assertThat(adapter.obtenerPorId(id)).map(AdministradorEntity::eliminadoEn).contains(ocurridoEn);
-        verify(logger).debug(AdministradorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AdministradorKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Test
@@ -140,6 +140,6 @@ class AdministradorCommandOutputAdapterTest {
         assertThat(persistido.getNombre()).isEqualTo("Ana Reactivada");
         assertThat(persistido.getEmail()).isEqualTo("reactivada@uco.edu.co");
         assertThat(persistido.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
-        verify(logger).debug(AdministradorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AdministradorKey.LOG_FILA_REACTIVADA, id);
     }
 }
