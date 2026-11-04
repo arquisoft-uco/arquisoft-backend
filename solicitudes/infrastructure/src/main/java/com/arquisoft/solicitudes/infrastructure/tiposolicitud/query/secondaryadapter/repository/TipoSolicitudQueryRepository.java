@@ -14,4 +14,11 @@ public interface TipoSolicitudQueryRepository extends QueryRepository<TipoSolici
             ORDER BY t.id
             """)
     List<TipoSolicitudJpaQueryEntity> findByRolIn(@Param("roles") List<String> roles);
+
+    @Query("""
+            SELECT t FROM TipoSolicitudJpaQueryEntity t
+            WHERE t.id IN (SELECT r.tipoSolicitudId FROM TipoSolicitudRolRecibidaJpaQueryEntity r WHERE r.rol IN :roles)
+            ORDER BY t.id
+            """)
+    List<TipoSolicitudJpaQueryEntity> findByRolRecibidaIn(@Param("roles") List<String> roles);
 }
