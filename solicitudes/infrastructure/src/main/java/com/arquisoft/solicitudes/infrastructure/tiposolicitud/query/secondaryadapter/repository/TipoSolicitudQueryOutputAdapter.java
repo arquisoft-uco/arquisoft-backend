@@ -15,8 +15,8 @@ public class TipoSolicitudQueryOutputAdapter implements TipoSolicitudQueryOutput
     private final TipoSolicitudQueryRepository repository;
 
     @Override
-    public List<TipoSolicitudReadModel> findAll() {
-        return repository.findAll()
+    public List<TipoSolicitudReadModel> consultarPorRoles(List<String> roles) {
+        return repository.findByRolIn(roles)
                 .stream()
                 .map(TipoSolicitudQueryMapper::toReadModel)
                 .toList();
