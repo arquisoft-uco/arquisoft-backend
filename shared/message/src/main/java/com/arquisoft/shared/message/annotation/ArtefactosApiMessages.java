@@ -22,13 +22,15 @@ public final class ArtefactosApiMessages {
         public static final String ELIMINAR_SUMMARY = "Eliminar una versión del repositorio de artefactos";
         public static final String ELIMINAR_DESCRIPTION =
                 "Elimina una versión de una plantilla del repositorio de artefactos cuando se subió por error "
-                        + "o dejó de ser válida. Solo se puede eliminar si ningún artefacto de proyecto de grado "
-                        + "la usa, esté omitido o no. La versión y su archivo desaparecen del repositorio de "
-                        + "forma definitiva, poco después de responder. No notifica a nadie.";
+                        + "o dejó de ser válida. Solo se puede eliminar la última versión subida del "
+                        + "documento y únicamente si ningún artefacto de proyecto de grado la usa, esté omitido "
+                        + "o no. La versión y su archivo desaparecen del repositorio de forma definitiva, "
+                        + "poco después de responder. No notifica a nadie.";
         public static final String ELIMINAR_RESP_204 = "Eliminación de la versión autorizada";
         public static final String ELIMINAR_RESP_400 = "Identificador de la versión inválido";
         public static final String ELIMINAR_RESP_422 =
-                "La versión no existe o está en uso por artefactos de proyectos de grado";
+                "La versión no existe, no es la última subida de su documento o está en uso por artefactos "
+                        + "de proyectos de grado";
         public static final String PARAM_VERSION = "Identificador de la versión del repositorio de artefactos";
     }
 

@@ -1,6 +1,7 @@
 package com.arquisoft.artefactos.application.versionrepositorioartefacto.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorVersionRepositorioExisteFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.UltimaVersionDocumentoDeVersionRepositorioFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.secondaryport.VersionRepositorioArtefactoOutputPort;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.validator.EliminarVersionRepositorioArtefactoValidator;
@@ -26,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -39,6 +41,8 @@ class EliminarVersionRepositorioArtefactoUseCaseImplTest {
 
     @Mock
     private VersionRepositorioArtefactoBloqueadaPorIdFinder versionRepositorioArtefactoBloqueadaPorIdFinder;
+    @Mock
+    private UltimaVersionDocumentoDeVersionRepositorioFinder ultimaVersionDocumentoDeVersionRepositorioFinder;
     @Mock
     private ArtefactoPorVersionRepositorioExisteFinder artefactoPorVersionRepositorioExisteFinder;
     @Mock
@@ -60,15 +64,16 @@ class EliminarVersionRepositorioArtefactoUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new EliminarVersionRepositorioArtefactoUseCaseImpl(
-                versionRepositorioArtefactoBloqueadaPorIdFinder, artefactoPorVersionRepositorioExisteFinder,
-                eliminarVersionRepositorioArtefactoValidator, versionRepositorioArtefactoOutputPort,
-                eventPublisher, logger);
+                versionRepositorioArtefactoBloqueadaPorIdFinder, ultimaVersionDocumentoDeVersionRepositorioFinder,
+                artefactoPorVersionRepositorioExisteFinder, eliminarVersionRepositorioArtefactoValidator,
+                versionRepositorioArtefactoOutputPort, eventPublisher, logger);
         versionId = UtilUUID.generarNuevoUUID();
         repositorioId = UtilUUID.generarNuevoUUID();
         eliminacion = EliminacionVersionRepositorioArtefactoDomain.crear(versionId);
         version = VersionRepositorioArtefactoDomain.reconstruir(versionId, "Formato A", 2, repositorioId, "Repo",
                 new DatosArchivo("a.pdf", "application/pdf", 10L));
         when(versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(versionId)).thenReturn(version);
+        when(ultimaVersionDocumentoDeVersionRepositorioFinder.obtener(versionId)).thenReturn(2);
         when(artefactoPorVersionRepositorioExisteFinder.obtener(versionId)).thenReturn(false);
     }
 
@@ -78,15 +83,17 @@ class EliminarVersionRepositorioArtefactoUseCaseImplTest {
         useCase.ejecutar(eliminacion);
 
         // Assert
-        var orden = inOrder(versionRepositorioArtefactoBloqueadaPorIdFinder, artefactoPorVersionRepositorioExisteFinder,
+        var orden = inOrder(versionRepositorioArtefactoBloqueadaPorIdFinder,
+                ultimaVersionDocumentoDeVersionRepositorioFinder, artefactoPorVersionRepositorioExisteFinder,
                 eliminarVersionRepositorioArtefactoValidator, versionRepositorioArtefactoOutputPort, eventPublisher,
                 logger);
         var captor = ArgumentCaptor.forClass(VersionRepositorioArtefactoEliminacionAutorizadaEvent.class);
         orden.verify(logger).info(EliminarVersionRepositorioArtefactoKey.LOG_ELIMINANDO, versionId);
         orden.verify(versionRepositorioArtefactoBloqueadaPorIdFinder, times(1)).obtener(versionId);
+        orden.verify(ultimaVersionDocumentoDeVersionRepositorioFinder, times(1)).obtener(versionId);
         orden.verify(artefactoPorVersionRepositorioExisteFinder, times(1)).obtener(versionId);
-        orden.verify(logger).debug(EliminarVersionRepositorioArtefactoKey.LOG_VERIFICACION_ELIMINAR, true, false);
-        orden.verify(eliminarVersionRepositorioArtefactoValidator).validar(eliminacion, version, false);
+        orden.verify(logger).debug(EliminarVersionRepositorioArtefactoKey.LOG_VERIFICACION_ELIMINAR, true, 2, false);
+        orden.verify(eliminarVersionRepositorioArtefactoValidator).validar(eliminacion, version, 2, false);
         orden.verify(versionRepositorioArtefactoOutputPort).eliminar(versionId);
         orden.verify(eventPublisher).publish(captor.capture());
         orden.verify(logger).info(EliminarVersionRepositorioArtefactoKey.LOG_ELIMINADA, versionId, repositorioId);
@@ -101,7 +108,7 @@ class EliminarVersionRepositorioArtefactoUseCaseImplTest {
     void debeNoEliminarNiPublicar_cuandoElValidatorRechaza() {
         // Arrange
         doThrow(new VersionRepositorioArtefactoEnUsoException("Formato A", 2, versionId))
-                .when(eliminarVersionRepositorioArtefactoValidator).validar(any(), any(), anyBoolean());
+                .when(eliminarVersionRepositorioArtefactoValidator).validar(any(), any(), anyInt(), anyBoolean());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(eliminacion))

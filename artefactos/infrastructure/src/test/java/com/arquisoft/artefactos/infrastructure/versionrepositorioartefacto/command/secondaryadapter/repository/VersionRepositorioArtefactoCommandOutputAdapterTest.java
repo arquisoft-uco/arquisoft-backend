@@ -335,6 +335,75 @@ class VersionRepositorioArtefactoCommandOutputAdapterTest {
         verify(logger).debug(EliminarVersionRepositorioArtefactoKey.LOG_ELIMINADO, eliminada);
     }
 
+    @Test
+    void debeDevolverLaMayorVersion_cuandoElDocumentoTieneVarias() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var segunda = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadConVersion(UtilUUID.generarNuevoUUID(), repositorio, "Doc", 1));
+        adapter.guardar(entidadConVersion(segunda, repositorio, "Doc", 2));
+        adapter.guardar(entidadConVersion(UtilUUID.generarNuevoUUID(), repositorio, "Doc", 3));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var ultima = adapter.obtenerUltimaVersionDocumentoDe(segunda);
+
+        // Assert
+        assertThat(ultima).isEqualTo(3);
+    }
+
+    @Test
+    void debeIgnorarMayusculas_cuandoElNombreDifiereSoloEnCaja() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var primera = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadConVersion(primera, repositorio, "Formato A", 1));
+        adapter.guardar(entidadConVersion(UtilUUID.generarNuevoUUID(), repositorio, "FORMATO a", 2));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var ultima = adapter.obtenerUltimaVersionDocumentoDe(primera);
+
+        // Assert
+        assertThat(ultima).isEqualTo(2);
+    }
+
+    @Test
+    void debeIgnorarOtroRepositorioYOtroDocumento() {
+        // Arrange
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var propia = UtilUUID.generarNuevoUUID();
+        adapter.guardar(entidadConVersion(propia, repositorio, "Doc", 1));
+        adapter.guardar(entidadConVersion(UtilUUID.generarNuevoUUID(), repositorio, "Otro documento", 5));
+        adapter.guardar(entidadConVersion(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Doc", 7));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var ultima = adapter.obtenerUltimaVersionDocumentoDe(propia);
+
+        // Assert
+        assertThat(ultima).isEqualTo(1);
+    }
+
+    @Test
+    void debeDevolverCero_cuandoLaVersionNoExiste() {
+        // Act
+        var ultima = adapter.obtenerUltimaVersionDocumentoDe(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(ultima).isZero();
+    }
+
+    private VersionRepositorioArtefactoEntity entidadConVersion(
+            UUID id, UUID repositorio, String nombreDocumento, int versionDocumento) {
+        return new VersionRepositorioArtefactoEntity(
+                id, nombreDocumento, versionDocumento, repositorio, "Repositorio", "plantilla.pdf",
+                "application/pdf", 2048L);
+    }
+
     private void sembrarArtefacto(UUID proyecto, UUID version) {
         entityManager.persist(ArtefactoJpaEntity.builder()
                 .id(UtilUUID.generarNuevoUUID())

@@ -35,6 +35,15 @@ public interface VersionRepositorioArtefactoCommandRepository
             """)
     Optional<VersionRepositorioArtefactoJpaEntity> buscarPorArtefacto(@Param("artefacto") UUID artefacto);
 
+    @Query("""
+            SELECT COALESCE(MAX(o.versionDocumento), 0)
+            FROM VersionRepositorioArtefactoJpaEntity v, VersionRepositorioArtefactoJpaEntity o
+            WHERE v.id = :id
+              AND o.repositorioArtefacto = v.repositorioArtefacto
+              AND LOWER(o.nombreDocumento) = LOWER(v.nombreDocumento)
+            """)
+    int ultimaVersionDocumentoDe(@Param("id") UUID id);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE VersionRepositorioArtefactoJpaEntity v "
             + "SET v.nombreRepositorio = :nombreRepositorio WHERE v.repositorioArtefacto = :repositorioArtefacto")

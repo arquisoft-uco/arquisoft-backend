@@ -51,6 +51,11 @@ public class VersionRepositorioArtefactoCommandOutputAdapter implements VersionR
     }
 
     @Override
+    public int obtenerUltimaVersionDocumentoDe(UUID version) {
+        return versionRepositorioArtefactoCommandRepository.ultimaVersionDocumentoDe(version);
+    }
+
+    @Override
     public List<VersionRepositorioArtefactoEntity> consultarVersionesAsignadas(UUID proyectoGrado) {
         return versionRepositorioArtefactoCommandRepository.consultarVersionesAsignadas(proyectoGrado).stream()
                 .map(VersionRepositorioArtefactoJpaMapper::toEntity)

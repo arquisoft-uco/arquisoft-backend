@@ -1,11 +1,17 @@
 package com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web;
 
 import com.arquisoft.shared.logger.AppLoggerConfig;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.ConsultarTiposSolicitudInteractor;
+import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.model.ConsultarTiposSolicitudQuery;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
+import com.arquisoft.solicitudes.infrastructure.security.SolicitudesRoles;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -19,7 +25,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,11 +39,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarTiposSolicitudController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
-        ConsultarTiposSolicitudControllerTest.TestSecurityConfig.class})
+@Import({AppLoggerConfig.class, IdentidadActualTestConfig.class, GlobalAppExceptionHandler.class,
+        TrazabilidadConfig.class, ConsultarTiposSolicitudControllerTest.TestSecurityConfig.class})
 class ConsultarTiposSolicitudControllerTest {
 
     private static final String RUTA = "/solicitudes/tipos-solicitud";
+    private static final UUID ACTOR = UtilUUID.generarNuevoUUID();
 
     @TestConfiguration
     @EnableWebSecurity
@@ -56,62 +67,53 @@ class ConsultarTiposSolicitudControllerTest {
     @MockitoBean
     private ConsultarTiposSolicitudInteractor consultarTiposSolicitudInteractor;
 
+    private ConsultarTiposSolicitudQuery queryInvocada() {
+        var captor = ArgumentCaptor.forClass(ConsultarTiposSolicitudQuery.class);
+        verify(consultarTiposSolicitudInteractor, times(1)).ejecutar(captor.capture());
+        return captor.getValue();
+    }
+
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor conRoles(String... roles) {
+        return SecurityMockMvcRequestPostProcessors.jwt()
+                .jwt(j -> j.subject(ACTOR.toString()).claim("roles", List.of(roles)));
+    }
+
     @Test
-    void debe200_cuandoConsultaExitosa() throws Exception {
+    void debe200ConLosTiposDelRol_cuandoElLlamanteEsEstudiante() throws Exception {
         // Arrange
         var tipos = List.of(
                 new TipoSolicitudReadModel("NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
-                        "Solicitud para temas que surgen de improvisto y que no están tipados"),
+                        "Solicitud para temas que surgen de improvisto"),
                 new TipoSolicitudReadModel("CAMBIO_DE_ASESOR", "Cambio de Asesor",
-                        "Solicitud para modificar el asesor")
-        );
-        when(consultarTiposSolicitudInteractor.ejecutar()).thenReturn(tipos);
+                        "Solicitud para modificar el asesor"));
+        when(consultarTiposSolicitudInteractor.ejecutar(any(ConsultarTiposSolicitudQuery.class))).thenReturn(tipos);
 
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+        // Act
+        mockMvc.perform(get(RUTA).with(conRoles(UsuariosRoles.ESTUDIANTE)))
+                // Assert
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("NOVEDAD_PARA_EL_COORDINADOR"))
                 .andExpect(jsonPath("$[0].nombre").value("Novedad para el Coordinador"))
-                .andExpect(jsonPath("$[1].id").value("CAMBIO_DE_ASESOR"))
-                .andExpect(jsonPath("$[1].nombre").value("Cambio de Asesor"));
+                .andExpect(jsonPath("$[0].descripcion").exists())
+                .andExpect(jsonPath("$[1].id").value("CAMBIO_DE_ASESOR"));
+        var query = queryInvocada();
+        assertThat(query.actor()).isEqualTo(ACTOR);
+        assertThat(query.rolesIdentidad()).containsExactly(SolicitudesRoles.Negocio.ESTUDIANTE);
     }
 
     @Test
-    void debe200ConListaVacia_cuandoNoHayTipos() throws Exception {
+    void debe200ConListaVacia_cuandoElLlamanteNoTieneRolReconocido() throws Exception {
         // Arrange
-        when(consultarTiposSolicitudInteractor.ejecutar()).thenReturn(List.of());
+        when(consultarTiposSolicitudInteractor.ejecutar(any(ConsultarTiposSolicitudQuery.class)))
+                .thenReturn(List.of());
 
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+        // Act
+        mockMvc.perform(get(RUTA).with(conRoles(UsuariosRoles.JURADO)))
+                // Assert
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-    }
-
-    @Test
-    void debeRetornarJsonCorrecto_cuandoListaTieneVariosElementos() throws Exception {
-        // Arrange
-        var tipos = List.of(
-                new TipoSolicitudReadModel("NOVEDAD_PARA_EL_ASESOR", "Novedad para el Asesor",
-                        "Solicitud para temas que surgen de improvisto y que no están tipados"),
-                new TipoSolicitudReadModel("AMPLIACION_DE_PLAZO", "Ampliación de Plazo",
-                        "Solicitud para extender la fecha de entrega del proyecto"),
-                new TipoSolicitudReadModel("REGISTRO_Y_MODIFICACION_DE_USUARIOS",
-                        "Registro y modificación de Usuarios",
-                        "Solicitud para el registro o modificación de usuarios")
-        );
-        when(consultarTiposSolicitudInteractor.ejecutar()).thenReturn(tipos);
-
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(3))
-                .andExpect(jsonPath("$[0].id").value("NOVEDAD_PARA_EL_ASESOR"))
-                .andExpect(jsonPath("$[1].id").value("AMPLIACION_DE_PLAZO"))
-                .andExpect(jsonPath("$[2].id").value("REGISTRO_Y_MODIFICACION_DE_USUARIOS"));
+        assertThat(queryInvocada().rolesIdentidad()).isEmpty();
     }
 
     @Test
@@ -119,19 +121,6 @@ class ConsultarTiposSolicitudControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeInvocarInteractor_cuandoEndpointEsLlamado() throws Exception {
-        // Arrange
-        when(consultarTiposSolicitudInteractor.ejecutar()).thenReturn(List.of());
-
-        // Act
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
-                .andExpect(status().isOk());
-
-        // Assert
-        verify(consultarTiposSolicitudInteractor, times(1)).ejecutar();
+        verify(consultarTiposSolicitudInteractor, never()).ejecutar(any(ConsultarTiposSolicitudQuery.class));
     }
 }

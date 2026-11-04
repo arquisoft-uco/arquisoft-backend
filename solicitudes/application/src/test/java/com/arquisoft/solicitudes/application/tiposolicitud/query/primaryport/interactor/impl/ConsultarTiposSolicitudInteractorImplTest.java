@@ -1,9 +1,13 @@
 package com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.impl;
 
+import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.solicitudes.application.tiposolicitud.query.criteria.TipoSolicitudCriteria;
+import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.model.ConsultarTiposSolicitudQuery;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.usecase.ConsultarTiposSolicitudUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -11,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,18 +29,23 @@ class ConsultarTiposSolicitudInteractorImplTest {
     private ConsultarTiposSolicitudInteractorImpl interactor;
 
     @Test
-    void debeDelegarEnUseCase_yRetornarSuResultado() {
+    void debeDelegarEnUseCaseConActorYRolesDelQuery_yRetornarSuResultado() {
         // Arrange
+        var actor = UtilUUID.generarNuevoUUID();
+        var query = ConsultarTiposSolicitudQuery.crear(actor, List.of("ESTUDIANTE"));
         var resultadoEsperado = List.of(
                 new TipoSolicitudReadModel("CAMBIO_DE_ASESOR", "Cambio de Asesor",
                         "Solicitud para modificar el asesor"));
-        when(consultarTiposSolicitudUseCase.ejecutar()).thenReturn(resultadoEsperado);
+        when(consultarTiposSolicitudUseCase.ejecutar(any(TipoSolicitudCriteria.class))).thenReturn(resultadoEsperado);
 
         // Act
-        var resultado = interactor.ejecutar();
+        var resultado = interactor.ejecutar(query);
 
         // Assert
+        var captor = ArgumentCaptor.forClass(TipoSolicitudCriteria.class);
+        verify(consultarTiposSolicitudUseCase).ejecutar(captor.capture());
+        assertThat(captor.getValue().actor()).isEqualTo(actor);
+        assertThat(captor.getValue().rolesIdentidad()).containsExactly("ESTUDIANTE");
         assertThat(resultado).isSameAs(resultadoEsperado);
-        verify(consultarTiposSolicitudUseCase).ejecutar();
     }
 }

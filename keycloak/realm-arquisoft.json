@@ -81,6 +81,7 @@
               "mapas-ruta:mapa-ruta:create",
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
+              "solicitudes:tipo-solicitud-recibida:view",
               "solicitudes:solicitud-registro-modificacion-usuarios:create",
               "solicitudes:solicitud-registro-modificacion-usuarios:delete",
               "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
@@ -144,6 +145,7 @@
               "evaluaciones:evaluacion-cualitativa-jurado:delete",
               "evaluaciones:criterio-item-cualitativo-jurado:view",
               "evaluaciones:evaluacion-jurado-jurado:view",
+              "evaluaciones:evaluacion-jurado:view",
               "evaluaciones:evaluacion-cualitativa-jurado-jurado:view"
             ]
           }
@@ -221,6 +223,7 @@
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
+              "solicitudes:tipo-solicitud-recibida:view",
               "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view",
               "usuarios:administrador:delete",
               "usuarios:asesor:delete",
@@ -384,9 +387,11 @@
               "solicitudes:respuesta-novedad-asesor:create",
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
+              "solicitudes:tipo-solicitud-recibida:view",
               "proyectos:proyecto-grado-asesor-detalle:view",
               "artefactos:estado-revision-asesor:view",
               "evaluaciones:evaluacion-asesor:view",
+              "evaluaciones:evaluacion-asesor-detalle:view",
               "evaluaciones:evaluacion-cualitativa-asesor:create",
               "evaluaciones:evaluacion-cuantitativa-asesor:create",
               "artefactos:estudiante-artefacto:view",
@@ -1384,6 +1389,15 @@
           "attributes": {}
         },
         {
+          "id": "7c1e5a42-93b8-4d6f-a0e7-5b2d8c4f9e13",
+          "name": "solicitudes:tipo-solicitud-recibida:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "9582eb8b-526a-4b4f-8c12-94c5925fb242",
           "name": "fichas:evaluacion-ficha-perfil:create",
           "description": "",
@@ -2133,6 +2147,24 @@
         {
           "id": "7c2e5a1d-3b9f-4d6a-8e41-5f0a9c3d2b17",
           "name": "evaluaciones:evaluacion-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a9a9a449-36e2-4b65-9cc1-738241f54845",
+          "name": "evaluaciones:evaluacion-asesor-detalle:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a3f1c8e2-6d47-4b90-9e15-2c7b8d04f6a9",
+          "name": "evaluaciones:evaluacion-jurado:view",
           "description": "",
           "composite": false,
           "clientRole": true,
