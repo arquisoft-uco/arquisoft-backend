@@ -14,11 +14,11 @@ class EnviarSolicitudNovedadAsesorCommandTest {
     @Test
     void debeCrearElComando_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
 
         // Act
-        EnviarSolicitudNovedadAsesorCommand command =
+        var command =
                 EnviarSolicitudNovedadAsesorCommand.crear(
                         remitente, destinatario.toString(), "  Hola asesor  ");
 
@@ -31,7 +31,7 @@ class EnviarSolicitudNovedadAsesorCommandTest {
     @Test
     void debeAcumularLosErroresDeFormato_cuandoLosDatosSonInvalidos() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EnviarSolicitudNovedadAsesorCommand.crear(
                         null, "tampoco-es-uuid", "a".repeat(101)));
 
@@ -45,7 +45,7 @@ class EnviarSolicitudNovedadAsesorCommandTest {
     @Test
     void debeReportarElMensaje_cuandoEstaEnBlanco() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EnviarSolicitudNovedadAsesorCommand.crear(
                         UUID.randomUUID(), UUID.randomUUID().toString(), "   "));
 

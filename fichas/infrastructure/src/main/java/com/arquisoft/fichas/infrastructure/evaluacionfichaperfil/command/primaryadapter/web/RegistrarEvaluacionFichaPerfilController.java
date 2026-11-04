@@ -4,7 +4,6 @@ import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.model.RegistrarEvaluacionFichaPerfilCommand;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.interactor.RegistrarEvaluacionFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.primaryadapter.web.dto.RegistrarEvaluacionFichaPerfilResponseDTO;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,15 +14,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 
 import java.util.UUID;
 
@@ -37,7 +33,6 @@ public class RegistrarEvaluacionFichaPerfilController {
     private final RegistrarEvaluacionFichaPerfilInteractor registrarEvaluacionFichaPerfilInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.evaluaciones:/{fichaId}/evaluaciones}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_EVALUACION_FICHA_PERFIL_CREATE)
     @Operation(
             summary = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_SUMMARY,
             description = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_DESCRIPTION,
@@ -55,9 +50,9 @@ public class RegistrarEvaluacionFichaPerfilController {
     })
     public ResponseEntity<RegistrarEvaluacionFichaPerfilResponseDTO> registrarEvaluacion(
             @PathVariable UUID fichaId,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var representanteComiteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var representanteComiteId = identidad.id();
 
         var command = RegistrarEvaluacionFichaPerfilCommand.crear(
                 fichaId,

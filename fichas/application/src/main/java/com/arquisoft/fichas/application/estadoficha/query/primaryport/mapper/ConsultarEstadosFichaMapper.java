@@ -8,6 +8,6 @@ public final class ConsultarEstadosFichaMapper {
     private ConsultarEstadosFichaMapper() {}
 
     public static EstadoFichaCriteria toCriteria(ConsultarEstadosFichaQuery query) {
-        return new EstadoFichaCriteria(query.roles());
+        return new EstadoFichaCriteria(query.actor(), query.rolesIdentidad());
     }
 }

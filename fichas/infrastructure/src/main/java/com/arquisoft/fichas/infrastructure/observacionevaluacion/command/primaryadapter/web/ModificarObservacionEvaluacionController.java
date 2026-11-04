@@ -3,11 +3,10 @@ package com.arquisoft.fichas.infrastructure.observacionevaluacion.command.primar
 import com.arquisoft.fichas.application.observacionevaluacion.command.primaryport.interactor.ModificarObservacionEvaluacionInteractor;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.command.primaryadapter.web.dto.ModificarObservacionEvaluacionRequestDTO;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.command.primaryadapter.web.mapper.ModificarObservacionEvaluacionRequestMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,9 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,7 +32,6 @@ public class ModificarObservacionEvaluacionController {
     private final ModificarObservacionEvaluacionInteractor modificarObservacionEvaluacionInteractor;
 
     @PatchMapping("${rutas.fichas.fichas-perfil.observacion-evaluacion-por-id:/observaciones-evaluacion/{observacionEvaluacionId}}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_OBSERVACION_EVALUACION_UPDATE)
     @Operation(
             summary = FichasApiMessages.ObservacionEvaluacion.MODIFICAR_SUMMARY,
             description = FichasApiMessages.ObservacionEvaluacion.MODIFICAR_DESCRIPTION,
@@ -57,9 +52,9 @@ public class ModificarObservacionEvaluacionController {
     public ResponseEntity<Void> modificar(
             @PathVariable UUID observacionEvaluacionId,
             @RequestBody ModificarObservacionEvaluacionRequestDTO dto,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var representanteComiteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var representanteComiteId = identidad.id();
 
         modificarObservacionEvaluacionInteractor.ejecutar(
                 ModificarObservacionEvaluacionRequestMapper.toCommand(dto, observacionEvaluacionId, representanteComiteId));

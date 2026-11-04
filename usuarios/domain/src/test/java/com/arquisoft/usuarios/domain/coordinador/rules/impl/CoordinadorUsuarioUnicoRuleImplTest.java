@@ -1,18 +1,21 @@
 package com.arquisoft.usuarios.domain.coordinador.rules.impl;
 
+import com.arquisoft.shared.message.constant.UsuariosCodes;
 import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.coordinador.exception.CoordinadorUsuarioDuplicadoException;
 import com.arquisoft.usuarios.domain.coordinador.model.DisponibilidadCoordinadorUsuario;
-import com.arquisoft.shared.message.constant.UsuariosCodes;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CoordinadorUsuarioUnicoRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final CoordinadorUsuarioUnicoRuleImpl rule = new CoordinadorUsuarioUnicoRuleImpl();
 
@@ -20,7 +23,7 @@ class CoordinadorUsuarioUnicoRuleImplTest {
     void debeLanzarDuplicadoConSuCodigo_cuandoUsuarioYaEsCoordinador() {
         // Arrange
         var usuario = UUID.randomUUID();
-        var disponibilidad = new DisponibilidadCoordinadorUsuario(usuario, CoordinadorDomain.crear(usuario));
+        var disponibilidad = new DisponibilidadCoordinadorUsuario(usuario, NOMBRE, CoordinadorDomain.crear(usuario));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(disponibilidad))
@@ -32,7 +35,7 @@ class CoordinadorUsuarioUnicoRuleImplTest {
     @Test
     void noDebeLanzar_cuandoUsuarioNoEsCoordinador() {
         // Arrange
-        var disponibilidad = new DisponibilidadCoordinadorUsuario(UUID.randomUUID(), CoordinadorDomain.VACIO);
+        var disponibilidad = new DisponibilidadCoordinadorUsuario(UUID.randomUUID(), NOMBRE, CoordinadorDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
@@ -43,9 +46,22 @@ class CoordinadorUsuarioUnicoRuleImplTest {
         // Arrange
         var usuario = UUID.randomUUID();
         var eliminado = CoordinadorDomain.reconstruir(usuario, Instant.parse("2026-09-24T10:00:00Z"));
-        var disponibilidad = new DisponibilidadCoordinadorUsuario(usuario, eliminado);
+        var disponibilidad = new DisponibilidadCoordinadorUsuario(usuario, NOMBRE, eliminado);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoYaTieneElRol() {
+        // Arrange
+        var usuario = UUID.randomUUID();
+        var entrada = new DisponibilidadCoordinadorUsuario(usuario, NOMBRE, CoordinadorDomain.crear(usuario));
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(CoordinadorUsuarioDuplicadoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

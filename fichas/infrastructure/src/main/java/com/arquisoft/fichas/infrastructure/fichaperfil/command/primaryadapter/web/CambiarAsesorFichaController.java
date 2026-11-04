@@ -4,7 +4,6 @@ import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.we
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interactor.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web.dto.CambiarAsesorFichaRequestDTO;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +13,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,7 +47,6 @@ public class CambiarAsesorFichaController {
                     description = FichasApiMessages.FichaPerfil.CAMBIAR_ASESOR_RESP_422)
     })
     @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_UPDATE_ASESOR)
     public ResponseEntity<Void> cambiarAsesor(
             @PathVariable UUID id,
             @RequestBody CambiarAsesorFichaRequestDTO request

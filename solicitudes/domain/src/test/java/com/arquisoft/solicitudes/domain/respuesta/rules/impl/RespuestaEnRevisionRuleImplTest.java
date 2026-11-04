@@ -31,8 +31,7 @@ class RespuestaEnRevisionRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(estado))
-                .isInstanceOf(RespuestaNoEnRevisionException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(RespuestaNoEnRevisionException.class);
     }
 
     @Test
@@ -43,7 +42,6 @@ class RespuestaEnRevisionRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(estado))
-                .isInstanceOf(RespuestaNoEnRevisionException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(RespuestaNoEnRevisionException.class);
     }
 }

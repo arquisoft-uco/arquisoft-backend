@@ -1,18 +1,18 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web;
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
-import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.ModificarItemFichaPerfilInteractor;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -20,10 +20,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -35,17 +33,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ModificarItemFichaPerfilController.class)
-@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+@Import({IdentidadActualTestConfig.class, com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ModificarItemFichaPerfilControllerTest.TestSecurityConfig.class})
 class ModificarItemFichaPerfilControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -77,8 +75,7 @@ class ModificarItemFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
+                                .jwt(jwt -> jwt.subject(estudianteId.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isNoContent());
@@ -97,8 +94,7 @@ class ModificarItemFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
+                                .jwt(jwt -> jwt.subject(estudianteId.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());
@@ -118,8 +114,7 @@ class ModificarItemFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
+                                .jwt(jwt -> jwt.subject(estudianteId.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());
@@ -136,23 +131,6 @@ class ModificarItemFichaPerfilControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        // Arrange
-        UUID itemId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        String body = "{\"contenido\": \"Contenido modificado\"}";
-
-        // Act & Assert
-        mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:read")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -175,8 +153,7 @@ class ModificarItemFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
+                                .jwt(jwt -> jwt.subject(estudianteId.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());
@@ -189,23 +166,16 @@ class ModificarItemFichaPerfilControllerTest {
         UUID estudianteId = UUID.randomUUID();
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
-        ValidationResult validationResult = new ValidationResult();
-        validationResult.agregarError(
-                FichasFields.ItemFichaPerfil.ESTADO_FICHA,
-                FichasCodes.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
-                Mensajes.formatear(ItemFichaPerfilKey.ERROR_ESTADO_FICHA_NO_MODIFICABLE, "Aprobada")
-        );
-
-        doThrow(new DomainValidationException(validationResult))
+        doThrow(new EstadoFichaPerfilTerminalException(EstadoFicha.APROBADA))
                 .when(modificarItemFichaPerfilInteractor).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
+                                .jwt(jwt -> jwt.subject(estudianteId.toString())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value(FichasCodes.EstadoFichaPerfil.ESTADO_TERMINAL));
     }
 }

@@ -1,13 +1,45 @@
-# Estructura final recomendada para el key o path de los archivos
-```
-arquisoft-artefactos
-└── artefacto/
-    └── {artefactoId}/
-        └── {versionArtefactoId}.{ext}
-```
+# shared:minio
+
+Almacenamiento de objetos sobre MinIO/S3. El archivo **nunca pasa por el backend** al subirse: este firma
+un formulario `POST` con política y el navegador sube directo a MinIO.
+
+## API (`AlmacenamientoObjetos`)
+
+| Método | Qué hace |
+|---|---|
+| `generarFormularioCarga` | `PostPolicy` con `key` exacta, `Content-Type` exacto, `content-length-range` `[1, máximo]` y un `eq` por metadato `x-amz-meta-*`, con el valor codificado en URL (UTF-8): S3 solo admite ASCII en los metadatos de usuario, así que el llamante pasa el valor tal cual y nunca lo codifica. Devuelve `url` (`minio.endpoint-publico` + bucket), `campos` (firma + `key`, `Content-Type` y metadatos, que el cliente debe reenviar con el `file` al final) y `expiraEn` |
+| `generarEnlaceDescarga` | URL `GET` prefirmada de la key exacta, con `response-content-disposition` dentro de la firma (`attachment; filename="…"; filename*=UTF-8''…`). Se firma con un cliente aparte (`MinioClientFirmante`) cuyo endpoint es `minio.endpoint-publico` —la firma de un GET liga el `Host`— y región explícita, así que firmar es local: **no consulta a MinIO**. Antes de armar el `Content-Disposition` se quitan del nombre `"`, `\r`, `\n` y `;` (no pueden cerrar el parámetro ni inyectar una cabecera); el fallback ASCII reemplaza lo no ASCII, `\` y los caracteres de control por `_` y `filename*` va codificado por porcentaje (RFC 5987). Devuelve `url` y `expiraEn` (`descarga-minutos`) |
+| `consultarMetadatos` | `statObject`. Tamaño, tipo, `etag` sin comillas y metadatos de usuario (en minúsculas, sin el prefijo `x-amz-meta-` y ya decodificados). Objeto ausente → `MetadatosObjeto.VACIO` |
+| `abrirLectura` | `getObject` en streaming y el `etag` del GET. Objeto ausente → `Optional.empty()`. El llamador cierra la `LecturaObjeto` |
+| `copiar` | `copyObject` condicionado al ETag (`x-amz-copy-source-if-match`): si el origen cambió, MinIO responde 412 y sale `MinioOperationException` |
+| `eliminar` | `removeObject` |
+
+Todo fallo es `MinioOperationException` (503). El módulo no registra logs: loguea el adaptador del contexto.
+
+## Lo que este módulo no hace
+
+No crea buckets, no comprueba que existan y no lista objetos (`makeBucket`, `bucketExists`, `listObjects`):
+en la nube la cuenta del backend solo tiene `GetObject`, `PutObject`, `DeleteObject` y `GetBucketLocation`
+sobre `repositorio-artefactos/*` y `artefactos/*`. Un objeto ausente responde 404 `NoSuchKey` y se mapea a vacío. Firmar un enlace no verifica que el objeto exista: el llamante lo comprueba antes con `consultarMetadatos` (`statObject`, vacío si no existe) y decide qué hacer. El bucket
+y su ciclo de vida los configura `minio/configurar.sh`. TLS siempre se valida: no hay modo *trust-all*.
+
+## Layout de los buckets `repositorio-artefactos` y `artefactos` (ambos igual)
 
 ```
--- Lo que guarda tu BD del contexto
-storage_key VARCHAR(255)  
--- Valor: "artefacto/uuid-artefacto/uuid-version-artefacto.pdf"
+pendientes/{carga}      # destino del formulario firmado; ILM lo expira a 1 día
+versiones/{version}     # copia definitiva tras validar el archivo; no expira
+```
+
+## Propiedades
+
+```yaml
+minio:
+  endpoint: http://minio:9000            # el que usa el backend
+  endpoint-publico: http://localhost:9000 # el que alcanza el navegador (url del formulario y host de la firma de descarga)
+  region: us-east-1                      # región con la que se firman los enlaces (evita una consulta por red)
+  access-key: ...
+  secret-key: ...
+  presigned-url-expiry:
+    formulario-carga-minutos: 15
+    descarga-minutos: 5                  # de 1 a 5; fuera de rango el arranque falla
 ```

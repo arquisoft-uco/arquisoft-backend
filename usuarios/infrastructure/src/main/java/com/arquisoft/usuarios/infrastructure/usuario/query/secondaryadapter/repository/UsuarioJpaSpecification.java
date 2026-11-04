@@ -31,7 +31,7 @@ class UsuarioJpaSpecification extends QueryJpaSpecification<UsuarioJpaQueryEntit
                 case ES_REPRESENTANTE_COMITE -> CampoSpec.booleano(root -> root.get("esRepresentanteComite"));
                 case ES_ADMINISTRADOR -> CampoSpec.booleano(root -> root.get("esAdministrador"));
                 case ES_BIBLIOTECARIO -> CampoSpec.booleano(root -> root.get("esBibliotecario"));
-                // TODO HU252: case ES_JURADO -> CampoSpec.booleano(root -> root.get("esJurado"));
+                case ES_JURADO -> CampoSpec.booleano(root -> root.get("esJurado"));
             };
             m.put(campo.getClave(), spec);
         }

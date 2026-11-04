@@ -55,7 +55,7 @@ class SolicitudCommandOutputAdapterTest {
     }
 
     private UUID sembrarSolicitud(String mensaje) {
-        UUID solicitudId = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         adapter.registrar(new SolicitudEntity(solicitudId, destinatarioFila, remitenteFila,
                 Instant.parse("2026-02-01T10:30:00Z"), mensaje, TIPO));
         entityManager.flush();
@@ -66,8 +66,8 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeInsertarLaSolicitudConSusClavesForaneas_cuandoRegistra() {
         // Arrange
-        UUID solicitudId = UUID.randomUUID();
-        Instant fecha = Instant.parse("2026-02-01T10:30:00Z");
+        var solicitudId = UUID.randomUUID();
+        var fecha = Instant.parse("2026-02-01T10:30:00Z");
 
         // Act
         adapter.registrar(new SolicitudEntity(
@@ -76,7 +76,7 @@ class SolicitudCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        SolicitudJpaEntity guardada = entityManager.find(SolicitudJpaEntity.class, solicitudId);
+        var guardada = entityManager.find(SolicitudJpaEntity.class, solicitudId);
         assertThat(guardada).isNotNull();
         assertThat(guardada.getMensajeSolicitud()).isEqualTo("una novedad");
         assertThat(guardada.getRemitente().getId()).isEqualTo(remitenteFila);
@@ -87,7 +87,7 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeRetornarTrue_cuandoYaExisteLaCombinacionUnica() {
         // Arrange
-        Instant fecha = Instant.parse("2026-02-01T10:30:00Z");
+        var fecha = Instant.parse("2026-02-01T10:30:00Z");
         adapter.registrar(new SolicitudEntity(
                 UUID.randomUUID(), destinatarioFila, remitenteFila, fecha, "duplicable", TIPO));
         entityManager.flush();
@@ -101,7 +101,7 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeRetornarFalse_cuandoLaCombinacionNoCoincide() {
         // Arrange
-        Instant fecha = Instant.parse("2026-02-01T10:30:00Z");
+        var fecha = Instant.parse("2026-02-01T10:30:00Z");
         adapter.registrar(new SolicitudEntity(
                 UUID.randomUUID(), destinatarioFila, remitenteFila, fecha, "original", TIPO));
         entityManager.flush();
@@ -115,7 +115,7 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeProyectarUsuariosYTipo_cuandoBuscaDatosDeUnaSolicitudExistente() {
         // Arrange
-        UUID solicitudId = sembrarSolicitud("una novedad");
+        var solicitudId = sembrarSolicitud("una novedad");
 
         // Act & Assert
         assertThat(adapter.buscarDatos(solicitudId)).hasValueSatisfying(datos -> {
@@ -134,7 +134,7 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeBorrarLaFila_cuandoElimina() {
         // Arrange
-        UUID solicitudId = sembrarSolicitud("a eliminar");
+        var solicitudId = sembrarSolicitud("a eliminar");
 
         // Act
         adapter.eliminar(solicitudId);

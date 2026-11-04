@@ -1,0 +1,54 @@
+package com.arquisoft.artefactos.infrastructure.versionartefacto.query.secondaryadapter.repository;
+
+import com.arquisoft.artefactos.application.versionartefacto.query.criteria.VersionArtefactoAsesorCriteria;
+import com.arquisoft.artefactos.application.versionartefacto.query.criteria.VersionArtefactoEstudianteCriteria;
+import com.arquisoft.artefactos.application.versionartefacto.query.readmodel.VersionArtefactoReadModel;
+import com.arquisoft.artefactos.application.versionartefacto.query.secondaryport.VersionArtefactoQueryOutputPort;
+import com.arquisoft.artefactos.infrastructure.versionartefacto.exception.VersionArtefactoNoDisponibleException;
+import com.arquisoft.artefactos.infrastructure.versionartefacto.query.secondaryadapter.repository.mapper.VersionArtefactoAsesorQueryMapper;
+import com.arquisoft.artefactos.infrastructure.versionartefacto.query.secondaryadapter.repository.mapper.VersionArtefactoEstudianteQueryMapper;
+import com.arquisoft.shared.jpa.util.PageableMapper;
+import com.arquisoft.shared.jpa.util.PaginationMapper;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.UUID;
+
+@Component
+@RequiredArgsConstructor
+public class VersionArtefactoQueryOutputAdapter implements VersionArtefactoQueryOutputPort {
+
+    private final VersionArtefactoAsesorQueryRepository versionArtefactoAsesorRepository;
+    private final VersionArtefactoAsesorJpaSpecification asesorSpecification;
+    private final VersionArtefactoEstudianteQueryRepository versionArtefactoEstudianteRepository;
+    private final VersionArtefactoEstudianteJpaSpecification estudianteSpecification;
+
+    @Override
+    public PaginatedResult<VersionArtefactoReadModel> consultarTodasAsesor(VersionArtefactoAsesorCriteria criteria) {
+        var pageable = PageableMapper.toPageable(criteria, VersionArtefactoAsesorSortMapper::traducir, "id");
+        var spec = asesorSpecification.desdeCriteria(criteria);
+
+        return PaginationMapper.toResult(
+                versionArtefactoAsesorRepository.findAll(spec, pageable)
+                        .map(VersionArtefactoAsesorQueryMapper::toReadModel));
+    }
+
+    @Override
+    public PaginatedResult<VersionArtefactoReadModel> consultarTodasEstudiante(
+            VersionArtefactoEstudianteCriteria criteria) {
+        var pageable = PageableMapper.toPageable(criteria, VersionArtefactoEstudianteSortMapper::traducir, "id");
+        var spec = estudianteSpecification.desdeCriteria(criteria);
+
+        return PaginationMapper.toResult(
+                versionArtefactoEstudianteRepository.findAll(spec, pageable)
+                        .map(VersionArtefactoEstudianteQueryMapper::toReadModel));
+    }
+
+    @Override
+    public VersionArtefactoReadModel consultarPorId(UUID versionArtefacto) {
+        return versionArtefactoAsesorRepository.findById(versionArtefacto)
+                .map(VersionArtefactoAsesorQueryMapper::toReadModel)
+                .orElseThrow(() -> new VersionArtefactoNoDisponibleException(versionArtefacto));
+    }
+}

@@ -1,6 +1,7 @@
 package com.arquisoft.solicitudes.application.solicitud.query.criteria;
 
 import com.arquisoft.shared.query.QueryCriteria;
+import com.arquisoft.shared.util.UtilTexto;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -53,8 +54,15 @@ public final class SolicitudCriteria extends QueryCriteria {
         }
     }
 
+    private final String tipoSolicitud;
+
     private SolicitudCriteria(Builder b) {
         super(b);
+        this.tipoSolicitud = b.tipoSolicitud;
+    }
+
+    public String getTipoSolicitud() {
+        return tipoSolicitud;
     }
 
     public static Builder builder() {
@@ -62,6 +70,13 @@ public final class SolicitudCriteria extends QueryCriteria {
     }
 
     public static final class Builder extends QueryCriteria.BaseBuilder<Builder> {
+
+        private String tipoSolicitud = UtilTexto.VACIO;
+
+        public Builder tipoSolicitud(String tipoSolicitud) {
+            this.tipoSolicitud = UtilTexto.esVacioONulo(tipoSolicitud) ? UtilTexto.VACIO : tipoSolicitud;
+            return this;
+        }
 
         @Override
         protected Set<String> camposFiltrables() {

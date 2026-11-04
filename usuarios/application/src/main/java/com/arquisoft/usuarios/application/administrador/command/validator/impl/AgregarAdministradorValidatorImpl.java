@@ -5,9 +5,8 @@ import com.arquisoft.usuarios.domain.administrador.AdministradorDomain;
 import com.arquisoft.usuarios.domain.administrador.model.DisponibilidadAdministradorUsuario;
 import com.arquisoft.usuarios.domain.administrador.rules.AdministradorUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.administrador.rules.impl.AdministradorUsuarioUnicoRuleImpl;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class AgregarAdministradorValidatorImpl implements AgregarAdministradorValidator {
@@ -19,8 +18,8 @@ public class AgregarAdministradorValidatorImpl implements AgregarAdministradorVa
     }
 
     @Override
-    public void validar(UUID usuario, AdministradorDomain administrador) {
+    public void validar(UsuarioDomain usuario, AdministradorDomain administrador) {
         administradorUsuarioUnicoRule.validar(
-                new DisponibilidadAdministradorUsuario(usuario, administrador));
+                new DisponibilidadAdministradorUsuario(usuario.getId(), usuario.getNombre(), administrador));
     }
 }

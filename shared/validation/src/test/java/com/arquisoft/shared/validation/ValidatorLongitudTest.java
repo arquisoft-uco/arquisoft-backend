@@ -19,7 +19,7 @@ class ValidatorLongitudTest {
 
         // Assert
         assertThat(valido).isFalse();
-        assertThat(result.getErrores().get(0).mensaje()).contains(CAMPO, "3");
+        assertThat(result.getErrores().get(0).mensaje()).contains("3").doesNotContain(CAMPO);
     }
 
     @Test
@@ -32,7 +32,7 @@ class ValidatorLongitudTest {
 
         // Assert
         assertThat(valido).isFalse();
-        assertThat(result.getErrores().get(0).mensaje()).contains(CAMPO, "5");
+        assertThat(result.getErrores().get(0).mensaje()).contains("5").doesNotContain(CAMPO);
     }
 
     @Test
@@ -46,7 +46,7 @@ class ValidatorLongitudTest {
         // Assert
         assertThat(valido).isFalse();
         assertThat(result.getErrores()).hasSize(1);
-        assertThat(result.getErrores().get(0).mensaje()).contains(CAMPO, "3", "10");
+        assertThat(result.getErrores().get(0).mensaje()).contains("3", "10").doesNotContain(CAMPO);
     }
 
     @Test
@@ -60,7 +60,7 @@ class ValidatorLongitudTest {
         // Assert
         assertThat(valido).isFalse();
         assertThat(result.getErrores()).hasSize(1);
-        assertThat(result.getErrores().get(0).mensaje()).contains(CAMPO, "3", "10");
+        assertThat(result.getErrores().get(0).mensaje()).contains("3", "10").doesNotContain(CAMPO);
     }
 
     @Test

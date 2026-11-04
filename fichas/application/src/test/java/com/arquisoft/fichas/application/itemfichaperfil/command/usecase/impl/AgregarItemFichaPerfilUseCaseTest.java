@@ -179,7 +179,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Arrange
         var entrada = entrada();
         stubConsultas(entrada, true, true, true);
-        doThrow(new ItemTipoDuplicadoException(TipoItem.OBJETIVO_GENERAL.getId()))
+        doThrow(new ItemTipoDuplicadoException(TipoItem.OBJETIVO_GENERAL))
                 .when(agregarItemFichaPerfilValidator)
                 .validar(entrada.getItem(), estudiante, true, true, estadoEnConstruccion, true);
 

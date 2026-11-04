@@ -1,0 +1,165 @@
+package com.arquisoft.shared.message.annotation;
+
+public final class MapasRutaApiMessages {
+
+    private MapasRutaApiMessages() {}
+
+    public static final class Comun {
+
+        private Comun() {}
+
+        public static final String RESP_401 = "No autenticado";
+        public static final String RESP_403 = "Sin permisos para realizar la operación";
+    }
+
+    public static final class MapaRuta {
+
+        private MapaRuta() {}
+
+        public static final String TAG_NAME = "Mapas de Ruta";
+        public static final String TAG_DESCRIPTION =
+                "Planificación del proyecto de grado: fechas importantes, tareas y planes";
+        public static final String AGREGAR_SUMMARY = "Agregar fechas importantes en un mapa de ruta";
+        public static final String AGREGAR_DESCRIPTION =
+                "Crea el mapa de ruta de un proyecto de grado en proceso con su fecha de inicio y su fecha de fin. "
+                        + "Solo el coordinador asignado al proyecto puede crearlo, y cada proyecto admite un único mapa";
+        public static final String AGREGAR_RESP_201 = "Mapa de ruta creado";
+        public static final String AGREGAR_RESP_400 =
+                "Datos de entrada inválidos o fecha de fin no posterior a la fecha de inicio";
+        public static final String AGREGAR_RESP_422 =
+                "Proyecto inexistente, no asignado al coordinador, fuera de proceso "
+                        + "o con mapa de ruta existente";
+        public static final String CAMBIAR_FECHA_FIN_SUMMARY = "Cambiar la fecha de fin de un mapa de ruta";
+        public static final String CAMBIAR_FECHA_FIN_DESCRIPTION =
+                "Modifica la fecha de fin del mapa de ruta de un proyecto de grado en proceso. "
+                        + "La fecha de inicio no se modifica y solo el coordinador asignado al proyecto puede hacerlo";
+        public static final String CAMBIAR_FECHA_FIN_RESP_204 = "Fecha de fin del mapa de ruta modificada";
+        public static final String CAMBIAR_FECHA_FIN_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_FECHA_FIN_RESP_422 =
+                "Mapa de ruta inexistente, proyecto no asignado al coordinador, fuera de proceso "
+                        + "o fecha de fin no posterior a la de inicio";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar el mapa de ruta del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Devuelve el título del proyecto de grado al que pertenece el estudiante autenticado "
+                        + "y las fechas de inicio y fin de su mapa de ruta";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Mapa de ruta encontrado";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
+                "El identificador del estudiante del token no es un UUID válido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_404 =
+                "El estudiante no tiene proyecto de grado asignado o su proyecto no tiene mapa de ruta";
+        public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar mapas de ruta según fechas";
+        public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
+                "Lista paginada de los mapas de ruta de los proyectos de grado asignados al coordinador autenticado, "
+                        + "con su título y sus fechas de inicio y fin; admite filtros y orden por fechaInicio y fechaFin; "
+                        + "sin orden se devuelve el de fechaInicio más reciente primero y, a igual fechaInicio, "
+                        + "el de fechaFin más cercana";
+        public static final String CONSULTAR_COORDINADOR_RESP_200 = "Página de mapas de ruta del coordinador";
+        public static final String CONSULTAR_COORDINADOR_RESP_400 = "Criterio de filtro u ordenamiento inválido";
+    }
+
+    public static final class Tarea {
+
+        private Tarea() {}
+
+        public static final String TAG_NAME = "Tareas";
+        public static final String TAG_DESCRIPTION = "Tareas del mapa de ruta de un proyecto de grado";
+        public static final String ASIGNAR_SUMMARY = "Asignar una nueva tarea";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Asigna una nueva tarea, con su descripción y su asesor, al mapa de ruta de un proyecto de grado "
+                        + "en proceso. La tarea nace en estado Nueva y su descripción no se repite dentro del mapa";
+        public static final String ASIGNAR_RESP_201 = "Tarea asignada";
+        public static final String ASIGNAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String ASIGNAR_RESP_422 =
+                "Mapa de ruta inexistente, descripción duplicada o demasiado larga, proyecto fuera de proceso "
+                        + "o asesor no asignado al proyecto";
+        public static final String CONSULTAR_INFORMACION_SUMMARY = "Consultar la información de una tarea";
+        public static final String CONSULTAR_INFORMACION_DESCRIPTION =
+                "Devuelve el detalle de una tarea: su descripción, su estado, el mapa de ruta al que pertenece "
+                        + "y el asesor responsable";
+        public static final String CONSULTAR_INFORMACION_RESP_200 = "Información de la tarea";
+        public static final String CONSULTAR_INFORMACION_RESP_400 = "Identificador de tarea inválido";
+        public static final String CONSULTAR_INFORMACION_RESP_404 = "La tarea no existe";
+        public static final String CONSULTAR_POR_MAPA_RUTA_SUMMARY = "Consultar las tareas de un mapa de ruta";
+        public static final String CONSULTAR_POR_MAPA_RUTA_DESCRIPTION =
+                "Devuelve, paginadas, filtradas y ordenadas, las tareas de un mapa de ruta. Filtros por descripción, "
+                        + "estado y asesor; sin orden se ordena por descripción ascendente. Si el mapa no tiene "
+                        + "tareas la página llega vacía";
+        public static final String CONSULTAR_POR_MAPA_RUTA_RESP_200 = "Página de tareas del mapa de ruta";
+        public static final String CONSULTAR_POR_MAPA_RUTA_RESP_400 =
+                "Identificador de mapa de ruta inválido, o filtro u ordenamiento no permitido";
+        public static final String CAMBIAR_ESTADO_ITEM_SUMMARY = "Cambiar el estado de una tarea";
+        public static final String CAMBIAR_ESTADO_ITEM_DESCRIPTION =
+                "Cambia el estado de una tarea de Nueva a En progreso o Finalizada, o de En progreso a Finalizada. "
+                        + "No se vuelve a Nueva, Finalizada es definitiva y repetir el estado actual se rechaza";
+        public static final String CAMBIAR_ESTADO_ITEM_RESP_204 = "Estado de la tarea cambiado";
+        public static final String CAMBIAR_ESTADO_ITEM_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_ESTADO_ITEM_RESP_422 =
+                "Tarea inexistente, estado fuera del catálogo o transición de estado no permitida";
+        public static final String MODIFICAR_INFORMACION_SUMMARY = "Modificar la información de una tarea";
+        public static final String MODIFICAR_INFORMACION_DESCRIPTION =
+                "Modifica la descripción y el asesor de una tarea existente. El mapa de ruta y el estado de la "
+                        + "tarea no cambian, y repetir los valores actuales se acepta";
+        public static final String MODIFICAR_INFORMACION_RESP_204 = "Información de la tarea modificada";
+        public static final String MODIFICAR_INFORMACION_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_INFORMACION_RESP_422 =
+                "Tarea o mapa de ruta inexistente, descripción ya usada por otra tarea del mapa de ruta "
+                        + "o asesor no asignado al proyecto de grado";
+        public static final String REMOVER_INFORMACION_SUMMARY = "Remover una tarea";
+        public static final String REMOVER_INFORMACION_DESCRIPTION =
+                "Elimina una tarea del mapa de ruta mientras esté Nueva o En progreso. "
+                        + "Una tarea Finalizada no se puede remover";
+        public static final String REMOVER_INFORMACION_RESP_204 = "Tarea removida";
+        public static final String REMOVER_INFORMACION_RESP_422 =
+                "Tarea inexistente o en un estado que no permite removerla";
+    }
+
+    public static final class PlanEstimado {
+
+        private PlanEstimado() {}
+
+        public static final String TAG_NAME = "Planes estimados";
+        public static final String TAG_DESCRIPTION = "Planes estimados de las tareas del mapa de ruta";
+        public static final String AGREGAR_SUMMARY = "Agregar un nuevo plan estimado";
+        public static final String AGREGAR_DESCRIPTION =
+                "Agrega el plan estimado de una tarea: los días que se espera tardar y, opcionalmente, una "
+                        + "descripción. Una tarea solo admite un plan estimado y el tiempo acumulado de los planes "
+                        + "del mapa no puede exceder el plazo del mapa de ruta";
+        public static final String AGREGAR_RESP_201 = "Plan estimado agregado";
+        public static final String AGREGAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String AGREGAR_RESP_422 =
+                "Tarea inexistente, tarea con plan estimado o tiempo acumulado que excede el plazo del mapa de ruta";
+        public static final String CONSULTAR_SUMMARY = "Consultar los planes estimados de una tarea";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve, paginados, filtrados y ordenados, los planes estimados de una tarea. Filtros por tiempo "
+                        + "estimado y descripción; sin orden se ordena por tiempo estimado ascendente. Si la tarea "
+                        + "no tiene plan estimado la página llega vacía";
+        public static final String CONSULTAR_RESP_200 = "Página de planes estimados de la tarea";
+        public static final String CONSULTAR_RESP_400 =
+                "Identificador de tarea inválido, o filtro u ordenamiento no permitido";
+        public static final String MODIFICAR_SUMMARY = "Modificar un plan estimado";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica la descripción de un plan estimado existente. La descripción es opcional: si no llega "
+                        + "o llega en blanco, el plan queda sin descripción. El tiempo estimado no se modifica";
+        public static final String MODIFICAR_RESP_204 = "Plan estimado modificado";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 = "Plan estimado inexistente";
+        public static final String REMOVER_SUMMARY = "Remover un plan estimado";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve un plan estimado existente; la tarea queda libre para recibir otro plan estimado";
+        public static final String REMOVER_RESP_204 = "Plan estimado removido";
+        public static final String REMOVER_RESP_422 = "Plan estimado inexistente";
+    }
+
+    public static final class EstadoItem {
+
+        private EstadoItem() {}
+
+        public static final String TAG_NAME = "Estados de ítem";
+        public static final String TAG_DESCRIPTION = "Catálogo de estados que puede tener un ítem de tarea";
+        public static final String CONSULTAR_SUMMARY = "Consultar los estados de ítem";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve el catálogo completo de estados de ítem (Nueva, En progreso, Finalizada) "
+                        + "con su identificador, nombre y descripción";
+        public static final String CONSULTAR_RESP_200 = "Catálogo de estados de ítem";
+    }
+}

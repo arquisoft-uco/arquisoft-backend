@@ -169,8 +169,7 @@ public final class NotificacionDomain {
             result.agregarError(
                     NotificacionesFields.Notificacion.TIPO,
                     NotificacionesCodes.Notificacion.TIPO_REQUERIDO,
-                    Mensajes.formatear(
-                            ValidadorKey.NO_NULO, NotificacionesFields.Notificacion.TIPO));
+                    Mensajes.obtener(ValidadorKey.NO_NULO));
             return;
         }
         this.tipo = tipoSeguro;

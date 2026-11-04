@@ -1,125 +1,113 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
+import com.arquisoft.seguridad.application.autorizacion.command.primaryport.interactor.AutorizarAccesoInteractor;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.ResolvedorPlantillaRuta;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias.EquivalenciasProperties;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
+import com.arquisoft.seguridad.infrastructure.filter.AutorizacionAccesoFilter;
+import com.arquisoft.seguridad.infrastructure.filter.IdentidadTrazaFilter;
+import com.arquisoft.seguridad.infrastructure.filter.JwtListaNegraFilter;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
-import com.arquisoft.seguridad.infrastructure.filter.IdentidadTrazaFilter;
-import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtValidators;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableConfigurationProperties({PepProperties.class, EquivalenciasProperties.class})
 @RequiredArgsConstructor
 public class SeguridadConfig {
 
     private final AppLogger logger;
-
-    // Rutas públicas y plantilla del issuer: son contrato con Keycloak y con las herramientas
-    // (actuator, springdoc), que las resuelven literalmente. No van al catálogo.
-    private static final String PLANTILLA_ISSUER = "%s/realms/%s";
-    private static final String RUTA_ACTUATOR_HEALTH = "/actuator/health/**";
-    // Alloy raspa este endpoint por la red interna. Traefik no enruta /api/actuator
-    // (ver labels en .github/workflows/deploy.yml), asi que no queda expuesto a internet.
-    private static final String RUTA_ACTUATOR_PROMETHEUS = "/actuator/prometheus";
-    private static final String RUTA_SWAGGER_UI = "/swagger-ui/**";
-    private static final String RUTA_API_DOCS = "/v3/api-docs/**";
-    private static final String RUTA_SWAGGER_RESOURCES = "/swagger-resources/**";
-
-    private final JwtAuthenticationConverter jwtAuthenticationConverter;
-    private final SecurityAccessDeniedHandler securityAccessDeniedHandler;
-    private final SecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
-    private final JwtBlacklistFilter jwtBlacklistFilter;
+    private final AccesoDenegadoHandler accesoDenegadoHandler;
+    private final NoAutenticadoEntryPoint noAutenticadoEntryPoint;
+    private final JwtListaNegraFilter jwtBlacklistFilter;
     private final GestorTraza gestorTraza;
-    private final RutasAutenticacion rutasAutenticacion;
+    private final RutasPublicas rutasPublicas;
+    private final AutenticacionProperties propiedadesAutenticacion;
 
     @Bean
-    public IdentidadTrazaFilter identidadTrazaFilter() {
+    public IdentidadTrazaFilter seguridadIdentidadTrazaFilter() {
         return new IdentidadTrazaFilter(gestorTraza);
     }
 
     @Bean
-    public FilterRegistrationBean<IdentidadTrazaFilter> identidadTrazaFilterSinRegistroServlet(
+    public FilterRegistrationBean<IdentidadTrazaFilter> seguridadIdentidadTrazaFilterSinRegistroServlet(
             IdentidadTrazaFilter filtro) {
         var registro = new FilterRegistrationBean<>(filtro);
         registro.setEnabled(false);
         return registro;
     }
 
-    @Value("${arquisoft.keycloak.server-url}")
-    private String keycloakServerUrl;
-
-    @Value("${arquisoft.keycloak.realm}")
-    private String realm;
-
-    @Value("${arquisoft.keycloak.expected-audience:arquisoft-api}")
-    private String expectedAudience;
-
     @Bean
-    public JwtDecoder jwtDecoder() {
-        var issuer = PLANTILLA_ISSUER.formatted(keycloakServerUrl, realm);
-        var decoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
-        decoder.setJwtValidator(jwtValidator(issuer, expectedAudience));
-        return decoder;
-    }
-
-    static OAuth2TokenValidator<Jwt> jwtValidator(String issuer, String expectedAudience) {
-        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
-        return new DelegatingOAuth2TokenValidator<>(
-                withIssuer, new AudienceValidator(expectedAudience));
+    @ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
+    public AutorizacionAccesoFilter seguridadAutorizacionAccesoFilter(
+            AutorizarAccesoInteractor autorizarAccesoInteractor,
+            ResolvedorPlantillaRuta resolvedorPlantillaRuta,
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolvedorExcepciones) {
+        return new AutorizacionAccesoFilter(autorizarAccesoInteractor, resolvedorPlantillaRuta, gestorTraza,
+                rutasPublicas, propiedadesAutenticacion, noAutenticadoEntryPoint, accesoDenegadoHandler, resolvedorExcepciones);
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
+    public FilterRegistrationBean<AutorizacionAccesoFilter> seguridadAutorizacionAccesoFilterSinRegistroServlet(
+            AutorizacionAccesoFilter filtro) {
+        var registro = new FilterRegistrationBean<>(filtro);
+        registro.setEnabled(false);
+        return registro;
+    }
+
+    @Bean
+    public SecurityFilterChain seguridadFilterChain(
+            HttpSecurity http,
+            AuthenticationManagerResolver<HttpServletRequest> seguridadAutenticacionPorEmisorResolver,
+            ObjectProvider<AutorizacionAccesoFilter> autorizacionAccesoFilter) throws Exception {
         http
                 .cors(cors -> { })
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(HttpMethod.POST, rutasAutenticacion.login()).permitAll()
-                        .requestMatchers(HttpMethod.POST, rutasAutenticacion.refresh()).permitAll()
-                        .requestMatchers(HttpMethod.POST, rutasAutenticacion.validate()).permitAll()
-                        .requestMatchers(RUTA_ACTUATOR_HEALTH, RUTA_ACTUATOR_PROMETHEUS).permitAll()
-                        .requestMatchers(RUTA_SWAGGER_UI, RUTA_API_DOCS, RUTA_SWAGGER_RESOURCES).permitAll()
+                        .requestMatchers(rutasPublicas.patronesPublicos()).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .authenticationEntryPoint(securityAuthenticationEntryPoint)
-                        .jwt(jwt -> jwt
-                                .decoder(jwtDecoder())
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter)
-                        )
+                        .authenticationEntryPoint(noAutenticadoEntryPoint)
+                        .authenticationManagerResolver(seguridadAutenticacionPorEmisorResolver)
                 )
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(securityAuthenticationEntryPoint)
-                        .accessDeniedHandler(securityAccessDeniedHandler)
+                        .authenticationEntryPoint(noAutenticadoEntryPoint)
+                        .accessDeniedHandler(accesoDenegadoHandler)
                 );
 
         // Verifica blacklist de tokens revocados en cada request autenticado.
         // Corre despues de BearerTokenAuthenticationFilter (autenticacion ya verificada).
         http.addFilterAfter(jwtBlacklistFilter, BearerTokenAuthenticationFilter.class);
 
-        http.addFilterAfter(identidadTrazaFilter(), BearerTokenAuthenticationFilter.class);
+        http.addFilterAfter(seguridadIdentidadTrazaFilter(), BearerTokenAuthenticationFilter.class);
+
+        // Tras seguridadIdentidadTrazaFilter: cuando el proveedor responde 401/403/503 la traza ya lleva el sub.
+        autorizacionAccesoFilter.ifAvailable(filtro -> http.addFilterAfter(filtro, BearerTokenAuthenticationFilter.class));
 
         return http.build();
     }
@@ -128,7 +116,12 @@ public class SeguridadConfig {
     // aun puede no estar instalado y el log saldria como clave cruda, sin sus argumentos.
     @EventListener(ApplicationReadyEvent.class)
     public void registrarConfiguracionAplicada() {
-        logger.info(IniciarSesionKey.LOG_JWT_DECODER_CONFIG,
-                PLANTILLA_ISSUER.formatted(keycloakServerUrl, realm), expectedAudience);
+        var emisores = propiedadesAutenticacion.habilitados().stream()
+                .map(AutenticacionProperties.Emisor::id)
+                .collect(Collectors.joining(","));
+        var modos = propiedadesAutenticacion.habilitados().stream()
+                .map(emisor -> emisor.authorization().name())
+                .collect(Collectors.joining(","));
+        logger.info(IniciarSesionKey.LOG_EMISORES_HABILITADOS, emisores, modos);
     }
 }

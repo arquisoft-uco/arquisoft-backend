@@ -4,4 +4,5 @@ import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 
 import java.util.UUID;
 
-public record EvaluacionesEnCursoFicha(UUID fichaPerfil, EstadoFicha estadoActual, long enEvaluacion) {}
+public record EvaluacionesEnCursoFicha(UUID fichaPerfil, String tituloProyecto, EstadoFicha estadoActual,
+                                       long enEvaluacion) {}

@@ -9,10 +9,13 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RepresentanteComiteUsuarioUnicoRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final RepresentanteComiteUsuarioUnicoRuleImpl rule = new RepresentanteComiteUsuarioUnicoRuleImpl();
 
@@ -21,7 +24,7 @@ class RepresentanteComiteUsuarioUnicoRuleImplTest {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
         var disponibilidad = new DisponibilidadRepresentanteComiteUsuario(
-                usuario, RepresentanteComiteDomain.crear(usuario));
+                usuario, NOMBRE, RepresentanteComiteDomain.crear(usuario));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(disponibilidad))
@@ -34,7 +37,7 @@ class RepresentanteComiteUsuarioUnicoRuleImplTest {
     void noDebeLanzar_cuandoUsuarioNoEsRepresentante() {
         // Arrange
         var disponibilidad = new DisponibilidadRepresentanteComiteUsuario(
-                UtilUUID.generarNuevoUUID(), RepresentanteComiteDomain.VACIO);
+                UtilUUID.generarNuevoUUID(), NOMBRE, RepresentanteComiteDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
@@ -45,9 +48,22 @@ class RepresentanteComiteUsuarioUnicoRuleImplTest {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
         var eliminado = RepresentanteComiteDomain.reconstruir(usuario, Instant.parse("2026-09-24T10:00:00Z"));
-        var disponibilidad = new DisponibilidadRepresentanteComiteUsuario(usuario, eliminado);
+        var disponibilidad = new DisponibilidadRepresentanteComiteUsuario(usuario, NOMBRE, eliminado);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoYaTieneElRol() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var entrada = new DisponibilidadRepresentanteComiteUsuario(usuario, NOMBRE, RepresentanteComiteDomain.crear(usuario));
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(RepresentanteComiteUsuarioDuplicadoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

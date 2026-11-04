@@ -1,28 +1,28 @@
 package com.arquisoft.shared.amqp.consumer;
 
 import com.arquisoft.shared.exception.InfrastructureException;
-import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.SolicitudTraza;
 import com.arquisoft.shared.tracing.infrastructure.traza.propagacion.TrazaHeaders;
 import com.rabbitmq.client.Channel;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.dao.DataAccessException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
-@Slf4j
 public abstract class AbstractEventConsumer {
 
     private final ObjectMapper objectMapper;
     private final GestorTraza gestorTraza;
+    private final AppLogger logger;
 
-    protected AbstractEventConsumer(ObjectMapper objectMapper, GestorTraza gestorTraza) {
+    protected AbstractEventConsumer(ObjectMapper objectMapper, GestorTraza gestorTraza, AppLogger logger) {
         this.objectMapper = objectMapper;
         this.gestorTraza = gestorTraza;
+        this.logger = logger;
     }
 
     protected <T> T deserialize(Message message, Class<T> type) {
@@ -40,7 +40,7 @@ public abstract class AbstractEventConsumer {
 
         try (var alcance = gestorTraza.abrir(solicitud)) {
             gestorTraza.registrarUsuario(header(message, TrazaHeaders.AMQP_USER_ID));
-            log.debug(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_RECIBIDO),
+            logger.debug(MensajeriaKey.LOG_EVENTO_RECIBIDO,
                     message.getMessageProperties().getConsumerQueue(), deliveryTag);
             try {
                 handler.handle();
@@ -49,7 +49,7 @@ public abstract class AbstractEventConsumer {
                 return;
             }
 
-            log.debug(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_PROCESADO),
+            logger.debug(MensajeriaKey.LOG_EVENTO_PROCESADO,
                     message.getMessageProperties().getConsumerQueue(), deliveryTag);
         }
         // Solo se alcanza si handler.handle() no lanzó excepción.
@@ -66,18 +66,28 @@ public abstract class AbstractEventConsumer {
 
         boolean transitorio = esTransitorio(ex);
 
-        if (transitorio && !Boolean.TRUE.equals(message.getMessageProperties().isRedelivered())) {
-            log.warn(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_REENCOLADO),
-                    deliveryTag, ex.getMessage(), ex);
-            channel.basicNack(deliveryTag, false, true);
+        if (transitorio && reintentarTransitorio(message, channel, deliveryTag, ex)) {
             return;
         }
 
         var clave = transitorio
                 ? MensajeriaKey.LOG_EVENTO_A_DLQ_TRAS_REINTENTO
                 : MensajeriaKey.LOG_EVENTO_A_DLQ;
-        log.error(Mensajes.obtener(clave), deliveryTag, ex.getMessage(), ex);
+        logger.error(clave, ex, deliveryTag, ex.getMessage());
         channel.basicNack(deliveryTag, false, false);
+    }
+
+    // Punto de extension para una cola que necesite esperar entre reintentos en vez de reencolar
+    // al instante. Quien lo sobrescribe queda a cargo de confirmar o rechazar la entrega cuando
+    // devuelve true; si devuelve false, el mensaje va a la cola de descarte.
+    protected boolean reintentarTransitorio(Message message, Channel channel, long deliveryTag, Exception ex)
+            throws IOException {
+        if (Boolean.TRUE.equals(message.getMessageProperties().isRedelivered())) {
+            return false;
+        }
+        logger.warn(MensajeriaKey.LOG_EVENTO_REENCOLADO, deliveryTag, ex.getMessage(), ex);
+        channel.basicNack(deliveryTag, false, true);
+        return true;
     }
 
     private static boolean esTransitorio(Throwable ex) {

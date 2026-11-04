@@ -1,9 +1,11 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,8 +17,8 @@ class SecurityConfigJwtValidatorTest {
     private static final String ISSUER = "https://keycloak.example.com/realms/arquisoft";
     private static final String EXPECTED_AUDIENCE = "arquisoft-api";
 
-    private final OAuth2TokenValidator<Jwt> validator =
-            SeguridadConfig.jwtValidator(ISSUER, EXPECTED_AUDIENCE);
+    private final OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(
+            JwtValidators.createDefaultWithIssuer(ISSUER), new AudienciaValidator(List.of(EXPECTED_AUDIENCE)));
 
     private Jwt jwt(String issuer, List<String> audiencias) {
         return Jwt.withTokenValue("token")

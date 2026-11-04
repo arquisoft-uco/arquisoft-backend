@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.estudiante.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RemoverEstudianteKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
@@ -37,11 +37,11 @@ public class RemoverEstudianteUseCaseImpl implements RemoverEstudianteUseCase {
         logger.debug(RemoverEstudianteKey.LOG_VERIFICACION_REMOVER,
                 entrada.getUsuario(), !estudiante.esVacio(), estudiante.estaEliminado());
 
-        removerEstudianteValidator.validar(entrada.getUsuario(), estudiante);
+        removerEstudianteValidator.validar(entrada.getUsuario(), usuario, estudiante);
 
         estudiante.remover(UtilFecha.generarInstanteActual());
         estudianteOutputPort.eliminarLogica(estudiante.getUsuario(), estudiante.getEliminadoEn());
-        proveedorIdentidadOutputPort.revocarRealmRole(estudiante.getUsuario(), UsuariosRealmRoles.ESTUDIANTE);
+        proveedorIdentidadOutputPort.revocarRol(estudiante.getUsuario(), UsuariosRoles.ESTUDIANTE);
 
         eventPublisher.publish(new EstudianteRemovidoEvent(
                 usuario.getId(), usuario.getIdentificador(), usuario.getNombre(), usuario.getEmail()));

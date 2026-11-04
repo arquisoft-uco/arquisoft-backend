@@ -5,7 +5,6 @@ import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interactor.RegistrarFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web.dto.RegistrarFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web.dto.RegistrarFichaPerfilResponseDTO;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.message.annotation.ApiCodes;
@@ -21,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.UUID;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +34,6 @@ public class RegistrarFichaPerfilController {
     private final RegistrarFichaPerfilInteractor registrarFichaPerfilInteractor;
 
     @PostMapping
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_CREATE)
     @Operation(
             summary = FichasApiMessages.FichaPerfil.REGISTRAR_SUMMARY,
             description = FichasApiMessages.FichaPerfil.REGISTRAR_DESCRIPTION,

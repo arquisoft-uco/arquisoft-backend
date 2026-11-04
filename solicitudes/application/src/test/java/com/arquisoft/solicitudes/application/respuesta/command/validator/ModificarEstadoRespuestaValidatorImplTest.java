@@ -71,8 +71,7 @@ class ModificarEstadoRespuestaValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(entrada,
                 ResumenSolicitud.VACIO, new ResumenRespuesta(solicitud, ESTADO_ACTUAL_OK),
                 UsuarioDomain.VACIO, UsuarioDomain.VACIO))
-                .isInstanceOf(SolicitudNoEncontradaException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(SolicitudNoEncontradaException.class);
     }
 
     @Test
@@ -151,8 +150,7 @@ class ModificarEstadoRespuestaValidatorImplTest {
                 resumenSolicitud(solicitud, remitente, coordinador, TIPO_OK),
                 ResumenRespuesta.VACIO,
                 usuario(remitente, "ana"), usuario(coordinador, "pedro")))
-                .isInstanceOf(RespuestaNoEncontradaException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(RespuestaNoEncontradaException.class);
     }
 
     @Test
@@ -168,8 +166,7 @@ class ModificarEstadoRespuestaValidatorImplTest {
                 resumenSolicitud(solicitud, remitente, coordinador, TIPO_OK),
                 new ResumenRespuesta(solicitud, "APROBADA"),
                 usuario(remitente, "ana"), usuario(coordinador, "pedro")))
-                .isInstanceOf(RespuestaNoEnRevisionException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(RespuestaNoEnRevisionException.class);
     }
 
     @Test
@@ -185,7 +182,6 @@ class ModificarEstadoRespuestaValidatorImplTest {
                 resumenSolicitud(solicitud, remitente, coordinador, TIPO_OK),
                 new ResumenRespuesta(solicitud, ESTADO_ACTUAL_OK),
                 usuario(remitente, "ana"), usuario(coordinador, "pedro")))
-                .isInstanceOf(EstadoRespuestaNoResolutivoException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(EstadoRespuestaNoResolutivoException.class);
     }
 }

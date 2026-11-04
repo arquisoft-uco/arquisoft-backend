@@ -47,4 +47,15 @@ public final class SeguridadFields {
         public static final String ID = "identidadId";
         public static final String CORREO = "correo";
     }
+
+    public static final class Autorizacion {
+
+        private Autorizacion() {}
+
+        public static final String METODO = "metodo";
+        public static final String RECURSO = "recurso";
+        public static final String CREDENCIAL = "credencial";
+        public static final String EMISOR = "emisor";
+        public static final String CORRELACION = "correlacion";
+    }
 }

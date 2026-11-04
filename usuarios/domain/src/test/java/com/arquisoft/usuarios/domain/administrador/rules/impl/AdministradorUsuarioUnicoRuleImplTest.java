@@ -9,10 +9,13 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AdministradorUsuarioUnicoRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final AdministradorUsuarioUnicoRuleImpl rule = new AdministradorUsuarioUnicoRuleImpl();
 
@@ -21,7 +24,7 @@ class AdministradorUsuarioUnicoRuleImplTest {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
         var disponibilidad = new DisponibilidadAdministradorUsuario(
-                usuario, AdministradorDomain.crear(usuario));
+                usuario, NOMBRE, AdministradorDomain.crear(usuario));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(disponibilidad))
@@ -34,7 +37,7 @@ class AdministradorUsuarioUnicoRuleImplTest {
     void noDebeLanzar_cuandoAdministradorEsVacio() {
         // Arrange
         var disponibilidad = new DisponibilidadAdministradorUsuario(
-                UtilUUID.generarNuevoUUID(), AdministradorDomain.VACIO);
+                UtilUUID.generarNuevoUUID(), NOMBRE, AdministradorDomain.VACIO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
@@ -45,9 +48,22 @@ class AdministradorUsuarioUnicoRuleImplTest {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
         var eliminado = AdministradorDomain.reconstruir(usuario, Instant.parse("2026-09-24T10:00:00Z"));
-        var disponibilidad = new DisponibilidadAdministradorUsuario(usuario, eliminado);
+        var disponibilidad = new DisponibilidadAdministradorUsuario(usuario, NOMBRE, eliminado);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoYaTieneElRol() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var entrada = new DisponibilidadAdministradorUsuario(usuario, NOMBRE, AdministradorDomain.crear(usuario));
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(AdministradorUsuarioDuplicadoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

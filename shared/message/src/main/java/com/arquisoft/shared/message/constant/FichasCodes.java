@@ -38,7 +38,6 @@ public final class FichasCodes {
         public static final String TIPO_ITEM_INVALIDO = "TIPO_ITEM_INVALIDO";
         public static final String ITEM_NO_ENCONTRADO = "ITEM_NO_ENCONTRADO";
         public static final String ESTADO_FICHA_REQUERIDO = "ITEM_ESTADO_FICHA_REQUERIDO";
-        public static final String ESTADO_FICHA_NO_MODIFICABLE = "ESTADO_FICHA_NO_MODIFICABLE";
         public static final String ITEM_CON_REVISIONES = "ITEM_CON_REVISIONES";
     }
 
@@ -69,6 +68,7 @@ public final class FichasCodes {
         public static final String ASESOR_FICHA_REQUERIDO = "OBSERVACION_ITEM_ASESOR_FICHA_REQUERIDO";
         public static final String OBSERVACION_ITEM_DUPLICADA = "OBSERVACION_ITEM_DUPLICADA";
         public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_ITEM_ESTUDIANTE_REQUERIDO";
+        public static final String NO_ENCONTRADA = "OBSERVACION_ITEM_NO_ENCONTRADA";
         public static final String ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO =
                 "ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO";
     }
@@ -89,6 +89,7 @@ public final class FichasCodes {
         public static final String OBSERVACION_EVALUACION_NO_ENCONTRADA = "OBSERVACION_EVALUACION_NO_ENCONTRADA";
         public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_EVALUACION_ESTUDIANTE_REQUERIDO";
         public static final String ASESOR_FICHA_REQUERIDO = "OBSERVACION_EVALUACION_ASESOR_FICHA_REQUERIDO";
+        public static final String FICHA_PERFIL_REQUERIDA = "OBSERVACION_EVALUACION_FICHA_PERFIL_REQUERIDA";
     }
 
     public static final class Estudiante {
@@ -157,6 +158,7 @@ public final class FichasCodes {
 
         public static final String NO_ENCONTRADO = "ESTADO_FICHA_NO_ENCONTRADO";
         public static final String ROLES_REQUERIDO = "ESTADO_FICHA_ROLES_REQUERIDO";
+        public static final String ACTOR_REQUERIDO = "ESTADO_FICHA_ACTOR_REQUERIDO";
     }
 
     public static final class EvaluacionFichaPerfil {
@@ -167,6 +169,7 @@ public final class FichasCodes {
         public static final String REPRESENTANTE_REQUERIDO = "REPRESENTANTE_REQUERIDO";
         public static final String FICHA_REQUERIDA = "FICHA_REQUERIDA";
         public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_REQUERIDO";
+        public static final String ASESOR_FICHA_REQUERIDO = "EVALUACION_FICHA_PERFIL_ASESOR_FICHA_REQUERIDO";
     }
 
     public static final class RepresentanteComite {

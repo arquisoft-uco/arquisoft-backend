@@ -3,10 +3,10 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.query.primaryadapter
 import com.arquisoft.fichas.application.itemfichaperfil.query.primaryport.interactor.ConsultarItemsFichaPerfilRepresentanteInteractor;
 import com.arquisoft.fichas.application.itemfichaperfil.query.primaryport.model.ConsultarItemsFichaPerfilRepresentanteQuery;
 import com.arquisoft.fichas.application.itemfichaperfil.query.readmodel.ItemFichaPerfilReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +14,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -35,13 +33,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarItemsFichaPerfilRepresentanteController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarItemsFichaPerfilRepresentanteControllerTest.TestSecurityConfig.class})
 class ConsultarItemsFichaPerfilRepresentanteControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -64,10 +61,9 @@ class ConsultarItemsFichaPerfilRepresentanteControllerTest {
     private static final UUID REPRESENTANTE_ID = UUID.randomUUID();
     private static final UUID FICHA_ID = UUID.randomUUID();
 
-    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol(String authority) {
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject(REPRESENTANTE_ID.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(j -> j.subject(REPRESENTANTE_ID.toString()));
     }
 
     @Test
@@ -80,7 +76,7 @@ class ConsultarItemsFichaPerfilRepresentanteControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/{fichaPerfilId}/items/representante", FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.ITEM_FICHA_PERFIL_REPRESENTANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].id").value(itemId.toString()))
@@ -98,7 +94,7 @@ class ConsultarItemsFichaPerfilRepresentanteControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/{fichaPerfilId}/items/representante", FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.ITEM_FICHA_PERFIL_REPRESENTANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -108,7 +104,7 @@ class ConsultarItemsFichaPerfilRepresentanteControllerTest {
     void debeRetornar400_cuandoFichaPerfilIdNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/{fichaPerfilId}/items/representante", "no-es-uuid")
-                        .with(jwtConRol(FichasAuthorities.ITEM_FICHA_PERFIL_REPRESENTANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -120,14 +116,6 @@ class ConsultarItemsFichaPerfilRepresentanteControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoSinClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get("/fichas-perfil/{fichaPerfilId}/items/representante", FICHA_ID)
-                        .with(jwtConRol("otro:permiso")))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debePasarFichaPerfilIdDelPathYSubjectDelJwtAlQuery() throws Exception {
         // Arrange
         when(consultarItemsFichaPerfilRepresentanteInteractor.ejecutar(any(ConsultarItemsFichaPerfilRepresentanteQuery.class)))
@@ -135,7 +123,7 @@ class ConsultarItemsFichaPerfilRepresentanteControllerTest {
 
         // Act
         mockMvc.perform(get("/fichas-perfil/{fichaPerfilId}/items/representante", FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.ITEM_FICHA_PERFIL_REPRESENTANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk());
 
         // Assert

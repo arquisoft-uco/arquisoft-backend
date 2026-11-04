@@ -1,37 +1,56 @@
 package com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web.mapper;
 
-import com.arquisoft.shared.validation.ApplicationValidationException;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ConsultarTiposSolicitudRequestMapperTest {
 
-    @Test
-    void debeConservarLosIds_cuandoConstruyeElQuery() {
-        // Act
-        var query = ConsultarTiposSolicitudRequestMapper.toQuery(Set.of("CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO"));
-
-        // Assert
-        assertThat(query.tipos()).containsExactlyInAnyOrder("CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO");
+    private static IdentidadActual identidad(String... roles) {
+        return new IdentidadActual(UUID.randomUUID(), "u@uco.edu.co", "usuario", List.of(roles), "token", null);
     }
 
     @Test
-    void debeAceptarConjuntoVacio_cuandoNoHayTiposPermitidos() {
+    void debeDevolverLosCuatroTiposDeEstudiante_cuandoElRolEsEstudiante() {
         // Act
-        var query = ConsultarTiposSolicitudRequestMapper.toQuery(Set.of());
+        var query = ConsultarTiposSolicitudRequestMapper.toQuery(identidad(UsuariosRoles.ESTUDIANTE));
+
+        // Assert
+        assertThat(query.tipos()).containsExactlyInAnyOrder(
+                "NOVEDAD_PARA_EL_COORDINADOR", "NOVEDAD_PARA_EL_ASESOR",
+                "CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO");
+    }
+
+    @Test
+    void debeDevolverSoloRegistroDeUsuarios_cuandoElRolEsCoordinador() {
+        // Act
+        var query = ConsultarTiposSolicitudRequestMapper.toQuery(identidad(UsuariosRoles.COORDINADOR));
+
+        // Assert
+        assertThat(query.tipos()).containsExactly("REGISTRO_Y_MODIFICACION_DE_USUARIOS");
+    }
+
+    @Test
+    void debeUnirLosTipos_cuandoCombinaRoles() {
+        // Act
+        var query = ConsultarTiposSolicitudRequestMapper.toQuery(
+                identidad(UsuariosRoles.ESTUDIANTE, UsuariosRoles.COORDINADOR));
+
+        // Assert
+        assertThat(query.tipos()).hasSize(5);
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoElRolNoEnviaSolicitudes() {
+        // Act
+        var query = ConsultarTiposSolicitudRequestMapper.toQuery(identidad(UsuariosRoles.JURADO, "rol-desconocido"));
 
         // Assert
         assertThat(query.tipos()).isEmpty();
-    }
-
-    @Test
-    void debePropagarApplicationValidationException_cuandoConjuntoEsNulo() {
-        // Act & Assert
-        assertThatThrownBy(() -> ConsultarTiposSolicitudRequestMapper.toQuery(null))
-                .isInstanceOf(ApplicationValidationException.class);
     }
 }

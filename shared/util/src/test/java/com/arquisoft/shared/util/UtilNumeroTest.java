@@ -77,4 +77,12 @@ class UtilNumeroTest {
         assertThat(UtilNumero.obtenerPorDefecto(null, 9L)).isEqualTo(9L);
         assertThat(UtilNumero.obtenerPorDefecto(3L, 9L)).isEqualTo(3L);
     }
+
+    @Test
+    void debeExpresarEnMegabytes_cuandoRecibeBytes() {
+        assertThat(UtilNumero.formatearMegabytes(5_242_880L)).isEqualTo("5");
+        assertThat(UtilNumero.formatearMegabytes(1_572_864L)).isEqualTo("1.5");
+        assertThat(UtilNumero.formatearMegabytes(1_000_000L)).isEqualTo("0.95");
+        assertThat(UtilNumero.formatearMegabytes(0L)).isEqualTo("0");
+    }
 }

@@ -16,30 +16,33 @@ class AsignarEstudiantesProyectoGradoCommandTest {
     void debeCrearCommandConLosUuidsConvertidos_cuandoLaEntradaEsValida() {
         // Arrange
         var proyectoGrado = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
         var estudiantes = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 
         // Act
         var command = AsignarEstudiantesProyectoGradoCommand.crear(
-                proyectoGrado, estudiantes.stream().map(UUID::toString).toList());
+                proyectoGrado, coordinador, estudiantes.stream().map(UUID::toString).toList());
 
         // Assert
         assertThat(command.proyectoGrado()).isEqualTo(proyectoGrado);
+        assertThat(command.coordinador()).isEqualTo(coordinador);
         assertThat(command.estudiantes()).containsExactlyElementsOf(estudiantes);
     }
 
     @Test
-    void debeAcumularTodosLosErrores_cuandoSinProyectoYConExcesoDeEstudiantesInvalidos() {
+    void debeAcumularTodosLosErrores_cuandoSinProyectoNiCoordinadorYConExcesoDeEstudiantesInvalidos() {
         // Arrange
         var estudiantes = List.of(UUID.randomUUID().toString(), UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(), "no-uuid");
 
         // Act & Assert
-        assertThatThrownBy(() -> AsignarEstudiantesProyectoGradoCommand.crear(null, estudiantes))
+        assertThatThrownBy(() -> AsignarEstudiantesProyectoGradoCommand.crear(null, null, estudiantes))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .extracting(error -> error.codigoError())
                         .containsExactlyInAnyOrder(
                                 ProyectosCodes.EstudianteProyectoGrado.PROYECTO_GRADO_ID_REQUERIDO,
+                                ProyectosCodes.EstudianteProyectoGrado.COORDINADOR_ID_REQUERIDO,
                                 ProyectosCodes.EstudianteProyectoGrado.ESTUDIANTES_MAXIMO,
                                 ProyectosCodes.EstudianteProyectoGrado.ESTUDIANTE_ID_INVALIDO));
     }

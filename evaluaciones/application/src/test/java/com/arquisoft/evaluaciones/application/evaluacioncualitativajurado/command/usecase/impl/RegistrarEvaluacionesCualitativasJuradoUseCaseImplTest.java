@@ -8,6 +8,8 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.secondaryport.entity.EvaluacionCualitativaJuradoEntity;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.validator.RegistrarEvaluacionesCualitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoCompletaFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.MarcarEvaluacionJuradoEvaluadaUseCase;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.finder.ItemsCualitativosJuradoExistentesFinder;
 import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
@@ -16,6 +18,7 @@ import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.RegistroEva
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.event.EvaluacionesCualitativasJuradoRegistradasEvent;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.ItemsCualitativosJuradoNoEncontradosException;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.CompletitudEvaluacionJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.ContextoRegistroEvaluacionJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
@@ -67,6 +70,12 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     private IniciarEvaluacionUseCase iniciarEvaluacionUseCase;
 
     @Mock
+    private EvaluacionJuradoCompletaFinder completaFinder;
+
+    @Mock
+    private MarcarEvaluacionJuradoEvaluadaUseCase marcarEvaluadaUseCase;
+
+    @Mock
     private EventPublisher eventPublisher;
 
     @Mock
@@ -91,18 +100,27 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
         when(itemsRegistradosFinder.obtener(any(CriterioItemsEvaluacion.class))).thenReturn(Set.of());
+        when(completaFinder.obtener(evaluacionJurado)).thenReturn(true);
 
         // Act
         useCase.ejecutar(registro);
 
         // Assert
-        var orden = inOrder(contextoFinder, validator, iniciarEvaluacionUseCase, outputPort, eventPublisher);
+        var orden = inOrder(contextoFinder, validator, iniciarEvaluacionUseCase, outputPort,
+                completaFinder, marcarEvaluadaUseCase, eventPublisher);
         orden.verify(contextoFinder).obtener(evaluacionJurado);
         orden.verify(validator).validarExistencia(any());
         orden.verify(validator).validarContenido(any(), any(), any());
         orden.verify(iniciarEvaluacionUseCase).ejecutar(any(InicioEvaluacionDomain.class));
         orden.verify(outputPort).registrarTodas(any());
+        orden.verify(completaFinder).obtener(evaluacionJurado);
+        orden.verify(marcarEvaluadaUseCase).ejecutar(any(CompletitudEvaluacionJuradoDomain.class));
         orden.verify(eventPublisher).publish(any());
+
+        var completitudCaptor = ArgumentCaptor.forClass(CompletitudEvaluacionJuradoDomain.class);
+        verify(marcarEvaluadaUseCase).ejecutar(completitudCaptor.capture());
+        assertThat(completitudCaptor.getValue().getEvaluacionJurado()).isEqualTo(evaluacionJurado);
+        assertThat(completitudCaptor.getValue().isCompleta()).isTrue();
 
         verify(itemsFinder).obtener(Set.of(item));
         verify(criteriosFinder).obtener(Set.of(criterio));
@@ -139,6 +157,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
         when(itemsRegistradosFinder.obtener(any(CriterioItemsEvaluacion.class))).thenReturn(Set.of());
+        when(completaFinder.obtener(evaluacionJurado)).thenReturn(false);
 
         // Act
         useCase.ejecutar(registro);
@@ -148,6 +167,9 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         verify(iniciarEvaluacionUseCase).ejecutar(inicioCaptor.capture());
         assertThat(inicioCaptor.getValue().getEstadoActual().getId()).isEqualTo("EN_PROGRESO");
         verify(outputPort).registrarTodas(any());
+        var completitudCaptor = ArgumentCaptor.forClass(CompletitudEvaluacionJuradoDomain.class);
+        verify(marcarEvaluadaUseCase).ejecutar(completitudCaptor.capture());
+        assertThat(completitudCaptor.getValue().isCompleta()).isFalse();
         verify(eventPublisher).publish(any());
     }
 
@@ -165,6 +187,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         verify(itemsFinder, never()).obtener(any());
         verify(iniciarEvaluacionUseCase, never()).ejecutar(any());
         verify(outputPort, never()).registrarTodas(any());
+        verify(marcarEvaluadaUseCase, never()).ejecutar(any());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -189,6 +212,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
                 .isInstanceOf(ItemsCualitativosJuradoNoEncontradosException.class);
         verify(iniciarEvaluacionUseCase, never()).ejecutar(any());
         verify(outputPort, never()).registrarTodas(any());
+        verify(marcarEvaluadaUseCase, never()).ejecutar(any());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -210,6 +234,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(registro)).isSameAs(fallo);
+        verify(marcarEvaluadaUseCase, never()).ejecutar(any());
         verify(eventPublisher, never()).publish(any());
     }
 

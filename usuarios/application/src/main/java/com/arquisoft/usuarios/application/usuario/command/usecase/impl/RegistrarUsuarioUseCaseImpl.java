@@ -6,6 +6,7 @@ import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoo
 import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
+import com.arquisoft.usuarios.application.jurado.command.usecase.AgregarJuradoUseCase;
 import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
@@ -20,7 +21,7 @@ import com.arquisoft.usuarios.application.usuario.command.validator.RegistrarUsu
 import com.arquisoft.usuarios.domain.usuario.RegistroUsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,7 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
     private final AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
     private final AgregarAdministradorUseCase agregarAdministradorUseCase;
     private final AgregarBibliotecarioUseCase agregarBibliotecarioUseCase;
+    private final AgregarJuradoUseCase agregarJuradoUseCase;
     private final AppLogger logger;
 
     @Override
@@ -68,37 +70,37 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
         var usuario = UsuarioDomain.crear(identidadId, registro);
         usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));
 
-        if (registro.contieneRol(UsuariosRealmRoles.ESTUDIANTE)) {
+        if (registro.contieneRol(UsuariosRoles.ESTUDIANTE)) {
             agregarEstudianteUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.COORDINADOR)) {
+        if (registro.contieneRol(UsuariosRoles.COORDINADOR)) {
             agregarCoordinadorUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.ASESOR_FICHA)) {
+        if (registro.contieneRol(UsuariosRoles.ASESOR_FICHA)) {
             agregarAsesorFichaUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.ASESOR)) {
+        if (registro.contieneRol(UsuariosRoles.ASESOR)) {
             agregarAsesorUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.REPRESENTANTE_COMITE)) {
+        if (registro.contieneRol(UsuariosRoles.REPRESENTANTE_COMITE)) {
             agregarRepresentanteComiteUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.ADMINISTRADOR)) {
+        if (registro.contieneRol(UsuariosRoles.ADMINISTRADOR)) {
             agregarAdministradorUseCase.ejecutar(usuario);
         }
 
-        if (registro.contieneRol(UsuariosRealmRoles.BIBLIOTECARIO)) {
+        if (registro.contieneRol(UsuariosRoles.BIBLIOTECARIO)) {
             agregarBibliotecarioUseCase.ejecutar(usuario);
         }
 
-        // TODO HU250 (jurado):
-        //  despachar aqui su Agregar{Rol}UseCase con registro.contieneRol(...); es el mismo use case que
-        //  ModificarUsuarioUseCaseImpl invoca para reactivar el rol.
+        if (registro.contieneRol(UsuariosRoles.JURADO)) {
+            agregarJuradoUseCase.ejecutar(usuario);
+        }
 
         logger.info(RegistrarUsuarioKey.LOG_REGISTRADO,
                 identidadId, UtilTexto.enmascararCorreo(registro.getEmail()));

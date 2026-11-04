@@ -3,12 +3,12 @@ package com.arquisoft.fichas.infrastructure.observacionevaluacion.command.primar
 import com.arquisoft.fichas.application.observacionevaluacion.command.primaryport.interactor.ModificarObservacionEvaluacionInteractor;
 import com.arquisoft.fichas.application.observacionevaluacion.command.primaryport.model.ModificarObservacionEvaluacionCommand;
 import com.arquisoft.fichas.domain.observacionevaluacion.exception.ObservacionEvaluacionNoEncontradaException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -40,13 +38,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ModificarObservacionEvaluacionController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ModificarObservacionEvaluacionControllerTest.TestSecurityConfig.class})
 class ModificarObservacionEvaluacionControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -109,20 +106,6 @@ class ModificarObservacionEvaluacionControllerTest {
     }
 
     @Test
-    void debe403_cuandoAuthorityDeAgregarEnVezDeModificar() throws Exception {
-        // Act & Assert — el client role de agregar observaciones no habilita modificarlas
-        mockMvc.perform(patch(RUTA, OBSERVACION_EVALUACION_ID)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(REPRESENTANTE_COMITE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_EVALUACION_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-
-        verify(modificarObservacionEvaluacionInteractor, never()).ejecutar(any());
-    }
-
-    @Test
     void debe422_cuandoLaObservacionNoExiste() throws Exception {
         // Arrange
         doThrow(new ObservacionEvaluacionNoEncontradaException(OBSERVACION_EVALUACION_ID))
@@ -138,8 +121,7 @@ class ModificarObservacionEvaluacionControllerTest {
     private MockHttpServletRequestBuilder peticionAutorizada(String body) {
         return patch(RUTA, OBSERVACION_EVALUACION_ID)
                 .with(SecurityMockMvcRequestPostProcessors.jwt()
-                        .jwt(j -> j.subject(REPRESENTANTE_COMITE_ID.toString()))
-                        .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_EVALUACION_UPDATE)))
+                        .jwt(j -> j.subject(REPRESENTANTE_COMITE_ID.toString())))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body);
     }

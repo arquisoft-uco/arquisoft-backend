@@ -1,6 +1,5 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.secondaryport.mapper;
 
-import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGrado;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 import org.junit.jupiter.api.Test;
 
@@ -20,11 +19,9 @@ class ProyectoGradoMapperTest {
         var reconstruido = ProyectoGradoMapper.toDomain(entidad);
 
         // Assert
-        assertThat(entidad.estadoProyectoGrado()).isEqualTo(EstadoProyectoGrado.EN_PROCESO.getId());
         assertThat(reconstruido.getId()).isEqualTo(proyecto.getId());
         assertThat(reconstruido.getFichaPerfil()).isEqualTo(proyecto.getFichaPerfil());
         assertThat(reconstruido.getTituloProyecto()).isEqualTo(proyecto.getTituloProyecto());
         assertThat(reconstruido.getCoordinador()).isEqualTo(proyecto.getCoordinador());
-        assertThat(reconstruido.getEstadoProyectoGrado()).isEqualTo(EstadoProyectoGrado.EN_PROCESO);
     }
 }

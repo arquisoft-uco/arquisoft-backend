@@ -39,4 +39,32 @@ public class NotificacionesProyectosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ASESOR_PROYECTO_GRADO_ASIGNADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_ASIGNADO;
+
+    @Bean
+    public Declarables notificacionesAsesorProyectoGradoAsignadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_PROYECTO_GRADO_ASIGNADO_QUEUE,
+                EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_ASIGNADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String ASESOR_PROYECTO_GRADO_FINALIZADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_FINALIZADO;
+
+    @Bean
+    public Declarables notificacionesAsesorProyectoGradoFinalizadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_PROYECTO_GRADO_FINALIZADO_QUEUE,
+                EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_FINALIZADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

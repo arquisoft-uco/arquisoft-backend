@@ -44,8 +44,7 @@ public record RegistrarEvaluacionesCualitativasJuradoCommand(
             result.agregarError(
                     EvaluacionesFields.RegistroEvaluacionesCualitativasJurado.EVALUACIONES,
                     EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.LOTE_VACIO,
-                    Mensajes.formatear(ValidadorKey.COLECCION_VACIA,
-                            EvaluacionesFields.RegistroEvaluacionesCualitativasJurado.EVALUACIONES));
+                    Mensajes.obtener(ValidadorKey.COLECCION_VACIA));
             return List.of();
         }
 

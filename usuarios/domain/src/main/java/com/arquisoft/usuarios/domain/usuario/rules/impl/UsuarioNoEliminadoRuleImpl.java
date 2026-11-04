@@ -9,7 +9,7 @@ public class UsuarioNoEliminadoRuleImpl implements UsuarioNoEliminadoRule {
     @Override
     public void validar(VigenciaUsuario vigencia) {
         if (vigencia.encontrado().estaEliminado()) {
-            throw new UsuarioEliminadoException(vigencia.usuario());
+            throw new UsuarioEliminadoException(vigencia.usuario(), vigencia.encontrado().getNombre());
         }
     }
 }

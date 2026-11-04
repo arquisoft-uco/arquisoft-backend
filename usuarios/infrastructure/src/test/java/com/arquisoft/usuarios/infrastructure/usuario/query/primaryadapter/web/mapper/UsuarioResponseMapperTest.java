@@ -13,7 +13,7 @@ class UsuarioResponseMapperTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var readModel = new UsuarioReadModel(id, "1007", "Gina Paz", "gina.paz@uco.edu.co",
-                "3000000000", "ACTIVO", true, false, true, false, false, false, true, false);
+                "3000000000", "ACTIVO", true, false, true, false, false, false, true, false, true);
 
         // Act
         var dto = UsuarioResponseMapper.toResponse(readModel);
@@ -25,13 +25,14 @@ class UsuarioResponseMapperTest {
         assertThat(dto.esAsesor()).isTrue();
         assertThat(dto.esRepresentanteComite()).isFalse();
         assertThat(dto.esAdministrador()).isTrue();
+        assertThat(dto.esJurado()).isTrue();
     }
 
     @Test
     void debePropagarEsBibliotecario_cuandoConvierteAResponseDTO() {
         // Arrange
         var readModel = new UsuarioReadModel(UtilUUID.generarNuevoUUID(), "1009", "Ivan Rios", "ivan.rios@uco.edu.co",
-                "3000000000", "ACTIVO", true, false, false, false, false, false, false, true);
+                "3000000000", "ACTIVO", true, false, false, false, false, false, false, true, false);
 
         // Act
         var dto = UsuarioResponseMapper.toResponse(readModel);

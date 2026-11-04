@@ -1,7 +1,6 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.secondaryport.mapper;
 
 import com.arquisoft.proyectos.application.proyectogrado.command.secondaryport.entity.ProyectoGradoEntity;
-import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGrado;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 
 public final class ProyectoGradoMapper {
@@ -13,8 +12,7 @@ public final class ProyectoGradoMapper {
                 proyecto.getId(),
                 proyecto.getFichaPerfil(),
                 proyecto.getTituloProyecto(),
-                proyecto.getCoordinador(),
-                proyecto.getEstadoProyectoGrado().getId());
+                proyecto.getCoordinador());
     }
 
     public static ProyectoGradoDomain toDomain(ProyectoGradoEntity entity) {
@@ -22,7 +20,6 @@ public final class ProyectoGradoMapper {
                 entity.id(),
                 entity.fichaPerfil(),
                 entity.tituloProyecto(),
-                entity.coordinador(),
-                EstadoProyectoGrado.desde(entity.estadoProyectoGrado()));
+                entity.coordinador());
     }
 }

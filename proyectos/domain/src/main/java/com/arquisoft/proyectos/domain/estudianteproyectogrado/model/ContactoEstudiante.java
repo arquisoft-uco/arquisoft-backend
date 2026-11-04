@@ -1,4 +1,6 @@
 package com.arquisoft.proyectos.domain.estudianteproyectogrado.model;
 
-public record ContactoEstudiante(String nombre, String email) {
+import java.util.UUID;
+
+public record ContactoEstudiante(UUID id, String nombre, String email) {
 }

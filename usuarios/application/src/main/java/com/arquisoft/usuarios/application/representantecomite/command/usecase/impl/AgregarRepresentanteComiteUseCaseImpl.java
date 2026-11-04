@@ -30,7 +30,7 @@ public class AgregarRepresentanteComiteUseCaseImpl implements AgregarRepresentan
         logger.debug(AgregarRepresentanteComiteKey.LOG_VERIFICACION_AGREGAR,
                 usuario.getId(), !representanteComite.esVacio(), representanteComite.estaEliminado());
 
-        agregarRepresentanteComiteValidator.validar(usuario.getId(), representanteComite);
+        agregarRepresentanteComiteValidator.validar(usuario, representanteComite);
 
         if (representanteComite.esVacio()) {
             representanteComiteOutputPort.guardar(

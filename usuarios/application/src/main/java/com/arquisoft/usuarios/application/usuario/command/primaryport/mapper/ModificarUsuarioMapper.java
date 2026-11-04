@@ -12,7 +12,6 @@ public final class ModificarUsuarioMapper {
                 command.usuario(),
                 new ModificacionUsuarioDomain.DatosModificacionUsuario(
                         command.identificador(),
-                        command.nombre(),
                         command.email(),
                         command.contacto(),
                         command.nombres(),

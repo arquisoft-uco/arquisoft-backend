@@ -5,7 +5,41 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum EvaluacionCuantitativaJuradoKey implements ClaveMensaje {
 
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.consultando", 1),
-    LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.consulta-completada", 1);
+    LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.consulta-completada", 1),
+    LOG_CAMBIANDO_PUNTAJE("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.cambiando-puntaje", 2),
+    LOG_VERIFICACION_CAMBIAR_PUNTAJE(
+            "evaluaciones.aplicacion.evaluacioncuantitativajurado.log.verificacion-cambiar-puntaje", 3),
+    LOG_PUNTAJE_CAMBIADO("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.puntaje-cambiado", 1),
+    LOG_GUARDADO("evaluaciones.infraestructura.evaluacioncuantitativajurado.log.guardado", 1),
+    LOG_OMITIENDO_LOTE("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.omitiendo-lote", 2),
+    LOG_VERIFICACION_OMISION("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.verificacion-omision", 5),
+    LOG_LOTE_OMITIDO("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.lote-omitido", 2),
+    LOG_LOTE_ELIMINADO("evaluaciones.infraestructura.evaluacioncuantitativajurado.log.lote-eliminado", 1),
+    ERROR_EVALUACIONES_NO_ENCONTRADAS(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluaciones-no-encontradas", 0),
+    ERROR_EVALUACIONES_NO_ENCONTRADAS_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluaciones-no-encontradas-detalle", 2),
+    ERROR_OMISION_EVALUACION_JURADO_FINALIZADA(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.omision-evaluacion-jurado-finalizada", 0),
+    ERROR_OMISION_EVALUACION_JURADO_FINALIZADA_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.omision-evaluacion-jurado-finalizada-detalle", 1),
+    ERROR_EVALUACIONES_CON_OBSERVACIONES(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluaciones-con-observaciones", 0),
+    ERROR_EVALUACIONES_CON_OBSERVACIONES_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluaciones-con-observaciones-detalle", 2),
+    ERROR_PUNTAJE_NO_ENTERO("evaluaciones.aplicacion.evaluacioncuantitativajurado.error.puntaje-no-entero", 0),
+    ERROR_NO_ENCONTRADA("evaluaciones.dominio.evaluacioncuantitativajurado.error.no-encontrada", 0),
+    ERROR_NO_ENCONTRADA_DETALLE("evaluaciones.dominio.evaluacioncuantitativajurado.error.no-encontrada-detalle", 1),
+    ERROR_NO_PERTENECE_JURADO(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.no-pertenece-jurado", 0),
+    ERROR_NO_PERTENECE_JURADO_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.no-pertenece-jurado-detalle", 1),
+    ERROR_EVALUACION_FINALIZADA(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluacion-finalizada", 0),
+    ERROR_EVALUACION_FINALIZADA_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluacion-finalizada-detalle", 1),
+    ERROR_PUNTAJE_EXCEDE_VALOR_ITEM(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.puntaje-excede-valor-item", 3);
 
     private final String clave;
     private final int parametros;

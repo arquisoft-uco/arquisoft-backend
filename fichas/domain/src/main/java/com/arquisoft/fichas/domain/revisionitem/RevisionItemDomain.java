@@ -100,7 +100,7 @@ public final class RevisionItemDomain {
             result.agregarError(
                     FichasFields.RevisionItem.ESTADO_REVISION,
                     FichasCodes.RevisionItem.ESTADO_REVISION_NO_ENCONTRADO,
-                    Mensajes.formatear(RevisionItemKey.ERROR_ESTADO_NO_ENCONTRADO, estadoRevision));
+                    Mensajes.formatear(RevisionItemKey.ERROR_ESTADO_NO_ENCONTRADO));
             return;
         }
         this.estadoRevision = EstadoRevision.desde(estadoRevision);

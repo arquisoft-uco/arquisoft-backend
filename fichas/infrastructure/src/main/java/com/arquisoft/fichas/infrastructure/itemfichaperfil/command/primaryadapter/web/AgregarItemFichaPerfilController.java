@@ -5,7 +5,6 @@ import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web.dto.AgregarItemFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web.dto.AgregarItemFichaPerfilResponseDTO;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,16 +17,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 
 import java.util.UUID;
 
@@ -41,7 +37,6 @@ public class AgregarItemFichaPerfilController {
     private final AgregarItemFichaPerfilInteractor agregarItemFichaPerfilInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.items:/{fichaPerfilId}/items}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_CREATE)
     @Operation(
             summary = FichasApiMessages.ItemFichaPerfil.AGREGAR_SUMMARY,
             description = FichasApiMessages.ItemFichaPerfil.AGREGAR_DESCRIPTION,
@@ -63,9 +58,9 @@ public class AgregarItemFichaPerfilController {
     public ResponseEntity<AgregarItemFichaPerfilResponseDTO> agregarItem(
             @PathVariable UUID fichaPerfilId,
             @RequestBody AgregarItemFichaPerfilRequestDTO dto,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var estudianteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var estudianteId = identidad.id();
 
         UUID itemId = agregarItemFichaPerfilInteractor.ejecutar(AgregarItemFichaPerfilRequestMapper.toCommand(dto, fichaPerfilId, estudianteId));
 

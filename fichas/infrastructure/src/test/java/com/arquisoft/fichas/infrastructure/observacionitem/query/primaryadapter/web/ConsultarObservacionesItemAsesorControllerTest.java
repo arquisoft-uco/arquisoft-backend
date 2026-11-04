@@ -3,13 +3,13 @@ package com.arquisoft.fichas.infrastructure.observacionitem.query.primaryadapter
 import com.arquisoft.fichas.application.observacionitem.query.primaryport.interactor.ConsultarObservacionesItemAsesorInteractor;
 import com.arquisoft.fichas.application.observacionitem.query.primaryport.model.ConsultarObservacionesItemAsesorQuery;
 import com.arquisoft.fichas.application.observacionitem.query.readmodel.ObservacionItemReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.query.pagination.SortDirection;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +18,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarObservacionesItemAsesorController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarObservacionesItemAsesorControllerTest.TestSecurityConfig.class})
 class ConsultarObservacionesItemAsesorControllerTest {
 
@@ -48,7 +46,6 @@ class ConsultarObservacionesItemAsesorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -170,20 +167,8 @@ class ConsultarObservacionesItemAsesorControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    void debeRetornar403_cuandoSinClientRoleObservacionItemAsesorView() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_CREATE))))
-                .andExpect(status().isForbidden());
-    }
-
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor conAutoridadYSub(UUID sub) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject(sub.toString()))
-                .authorities(new SimpleGrantedAuthority(FichasAuthorities.OBSERVACION_ITEM_ASESOR_VIEW));
+                .jwt(j -> j.subject(sub.toString()));
     }
 }

@@ -4,7 +4,6 @@ import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,10 +22,10 @@ class TipoNotificacionEventoTest {
     @Test
     void debeDeclararLosMismosTiposQueElDominio_cuandoSeComparanAmbasTablas() {
         // Arrange
-        Set<String> enInfraestructura = Arrays.stream(TipoNotificacionEvento.values())
+        var enInfraestructura = Arrays.stream(TipoNotificacionEvento.values())
                 .map(Enum::name)
                 .collect(Collectors.toSet());
-        Set<String> enDominio = Arrays.stream(TipoNotificacion.values())
+        var enDominio = Arrays.stream(TipoNotificacion.values())
                 .filter(tipo -> !tipo.esVacio())
                 .map(Enum::name)
                 .collect(Collectors.toSet());

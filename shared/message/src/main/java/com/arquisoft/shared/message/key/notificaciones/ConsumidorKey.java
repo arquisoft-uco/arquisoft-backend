@@ -14,15 +14,32 @@ public enum ConsumidorKey implements ClaveMensaje {
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-respondida-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_ASESOR_RESPONDIDA_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-respondida-recibido", 2),
+    LOG_SOLICITUD_CAMBIO_ASESOR_RESPONDIDA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-cambio-asesor-respondida-recibido", 2),
+    LOG_SOLICITUD_AMPLIACION_PLAZO_RESPONDIDA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-ampliacion-plazo-respondida-recibido", 2),
+    LOG_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-registro-modificacion-usuarios-respondida-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-estado-modificado-recibido",
             2),
+    LOG_SOLICITUD_NOVEDAD_ASESOR_ESTADO_MODIFICADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-estado-modificado-recibido", 2),
+    LOG_SOLICITUD_CAMBIO_ASESOR_ESTADO_MODIFICADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-cambio-asesor-estado-modificado-recibido", 2),
+    LOG_SOLICITUD_AMPLIACION_PLAZO_ESTADO_MODIFICADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-ampliacion-plazo-estado-modificado-recibido", 2),
+    LOG_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log."
+                    + "solicitud-registro-modificacion-usuarios-estado-modificado-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_ASESOR_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-recibido", 2),
     LOG_SOLICITUD_CAMBIO_ASESOR_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-cambio-asesor-recibido", 2),
     LOG_SOLICITUD_AMPLIACION_PLAZO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-ampliacion-plazo-recibido", 2),
+    LOG_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-registro-modificacion-usuarios-recibido", 2),
     LOG_REVISION_ITEM_AGREGADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.revision-item-agregado-recibido", 2),
     LOG_USUARIO_ESTADO_CAMBIADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.usuario-estado-cambiado-recibido", 3),
@@ -32,8 +49,32 @@ public enum ConsumidorKey implements ClaveMensaje {
             "notificaciones.infraestructura.consumidor.log.proyecto-grado-registrado-recibido", 3),
     LOG_ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.estudiantes-proyecto-grado-asignados-recibido", 2),
+    LOG_ASESOR_PROYECTO_GRADO_ASIGNADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.asesor-proyecto-grado-asignado-recibido", 1),
+    LOG_ASESOR_PROYECTO_GRADO_FINALIZADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.asesor-proyecto-grado-finalizado-recibido", 1),
     LOG_ESTADO_FICHA_PERFIL_AGREGADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.estado-ficha-perfil-agregado-recibido", 3),
+    LOG_REVISION_ASESOR_ESTADO_CAMBIADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.revision-asesor-estado-cambiado-recibido", 2),
+    LOG_REVISION_ASESOR_ESTADO_CAMBIADO_IGNORADO(
+            "notificaciones.infraestructura.consumidor.log.revision-asesor-estado-cambiado-ignorado", 2),
+    LOG_VERSION_ARTEFACTO_GENERADA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.version-artefacto-generada-recibido", 2),
+    LOG_ESTUDIANTES_ARTEFACTO_ASIGNADOS_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.estudiantes-artefacto-asignados-recibido", 2),
+    LOG_ESTUDIANTE_ARTEFACTO_REMOVIDO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.estudiante-artefacto-removido-recibido", 1),
+    LOG_ARTEFACTO_OMITIDO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.artefacto-omitido-recibido", 2),
+    LOG_ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.artefacto-version-repositorio-cambiada-recibido", 2),
+    LOG_REVISION_ASESOR_ENVIADA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.revision-asesor-enviada-recibido", 2),
+    LOG_REVISION_ASESOR_CERRADA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.revision-asesor-cerrada-recibido", 2),
+    LOG_OBSERVACION_REABIERTA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.observacion-reabierta-recibido", 2),
     LOG_NOTIFICACION_ENVIADA("notificaciones.infraestructura.consumidor.log.notificacion-enviada", 2),
     LOG_NOTIFICACION_DUPLICADA("notificaciones.infraestructura.consumidor.log.notificacion-duplicada", 2),
     LOG_NOTIFICACION_FALLIDA("notificaciones.infraestructura.consumidor.log.notificacion-fallida", 2),

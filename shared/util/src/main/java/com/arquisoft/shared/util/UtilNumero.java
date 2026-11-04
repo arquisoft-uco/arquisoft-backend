@@ -2,11 +2,15 @@ package com.arquisoft.shared.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 public final class UtilNumero {
 
     public static final int CERO = 0;
     public static final BigDecimal CERO_DECIMAL = BigDecimal.ZERO;
+
+    private static final BigDecimal BYTES_POR_MEGABYTE = BigDecimal.valueOf(1_048_576L);
+    private static final int DECIMALES_MEGABYTES = 2;
 
     private UtilNumero() {}
 
@@ -37,6 +41,13 @@ public final class UtilNumero {
 
     public static BigDecimal obtenerPorDefecto(final BigDecimal numero) {
         return obtenerPorDefecto(numero, CERO_DECIMAL);
+    }
+
+    public static String formatearMegabytes(final long bytes) {
+        return BigDecimal.valueOf(bytes)
+                .divide(BYTES_POR_MEGABYTE, DECIMALES_MEGABYTES, RoundingMode.HALF_UP)
+                .stripTrailingZeros()
+                .toPlainString();
     }
 
     private static boolean esFinito(final Number numero) {

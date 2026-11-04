@@ -5,15 +5,52 @@
 # extrae a microservicio, se lleve su propia configuracion de rutas consigo.
 rutas:
   evaluaciones:
+    evaluacion:
+      base: /evaluaciones
+      jurados: /{evaluacionId}/jurados
+      evaluacion-asesor: /{evaluacionId}/evaluacion-asesor
+      evaluacion-asesor-por-id: /evaluaciones-asesor/{evaluacionAsesorId}
+      evaluaciones-jurado: /{evaluacionId}/evaluaciones-jurado
+      coordinador: /coordinador
+      asesor: /asesor
+      jurado: /jurado
+      estudiante: /estudiante
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
       por-id: /{itemId}
     criterios-item-cualitativo-jurado:
       base: /evaluaciones/criterios-item-cualitativo-jurado
+    categorias-item-cuantitativo-jurado:
+      base: /evaluaciones/categorias-item-cuantitativo-jurado
+    categorias-item-cuantitativo-asesor:
+      base: /evaluaciones/categorias-item-cuantitativo-asesor
     evaluaciones-jurado:
       base: /evaluaciones/evaluaciones-jurado
       cualitativas: /{evaluacionJuradoId}/cualitativas
+      cualitativas-jurado: /{evaluacionJuradoId}/cualitativas/jurado
       cuantitativas: /{evaluacionJuradoId}/cuantitativas
+      jurado: /jurado
+    evaluaciones:
+      base: /evaluaciones/evaluaciones-asesor
+      cuantitativas: /{evaluacionAsesorId}/cuantitativas
+      cualitativas: /{evaluacionAsesorId}/cualitativas
+    criterios-item-cualitativo-asesor:
+      base: /evaluaciones/criterios-item-cualitativo-asesor
+    items-cualitativos-asesor:
+      base: /evaluaciones/items-cualitativos-asesor
+    items-cuantitativos-asesor:
+      base: /evaluaciones/items-cuantitativos-asesor
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
       por-id: /{itemId}
+    evaluaciones-cuantitativas-jurado:
+      base: /evaluaciones/evaluaciones-cuantitativas-jurado
+      puntaje: /{id}/puntaje
+      observaciones: /{id}/observaciones
+      observaciones-jurado: /{id}/observaciones/jurado
+      observaciones-estudiante: /{id}/observaciones/estudiante
+    observaciones-item-jurado:
+      base: /evaluaciones/observaciones-item-jurado
+      por-id: /{observacionId}
+    estados-evaluacion:
+      base: /evaluaciones/estados-evaluacion

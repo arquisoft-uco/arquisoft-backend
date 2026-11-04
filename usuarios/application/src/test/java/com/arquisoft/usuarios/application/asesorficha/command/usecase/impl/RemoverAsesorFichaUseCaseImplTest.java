@@ -2,7 +2,7 @@ package com.arquisoft.usuarios.application.asesorficha.command.usecase.impl;
 
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
@@ -90,9 +90,9 @@ class RemoverAsesorFichaUseCaseImplTest {
                 eventPublisher);
         var captorInstante = ArgumentCaptor.forClass(Instant.class);
         var captorEvento = ArgumentCaptor.forClass(AsesorFichaRemovidoEvent.class);
-        orden.verify(removerAsesorFichaValidator).validar(id, vigente);
+        orden.verify(removerAsesorFichaValidator).validar(id, usuario, vigente);
         orden.verify(asesorFichaOutputPort).eliminarLogica(eq(id), captorInstante.capture());
-        orden.verify(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.ASESOR_FICHA);
+        orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.ASESOR_FICHA);
         orden.verify(eventPublisher).publish(captorEvento.capture());
 
         assertThat(captorInstante.getValue()).isNotEqualTo(UtilFecha.VACIO);
@@ -109,14 +109,14 @@ class RemoverAsesorFichaUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         when(asesorFichaPorUsuarioFinder.obtener(id)).thenReturn(AsesorFichaDomain.VACIO);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new AsesorFichaNoEncontradoException(id))
-                .when(removerAsesorFichaValidator).validar(id, AsesorFichaDomain.VACIO);
+        doThrow(new AsesorFichaNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerAsesorFichaValidator).validar(id, UsuarioDomain.VACIO, AsesorFichaDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(AsesorFichaDomain.crear(id)))
                 .isInstanceOf(AsesorFichaNoEncontradoException.class);
         verify(asesorFichaOutputPort, never()).eliminarLogica(any(), any());
-        verify(proveedorIdentidadOutputPort, never()).revocarRealmRole(any(), anyString());
+        verify(proveedorIdentidadOutputPort, never()).revocarRol(any(), anyString());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -127,7 +127,7 @@ class RemoverAsesorFichaUseCaseImplTest {
         when(asesorFichaPorUsuarioFinder.obtener(id)).thenReturn(AsesorFichaDomain.crear(id));
         when(usuarioPorIdFinder.obtener(id)).thenReturn(usuario(id));
         var fallo = new InfrastructureException("Proveedor de identidad caido", "PROVEEDOR_NO_DISPONIBLE");
-        doThrow(fallo).when(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.ASESOR_FICHA);
+        doThrow(fallo).when(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.ASESOR_FICHA);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(AsesorFichaDomain.crear(id))).isSameAs(fallo);

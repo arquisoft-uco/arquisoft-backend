@@ -1,5 +1,6 @@
 package com.arquisoft.shared.web.filter;
 
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.tracing.application.traza.primaryport.AlcanceTraza;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.SolicitudTraza;
@@ -8,7 +9,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-@Slf4j
 @Component
 @Order(-300)
 public class TrazabilidadFilter extends OncePerRequestFilter {
@@ -32,13 +31,16 @@ public class TrazabilidadFilter extends OncePerRequestFilter {
 
     private final GestorTraza gestorTraza;
     private final List<String> rutasExcluidas;
+    private final AppLogger appLogger;
 
     public TrazabilidadFilter(
             GestorTraza gestorTraza,
             @Value("${arquisoft.trazas.rutas-excluidas-auditoria:" + RutasTecnicas.PREFIJOS_CSV + "}")
-            List<String> rutasExcluidas) {
+            List<String> rutasExcluidas,
+            AppLogger appLogger) {
         this.gestorTraza = gestorTraza;
         this.rutasExcluidas = List.copyOf(rutasExcluidas);
+        this.appLogger = appLogger;
     }
 
     @Override
@@ -78,11 +80,11 @@ public class TrazabilidadFilter extends OncePerRequestFilter {
 
     private void auditar(int estado) {
         if (estado >= PRIMER_ESTADO_SERVIDOR) {
-            log.error(MARCA_AUDITORIA);
+            appLogger.error(MARCA_AUDITORIA);
         } else if (estado >= PRIMER_ESTADO_CLIENTE) {
-            log.warn(MARCA_AUDITORIA);
+            appLogger.warn(MARCA_AUDITORIA);
         } else if (estado >= PRIMER_ESTADO_EXITOSO && estado < PRIMER_ESTADO_REDIRECCION) {
-            log.info(MARCA_AUDITORIA);
+            appLogger.info(MARCA_AUDITORIA);
         }
     }
 

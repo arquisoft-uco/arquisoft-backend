@@ -10,7 +10,7 @@ public class CoordinadorUsuarioUnicoRuleImpl implements CoordinadorUsuarioUnicoR
     public void validar(DisponibilidadCoordinadorUsuario disponibilidad) {
         var coordinador = disponibilidad.coordinador();
         if (!coordinador.esVacio() && !coordinador.estaEliminado()) {
-            throw new CoordinadorUsuarioDuplicadoException(disponibilidad.usuario());
+            throw new CoordinadorUsuarioDuplicadoException(disponibilidad.usuario(), disponibilidad.nombre());
         }
     }
 }

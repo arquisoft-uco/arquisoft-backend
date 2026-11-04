@@ -81,7 +81,7 @@ class RemoverObservacionEvaluacionUseCaseImplTest {
         // Arrange
         var pertenencia = new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.APROBADA);
         when(pertenenciaObservacionEvaluacionEnRemocionFinder.obtener(entrada)).thenReturn(pertenencia);
-        doThrow(new EvaluacionFichaCerradaException(evaluacionFichaPerfil, EstadoEvaluacion.APROBADA.getId()))
+        doThrow(new EvaluacionFichaCerradaException(evaluacionFichaPerfil, EstadoEvaluacion.APROBADA))
                 .when(removerObservacionEvaluacionValidator).validar(entrada, true, pertenencia);
 
         // Act & Assert

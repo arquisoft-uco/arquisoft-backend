@@ -2,11 +2,10 @@ package com.arquisoft.fichas.infrastructure.revisionitem.command.primaryadapter.
 
 import com.arquisoft.fichas.application.revisionitem.command.primaryport.interactor.MarcarRevisionItemComoVisualizadaInteractor;
 import com.arquisoft.fichas.application.revisionitem.command.primaryport.model.MarcarRevisionItemComoVisualizadaCommand;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,9 +13,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +30,6 @@ public class MarcarRevisionItemComoVisualizadaController {
     private final MarcarRevisionItemComoVisualizadaInteractor marcarRevisionItemComoVisualizadaInteractor;
 
     @PatchMapping("${rutas.fichas.fichas-perfil.revision-visualizada:/revisiones/{revisionItemId}/visualizada}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_REVISION_ITEM_VISUALIZADA_UPDATE)
     @Operation(
             summary = FichasApiMessages.RevisionItem.VISUALIZAR_SUMMARY,
             description = FichasApiMessages.RevisionItem.VISUALIZAR_DESCRIPTION,
@@ -54,8 +49,8 @@ public class MarcarRevisionItemComoVisualizadaController {
     })
     public ResponseEntity<Void> marcarVisualizada(
             @PathVariable UUID revisionItemId,
-            @AuthenticationPrincipal Jwt jwt) {
-        var estudianteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+            IdentidadActual identidad) {
+        var estudianteId = identidad.id();
         var command = MarcarRevisionItemComoVisualizadaCommand.crear(revisionItemId, estudianteId);
         marcarRevisionItemComoVisualizadaInteractor.ejecutar(command);
         return ResponseEntity.noContent().build();

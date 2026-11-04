@@ -5,6 +5,7 @@ import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.query.pagination.SortDirection;
 import com.arquisoft.shared.query.QueryCriteria;
 import com.arquisoft.shared.query.SortOrder;
+import com.arquisoft.shared.util.UtilObjeto;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,6 +25,15 @@ public final class PageableMapper {
                 .map(orden -> aSortOrder(orden, traductorDeCampo))
                 .toList();
         return PageRequest.of(criteria.getPagina(), criteria.getTamanio(), Sort.by(ordenes));
+    }
+
+    public static Pageable toPageable(
+            QueryCriteria criteria, UnaryOperator<String> traductorDeCampo, String rutaDesempate) {
+        var sort = toPageable(criteria, traductorDeCampo).getSort();
+        var ordenado = UtilObjeto.esNulo(sort.getOrderFor(rutaDesempate))
+                ? sort.and(Sort.by(Sort.Order.asc(rutaDesempate)))
+                : sort;
+        return PageRequest.of(criteria.getPagina(), criteria.getTamanio(), ordenado);
     }
 
     private static Sort.Order aSortOrder(SortOrder orden, UnaryOperator<String> traductorDeCampo) {

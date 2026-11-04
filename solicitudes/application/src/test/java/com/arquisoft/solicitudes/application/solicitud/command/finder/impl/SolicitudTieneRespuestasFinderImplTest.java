@@ -24,7 +24,7 @@ class SolicitudTieneRespuestasFinderImplTest {
     @Test
     void debeDelegarEnElPuerto_cuandoLaSolicitudTieneRespuestas() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         when(respuestaOutputPort.existePorSolicitud(solicitud)).thenReturn(true);
 
         // Act & Assert
@@ -34,7 +34,7 @@ class SolicitudTieneRespuestasFinderImplTest {
     @Test
     void debeDelegarEnElPuerto_cuandoLaSolicitudNoTieneRespuestas() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         when(respuestaOutputPort.existePorSolicitud(solicitud)).thenReturn(false);
 
         // Act & Assert

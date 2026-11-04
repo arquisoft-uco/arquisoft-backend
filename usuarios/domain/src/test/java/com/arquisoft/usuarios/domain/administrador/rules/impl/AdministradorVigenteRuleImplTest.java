@@ -8,10 +8,13 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AdministradorVigenteRuleImplTest {
+
+    private static final String NOMBRE = "Ana Pérez";
 
     private final AdministradorVigenteRuleImpl rule = new AdministradorVigenteRuleImpl();
 
@@ -22,7 +25,7 @@ class AdministradorVigenteRuleImplTest {
         var vigente = AdministradorDomain.crear(usuario);
 
         // Act & Assert
-        assertThatCode(() -> rule.validar(new ExistenciaAdministrador(usuario, vigente)))
+        assertThatCode(() -> rule.validar(new ExistenciaAdministrador(usuario, NOMBRE, vigente)))
                 .doesNotThrowAnyException();
     }
 
@@ -32,7 +35,7 @@ class AdministradorVigenteRuleImplTest {
         var usuario = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> rule.validar(new ExistenciaAdministrador(usuario, AdministradorDomain.VACIO)))
+        assertThatThrownBy(() -> rule.validar(new ExistenciaAdministrador(usuario, NOMBRE, AdministradorDomain.VACIO)))
                 .isInstanceOf(AdministradorNoEncontradoException.class);
     }
 
@@ -43,7 +46,20 @@ class AdministradorVigenteRuleImplTest {
         var removido = AdministradorDomain.reconstruir(usuario, Instant.parse("2026-09-24T10:00:00Z"));
 
         // Act & Assert
-        assertThatThrownBy(() -> rule.validar(new ExistenciaAdministrador(usuario, removido)))
+        assertThatThrownBy(() -> rule.validar(new ExistenciaAdministrador(usuario, NOMBRE, removido)))
                 .isInstanceOf(AdministradorNoEncontradoException.class);
+    }
+
+    @Test
+    void debeNombrarAlUsuarioSinExponerSuId_cuandoNoTieneElRolVigente() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var entrada = new ExistenciaAdministrador(usuario, NOMBRE, AdministradorDomain.VACIO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(entrada))
+                .isInstanceOfSatisfying(AdministradorNoEncontradoException.class, ex -> assertThat(ex.getError().getMessage())
+                        .contains(NOMBRE)
+                        .doesNotContain(usuario.toString()));
     }
 }

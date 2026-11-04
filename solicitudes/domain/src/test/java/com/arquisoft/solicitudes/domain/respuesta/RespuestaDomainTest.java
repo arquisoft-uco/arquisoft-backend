@@ -20,10 +20,10 @@ class RespuestaDomainTest {
     @Test
     void debeNacerEnRevision_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act
-        RespuestaDomain respuesta = RespuestaDomain.crear(solicitud, "Contenido valido");
+        var respuesta = RespuestaDomain.crear(solicitud, "Contenido valido");
 
         // Assert
         assertThat(respuesta.getEstadoRespuesta()).isEqualTo(EstadoRespuesta.EN_REVISION);
@@ -37,7 +37,7 @@ class RespuestaDomainTest {
     @Test
     void debeRecortarElContenido_cuandoTieneEspaciosAlrededor() {
         // Act
-        RespuestaDomain respuesta = RespuestaDomain.crear(UUID.randomUUID(), "  respuesta  ");
+        var respuesta = RespuestaDomain.crear(UUID.randomUUID(), "  respuesta  ");
 
         // Assert
         assertThat(respuesta.getContenido()).isEqualTo("respuesta");
@@ -46,7 +46,7 @@ class RespuestaDomainTest {
     @Test
     void debeLanzar_cuandoElContenidoEstaEnBlanco() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> RespuestaDomain.crear(UUID.randomUUID(), "   "));
 
         // Assert
@@ -57,10 +57,10 @@ class RespuestaDomainTest {
     @Test
     void debeLanzar_cuandoElContenidoExcede100Caracteres() {
         // Arrange
-        String largo = "x".repeat(101);
+        var largo = "x".repeat(101);
 
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> RespuestaDomain.crear(UUID.randomUUID(), largo));
 
         // Assert
@@ -71,7 +71,7 @@ class RespuestaDomainTest {
     @Test
     void debeAcumularAmbosErrores_cuandoSolicitudYContenidoSonInvalidos() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> RespuestaDomain.crear(null, ""));
 
         // Assert
@@ -83,11 +83,11 @@ class RespuestaDomainTest {
     @Test
     void debeReconstruirSinValidar_cuandoVieneDesdeLaPersistencia() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID solicitud = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act
-        RespuestaDomain respuesta = RespuestaDomain.reconstruir(
+        var respuesta = RespuestaDomain.reconstruir(
                 id, solicitud, null, "", EstadoRespuesta.APROBADA);
 
         // Assert

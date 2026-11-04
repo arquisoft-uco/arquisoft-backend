@@ -27,7 +27,7 @@ public class ConsultarEvaluacionesCualitativasJuradoUseCaseImpl
     public List<EvaluacionCualitativaJuradoReadModel> ejecutar(EvaluacionCualitativaJuradoCriteria criteria) {
         logger.debug(EvaluacionCualitativaJuradoKey.LOG_CONSULTANDO, criteria.evaluacionJuradoId());
 
-        boolean existe = evaluacionJuradoExisteQueryFinder.obtener(criteria.evaluacionJuradoId());
+        var existe = evaluacionJuradoExisteQueryFinder.obtener(criteria.evaluacionJuradoId());
 
         consultarEvaluacionesCualitativasJuradoValidator.validar(criteria.evaluacionJuradoId(), existe);
 

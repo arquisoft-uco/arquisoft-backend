@@ -10,7 +10,7 @@ public class AsesorUsuarioUnicoRuleImpl implements AsesorUsuarioUnicoRule {
     public void validar(DisponibilidadAsesorUsuario disponibilidad) {
         var asesor = disponibilidad.asesor();
         if (!asesor.esVacio() && !asesor.estaEliminado()) {
-            throw new AsesorUsuarioDuplicadoException(disponibilidad.usuario());
+            throw new AsesorUsuarioDuplicadoException(disponibilidad.usuario(), disponibilidad.nombre());
         }
     }
 }

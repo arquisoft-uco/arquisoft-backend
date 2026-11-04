@@ -84,4 +84,16 @@ class ItemCuantitativoJuradoDomainTest {
         assertThat(item.getCategoria()).isEqualTo(CATEGORIA);
         assertThat(item.getValor()).isEqualTo(50);
     }
+
+    @Test
+    void debeDistinguirElCentinelaVacio_deUnItemReconstruido() {
+        // Act
+        var item = ItemCuantitativoJuradoDomain.reconstruir(
+                UUID.randomUUID(), "Rigor", "Descripción", UUID.randomUUID(), 500);
+
+        // Assert
+        assertThat(ItemCuantitativoJuradoDomain.VACIO.esVacio()).isTrue();
+        assertThat(ItemCuantitativoJuradoDomain.VACIO.getValor()).isZero();
+        assertThat(item.esVacio()).isFalse();
+    }
 }

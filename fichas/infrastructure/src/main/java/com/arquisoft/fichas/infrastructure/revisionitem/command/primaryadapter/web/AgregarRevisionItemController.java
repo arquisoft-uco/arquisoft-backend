@@ -3,11 +3,10 @@ package com.arquisoft.fichas.infrastructure.revisionitem.command.primaryadapter.
 import com.arquisoft.fichas.application.revisionitem.command.primaryport.interactor.AgregarRevisionItemInteractor;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.primaryadapter.web.dto.AgregarRevisionItemResponseDTO;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.primaryadapter.web.mapper.AgregarRevisionItemRequestMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,9 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +34,6 @@ public class AgregarRevisionItemController {
     private final AgregarRevisionItemInteractor agregarRevisionItemInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.item-revisiones:/items/{itemId}/revisiones}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_REVISION_ITEM_CREATE)
     @Operation(
             summary = FichasApiMessages.RevisionItem.AGREGAR_SUMMARY,
             description = FichasApiMessages.RevisionItem.AGREGAR_DESCRIPTION,
@@ -59,9 +54,9 @@ public class AgregarRevisionItemController {
     })
     public ResponseEntity<AgregarRevisionItemResponseDTO> agregar(
             @PathVariable UUID itemId,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var asesorFichaId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var asesorFichaId = identidad.id();
 
         UUID id = agregarRevisionItemInteractor.ejecutar(
                 AgregarRevisionItemRequestMapper.toCommand(itemId, asesorFichaId));

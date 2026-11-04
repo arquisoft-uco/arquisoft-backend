@@ -1,0 +1,9 @@
+package com.arquisoft.artefactos.application.versionrepositorioartefacto.command.primaryport.interactor;
+
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.primaryport.model.AgregarVersionRepositorioArtefactoCommand;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.result.AgregacionVersionRepositorioArtefactoResult;
+import com.arquisoft.shared.interactor.Interactor;
+
+public interface AgregarVersionRepositorioArtefactoInteractor
+        extends Interactor<AgregarVersionRepositorioArtefactoCommand, AgregacionVersionRepositorioArtefactoResult> {
+}

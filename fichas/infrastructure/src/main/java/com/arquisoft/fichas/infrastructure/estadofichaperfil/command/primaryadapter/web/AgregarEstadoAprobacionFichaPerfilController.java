@@ -4,11 +4,10 @@ import com.arquisoft.fichas.application.estadofichaperfil.command.primaryport.in
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.primaryadapter.web.dto.AgregarEstadoAprobacionFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.primaryadapter.web.dto.AgregarEstadoAprobacionFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.primaryadapter.web.mapper.AgregarEstadoAprobacionFichaPerfilRequestMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,9 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +34,6 @@ public class AgregarEstadoAprobacionFichaPerfilController {
     private final AgregarEstadoAprobacionFichaPerfilInteractor agregarEstadoAprobacionFichaPerfilInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.estado-aprobacion:/{fichaPerfilId}/estados-ficha/aprobacion}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_PERFIL_APROBACION_CREATE)
     @Operation(
             summary = FichasApiMessages.EstadoFichaPerfil.AGREGAR_APROBACION_SUMMARY,
             description = FichasApiMessages.EstadoFichaPerfil.AGREGAR_APROBACION_DESCRIPTION,
@@ -60,9 +55,9 @@ public class AgregarEstadoAprobacionFichaPerfilController {
     public ResponseEntity<AgregarEstadoAprobacionFichaPerfilResponseDTO> agregar(
             @PathVariable String fichaPerfilId,
             @RequestBody AgregarEstadoAprobacionFichaPerfilRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var coordinador = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var coordinador = identidad.id();
         var id = agregarEstadoAprobacionFichaPerfilInteractor.ejecutar(
                 AgregarEstadoAprobacionFichaPerfilRequestMapper.toCommand(fichaPerfilId, request, coordinador));
 

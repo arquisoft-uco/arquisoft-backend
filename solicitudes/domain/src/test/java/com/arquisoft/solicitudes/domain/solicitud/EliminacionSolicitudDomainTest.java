@@ -16,11 +16,11 @@ class EliminacionSolicitudDomainTest {
     @Test
     void debeCrearLaEliminacion_cuandoLosTresDatosSonValidos() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID remitenteUsuario = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var remitenteUsuario = UUID.randomUUID();
 
         // Act
-        EliminacionSolicitudDomain eliminacion = EliminacionSolicitudDomain.crear(
+        var eliminacion = EliminacionSolicitudDomain.crear(
                 solicitud, remitenteUsuario, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
 
         // Assert
@@ -32,7 +32,7 @@ class EliminacionSolicitudDomainTest {
     @Test
     void debeLanzarDomainValidationException_cuandoLaSolicitudEsNula() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> EliminacionSolicitudDomain.crear(
                         null, UUID.randomUUID(), TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
 
@@ -44,7 +44,7 @@ class EliminacionSolicitudDomainTest {
     @Test
     void debeLanzarDomainValidationException_cuandoElRemitenteUsuarioEsNulo() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> EliminacionSolicitudDomain.crear(
                         UUID.randomUUID(), null, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR));
 
@@ -56,7 +56,7 @@ class EliminacionSolicitudDomainTest {
     @Test
     void debeLanzarDomainValidationException_cuandoElTipoEsperadoEsNulo() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> EliminacionSolicitudDomain.crear(UUID.randomUUID(), UUID.randomUUID(), null));
 
         // Assert
@@ -69,7 +69,7 @@ class EliminacionSolicitudDomainTest {
     @Test
     void debeAcumularLosTresErrores_cuandoTodosLosDatosSonNulos() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> EliminacionSolicitudDomain.crear(null, null, null));
 
         // Assert

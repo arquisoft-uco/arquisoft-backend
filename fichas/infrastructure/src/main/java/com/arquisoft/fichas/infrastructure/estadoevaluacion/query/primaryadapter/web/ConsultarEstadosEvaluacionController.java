@@ -5,7 +5,6 @@ import com.arquisoft.fichas.application.estadoevaluacion.query.primaryport.inter
 import com.arquisoft.fichas.application.estadoevaluacion.query.readmodel.EstadoEvaluacionReadModel;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.query.primaryadapter.web.dto.EstadoEvaluacionResponseDTO;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.query.primaryadapter.web.mapper.EstadoEvaluacionResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +16,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +31,6 @@ public class ConsultarEstadosEvaluacionController {
     private final ConsultarEstadosEvaluacionInteractor consultarEstadosEvaluacionInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.estados-evaluacion:/estados-evaluacion}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_EVALUACION_VIEW)
     @Operation(
             summary = FichasApiMessages.EstadoEvaluacion.CONSULTAR_SUMMARY,
             description = FichasApiMessages.EstadoEvaluacion.CONSULTAR_DESCRIPTION,

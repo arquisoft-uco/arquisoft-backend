@@ -3,11 +3,11 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.query.primaryadapt
 import com.arquisoft.fichas.application.estadofichaperfil.query.primaryport.interactor.ConsultarEstadosFichaPerfilRepresentanteInteractor;
 import com.arquisoft.fichas.application.estadofichaperfil.query.primaryport.model.ConsultarEstadosFichaPerfilRepresentanteQuery;
 import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.EstadoFichaPerfilReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -38,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEstadosFichaPerfilRepresentanteController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarEstadosFichaPerfilRepresentanteControllerTest.TestSecurityConfig.class})
 class ConsultarEstadosFichaPerfilRepresentanteControllerTest {
 
@@ -48,7 +46,6 @@ class ConsultarEstadosFichaPerfilRepresentanteControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -68,10 +65,9 @@ class ConsultarEstadosFichaPerfilRepresentanteControllerTest {
     @MockitoBean
     private ConsultarEstadosFichaPerfilRepresentanteInteractor consultarEstadosFichaPerfilRepresentanteInteractor;
 
-    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol(String authority) {
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject(REPRESENTANTE_ID.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(j -> j.subject(REPRESENTANTE_ID.toString()));
     }
 
     @Test
@@ -86,7 +82,7 @@ class ConsultarEstadosFichaPerfilRepresentanteControllerTest {
 
         // Act
         mockMvc.perform(get(RUTA, FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("EN_CONSTRUCCION"))
@@ -110,7 +106,7 @@ class ConsultarEstadosFichaPerfilRepresentanteControllerTest {
 
         // Act & Assert
         mockMvc.perform(get(RUTA, FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -120,7 +116,7 @@ class ConsultarEstadosFichaPerfilRepresentanteControllerTest {
     void debeRetornar400_cuandoFichaPerfilIdNoEsUUID() throws Exception {
         // Act
         mockMvc.perform(get(RUTA, "no-es-uuid")
-                        .with(jwtConRol(FichasAuthorities.ESTADO_FICHA_PERFIL_REPRESENTANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isBadRequest());
 
         // Assert
@@ -132,16 +128,5 @@ class ConsultarEstadosFichaPerfilRepresentanteControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA, FICHA_ID))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debeRetornar403_cuandoTieneSoloElClientRoleDeEstudiante() throws Exception {
-        // Act
-        mockMvc.perform(get(RUTA, FICHA_ID)
-                        .with(jwtConRol(FichasAuthorities.ESTADO_FICHA_PERFIL_ESTUDIANTE_VIEW)))
-                .andExpect(status().isForbidden());
-
-        // Assert
-        verify(consultarEstadosFichaPerfilRepresentanteInteractor, never()).ejecutar(any());
     }
 }

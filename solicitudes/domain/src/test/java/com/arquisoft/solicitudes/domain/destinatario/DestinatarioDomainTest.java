@@ -14,10 +14,10 @@ class DestinatarioDomainTest {
     @Test
     void debeCrearElDestinatario_cuandoElUsuarioEsValido() {
         // Arrange
-        UUID usuario = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
 
         // Act
-        DestinatarioDomain destinatario = DestinatarioDomain.crear(usuario);
+        var destinatario = DestinatarioDomain.crear(usuario);
 
         // Assert
         assertThat(destinatario.getId()).isNotNull();
@@ -27,7 +27,7 @@ class DestinatarioDomainTest {
     @Test
     void debeAcumularError_cuandoElUsuarioEsNulo() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> DestinatarioDomain.crear(null));
 
         // Assert

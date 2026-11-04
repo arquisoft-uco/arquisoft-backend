@@ -34,8 +34,8 @@ class UsuarioSolicitudesCommandOutputAdapterTest {
     @Test
     void debeInsertarLaReplica_cuandoGuardaUnUsuarioNuevo() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        Instant ocurridoEn = Instant.now();
+        var id = UUID.randomUUID();
+        var ocurridoEn = Instant.now();
 
         // Act
         adapter.guardar(new UsuarioEntity(id, "EST-1", "Ana", "ana@uco.edu.co", ocurridoEn));
@@ -49,7 +49,7 @@ class UsuarioSolicitudesCommandOutputAdapterTest {
     @Test
     void debeSobrescribirLosDatos_cuandoGuardaUnUsuarioExistente() {
         // Arrange
-        UUID id = UUID.randomUUID();
+        var id = UUID.randomUUID();
         entityManager.persist(UsuarioJpaEntity.builder()
                 .id(id).identificador("OLD").nombre("Vieja").email("old@uco.edu.co")
                 .ocurridoEn(Instant.now().minusSeconds(60)).build());
@@ -62,7 +62,7 @@ class UsuarioSolicitudesCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        UsuarioJpaEntity guardada = entityManager.find(UsuarioJpaEntity.class, id);
+        var guardada = entityManager.find(UsuarioJpaEntity.class, id);
         assertThat(guardada.getNombre()).isEqualTo("Nueva");
         assertThat(guardada.getIdentificador()).isEqualTo("NEW");
     }
@@ -70,8 +70,8 @@ class UsuarioSolicitudesCommandOutputAdapterTest {
     @Test
     void debeDevolverLaReplica_cuandoBuscaPorId() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        Instant ocurridoEn = Instant.now();
+        var id = UUID.randomUUID();
+        var ocurridoEn = Instant.now();
         entityManager.persist(UsuarioJpaEntity.builder()
                 .id(id).identificador("COORD-1").nombre("Pedro").email("pedro@uco.edu.co")
                 .ocurridoEn(ocurridoEn).build());
@@ -90,7 +90,7 @@ class UsuarioSolicitudesCommandOutputAdapterTest {
     @Test
     void debeActualizarLosDatosPersistidos_cuandoSeInvocaActualizar() {
         // Arrange
-        UUID id = UUID.randomUUID();
+        var id = UUID.randomUUID();
         entityManager.persist(UsuarioJpaEntity.builder()
                 .id(id).identificador("EST-1").nombre("Ana").email("ana@uco.edu.co")
                 .ocurridoEn(Instant.parse("2026-09-01T10:00:00Z")).build());

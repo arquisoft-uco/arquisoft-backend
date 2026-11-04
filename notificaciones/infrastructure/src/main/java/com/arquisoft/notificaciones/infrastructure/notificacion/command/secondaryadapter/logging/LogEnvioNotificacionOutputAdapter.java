@@ -5,7 +5,6 @@ import com.arquisoft.notificaciones.application.notificacion.command.secondarypo
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.ResultadoEntrega;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,7 @@ public class LogEnvioNotificacionOutputAdapter implements EnvioNotificacionOutpu
     @Override
     public ResultadoEntrega enviar(MensajeNotificacion mensaje) {
         logger.info(
-                Mensajes.obtener(EnvioNotificacionKey.LOG_ENVIO_SIMULADO),
+                EnvioNotificacionKey.LOG_ENVIO_SIMULADO,
                 mensaje.destinatarios().stream()
                         .map(DestinatarioNotificacion::email)
                         .map(UtilTexto::enmascararCorreo)

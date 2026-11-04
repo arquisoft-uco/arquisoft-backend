@@ -1,0 +1,9 @@
+package com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.usecase;
+
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.VersionRepositorioArtefactoSubidaResult;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
+import com.arquisoft.shared.usecase.UseCase;
+
+public interface SubirVersionRepositorioArtefactoUseCase
+        extends UseCase<SubidaVersionRepositorioArtefactoDomain, VersionRepositorioArtefactoSubidaResult> {
+}

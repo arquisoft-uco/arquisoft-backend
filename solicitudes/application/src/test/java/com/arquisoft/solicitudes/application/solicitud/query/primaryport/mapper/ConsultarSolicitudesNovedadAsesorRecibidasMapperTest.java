@@ -36,7 +36,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
-        SolicitudCriteria criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
                 query(asesor, criterio));
 
         // Assert
@@ -56,7 +56,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente);
 
         // Act
-        SolicitudCriteria criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
                 query(asesor, criterio));
 
         // Assert
@@ -76,7 +76,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(2, 25, ordenamiento, null);
 
         // Act
-        SolicitudCriteria criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
                 query(asesor, criterio));
 
         // Assert
@@ -94,7 +94,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasMapperTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
 
         // Act
-        SolicitudCriteria criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
+        var criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
                 query(asesor, criterio));
 
         // Assert
@@ -127,5 +127,19 @@ class ConsultarSolicitudesNovedadAsesorRecibidasMapperTest {
         assertThatThrownBy(() -> ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
                 query(asesor, criterio)))
                 .isInstanceOf(FiltroException.class);
+    }
+
+    @Test
+    void debeFijarElTipoSolicitudDelCriteria_cuandoSeConvierteLaConsulta() {
+        // Arrange
+        var asesor = UUID.randomUUID();
+        var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
+
+        // Act
+        var criteria = ConsultarSolicitudesNovedadAsesorRecibidasMapper.toCriteria(
+                query(asesor, criterio));
+
+        // Assert
+        assertThat(criteria.getTipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId());
     }
 }

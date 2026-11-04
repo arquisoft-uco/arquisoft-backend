@@ -1,17 +1,17 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
-import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.publisher.EventPublisher;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
 import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
+import com.arquisoft.usuarios.application.bibliotecario.command.usecase.AgregarBibliotecarioUseCase;
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
+import com.arquisoft.usuarios.application.jurado.command.usecase.AgregarJuradoUseCase;
 import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
-import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
-import com.arquisoft.usuarios.application.bibliotecario.command.usecase.AgregarBibliotecarioUseCase;
-import com.arquisoft.usuarios.domain.bibliotecario.exception.BibliotecarioUsuarioDuplicadoException;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoOtroUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtraIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtroUsuarioExisteFinder;
@@ -19,8 +19,10 @@ import com.arquisoft.usuarios.application.usuario.command.finder.IdentificadorOt
 import com.arquisoft.usuarios.application.usuario.command.finder.UsuarioPorIdFinder;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.ProveedorIdentidadOutputPort;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.ModificacionIdentidadEntity;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.usuarios.application.usuario.command.validator.ModificarUsuarioValidator;
+import com.arquisoft.usuarios.domain.bibliotecario.exception.BibliotecarioUsuarioDuplicadoException;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.usuario.ModificacionUsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
@@ -83,6 +85,8 @@ class ModificarUsuarioUseCaseImplTest {
     @Mock
     private AgregarBibliotecarioUseCase agregarBibliotecarioUseCase;
     @Mock
+    private AgregarJuradoUseCase agregarJuradoUseCase;
+    @Mock
     private EventPublisher eventPublisher;
     @Mock
     private AppLogger logger;
@@ -99,17 +103,18 @@ class ModificarUsuarioUseCaseImplTest {
                 emailOtraIdentidadExisteFinder, contactoOtroUsuarioExisteFinder, modificarUsuarioValidator,
                 agregarEstudianteUseCase, agregarCoordinadorUseCase, agregarAsesorFichaUseCase,
                 agregarAsesorUseCase, agregarRepresentanteComiteUseCase, agregarAdministradorUseCase,
-                agregarBibliotecarioUseCase, eventPublisher, logger);
+                agregarBibliotecarioUseCase, agregarJuradoUseCase, eventPublisher, logger);
         usuarioId = UUID.randomUUID();
         usuarioActivo = UsuarioDomain.reconstruir(usuarioId, "usr001", "Nombre Original",
                 "original@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO, UtilFecha.VACIO);
     }
 
     @Test
-    void debeActualizarPublicarYAsignarRealmRolesVacio_cuandoSoloCambianDatos() {
+    void debeActualizarPublicarSincronizarIdentidadYAsignarRealmRolesVacio_cuandoCambiaElNombreCompleto() {
         // Arrange
-        var modificacion = modificacionSoloNombre();
+        var modificacion = modificacionSoloNombreCompleto();
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+        var identidadCaptor = ArgumentCaptor.forClass(ModificacionIdentidadEntity.class);
 
         // Act
         useCase.ejecutar(modificacion);
@@ -117,17 +122,37 @@ class ModificarUsuarioUseCaseImplTest {
         // Assert
         verify(usuarioOutputPort, times(1)).actualizar(any());
         verify(eventPublisher, times(1)).publish(any());
-        verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of());
-        verify(proveedorIdentidadOutputPort, never()).actualizar(any());
+        verify(proveedorIdentidadOutputPort, times(1)).asignarRoles(usuarioId, List.of());
+        verify(proveedorIdentidadOutputPort, times(1)).actualizar(identidadCaptor.capture());
+        assertThat(identidadCaptor.getValue().nombres()).isEqualTo("Nombre");
+        assertThat(identidadCaptor.getValue().apellidos()).isEqualTo("Nuevo");
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
                 agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
-                agregarAdministradorUseCase, agregarBibliotecarioUseCase);
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase, agregarJuradoUseCase);
         // presupuesto de I/O: un solo viaje por finder de unicidad tocado
         verify(usuarioPorIdFinder, times(1)).obtener(usuarioId);
         verify(identificadorOtroUsuarioExisteFinder, never()).obtener(any());
         verify(emailOtroUsuarioExisteFinder, never()).obtener(any());
         verify(emailOtraIdentidadExisteFinder, never()).obtener(any());
         verify(contactoOtroUsuarioExisteFinder, never()).obtener(any());
+    }
+
+    @Test
+    void noDebeSincronizarIdentidad_cuandoSoloCambiaElContacto() {
+        // Arrange
+        var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
+                null, null, "573009998877", null, null);
+        var modificacion = ModificacionUsuarioDomain.crear(usuarioId, datos, List.of());
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+        when(contactoOtroUsuarioExisteFinder.obtener(any())).thenReturn(false);
+
+        // Act
+        useCase.ejecutar(modificacion);
+
+        // Assert
+        verify(usuarioOutputPort, times(1)).actualizar(any());
+        verify(proveedorIdentidadOutputPort, never()).actualizar(any());
+        verify(proveedorIdentidadOutputPort, times(1)).asignarRoles(usuarioId, List.of());
     }
 
     @Test
@@ -146,7 +171,7 @@ class ModificarUsuarioUseCaseImplTest {
         verify(agregarAsesorUseCase, never()).ejecutar(any());
         verify(agregarRepresentanteComiteUseCase, never()).ejecutar(any());
         verify(eventPublisher, never()).publish(any());
-        verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of("estudiante"));
+        verify(proveedorIdentidadOutputPort, times(1)).asignarRoles(usuarioId, List.of("estudiante"));
     }
 
     @Test
@@ -155,7 +180,7 @@ class ModificarUsuarioUseCaseImplTest {
         var usuarioInactivo = UsuarioDomain.reconstruir(usuarioId, "usr001", "Nombre Original",
                 "original@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO, UtilFecha.VACIO);
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                null, "Nombre Nuevo", null, null, null, null);
+                null, null, null, "Nombre", "Nuevo");
         var modificacion = ModificacionUsuarioDomain.crear(usuarioId, datos, List.of("estudiante"));
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioInactivo);
         var captor = ArgumentCaptor.forClass(UsuarioEntity.class);
@@ -169,14 +194,14 @@ class ModificarUsuarioUseCaseImplTest {
         assertThat(captor.getValue().estado()).isEqualTo(EstadoUsuario.INACTIVO.getId());
         verify(agregarEstudianteUseCase, times(1)).ejecutar(usuarioInactivo);
         verify(eventPublisher, times(1)).publish(any());
-        verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of("estudiante"));
+        verify(proveedorIdentidadOutputPort, times(1)).asignarRoles(usuarioId, List.of("estudiante"));
     }
 
     @Test
     void debeConsultarLosTresFindersDeUnicidad_cuandoLosTresCamposLlegan() {
         // Arrange
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                "usr999", null, null, "573009998877", null, null);
+                "usr999", null, "573009998877", null, null);
         var modificacion = ModificacionUsuarioDomain.crear(usuarioId, datos, List.of());
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
         when(identificadorOtroUsuarioExisteFinder.obtener(any())).thenReturn(false);
@@ -194,7 +219,7 @@ class ModificarUsuarioUseCaseImplTest {
     void debeAgregarLosTresRolesRestantesConUsuarioModificado_cuandoRolesLosIncluye() {
         // Arrange
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                null, null, null, null, null, null);
+                null, null, null, null, null);
         var modificacion = ModificacionUsuarioDomain.crear(
                 usuarioId, datos, List.of("coordinador", "asesor-ficha", "asesor"));
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
@@ -224,7 +249,7 @@ class ModificarUsuarioUseCaseImplTest {
         orden.verify(usuarioOutputPort).actualizar(any());
         orden.verify(agregarRepresentanteComiteUseCase, times(1)).ejecutar(usuarioActivo);
         orden.verify(proveedorIdentidadOutputPort)
-                .asignarRealmRoles(usuarioId, List.of("representante-comite"));
+                .asignarRoles(usuarioId, List.of("representante-comite"));
         verify(agregarEstudianteUseCase, never()).ejecutar(any());
         verify(agregarCoordinadorUseCase, never()).ejecutar(any());
         verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
@@ -244,7 +269,7 @@ class ModificarUsuarioUseCaseImplTest {
         var orden = inOrder(usuarioOutputPort, agregarAdministradorUseCase, proveedorIdentidadOutputPort);
         orden.verify(usuarioOutputPort).actualizar(any());
         orden.verify(agregarAdministradorUseCase, times(1)).ejecutar(usuarioActivo);
-        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(usuarioId, List.of("administrador"));
+        orden.verify(proveedorIdentidadOutputPort).asignarRoles(usuarioId, List.of("administrador"));
         verify(agregarEstudianteUseCase, never()).ejecutar(any());
         verify(agregarCoordinadorUseCase, never()).ejecutar(any());
         verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
@@ -266,7 +291,7 @@ class ModificarUsuarioUseCaseImplTest {
         var orden = inOrder(usuarioOutputPort, agregarBibliotecarioUseCase, proveedorIdentidadOutputPort);
         orden.verify(usuarioOutputPort).actualizar(any());
         orden.verify(agregarBibliotecarioUseCase, times(1)).ejecutar(usuarioActivo);
-        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(usuarioId, List.of("bibliotecario"));
+        orden.verify(proveedorIdentidadOutputPort).asignarRoles(usuarioId, List.of("bibliotecario"));
         verify(agregarEstudianteUseCase, never()).ejecutar(any());
         verify(agregarCoordinadorUseCase, never()).ejecutar(any());
         verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
@@ -276,11 +301,41 @@ class ModificarUsuarioUseCaseImplTest {
     }
 
     @Test
+    void debeAgregarRolJuradoAntesDeKeycloak_cuandoLaModificacionIncluyeJurado() {
+        // Arrange
+        var modificacion = modificacionConRol("jurado");
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+
+        // Act
+        useCase.ejecutar(modificacion);
+
+        // Assert
+        var orden = inOrder(usuarioOutputPort, agregarJuradoUseCase, proveedorIdentidadOutputPort);
+        orden.verify(usuarioOutputPort).actualizar(any());
+        orden.verify(agregarJuradoUseCase, times(1)).ejecutar(usuarioActivo);
+        orden.verify(proveedorIdentidadOutputPort).asignarRoles(usuarioId, List.of("jurado"));
+        verify(agregarBibliotecarioUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarJurado_cuandoLaModificacionNoIncluyeJurado() {
+        // Arrange
+        var modificacion = modificacionConRol("bibliotecario");
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+
+        // Act
+        useCase.ejecutar(modificacion);
+
+        // Assert
+        verify(agregarJuradoUseCase, never()).ejecutar(any());
+    }
+
+    @Test
     void noDebeTocarKeycloak_cuandoAgregarBibliotecarioLanzaDuplicado() {
         // Arrange
         var modificacion = modificacionConRol("bibliotecario");
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
-        doThrow(new BibliotecarioUsuarioDuplicadoException(usuarioId))
+        doThrow(new BibliotecarioUsuarioDuplicadoException(usuarioId, usuarioActivo.getNombre()))
                 .when(agregarBibliotecarioUseCase).ejecutar(any());
 
         // Act & Assert
@@ -291,8 +346,8 @@ class ModificarUsuarioUseCaseImplTest {
 
     @Test
     void noDebeConsultarFinderDeUnicidad_cuandoElCampoCorrespondienteEsAusente() {
-        // Arrange — solo llega nombre; identificador/email/contacto ausentes
-        var modificacion = modificacionSoloNombre();
+        // Arrange — solo llegan nombres y apellidos; identificador/email/contacto ausentes
+        var modificacion = modificacionSoloNombreCompleto();
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
 
         // Act
@@ -321,7 +376,7 @@ class ModificarUsuarioUseCaseImplTest {
     @Test
     void noDebePersistirNiPublicarNiTocarKeycloak_cuandoElValidadorLanza() {
         // Arrange
-        var modificacion = modificacionSoloNombre();
+        var modificacion = modificacionSoloNombreCompleto();
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
         doThrow(new UsuarioNoEncontradoException(usuarioId)).when(modificarUsuarioValidator)
                 .validar(any(), any(), eq(false), eq(false), eq(false));
@@ -334,7 +389,7 @@ class ModificarUsuarioUseCaseImplTest {
         verifyNoInteractions(proveedorIdentidadOutputPort);
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
                 agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
-                agregarAdministradorUseCase, agregarBibliotecarioUseCase);
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase, agregarJuradoUseCase);
     }
 
     @Test
@@ -344,7 +399,7 @@ class ModificarUsuarioUseCaseImplTest {
                 "original@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO, Instant.parse("2026-09-25T10:15:30Z"));
         var modificacion = modificacionConRol("estudiante");
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioEliminado);
-        doThrow(new UsuarioEliminadoException(usuarioId)).when(modificarUsuarioValidator)
+        doThrow(new UsuarioEliminadoException(usuarioId, "Nombre Original")).when(modificarUsuarioValidator)
                 .validar(any(), eq(usuarioEliminado), eq(false), eq(false), eq(false));
 
         // Act & Assert
@@ -354,7 +409,7 @@ class ModificarUsuarioUseCaseImplTest {
         verifyNoInteractions(eventPublisher, proveedorIdentidadOutputPort);
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
                 agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
-                agregarAdministradorUseCase, agregarBibliotecarioUseCase);
+                agregarAdministradorUseCase, agregarBibliotecarioUseCase, agregarJuradoUseCase);
     }
 
     @Test
@@ -387,13 +442,13 @@ class ModificarUsuarioUseCaseImplTest {
         orden.verify(modificarUsuarioValidator).validar(any(), any(), eq(false), eq(false), eq(false));
         orden.verify(usuarioOutputPort).actualizar(any());
         orden.verify(agregarEstudianteUseCase).ejecutar(any());
-        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(any(), any());
+        orden.verify(proveedorIdentidadOutputPort).asignarRoles(any(), any());
     }
 
     @Test
     void debeLoguearEntradaYCierre_cuandoLaModificacionSeCompleta() {
         // Arrange
-        var modificacion = modificacionSoloNombre();
+        var modificacion = modificacionSoloNombreCompleto();
         when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
 
         // Act
@@ -404,21 +459,21 @@ class ModificarUsuarioUseCaseImplTest {
         verify(logger).info(any(ClaveMensaje.class), eq(usuarioId), eq(0));
     }
 
-    private ModificacionUsuarioDomain modificacionSoloNombre() {
+    private ModificacionUsuarioDomain modificacionSoloNombreCompleto() {
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                null, "Nombre Nuevo", null, null, null, null);
+                null, null, null, "Nombre", "Nuevo");
         return ModificacionUsuarioDomain.crear(usuarioId, datos, List.of());
     }
 
     private ModificacionUsuarioDomain modificacionConEmail(String email) {
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                null, null, email, null, null, null);
+                null, email, null, null, null);
         return ModificacionUsuarioDomain.crear(usuarioId, datos, List.of());
     }
 
     private ModificacionUsuarioDomain modificacionConRol(String rol) {
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                null, null, null, null, null, null);
+                null, null, null, null, null);
         return ModificacionUsuarioDomain.crear(usuarioId, datos, List.of(rol));
     }
 }

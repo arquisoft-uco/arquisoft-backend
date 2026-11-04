@@ -49,6 +49,7 @@ logs/
 .env*.properties
 .env
 *.key
+*.http
 
 .claude/settings.local.json
 /commit

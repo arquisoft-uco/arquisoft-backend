@@ -6,7 +6,6 @@ import com.arquisoft.shared.message.annotation.UsuariosApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.usuarios.application.estudiante.command.primaryport.interactor.RemoverEstudianteInteractor;
 import com.arquisoft.usuarios.infrastructure.estudiante.command.primaryadapter.web.mapper.RemoverEstudianteRequestMapper;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +31,6 @@ public class RemoverEstudianteController {
     private final RemoverEstudianteInteractor removerEstudianteInteractor;
 
     @DeleteMapping("${rutas.usuarios.usuarios.estudiante:/{usuarioId}/estudiante}")
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_ESTUDIANTE_DELETE)
     @Operation(
             summary = UsuariosApiMessages.Estudiante.REMOVER_SUMMARY,
             description = UsuariosApiMessages.Estudiante.REMOVER_DESCRIPTION,

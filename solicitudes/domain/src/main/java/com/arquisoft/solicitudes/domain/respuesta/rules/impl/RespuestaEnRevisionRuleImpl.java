@@ -10,7 +10,7 @@ public class RespuestaEnRevisionRuleImpl implements RespuestaEnRevisionRule {
     @Override
     public void validar(EstadoRespuestaActual actual) {
         if (!EstadoRespuesta.EN_REVISION.getId().equals(actual.estado())) {
-            throw new RespuestaNoEnRevisionException(actual.solicitud());
+            throw new RespuestaNoEnRevisionException();
         }
     }
 }

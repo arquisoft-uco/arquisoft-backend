@@ -15,6 +15,7 @@ import java.util.UUID;
 
 public record AsignarEstudiantesProyectoGradoCommand(
         UUID proyectoGrado,
+        UUID coordinador,
         List<UUID> estudiantes
 ) {
 
@@ -22,12 +23,17 @@ public record AsignarEstudiantesProyectoGradoCommand(
         estudiantes = UtilColeccion.aplicarPorDefecto(estudiantes);
     }
 
-    public static AsignarEstudiantesProyectoGradoCommand crear(UUID proyectoGrado, List<String> estudiantes) {
+    public static AsignarEstudiantesProyectoGradoCommand crear(UUID proyectoGrado, UUID coordinador,
+                                                               List<String> estudiantes) {
         var result = new ValidationResult();
 
         ValidatorObjeto.noNulo(proyectoGrado,
                 ProyectosFields.EstudianteProyectoGrado.PROYECTO_GRADO,
                 ProyectosCodes.EstudianteProyectoGrado.PROYECTO_GRADO_ID_REQUERIDO, result);
+
+        ValidatorObjeto.noNulo(coordinador,
+                ProyectosFields.EstudianteProyectoGrado.COORDINADOR,
+                ProyectosCodes.EstudianteProyectoGrado.COORDINADOR_ID_REQUERIDO, result);
 
         var lista = UtilColeccion.aplicarPorDefecto(estudiantes);
         if (ValidatorColeccion.noVacia(lista,
@@ -44,6 +50,6 @@ public record AsignarEstudiantesProyectoGradoCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new AsignarEstudiantesProyectoGradoCommand(
-                proyectoGrado, lista.stream().map(UtilUUID::generarUUIDDesdeTexto).toList());
+                proyectoGrado, coordinador, lista.stream().map(UtilUUID::generarUUIDDesdeTexto).toList());
     }
 }

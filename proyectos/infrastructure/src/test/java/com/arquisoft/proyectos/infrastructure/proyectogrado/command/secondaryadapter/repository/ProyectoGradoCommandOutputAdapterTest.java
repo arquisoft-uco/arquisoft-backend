@@ -3,6 +3,7 @@ package com.arquisoft.proyectos.infrastructure.proyectogrado.command.secondaryad
 import com.arquisoft.proyectos.application.proyectogrado.command.secondaryport.entity.ProyectoGradoEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.ProyectoGradoKey;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,7 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     private ProyectoGradoEntity proyecto(UUID fichaPerfil) {
-        return new ProyectoGradoEntity(UUID.randomUUID(), fichaPerfil, "Sistema de gestión", UUID.randomUUID(),
-                "EN_PROCESO");
+        return new ProyectoGradoEntity(UUID.randomUUID(), fichaPerfil, "Sistema de gestión", UUID.randomUUID());
     }
 
     @Test
@@ -63,6 +63,22 @@ class ProyectoGradoCommandOutputAdapterTest {
         // Act
         var existe = adapter.existePorFichaPerfil(conProyecto);
         var noExiste = adapter.existePorFichaPerfil(UUID.randomUUID());
+
+        // Assert
+        assertThat(existe).isTrue();
+        assertThat(noExiste).isFalse();
+    }
+
+    @Test
+    void debeResponderSiElProyectoExiste_cuandoSeConsultaPorId() {
+        // Arrange
+        var registrado = proyecto(UtilUUID.generarNuevoUUID());
+        adapter.registrar(registrado);
+        entityManager.flush();
+
+        // Act
+        var existe = adapter.existePorId(registrado.id());
+        var noExiste = adapter.existePorId(UtilUUID.generarNuevoUUID());
 
         // Assert
         assertThat(existe).isTrue();

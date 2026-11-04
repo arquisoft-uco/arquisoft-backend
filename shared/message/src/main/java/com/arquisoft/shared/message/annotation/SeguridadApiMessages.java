@@ -27,10 +27,11 @@ public final class SeguridadApiMessages {
                 "OAuth 2.1 / RFC 9700 — usar Authorization Code + PKCE en la SPA";
         public static final String INICIAR_SESION_SUMMARY = "Iniciar sesion (ROPC — desaconsejado para navegadores)";
         public static final String INICIAR_SESION_DESCRIPTION =
-                "Autentica al usuario contra Keycloak usando email y contrasena "
+                "Autentica al usuario contra el proveedor de identidad usando email y contrasena "
                         + "(grant_type=password / ROPC). DESACONSEJADO por OAuth 2.1 y RFC 9700: "
                         + "el flujo recomendado para la SPA es Authorization Code + PKCE contra "
-                        + "Keycloak. Este endpoint se mantiene solo para clientes internos de confianza. "
+                        + "el proveedor de identidad. DEPRECADO: este endpoint se mantiene solo para clientes internos de confianza "
+                        + "durante la transicion y se desactiva con security.direct-login.provider=none. "
                         + "Retorna access token, refresh token y metadatos de la sesion.";
         public static final String INICIAR_SESION_RESP_200 = "Autenticacion exitosa — tokens retornados";
         public static final String INICIAR_SESION_RESP_400 = "Datos de entrada invalidos";

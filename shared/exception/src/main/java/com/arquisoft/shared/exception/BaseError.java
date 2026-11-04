@@ -8,20 +8,26 @@ public final class BaseError {
 
     private final String codigoError;
     private final String message;
+    private final String detalle;
     private final List<String> traza;
 
-    private BaseError(String codigoError, String message, List<String> traza) {
+    private BaseError(String codigoError, String message, String detalle, List<String> traza) {
         this.codigoError = codigoError;
         this.message = message;
+        this.detalle = detalle;
         this.traza = Collections.unmodifiableList(traza);
     }
 
     public static BaseError of(String codigoError, String message) {
-        return new BaseError(codigoError, message, Collections.emptyList());
+        return new BaseError(codigoError, message, message, Collections.emptyList());
     }
 
     public static BaseError of(String codigoError, String message, Throwable cause) {
-        return new BaseError(codigoError, message, construirTraza(cause));
+        return new BaseError(codigoError, message, message, construirTraza(cause));
+    }
+
+    public static BaseError conDetalle(String codigoError, String message, String detalle) {
+        return new BaseError(codigoError, message, detalle, Collections.emptyList());
     }
 
     private static List<String> construirTraza(Throwable cause) {
@@ -40,6 +46,10 @@ public final class BaseError {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getDetalle() {
+        return detalle;
     }
 
     public List<String> getTraza() {

@@ -5,10 +5,10 @@ import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.Estado
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilEstudianteInteractor;
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.model.ConsultarFichasPerfilEstudianteQuery;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilEstudianteReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +16,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,13 +37,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarFichasPerfilEstudianteController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarFichasPerfilEstudianteControllerTest.TestSecurityConfig.class})
 class ConsultarFichasPerfilEstudianteControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -69,10 +66,9 @@ class ConsultarFichasPerfilEstudianteControllerTest {
     private static final UUID FICHA_ID = UUID.randomUUID();
     private static final UUID OTRA_FICHA_ID = UUID.randomUUID();
 
-    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol(String authority) {
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConRol() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()));
     }
 
     private static FichaPerfilEstudianteReadModel readModel(UUID fichaId) {
@@ -91,7 +87,7 @@ class ConsultarFichasPerfilEstudianteControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estudiante")
-                        .with(jwtConRol(FichasAuthorities.FICHA_PERFIL_ESTUDIANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].idFichaPerfil").value(FICHA_ID.toString()))
@@ -109,7 +105,7 @@ class ConsultarFichasPerfilEstudianteControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estudiante")
-                        .with(jwtConRol(FichasAuthorities.FICHA_PERFIL_ESTUDIANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
@@ -122,14 +118,6 @@ class ConsultarFichasPerfilEstudianteControllerTest {
     }
 
     @Test
-    void debeRetornar403_sinClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get("/fichas-perfil/estudiante")
-                        .with(jwtConRol("otro:permiso")))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeExtraerEstudianteDelSubjectDelJwt() throws Exception {
         // Arrange
         when(consultarFichasPerfilEstudianteInteractor.ejecutar(any(ConsultarFichasPerfilEstudianteQuery.class)))
@@ -137,7 +125,7 @@ class ConsultarFichasPerfilEstudianteControllerTest {
 
         // Act
         mockMvc.perform(get("/fichas-perfil/estudiante")
-                        .with(jwtConRol(FichasAuthorities.FICHA_PERFIL_ESTUDIANTE_VIEW)))
+                        .with(jwtConRol()))
                 .andExpect(status().isOk());
 
         // Assert
@@ -147,15 +135,14 @@ class ConsultarFichasPerfilEstudianteControllerTest {
     }
 
     @Test
-    void debeRetornar400SinConsultar_cuandoSubjectDelJwtNoEsUUID() throws Exception {
+    void debeRetornar401SinConsultar_cuandoSubjectDelJwtNoEsUUID() throws Exception {
         // Arrange
         var jwtSubjectInvalido = SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(j -> j.subject("no-es-uuid"))
-                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_ESTUDIANTE_VIEW));
+                .jwt(j -> j.subject("no-es-uuid"));
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estudiante").with(jwtSubjectInvalido))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
         verify(consultarFichasPerfilEstudianteInteractor, never())
                 .ejecutar(any(ConsultarFichasPerfilEstudianteQuery.class));
     }

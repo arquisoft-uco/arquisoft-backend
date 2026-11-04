@@ -4,9 +4,13 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum ObservacionEvaluacionKey implements ClaveMensaje {
 
-    ERROR_OBSERVACION_EVALUACION_DUPLICADA("fichas.dominio.observacionevaluacion.error.duplicada", 2),
-    ERROR_EVALUACION_CERRADA("fichas.dominio.observacionevaluacion.error.evaluacion-cerrada", 2),
-    ERROR_OBSERVACION_EVALUACION_NO_ENCONTRADA("fichas.dominio.observacionevaluacion.error.no-encontrada", 1),
+    ERROR_OBSERVACION_EVALUACION_DUPLICADA("fichas.dominio.observacionevaluacion.error.duplicada", 1),
+    ERROR_OBSERVACION_EVALUACION_DUPLICADA_DETALLE("fichas.dominio.observacionevaluacion.error.duplicada-detalle", 2),
+    ERROR_EVALUACION_CERRADA("fichas.dominio.observacionevaluacion.error.evaluacion-cerrada", 1),
+    ERROR_EVALUACION_CERRADA_DETALLE("fichas.dominio.observacionevaluacion.error.evaluacion-cerrada-detalle", 2),
+    ERROR_OBSERVACION_EVALUACION_NO_ENCONTRADA("fichas.dominio.observacionevaluacion.error.no-encontrada", 0),
+    ERROR_OBSERVACION_EVALUACION_NO_ENCONTRADA_DETALLE(
+            "fichas.dominio.observacionevaluacion.error.no-encontrada-detalle", 1),
     LOG_AGREGANDO("fichas.aplicacion.observacionevaluacion.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.observacionevaluacion.log.verificacion-agregar", 4),
     LOG_AGREGADA("fichas.aplicacion.observacionevaluacion.log.agregada", 2),
@@ -20,6 +24,10 @@ public enum ObservacionEvaluacionKey implements ClaveMensaje {
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.observacionevaluacion.log.consulta-estudiante-completada", 1),
     LOG_CONSULTANDO_ASESOR("fichas.aplicacion.observacionevaluacion.log.consultando-asesor", 2),
     LOG_CONSULTA_ASESOR_COMPLETADA("fichas.aplicacion.observacionevaluacion.log.consulta-asesor-completada", 1),
+    LOG_CONSULTANDO_REPRESENTANTE("fichas.aplicacion.observacionevaluacion.log.consultando-representante", 2),
+    LOG_CONSULTA_REPRESENTANTE_COMPLETADA("fichas.aplicacion.observacionevaluacion.log.consulta-representante-completada", 1),
+    LOG_CONSULTANDO_COORDINADOR("fichas.aplicacion.observacionevaluacion.log.consultando-coordinador", 1),
+    LOG_CONSULTA_COORDINADOR_COMPLETADA("fichas.aplicacion.observacionevaluacion.log.consulta-coordinador-completada", 1),
     LOG_GUARDADA("fichas.infraestructura.observacionevaluacion.log.guardada", 1),
     LOG_ACTUALIZADA("fichas.infraestructura.observacionevaluacion.log.actualizada", 1),
     LOG_ELIMINADA("fichas.infraestructura.observacionevaluacion.log.eliminada", 1);

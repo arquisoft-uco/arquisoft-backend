@@ -29,8 +29,10 @@ public final class ModificacionUsuarioDomain {
     private String apellidos;
     private List<String> roles;
 
-    public record DatosModificacionUsuario(String identificador, String nombre, String email,
-                                           String contacto, String nombres, String apellidos) {}
+    private static final String SEPARADOR_NOMBRE = " ";
+
+    public record DatosModificacionUsuario(String identificador, String email, String contacto,
+                                           String nombres, String apellidos) {}
 
     private ModificacionUsuarioDomain() {}
 
@@ -41,11 +43,9 @@ public final class ModificacionUsuarioDomain {
 
         modificacion.setUsuario(usuario, result);
         modificacion.setIdentificador(datos.identificador(), result);
-        modificacion.setNombre(datos.nombre(), result);
         modificacion.setEmail(datos.email(), result);
         modificacion.setContacto(datos.contacto(), result);
-        modificacion.setNombres(datos.nombres(), result);
-        modificacion.setApellidos(datos.apellidos(), result);
+        modificacion.setNombreCompleto(datos.nombres(), datos.apellidos(), result);
         modificacion.setRoles(roles);
 
         result.lanzarSiTieneErrores();
@@ -75,28 +75,6 @@ public final class ModificacionUsuarioDomain {
             return;
         }
         this.identificador = identificadorRecortado;
-    }
-
-    private void setNombre(String nombre, ValidationResult result) {
-        if (UtilObjeto.esNulo(nombre)) {
-            return;
-        }
-        if (!ValidatorTexto.noEnBlanco(nombre, UsuariosFields.Usuario.NOMBRE,
-                UsuariosCodes.Usuario.NOMBRE_REQUERIDO, result)) {
-            return;
-        }
-        var nombreRecortado = UtilTexto.aplicarTrim(nombre);
-        if (!ValidatorLongitud.longitudEntre(nombreRecortado, UsuariosLimits.Usuario.NOMBRE_MIN,
-                UsuariosLimits.Usuario.NOMBRE_MAX, UsuariosFields.Usuario.NOMBRE,
-                UsuariosCodes.Usuario.NOMBRE_LONGITUD, result)) {
-            return;
-        }
-        if (!UtilTexto.coincidePatron(nombreRecortado, UsuariosLimits.Usuario.PATRON_NOMBRE)) {
-            result.agregarError(UsuariosFields.Usuario.NOMBRE, UsuariosCodes.Usuario.NOMBRE_FORMATO,
-                    Mensajes.formatear(RegistrarUsuarioKey.ERROR_NOMBRE_FORMATO, nombreRecortado));
-            return;
-        }
-        this.nombre = nombreRecortado;
     }
 
     private void setEmail(String email, ValidationResult result) {
@@ -142,26 +120,33 @@ public final class ModificacionUsuarioDomain {
         this.contacto = contactoRecortado;
     }
 
-    private void setNombres(String nombres, ValidationResult result) {
-        if (UtilObjeto.esNulo(nombres)) {
+    private void setNombreCompleto(String nombres, String apellidos, ValidationResult result) {
+        if (UtilObjeto.esNulo(nombres) && UtilObjeto.esNulo(apellidos)) {
             return;
         }
-        if (!ValidatorTexto.noEnBlanco(nombres, UsuariosFields.Usuario.NOMBRES,
-                UsuariosCodes.Usuario.NOMBRES_REQUERIDO, result)) {
+        var nombresPresentes = ValidatorTexto.noEnBlanco(nombres, UsuariosFields.Usuario.NOMBRES,
+                UsuariosCodes.Usuario.NOMBRES_REQUERIDO, result);
+        var apellidosPresentes = ValidatorTexto.noEnBlanco(apellidos, UsuariosFields.Usuario.APELLIDOS,
+                UsuariosCodes.Usuario.APELLIDOS_REQUERIDO, result);
+        if (!nombresPresentes || !apellidosPresentes) {
             return;
         }
-        this.nombres = UtilTexto.aplicarTrim(nombres);
-    }
-
-    private void setApellidos(String apellidos, ValidationResult result) {
-        if (UtilObjeto.esNulo(apellidos)) {
+        var nombresRecortados = UtilTexto.aplicarTrim(nombres);
+        var apellidosRecortados = UtilTexto.aplicarTrim(apellidos);
+        var nombreCompleto = nombresRecortados + SEPARADOR_NOMBRE + apellidosRecortados;
+        if (!ValidatorLongitud.longitudEntre(nombreCompleto, UsuariosLimits.Usuario.NOMBRE_MIN,
+                UsuariosLimits.Usuario.NOMBRE_MAX, UsuariosFields.Usuario.NOMBRE,
+                UsuariosCodes.Usuario.NOMBRE_LONGITUD, result)) {
             return;
         }
-        if (!ValidatorTexto.noEnBlanco(apellidos, UsuariosFields.Usuario.APELLIDOS,
-                UsuariosCodes.Usuario.APELLIDOS_REQUERIDO, result)) {
+        if (!UtilTexto.coincidePatron(nombreCompleto, UsuariosLimits.Usuario.PATRON_NOMBRE)) {
+            result.agregarError(UsuariosFields.Usuario.NOMBRE, UsuariosCodes.Usuario.NOMBRE_FORMATO,
+                    Mensajes.formatear(RegistrarUsuarioKey.ERROR_NOMBRE_FORMATO, nombreCompleto));
             return;
         }
-        this.apellidos = UtilTexto.aplicarTrim(apellidos);
+        this.nombres = nombresRecortados;
+        this.apellidos = apellidosRecortados;
+        this.nombre = nombreCompleto;
     }
 
     private void setRoles(List<String> roles) {

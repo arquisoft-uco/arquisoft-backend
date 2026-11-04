@@ -4,11 +4,10 @@ import com.arquisoft.fichas.application.observacionevaluacion.command.primarypor
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.command.primaryadapter.web.dto.AgregarObservacionEvaluacionRequestDTO;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.command.primaryadapter.web.dto.AgregarObservacionEvaluacionResponseDTO;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.command.primaryadapter.web.mapper.AgregarObservacionEvaluacionRequestMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,9 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,7 +36,6 @@ public class AgregarObservacionEvaluacionController {
     private final AgregarObservacionEvaluacionInteractor agregarObservacionEvaluacionInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.evaluacion-observaciones:/evaluaciones/{evaluacionFichaPerfilId}/observaciones}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_OBSERVACION_EVALUACION_CREATE)
     @Operation(
             summary = FichasApiMessages.ObservacionEvaluacion.AGREGAR_SUMMARY,
             description = FichasApiMessages.ObservacionEvaluacion.AGREGAR_DESCRIPTION,
@@ -62,9 +57,9 @@ public class AgregarObservacionEvaluacionController {
     public ResponseEntity<AgregarObservacionEvaluacionResponseDTO> agregar(
             @PathVariable UUID evaluacionFichaPerfilId,
             @RequestBody AgregarObservacionEvaluacionRequestDTO dto,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var representanteComiteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var representanteComiteId = identidad.id();
 
         var id = agregarObservacionEvaluacionInteractor.ejecutar(
                 AgregarObservacionEvaluacionRequestMapper.toCommand(dto, evaluacionFichaPerfilId, representanteComiteId));

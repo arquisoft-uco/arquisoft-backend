@@ -1,7 +1,9 @@
 package com.arquisoft.shared.query;
 
 import com.arquisoft.shared.query.exception.FiltroException;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.AppCodes;
+import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.query.pagination.SortDirection;
 import org.junit.jupiter.api.Test;
 
@@ -144,6 +146,16 @@ class FiltroMensajesTest {
         assertThatThrownBy(() -> SortOrder.parse(" :ASC"))
                 .isInstanceOf(FiltroException.class)
                 .hasMessage("El campo de ordenamiento no puede estar vacío");
+    }
+
+    @Test
+    void debeEntregarAlClienteUnMensajeSinElValorRecibido_cuandoElConectorEsInvalido() {
+        assertThatThrownBy(() -> FiltroConector.parse("XOR"))
+                .isInstanceOf(FiltroException.class)
+                .extracting(e -> ((FiltroException) e).getError().getMessage())
+                .isEqualTo(Mensajes.obtener(ConsultaKey.ERROR_CONECTOR_INVALIDO))
+                .asString()
+                .doesNotContain("XOR");
     }
 
     @Test

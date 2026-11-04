@@ -4,14 +4,13 @@ import com.arquisoft.fichas.application.observacionitem.query.primaryport.intera
 import com.arquisoft.fichas.infrastructure.observacionitem.query.primaryadapter.web.dto.ObservacionItemResponseDTO;
 import com.arquisoft.fichas.infrastructure.observacionitem.query.primaryadapter.web.mapper.ConsultarObservacionesItemAsesorRequestMapper;
 import com.arquisoft.fichas.infrastructure.observacionitem.query.primaryadapter.web.mapper.ObservacionItemResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,9 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +35,6 @@ public class ConsultarObservacionesItemAsesorController {
     private final ConsultarObservacionesItemAsesorInteractor consultarObservacionesItemAsesorInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.observaciones-item-asesor:/observaciones-item/asesor}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_OBSERVACION_ITEM_ASESOR_VIEW)
     @Operation(
             summary = FichasApiMessages.ObservacionItem.CONSULTAR_ASESOR_SUMMARY,
             description = FichasApiMessages.ObservacionItem.CONSULTAR_ASESOR_DESCRIPTION,
@@ -60,9 +55,9 @@ public class ConsultarObservacionesItemAsesorController {
     })
     public ResponseEntity<PageResponseDTO<ObservacionItemResponseDTO>> consultarElaboradas(
             @RequestBody(required = false) QueryCriteriaRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var asesorFicha = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var asesorFicha = identidad.id();
         var resultado = consultarObservacionesItemAsesorInteractor.ejecutar(
                 ConsultarObservacionesItemAsesorRequestMapper.toQuery(request, asesorFicha));
 

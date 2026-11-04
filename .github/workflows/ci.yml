@@ -15,7 +15,8 @@ on:
 
 concurrency:
   group: ci-backend-${{ github.ref }}
-  cancel-in-progress: true
+  # En develop no se cancela: cada merge debe quedar con su propio veredicto de CI.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
 
 jobs:
   # ============================================================================
@@ -43,7 +44,7 @@ jobs:
   build:
     name: Lint, Test & Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       # ── Checkout ──

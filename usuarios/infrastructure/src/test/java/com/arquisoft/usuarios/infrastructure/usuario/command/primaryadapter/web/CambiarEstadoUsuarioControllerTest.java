@@ -9,7 +9,6 @@ import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.CambiarEstadoUsuarioInteractor;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.model.CambiarEstadoUsuarioCommand;
 import com.arquisoft.usuarios.domain.usuario.exception.EstadoUsuarioSinCambioException;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +17,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -45,7 +42,6 @@ class CambiarEstadoUsuarioControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -66,8 +62,7 @@ class CambiarEstadoUsuarioControllerTest {
     private CambiarEstadoUsuarioInteractor cambiarEstadoUsuarioInteractor;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor administrador() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_ESTADO_UPDATE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -111,18 +106,6 @@ class CambiarEstadoUsuarioControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_INACTIVO))
                 .andExpect(status().isUnauthorized());
-        verify(cambiarEstadoUsuarioInteractor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debe403_cuandoSoloTieneElClientRoleDeModificarUsuario() throws Exception {
-        // Act & Assert
-        mockMvc.perform(patch(RUTA, UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_UPDATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_INACTIVO))
-                .andExpect(status().isForbidden());
         verify(cambiarEstadoUsuarioInteractor, never()).ejecutar(any());
     }
 

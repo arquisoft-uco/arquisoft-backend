@@ -1,6 +1,5 @@
 package com.arquisoft.proyectos.domain.proyectogrado;
 
-import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGrado;
 import com.arquisoft.shared.message.constant.ProyectosCodes;
 import com.arquisoft.shared.message.constant.ProyectosFields;
 import com.arquisoft.shared.message.constant.ProyectosLimits;
@@ -28,7 +27,6 @@ class ProyectoGradoDomainTest {
         assertThat(proyecto.getFichaPerfil()).isEqualTo(fichaPerfil);
         assertThat(proyecto.getTituloProyecto()).isEqualTo("Sistema de gestion academica");
         assertThat(proyecto.getCoordinador()).isEqualTo(coordinador);
-        assertThat(proyecto.getEstadoProyectoGrado()).isEqualTo(EstadoProyectoGrado.EN_PROCESO);
         assertThat(proyecto.esVacio()).isFalse();
     }
 
@@ -92,15 +90,13 @@ class ProyectoGradoDomainTest {
         var coordinador = UUID.randomUUID();
 
         // Act
-        var proyecto = ProyectoGradoDomain.reconstruir(id, fichaPerfil, "Titulo", coordinador,
-                EstadoProyectoGrado.FINALIZADO);
+        var proyecto = ProyectoGradoDomain.reconstruir(id, fichaPerfil, "Titulo", coordinador);
 
         // Assert
         assertThat(proyecto.getId()).isEqualTo(id);
         assertThat(proyecto.getFichaPerfil()).isEqualTo(fichaPerfil);
         assertThat(proyecto.getTituloProyecto()).isEqualTo("Titulo");
         assertThat(proyecto.getCoordinador()).isEqualTo(coordinador);
-        assertThat(proyecto.getEstadoProyectoGrado()).isEqualTo(EstadoProyectoGrado.FINALIZADO);
         assertThat(proyecto.esVacio()).isFalse();
         assertThat(ProyectoGradoDomain.VACIO.esVacio()).isTrue();
     }

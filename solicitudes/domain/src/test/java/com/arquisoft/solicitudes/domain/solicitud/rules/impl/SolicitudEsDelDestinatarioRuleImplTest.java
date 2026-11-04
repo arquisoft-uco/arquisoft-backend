@@ -15,7 +15,7 @@ class SolicitudEsDelDestinatarioRuleImplTest {
 
     @Test
     void debePasar_cuandoElDestinatarioEsElSolicitante() {
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
         assertThatCode(() -> rule.validar(new PropiedadDestinatarioSolicitud(
                 UUID.randomUUID(), coordinador, coordinador)))
                 .doesNotThrowAnyException();

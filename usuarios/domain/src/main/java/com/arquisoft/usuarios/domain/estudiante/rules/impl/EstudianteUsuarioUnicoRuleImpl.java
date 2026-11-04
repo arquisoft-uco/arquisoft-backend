@@ -10,7 +10,7 @@ public class EstudianteUsuarioUnicoRuleImpl implements EstudianteUsuarioUnicoRul
     public void validar(DisponibilidadEstudianteUsuario disponibilidad) {
         var estudiante = disponibilidad.estudiante();
         if (!estudiante.esVacio() && !estudiante.estaEliminado()) {
-            throw new EstudianteUsuarioDuplicadoException(disponibilidad.usuario());
+            throw new EstudianteUsuarioDuplicadoException(disponibilidad.usuario(), disponibilidad.nombre());
         }
     }
 }

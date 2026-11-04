@@ -6,8 +6,7 @@ import com.arquisoft.shared.message.annotation.SolicitudesApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.interactor.EliminarSolicitudNovedadCoordinadorInteractor;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EliminarSolicitudNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
-import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,9 +16,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +32,6 @@ public class EliminarSolicitudNovedadCoordinadorController {
 
     @DeleteMapping(
             "${rutas.solicitudes.solicitud.novedad-coordinador-por-id:/novedad-coordinador/{solicitudId}}")
-    @PreAuthorize(SolicitudesAuthorities.Expresiones.HAS_SOLICITUD_NOVEDAD_COORDINADOR_DELETE)
     @Operation(
             summary = SolicitudesApiMessages.Solicitud.ELIMINAR_NOVEDAD_COORDINADOR_SUMMARY,
             description = SolicitudesApiMessages.Solicitud.ELIMINAR_NOVEDAD_COORDINADOR_DESCRIPTION,
@@ -57,9 +52,9 @@ public class EliminarSolicitudNovedadCoordinadorController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<Void> eliminar(@PathVariable String solicitudId,
-                                         @AuthenticationPrincipal Jwt jwt) {
+                                         IdentidadActual identidad) {
 
-        var remitenteUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var remitenteUsuario = identidad.id();
 
         eliminarSolicitudNovedadCoordinadorInteractor.ejecutar(
                 EliminarSolicitudNovedadCoordinadorCommand.crear(solicitudId, remitenteUsuario));

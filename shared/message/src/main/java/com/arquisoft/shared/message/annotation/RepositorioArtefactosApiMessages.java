@@ -1,0 +1,91 @@
+package com.arquisoft.shared.message.annotation;
+
+public final class RepositorioArtefactosApiMessages {
+
+    private RepositorioArtefactosApiMessages() {}
+
+    public static final class Comun {
+
+        private Comun() {}
+
+        public static final String RESP_401 = "No autenticado";
+        public static final String RESP_403 = "Sin permisos para realizar la operación";
+    }
+
+    public static final class RepositorioArtefacto {
+
+        private RepositorioArtefacto() {}
+
+        public static final String TAG_NAME = "Repositorios de artefactos";
+        public static final String TAG_DESCRIPTION = "Administración de los repositorios de artefactos";
+        public static final String GENERAR_SUMMARY = "Generar nuevo repositorio de artefactos";
+        public static final String GENERAR_DESCRIPTION =
+                "Genera un repositorio de artefactos que queda a cargo del administrador autenticado";
+        public static final String GENERAR_RESP_201 = "Repositorio de artefactos generado";
+        public static final String GENERAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String GENERAR_RESP_422 =
+                "Datos inválidos, administrador no vigente o repositorio duplicado";
+        public static final String MODIFICAR_SUMMARY = "Modificar repositorio de artefactos";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica el nombre y la descripción de un repositorio de artefactos existente";
+        public static final String MODIFICAR_RESP_204 = "Repositorio de artefactos modificado";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 =
+                "Administrador no vigente, repositorio inexistente o nombre ya usado por otro repositorio";
+        public static final String PARAM_REPOSITORIO = "Identificador del repositorio de artefactos";
+        public static final String CONSULTAR_SUMMARY = "Consultar repositorios de artefactos con filtros dinámicos";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Lista, con paginación, filtros y orden dinámicos, los repositorios de artefactos "
+                        + "junto con su administrador";
+        public static final String CONSULTAR_RESP_200 = "Listado obtenido exitosamente";
+        public static final String CONSULTAR_RESP_400 = "Filtro, operador, campo o valor inválido";
+    }
+
+    public static final class VersionRepositorioArtefacto {
+
+        private VersionRepositorioArtefacto() {}
+
+        public static final String TAG_NAME = "Versiones de repositorios de artefactos";
+        public static final String TAG_DESCRIPTION =
+                "Carga de nuevas versiones de plantillas en un repositorio de artefactos";
+        public static final String SOLICITAR_CARGA_SUMMARY = "Solicitar la carga de una versión";
+        public static final String SOLICITAR_CARGA_DESCRIPTION =
+                "Entrega un formulario firmado para subir el archivo directamente al almacenamiento de objetos";
+        public static final String SOLICITAR_CARGA_RESP_200 = "Formulario de carga generado";
+        public static final String SOLICITAR_CARGA_RESP_400 = "Datos de entrada inválidos";
+        public static final String SOLICITAR_CARGA_RESP_422 =
+                "Administrador no vigente, repositorio inexistente, tipo o tamaño de archivo no permitido";
+        public static final String SOLICITAR_CARGA_RESP_503 = "Almacenamiento de objetos no disponible";
+        public static final String SUBIR_SUMMARY = "Confirmar la subida de una nueva versión";
+        public static final String SUBIR_DESCRIPTION =
+                "Valida el archivo subido y registra la versión del documento en el repositorio";
+        public static final String SUBIR_RESP_201 = "Versión registrada";
+        public static final String SUBIR_RESP_400 = "Datos de entrada inválidos";
+        public static final String SUBIR_RESP_422 =
+                "Carga inexistente o ajena, archivo inválido o incoherencia con el documento declarado";
+        public static final String SUBIR_RESP_503 = "Almacenamiento de objetos no disponible";
+        public static final String PARAM_REPOSITORIO = "Identificador del repositorio de artefactos";
+        public static final String CONSULTAR_SUMMARY = "Consultar las versiones de un repositorio de artefactos";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Lista todas las versiones de los documentos del repositorio, la de mayor número primero";
+        public static final String CONSULTAR_RESP_200 = "Versiones obtenidas exitosamente (lista vacía si no hay)";
+        public static final String CONSULTAR_RESP_400 = "Identificador de repositorio inválido";
+        public static final String CONSULTAR_ASESOR_SUMMARY =
+                "Consultar las versiones de todos los repositorios de artefactos para asignar";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Lista paginada, con filtros y orden, de las versiones de todos los repositorios "
+                        + "junto con el repositorio al que pertenecen";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Listado obtenido exitosamente";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "Filtro, operador, campo o valor inválido";
+        public static final String PARAM_VERSION = "Identificador de la versión del repositorio de artefactos";
+        public static final String DESCARGAR_SUMMARY = "Descargar el archivo de una versión del repositorio de artefactos";
+        public static final String DESCARGAR_DESCRIPTION =
+                "Entrega, al administrador, al asesor y al estudiante, una URL de descarga de vida corta "
+                        + "del archivo original de cualquier versión";
+        public static final String DESCARGAR_RESP_200 = "Enlace de descarga generado";
+        public static final String DESCARGAR_RESP_400 = "Identificador de versión inválido";
+        public static final String DESCARGAR_RESP_422 = "La versión solicitada no existe";
+        public static final String DESCARGAR_RESP_503 =
+                "El archivo no está disponible o el almacenamiento de objetos no responde";
+    }
+}

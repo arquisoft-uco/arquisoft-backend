@@ -10,7 +10,7 @@ public class RepresentanteComiteUsuarioUnicoRuleImpl implements RepresentanteCom
     public void validar(DisponibilidadRepresentanteComiteUsuario disponibilidad) {
         var representanteComite = disponibilidad.representanteComite();
         if (!representanteComite.esVacio() && !representanteComite.estaEliminado()) {
-            throw new RepresentanteComiteUsuarioDuplicadoException(disponibilidad.usuario());
+            throw new RepresentanteComiteUsuarioDuplicadoException(disponibilidad.usuario(), disponibilidad.nombre());
         }
     }
 }

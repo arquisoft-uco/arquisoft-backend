@@ -1,0 +1,39 @@
+package com.arquisoft.artefactos.application.artefacto.command.secondaryport;
+
+import com.arquisoft.artefactos.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
+
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface ArtefactoOutputPort {
+
+    void registrar(ArtefactoEntity artefacto);
+
+    void traspasarAsesorDeProyecto(UUID proyectoGrado, UUID asesor);
+
+    Optional<ArtefactoEntity> obtenerPorId(UUID id);
+
+    Optional<ArtefactoEntity> obtenerBloqueadoPorId(UUID id);
+
+    Optional<ArtefactoEntity> obtenerPorVersionArtefacto(UUID versionArtefacto);
+
+    Optional<ArtefactoEntity> obtenerBloqueadoPorVersionArtefacto(UUID versionArtefacto);
+
+    void cambiarAsesor(UUID artefacto, UUID asesor);
+
+    void omitir(UUID artefacto, Instant omitidoEn);
+
+    void cambiarVersionRepositorio(UUID artefacto, UUID versionRepositorioArtefacto);
+
+    void reactivar(UUID artefacto, UUID asesor);
+
+    Optional<ArtefactoEntity> obtenerOmitidoPorProyectoYDocumento(
+            UUID proyectoGrado, UUID versionRepositorioArtefacto);
+
+    Optional<ArtefactoEntity> obtenerPorRevisionAsesor(UUID revisionAsesor);
+
+    Optional<ArtefactoEntity> obtenerPorObservacion(UUID observacion);
+
+    boolean existePorVersionRepositorioArtefacto(UUID versionRepositorioArtefacto);
+}

@@ -10,7 +10,8 @@ public class FichaPerfilSinEvaluacionEnCursoRuleImpl implements FichaPerfilSinEv
     @Override
     public void validar(EvaluacionesEnCursoFicha evaluaciones) {
         if (evaluaciones.estadoActual() == EstadoFicha.DISPONIBLE_PARA_EVALUACION && evaluaciones.enEvaluacion() > 0) {
-            throw new FichaPerfilConEvaluacionEnCursoException(evaluaciones.fichaPerfil(), evaluaciones.enEvaluacion());
+            throw new FichaPerfilConEvaluacionEnCursoException(
+                    evaluaciones.fichaPerfil(), evaluaciones.tituloProyecto(), evaluaciones.enEvaluacion());
         }
     }
 }

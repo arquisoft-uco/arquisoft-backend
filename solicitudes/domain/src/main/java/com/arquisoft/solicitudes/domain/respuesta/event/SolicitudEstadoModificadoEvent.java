@@ -18,7 +18,19 @@ public final class SolicitudEstadoModificadoEvent extends DomainEvent {
     private static final Map<TipoSolicitud, IdentidadEvento> IDENTIDADES = Map.of(
             TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR, new IdentidadEvento(
                     EventTopics.Solicitudes.NOVEDAD_COORDINADOR_ESTADO_MODIFICADO,
-                    "SolicitudNovedadCoordinadorEstadoModificadoEvent"));
+                    "SolicitudNovedadCoordinadorEstadoModificadoEvent"),
+            TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, new IdentidadEvento(
+                    EventTopics.Solicitudes.NOVEDAD_ASESOR_ESTADO_MODIFICADO,
+                    "SolicitudNovedadAsesorEstadoModificadoEvent"),
+            TipoSolicitud.CAMBIO_DE_ASESOR, new IdentidadEvento(
+                    EventTopics.Solicitudes.CAMBIO_ASESOR_ESTADO_MODIFICADO,
+                    "SolicitudCambioAsesorEstadoModificadoEvent"),
+            TipoSolicitud.AMPLIACION_DE_PLAZO, new IdentidadEvento(
+                    EventTopics.Solicitudes.AMPLIACION_PLAZO_ESTADO_MODIFICADO,
+                    "SolicitudAmpliacionPlazoEstadoModificadoEvent"),
+            TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, new IdentidadEvento(
+                    EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO,
+                    "SolicitudRegistroModificacionUsuariosEstadoModificadoEvent"));
 
     private final UUID solicitudId;
     private final String nuevoEstado;

@@ -5,9 +5,8 @@ import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.coordinador.model.DisponibilidadCoordinadorUsuario;
 import com.arquisoft.usuarios.domain.coordinador.rules.CoordinadorUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.coordinador.rules.impl.CoordinadorUsuarioUnicoRuleImpl;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class AgregarCoordinadorValidatorImpl implements AgregarCoordinadorValidator {
@@ -19,7 +18,8 @@ public class AgregarCoordinadorValidatorImpl implements AgregarCoordinadorValida
     }
 
     @Override
-    public void validar(UUID usuario, CoordinadorDomain coordinador) {
-        coordinadorUsuarioUnicoRule.validar(new DisponibilidadCoordinadorUsuario(usuario, coordinador));
+    public void validar(UsuarioDomain usuario, CoordinadorDomain coordinador) {
+        coordinadorUsuarioUnicoRule.validar(
+                new DisponibilidadCoordinadorUsuario(usuario.getId(), usuario.getNombre(), coordinador));
     }
 }

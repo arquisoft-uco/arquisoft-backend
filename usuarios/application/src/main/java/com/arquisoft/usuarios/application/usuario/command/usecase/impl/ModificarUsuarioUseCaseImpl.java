@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.ModificarUsuarioKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilObjeto;
@@ -11,6 +11,7 @@ import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUs
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
+import com.arquisoft.usuarios.application.jurado.command.usecase.AgregarJuradoUseCase;
 import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoOtroUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtraIdentidadExisteFinder;
@@ -49,6 +50,7 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
     private final AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
     private final AgregarAdministradorUseCase agregarAdministradorUseCase;
     private final AgregarBibliotecarioUseCase agregarBibliotecarioUseCase;
+    private final AgregarJuradoUseCase agregarJuradoUseCase;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
@@ -90,42 +92,43 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
                     modificacion.getApellidos()));
         }
 
-        proveedorIdentidadOutputPort.asignarRealmRoles(modificacion.getUsuario(), modificacion.getRoles());
+        proveedorIdentidadOutputPort.asignarRoles(modificacion.getUsuario(), modificacion.getRoles());
 
         logger.info(ModificarUsuarioKey.LOG_MODIFICADO, modificacion.getUsuario(),
                 modificacion.getRoles().size());
     }
 
-    // TODO HU250 (jurado):
-    //  despachar aqui su Agregar{Rol}UseCase con modificacion.contieneRol(...): si la fila del rol ya existe
-    //  eliminada logicamente (removida por HU251), el use case la reactiva en vez de crear una nueva.
     private void agregarRoles(ModificacionUsuarioDomain modificacion, UsuarioDomain usuario) {
-        if (modificacion.contieneRol(UsuariosRealmRoles.ESTUDIANTE)) {
+        if (modificacion.contieneRol(UsuariosRoles.ESTUDIANTE)) {
             agregarEstudianteUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.COORDINADOR)) {
+        if (modificacion.contieneRol(UsuariosRoles.COORDINADOR)) {
             agregarCoordinadorUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.ASESOR_FICHA)) {
+        if (modificacion.contieneRol(UsuariosRoles.ASESOR_FICHA)) {
             agregarAsesorFichaUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.ASESOR)) {
+        if (modificacion.contieneRol(UsuariosRoles.ASESOR)) {
             agregarAsesorUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.REPRESENTANTE_COMITE)) {
+        if (modificacion.contieneRol(UsuariosRoles.REPRESENTANTE_COMITE)) {
             agregarRepresentanteComiteUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.ADMINISTRADOR)) {
+        if (modificacion.contieneRol(UsuariosRoles.ADMINISTRADOR)) {
             agregarAdministradorUseCase.ejecutar(usuario);
         }
 
-        if (modificacion.contieneRol(UsuariosRealmRoles.BIBLIOTECARIO)) {
+        if (modificacion.contieneRol(UsuariosRoles.BIBLIOTECARIO)) {
             agregarBibliotecarioUseCase.ejecutar(usuario);
+        }
+
+        if (modificacion.contieneRol(UsuariosRoles.JURADO)) {
+            agregarJuradoUseCase.ejecutar(usuario);
         }
     }
 }

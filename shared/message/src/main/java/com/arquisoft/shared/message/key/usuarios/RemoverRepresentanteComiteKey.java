@@ -6,6 +6,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum RemoverRepresentanteComiteKey implements ClaveMensaje {
 
     ERROR_NO_ENCONTRADO("usuarios.dominio.representantecomite.error.no-encontrado", 1),
+    ERROR_NO_ENCONTRADO_DETALLE("usuarios.dominio.representantecomite.error.no-encontrado-detalle", 1),
     LOG_REMOVIENDO("usuarios.aplicacion.representantecomite.log.removiendo", 1),
     LOG_VERIFICACION_REMOVER("usuarios.aplicacion.representantecomite.log.verificacion-remover", 3),
     LOG_REMOVIDO("usuarios.aplicacion.representantecomite.log.removido", 1);

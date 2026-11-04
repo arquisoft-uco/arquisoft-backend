@@ -33,7 +33,6 @@ class EstadoRespuestaResolutivoRuleImplTest {
         var solicitud = UUID.randomUUID();
         assertThatThrownBy(() -> rule.validar(
                 new NuevoEstadoRespuesta(solicitud, EstadoRespuesta.EN_REVISION)))
-                .isInstanceOf(EstadoRespuestaNoResolutivoException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(EstadoRespuestaNoResolutivoException.class);
     }
 }

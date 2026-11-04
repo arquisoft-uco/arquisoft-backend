@@ -10,7 +10,7 @@ public class EstudianteVigenteRuleImpl implements EstudianteVigenteRule {
     public void validar(ExistenciaEstudiante existencia) {
         var estudiante = existencia.estudiante();
         if (estudiante.esVacio() || estudiante.estaEliminado()) {
-            throw new EstudianteNoEncontradoException(existencia.usuario());
+            throw new EstudianteNoEncontradoException(existencia.usuario(), existencia.nombre());
         }
     }
 }

@@ -8,9 +8,9 @@ public record RegistroIdentidadEntity(
         String email,
         String nombres,
         String apellidos,
-        List<String> realmRoles) {
+        List<String> roles) {
 
     public RegistroIdentidadEntity {
-        realmRoles = UtilColeccion.aplicarPorDefecto(realmRoles);
+        roles = UtilColeccion.aplicarPorDefecto(roles);
     }
 }

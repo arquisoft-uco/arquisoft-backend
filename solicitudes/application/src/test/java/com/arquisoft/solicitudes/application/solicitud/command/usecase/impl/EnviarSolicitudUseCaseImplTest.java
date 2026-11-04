@@ -29,7 +29,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -165,7 +164,7 @@ class EnviarSolicitudUseCaseImplTest {
     @Test
     void debeLanzarYNoSeguir_cuandoElRemitenteNoExiste() {
         // Arrange
-        doThrow(new RemitenteNoEncontradoException(envio.getRemitenteUsuario()))
+        doThrow(new RemitenteNoEncontradoException())
                 .when(registrarRemitenteUseCase).ejecutar(envio.getRemitente());
 
         // Act & Assert
@@ -179,7 +178,7 @@ class EnviarSolicitudUseCaseImplTest {
     @Test
     void debeLanzarYNoPersistir_cuandoElDestinatarioNoExiste() {
         // Arrange
-        doThrow(new DestinatarioNoEncontradoException(envio.getDestinatarioUsuario()))
+        doThrow(new DestinatarioNoEncontradoException())
                 .when(registrarDestinatarioUseCase).ejecutar(envio.getDestinatario());
 
         // Act & Assert
@@ -215,7 +214,7 @@ class EnviarSolicitudUseCaseImplTest {
         useCase.ejecutar(envio);
 
         // Assert — registrar remitente (valida existencia) -> registrar destinatario -> finders -> validar -> persistir -> publicar
-        InOrder inOrder = inOrder(registrarRemitenteUseCase, registrarDestinatarioUseCase,
+        var inOrder = inOrder(registrarRemitenteUseCase, registrarDestinatarioUseCase,
                 remitenteDeUsuarioFinder, solicitudDuplicadaFinder,
                 validator, solicitudOutputPort, eventPublisher);
         inOrder.verify(registrarRemitenteUseCase).ejecutar(any());

@@ -42,6 +42,12 @@ public class ItemCualitativoJuradoCommandOutputAdapter
     }
 
     @Override
+    public void eliminar(UUID id) {
+        repository.deleteById(id);
+        logger.debug(ItemCualitativoJuradoKey.LOG_ELIMINADO, id);
+    }
+
+    @Override
     public Set<UUID> consultarIdsExistentes(Set<UUID> ids) {
         return repository.findIdsByIdIn(ids);
     }

@@ -8,7 +8,6 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -33,7 +32,7 @@ public class AsignarEstadoInicialEvaluacionUseCaseImpl implements AsignarEstadoI
                 EstadoEvaluacionFichaMapper.toEntity(estadoInicial));
 
         logger.debug(
-                Mensajes.obtener(EstadoEvaluacionFichaKey.LOG_CREADO_AUTOMATICO),
+                EstadoEvaluacionFichaKey.LOG_CREADO_AUTOMATICO,
                 estadoInicial.getId(),
                 estadoInicial.getEvaluacionFichaPerfilId(),
                 estadoInicial.getEstadoEvaluacion());

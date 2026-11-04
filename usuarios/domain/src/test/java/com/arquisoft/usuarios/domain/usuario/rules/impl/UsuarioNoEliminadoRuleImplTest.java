@@ -32,6 +32,7 @@ class UsuarioNoEliminadoRuleImplTest {
                 .isInstanceOfSatisfying(UsuarioEliminadoException.class, ex -> {
                     assertThat(ex.getCodigoError()).isEqualTo(UsuariosCodes.Usuario.ELIMINADO);
                     assertThat(ex.getMessage()).contains(usuario.toString());
+                    assertThat(ex.getError().getMessage()).contains("Nombre").doesNotContain(usuario.toString());
                 });
     }
 

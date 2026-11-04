@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.application.usuario.command.validator.impl;
 
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.usuarios.domain.administrador.AdministradorDomain;
@@ -10,6 +10,7 @@ import com.arquisoft.usuarios.domain.bibliotecario.BibliotecarioDomain;
 import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
+import com.arquisoft.usuarios.domain.jurado.JuradoDomain;
 import com.arquisoft.usuarios.domain.representantecomite.RepresentanteComiteDomain;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEliminadoException;
@@ -26,6 +27,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EliminarUsuarioValidatorImplTest {
 
+    private static final String NOMBRE = "Ana Pérez";
+
     private final EliminarUsuarioValidatorImpl validator = new EliminarUsuarioValidatorImpl();
 
     private static UsuarioDomain usuario(UUID id, Instant eliminadoEn) {
@@ -36,13 +39,13 @@ class EliminarUsuarioValidatorImplTest {
     private static RolesUsuario roles(UUID id, EstudianteDomain estudiante, AsesorDomain asesor,
                                       AsesorFichaDomain asesorFicha, CoordinadorDomain coordinador,
                                       RepresentanteComiteDomain representanteComite) {
-        return new RolesUsuario(id, estudiante, asesor, asesorFicha, coordinador, representanteComite,
-                AdministradorDomain.VACIO, BibliotecarioDomain.VACIO);
+        return new RolesUsuario(id, NOMBRE, estudiante, asesor, asesorFicha, coordinador, representanteComite,
+                AdministradorDomain.VACIO, BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
     }
 
     private static RolesUsuario rolesConAdministrador(UUID id, AdministradorDomain administrador) {
-        return new RolesUsuario(id, EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO,
-                CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, administrador, BibliotecarioDomain.VACIO);
+        return new RolesUsuario(id, NOMBRE, EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO,
+                CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, administrador, BibliotecarioDomain.VACIO, JuradoDomain.VACIO);
     }
 
     @Test
@@ -101,7 +104,7 @@ class EliminarUsuarioValidatorImplTest {
                 AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO,
                 RepresentanteComiteDomain.crear(id))))
                 .isInstanceOf(UsuarioRolesVigentesException.class)
-                .hasMessageContaining(UsuariosRealmRoles.REPRESENTANTE_COMITE);
+                .hasMessageContaining(UsuariosRoles.REPRESENTANTE_COMITE);
     }
 
     @Test
@@ -125,7 +128,21 @@ class EliminarUsuarioValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(id, usuario(id, UtilFecha.VACIO),
                 rolesConAdministrador(id, AdministradorDomain.crear(id))))
                 .isInstanceOf(UsuarioRolesVigentesException.class)
-                .hasMessageContaining(UsuariosRealmRoles.ADMINISTRADOR);
+                .hasMessageContaining(UsuariosRoles.ADMINISTRADOR);
+    }
+
+    @Test
+    void debeLanzarRolesVigentes_cuandoElJuradoSigueVigente() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var roles = new RolesUsuario(id, NOMBRE, EstudianteDomain.VACIO, AsesorDomain.VACIO, AsesorFichaDomain.VACIO,
+                CoordinadorDomain.VACIO, RepresentanteComiteDomain.VACIO, AdministradorDomain.VACIO,
+                BibliotecarioDomain.VACIO, JuradoDomain.crear(id));
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(id, usuario(id, UtilFecha.VACIO), roles))
+                .isInstanceOf(UsuarioRolesVigentesException.class)
+                .hasMessageContaining(UsuariosRoles.JURADO);
     }
 
     @Test

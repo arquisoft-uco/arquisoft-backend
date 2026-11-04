@@ -9,7 +9,7 @@ public class SolicitudEsDelRemitenteRuleImpl implements SolicitudEsDelRemitenteR
     @Override
     public void validar(PropiedadSolicitud propiedad) {
         if (!propiedad.remitenteUsuario().equals(propiedad.solicitante())) {
-            throw new SolicitudNoPropiaException(propiedad.solicitud());
+            throw new SolicitudNoPropiaException();
         }
     }
 }

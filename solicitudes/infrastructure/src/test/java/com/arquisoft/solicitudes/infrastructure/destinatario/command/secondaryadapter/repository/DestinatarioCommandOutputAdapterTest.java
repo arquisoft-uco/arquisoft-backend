@@ -33,8 +33,8 @@ class DestinatarioCommandOutputAdapterTest {
     @Test
     void debeInsertarLaFila_cuandoRegistra() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID usuario = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
 
         // Act
         adapter.registrar(new DestinatarioEntity(id, usuario));
@@ -42,7 +42,7 @@ class DestinatarioCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        DestinatarioJpaEntity guardada = entityManager.find(DestinatarioJpaEntity.class, id);
+        var guardada = entityManager.find(DestinatarioJpaEntity.class, id);
         assertThat(guardada).isNotNull();
         assertThat(guardada.getUsuarioId()).isEqualTo(usuario);
     }
@@ -50,8 +50,8 @@ class DestinatarioCommandOutputAdapterTest {
     @Test
     void debeResolverElIdPorUsuario_cuandoLaFilaExisteOAusente() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID usuario = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var usuario = UUID.randomUUID();
         entityManager.persist(DestinatarioJpaEntity.builder().id(id).usuarioId(usuario).build());
         entityManager.flush();
         entityManager.clear();

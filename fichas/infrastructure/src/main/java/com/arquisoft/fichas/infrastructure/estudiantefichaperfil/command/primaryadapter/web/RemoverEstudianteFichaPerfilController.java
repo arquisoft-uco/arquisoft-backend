@@ -3,7 +3,6 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.primar
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.model.RemoverEstudianteFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.interactor.RemoverEstudianteFichaPerfilInteractor;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,7 +12,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +29,6 @@ public class RemoverEstudianteFichaPerfilController {
     private final RemoverEstudianteFichaPerfilInteractor removerEstudianteFichaPerfilInteractor;
 
     @DeleteMapping("${rutas.fichas.fichas-perfil.estudiante-por-id:/{fichaPerfilId}/estudiantes/{estudianteId}}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTUDIANTE_FICHA_PERFIL_DELETE)
     @Operation(
             summary = FichasApiMessages.EstudianteFichaPerfil.REMOVER_SUMMARY,
             security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)

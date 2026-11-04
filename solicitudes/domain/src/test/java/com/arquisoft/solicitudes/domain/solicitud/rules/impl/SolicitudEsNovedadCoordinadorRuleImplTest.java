@@ -27,12 +27,11 @@ class SolicitudEsNovedadCoordinadorRuleImplTest {
     @Test
     void debeLanzarSolicitudTipoNoCoincide_cuandoElTipoActualDifiere() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(new TipoSolicitudConcordante(
                 solicitud, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), ESPERADO)))
-                .isInstanceOf(SolicitudTipoNoCoincideException.class)
-                .hasMessageContaining(solicitud.toString());
+                .isInstanceOf(SolicitudTipoNoCoincideException.class);
     }
 }

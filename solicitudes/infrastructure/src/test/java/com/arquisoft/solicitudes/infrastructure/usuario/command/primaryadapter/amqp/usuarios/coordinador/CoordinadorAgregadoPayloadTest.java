@@ -69,7 +69,7 @@ class CoordinadorAgregadoPayloadTest {
     @Test
     void debeDeserializarConNull_cuandoFaltaUnCampoNuevo() {
         // Arrange
-        String json = """
+        var json = """
                 {"idEvento":"evt-1","usuario":"11111111-1111-1111-1111-111111111111",
                  "identificador":"COORD-001","nombre":"Pedro Coordinador"}
                 """;

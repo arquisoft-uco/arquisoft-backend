@@ -11,7 +11,7 @@ public final class ValidatorTexto {
     public static boolean noEnBlanco(String valor, String campo, String codigoError, ValidationResult resultado) {
         if (UtilTexto.esVacioONulo(valor)) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.NO_EN_BLANCO, campo));
+                    Mensajes.obtener(ValidadorKey.NO_EN_BLANCO));
             return false;
         }
         return true;
@@ -20,7 +20,7 @@ public final class ValidatorTexto {
     public static boolean correoValido(String valor, String campo, String codigoError, ValidationResult resultado) {
         if (!UtilTexto.correoValido(valor)) {
             resultado.agregarError(campo, codigoError,
-                    Mensajes.formatear(ValidadorKey.CORREO_INVALIDO, campo));
+                    Mensajes.obtener(ValidadorKey.CORREO_INVALIDO));
             return false;
         }
         return true;

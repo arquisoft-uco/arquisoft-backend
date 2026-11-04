@@ -1,0 +1,26 @@
+# ==================== RUTAS DE CONTROLADORES — CONTEXTO MAPAS DE RUTA ====================
+# Un placeholder por segmento de path. OpenApiConfig lee la misma clave via @Value
+# para no duplicar el literal entre el controlador REST y la agrupacion de Swagger.
+# Vive en este modulo (no en el application.yml raiz) para que, si este contexto se
+# extrae a microservicio, se lleve su propia configuracion de rutas consigo.
+rutas:
+  mapas-ruta:
+    mapas-ruta:
+      base: /mapas-ruta
+      estudiante: /estudiante
+      coordinador: /coordinador
+      fecha-fin: /{id}/fecha-fin
+      tareas: /{mapaRutaId}/tareas
+      tareas-estudiante: /{mapaRutaId}/tareas/estudiante
+      planes-estimados: /planes-estimados/{planEstimadoId}
+    tareas:
+      base: /tareas
+      por-id: /{tareaId}
+      estado-item: /{tareaId}/estado-item
+      planes-estimados: /{tareaId}/planes-estimados
+      planes-estimados-estudiante: /{tareaId}/planes-estimados/estudiante
+    planes-estimados:
+      base: /planes-estimados
+      por-id: /{planEstimadoId}
+    estados-item:
+      base: /estados-item

@@ -5,9 +5,8 @@ import com.arquisoft.usuarios.domain.bibliotecario.BibliotecarioDomain;
 import com.arquisoft.usuarios.domain.bibliotecario.model.DisponibilidadBibliotecarioUsuario;
 import com.arquisoft.usuarios.domain.bibliotecario.rules.BibliotecarioUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.bibliotecario.rules.impl.BibliotecarioUsuarioUnicoRuleImpl;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class AgregarBibliotecarioValidatorImpl implements AgregarBibliotecarioValidator {
@@ -19,8 +18,8 @@ public class AgregarBibliotecarioValidatorImpl implements AgregarBibliotecarioVa
     }
 
     @Override
-    public void validar(UUID usuario, BibliotecarioDomain bibliotecario) {
+    public void validar(UsuarioDomain usuario, BibliotecarioDomain bibliotecario) {
         bibliotecarioUsuarioUnicoRule.validar(
-                new DisponibilidadBibliotecarioUsuario(usuario, bibliotecario));
+                new DisponibilidadBibliotecarioUsuario(usuario.getId(), usuario.getNombre(), bibliotecario));
     }
 }

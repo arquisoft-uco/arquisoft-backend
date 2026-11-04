@@ -5,7 +5,6 @@ import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.UsuariosApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.ModificarUsuarioInteractor;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.dto.ModificarUsuarioRequestDTO;
 import com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.mapper.ModificarUsuarioRequestMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +16,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,7 +31,6 @@ public class ModificarUsuarioController {
     private final ModificarUsuarioInteractor modificarUsuarioInteractor;
 
     @PatchMapping("${rutas.usuarios.usuarios.modificar:/{usuarioId}}")
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_USUARIO_UPDATE)
     @Operation(
             summary = UsuariosApiMessages.Usuario.MODIFICAR_SUMMARY,
             description = UsuariosApiMessages.Usuario.MODIFICAR_DESCRIPTION,

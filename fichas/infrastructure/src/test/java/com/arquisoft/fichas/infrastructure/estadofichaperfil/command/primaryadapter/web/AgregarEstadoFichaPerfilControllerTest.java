@@ -4,11 +4,11 @@ import com.arquisoft.fichas.application.estadofichaperfil.command.primaryport.in
 import com.arquisoft.fichas.application.estadofichaperfil.command.primaryport.model.AgregarEstadoFichaPerfilCommand;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.TransicionEstadoFichaNoPermitidaException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -40,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AgregarEstadoFichaPerfilController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         AgregarEstadoFichaPerfilControllerTest.TestSecurityConfig.class})
 class AgregarEstadoFichaPerfilControllerTest {
 
@@ -48,7 +46,6 @@ class AgregarEstadoFichaPerfilControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -70,14 +67,13 @@ class AgregarEstadoFichaPerfilControllerTest {
 
     private final UUID asesorFicha = UUID.randomUUID();
 
-    private RequestPostProcessor conRol(String rol) {
+    private RequestPostProcessor conRol() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(asesorFicha.toString()))
-                .authorities(new SimpleGrantedAuthority(rol));
+                .jwt(jwt -> jwt.subject(asesorFicha.toString()));
     }
 
     private RequestPostProcessor asesorAutorizado() {
-        return conRol(FichasAuthorities.ESTADO_FICHA_PERFIL_ASESOR_CREATE);
+        return conRol();
     }
 
     private MockHttpServletRequestBuilder peticion(Object fichaPerfil, String cuerpo) {
@@ -125,24 +121,6 @@ class AgregarEstadoFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(peticion(UUID.randomUUID(), "{\"estadoFicha\":\"DESCARTADA\"}"))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_cuandoElTokenTraeElRolDeConsultaDelAsesor() throws Exception {
-        // Act & Assert
-        mockMvc.perform(peticion(UUID.randomUUID(), "{\"estadoFicha\":\"DESCARTADA\"}")
-                        .with(conRol(FichasAuthorities.ESTADO_FICHA_PERFIL_ASESOR_VIEW)))
-                .andExpect(status().isForbidden());
-        verify(interactor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debe403_cuandoElTokenTraeElRolDeAprobacionDelCoordinador() throws Exception {
-        // Act & Assert
-        mockMvc.perform(peticion(UUID.randomUUID(), "{\"estadoFicha\":\"DESCARTADA\"}")
-                        .with(conRol(FichasAuthorities.ESTADO_FICHA_PERFIL_APROBACION_CREATE)))
-                .andExpect(status().isForbidden());
-        verify(interactor, never()).ejecutar(any());
     }
 
     @Test

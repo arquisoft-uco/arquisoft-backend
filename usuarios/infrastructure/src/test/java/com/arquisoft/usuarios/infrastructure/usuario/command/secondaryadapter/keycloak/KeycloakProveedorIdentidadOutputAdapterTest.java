@@ -360,7 +360,7 @@ class KeycloakProveedorIdentidadOutputAdapterTest {
                 .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
         // Act & Assert
-        assertThatCode(() -> adapter.revocarRealmRole(usuario, "estudiante")).doesNotThrowAnyException();
+        assertThatCode(() -> adapter.revocarRol(usuario, "estudiante")).doesNotThrowAnyException();
         verify(restTemplate, times(1)).exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.DELETE),
                 argThat((HttpEntity<?> entidad) -> entidad.getBody() instanceof List<?> cuerpo
                         && cuerpo.size() == 1
@@ -382,7 +382,7 @@ class KeycloakProveedorIdentidadOutputAdapterTest {
                         HttpStatus.NOT_FOUND, "Not Found", null, null, null));
 
         // Act & Assert
-        assertThatThrownBy(() -> adapter.revocarRealmRole(usuario, "estudiante"))
+        assertThatThrownBy(() -> adapter.revocarRol(usuario, "estudiante"))
                 .isInstanceOf(ProveedorIdentidadUsuarioNoDisponibleException.class);
     }
 
@@ -397,7 +397,7 @@ class KeycloakProveedorIdentidadOutputAdapterTest {
                 .thenThrow(new ResourceAccessException("timeout"));
 
         // Act & Assert
-        assertThatThrownBy(() -> adapter.revocarRealmRole(usuario, "estudiante"))
+        assertThatThrownBy(() -> adapter.revocarRol(usuario, "estudiante"))
                 .isInstanceOf(ProveedorIdentidadUsuarioNoDisponibleException.class);
     }
 
@@ -412,7 +412,7 @@ class KeycloakProveedorIdentidadOutputAdapterTest {
                 .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
         TransactionSynchronizationManager.initSynchronization();
         try {
-            adapter.revocarRealmRole(usuario, "estudiante");
+            adapter.revocarRol(usuario, "estudiante");
             var sincronizaciones = TransactionSynchronizationManager.getSynchronizations();
 
             // Act
@@ -438,7 +438,7 @@ class KeycloakProveedorIdentidadOutputAdapterTest {
                 .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
         TransactionSynchronizationManager.initSynchronization();
         try {
-            adapter.revocarRealmRole(usuario, "estudiante");
+            adapter.revocarRol(usuario, "estudiante");
 
             // Act
             TransactionSynchronizationManager.getSynchronizations()
@@ -466,7 +466,7 @@ class KeycloakProveedorIdentidadOutputAdapterTest {
                 .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "caido"));
         TransactionSynchronizationManager.initSynchronization();
         try {
-            adapter.revocarRealmRole(usuario, "estudiante");
+            adapter.revocarRol(usuario, "estudiante");
             var sincronizaciones = TransactionSynchronizationManager.getSynchronizations();
 
             // Act & Assert

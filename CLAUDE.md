@@ -41,7 +41,7 @@ una skill, gana la skill.**
 ```
 
 El gate real es `check` (tests + checkstyle + `jacocoTestCoverageVerification` + la tarea
-`verificarCapasHexagonales` del build raíz), no `test`.
+`verificarCapasHexagonales` y `verificarNeutralidadProveedorIdentidad` del build raíz), no `test`.
 
 ## Local Environment
 
@@ -63,7 +63,7 @@ Guía completa: [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md).
 
 ## Architecture
 
-Arquitectura hexagonal (Ports & Adapters) con **11 bounded contexts** y **14 módulos compartidos**.
+Arquitectura hexagonal (Ports & Adapters) con **12 bounded contexts** y **14 módulos compartidos**.
 Los contextos se comunican por eventos de dominio en RabbitMQ y **nunca se importan entre sí**, con
 una única excepción acotada: una **consulta síncrona de solo lectura** a otro contexto, hecha por
 HTTP (nunca un import), para un dato que un comando debe verificar *al momento de escribir* y no
@@ -74,14 +74,15 @@ de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 ### Bounded Contexts
 
 Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones`,
-`solicitudes` y `biblioteca`. Los otros tres (`artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje:
-solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
-`RegistrarUsuario` lo da de alta en Keycloak y publica los eventos con los que `fichas` y `proyectos`
+`solicitudes`, `biblioteca`, `repositorio_artefactos`, `artefactos`, `mapas_ruta` y `entregables`
+(réplicas de `asesor`, `proyecto_grado` y `estudiante_proyecto_grado`, generar y cambiar estado de un
+entregable y sus listados). Ya no queda ningún contexto en andamiaje. `usuarios` es el dueño del ciclo de vida del usuario:
+`RegistrarUsuario` lo da de alta en el proveedor de identidad configurado y publica los eventos con los que `fichas` y `proyectos`
 mantienen sus réplicas.
 
 | Context | Database |
 |---------|----------|
-| `seguridad` | *(sin DB — auth vía Keycloak + Redis)* |
+| `seguridad` | *(sin DB — identidad externa + Redis)* |
 | `usuarios` | `usuarios` |
 | `fichas` | `fichas_perfil` |
 | `notificaciones` | `notificaciones` |
@@ -92,6 +93,7 @@ mantienen sus réplicas.
 | `evaluaciones` | `evaluaciones` |
 | `solicitudes` | `solicitudes` |
 | `biblioteca` | `biblioteca` |
+| `mapas_ruta` | `mapas_ruta` |
 
 **Contexto de referencia: `fichas`** — el único completo (escritura, consulta, eventos, consumidor).
 Los demás contextos con código aportan cada uno algo distinto y tienen un límite conocido; ver
@@ -130,12 +132,17 @@ Lo que hay que saber de cada uno para no romper el grafo:
 | `shared:util` | `UtilTexto`, `UtilUUID`, `UtilColeccion`, `UtilFecha`, `UtilNumero`, `UtilObjeto`, `UtilEnum` | Prefijo `Util` en inglés, el resto en español |
 | `shared:tracing` | Contexto de traza completo (ver *Correlación*) | Único `shared:*` con capas hexagonales internas; **no** depende de spring-web ni spring-security |
 | `shared:message` | Códigos, campos, límites, textos Swagger, `EventTopics`, enums `{Feature}Key`, fachada `Mensajes` | — |
+| `shared:minio` | `AlmacenamientoObjetos`: formulario POST firmado con política, `statObject`, lectura en streaming, copia condicionada al ETag y borrado | Nunca crea buckets ni lista (la cuenta del backend en la nube no tiene `ListBucket`): el bucket lo crea `minio/configurar.sh`. Un objeto ausente (`NoSuchKey`) se devuelve vacío, no lanza |
 
 **Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
 crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
 prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
 tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Aún
-no existe (lo trae una HT aparte).
+no existe (lo trae una HT aparte). Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
+(`shared:web`, paquete `identidad`) traduce `IdentidadActual.roles()` a los roles de negocio de un
+contexto con un mapa que declara el propio contexto (claves de `UsuariosRoles`, valores en su
+`{Contexto}Roles`). Hoy su único consumidor es `estados-ficha`; el segundo previsto es el filtro de
+tipos de solicitud por rol (HU-101).
 
 ### Consultas síncronas entre contextos
 
@@ -198,13 +205,12 @@ Forma, espejando cualquier otro puerto secundario:
     │   │   ├── web/                        # Un Controller por acción + dto/ + mapper/
     │   │   └── amqp/{productor}/{entidad}/ # {Evento}Consumer + {Evento}Payload
     │   └── secondaryadapter/               # entity/ (JpaEntity) + mapper/ + repository/
-    │                                       #   (o keycloak/, redis/, jwt/, smtp/…)
+    │                                       #   (o keycloak/, redis/, jwt/, smtp/, minio/, tika/…)
     └── query/
         ├── primaryadapter/web/             # Controller + dto/ + mapper/
         └── secondaryadapter/repository/    # JpaQueryEntity (@Subselect) + Specification +
                                             #   SortMapper + QueryOutputAdapter + QueryRepository
 config/     # {Context}DataSourceConfig, {Contexto}Queues, *QueueConfig
-security/   # {Context}Authorities
 handler/    # {Context}GlobalExceptionHandler (@RestControllerAdvice) — solo seguridad tiene uno
 filter/     # Filtros HTTP del contexto
 src/main/resources/db/migration/{contexto}/   # Flyway — subcarpeta propia, siempre
@@ -278,13 +284,19 @@ el enunciado, para reconocer una desviación de un vistazo.
   su propio `query/validator/` **antes** de leer; las `Rule`s son del `domain/` y se comparten con los
   comandos, los `Validator`s no. Sin política en la HU, no hay `Validator`.
 - Sin literales: códigos en `{Contexto}Codes`, campos en `{Contexto}Fields`, límites en
-  `{Contexto}Limits`, Swagger en `{Contexto}ApiMessages`/`ApiCodes`/`ApiSecurity`, autorización en
-  `{Contexto}Authorities.Expresiones.HAS_*`. **Las rutas son la excepción** y se quedan inline como
-  placeholder de propiedad (`"${rutas.seguridad.auth.login:/login}"`); no existe `{Contexto}Routes`.
-  Nunca el prefijo `/api`: ya es el `context-path`.
-- **Un client role por endpoint, propio y distinto** — nunca se reutiliza el de otro. Dos endpoints
-  sobre el mismo recurso se diferencian con un calificador
-  (`fichas:ficha-perfil-coordinador:view` vs `fichas:ficha-perfil-asesor:view`).
+  `{Contexto}Limits`, Swagger en `{Contexto}ApiMessages`/`ApiCodes`/`ApiSecurity`. **Las rutas son la
+  excepción** y se quedan inline como placeholder de propiedad (`"${rutas.seguridad.auth.login:/login}"`);
+  no existe `{Contexto}Routes`. Nunca el prefijo `/api`: ya es el `context-path`. Todo endpoint cuelga
+  de la base de su contexto (`/fichas-perfil/...`, `/artefactos/...`); la tabla está en `arquisoft-arquitectura`.
+- **La autorización no vive en el controlador:** ni `@PreAuthorize` ni roles. La decide
+  `AutorizacionAccesoFilter` consultando a `DecisionAccesoOutputPort` por método + plantilla de ruta, con
+  un adaptador por emisor elegido por propiedad (`pep`, `role-table`, `none`). Un endpoint nuevo es un
+  recurso del PDP y una fila en `autorizacion-equivalencias.yml`, el mapa endpoint → client role
+  (`CompletitudEquivalenciasAutorizacionTest` lo exige), y ese client role en
+  `keycloak/realm-arquisoft.json`: creado en `arquisoft-api` y como composite directo de cada realm role
+  que lo usa — si falta, el endpoint responde 403 a todos y el build no lo detecta. Un client role por
+  controlador. El controlador recibe `IdentidadActual` (`shared:web`), nunca `Jwt` ni
+  `@AuthenticationPrincipal`.
 
 **Eventos**
 - El `UseCase` inyecta la **interfaz** `EventPublisher` y publica tras persistir. El agregado es una
@@ -303,6 +315,9 @@ el enunciado, para reconocer una desviación de un vistazo.
   `DomainValidationException` (422 + `fieldErrors[]`), `ApplicationException` (400),
   `InfrastructureException` (503). Nunca `RuntimeException` directa. Constructor
   `super(message, errorCode)` — invertirlos compila y produce un bug silencioso.
+- El `message` lo ve el usuario en el front: nombre legible, sin UUID ni términos técnicos. Lo que
+  sirve para diagnosticar va en `BaseError.conDetalle(codigo, mensaje, detalle)`: el detalle es el
+  `getMessage()` que se loguea (`arquisoft-estandares` → *Excepciones*).
 - Viven **dentro del slice vertical del feature**, en la capa de su clase base. No hay `exception/` a
   nivel de contexto, y una subclase nunca va en distinta capa que su padre.
 - `GlobalAppExceptionHandler` (`shared:web`) resuelve el status recorriendo la jerarquía; un contexto
@@ -351,7 +366,10 @@ barre `<contexto>.*`. Ver [plantillas/README.md](plantillas/README.md).
 ## Logging y correlación
 
 **Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j`, del que
-no queda ninguno en ningún contexto. `warn` para 4xx, `error` para 5xx. La estructura
+no queda ninguno en el repo: solo importan SLF4J la implementación del puerto (`Slf4jAppLogger`,
+`AppLoggerConfig`) y `MdcContextoDiagnosticoOutputAdapter`. Si la superclase ya hereda un `logger`
+(filtros, `ResponseEntityExceptionHandler`), el campo se llama `appLogger`: el heredado es
+commons-logging y compila en silencio. `warn` para 4xx, `error` para 5xx. La estructura
 exacta por tipo de flujo (escritura: tres líneas; lectura: dos `debug`; evento: dos `INFO` que pone
 el adaptador) está en `arquisoft-estandares`.
 
@@ -415,7 +433,7 @@ Java puro.
 | PostgreSQL | 18 (una **base** por contexto, con su DataSource, EntityManagerFactory y Flyway) |
 | RabbitMQ | 4.2.5 |
 | Redis | 7 (Lettuce) |
-| Keycloak | 26.6 (OAuth2/OIDC Resource Server) |
+| Proveedor de identidad | OIDC, multi-emisor por JWKS (Security Baseline; Keycloak 26.6, realm en `keycloak/realm-arquisoft.json`) |
 | Flyway | 12.4.0 |
 | JUnit | 6.0.3 (Jupiter) |
 | Spring Modulith | 2.0.0 |
@@ -435,7 +453,16 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 
 ## Security
 
-- JWT validado contra el JWK Set de Keycloak (`seguridad/infrastructure/config/security/SeguridadConfig`).
+- JWT validado localmente contra el JWK Set del emisor configurado (multi-emisor,
+  `security.authentication.issuers[*]`; `seguridad/infrastructure/config/security/SeguridadConfig`). El
+  backend no guarda sesión ni permisos: la decisión de acceso se consulta al proveedor en **cada**
+  solicitud protegida (`AutorizacionAccesoFilter` → `DecisionAccesoOutputPort`) y falla cerrado con 503.
+  No se cachea: el contrato PEP-PDP prohíbe reutilizar decisiones.
+- El emisor `role-table` no lee client roles del token (solo `realm_access.roles`): resuelve el client
+  role que la tabla de equivalencias exige al endpoint con el índice de Redis (client role → realm
+  roles que lo otorgan, generación versionada con puntero), que `ActualizarMapeoRolesScheduler`
+  refresca desde la Admin API del proveedor. Exige `KEYCLOAK_CLIENT_UUID`; sin índice vigente falla
+  cerrado con 503. El índice es una caché de lo que declara el proveedor, no de decisiones.
 - CORS por defecto: `localhost:3000`, `4200`, `5173` (`CORS_ALLOWED_ORIGINS`). CSRF deshabilitado,
   sesiones stateless.
 - `TrazabilidadFilter` emite una línea `AUDIT` por petición con método, URI, usuario, duración y
@@ -466,7 +493,7 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
     es por instancia: N réplicas dan N× cuota — sigue siendo un límite, y es el precio de no tener
     estado compartido justo cuando el estado compartido es lo que falló.
 
-  `JwtBlacklistFilter` **sí** falla abierto, y ahí es lo correcto por una razón que no aplica arriba:
+  `JwtListaNegraFilter` **sí** falla abierto, y ahí es lo correcto por una razón que no aplica arriba:
   el radio de impacto está acotado porque la entrada de la lista negra expira con el propio token
   (5–15 min), así que una caída solo puede honrar un token revocado hasta que habría expirado igual.
   Detalle: [docs/fail-open-vs-fail-closed.md](docs/fail-open-vs-fail-closed.md).
@@ -483,8 +510,9 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
   `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class, …})`
   — sin `GlobalAppExceptionHandler` toda excepción sale 500; sin `AppLoggerConfig` falta el bean
   `AppLogger`. Mocks con `@MockitoBean` (nunca `@MockBean`), autenticación con
-  `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` usando la constante de
-  `{Contexto}Authorities` — nunca `@WithMockUser` (prefija `ROLE_`).
+  `SecurityMockMvcRequestPostProcessors.jwt().jwt(j -> j.subject(...))` sin `.authorities(...)` e
+  importando `IdentidadActualTestConfig` — nunca `@WithMockUser` (prefija `ROLE_`). No hay tests 403 por
+  rol en controladores: se cubren en `AutorizacionAccesoFilterTest`.
 - Spring Boot 4 reubicó los paquetes de slice test: las rutas
   `org.springframework.boot.test.autoconfigure.*` de Boot 3 no existen.
 - Nombres `debeHacerAlgo_cuandoCondicion()`, patrón Arrange / Act / Assert con sus marcadores, sin
@@ -498,10 +526,14 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 | Qué | Dónde | Convención que rompe |
 |---|---|---|
 | `EstadoEvaluacionCommandRepository` | `fichas/…/estadoevaluacion/…/repository/` | Código muerto: ningún `OutputPort`/`OutputAdapter` lo consume |
-| Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/auth/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
+| Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/autenticacion/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
 | Enums de catálogo en dos ubicaciones | `domain/{catalogo}/` vs `domain/{feature}/model/` | **Decisión abierta del proyecto, no la "arregles".** Un enum nuevo sigue lo que ya use su contexto |
 | `AdministradorRemovidoConsumer` stub | `solicitudes/…/usuario/…/amqp/usuarios/administrador/` | **Deliberado, HU-232.** Consume `usuarios.administrador.removido` para que el evento tenga cola enlazada, pero solo loguea `info` y confirma: la réplica de `usuario` en `solicitudes` es genérica y no distingue el rol, y qué significa "dejó de ser administrador" ahí es una decisión de negocio pendiente. Activar = invocar un `Interactor` de baja/actualización de la réplica cuando una HU lo defina |
 | `UsuarioSolicitudesCommandOutputAdapter` / `UsuarioSolicitudesCommandRepository` | `solicitudes/…/usuario/…/repository/` | La réplica lleva el contexto en el nombre. Con los beans nombrados por FQN, una réplica usa el nombre natural (`UsuarioCommandOutputAdapter`); ver `arquisoft-arquitectura/references/eventos.md` → *Replicación entre contextos* |
+| `ProyectoGradoDeEstudianteQueryOutputAdapter` stub | `mapas_ruta/…/asignacionproyecto/query/secondaryadapter/webclient/` | **Deliberado, HU-052.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `ProyectoGradoDeEstudianteQueryFinder` + el corte del use case están cableados y activos; el adaptador ignora al estudiante, devuelve siempre el proyecto fijo de su constante `PROYECTO_GRADO_SIMULADO` y loguea `warn`. Consecuencia: `GET /mapas-ruta/estudiante` devuelve **el mismo mapa a todo estudiante** (no verifica pertenencia), o 404 si ese proyecto no tiene mapa sembrado. Activar = reemplazar el cuerpo del adaptador y borrar la constante; checklist en `PLAN-HU-052.md` §5 |
+| `AsignacionAsesorOutputAdapter` stub | `mapas_ruta/…/asignacionasesor/command/secondaryadapter/webclient/` | **Deliberado, HU-007.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` (¿el asesor está asignado al proyecto?) — ninguno existe aún. El puerto + `AsesorAsignadoProyectoGradoFinder` + `AsesorAsignadoProyectoGradoRule` están cableados y activos; el adaptador ignora los argumentos, devuelve siempre `true` y loguea `warn`. Consecuencia: `POST /mapas-ruta/{mapaRutaId}/tareas` no verifica Tarea-POL-03 (el asesor de la tarea pertenece al proyecto). Además la réplica `asesor` no tiene consumidor: en un entorno real el `INSERT` de `tarea` falla por `fk_tarea_asesor` hasta que una HU la pueble. Activar = reemplazar el cuerpo del adaptador y borrar el `warn`; checklist en `PLAN-HU-007.md` §5 |
+| `artefacto` / `artefacto_entregable` sin productor | `entregables/…/artefactoentregable/query/`, migraciones `crear_artefacto*` | **Deliberado, HU-146.** Las dos tablas del MER existen y la lectura es real (`@Subselect` con `JOIN`), pero ningún contexto ni HU las escribe: no hay comando que vincule un artefacto a un entregable, y `VersionArtefactoGeneradaEvent` no alcanza para replicarlas. Consecuencia: `GET /entregables-proyecto-grado/{entregableProyectoGradoId}/artefactos` responde `200 []` para un entregable propio en un entorno real (uno ajeno o inexistente responde 422, HU-146.1). Activar = una HU de vinculación (o un consumidor) que escriba esas dos tablas; la lectura no cambia |
+| Raíces de ruta fuera de la base del contexto | `artefactos` (`/revisiones-asesor`, `/versiones-artefacto`, `/estados-revision-asesor`), `entregables` (`/entregables-proyecto-grado`, `/estados-entregable`, `/proyectos-grado`), `mapas_ruta` (`/tareas`, `/estados-item`) | La base de un contexto es la de su fila en `arquisoft-arquitectura` → *Rutas en placeholders…*; regla fijada el 2026-10-29. Migrar cada raíz rompe el contrato con el front, así que va en un chore por contexto (rutas, `autorizacion-equivalencias.yml` y tests de controller). Mientras tanto, un controlador nuevo usa la base del contexto aunque sus hermanos no |
 
 ## Reference Documentation
 

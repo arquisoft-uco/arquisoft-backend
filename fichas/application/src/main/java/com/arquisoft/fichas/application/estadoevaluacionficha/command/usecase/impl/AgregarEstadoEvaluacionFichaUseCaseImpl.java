@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EstadoEnEvaluacionExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EvaluacionFichaExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.RepresentantePropietarioEvaluacionFinder;
@@ -51,7 +50,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
         estadoEvaluacionFichaOutputPort.agregarEstado(EstadoEvaluacionFichaMapper.toEntity(estadoEvaluacion));
 
         logger.info(
-                Mensajes.obtener(EstadoEvaluacionFichaKey.LOG_AGREGADO),
+                EstadoEvaluacionFichaKey.LOG_AGREGADO,
                 estadoEvaluacion.getId(),
                 estadoEvaluacion.getEvaluacionFichaPerfilId(),
                 estadoEvaluacion.getEstadoEvaluacion());

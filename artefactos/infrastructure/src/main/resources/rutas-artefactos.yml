@@ -1,0 +1,44 @@
+# ==================== RUTAS DE CONTROLADORES — CONTEXTO ARTEFACTOS ====================
+# Un placeholder por segmento de path. Vive en este modulo (no en el application.yml raiz)
+# para que, si este contexto se extrae a microservicio, se lleve su propia configuracion.
+rutas:
+  artefactos:
+    revisiones-asesor:
+      base: /revisiones-asesor
+      estudiante: /estudiante
+      asesor: /asesor
+    versiones-artefacto:
+      base: /versiones-artefacto
+      asesor: /asesor
+    observaciones:
+      base: /revisiones-asesor
+      listar: /{revisionAsesorId}/observaciones
+      listar-estudiante: /{revisionAsesorId}/observaciones/estudiante
+    artefactos:
+      base: /artefactos
+      estudiantes: /{artefactoId}/estudiantes
+      estudiante-artefacto: /{artefactoId}/estudiantes/{estudianteId}
+      estudiante-participaciones: /estudiante/participaciones
+      cargas-version: /{artefactoId}/versiones/cargas
+      versiones: /{artefactoId}/versiones
+      versiones-estudiante: /versiones/estudiante
+      version: /versiones/{versionArtefactoId}
+      descarga-version: /versiones/{versionArtefactoId}/descarga
+      asesor: /asesor
+      asesor-sin-avance: /asesor/sin-avance
+      estudiante: /estudiante
+      cambiar-asesor: /{artefactoId}/asesor
+      omitir: /{artefactoId}
+      cambiar-version-repositorio: /{artefactoId}/version-repositorio
+      version-repositorio: /versiones-repositorio/{versionRepositorioArtefactoId}
+      revisiones-version: /versiones/{versionArtefactoId}/revisiones
+      revision: /revisiones/{revisionAsesorId}
+      estado-revision: /revisiones/{revisionAsesorId}/estado
+      envio-revision: /revisiones/{revisionAsesorId}/envio
+      cierre-revision: /revisiones/{revisionAsesorId}/cierre
+      estado-asesor-observacion: /observaciones/{observacionId}/estado-asesor
+      estado-estudiante-observacion: /observaciones/{observacionId}/estado-estudiante
+      observaciones-revision: /revisiones/{revisionAsesorId}/observaciones
+      observacion: /observaciones/{observacionId}
+    estados-revision-asesor:
+      base: /estados-revision-asesor

@@ -1,0 +1,98 @@
+package com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.repository;
+
+import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.NativeQuery;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEntity, UUID> {
+
+    @Modifying
+    @Query("UPDATE ArtefactoJpaEntity a SET a.asesor = :asesor "
+            + "WHERE a.proyectoGrado = :proyectoGrado AND a.asesor <> :asesor AND a.omitidoEn IS NULL")
+    int traspasarAsesorDeProyecto(@Param("proyectoGrado") UUID proyectoGrado, @Param("asesor") UUID asesor);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM ArtefactoJpaEntity a WHERE a.id = :id")
+    Optional<ArtefactoJpaEntity> bloquearPorId(@Param("id") UUID id);
+
+    boolean existsByVersionRepositorioArtefacto(UUID versionRepositorioArtefacto);
+
+    @NativeQuery("""
+            SELECT a.*
+            FROM artefacto a
+            JOIN version_artefacto va ON va.artefacto_id = a.id
+            WHERE va.id = :versionArtefacto
+            """)
+    Optional<ArtefactoJpaEntity> buscarPorVersionArtefacto(@Param("versionArtefacto") UUID versionArtefacto);
+
+    // FOR UPDATE OF a: el bloqueo recae sobre el artefacto y no sobre la version del JOIN, que se
+    // bloquea despues y de forma explicita; asi el orden artefacto -> revision -> version se respeta.
+    @NativeQuery("""
+            SELECT a.*
+            FROM artefacto a
+            JOIN version_artefacto va ON va.artefacto_id = a.id
+            WHERE va.id = :versionArtefacto
+            FOR UPDATE OF a
+            """)
+    Optional<ArtefactoJpaEntity> bloquearPorVersionArtefacto(@Param("versionArtefacto") UUID versionArtefacto);
+
+    @Modifying
+    @Query("UPDATE ArtefactoJpaEntity a SET a.asesor = :asesor WHERE a.id = :id")
+    int cambiarAsesor(@Param("id") UUID id, @Param("asesor") UUID asesor);
+
+    @Modifying
+    @Query("UPDATE ArtefactoJpaEntity a SET a.omitidoEn = :omitidoEn WHERE a.id = :id")
+    int omitir(@Param("id") UUID id, @Param("omitidoEn") Instant omitidoEn);
+
+    @Modifying
+    @Query("UPDATE ArtefactoJpaEntity a SET a.versionRepositorioArtefacto = :versionRepositorioArtefacto "
+            + "WHERE a.id = :id")
+    int cambiarVersionRepositorio(
+            @Param("id") UUID id, @Param("versionRepositorioArtefacto") UUID versionRepositorioArtefacto);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE ArtefactoJpaEntity a SET a.omitidoEn = NULL, a.asesor = :asesor WHERE a.id = :id")
+    int reactivar(@Param("id") UUID id, @Param("asesor") UUID asesor);
+
+    @Query("""
+            SELECT a
+            FROM ArtefactoJpaEntity a, VersionRepositorioArtefactoJpaEntity v, VersionRepositorioArtefactoJpaEntity n
+            WHERE a.proyectoGrado = :proyectoGrado
+              AND a.omitidoEn IS NOT NULL
+              AND v.id = a.versionRepositorioArtefacto
+              AND n.id = :versionRepositorioArtefacto
+              AND v.repositorioArtefacto = n.repositorioArtefacto
+              AND lower(v.nombreDocumento) = lower(n.nombreDocumento)
+            """)
+    Optional<ArtefactoJpaEntity> buscarOmitidoPorProyectoYDocumento(
+            @Param("proyectoGrado") UUID proyectoGrado,
+            @Param("versionRepositorioArtefacto") UUID versionRepositorioArtefacto);
+
+    @Query("""
+            SELECT a
+            FROM ArtefactoJpaEntity a, VersionArtefactoJpaEntity va, RevisionAsesorJpaEntity r
+            WHERE r.id = :revisionAsesor
+              AND va.id = r.versionArtefacto
+              AND a.id = va.artefacto
+            """)
+    Optional<ArtefactoJpaEntity> buscarPorRevisionAsesor(@Param("revisionAsesor") UUID revisionAsesor);
+
+    @Query("""
+            SELECT a
+            FROM ArtefactoJpaEntity a, VersionArtefactoJpaEntity va, RevisionAsesorJpaEntity r, ObservacionJpaEntity o
+            WHERE o.id = :observacion
+              AND r.id = o.revisionAsesor
+              AND va.id = r.versionArtefacto
+              AND a.id = va.artefacto
+            """)
+    Optional<ArtefactoJpaEntity> buscarPorObservacion(@Param("observacion") UUID observacion);
+}

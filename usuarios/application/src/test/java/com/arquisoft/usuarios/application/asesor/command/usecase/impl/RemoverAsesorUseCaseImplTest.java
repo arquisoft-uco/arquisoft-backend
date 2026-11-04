@@ -2,7 +2,7 @@ package com.arquisoft.usuarios.application.asesor.command.usecase.impl;
 
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
@@ -88,9 +88,9 @@ class RemoverAsesorUseCaseImplTest {
         var orden = inOrder(removerAsesorValidator, asesorOutputPort, proveedorIdentidadOutputPort, eventPublisher);
         var captorInstante = ArgumentCaptor.forClass(Instant.class);
         var captorEvento = ArgumentCaptor.forClass(AsesorRemovidoEvent.class);
-        orden.verify(removerAsesorValidator).validar(id, vigente);
+        orden.verify(removerAsesorValidator).validar(id, usuario, vigente);
         orden.verify(asesorOutputPort).eliminarLogica(eq(id), captorInstante.capture());
-        orden.verify(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.ASESOR);
+        orden.verify(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.ASESOR);
         orden.verify(eventPublisher).publish(captorEvento.capture());
 
         assertThat(captorInstante.getValue()).isNotEqualTo(UtilFecha.VACIO);
@@ -107,13 +107,14 @@ class RemoverAsesorUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         when(asesorPorUsuarioFinder.obtener(id)).thenReturn(AsesorDomain.VACIO);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(UsuarioDomain.VACIO);
-        doThrow(new AsesorNoEncontradoException(id)).when(removerAsesorValidator).validar(id, AsesorDomain.VACIO);
+        doThrow(new AsesorNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerAsesorValidator).validar(id, UsuarioDomain.VACIO, AsesorDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(AsesorDomain.crear(id)))
                 .isInstanceOf(AsesorNoEncontradoException.class);
         verify(asesorOutputPort, never()).eliminarLogica(any(), any());
-        verify(proveedorIdentidadOutputPort, never()).revocarRealmRole(any(), anyString());
+        verify(proveedorIdentidadOutputPort, never()).revocarRol(any(), anyString());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -124,13 +125,14 @@ class RemoverAsesorUseCaseImplTest {
         var removido = AsesorDomain.reconstruir(id, Instant.parse("2026-09-01T10:00:00Z"));
         when(asesorPorUsuarioFinder.obtener(id)).thenReturn(removido);
         when(usuarioPorIdFinder.obtener(id)).thenReturn(usuario(id));
-        doThrow(new AsesorNoEncontradoException(id)).when(removerAsesorValidator).validar(id, removido);
+        doThrow(new AsesorNoEncontradoException(id, UsuarioDomain.VACIO.getNombre()))
+                .when(removerAsesorValidator).validar(eq(id), any(UsuarioDomain.class), eq(removido));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(AsesorDomain.crear(id)))
                 .isInstanceOf(AsesorNoEncontradoException.class);
         verify(asesorOutputPort, never()).eliminarLogica(any(), any());
-        verify(proveedorIdentidadOutputPort, never()).revocarRealmRole(any(), anyString());
+        verify(proveedorIdentidadOutputPort, never()).revocarRol(any(), anyString());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -141,7 +143,7 @@ class RemoverAsesorUseCaseImplTest {
         when(asesorPorUsuarioFinder.obtener(id)).thenReturn(AsesorDomain.crear(id));
         when(usuarioPorIdFinder.obtener(id)).thenReturn(usuario(id));
         var fallo = new InfrastructureException("Proveedor de identidad caido", "PROVEEDOR_NO_DISPONIBLE");
-        doThrow(fallo).when(proveedorIdentidadOutputPort).revocarRealmRole(id, UsuariosRealmRoles.ASESOR);
+        doThrow(fallo).when(proveedorIdentidadOutputPort).revocarRol(id, UsuariosRoles.ASESOR);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(AsesorDomain.crear(id))).isSameAs(fallo);

@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +35,7 @@ class ConsultarEstadosFichaInteractorImplTest {
     @Test
     void debeDelegarEnUseCaseConLosRolesDelQuery_yRetornarSuResultado() {
         // Arrange
-        var query = ConsultarEstadosFichaQuery.crear(List.of("COORDINADOR", "REPRESENTANTE_COMITE"));
+        var query = ConsultarEstadosFichaQuery.crear(UUID.randomUUID(), List.of("COORDINADOR", "REPRESENTANTE_COMITE"));
         var resultadoEsperado = List.of(new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada"));
         when(consultarEstadosFichaUseCase.ejecutar(any(EstadoFichaCriteria.class))).thenReturn(resultadoEsperado);
 
@@ -44,6 +45,6 @@ class ConsultarEstadosFichaInteractorImplTest {
         // Assert
         assertThat(resultado).isSameAs(resultadoEsperado);
         verify(consultarEstadosFichaUseCase).ejecutar(criteriaCaptor.capture());
-        assertThat(criteriaCaptor.getValue().roles()).containsExactly("COORDINADOR", "REPRESENTANTE_COMITE");
+        assertThat(criteriaCaptor.getValue().rolesIdentidad()).containsExactly("COORDINADOR", "REPRESENTANTE_COMITE");
     }
 }

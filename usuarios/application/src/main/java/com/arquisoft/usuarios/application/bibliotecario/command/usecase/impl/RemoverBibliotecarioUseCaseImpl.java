@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.bibliotecario.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.RemoverBibliotecarioKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
@@ -37,11 +37,11 @@ public class RemoverBibliotecarioUseCaseImpl implements RemoverBibliotecarioUseC
         logger.debug(RemoverBibliotecarioKey.LOG_VERIFICACION_REMOVER,
                 entrada.getUsuario(), !bibliotecario.esVacio(), bibliotecario.estaEliminado());
 
-        removerBibliotecarioValidator.validar(entrada.getUsuario(), bibliotecario);
+        removerBibliotecarioValidator.validar(entrada.getUsuario(), usuario, bibliotecario);
 
         bibliotecario.remover(UtilFecha.generarInstanteActual());
         bibliotecarioOutputPort.eliminarLogica(bibliotecario.getUsuario(), bibliotecario.getEliminadoEn());
-        proveedorIdentidadOutputPort.revocarRealmRole(bibliotecario.getUsuario(), UsuariosRealmRoles.BIBLIOTECARIO);
+        proveedorIdentidadOutputPort.revocarRol(bibliotecario.getUsuario(), UsuariosRoles.BIBLIOTECARIO);
 
         eventPublisher.publish(new BibliotecarioRemovidoEvent(
                 usuario.getId(), usuario.getIdentificador(), usuario.getNombre(), usuario.getEmail()));

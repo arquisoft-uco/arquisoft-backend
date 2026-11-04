@@ -30,7 +30,7 @@ public class AgregarAsesorFichaUseCaseImpl implements AgregarAsesorFichaUseCase 
         logger.debug(AgregarAsesorFichaKey.LOG_VERIFICACION_AGREGAR,
                 usuario.getId(), !asesorFicha.esVacio(), asesorFicha.estaEliminado());
 
-        agregarAsesorFichaValidator.validar(usuario.getId(), asesorFicha);
+        agregarAsesorFichaValidator.validar(usuario, asesorFicha);
 
         if (asesorFicha.esVacio()) {
             asesorFichaOutputPort.guardar(AsesorFichaMapper.toEntity(AsesorFichaDomain.crear(usuario.getId())));

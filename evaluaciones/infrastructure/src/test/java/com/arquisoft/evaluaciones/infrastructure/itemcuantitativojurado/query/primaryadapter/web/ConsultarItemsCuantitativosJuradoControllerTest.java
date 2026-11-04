@@ -2,7 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.query.p
 
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.query.primaryport.interactor.ConsultarItemsCuantitativosJuradoInteractor;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.query.readmodel.ItemCuantitativoJuradoReadModel;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -11,10 +10,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -43,7 +40,6 @@ class ConsultarItemsCuantitativosJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -104,13 +100,6 @@ class ConsultarItemsCuantitativosJuradoControllerTest {
     }
 
     @Test
-    void debeRetornar403_cuandoElUsuarioNoTieneElRolDeVista() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeSerializarCategoriaIdYValorEnLaRespuesta_cuandoHayResultados() throws Exception {
         // Arrange
         UUID id = UUID.randomUUID();
@@ -142,8 +131,6 @@ class ConsultarItemsCuantitativosJuradoControllerTest {
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermisoView() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.ITEM_CUANTITATIVO_JURADO_VIEW));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

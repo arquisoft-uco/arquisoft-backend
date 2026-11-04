@@ -3,7 +3,7 @@ package com.arquisoft.fichas.infrastructure.tipoitem.query.primaryadapter.web;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.fichas.application.tipoitem.query.primaryport.interactor.ConsultarTiposItemInteractor;
 import com.arquisoft.fichas.application.tipoitem.query.readmodel.TipoItemReadModel;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +11,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -31,13 +29,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarTiposItemController.class)
-@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarTiposItemControllerTest.TestSecurityConfig.class})
 class ConsultarTiposItemControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -72,8 +69,7 @@ class ConsultarTiposItemControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/tipos-item")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.TIPO_ITEM_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(6))
                 .andExpect(jsonPath("$[0].id").value("OBJETIVO_GENERAL"))
@@ -88,8 +84,7 @@ class ConsultarTiposItemControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/tipos-item")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.TIPO_ITEM_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
@@ -105,8 +100,7 @@ class ConsultarTiposItemControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/tipos-item")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.TIPO_ITEM_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("REFERENCIAS"))
@@ -123,15 +117,6 @@ class ConsultarTiposItemControllerTest {
     }
 
     @Test
-    void debe403_cuandoClientRoleInsuficiente() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get("/fichas-perfil/tipos-item")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("otro-permiso"))))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debeInvocarInteractorUnaVez_cuandoEndpointEsLlamado() throws Exception {
         // Arrange
         List<TipoItemReadModel> tipos = List.of(
@@ -141,8 +126,7 @@ class ConsultarTiposItemControllerTest {
 
         // Act
         mockMvc.perform(get("/fichas-perfil/tipos-item")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.TIPO_ITEM_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk());
 
         // Assert
@@ -159,8 +143,7 @@ class ConsultarTiposItemControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/tipos-item")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.TIPO_ITEM_VIEW))))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk());
     }
 }

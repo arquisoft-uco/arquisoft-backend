@@ -32,8 +32,8 @@ public class RegistrarItemCuantitativoJuradoUseCaseImpl
                 item.getNombre(),
                 item.getCategoria());
 
-        boolean categoriaExiste = categoriaExisteFinder.obtener(item.getCategoria());
-        boolean nombreYaExiste = nombreExisteFinder.obtener(item);
+        var categoriaExiste = categoriaExisteFinder.obtener(item.getCategoria());
+        var nombreYaExiste = nombreExisteFinder.obtener(item);
 
         logger.debug(
                 ItemCuantitativoJuradoKey.LOG_VERIFICACION_REGISTRAR,

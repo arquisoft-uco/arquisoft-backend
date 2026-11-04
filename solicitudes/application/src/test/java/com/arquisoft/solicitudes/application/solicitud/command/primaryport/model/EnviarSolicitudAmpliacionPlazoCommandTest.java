@@ -14,11 +14,11 @@ class EnviarSolicitudAmpliacionPlazoCommandTest {
     @Test
     void debeCrearElComando_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
 
         // Act
-        EnviarSolicitudAmpliacionPlazoCommand command =
+        var command =
                 EnviarSolicitudAmpliacionPlazoCommand.crear(
                         remitente, destinatario.toString(), "  Solicito ampliacion de plazo  ");
 
@@ -31,7 +31,7 @@ class EnviarSolicitudAmpliacionPlazoCommandTest {
     @Test
     void debeAcumularLosErroresDeFormato_cuandoLosDatosSonInvalidos() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EnviarSolicitudAmpliacionPlazoCommand.crear(
                         null, "tampoco-es-uuid", "a".repeat(101)));
 
@@ -45,7 +45,7 @@ class EnviarSolicitudAmpliacionPlazoCommandTest {
     @Test
     void debeReportarElMensaje_cuandoEstaEnBlanco() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EnviarSolicitudAmpliacionPlazoCommand.crear(
                         UUID.randomUUID(), UUID.randomUUID().toString(), "   "));
 

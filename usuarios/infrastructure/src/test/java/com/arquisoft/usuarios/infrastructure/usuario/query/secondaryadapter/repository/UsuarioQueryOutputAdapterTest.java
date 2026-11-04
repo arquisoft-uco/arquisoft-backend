@@ -14,6 +14,7 @@ import com.arquisoft.usuarios.infrastructure.asesor.command.secondaryadapter.ent
 import com.arquisoft.usuarios.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
 import com.arquisoft.usuarios.infrastructure.bibliotecario.command.secondaryadapter.entity.BibliotecarioJpaEntity;
 import com.arquisoft.usuarios.infrastructure.coordinador.command.secondaryadapter.entity.CoordinadorJpaEntity;
+import com.arquisoft.usuarios.infrastructure.jurado.command.secondaryadapter.entity.JuradoJpaEntity;
 import com.arquisoft.usuarios.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
 import com.arquisoft.usuarios.infrastructure.representantecomite.command.secondaryadapter.entity.RepresentanteComiteJpaEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
@@ -62,6 +63,7 @@ class UsuarioQueryOutputAdapterTest {
         estudianteAsesor = persistirUsuario("1002", "Bruno Diaz", "ACTIVO", null);
         entityManager.persist(EstudianteJpaEntity.builder().usuarioId(estudianteAsesor).build());
         entityManager.persist(AsesorJpaEntity.builder().usuarioId(estudianteAsesor).build());
+        entityManager.persist(JuradoJpaEntity.builder().usuarioId(estudianteAsesor).build());
 
         coordinadorAsesorFicha = persistirUsuario("1003", "Carla Vidal", "ACTIVO", null);
         entityManager.persist(CoordinadorJpaEntity.builder().usuarioId(coordinadorAsesorFicha).build());
@@ -71,6 +73,7 @@ class UsuarioQueryOutputAdapterTest {
         estudianteDadoDeBaja = persistirUsuario("1004", "Dario Solano", "ACTIVO", null);
         entityManager.persist(EstudianteJpaEntity.builder().usuarioId(estudianteDadoDeBaja).eliminadoEn(baja).build());
         entityManager.persist(RepresentanteComiteJpaEntity.builder().usuarioId(estudianteDadoDeBaja).eliminadoEn(baja).build());
+        entityManager.persist(JuradoJpaEntity.builder().usuarioId(estudianteDadoDeBaja).eliminadoEn(baja).build());
 
         eliminado = persistirUsuario("1005", "Elena Roa", "INACTIVO", baja);
         entityManager.persist(AsesorJpaEntity.builder().usuarioId(eliminado).eliminadoEn(baja).build());
@@ -102,16 +105,16 @@ class UsuarioQueryOutputAdapterTest {
                 .extracting(UsuarioReadModel::id, UsuarioReadModel::vigente, UsuarioReadModel::esEstudiante,
                         UsuarioReadModel::esAsesor, UsuarioReadModel::esAsesorFicha, UsuarioReadModel::esCoordinador,
                         UsuarioReadModel::esRepresentanteComite, UsuarioReadModel::esAdministrador,
-                        UsuarioReadModel::esBibliotecario)
+                        UsuarioReadModel::esBibliotecario, UsuarioReadModel::esJurado)
                 .containsExactlyInAnyOrder(
-                        tuple(estudiante, true, true, false, false, false, false, false, false),
-                        tuple(estudianteAsesor, true, true, true, false, false, false, false, false),
-                        tuple(coordinadorAsesorFicha, true, false, false, true, true, true, false, false),
-                        tuple(estudianteDadoDeBaja, true, false, false, false, false, false, false, false),
-                        tuple(eliminado, false, false, false, false, false, false, false, false),
-                        tuple(sinRolesInactivo, true, false, false, false, false, false, false, false),
-                        tuple(administrador, true, false, false, false, false, false, true, true),
-                        tuple(administradorDadoDeBaja, true, false, false, false, false, false, false, false));
+                        tuple(estudiante, true, true, false, false, false, false, false, false, false),
+                        tuple(estudianteAsesor, true, true, true, false, false, false, false, false, true),
+                        tuple(coordinadorAsesorFicha, true, false, false, true, true, true, false, false, false),
+                        tuple(estudianteDadoDeBaja, true, false, false, false, false, false, false, false, false),
+                        tuple(eliminado, false, false, false, false, false, false, false, false, false),
+                        tuple(sinRolesInactivo, true, false, false, false, false, false, false, false, false),
+                        tuple(administrador, true, false, false, false, false, false, true, true, false),
+                        tuple(administradorDadoDeBaja, true, false, false, false, false, false, false, false, false));
         assertThat(resultado.getContent())
                 .filteredOn(u -> u.id().equals(estudiante))
                 .extracting(UsuarioReadModel::identificador, UsuarioReadModel::nombre, UsuarioReadModel::email,
@@ -194,6 +197,38 @@ class UsuarioQueryOutputAdapterTest {
         assertThat(resultado.getContent())
                 .extracting(UsuarioReadModel::id, UsuarioReadModel::esAdministrador, UsuarioReadModel::esBibliotecario)
                 .containsExactly(tuple(administrador, true, true));
+    }
+
+    @Test
+    void debeFiltrarJuradosVigentes_cuandoEsJuradoEsTrue() {
+        // Arrange — estudianteDadoDeBaja tiene la fila de jurado dada de baja: no debe contar como vigente
+        var criteria = conFiltro(NodoFiltro.predicado("esJurado", FiltroOperador.ES, "true"));
+
+        // Act
+        var resultado = adapter.consultarTodos(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(UsuarioReadModel::id)
+                .containsExactly(estudianteAsesor)
+                .doesNotContain(estudianteDadoDeBaja);
+    }
+
+    @Test
+    void debeRetornarUnaSolaFila_cuandoElUsuarioEsJuradoYAsesorALaVez() {
+        // Arrange
+        var criteria = conFiltro(NodoFiltro.grupo(FiltroConector.OR, List.of(
+                NodoFiltro.predicado("esJurado", FiltroOperador.ES, "true"),
+                NodoFiltro.predicado("esAsesor", FiltroOperador.ES, "true"))));
+
+        // Act
+        var resultado = adapter.consultarTodos(criteria);
+
+        // Assert
+        assertThat(resultado.getTotalElements()).isEqualTo(1L);
+        assertThat(resultado.getContent())
+                .extracting(UsuarioReadModel::id, UsuarioReadModel::esJurado, UsuarioReadModel::esAsesor)
+                .containsExactly(tuple(estudianteAsesor, true, true));
     }
 
     @Test
@@ -324,6 +359,7 @@ class UsuarioQueryOutputAdapterTest {
                 NodoFiltro.predicado("esCoordinador", FiltroOperador.ES, "true"),
                 NodoFiltro.predicado("esRepresentanteComite", FiltroOperador.ES, "true"),
                 NodoFiltro.predicado("esBibliotecario", FiltroOperador.ES, "false"),
+                NodoFiltro.predicado("esJurado", FiltroOperador.ES, "false"),
                 NodoFiltro.predicado("identificador", FiltroOperador.ES, "1003"),
                 NodoFiltro.predicado("nombre", FiltroOperador.CONTIENE, "Carla"),
                 NodoFiltro.predicado("email", FiltroOperador.CONTIENE, "1003@"),

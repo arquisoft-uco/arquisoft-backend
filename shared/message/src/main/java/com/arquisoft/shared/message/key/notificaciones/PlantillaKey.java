@@ -31,6 +31,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.solicitud-ampliacion-plazo", 1),
     CUERPO_SOLICITUD_AMPLIACION_PLAZO(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo", 3),
+    ASUNTO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-registro-modificacion-usuarios", 1),
+    CUERPO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-registro-modificacion-usuarios", 3),
     ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA(
             "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador-respondida", 0),
     CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA(
@@ -39,10 +43,38 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-asesor-respondida", 0),
     CUERPO_SOLICITUD_NOVEDAD_ASESOR_RESPONDIDA(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-novedad-asesor-respondida", 3),
+    ASUNTO_SOLICITUD_CAMBIO_ASESOR_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-cambio-asesor-respondida", 0),
+    CUERPO_SOLICITUD_CAMBIO_ASESOR_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-cambio-asesor-respondida", 3),
+    ASUNTO_SOLICITUD_AMPLIACION_PLAZO_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-ampliacion-plazo-respondida", 0),
+    CUERPO_SOLICITUD_AMPLIACION_PLAZO_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo-respondida", 3),
+    ASUNTO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-registro-modificacion-usuarios-respondida", 0),
+    CUERPO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-registro-modificacion-usuarios-respondida", 3),
     ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO(
             "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador-estado-modificado", 0),
     CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-novedad-coordinador-estado-modificado", 3),
+    ASUNTO_SOLICITUD_NOVEDAD_ASESOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-asesor-estado-modificado", 0),
+    CUERPO_SOLICITUD_NOVEDAD_ASESOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-novedad-asesor-estado-modificado", 3),
+    ASUNTO_SOLICITUD_CAMBIO_ASESOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-cambio-asesor-estado-modificado", 0),
+    CUERPO_SOLICITUD_CAMBIO_ASESOR_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-cambio-asesor-estado-modificado", 3),
+    ASUNTO_SOLICITUD_AMPLIACION_PLAZO_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-ampliacion-plazo-estado-modificado", 0),
+    CUERPO_SOLICITUD_AMPLIACION_PLAZO_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo-estado-modificado", 3),
+    ASUNTO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-registro-modificacion-usuarios-estado-modificado", 0),
+    CUERPO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-registro-modificacion-usuarios-estado-modificado", 3),
     ASUNTO_REVISION_ITEM_AGREGADA(
             "notificaciones.aplicacion.plantilla.asunto.revision-item-agregada", 1),
     CUERPO_REVISION_ITEM_AGREGADA(
@@ -72,10 +104,54 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.estudiantes-proyecto-grado-asignados", 1),
     CUERPO_ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS(
             "notificaciones.aplicacion.plantilla.cuerpo.estudiantes-proyecto-grado-asignados", 2),
+    ASUNTO_ASESOR_PROYECTO_GRADO_ASIGNADO(
+            "notificaciones.aplicacion.plantilla.asunto.asesor-proyecto-grado-asignado", 1),
+    CUERPO_ASESOR_PROYECTO_GRADO_ASIGNADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.asesor-proyecto-grado-asignado", 2),
+    ASUNTO_ASESOR_PROYECTO_GRADO_FINALIZADO(
+            "notificaciones.aplicacion.plantilla.asunto.asesor-proyecto-grado-finalizado", 1),
+    CUERPO_ASESOR_PROYECTO_GRADO_FINALIZADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.asesor-proyecto-grado-finalizado", 2),
     ASUNTO_ESTADO_FICHA_PERFIL_AGREGADO(
             "notificaciones.aplicacion.plantilla.asunto.estado-ficha-perfil-agregado", 2),
     CUERPO_ESTADO_FICHA_PERFIL_AGREGADO(
             "notificaciones.aplicacion.plantilla.cuerpo.estado-ficha-perfil-agregado", 3),
+    ASUNTO_REVISION_ASESOR_RESUELTA(
+            "notificaciones.aplicacion.plantilla.asunto.revision-asesor-resuelta", 1),
+    CUERPO_REVISION_ASESOR_RESUELTA(
+            "notificaciones.aplicacion.plantilla.cuerpo.revision-asesor-resuelta", 2),
+    ASUNTO_VERSION_ARTEFACTO_GENERADA(
+            "notificaciones.aplicacion.plantilla.asunto.version-artefacto-generada", 2),
+    CUERPO_VERSION_ARTEFACTO_GENERADA(
+            "notificaciones.aplicacion.plantilla.cuerpo.version-artefacto-generada", 3),
+    ASUNTO_ESTUDIANTES_ARTEFACTO_ASIGNADOS(
+            "notificaciones.aplicacion.plantilla.asunto.estudiantes-artefacto-asignados", 1),
+    CUERPO_ESTUDIANTES_ARTEFACTO_ASIGNADOS(
+            "notificaciones.aplicacion.plantilla.cuerpo.estudiantes-artefacto-asignados", 3),
+    ASUNTO_ESTUDIANTE_ARTEFACTO_REMOVIDO(
+            "notificaciones.aplicacion.plantilla.asunto.estudiante-artefacto-removido", 1),
+    CUERPO_ESTUDIANTE_ARTEFACTO_REMOVIDO(
+            "notificaciones.aplicacion.plantilla.cuerpo.estudiante-artefacto-removido", 3),
+    ASUNTO_ARTEFACTO_OMITIDO(
+            "notificaciones.aplicacion.plantilla.asunto.artefacto-omitido", 1),
+    CUERPO_ARTEFACTO_OMITIDO(
+            "notificaciones.aplicacion.plantilla.cuerpo.artefacto-omitido", 3),
+    ASUNTO_ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA(
+            "notificaciones.aplicacion.plantilla.asunto.artefacto-version-repositorio-cambiada", 1),
+    CUERPO_ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA(
+            "notificaciones.aplicacion.plantilla.cuerpo.artefacto-version-repositorio-cambiada", 5),
+    ASUNTO_REVISION_ASESOR_ENVIADA(
+            "notificaciones.aplicacion.plantilla.asunto.revision-asesor-enviada", 2),
+    CUERPO_REVISION_ASESOR_ENVIADA(
+            "notificaciones.aplicacion.plantilla.cuerpo.revision-asesor-enviada", 4),
+    ASUNTO_REVISION_ASESOR_CERRADA(
+            "notificaciones.aplicacion.plantilla.asunto.revision-asesor-cerrada", 2),
+    CUERPO_REVISION_ASESOR_CERRADA(
+            "notificaciones.aplicacion.plantilla.cuerpo.revision-asesor-cerrada", 4),
+    ASUNTO_OBSERVACION_REABIERTA(
+            "notificaciones.aplicacion.plantilla.asunto.observacion-reabierta", 2),
+    CUERPO_OBSERVACION_REABIERTA(
+            "notificaciones.aplicacion.plantilla.cuerpo.observacion-reabierta", 5),
     PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;

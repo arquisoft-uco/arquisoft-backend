@@ -72,7 +72,7 @@ public class AgregarEstadoFichaPerfilValidatorImpl implements AgregarEstadoFicha
         estadoFichaPerfilNoRepetidoRule.validar(transicion);
         transicionEstadoFichaPermitidaRule.validar(transicion);
         fichaPerfilSinEvaluacionEnCursoRule.validar(
-                new EvaluacionesEnCursoFicha(fichaPerfil, actual, resumen.enEvaluacion()));
-        fichaPerfilConEstudiantesVigentesRule.validar(new IntegrantesVigentesFicha(fichaPerfil, integrantes.size()));
+                new EvaluacionesEnCursoFicha(fichaPerfil, ficha.getTituloProyecto(), actual, resumen.enEvaluacion()));
+        fichaPerfilConEstudiantesVigentesRule.validar(new IntegrantesVigentesFicha(fichaPerfil, ficha.getTituloProyecto(), integrantes.size()));
     }
 }

@@ -1,0 +1,19 @@
+# ==================== RUTAS DE CONTROLADORES — CONTEXTO ENTREGABLES ====================
+# Un placeholder por segmento de path. OpenApiConfig lee la misma clave via @Value
+# para no duplicar el literal entre el controlador REST y la agrupacion de Swagger.
+# Vive en este modulo (no en el application.yml raiz) para que, si este contexto se
+# extrae a microservicio, se lleve su propia configuracion de rutas consigo.
+rutas:
+  entregables:
+    estados-entregable:
+      base: /estados-entregable
+    proyectos-grado:
+      base: /proyectos-grado
+      entregables: /{proyectoGradoId}/entregables
+      entregables-estudiante: /{proyectoGradoId}/entregables/estudiante
+    entregables-proyecto-grado:
+      base: /entregables-proyecto-grado
+      estado: /{entregableProyectoGradoId}/estado
+      artefactos: /{entregableProyectoGradoId}/artefactos
+      asesor: /asesor
+      jurado: /jurado

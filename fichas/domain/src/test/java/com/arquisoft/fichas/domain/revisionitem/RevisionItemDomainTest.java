@@ -81,7 +81,7 @@ class RevisionItemDomainTest {
         assertThatThrownBy(() -> RevisionItemDomain.crearConEstado(item, "ESTADO_DESCONOCIDO"))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining(FichasCodes.RevisionItem.ESTADO_REVISION_NO_ENCONTRADO)
-                .hasMessageContaining("ESTADO_DESCONOCIDO");
+                .hasMessageNotContaining("ESTADO_DESCONOCIDO");
     }
 
     @Test

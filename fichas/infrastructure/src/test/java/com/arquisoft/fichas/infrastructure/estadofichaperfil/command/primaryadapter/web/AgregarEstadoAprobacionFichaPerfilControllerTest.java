@@ -4,11 +4,11 @@ import com.arquisoft.fichas.application.estadofichaperfil.command.primaryport.in
 import com.arquisoft.fichas.application.estadofichaperfil.command.primaryport.model.AgregarEstadoAprobacionFichaPerfilCommand;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilNoDisponibleParaEvaluacionException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -40,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AgregarEstadoAprobacionFichaPerfilController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         AgregarEstadoAprobacionFichaPerfilControllerTest.TestSecurityConfig.class})
 class AgregarEstadoAprobacionFichaPerfilControllerTest {
 
@@ -48,7 +46,6 @@ class AgregarEstadoAprobacionFichaPerfilControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -72,8 +69,7 @@ class AgregarEstadoAprobacionFichaPerfilControllerTest {
 
     private RequestPostProcessor coordinadorAutorizado() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(coordinador.toString()))
-                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_PERFIL_APROBACION_CREATE));
+                .jwt(jwt -> jwt.subject(coordinador.toString()));
     }
 
     private MockHttpServletRequestBuilder peticion(Object fichaPerfil, String cuerpo) {
@@ -130,18 +126,6 @@ class AgregarEstadoAprobacionFichaPerfilControllerTest {
         // Act & Assert
         mockMvc.perform(peticion(UUID.randomUUID(), "{\"acepta\":true}"))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_cuandoElTokenTraeOtroClientRole() throws Exception {
-        // Act & Assert
-        mockMvc.perform(peticion(UUID.randomUUID(), "{\"acepta\":true}")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(coordinador.toString()))
-                                .authorities(new SimpleGrantedAuthority(
-                                        FichasAuthorities.ESTADO_FICHA_PERFIL_ASESOR_VIEW))))
-                .andExpect(status().isForbidden());
-        verify(interactor, never()).ejecutar(any());
     }
 
     @Test

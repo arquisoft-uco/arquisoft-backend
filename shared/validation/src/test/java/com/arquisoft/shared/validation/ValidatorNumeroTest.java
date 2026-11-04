@@ -19,7 +19,7 @@ class ValidatorNumeroTest {
 
         // Assert
         assertThat(valido).isFalse();
-        assertThat(result.getErrores().get(0).mensaje()).contains(CAMPO, "5");
+        assertThat(result.getErrores().get(0).mensaje()).contains("5").doesNotContain(CAMPO);
     }
 
     @Test
@@ -32,7 +32,7 @@ class ValidatorNumeroTest {
 
         // Assert
         assertThat(valido).isFalse();
-        assertThat(result.getErrores().get(0).mensaje()).contains(CAMPO, "10");
+        assertThat(result.getErrores().get(0).mensaje()).contains("10").doesNotContain(CAMPO);
     }
 
     @Test
@@ -46,7 +46,7 @@ class ValidatorNumeroTest {
         // Assert
         assertThat(valido).isFalse();
         assertThat(result.getErrores()).hasSize(1);
-        assertThat(result.getErrores().get(0).mensaje()).contains(CAMPO, "1", "5");
+        assertThat(result.getErrores().get(0).mensaje()).contains("1", "5").doesNotContain(CAMPO);
     }
 
     @Test

@@ -3,7 +3,7 @@ package com.arquisoft.usuarios.application.usuario.command.primaryport.model;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.UsuariosCodes;
 import com.arquisoft.shared.message.constant.UsuariosFields;
-import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.message.key.usuarios.ModificarUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import com.arquisoft.shared.util.UtilColeccion;
@@ -20,19 +20,17 @@ import java.util.stream.Stream;
 public record ModificarUsuarioCommand(
         UUID usuario,
         String identificador,
-        String nombre,
         String email,
         String contacto,
         String nombres,
         String apellidos,
         List<String> roles
 ) {
-    public record DatosModificarUsuario(String identificador, String nombre, String email,
-                                        String contacto, String nombres, String apellidos) {}
+    public record DatosModificarUsuario(String identificador, String email, String contacto,
+                                        String nombres, String apellidos) {}
 
     public ModificarUsuarioCommand {
         identificador = recortarSiLlega(identificador);
-        nombre = recortarSiLlega(nombre);
         email = recortarSiLlega(email);
         contacto = recortarSiLlega(contacto);
         nombres = recortarSiLlega(nombres);
@@ -57,10 +55,10 @@ public record ModificarUsuarioCommand(
                         Mensajes.obtener(RegistrarUsuarioKey.ERROR_ROL_REQUERIDO)));
         rolesNormalizados.stream()
                 .filter(rol -> !UtilTexto.esVacioONulo(rol))
-                .filter(rol -> !UsuariosRealmRoles.CONOCIDOS.contains(rol))
+                .filter(rol -> !UsuariosRoles.CONOCIDOS.contains(rol))
                 .forEach(rol -> result.agregarError(UsuariosFields.Usuario.ROLES,
                         UsuariosCodes.Usuario.ROL_NO_VALIDO,
-                        Mensajes.formatear(RegistrarUsuarioKey.ERROR_ROL_NO_VALIDO, rol)));
+                        Mensajes.obtener(RegistrarUsuarioKey.ERROR_ROL_NO_VALIDO)));
 
         if (sinDatos(datos) && rolesNormalizados.isEmpty()) {
             result.agregarError(UsuariosFields.Usuario.USUARIO,
@@ -71,13 +69,13 @@ public record ModificarUsuarioCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new ModificarUsuarioCommand(
-                UtilUUID.generarUUIDDesdeTexto(usuario), datos.identificador(), datos.nombre(),
-                datos.email(), datos.contacto(), datos.nombres(), datos.apellidos(), rolesNormalizados);
+                UtilUUID.generarUUIDDesdeTexto(usuario), datos.identificador(), datos.email(),
+                datos.contacto(), datos.nombres(), datos.apellidos(), rolesNormalizados);
     }
 
     private static boolean sinDatos(DatosModificarUsuario datos) {
-        return Stream.of(datos.identificador(), datos.nombre(), datos.email(),
-                        datos.contacto(), datos.nombres(), datos.apellidos())
+        return Stream.of(datos.identificador(), datos.email(), datos.contacto(),
+                        datos.nombres(), datos.apellidos())
                 .allMatch(UtilObjeto::esNulo);
     }
 

@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
@@ -55,7 +54,7 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
         itemFichaPerfilOutputPort.registrarItem(ItemFichaPerfilMapper.toEntity(item));
 
         logger.info(
-                Mensajes.obtener(ItemFichaPerfilKey.LOG_AGREGADO),
+                ItemFichaPerfilKey.LOG_AGREGADO,
                 item.getId(),
                 item.getFichaPerfilId(),
                 item.getTipoItem()

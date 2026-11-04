@@ -1,6 +1,5 @@
 package com.arquisoft.proyectos.domain.proyectogrado;
 
-import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGrado;
 import com.arquisoft.shared.message.constant.ProyectosCodes;
 import com.arquisoft.shared.message.constant.ProyectosFields;
 import com.arquisoft.shared.message.constant.ProyectosLimits;
@@ -17,13 +16,12 @@ public final class ProyectoGradoDomain {
 
     public static final ProyectoGradoDomain VACIO = reconstruir(
             UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO,
-            UtilUUID.obtenerUUIDPorDefecto(), EstadoProyectoGrado.VACIO);
+            UtilUUID.obtenerUUIDPorDefecto());
 
     private UUID id;
     private UUID fichaPerfil;
     private String tituloProyecto;
     private UUID coordinador;
-    private EstadoProyectoGrado estadoProyectoGrado;
 
     private ProyectoGradoDomain() {}
 
@@ -35,20 +33,18 @@ public final class ProyectoGradoDomain {
         proyecto.setFichaPerfil(fichaPerfil, result);
         proyecto.setTituloProyecto(tituloProyecto, result);
         proyecto.setCoordinador(coordinador, result);
-        proyecto.setEstadoInicial();
 
         result.lanzarSiTieneErrores();
         return proyecto;
     }
 
     public static ProyectoGradoDomain reconstruir(UUID id, UUID fichaPerfil, String tituloProyecto,
-                                                   UUID coordinador, EstadoProyectoGrado estadoProyectoGrado) {
+                                                   UUID coordinador) {
         var proyecto = new ProyectoGradoDomain();
         proyecto.id = id;
         proyecto.fichaPerfil = fichaPerfil;
         proyecto.tituloProyecto = tituloProyecto;
         proyecto.coordinador = coordinador;
-        proyecto.estadoProyectoGrado = estadoProyectoGrado;
         return proyecto;
     }
 
@@ -89,10 +85,6 @@ public final class ProyectoGradoDomain {
         this.coordinador = coordinador;
     }
 
-    private void setEstadoInicial() {
-        this.estadoProyectoGrado = EstadoProyectoGrado.EN_PROCESO;
-    }
-
     public UUID getId() {
         return id;
     }
@@ -107,10 +99,6 @@ public final class ProyectoGradoDomain {
 
     public UUID getCoordinador() {
         return coordinador;
-    }
-
-    public EstadoProyectoGrado getEstadoProyectoGrado() {
-        return estadoProyectoGrado;
     }
 
     public boolean esVacio() {

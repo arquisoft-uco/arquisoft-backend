@@ -1,6 +1,7 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.secondaryadapter.logging;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.DestinatarioNotificacion;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +38,7 @@ class LogEnvioNotificacionOutputAdapterTest {
         sender.enviar(mensaje);
 
         // Assert
-        verify(logger).info(any(String.class), any(), any());
+        verify(logger).info(eq(EnvioNotificacionKey.LOG_ENVIO_SIMULADO), any(), any());
     }
 
     @Test
@@ -54,6 +56,6 @@ class LogEnvioNotificacionOutputAdapterTest {
         sender.enviar(mensaje);
 
         // Assert
-        verify(logger).info(any(String.class), any(), any());
+        verify(logger).info(eq(EnvioNotificacionKey.LOG_ENVIO_SIMULADO), any(), any());
     }
 }

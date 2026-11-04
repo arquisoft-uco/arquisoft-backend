@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.itemcuantitativojurado.query.prima
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.query.readmodel.ItemCuantitativoJuradoReadModel;
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.query.primaryadapter.web.dto.ItemCuantitativoJuradoResponseDTO;
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.query.primaryadapter.web.mapper.ItemCuantitativoJuradoResponseMapper;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,7 +34,6 @@ public class ConsultarItemsCuantitativosJuradoController {
     private final ConsultarItemsCuantitativosJuradoInteractor interactor;
 
     @GetMapping
-    @PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_ITEM_CUANTITATIVO_JURADO_VIEW)
     @Operation(
             summary = EvaluacionesApiMessages.ItemCuantitativoJurado.CONSULTAR_SUMMARY,
             description = EvaluacionesApiMessages.ItemCuantitativoJurado.CONSULTAR_DESCRIPTION,

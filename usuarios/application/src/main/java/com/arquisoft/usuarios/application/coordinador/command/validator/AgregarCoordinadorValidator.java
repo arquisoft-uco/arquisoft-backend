@@ -1,10 +1,9 @@
 package com.arquisoft.usuarios.application.coordinador.command.validator;
 
 import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
-
-import java.util.UUID;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 
 public interface AgregarCoordinadorValidator {
 
-    void validar(UUID usuario, CoordinadorDomain coordinador);
+    void validar(UsuarioDomain usuario, CoordinadorDomain coordinador);
 }

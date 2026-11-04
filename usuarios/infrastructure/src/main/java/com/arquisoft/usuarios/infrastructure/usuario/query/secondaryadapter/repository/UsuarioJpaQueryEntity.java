@@ -13,9 +13,6 @@ import org.hibernate.annotations.Synchronize;
 
 import java.util.UUID;
 
-// TODO HU252 (jurados): cuando exista la tabla jurado (la crea HU250), agregar al @Subselect
-//  "CASE WHEN EXISTS (SELECT 1 FROM jurado j WHERE j.usuario_id = u.id AND j.eliminado_en IS NULL)
-//  THEN TRUE ELSE FALSE END AS es_jurado" y "jurado" a @Synchronize.
 // Siempre EXISTS, nunca JOIN: un JOIN duplica filas por rol y rompe la paginacion.
 @Entity
 @Immutable
@@ -47,11 +44,14 @@ import java.util.UUID;
                     THEN TRUE ELSE FALSE END AS es_administrador,
                CASE WHEN EXISTS (SELECT 1 FROM bibliotecario b
                        WHERE b.usuario_id = u.id AND b.eliminado_en IS NULL)
-                    THEN TRUE ELSE FALSE END AS es_bibliotecario
+                    THEN TRUE ELSE FALSE END AS es_bibliotecario,
+               CASE WHEN EXISTS (SELECT 1 FROM jurado j
+                       WHERE j.usuario_id = u.id AND j.eliminado_en IS NULL)
+                    THEN TRUE ELSE FALSE END AS es_jurado
         FROM usuario u
         """)
 @Synchronize({"usuario", "estudiante", "asesor", "asesor_ficha", "coordinador", "representante_comite_curriculum",
-        "administrador", "bibliotecario"})
+        "administrador", "bibliotecario", "jurado"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -101,5 +101,6 @@ public class UsuarioJpaQueryEntity {
     @Column(name = "es_bibliotecario")
     private boolean esBibliotecario;
 
-    // TODO HU252: @Column(name = "es_jurado") private boolean esJurado;
+    @Column(name = "es_jurado")
+    private boolean esJurado;
 }

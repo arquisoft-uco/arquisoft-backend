@@ -17,16 +17,16 @@ class EnvioSolicitudDomainTest {
     @Test
     void debeAgruparLosTresObjetos_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID remitenteUsuario = UUID.randomUUID();
-        UUID destinatarioUsuario = UUID.randomUUID();
-        RemitenteDomain remitente = RemitenteDomain.crear(remitenteUsuario);
-        DestinatarioDomain destinatario = DestinatarioDomain.crear(destinatarioUsuario);
-        SolicitudDomain solicitud = SolicitudDomain.crear(
+        var remitenteUsuario = UUID.randomUUID();
+        var destinatarioUsuario = UUID.randomUUID();
+        var remitente = RemitenteDomain.crear(remitenteUsuario);
+        var destinatario = DestinatarioDomain.crear(destinatarioUsuario);
+        var solicitud = SolicitudDomain.crear(
                 destinatarioUsuario, remitenteUsuario, "novedad",
                 TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
 
         // Act
-        EnvioSolicitudDomain envio =
+        var envio =
                 EnvioSolicitudDomain.crear(solicitud, remitente, destinatario);
 
         // Assert
@@ -40,7 +40,7 @@ class EnvioSolicitudDomainTest {
     @Test
     void debeAcumularLosErrores_cuandoLosTresObjetosSonNulos() {
         // Act
-        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+        var excepcion = assertThrows(DomainValidationException.class,
                 () -> EnvioSolicitudDomain.crear(null, null, null));
 
         // Assert

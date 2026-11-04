@@ -5,7 +5,6 @@ import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.dto.FichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.ConsultarFichasPerfilCoordinadorRequestMapper;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.FichaPerfilResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
@@ -21,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +34,6 @@ public class ConsultarFichasPerfilCoordinadorController {
     private final ConsultarFichasPerfilCoordinadorInteractor consultarFichasPerfilCoordinadorInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.coordinador:/coordinador}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_COORDINADOR_VIEW)
     @Operation(
             summary = FichasApiMessages.FichaPerfil.CONSULTAR_SUMMARY,
             description = FichasApiMessages.FichaPerfil.CONSULTAR_DESCRIPTION,

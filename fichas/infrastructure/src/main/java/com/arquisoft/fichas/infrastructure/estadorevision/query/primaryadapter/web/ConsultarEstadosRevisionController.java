@@ -4,7 +4,6 @@ import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.estadorevision.query.primaryport.interactor.ConsultarEstadosRevisionInteractor;
 import com.arquisoft.fichas.infrastructure.estadorevision.query.primaryadapter.web.dto.EstadoRevisionResponseDTO;
 import com.arquisoft.fichas.infrastructure.estadorevision.query.primaryadapter.web.mapper.EstadoRevisionResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,7 +30,6 @@ public class ConsultarEstadosRevisionController {
     private final ConsultarEstadosRevisionInteractor consultarEstadosRevisionInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.estados-revision:/estados-revision}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_REVISION_VIEW)
     @Operation(
             summary = FichasApiMessages.EstadoRevision.CONSULTAR_SUMMARY,
             description = FichasApiMessages.EstadoRevision.CONSULTAR_DESCRIPTION,

@@ -10,7 +10,7 @@ class SolicitudSortMapperTest {
     @Test
     void debeTraducirRemitenteNombre_cuandoCampoOrdenable() {
         // Act
-        String ruta = SolicitudSortMapper.traducir("remitenteNombre");
+        var ruta = SolicitudSortMapper.traducir("remitenteNombre");
 
         // Assert
         assertThat(ruta).isEqualTo("remitenteNombre");
@@ -19,7 +19,7 @@ class SolicitudSortMapperTest {
     @Test
     void debeTraducirFechaCreacion_cuandoCampoOrdenable() {
         // Act
-        String ruta = SolicitudSortMapper.traducir("fechaCreacion");
+        var ruta = SolicitudSortMapper.traducir("fechaCreacion");
 
         // Assert
         assertThat(ruta).isEqualTo("fechaCreacion");
@@ -28,7 +28,7 @@ class SolicitudSortMapperTest {
     @Test
     void debeTraducirDestinatarioNombre_cuandoCampoOrdenable() {
         // Act
-        String ruta = SolicitudSortMapper.traducir("destinatarioNombre");
+        var ruta = SolicitudSortMapper.traducir("destinatarioNombre");
 
         // Assert
         assertThat(ruta).isEqualTo("destinatarioNombre");
@@ -45,7 +45,7 @@ class SolicitudSortMapperTest {
     @Test
     void debeRetornarNull_cuandoCampoNoExiste() {
         // Act
-        String ruta = SolicitudSortMapper.traducir("campoInexistente");
+        var ruta = SolicitudSortMapper.traducir("campoInexistente");
 
         // Assert
         assertThat(ruta).isNull();
@@ -54,7 +54,7 @@ class SolicitudSortMapperTest {
     @Test
     void debeRetornarNull_cuandoCampoFiltrablePeroNoOrdenable() {
         // Act
-        String ruta = SolicitudSortMapper.traducir("remitenteEmail");
+        var ruta = SolicitudSortMapper.traducir("remitenteEmail");
 
         // Assert
         assertThat(ruta).isNull();
@@ -64,7 +64,7 @@ class SolicitudSortMapperTest {
     void debeResolverUnaRutaJpa_paraTodoCampoQueElCriteriaDeclaraOrdenable() {
         for (SolicitudCriteria.Campo campo : SolicitudCriteria.Campo.values()) {
             // Act
-            String ruta = SolicitudSortMapper.traducir(campo.getClave());
+            var ruta = SolicitudSortMapper.traducir(campo.getClave());
 
             // Assert
             assertThat(SolicitudCriteria.Campo.esValidoParaOrdenar(campo.getClave()))

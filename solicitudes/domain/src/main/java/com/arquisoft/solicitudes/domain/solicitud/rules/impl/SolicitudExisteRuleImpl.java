@@ -9,7 +9,7 @@ public class SolicitudExisteRuleImpl implements SolicitudExisteRule {
     @Override
     public void validar(ExistenciaSolicitud existencia) {
         if (!existencia.existe()) {
-            throw new SolicitudNoEncontradaException(existencia.solicitud());
+            throw new SolicitudNoEncontradaException();
         }
     }
 }

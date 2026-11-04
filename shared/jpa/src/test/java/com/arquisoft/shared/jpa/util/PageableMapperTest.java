@@ -88,6 +88,51 @@ class PageableMapperTest {
     }
 
     @Test
+    void debeAgregarElDesempateAlFinal_cuandoElCriteriaTraeOrdenamiento() {
+        // Arrange
+        QueryCriteria criteria = CriteriaDePrueba.builder()
+                .pagina(1).tamanio(10)
+                .ordenamiento(List.of(SortOrder.of("asesor", SortDirection.DESC)))
+                .build();
+
+        // Act
+        Pageable pageable = PageableMapper.toPageable(criteria, TRADUCTOR, "id");
+
+        // Assert
+        assertThat(pageable.getPageNumber()).isEqualTo(1);
+        assertThat(pageable.getPageSize()).isEqualTo(10);
+        assertThat(pageable.getSort())
+                .containsExactly(Sort.Order.desc("asesorNombre"), Sort.Order.asc("id"));
+    }
+
+    @Test
+    void debeOrdenarSoloPorElDesempate_cuandoElCriteriaNoTraeOrdenamiento() {
+        // Arrange
+        QueryCriteria criteria = CriteriaDePrueba.builder().pagina(0).tamanio(10).build();
+
+        // Act
+        Pageable pageable = PageableMapper.toPageable(criteria, TRADUCTOR, "id");
+
+        // Assert
+        assertThat(pageable.getSort()).containsExactly(Sort.Order.asc("id"));
+    }
+
+    @Test
+    void debeNoDuplicarElDesempate_cuandoElCriteriaYaOrdenaPorEsaRuta() {
+        // Arrange
+        QueryCriteria criteria = CriteriaDePrueba.builder()
+                .pagina(0).tamanio(10)
+                .ordenamiento(List.of(SortOrder.of("asesor", SortDirection.DESC)))
+                .build();
+
+        // Act
+        Pageable pageable = PageableMapper.toPageable(criteria, TRADUCTOR, "asesorNombre");
+
+        // Assert
+        assertThat(pageable.getSort()).containsExactly(Sort.Order.desc("asesorNombre"));
+    }
+
+    @Test
     void debeLanzarDefectoDeMapeo_cuandoElTraductorNoResuelveLaClave() {
         // Arrange
         QueryCriteria criteria = CriteriaDePrueba.builder()

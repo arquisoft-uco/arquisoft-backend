@@ -38,4 +38,19 @@ class UtilFechaTest {
                 .isEqualTo(java.time.LocalDate.of(2026, 8, 27));
         assertThat(UtilFecha.parsearFechaDesdeTexto("no-fecha")).isNull();
     }
+
+    @Test
+    void debeRechazarLaFecha_cuandoNoExisteEnElCalendario() {
+        // Act & Assert
+        assertThat(UtilFecha.fechaValida("2026-02-30")).isFalse();
+        assertThat(UtilFecha.fechaValida("2026-13-01")).isFalse();
+        assertThat(UtilFecha.fechaValida("2026-02-28")).isTrue();
+    }
+
+    @Test
+    void debeRetornarNulo_cuandoLaFechaImposibleNoSePuedeParsear() {
+        // Act & Assert
+        assertThat(UtilFecha.parsearFechaDesdeTexto("2026-02-30")).isNull();
+        assertThat(UtilFecha.parsearFechaDesdeTexto(null)).isNull();
+    }
 }

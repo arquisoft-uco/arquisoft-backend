@@ -11,4 +11,10 @@ public interface EvaluacionCualitativaJuradoOutputPort {
     void registrarTodas(List<EvaluacionCualitativaJuradoEntity> entidades);
 
     Set<UUID> consultarItemsRegistrados(UUID evaluacionJurado, Set<UUID> items);
+
+    boolean existePorItem(UUID item);
+
+    Set<UUID> consultarIdsPorEvaluacionJurado(UUID evaluacionJurado, Set<UUID> evaluaciones);
+
+    void eliminarPorIds(UUID evaluacionJurado, Set<UUID> evaluaciones);
 }

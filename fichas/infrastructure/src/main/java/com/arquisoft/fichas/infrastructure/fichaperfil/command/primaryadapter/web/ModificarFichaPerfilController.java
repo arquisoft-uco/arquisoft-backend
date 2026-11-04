@@ -1,12 +1,12 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web;
 
-import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web.mapper.ModificarFichaPerfilRequestMapper;
-import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interactor.ModificarFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web.dto.ModificarFichaPerfilRequestDTO;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web.mapper.ModificarFichaPerfilRequestMapper;
 import com.arquisoft.shared.message.annotation.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.message.annotation.FichasApiMessages;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,16 +14,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.arquisoft.shared.util.UtilUUID;
 
 import java.util.UUID;
 
@@ -36,7 +31,6 @@ public class ModificarFichaPerfilController {
     private final ModificarFichaPerfilInteractor modificarFichaPerfilInteractor;
 
     @PatchMapping("${rutas.fichas.fichas-perfil.por-id:/{id}}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_UPDATE)
     @Operation(
             summary = FichasApiMessages.FichaPerfil.MODIFICAR_SUMMARY,
             description = FichasApiMessages.FichaPerfil.MODIFICAR_DESCRIPTION,
@@ -55,9 +49,9 @@ public class ModificarFichaPerfilController {
     public ResponseEntity<Void> modificar(
             @PathVariable UUID id,
             @RequestBody ModificarFichaPerfilRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var estudianteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var estudianteId = identidad.id();
         modificarFichaPerfilInteractor.ejecutar(ModificarFichaPerfilRequestMapper.toCommand(request, id, estudianteId));
 
         return ResponseEntity.noContent().build();

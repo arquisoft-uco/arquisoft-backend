@@ -4,7 +4,6 @@ import com.arquisoft.solicitudes.domain.estadorespuesta.exception.EstadoRespuest
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +48,7 @@ class EstadoRespuestaTest {
 
     @Test
     void debeDeclararSoloLasFilasDelCatalogoMer_masElCentinela() {
-        Set<String> constantes = Arrays.stream(EstadoRespuesta.values())
+        var constantes = Arrays.stream(EstadoRespuesta.values())
                 .map(Enum::name)
                 .collect(Collectors.toSet());
 

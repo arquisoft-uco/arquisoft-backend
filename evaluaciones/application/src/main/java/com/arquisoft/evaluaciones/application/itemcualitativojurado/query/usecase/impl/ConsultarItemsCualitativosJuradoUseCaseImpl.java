@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.itemcualitativojurado.query.readmo
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.query.secondaryport.ItemCualitativoJuradoQueryOutputPort;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.query.usecase.ConsultarItemsCualitativosJuradoUseCase;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,7 @@ public class ConsultarItemsCualitativosJuradoUseCaseImpl implements ConsultarIte
     public List<ItemCualitativoJuradoReadModel> ejecutar() {
         var resultado = queryOutputPort.consultarTodos();
 
-        logger.debug(Mensajes.obtener(ItemCualitativoJuradoKey.LOG_CONSULTA_COMPLETADA), resultado.size());
+        logger.debug(ItemCualitativoJuradoKey.LOG_CONSULTA_COMPLETADA, resultado.size());
 
         return resultado;
     }

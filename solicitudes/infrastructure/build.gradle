@@ -12,9 +12,9 @@ dependencies {
     implementation project(':shared:web')
     implementation project(':shared:jpa')
 
-    // Spring Security (para @PreAuthorize y @EnableMethodSecurity)
-    implementation "org.springframework.boot:spring-boot-starter-security"
-    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+    // Solo para los slices de test: un controlador de produccion no puede importar seguridad.
+    testImplementation "org.springframework.boot:spring-boot-starter-security"
+    testImplementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
 
     // AMQP — spring-amqp no es transitivo en compilación desde shared:amqp (Gradle 'implementation').
     // Se declara aquí para acceder a @RabbitListener, Message, Channel, QueueBuilder, etc.
@@ -38,6 +38,7 @@ dependencies {
     testImplementation "org.springframework.boot:spring-boot-data-jpa-test"
     testImplementation "org.springframework.boot:spring-boot-webmvc-test"
     testImplementation "org.springframework.security:spring-security-test"
+    testImplementation testFixtures(project(':shared:web'))
     testImplementation "com.h2database:h2"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

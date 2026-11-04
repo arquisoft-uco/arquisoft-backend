@@ -1,5 +1,7 @@
 package com.arquisoft.usuarios.application.asesor.command.usecase.impl;
 
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.asesor.command.finder.AsesorPorUsuarioFinder;
 import com.arquisoft.usuarios.application.asesor.command.secondaryport.AsesorOutputPort;
@@ -10,8 +12,6 @@ import com.arquisoft.usuarios.domain.asesor.event.AsesorAgregadoEvent;
 import com.arquisoft.usuarios.domain.asesor.exception.AsesorUsuarioDuplicadoException;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
-import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.publisher.EventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -98,7 +98,7 @@ class AgregarAsesorUseCaseImplTest {
         InOrder orden = inOrder(asesorPorUsuarioFinder, agregarAsesorValidator,
                 asesorOutputPort, eventPublisher);
         orden.verify(asesorPorUsuarioFinder).obtener(usuario.getId());
-        orden.verify(agregarAsesorValidator).validar(usuario.getId(), AsesorDomain.VACIO);
+        orden.verify(agregarAsesorValidator).validar(usuario, AsesorDomain.VACIO);
         orden.verify(asesorOutputPort).guardar(any());
         orden.verify(eventPublisher).publish(any());
     }
@@ -108,7 +108,7 @@ class AgregarAsesorUseCaseImplTest {
         // Arrange
         var usuario = usuario();
         when(asesorPorUsuarioFinder.obtener(any())).thenReturn(AsesorDomain.crear(usuario.getId()));
-        doThrow(new AsesorUsuarioDuplicadoException(usuario.getId()))
+        doThrow(new AsesorUsuarioDuplicadoException(usuario.getId(), usuario.getNombre()))
                 .when(agregarAsesorValidator).validar(any(), any());
 
         // Act & Assert
@@ -130,7 +130,7 @@ class AgregarAsesorUseCaseImplTest {
 
         // Assert
         verify(asesorPorUsuarioFinder, times(1)).obtener(usuario.getId());
-        verify(agregarAsesorValidator).validar(usuario.getId(), removido);
+        verify(agregarAsesorValidator).validar(usuario, removido);
         verify(asesorOutputPort, times(1)).reactivar(usuario.getId());
         verify(asesorOutputPort, never()).guardar(any());
         assertThat(removido.estaEliminado()).isFalse();

@@ -9,6 +9,7 @@ import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.entity.ItemFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.representantecomite.command.secondaryadapter.entity.RepresentanteComiteJpaEntity;
 import com.arquisoft.fichas.infrastructure.tipoitem.command.secondaryadapter.entity.TipoItemJpaEntity;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,11 +37,15 @@ class ItemFichaPerfilQueryOutputAdapterTest {
     @Autowired
     private ItemFichaPerfilRepresentanteQueryRepository representanteRepository;
 
+    @Autowired
+    private ItemFichaPerfilCoordinadorQueryRepository coordinadorRepository;
+
     private ItemFichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new ItemFichaPerfilQueryOutputAdapter(repository, estudianteRepository, representanteRepository);
+        adapter = new ItemFichaPerfilQueryOutputAdapter(repository, estudianteRepository, representanteRepository,
+                coordinadorRepository);
 
         persistirTipoItem("OBJETIVO_GENERAL", "Objetivo General");
         persistirTipoItem("ANTECEDENTES", "Antecedentes");
@@ -255,6 +260,74 @@ class ItemFichaPerfilQueryOutputAdapterTest {
             assertThat(item.fichaPerfilId()).isEqualTo(fichaPedida);
             assertThat(item.contenido()).isEqualTo("Contenido de la ficha pedida");
         });
+    }
+
+    @Test
+    void debeRetornarItemsDeLaFichaOrdenadosPorTipo() {
+        // Arrange
+        var asesor = persistirAsesor("DOC-300", "Ana Ruiz", "ana300@uco.edu.co");
+        var ficha = persistirFicha("Proyecto N", asesor);
+        persistirItem(ficha, "OBJETIVO_GENERAL", "Contenido objetivo");
+        persistirItem(ficha, "ANTECEDENTES", "Contenido antecedentes");
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarPorFicha(ficha);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(ItemFichaPerfilReadModel::tipoItemNombre)
+                .containsExactly("Antecedentes", "Objetivo General");
+        assertThat(resultado).allSatisfy(item -> {
+            assertThat(item.fichaPerfilId()).isEqualTo(ficha);
+            assertThat(item.id()).isNotNull();
+        });
+        assertThat(resultado).extracting(ItemFichaPerfilReadModel::tipoItem)
+                .containsExactly("ANTECEDENTES", "OBJETIVO_GENERAL");
+        assertThat(resultado).extracting(ItemFichaPerfilReadModel::contenido)
+                .containsExactly("Contenido antecedentes", "Contenido objetivo");
+    }
+
+    @Test
+    void debeExcluirItemsDeOtraFicha() {
+        // Arrange
+        var asesor = persistirAsesor("DOC-310", "Ana Ruiz", "ana310@uco.edu.co");
+        var fichaPedida = persistirFicha("Proyecto O", asesor);
+        var otraFicha = persistirFicha("Proyecto P", asesor);
+        persistirItem(fichaPedida, "OBJETIVO_GENERAL", "Contenido de la ficha pedida");
+        persistirItem(otraFicha, "ANTECEDENTES", "Contenido de otra ficha");
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarPorFicha(fichaPedida);
+
+        // Assert
+        assertThat(resultado).singleElement().satisfies(item -> {
+            assertThat(item.fichaPerfilId()).isEqualTo(fichaPedida);
+            assertThat(item.contenido()).isEqualTo("Contenido de la ficha pedida");
+        });
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoFichaNoExiste() {
+        // Act & Assert
+        assertThat(adapter.consultarPorFicha(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeRetornarItems_sinEvaluacionNiEstudiantesAsociados() {
+        // Arrange
+        var asesor = persistirAsesor("DOC-320", "Ana Ruiz", "ana320@uco.edu.co");
+        var ficha = persistirFicha("Proyecto Q", asesor);
+        persistirItem(ficha, "OBJETIVO_GENERAL", "Contenido sin actores");
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarPorFicha(ficha);
+
+        // Assert
+        assertThat(resultado).singleElement()
+                .satisfies(item -> assertThat(item.contenido()).isEqualTo("Contenido sin actores"));
     }
 
     private UUID persistirRepresentante(String identificador, String nombre, String email) {

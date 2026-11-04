@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de EvaluacionFichaPerfil. */
 public enum EvaluacionFichaPerfilKey implements ClaveMensaje {
 
-    ERROR_DUPLICADA("fichas.dominio.evaluacionfichaperfil.error.duplicada", 2),
+    ERROR_DUPLICADA("fichas.dominio.evaluacionfichaperfil.error.duplicada", 0),
+    ERROR_DUPLICADA_DETALLE("fichas.dominio.evaluacionfichaperfil.error.duplicada-detalle", 2),
     LOG_REGISTRANDO("fichas.aplicacion.evaluacionfichaperfil.log.registrando", 2),
     LOG_VERIFICACION_REGISTRAR("fichas.aplicacion.evaluacionfichaperfil.log.verificacion-registrar", 3),
     LOG_REGISTRADA("fichas.aplicacion.evaluacionfichaperfil.log.registrada", 3),
@@ -13,7 +14,11 @@ public enum EvaluacionFichaPerfilKey implements ClaveMensaje {
     LOG_CONSULTANDO_REPRESENTANTE("fichas.aplicacion.evaluacionfichaperfil.log.consultando-representante", 1),
     LOG_CONSULTA_REPRESENTANTE_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-representante-completada", 1),
     LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.evaluacionfichaperfil.log.consultando-estudiante", 1),
-    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-estudiante-completada", 1);
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-estudiante-completada", 1),
+    LOG_CONSULTANDO_COORDINADOR("fichas.aplicacion.evaluacionfichaperfil.log.consultando-coordinador", 1),
+    LOG_CONSULTA_COORDINADOR_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-coordinador-completada", 1),
+    LOG_CONSULTANDO_ASESOR("fichas.aplicacion.evaluacionfichaperfil.log.consultando-asesor", 4),
+    LOG_CONSULTA_ASESOR_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-asesor-completada", 3);
 
     private final String clave;
     private final int parametros;

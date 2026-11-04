@@ -114,7 +114,7 @@ public final class EstadoFichaPerfilDomain {
             result.agregarError(
                     FichasFields.EstadoFichaPerfil.ESTADO_FICHA,
                     FichasCodes.EstadoFichaPerfil.ESTADO_FICHA_INVALIDO,
-                    Mensajes.formatear(EstadoFichaPerfilKey.ERROR_ESTADO_FICHA_INVALIDO, recortado));
+                    Mensajes.formatear(EstadoFichaPerfilKey.ERROR_ESTADO_FICHA_INVALIDO));
             return;
         }
         var estado = EstadoFicha.desde(recortado);

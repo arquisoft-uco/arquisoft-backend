@@ -9,7 +9,7 @@ public class SolicitudEsNovedadCoordinadorRuleImpl implements SolicitudEsNovedad
     @Override
     public void validar(TipoSolicitudConcordante concordancia) {
         if (!concordancia.tipoEsperado().equals(concordancia.tipoActual())) {
-            throw new SolicitudTipoNoCoincideException(concordancia.solicitud());
+            throw new SolicitudTipoNoCoincideException();
         }
     }
 }

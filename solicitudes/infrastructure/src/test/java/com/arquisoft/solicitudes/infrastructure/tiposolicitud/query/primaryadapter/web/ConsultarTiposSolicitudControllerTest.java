@@ -1,12 +1,13 @@
 package com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web;
 
 import com.arquisoft.shared.logger.AppLoggerConfig;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.ConsultarTiposSolicitudInteractor;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.model.ConsultarTiposSolicitudQuery;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,17 +15,15 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,15 +37,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarTiposSolicitudController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
-        ConsultarTiposSolicitudControllerTest.TestSecurityConfig.class})
+@Import({AppLoggerConfig.class, IdentidadActualTestConfig.class, GlobalAppExceptionHandler.class,
+        TrazabilidadConfig.class, ConsultarTiposSolicitudControllerTest.TestSecurityConfig.class})
 class ConsultarTiposSolicitudControllerTest {
 
     private static final String RUTA = "/solicitudes/tipos-solicitud";
+    private static final UUID ACTOR = UUID.randomUUID();
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -66,18 +65,19 @@ class ConsultarTiposSolicitudControllerTest {
     @MockitoBean
     private ConsultarTiposSolicitudInteractor consultarTiposSolicitudInteractor;
 
-    private static SimpleGrantedAuthority auth(String nombre) {
-        return new SimpleGrantedAuthority(nombre);
-    }
-
     private ConsultarTiposSolicitudQuery queryInvocada() {
         var captor = ArgumentCaptor.forClass(ConsultarTiposSolicitudQuery.class);
         verify(consultarTiposSolicitudInteractor, times(1)).ejecutar(captor.capture());
         return captor.getValue();
     }
 
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor conRoles(String... roles) {
+        return SecurityMockMvcRequestPostProcessors.jwt()
+                .jwt(j -> j.subject(ACTOR.toString()).claim("roles", List.of(roles)));
+    }
+
     @Test
-    void debe200ConLosTiposDeEstudiante_cuandoTieneLosRolesDeEnvio() throws Exception {
+    void debe200ConLosTiposDeEstudiante_cuandoElLlamanteEsEstudiante() throws Exception {
         // Arrange
         var tipos = List.of(
                 new TipoSolicitudReadModel("NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
@@ -87,13 +87,7 @@ class ConsultarTiposSolicitudControllerTest {
         when(consultarTiposSolicitudInteractor.ejecutar(any(ConsultarTiposSolicitudQuery.class))).thenReturn(tipos);
 
         // Act
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt().authorities(
-                                auth(SolicitudesAuthorities.TIPO_SOLICITUD_VIEW),
-                                auth(SolicitudesAuthorities.SOLICITUD_CREATE),
-                                auth(SolicitudesAuthorities.SOLICITUD_NOVEDAD_ASESOR_CREATE),
-                                auth(SolicitudesAuthorities.SOLICITUD_CAMBIO_ASESOR_CREATE),
-                                auth(SolicitudesAuthorities.SOLICITUD_AMPLIACION_PLAZO_CREATE))))
+        mockMvc.perform(get(RUTA).with(conRoles(UsuariosRoles.ESTUDIANTE)))
                 // Assert
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -115,10 +109,7 @@ class ConsultarTiposSolicitudControllerTest {
                         "Solicitud para el registro o modificación de usuarios")));
 
         // Act
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt().authorities(
-                                auth(SolicitudesAuthorities.TIPO_SOLICITUD_VIEW),
-                                auth(SolicitudesAuthorities.SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_CREATE))))
+        mockMvc.perform(get(RUTA).with(conRoles(UsuariosRoles.COORDINADOR)))
                 // Assert
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -127,19 +118,17 @@ class ConsultarTiposSolicitudControllerTest {
     }
 
     @Test
-    void debe200ConListaVacia_cuandoNoTieneRolesDeEnvio() throws Exception {
+    void debe200ConListaVacia_cuandoElRolNoEnviaSolicitudes() throws Exception {
         // Arrange
         when(consultarTiposSolicitudInteractor.ejecutar(any(ConsultarTiposSolicitudQuery.class)))
                 .thenReturn(List.of());
 
         // Act
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(auth(SolicitudesAuthorities.TIPO_SOLICITUD_VIEW))))
+        mockMvc.perform(get(RUTA).with(conRoles(UsuariosRoles.JURADO)))
                 // Assert
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-        assertThat(queryInvocada().tipos()).isEqualTo(Set.of());
+        assertThat(queryInvocada().tipos()).isEmpty();
     }
 
     @Test
@@ -149,14 +138,7 @@ class ConsultarTiposSolicitudControllerTest {
                 .thenReturn(List.of());
 
         // Act
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt().authorities(
-                                auth(SolicitudesAuthorities.TIPO_SOLICITUD_VIEW),
-                                auth(SolicitudesAuthorities.SOLICITUD_CREATE),
-                                auth(SolicitudesAuthorities.SOLICITUD_NOVEDAD_ASESOR_CREATE),
-                                auth(SolicitudesAuthorities.SOLICITUD_CAMBIO_ASESOR_CREATE),
-                                auth(SolicitudesAuthorities.SOLICITUD_AMPLIACION_PLAZO_CREATE),
-                                auth(SolicitudesAuthorities.SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_CREATE))))
+        mockMvc.perform(get(RUTA).with(conRoles(UsuariosRoles.ESTUDIANTE, UsuariosRoles.COORDINADOR)))
                 // Assert
                 .andExpect(status().isOk());
         assertThat(queryInvocada().tipos()).containsExactlyInAnyOrder(
@@ -170,16 +152,6 @@ class ConsultarTiposSolicitudControllerTest {
         // Act & Assert
         mockMvc.perform(get(RUTA))
                 .andExpect(status().isUnauthorized());
-        verify(consultarTiposSolicitudInteractor, never()).ejecutar(any(ConsultarTiposSolicitudQuery.class));
-    }
-
-    @Test
-    void debe403_cuandoTieneRolDeEnvioPeroNoElDeConsulta() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(auth(SolicitudesAuthorities.SOLICITUD_CREATE))))
-                .andExpect(status().isForbidden());
         verify(consultarTiposSolicitudInteractor, never()).ejecutar(any(ConsultarTiposSolicitudQuery.class));
     }
 }

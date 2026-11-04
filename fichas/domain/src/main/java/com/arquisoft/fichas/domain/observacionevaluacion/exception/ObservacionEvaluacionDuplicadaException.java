@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.domain.observacionevaluacion.exception;
 
+import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.FichasCodes;
@@ -10,10 +11,10 @@ import java.util.UUID;
 public final class ObservacionEvaluacionDuplicadaException extends DomainException {
 
     public ObservacionEvaluacionDuplicadaException(UUID evaluacionFichaPerfil, String observacion) {
-        super(
-                Mensajes.formatear(ObservacionEvaluacionKey.ERROR_OBSERVACION_EVALUACION_DUPLICADA,
-                        evaluacionFichaPerfil, observacion),
-                FichasCodes.ObservacionEvaluacion.OBSERVACION_EVALUACION_DUPLICADA
-        );
+        super(BaseError.conDetalle(
+                FichasCodes.ObservacionEvaluacion.OBSERVACION_EVALUACION_DUPLICADA,
+                Mensajes.formatear(ObservacionEvaluacionKey.ERROR_OBSERVACION_EVALUACION_DUPLICADA, observacion),
+                Mensajes.formatear(ObservacionEvaluacionKey.ERROR_OBSERVACION_EVALUACION_DUPLICADA_DETALLE, evaluacionFichaPerfil, observacion)
+        ));
     }
 }

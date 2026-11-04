@@ -422,7 +422,7 @@ necesite**: una entidad no es de comando ni de consulta. Lo que el lado consulta
 | OutputAdapter (lectura) | `{feature}/query/secondaryadapter/repository/` | `QueryOutputAdapter` | `FichaPerfilQueryOutputAdapter` |
 | Repositorio (lectura) | `{feature}/query/secondaryadapter/repository/` | `QueryRepository` | `FichaPerfilQueryRepository` |
 | Mapper JpaQueryEntity → ReadModel | `{feature}/query/secondaryadapter/repository/mapper/` | `QueryMapper` | `FichaPerfilQueryMapper` |
-| Adaptador no-JPA | `{feature}/command/secondaryadapter/{tecnologia}/` | `OutputAdapter` | `KeycloakAuthOutputAdapter` |
+| Adaptador no-JPA | `{feature}/command/secondaryadapter/{tecnologia}/` | `OutputAdapter` | `KeycloakAutenticacionOutputAdapter` |
 | Configuración | `config/` | `Config` | `FichasDataSourceConfig` |
 
 Un adaptador de salida que no habla JPA no usa `repository/`, usa un subpaquete con el nombre de su
@@ -491,7 +491,7 @@ copie creyendo que son la regla, y para que se resuelvan cuando se toque esa par
 
 | Qué | Dónde | Convención | Estado |
 |---|---|---|---|
-| `*ResponseDTO` como clase Lombok `@Data`/`@Builder` | `seguridad/infrastructure/auth/command/primaryadapter/web/dto/` (los cuatro) | Los DTO de respuesta son `record`, como en `fichas` | Pendiente de migrar |
+| `*ResponseDTO` como clase Lombok `@Data`/`@Builder` | `seguridad/infrastructure/autenticacion/command/primaryadapter/web/dto/` (los cuatro) | Los DTO de respuesta son `record`, como en `fichas` | Pendiente de migrar |
 | `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Código muerto: no hay `OutputPort` ni `OutputAdapter` que lo consuma | Pendiente de eliminar |
 | `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub con `// TODO: persistir en tabla espejo`. Por eso no tiene `Interactor`, ni `@Transactional`, ni `Validator`, y el `UsuarioCreadoConsumer` inyecta el `UseCase` directo — cuando persista de verdad debe pasar por un `Interactor` | Pendiente de implementar |
 
@@ -683,7 +683,7 @@ Esta configuración hace que Spring Boot reemplace automáticamente los executor
 | Componente del proyecto | Efecto |
 |---|---|
 | Todos los **Controllers** REST (requests HTTP) | Cada request corre en un virtual thread |
-| **`KeycloakAuthOutputAdapter`** (HTTP a Keycloak) | Bloqueo I/O sin consumir OS thread |
+| **`KeycloakAutenticacionOutputAdapter`** (HTTP a Keycloak) | Bloqueo I/O sin consumir OS thread |
 | **`JwtTokenOutputAdapter`** (decodificación JWT) | Igual |
 | **`FichaPerfilCommandOutputAdapter`** y todos los OutputAdapters JPA/JDBC | Queries a BD sin bloquear OS thread |
 | **`@RabbitListener`** en los `Consumer` AMQP | Mensajes procesados en virtual threads |

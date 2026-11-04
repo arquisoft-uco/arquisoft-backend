@@ -17,4 +17,11 @@ public final class ProyectosLimits {
 
         public static final int MAX_ESTUDIANTES = 3;
     }
+
+    public static final class AsesorProyectoGrado {
+
+        private AsesorProyectoGrado() {}
+
+        public static final int MAX_ASESORES_ASIGNADOS = 1;
+    }
 }

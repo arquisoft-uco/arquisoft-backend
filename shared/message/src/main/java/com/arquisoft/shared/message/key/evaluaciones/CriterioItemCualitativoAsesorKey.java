@@ -1,0 +1,27 @@
+package com.arquisoft.shared.message.key.evaluaciones;
+
+import com.arquisoft.shared.message.ClaveMensaje;
+
+public enum CriterioItemCualitativoAsesorKey implements ClaveMensaje {
+
+    LOG_CONSULTA_COMPLETADA(
+            "evaluaciones.aplicacion.criterioitemcualitativoasesor.log.consulta-completada", 1);
+
+    private final String clave;
+    private final int parametros;
+
+    CriterioItemCualitativoAsesorKey(String clave, int parametros) {
+        this.clave = clave;
+        this.parametros = parametros;
+    }
+
+    @Override
+    public String clave() {
+        return clave;
+    }
+
+    @Override
+    public int parametros() {
+        return parametros;
+    }
+}

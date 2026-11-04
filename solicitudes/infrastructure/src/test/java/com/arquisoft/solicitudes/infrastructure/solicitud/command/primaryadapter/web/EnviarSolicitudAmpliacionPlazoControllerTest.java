@@ -8,7 +8,7 @@ import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model
 import com.arquisoft.solicitudes.domain.destinatario.exception.DestinatarioNoEncontradoException;
 import com.arquisoft.solicitudes.domain.remitente.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaException;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
+import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -37,13 +35,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(EnviarSolicitudAmpliacionPlazoController.class)
-@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
+@Import({IdentidadActualTestConfig.class, AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         EnviarSolicitudAmpliacionPlazoControllerTest.TestSecurityConfig.class})
 class EnviarSolicitudAmpliacionPlazoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -64,10 +61,9 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
     private EnviarSolicitudAmpliacionPlazoInteractor interactor;
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDe(
-            UUID subject, String authority) {
+            UUID subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(builder -> builder.subject(subject.toString()))
-                .authorities(new SimpleGrantedAuthority(authority));
+                .jwt(builder -> builder.subject(subject.toString()));
     }
 
     private static String body(String destinatario, String mensaje) {
@@ -79,20 +75,20 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
     @Test
     void debe201YTomarElRemitenteDelJwt_cuandoLaPeticionEsValida() throws Exception {
         // Arrange
-        UUID remitente = UUID.randomUUID();
-        UUID destinatario = UUID.randomUUID();
-        UUID solicitudId = UUID.randomUUID();
+        var remitente = UUID.randomUUID();
+        var destinatario = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         when(interactor.ejecutar(any())).thenReturn(solicitudId);
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/ampliacion-plazo")
-                        .with(jwtDe(remitente, SolicitudesAuthorities.SOLICITUD_AMPLIACION_PLAZO_CREATE))
+                        .with(jwtDe(remitente))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(destinatario.toString(), "Solicito una ampliacion de plazo por fuerza mayor")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(solicitudId.toString()));
 
-        ArgumentCaptor<EnviarSolicitudAmpliacionPlazoCommand> captor =
+        var captor =
                 ArgumentCaptor.forClass(EnviarSolicitudAmpliacionPlazoCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().remitenteUsuario()).isEqualTo(remitente);
@@ -105,7 +101,7 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
     void debe400_cuandoElMensajeEstaEnBlanco() throws Exception {
         // Act & Assert
         mockMvc.perform(post("/solicitudes/ampliacion-plazo")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_AMPLIACION_PLAZO_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "")))
                 .andExpect(status().isBadRequest());
@@ -115,7 +111,7 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
     void debe400_cuandoElMensajeExcedeCienCaracteres() throws Exception {
         // Act & Assert
         mockMvc.perform(post("/solicitudes/ampliacion-plazo")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_AMPLIACION_PLAZO_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "a".repeat(101))))
                 .andExpect(status().isBadRequest());
@@ -125,7 +121,7 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
     void debe400_cuandoElDestinatarioNoEsUuid() throws Exception {
         // Act & Assert
         mockMvc.perform(post("/solicitudes/ampliacion-plazo")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_AMPLIACION_PLAZO_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body("no-es-uuid", "mensaje valido")))
                 .andExpect(status().isBadRequest());
@@ -135,11 +131,11 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
     void debe422_cuandoElRemitenteNoExiste() throws Exception {
         // Arrange
         when(interactor.ejecutar(any()))
-                .thenThrow(new RemitenteNoEncontradoException(UUID.randomUUID()));
+                .thenThrow(new RemitenteNoEncontradoException());
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/ampliacion-plazo")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_AMPLIACION_PLAZO_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "mensaje valido")))
                 .andExpect(status().isUnprocessableEntity());
@@ -149,11 +145,11 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
     void debe422_cuandoElDestinatarioNoExiste() throws Exception {
         // Arrange
         when(interactor.ejecutar(any()))
-                .thenThrow(new DestinatarioNoEncontradoException(UUID.randomUUID()));
+                .thenThrow(new DestinatarioNoEncontradoException());
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/ampliacion-plazo")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_AMPLIACION_PLAZO_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "mensaje valido")))
                 .andExpect(status().isUnprocessableEntity());
@@ -166,7 +162,7 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/solicitudes/ampliacion-plazo")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_AMPLIACION_PLAZO_CREATE))
+                        .with(jwtDe(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "mensaje valido")))
                 .andExpect(status().isUnprocessableEntity());
@@ -179,16 +175,5 @@ class EnviarSolicitudAmpliacionPlazoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(UUID.randomUUID().toString(), "mensaje valido")))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void debe403_cuandoElTokenNoTieneElRoleDeAmpliacionDePlazo() throws Exception {
-        // Arrange — granularidad por endpoint (CA-10): el role de cambio de asesor no habilita el de ampliacion de plazo
-        // Act & Assert
-        mockMvc.perform(post("/solicitudes/ampliacion-plazo")
-                        .with(jwtDe(UUID.randomUUID(), SolicitudesAuthorities.SOLICITUD_CAMBIO_ASESOR_CREATE))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body(UUID.randomUUID().toString(), "mensaje valido")))
-                .andExpect(status().isForbidden());
     }
 }

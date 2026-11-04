@@ -1,7 +1,7 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.primaryport.mapper;
 
 import com.arquisoft.proyectos.application.proyectogrado.command.primaryport.model.RegistrarProyectoGradoCommand;
-import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGrado;
+import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -27,8 +27,10 @@ class RegistrarProyectoGradoMapperTest {
         assertThat(proyecto.getFichaPerfil()).isEqualTo(fichaPerfil);
         assertThat(proyecto.getTituloProyecto()).isEqualTo("Sistema de gestión");
         assertThat(proyecto.getCoordinador()).isEqualTo(coordinador);
-        assertThat(proyecto.getEstadoProyectoGrado()).isEqualTo(EstadoProyectoGrado.EN_PROCESO);
+        assertThat(registro.getEstadoInicial().getProyectoGrado()).isEqualTo(proyecto.getId());
+        assertThat(registro.getEstadoInicial().getEstadoProyecto()).isEqualTo(EstadoProyecto.EN_PROCESO);
         assertThat(registro.getEstudiantes().getProyectoGrado()).isEqualTo(proyecto.getId());
+        assertThat(registro.getEstudiantes().getCoordinador()).isEqualTo(coordinador);
         assertThat(registro.getEstudiantes().getEstudiantes()).containsExactlyElementsOf(estudiantes);
     }
 }

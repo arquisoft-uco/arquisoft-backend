@@ -119,4 +119,13 @@ public final class UsuariosCodes {
         public static final String USUARIO_DUPLICADO = "BIBLIOTECARIO_USUARIO_DUPLICADO";
         public static final String BIBLIOTECARIO_NO_ENCONTRADO = "BIBLIOTECARIO_NO_ENCONTRADO";
     }
+
+    public static final class Jurado {
+
+        private Jurado() {}
+
+        public static final String USUARIO_REQUERIDO = "JURADO_USUARIO_REQUERIDO";
+        public static final String USUARIO_DUPLICADO = "JURADO_USUARIO_DUPLICADO";
+        public static final String JURADO_NO_ENCONTRADO = "JURADO_NO_ENCONTRADO";
+    }
 }

@@ -3,7 +3,7 @@ package com.arquisoft.solicitudes.application.solicitud.query.primaryport.intera
 import com.arquisoft.solicitudes.application.solicitud.query.criteria.SolicitudCriteria;
 import com.arquisoft.solicitudes.application.solicitud.query.primaryport.model.ConsultarSolicitudesNovedadAsesorRecibidasQuery;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
-import com.arquisoft.solicitudes.application.solicitud.query.usecase.ConsultarSolicitudesNovedadAsesorRecibidasUseCase;
+import com.arquisoft.solicitudes.application.solicitud.query.usecase.ConsultarSolicitudesUseCase;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.FiltroConector;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class ConsultarSolicitudesNovedadAsesorRecibidasInteractorImplTest {
 
     @Mock
-    private ConsultarSolicitudesNovedadAsesorRecibidasUseCase useCase;
+    private ConsultarSolicitudesUseCase useCase;
 
     @Captor
     private ArgumentCaptor<SolicitudCriteria> criteriaCaptor;
@@ -45,7 +45,7 @@ class ConsultarSolicitudesNovedadAsesorRecibidasInteractorImplTest {
         var criterio = ConsultaCriteriaQuery.crear(0, 10, List.of(), null);
         var query = ConsultarSolicitudesNovedadAsesorRecibidasQuery.crear(asesor, criterio);
 
-        PaginatedResult<SolicitudReadModel> esperado = PaginatedResult.of(List.of(), 0, 10, 0L);
+        var esperado = PaginatedResult.of(List.<SolicitudReadModel>of(), 0, 10, 0L);
         when(useCase.ejecutar(any(SolicitudCriteria.class))).thenReturn(esperado);
 
         // Act

@@ -30,7 +30,7 @@ public class AgregarAsesorUseCaseImpl implements AgregarAsesorUseCase {
         logger.debug(AgregarAsesorKey.LOG_VERIFICACION_AGREGAR,
                 usuario.getId(), !asesor.esVacio(), asesor.estaEliminado());
 
-        agregarAsesorValidator.validar(usuario.getId(), asesor);
+        agregarAsesorValidator.validar(usuario, asesor);
 
         if (asesor.esVacio()) {
             asesorOutputPort.guardar(AsesorMapper.toEntity(AsesorDomain.crear(usuario.getId())));

@@ -4,6 +4,7 @@ import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.sec
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.entity.ItemCuantitativoJuradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
+import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -11,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,6 +66,39 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeRetornarEntity_cuandoElItemExiste() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        var jpaEntity = ItemCuantitativoJuradoJpaEntity.builder()
+                .id(id)
+                .nombre("Rigor")
+                .descripcion("Descripción")
+                .categoriaId(UUID.randomUUID())
+                .valor(500)
+                .build();
+        when(repository.findById(id)).thenReturn(Optional.of(jpaEntity));
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().id()).isEqualTo(id);
+        assertThat(resultado.get().valor()).isEqualTo(500);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElItemNoExiste() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThat(adapter.obtenerPorId(id)).isEmpty();
+
+    }
+
+    @Test
     void debeDelegarConsultaDeExistenciaPorId() {
         // Arrange
         UUID id = UUID.randomUUID();
@@ -85,5 +120,18 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
         // Assert
         verify(repository).actualizarDescripcion(id, "Nueva descripción");
         verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeEliminarPorIdYLoguear_cuandoEliminaItem() {
+        // Arrange
+        var id = UUID.randomUUID();
+
+        // Act
+        adapter.eliminar(id);
+
+        // Assert
+        verify(repository).deleteById(id);
+        verify(logger).debug(eq(ItemCuantitativoJuradoKey.LOG_ELIMINADO), eq(id));
     }
 }

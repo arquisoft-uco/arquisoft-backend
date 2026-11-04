@@ -22,7 +22,7 @@ public final class UsuarioQueryMapper {
                 entity.isEsCoordinador(),
                 entity.isEsRepresentanteComite(),
                 entity.isEsAdministrador(),
-                entity.isEsBibliotecario());
-        // TODO HU252: pasar entity.isEsJurado()
+                entity.isEsBibliotecario(),
+                entity.isEsJurado());
     }
 }

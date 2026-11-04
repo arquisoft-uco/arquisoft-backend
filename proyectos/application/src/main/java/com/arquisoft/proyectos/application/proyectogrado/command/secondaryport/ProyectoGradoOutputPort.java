@@ -11,5 +11,7 @@ public interface ProyectoGradoOutputPort {
 
     boolean existePorFichaPerfil(UUID fichaPerfil);
 
+    boolean existePorId(UUID proyectoGrado);
+
     Optional<ProyectoGradoEntity> obtenerPorId(UUID proyectoGrado);
 }

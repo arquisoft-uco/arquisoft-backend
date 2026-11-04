@@ -1,5 +1,7 @@
 package com.arquisoft.usuarios.application.estudiante.command.usecase.impl;
 
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.estudiante.command.finder.EstudiantePorUsuarioFinder;
 import com.arquisoft.usuarios.application.estudiante.command.secondaryport.EstudianteOutputPort;
@@ -8,10 +10,8 @@ import com.arquisoft.usuarios.application.estudiante.command.validator.AgregarEs
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
 import com.arquisoft.usuarios.domain.estudiante.event.EstudianteAgregadoEvent;
-import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.estudiante.exception.EstudianteUsuarioDuplicadoException;
-import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.publisher.EventPublisher;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -100,7 +100,7 @@ class AgregarEstudianteUseCaseImplTest {
         InOrder orden = inOrder(estudiantePorUsuarioFinder, agregarEstudianteValidator,
                 estudianteOutputPort, eventPublisher);
         orden.verify(estudiantePorUsuarioFinder).obtener(usuario.getId());
-        orden.verify(agregarEstudianteValidator).validar(usuario.getId(), EstudianteDomain.VACIO);
+        orden.verify(agregarEstudianteValidator).validar(usuario, EstudianteDomain.VACIO);
         orden.verify(estudianteOutputPort).guardar(any());
         orden.verify(eventPublisher).publish(any());
     }
@@ -110,7 +110,7 @@ class AgregarEstudianteUseCaseImplTest {
         // Arrange
         var usuario = usuario();
         when(estudiantePorUsuarioFinder.obtener(any())).thenReturn(EstudianteDomain.VACIO);
-        doThrow(new EstudianteUsuarioDuplicadoException(usuario.getId()))
+        doThrow(new EstudianteUsuarioDuplicadoException(usuario.getId(), usuario.getNombre()))
                 .when(agregarEstudianteValidator).validar(any(), any());
 
         // Act & Assert
@@ -132,7 +132,7 @@ class AgregarEstudianteUseCaseImplTest {
 
         // Assert
         verify(estudiantePorUsuarioFinder, times(1)).obtener(usuario.getId());
-        verify(agregarEstudianteValidator).validar(usuario.getId(), removido);
+        verify(agregarEstudianteValidator).validar(usuario, removido);
         verify(estudianteOutputPort, times(1)).reactivar(usuario.getId());
         verify(estudianteOutputPort, never()).guardar(any());
         assertThat(removido.estaEliminado()).isFalse();

@@ -9,7 +9,8 @@ public class AprobacionRespaldadaPorEvaluacionRuleImpl implements AprobacionResp
     @Override
     public void validar(RespaldoAprobacionFicha respaldo) {
         if (respaldo.acepta() && respaldo.resumen().aprobatorias() == 0) {
-            throw new AprobacionSinEvaluacionAprobatoriaException(respaldo.resumen().fichaPerfil());
+            throw new AprobacionSinEvaluacionAprobatoriaException(
+                    respaldo.resumen().fichaPerfil(), respaldo.tituloProyecto());
         }
     }
 }

@@ -6,7 +6,6 @@ import com.arquisoft.shared.message.annotation.UsuariosApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.usuarios.application.bibliotecario.command.primaryport.interactor.RemoverBibliotecarioInteractor;
 import com.arquisoft.usuarios.infrastructure.bibliotecario.command.primaryadapter.web.mapper.RemoverBibliotecarioRequestMapper;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +31,6 @@ public class RemoverBibliotecarioController {
     private final RemoverBibliotecarioInteractor removerBibliotecarioInteractor;
 
     @DeleteMapping("${rutas.usuarios.usuarios.bibliotecario:/{usuarioId}/bibliotecario}")
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_BIBLIOTECARIO_DELETE)
     @Operation(
             summary = UsuariosApiMessages.Bibliotecario.REMOVER_SUMMARY,
             description = UsuariosApiMessages.Bibliotecario.REMOVER_DESCRIPTION,

@@ -140,7 +140,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var entrada = entrada();
         stubConsultas(entrada, true, true, true);
         when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(EstadoEvaluacionFichaDomain.VACIO);
-        doThrow(new EstadoEvaluacionDuplicadoException(evaluacion, EstadoEvaluacion.APROBADA.getId()))
+        doThrow(new EstadoEvaluacionDuplicadoException(evaluacion, EstadoEvaluacion.APROBADA))
                 .when(agregarEstadoEvaluacionFichaValidator).validar(entrada, true, true, true, EstadoEvaluacionFichaDomain.VACIO);
 
         // Act & Assert

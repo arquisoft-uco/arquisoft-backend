@@ -44,7 +44,8 @@ class EvaluacionJuradoAccesoQueryOutputAdapterTest {
         UUID evaluacionJurado = UUID.randomUUID();
 
         entityManager.createNativeQuery(
-                "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id) VALUES (?, ?, ?)")
+                "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id, estado_evaluacion_asignada_jurado_id) "
+                        + "VALUES (?, ?, ?, 'PENDIENTE_POR_EVALUAR')")
                 .setParameter(1, evaluacionJurado)
                 .setParameter(2, UUID.randomUUID())
                 .setParameter(3, UUID.randomUUID())
@@ -67,5 +68,33 @@ class EvaluacionJuradoAccesoQueryOutputAdapterTest {
     void debeRetornarFalse_cuandoLaEvaluacionJuradoNoExiste() {
         // Act & Assert
         assertThat(adapter.existePorId(UUID.randomUUID())).isFalse();
+    }
+
+    @Test
+    void debeRetornarJurado_cuandoExisteEvaluacion() {
+        // Arrange
+        var evaluacionJurado = UUID.randomUUID();
+        var jurado = UUID.randomUUID();
+        entityManager.createNativeQuery(
+                "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id, estado_evaluacion_asignada_jurado_id) "
+                        + "VALUES (?, ?, ?, 'PENDIENTE_POR_EVALUAR')")
+                .setParameter(1, evaluacionJurado)
+                .setParameter(2, UUID.randomUUID())
+                .setParameter(3, jurado)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerJuradoPorId(evaluacionJurado);
+
+        // Assert
+        assertThat(resultado).contains(jurado);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.obtenerJuradoPorId(UUID.randomUUID())).isEmpty();
     }
 }

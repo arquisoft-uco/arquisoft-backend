@@ -5,13 +5,11 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 
-import java.util.UUID;
-
 public final class SolicitudConRespuestasException extends DomainException {
 
-    public SolicitudConRespuestasException(UUID solicitud) {
+    public SolicitudConRespuestasException() {
         super(
-                Mensajes.formatear(SolicitudKey.ERROR_SOLICITUD_CON_RESPUESTAS, solicitud),
+                Mensajes.formatear(SolicitudKey.ERROR_SOLICITUD_CON_RESPUESTAS),
                 SolicitudesCodes.Solicitud.SOLICITUD_CON_RESPUESTAS
         );
     }

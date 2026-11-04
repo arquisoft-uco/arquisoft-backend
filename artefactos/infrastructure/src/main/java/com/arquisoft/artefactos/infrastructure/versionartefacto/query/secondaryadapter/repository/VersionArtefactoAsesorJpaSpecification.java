@@ -1,0 +1,40 @@
+package com.arquisoft.artefactos.infrastructure.versionartefacto.query.secondaryadapter.repository;
+
+import com.arquisoft.artefactos.application.versionartefacto.query.criteria.VersionArtefactoAsesorCriteria;
+import com.arquisoft.shared.jpa.query.CampoSpec;
+import com.arquisoft.shared.jpa.query.QueryJpaSpecification;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+@Component
+class VersionArtefactoAsesorJpaSpecification extends QueryJpaSpecification<VersionArtefactoAsesorJpaQueryEntity> {
+
+    private static final Map<String, CampoSpec<VersionArtefactoAsesorJpaQueryEntity>> CAMPOS;
+
+    static {
+        Map<String, CampoSpec<VersionArtefactoAsesorJpaQueryEntity>> m = new LinkedHashMap<>();
+        for (var campo : VersionArtefactoAsesorCriteria.Campo.values()) {
+            CampoSpec<VersionArtefactoAsesorJpaQueryEntity> spec = switch (campo) {
+                case ARTEFACTO      -> CampoSpec.uuid(root -> root.get("artefactoId"));
+                case PROYECTO_GRADO   -> CampoSpec.uuid(root -> root.get("proyectoGradoId"));
+                case NOMBRE_PROYECTO  -> CampoSpec.texto(root -> root.get("nombreProyecto"));
+                case NOMBRE_DOCUMENTO -> CampoSpec.texto(root -> root.get("nombreDocumento"));
+                case VERSION        -> CampoSpec.entero(root -> root.get("version"));
+                case FECHA_CREACION -> CampoSpec.fechaHora(root -> root.get("fechaCreacion"));
+                case ASESOR_ID      -> CampoSpec.uuid(root -> root.get("asesorId"));
+                case ESTADO_REVISION -> CampoSpec.texto(root -> root.get("estadoRevisionId"));
+                case FECHA_CREACION_REVISION -> CampoSpec.fechaHora(root -> root.get("fechaCreacionRevision"));
+            };
+            m.put(campo.getClave(), spec);
+        }
+        CAMPOS = Collections.unmodifiableMap(m);
+    }
+
+    @Override
+    protected Map<String, CampoSpec<VersionArtefactoAsesorJpaQueryEntity>> camposPermitidos() {
+        return CAMPOS;
+    }
+}

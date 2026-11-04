@@ -21,7 +21,16 @@ public final class SolicitudRespondidaEvent extends DomainEvent {
                     "SolicitudNovedadCoordinadorRespondidaEvent"),
             TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, new IdentidadEvento(
                     EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA,
-                    "SolicitudNovedadAsesorRespondidaEvent"));
+                    "SolicitudNovedadAsesorRespondidaEvent"),
+            TipoSolicitud.CAMBIO_DE_ASESOR, new IdentidadEvento(
+                    EventTopics.Solicitudes.CAMBIO_ASESOR_RESPONDIDA,
+                    "SolicitudCambioAsesorRespondidaEvent"),
+            TipoSolicitud.AMPLIACION_DE_PLAZO, new IdentidadEvento(
+                    EventTopics.Solicitudes.AMPLIACION_PLAZO_RESPONDIDA,
+                    "SolicitudAmpliacionPlazoRespondidaEvent"),
+            TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, new IdentidadEvento(
+                    EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA,
+                    "SolicitudRegistroModificacionUsuariosRespondidaEvent"));
 
     private final UUID solicitudId;
     private final UUID respuestaId;

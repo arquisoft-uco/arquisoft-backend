@@ -7,7 +7,6 @@ import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
 import com.arquisoft.usuarios.application.usuario.query.primaryport.interactor.ConsultarUsuariosAdministradorInteractor;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.usuarios.infrastructure.usuario.query.primaryadapter.web.dto.UsuarioResponseDTO;
 import com.arquisoft.usuarios.infrastructure.usuario.query.primaryadapter.web.mapper.ConsultarUsuariosAdministradorRequestMapper;
 import com.arquisoft.usuarios.infrastructure.usuario.query.primaryadapter.web.mapper.UsuarioResponseMapper;
@@ -21,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +34,6 @@ public class ConsultarUsuariosAdministradorController {
     private final ConsultarUsuariosAdministradorInteractor consultarUsuariosAdministradorInteractor;
 
     @PostMapping("${rutas.usuarios.usuarios.usuarios-administrador:/administrador}")
-    @PreAuthorize(UsuariosAuthorities.Expresiones.HAS_USUARIO_ADMINISTRADOR_VIEW)
     @Operation(
             summary = UsuariosApiMessages.Usuario.CONSULTAR_ADMINISTRADOR_SUMMARY,
             description = UsuariosApiMessages.Usuario.CONSULTAR_ADMINISTRADOR_DESCRIPTION,

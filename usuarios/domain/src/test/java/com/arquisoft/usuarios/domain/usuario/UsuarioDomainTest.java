@@ -68,7 +68,7 @@ class UsuarioDomainTest {
         var usuario = UsuarioDomain.reconstruir(
                 id, "usr003", "Nombre Original", "original@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO, UtilFecha.VACIO);
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                null, "Nombre Nuevo", null, null, null, null);
+                null, null, null, "Nombre", "Nuevo");
         var modificacion = ModificacionUsuarioDomain.crear(id, datos, List.of());
 
         // Act
@@ -90,7 +90,7 @@ class UsuarioDomainTest {
         var usuario = UsuarioDomain.reconstruir(
                 id, "usr004", "Nombre Original", "original@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO, UtilFecha.VACIO);
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                "usr005", "Nombre Actualizado", "actualizado@uco.edu.co", "573009998877", null, null);
+                "usr005", "actualizado@uco.edu.co", "573009998877", "Nombre", "Actualizado");
         var modificacion = ModificacionUsuarioDomain.crear(id, datos, List.of());
 
         // Act
@@ -112,7 +112,7 @@ class UsuarioDomainTest {
         var usuario = UsuarioDomain.reconstruir(id, "usr007", "Nombre",
                 "correo@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO, UtilFecha.VACIO);
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                null, "Nombre Corregido", null, null, null, null);
+                null, null, null, "Nombre", "Corregido");
         var modificacion = ModificacionUsuarioDomain.crear(id, datos, List.of());
 
         // Act
@@ -131,7 +131,7 @@ class UsuarioDomainTest {
         var usuario = UsuarioDomain.reconstruir(id, "usr008", "Nombre",
                 "correo@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO, eliminadoEn);
         var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
-                null, "Nombre Corregido", null, null, null, null);
+                null, null, null, "Nombre", "Corregido");
         var modificacion = ModificacionUsuarioDomain.crear(id, datos, List.of());
 
         // Act

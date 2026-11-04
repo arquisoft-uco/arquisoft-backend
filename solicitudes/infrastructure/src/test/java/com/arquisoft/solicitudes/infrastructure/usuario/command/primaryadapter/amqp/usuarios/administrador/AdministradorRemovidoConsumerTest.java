@@ -39,7 +39,7 @@ class AdministradorRemovidoConsumerTest {
     }
 
     private Message mensajeCon(String idEvento, String usuario, long deliveryTag) {
-        String payloadJson = """
+        var payloadJson = """
                 {
                     "idEvento": "%s",
                     "ocurridoEn": "2026-09-28T10:00:00Z",
@@ -50,7 +50,7 @@ class AdministradorRemovidoConsumerTest {
                 }
                 """.formatted(idEvento, usuario);
 
-        MessageProperties props = new MessageProperties();
+        var props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
         props.setHeader("X-Trace-Id", "trace-123");
         props.setHeader("X-User-Id", "user-456");

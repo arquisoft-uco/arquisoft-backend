@@ -6,6 +6,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum AgregarCoordinadorKey implements ClaveMensaje {
 
     ERROR_USUARIO_DUPLICADO("usuarios.dominio.coordinador.error.usuario-duplicado", 1),
+    ERROR_USUARIO_DUPLICADO_DETALLE("usuarios.dominio.coordinador.error.usuario-duplicado-detalle", 1),
     LOG_VERIFICACION_AGREGAR("usuarios.aplicacion.coordinador.log.verificacion-agregar", 3),
     LOG_REACTIVADO("usuarios.aplicacion.coordinador.log.reactivado", 1),
     LOG_GUARDADO("usuarios.infraestructura.coordinador.log.guardado", 1),

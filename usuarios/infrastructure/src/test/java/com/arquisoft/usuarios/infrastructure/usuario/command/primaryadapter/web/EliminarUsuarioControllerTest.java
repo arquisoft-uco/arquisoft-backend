@@ -8,7 +8,6 @@ import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.EliminarUsuarioInteractor;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.model.EliminarUsuarioCommand;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioRolesVigentesException;
-import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +15,14 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -42,7 +41,6 @@ class EliminarUsuarioControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -63,8 +61,7 @@ class EliminarUsuarioControllerTest {
     private EliminarUsuarioInteractor eliminarUsuarioInteractor;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor administrador() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_DELETE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 
     @Test
@@ -95,20 +92,10 @@ class EliminarUsuarioControllerTest {
     }
 
     @Test
-    void debe403_cuandoSoloTieneElClientRoleDeModificarUsuario() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete(RUTA, UtilUUID.generarNuevoUUID())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_UPDATE))))
-                .andExpect(status().isForbidden());
-        verify(eliminarUsuarioInteractor, never()).ejecutar(any());
-    }
-
-    @Test
     void debe422ConSuCodigo_cuandoElUsuarioTieneRolesVigentes() throws Exception {
         // Arrange
         var usuario = UtilUUID.generarNuevoUUID();
-        doThrow(new UsuarioRolesVigentesException(usuario, "estudiante"))
+        doThrow(new UsuarioRolesVigentesException(usuario, "Ana Pérez", List.of("estudiante")))
                 .when(eliminarUsuarioInteractor).ejecutar(any());
 
         // Act & Assert

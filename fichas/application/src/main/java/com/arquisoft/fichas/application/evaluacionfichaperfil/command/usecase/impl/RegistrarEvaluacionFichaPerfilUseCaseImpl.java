@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AsignarEstadoInicialEvaluacionUseCase;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.finder.EvaluacionDeRepresentanteExisteFinder;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.RegistrarEvaluacionFichaPerfilUseCase;
@@ -50,7 +49,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
         asignarEstadoInicialEvaluacionUseCase.ejecutar(evaluacion);
 
         logger.info(
-                Mensajes.obtener(EvaluacionFichaPerfilKey.LOG_REGISTRADA),
+                EvaluacionFichaPerfilKey.LOG_REGISTRADA,
                 evaluacion.getId(),
                 evaluacion.getRepresentanteComiteId(),
                 evaluacion.getFichaPerfilId());

@@ -10,7 +10,7 @@ public class EvaluacionFichaAbiertaRuleImpl implements EvaluacionFichaAbiertaRul
     public void validar(EstadoEvaluacionObservada estado) {
         if (estado.ultimoEstado().esTerminal()) {
             throw new EvaluacionFichaCerradaException(
-                    estado.evaluacionFichaPerfil(), estado.ultimoEstado().getId());
+                    estado.evaluacionFichaPerfil(), estado.ultimoEstado());
         }
     }
 }

@@ -1,102 +1,81 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.mapper;
 
 import com.arquisoft.fichas.infrastructure.security.FichasRoles;
+import com.arquisoft.shared.message.constant.UsuariosRoles;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ConsultarEstadosFichaRequestMapperTest {
 
-    private static final String REALM_ACCESS = "realm_access";
-    private static final String ROLES = "roles";
+    private static final UUID ACTOR = UUID.randomUUID();
 
     @ParameterizedTest
     @CsvSource({
-            FichasRoles.Realm.ASESOR_FICHA + "," + FichasRoles.Negocio.ASESOR_FICHA,
-            FichasRoles.Realm.COORDINADOR + "," + FichasRoles.Negocio.COORDINADOR,
-            FichasRoles.Realm.REPRESENTANTE_COMITE + "," + FichasRoles.Negocio.REPRESENTANTE_COMITE
+            UsuariosRoles.ASESOR_FICHA + "," + FichasRoles.Negocio.ASESOR_FICHA,
+            UsuariosRoles.COORDINADOR + "," + FichasRoles.Negocio.COORDINADOR,
+            UsuariosRoles.REPRESENTANTE_COMITE + "," + FichasRoles.Negocio.REPRESENTANTE_COMITE
     })
-    void debeTraducirAlRolDeNegocio_cuandoElRolRealmEstaEnLaWhitelist(String rolRealm, String rolNegocio) {
+    void debeTraducirAlRolDeNegocio_cuandoElRolDeIdentidadEstaEnLaWhitelist(String rolIdentidad, String rolNegocio) {
         // Arrange
-        var jwt = jwtConClaim(Map.of(ROLES, List.of(rolRealm)));
+        var identidad = identidadConRoles(List.of(rolIdentidad));
 
         // Act
-        var query = ConsultarEstadosFichaRequestMapper.toQuery(jwt);
+        var query = ConsultarEstadosFichaRequestMapper.toQuery(identidad);
 
         // Assert
-        assertThat(query.roles()).containsExactly(rolNegocio);
+        assertThat(query.actor()).isEqualTo(ACTOR);
+        assertThat(query.rolesIdentidad()).containsExactly(rolNegocio);
     }
 
     @Test
     void debeUnirLosRolesSinDuplicados_cuandoElLlamanteTieneVariosRoles() {
         // Arrange
-        var jwt = jwtConClaim(Map.of(ROLES, List.of(
-                FichasRoles.Realm.COORDINADOR,
-                FichasRoles.Realm.REPRESENTANTE_COMITE,
-                FichasRoles.Realm.COORDINADOR)));
+        var identidad = identidadConRoles(List.of(
+                UsuariosRoles.COORDINADOR,
+                UsuariosRoles.REPRESENTANTE_COMITE,
+                UsuariosRoles.COORDINADOR));
 
         // Act
-        var query = ConsultarEstadosFichaRequestMapper.toQuery(jwt);
+        var query = ConsultarEstadosFichaRequestMapper.toQuery(identidad);
 
         // Assert
-        assertThat(query.roles()).containsExactlyInAnyOrder(
+        assertThat(query.rolesIdentidad()).containsExactlyInAnyOrder(
                 FichasRoles.Negocio.COORDINADOR, FichasRoles.Negocio.REPRESENTANTE_COMITE);
     }
 
     @Test
     void debeDescartarLosRolesDesconocidos_cuandoNoEstanEnLaWhitelist() {
         // Arrange
-        var jwt = jwtConClaim(Map.of(ROLES, List.of(
-                "estudiante", "administrador", "offline_access", FichasRoles.Realm.ASESOR_FICHA)));
+        var identidad = identidadConRoles(List.of(
+                "estudiante", "administrador", "offline_access", UsuariosRoles.ASESOR_FICHA));
 
         // Act
-        var query = ConsultarEstadosFichaRequestMapper.toQuery(jwt);
+        var query = ConsultarEstadosFichaRequestMapper.toQuery(identidad);
 
         // Assert
-        assertThat(query.roles()).containsExactly(FichasRoles.Negocio.ASESOR_FICHA);
+        assertThat(query.rolesIdentidad()).containsExactly(FichasRoles.Negocio.ASESOR_FICHA);
     }
 
     @Test
-    void debeRetornarRolesVacios_cuandoElTokenNoTraeRealmAccess() {
+    void debeRetornarRolesVacios_cuandoLaIdentidadNoTraeRoles() {
         // Arrange
-        var jwt = Jwt.withTokenValue("token").header("alg", "none").subject("usuario").build();
+        var identidad = identidadConRoles(List.of());
 
         // Act
-        var query = ConsultarEstadosFichaRequestMapper.toQuery(jwt);
+        var query = ConsultarEstadosFichaRequestMapper.toQuery(identidad);
 
         // Assert
-        assertThat(query.roles()).isEmpty();
+        assertThat(query.rolesIdentidad()).isEmpty();
     }
 
-    @Test
-    void debeIgnorarLoMalformado_cuandoElClaimNoTieneLaFormaEsperada() {
-        // Arrange
-        var noEsMapa = jwtConClaim("asesor-ficha");
-        var rolesNoEsLista = jwtConClaim(Map.of(ROLES, FichasRoles.Realm.ASESOR_FICHA));
-        var entradasNoTexto = jwtConClaim(Map.of(ROLES, List.of(42, FichasRoles.Realm.ASESOR_FICHA)));
-
-        // Act
-        var deNoEsMapa = ConsultarEstadosFichaRequestMapper.toQuery(noEsMapa);
-        var deRolesNoEsLista = ConsultarEstadosFichaRequestMapper.toQuery(rolesNoEsLista);
-        var deEntradasNoTexto = ConsultarEstadosFichaRequestMapper.toQuery(entradasNoTexto);
-
-        // Assert
-        assertThat(deNoEsMapa.roles()).isEmpty();
-        assertThat(deRolesNoEsLista.roles()).isEmpty();
-        assertThat(deEntradasNoTexto.roles()).containsExactly(FichasRoles.Negocio.ASESOR_FICHA);
-    }
-
-    private static Jwt jwtConClaim(Object realmAccess) {
-        return Jwt.withTokenValue("token")
-                .header("alg", "none")
-                .subject("usuario")
-                .claim(REALM_ACCESS, realmAccess)
-                .build();
+    private static IdentidadActual identidadConRoles(List<String> roles) {
+        return new IdentidadActual(ACTOR, "a@uco.edu.co", "a", roles, "jti", null);
     }
 }

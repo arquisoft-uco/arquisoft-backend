@@ -61,4 +61,21 @@ public final class SeguridadCodes {
         public static final String LIMITE_SOLICITUDES_EXCEDIDO = "LIMITE_SOLICITUDES_EXCEDIDO";
         public static final String REDIS_CLIENTE_STANDALONE_REQUERIDO = "REDIS_CLIENTE_STANDALONE_REQUERIDO";
     }
+
+    public static final class Autorizacion {
+
+        private Autorizacion() {}
+
+        public static final String ACCESO_METODO_REQUERIDO = "ACCESO_METODO_REQUERIDO";
+        public static final String ACCESO_RECURSO_REQUERIDO = "ACCESO_RECURSO_REQUERIDO";
+        public static final String ACCESO_CREDENCIAL_REQUERIDA = "ACCESO_CREDENCIAL_REQUERIDA";
+        public static final String ACCESO_EMISOR_REQUERIDO = "ACCESO_EMISOR_REQUERIDO";
+        public static final String ACCESO_METODO_EXCEDE_LIMITE = "ACCESO_METODO_EXCEDE_LIMITE";
+        public static final String ACCESO_RECURSO_EXCEDE_LIMITE = "ACCESO_RECURSO_EXCEDE_LIMITE";
+        public static final String ACCESO_CREDENCIAL_EXCEDE_LIMITE = "ACCESO_CREDENCIAL_EXCEDE_LIMITE";
+        public static final String ACCESO_EMISOR_EXCEDE_LIMITE = "ACCESO_EMISOR_EXCEDE_LIMITE";
+        public static final String ACCESO_CORRELACION_EXCEDE_LIMITE = "ACCESO_CORRELACION_EXCEDE_LIMITE";
+        public static final String PROVEEDOR_AUTORIZACION_NO_DISPONIBLE = "PROVEEDOR_AUTORIZACION_NO_DISPONIBLE";
+        public static final String CONFIGURACION_INSEGURA = "CONFIGURACION_INSEGURA";
+    }
 }

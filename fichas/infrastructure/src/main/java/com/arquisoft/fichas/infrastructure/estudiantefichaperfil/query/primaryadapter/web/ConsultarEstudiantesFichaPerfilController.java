@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.query.primaryport.
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.query.primaryadapter.web.dto.EstudianteFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.query.primaryadapter.web.mapper.ConsultarEstudiantesFichaPerfilRequestMapper;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.query.primaryadapter.web.mapper.EstudianteFichaPerfilResponseMapper;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +37,6 @@ public class ConsultarEstudiantesFichaPerfilController {
     private final ConsultarEstudiantesFichaPerfilInteractor consultarEstudiantesFichaPerfilInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.estudiantes:/{fichaPerfilId}/estudiantes}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTUDIANTE_FICHA_PERFIL_COORDINADOR_VIEW)
     @Operation(
             summary = FichasApiMessages.ConsultaEstudianteFichaPerfil.CONSULTAR_SUMMARY,
             description = FichasApiMessages.ConsultaEstudianteFichaPerfil.CONSULTAR_DESCRIPTION,

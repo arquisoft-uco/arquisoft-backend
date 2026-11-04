@@ -3,7 +3,6 @@ package com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.primaryport.interactor.ModificarItemCuantitativoJuradoInteractor;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.primaryport.model.ModificarItemCuantitativoJuradoCommand;
 import com.arquisoft.evaluaciones.domain.itemcuantitativojurado.exception.ItemCuantitativoJuradoNoEncontradoException;
-import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -13,10 +12,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -49,7 +46,6 @@ class ModificarItemCuantitativoJuradoControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
 
         @Bean
@@ -138,24 +134,8 @@ class ModificarItemCuantitativoJuradoControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    void debeRetornar403_cuandoNoTienePermiso() throws Exception {
-        // Arrange
-        var itemId = UUID.randomUUID();
-
-        // Act & Assert
-        mockMvc.perform(patch(BASE + "/{itemId}", itemId)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(
-                                        "evaluaciones:item-cuantitativo-jurado:create")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
-    }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
-                .authorities(new SimpleGrantedAuthority(
-                        EvaluacionesAuthorities.ITEM_CUANTITATIVO_JURADO_UPDATE));
+        return SecurityMockMvcRequestPostProcessors.jwt();
     }
 }

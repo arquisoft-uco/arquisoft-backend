@@ -3,13 +3,12 @@ package com.arquisoft.solicitudes.infrastructure.respuesta.command.primaryadapte
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.SolicitudesApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.ResponderSolicitudNovedadAsesorInteractor;
 import com.arquisoft.solicitudes.infrastructure.respuesta.command.primaryadapter.web.dto.ResponderSolicitudNovedadAsesorRequestDTO;
 import com.arquisoft.solicitudes.infrastructure.respuesta.command.primaryadapter.web.dto.ResponderSolicitudNovedadAsesorResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.respuesta.command.primaryadapter.web.mapper.ResponderSolicitudNovedadAsesorRequestMapper;
-import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,9 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,7 +37,6 @@ public class ResponderSolicitudNovedadAsesorController {
 
     @PostMapping(
             "${rutas.solicitudes.respuesta.novedad-asesor:/novedad-asesor/{solicitudId}/respuesta}")
-    @PreAuthorize(SolicitudesAuthorities.Expresiones.HAS_RESPUESTA_NOVEDAD_ASESOR_CREATE)
     @Operation(
             summary = SolicitudesApiMessages.Respuesta.RESPONDER_NOVEDAD_ASESOR_SUMMARY,
             description = SolicitudesApiMessages.Respuesta.RESPONDER_NOVEDAD_ASESOR_DESCRIPTION,
@@ -64,9 +59,9 @@ public class ResponderSolicitudNovedadAsesorController {
     public ResponseEntity<ResponderSolicitudNovedadAsesorResponseDTO> responder(
             @PathVariable String solicitudId,
             @RequestBody ResponderSolicitudNovedadAsesorRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            IdentidadActual identidad) {
 
-        var asesorUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var asesorUsuario = identidad.id();
         var id = responderSolicitudNovedadAsesorInteractor.ejecutar(
                 ResponderSolicitudNovedadAsesorRequestMapper.toCommand(
                         request, solicitudId, asesorUsuario));

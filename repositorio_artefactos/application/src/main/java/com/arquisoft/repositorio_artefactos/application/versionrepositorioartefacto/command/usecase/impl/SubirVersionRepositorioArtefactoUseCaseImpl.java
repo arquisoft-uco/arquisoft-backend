@@ -1,0 +1,73 @@
+package com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.usecase.impl;
+
+import com.arquisoft.repositorio_artefactos.application.administrador.command.finder.AdministradorPorIdFinder;
+import com.arquisoft.repositorio_artefactos.application.repositorioartefacto.command.finder.RepositorioArtefactoBloqueadoPorIdFinder;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.AnalisisCargaFinder;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.CargaPendienteFinder;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.TamanoMaximoArchivoFinder;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.finder.UltimaVersionDocumentoFinder;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.VersionRepositorioArtefactoSubidaResult;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.result.mapper.VersionRepositorioArtefactoSubidaResultMapper;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.AlmacenamientoVersionOutputPort;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.VersionRepositorioArtefactoOutputPort;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.secondaryport.mapper.VersionRepositorioArtefactoMapper;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.usecase.SubirVersionRepositorioArtefactoUseCase;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.validator.SubirVersionRepositorioArtefactoContenidoValidator;
+import com.arquisoft.repositorio_artefactos.application.versionrepositorioartefacto.command.validator.SubirVersionRepositorioArtefactoValidator;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.SubidaVersionRepositorioArtefactoDomain;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
+import com.arquisoft.repositorio_artefactos.domain.versionrepositorioartefacto.event.VersionRepositorioArtefactoSubidaEvent;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.repositorio_artefactos.VersionRepositorioArtefactoKey;
+import com.arquisoft.shared.publisher.EventPublisher;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class SubirVersionRepositorioArtefactoUseCaseImpl implements SubirVersionRepositorioArtefactoUseCase {
+
+    private final AdministradorPorIdFinder administradorPorIdFinder;
+    private final RepositorioArtefactoBloqueadoPorIdFinder repositorioArtefactoBloqueadoPorIdFinder;
+    private final CargaPendienteFinder cargaPendienteFinder;
+    private final AnalisisCargaFinder analisisCargaFinder;
+    private final UltimaVersionDocumentoFinder ultimaVersionDocumentoFinder;
+    private final TamanoMaximoArchivoFinder tamanoMaximoArchivoFinder;
+    private final SubirVersionRepositorioArtefactoValidator subirVersionValidator;
+    private final SubirVersionRepositorioArtefactoContenidoValidator subirVersionContenidoValidator;
+    private final AlmacenamientoVersionOutputPort almacenamientoVersionOutputPort;
+    private final VersionRepositorioArtefactoOutputPort versionRepositorioArtefactoOutputPort;
+    private final EventPublisher eventPublisher;
+    private final AppLogger logger;
+
+    @Override
+    public VersionRepositorioArtefactoSubidaResult ejecutar(SubidaVersionRepositorioArtefactoDomain subida) {
+        logger.info(VersionRepositorioArtefactoKey.LOG_SUBIENDO,
+                subida.getRepositorio(), subida.getCarga(), subida.getSolicitante());
+
+        var administrador = administradorPorIdFinder.obtener(subida.getSolicitante());
+        var repositorio = repositorioArtefactoBloqueadoPorIdFinder.obtener(subida.getRepositorio());
+        var carga = cargaPendienteFinder.obtener(subida.getCarga());
+        var ultimaVersion = ultimaVersionDocumentoFinder.obtener(subida);
+        var tamanoMaximo = tamanoMaximoArchivoFinder.obtener();
+        logger.debug(VersionRepositorioArtefactoKey.LOG_VERIFICACION_SUBIR,
+                !administrador.esVacio(), !repositorio.esVacio(), !carga.esVacio(),
+                subida.isNuevoDocumento(), ultimaVersion.numeroVersion());
+
+        subirVersionValidator.validar(subida, administrador, repositorio, carga, tamanoMaximo, ultimaVersion);
+
+        var analisis = analisisCargaFinder.obtener(subida.getCarga());
+        subirVersionContenidoValidator.validar(subida, carga, analisis);
+
+        var version = VersionRepositorioArtefactoDomain.crear(subida, ultimaVersion, carga, analisis);
+
+        almacenamientoVersionOutputPort.copiarCargaAUri(carga.getCarga(), carga.getEtag(), version.getUriArchivo());
+        versionRepositorioArtefactoOutputPort.registrar(VersionRepositorioArtefactoMapper.toEntity(version));
+        eventPublisher.publish(new VersionRepositorioArtefactoSubidaEvent(version, repositorio.getNombreRepositorio()));
+        almacenamientoVersionOutputPort.eliminarCarga(carga.getCarga());
+
+        logger.info(VersionRepositorioArtefactoKey.LOG_SUBIDA,
+                version.getId(), version.getNumeroVersion(), version.getRepositorioArtefacto());
+        return VersionRepositorioArtefactoSubidaResultMapper.toResult(version);
+    }
+}

@@ -5,13 +5,11 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 
-import java.util.UUID;
-
 public final class SolicitudYaRespondidaException extends DomainException {
 
-    public SolicitudYaRespondidaException(UUID solicitud) {
+    public SolicitudYaRespondidaException() {
         super(
-                Mensajes.formatear(RespuestaKey.ERROR_SOLICITUD_YA_RESPONDIDA, solicitud),
+                Mensajes.formatear(RespuestaKey.ERROR_SOLICITUD_YA_RESPONDIDA),
                 SolicitudesCodes.Respuesta.SOLICITUD_YA_RESPONDIDA
         );
     }

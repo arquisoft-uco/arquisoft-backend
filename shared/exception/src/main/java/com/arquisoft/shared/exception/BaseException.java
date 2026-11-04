@@ -5,12 +5,12 @@ public abstract class BaseException extends RuntimeException {
     private final BaseError error;
 
     protected BaseException(BaseError error) {
-        super(error.getMessage());
+        super(error.getDetalle());
         this.error = error;
     }
 
     protected BaseException(BaseError error, Throwable cause) {
-        super(error.getMessage(), cause);
+        super(error.getDetalle(), cause);
         this.error = error;
     }
 

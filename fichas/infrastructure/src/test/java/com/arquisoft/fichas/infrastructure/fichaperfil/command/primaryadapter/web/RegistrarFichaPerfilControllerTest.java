@@ -6,7 +6,6 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDup
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interactor.RegistrarFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +14,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -40,7 +37,6 @@ class RegistrarFichaPerfilControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @EnableMethodSecurity(prePostEnabled = true)
     static class TestSecurityConfig {
         @Bean
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -76,8 +72,7 @@ class RegistrarFichaPerfilControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -96,8 +91,7 @@ class RegistrarFichaPerfilControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyInvalido))
                 .andExpect(status().isBadRequest());
@@ -122,26 +116,6 @@ class RegistrarFichaPerfilControllerTest {
     }
 
     @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        // Arrange
-        UUID asesorId = UUID.randomUUID();
-        String body = String.format("""
-                {
-                  "tituloProyecto": "Título de prueba",
-                  "asesorFicha": "%s"
-                }
-                """, asesorId);
-
-        // Act & Assert
-        mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("estudiante:perfil:read")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void debe422_cuandoTituloDuplicado() throws Exception {
         // Arrange
         UUID asesorId = UUID.randomUUID();
@@ -158,8 +132,7 @@ class RegistrarFichaPerfilControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());
@@ -181,8 +154,7 @@ class RegistrarFichaPerfilControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());
@@ -207,8 +179,7 @@ class RegistrarFichaPerfilControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -232,8 +203,7 @@ class RegistrarFichaPerfilControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -258,8 +228,7 @@ class RegistrarFichaPerfilControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -283,8 +252,7 @@ class RegistrarFichaPerfilControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());
@@ -308,8 +276,7 @@ class RegistrarFichaPerfilControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());

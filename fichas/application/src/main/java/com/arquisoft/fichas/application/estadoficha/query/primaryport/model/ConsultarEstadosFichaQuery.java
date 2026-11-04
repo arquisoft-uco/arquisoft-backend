@@ -6,20 +6,25 @@ import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.List;
+import java.util.UUID;
 
 public record ConsultarEstadosFichaQuery(
-        List<String> roles
+        UUID actor,
+        List<String> rolesIdentidad
 ) {
 
-    public static ConsultarEstadosFichaQuery crear(List<String> roles) {
+    public static ConsultarEstadosFichaQuery crear(UUID actor, List<String> rolesIdentidad) {
         var result = new ValidationResult();
 
-        ValidatorObjeto.noNulo(roles,
+        ValidatorObjeto.noNulo(actor,
+                FichasFields.EstadoFicha.ACTOR,
+                FichasCodes.EstadoFicha.ACTOR_REQUERIDO, result);
+        ValidatorObjeto.noNulo(rolesIdentidad,
                 FichasFields.EstadoFicha.ROLES,
                 FichasCodes.EstadoFicha.ROLES_REQUERIDO, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new ConsultarEstadosFichaQuery(roles);
+        return new ConsultarEstadosFichaQuery(actor, rolesIdentidad);
     }
 }

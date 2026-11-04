@@ -75,7 +75,7 @@ class AgregarRepresentanteComiteUseCaseImplTest {
         var orden = inOrder(representanteComitePorUsuarioFinder, agregarRepresentanteComiteValidator,
                 representanteComiteOutputPort, eventPublisher);
         orden.verify(representanteComitePorUsuarioFinder).obtener(usuario.getId());
-        orden.verify(agregarRepresentanteComiteValidator).validar(usuario.getId(), RepresentanteComiteDomain.VACIO);
+        orden.verify(agregarRepresentanteComiteValidator).validar(usuario, RepresentanteComiteDomain.VACIO);
         orden.verify(representanteComiteOutputPort).guardar(any());
         orden.verify(eventPublisher).publish(any());
 
@@ -107,7 +107,7 @@ class AgregarRepresentanteComiteUseCaseImplTest {
 
         // Assert
         var orden = inOrder(agregarRepresentanteComiteValidator, representanteComiteOutputPort, eventPublisher);
-        orden.verify(agregarRepresentanteComiteValidator).validar(usuario.getId(), eliminado);
+        orden.verify(agregarRepresentanteComiteValidator).validar(usuario, eliminado);
         orden.verify(representanteComiteOutputPort).reactivar(usuario.getId());
         orden.verify(eventPublisher).publish(any(RepresentanteComiteAgregadoEvent.class));
         verify(representanteComiteOutputPort, never()).guardar(any());
@@ -121,8 +121,8 @@ class AgregarRepresentanteComiteUseCaseImplTest {
         var usuario = usuario();
         var vigente = RepresentanteComiteDomain.crear(usuario.getId());
         when(representanteComitePorUsuarioFinder.obtener(usuario.getId())).thenReturn(vigente);
-        doThrow(new RepresentanteComiteUsuarioDuplicadoException(usuario.getId()))
-                .when(agregarRepresentanteComiteValidator).validar(usuario.getId(), vigente);
+        doThrow(new RepresentanteComiteUsuarioDuplicadoException(usuario.getId(), usuario.getNombre()))
+                .when(agregarRepresentanteComiteValidator).validar(usuario, vigente);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(usuario))

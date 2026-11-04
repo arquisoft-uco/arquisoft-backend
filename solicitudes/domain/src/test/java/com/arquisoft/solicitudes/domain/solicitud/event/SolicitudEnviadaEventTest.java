@@ -17,10 +17,10 @@ class SolicitudEnviadaEventTest {
     @Test
     void debeAsignarTodosLosCampos_cuandoSeConstruye() {
         // Arrange
-        UUID solicitudId = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
 
         // Act
-        SolicitudEnviadaEvent evento = new SolicitudEnviadaEvent(
+        var evento = new SolicitudEnviadaEvent(
                 TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, solicitudId, "Ana Estudiante", "Pedro Asesor",
                 "pedro@uco.edu.co", "novedad para el asesor");
 
@@ -43,12 +43,14 @@ class SolicitudEnviadaEventTest {
             "CAMBIO_DE_ASESOR," + EventTopics.Solicitudes.CAMBIO_ASESOR_ENVIADA
                     + ",SolicitudCambioAsesorEnviadaEvent",
             "AMPLIACION_DE_PLAZO," + EventTopics.Solicitudes.AMPLIACION_PLAZO_ENVIADA
-                    + ",SolicitudAmpliacionPlazoEnviadaEvent"
+                    + ",SolicitudAmpliacionPlazoEnviadaEvent",
+            "REGISTRO_Y_MODIFICACION_DE_USUARIOS," + EventTopics.Solicitudes.REGISTRO_MODIFICACION_USUARIOS_ENVIADA
+                    + ",SolicitudRegistroModificacionUsuariosEnviadaEvent"
     })
     void debeExponerElTemaYElTipoDeEventoDelTipoDeSolicitud(
             TipoSolicitud tipo, String temaEsperado, String tipoEventoEsperado) {
         // Act
-        SolicitudEnviadaEvent evento = new SolicitudEnviadaEvent(
+        var evento = new SolicitudEnviadaEvent(
                 tipo, UUID.randomUUID(), "Ana Estudiante", "Pedro Asesor", "pedro@uco.edu.co", "mensaje");
 
         // Assert
@@ -62,15 +64,6 @@ class SolicitudEnviadaEventTest {
         assertThat(new SolicitudEnviadaEvent(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR, UUID.randomUUID(),
                 "a", "b", "c@uco.edu.co", "m").getTemaEvento())
                 .isEqualTo("solicitudes.solicitud.novedad_asesor_enviada");
-    }
-
-    @Test
-    void debeLanzarTipoNoEncontrado_cuandoElTipoNoSeEnvia() {
-        // Act & Assert
-        assertThatThrownBy(() -> new SolicitudEnviadaEvent(
-                TipoSolicitud.REGISTRO_Y_MODIFICACION_DE_USUARIOS, UUID.randomUUID(), "a", "b",
-                "c@uco.edu.co", "m"))
-                .isInstanceOf(TipoSolicitudNoEncontradoException.class);
     }
 
     @Test

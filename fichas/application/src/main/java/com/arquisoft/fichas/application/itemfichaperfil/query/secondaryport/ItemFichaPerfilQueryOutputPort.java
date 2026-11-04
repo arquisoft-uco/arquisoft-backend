@@ -12,4 +12,6 @@ public interface ItemFichaPerfilQueryOutputPort {
     List<ItemFichaPerfilReadModel> consultarPorFichaYEstudiante(UUID fichaPerfil, UUID estudiante);
 
     List<ItemFichaPerfilReadModel> consultarPorFichaYRepresentante(UUID fichaPerfil, UUID representanteComite);
+
+    List<ItemFichaPerfilReadModel> consultarPorFicha(UUID fichaPerfil);
 }
