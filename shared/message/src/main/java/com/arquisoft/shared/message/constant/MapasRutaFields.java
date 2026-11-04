@@ -36,4 +36,11 @@ public final class MapasRutaFields {
         public static final String DESCRIPCION_ESTIMADO = "descripcionEstimado";
         public static final String PLAN_ESTIMADO = "planEstimado";
     }
+
+    public static final class PlanReal {
+
+        private PlanReal() {}
+
+        public static final String TAREA = "tarea";
+    }
 }

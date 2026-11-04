@@ -13,6 +13,7 @@ rutas:
       tareas: /{mapaRutaId}/tareas
       tareas-estudiante: /{mapaRutaId}/tareas/estudiante
       planes-estimados: /planes-estimados/{planEstimadoId}
+      planes-reales-estudiante: /tareas/{tareaId}/planes-reales/estudiante
     tareas:
       base: /tareas
       por-id: /{tareaId}
