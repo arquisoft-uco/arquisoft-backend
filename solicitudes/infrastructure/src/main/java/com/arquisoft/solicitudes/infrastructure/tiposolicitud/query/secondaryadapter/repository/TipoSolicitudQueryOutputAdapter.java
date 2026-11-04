@@ -21,4 +21,12 @@ public class TipoSolicitudQueryOutputAdapter implements TipoSolicitudQueryOutput
                 .map(TipoSolicitudQueryMapper::toReadModel)
                 .toList();
     }
+
+    @Override
+    public List<TipoSolicitudReadModel> consultarRecibiblesPorRoles(List<String> roles) {
+        return repository.findByRolRecibidaIn(roles)
+                .stream()
+                .map(TipoSolicitudQueryMapper::toReadModel)
+                .toList();
+    }
 }

@@ -1,6 +1,16 @@
 package com.arquisoft.solicitudes.infrastructure.security;
 
+import com.arquisoft.shared.message.constant.UsuariosRoles;
+
+import java.util.Map;
+
 public final class SolicitudesRoles {
+
+    public static final Map<String, String> NEGOCIO_POR_ROL_IDENTIDAD = Map.of(
+            UsuariosRoles.ESTUDIANTE, Negocio.ESTUDIANTE,
+            UsuariosRoles.COORDINADOR, Negocio.COORDINADOR,
+            UsuariosRoles.ASESOR, Negocio.ASESOR,
+            UsuariosRoles.ADMINISTRADOR, Negocio.ADMINISTRADOR);
 
     private SolicitudesRoles() {}
 
