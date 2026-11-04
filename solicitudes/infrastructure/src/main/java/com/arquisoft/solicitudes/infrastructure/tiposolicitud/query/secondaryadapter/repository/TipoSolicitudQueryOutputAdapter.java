@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -16,8 +15,8 @@ public class TipoSolicitudQueryOutputAdapter implements TipoSolicitudQueryOutput
     private final TipoSolicitudQueryRepository repository;
 
     @Override
-    public List<TipoSolicitudReadModel> consultarPorIds(Set<String> ids) {
-        return repository.findByIdIn(ids)
+    public List<TipoSolicitudReadModel> consultarPorRoles(List<String> roles) {
+        return repository.findByRolIn(roles)
                 .stream()
                 .map(TipoSolicitudQueryMapper::toReadModel)
                 .toList();

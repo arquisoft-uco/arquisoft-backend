@@ -2,11 +2,11 @@ package com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.mo
 
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -14,49 +14,50 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ConsultarTiposSolicitudQueryTest {
 
     @Test
-    void debeConservarLosIds_cuandoConjuntoValido() {
+    void debeCrearQueryConActorYRoles_cuandoSonValidos() {
         // Arrange
-        var tipos = Set.of("CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO");
+        var actor = UtilUUID.generarNuevoUUID();
+        var roles = List.of("ESTUDIANTE", "COORDINADOR");
 
         // Act
-        var query = ConsultarTiposSolicitudQuery.crear(tipos);
+        var query = ConsultarTiposSolicitudQuery.crear(actor, roles);
 
         // Assert
-        assertThat(query.tipos()).containsExactlyInAnyOrderElementsOf(tipos);
+        assertThat(query.actor()).isEqualTo(actor);
+        assertThat(query.rolesIdentidad()).containsExactlyElementsOf(roles);
     }
 
     @Test
-    void debeAceptarConjuntoVacio_cuandoElUsuarioNoTienePermisos() {
+    void debeCrearQueryConRolesVacios_cuandoElLlamanteNoTieneRolesReconocidos() {
         // Act
-        var query = ConsultarTiposSolicitudQuery.crear(Set.of());
+        var query = ConsultarTiposSolicitudQuery.crear(UtilUUID.generarNuevoUUID(), List.of());
 
         // Assert
-        assertThat(query.tipos()).isEmpty();
+        assertThat(query.rolesIdentidad()).isEmpty();
     }
 
     @Test
-    void debeLanzarApplicationValidationException_cuandoConjuntoEsNulo() {
+    void debeLanzarApplicationValidationException_cuandoLosRolesSonNulos() {
+        // Arrange
+        var actor = UtilUUID.generarNuevoUUID();
+
         // Act & Assert
-        assertThatThrownBy(() -> ConsultarTiposSolicitudQuery.crear(null))
+        assertThatThrownBy(() -> ConsultarTiposSolicitudQuery.crear(actor, null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, ex ->
                         assertThat(ex.getValidationResult().getErrores()).singleElement().satisfies(error -> {
-                            assertThat(error.campo()).isEqualTo(SolicitudesFields.TipoSolicitud.TIPOS);
-                            assertThat(error.codigoError()).isEqualTo(SolicitudesCodes.TipoSolicitud.TIPOS_REQUERIDOS);
+                            assertThat(error.campo()).isEqualTo(SolicitudesFields.TipoSolicitud.ROLES);
+                            assertThat(error.codigoError()).isEqualTo(SolicitudesCodes.TipoSolicitud.ROLES_REQUERIDO);
                         }));
     }
 
     @Test
-    void debeHacerCopiaDefensiva_cuandoElConjuntoOriginalCambia() {
-        // Arrange
-        var original = new HashSet<>(Set.of("CAMBIO_DE_ASESOR"));
-        var query = ConsultarTiposSolicitudQuery.crear(original);
-
-        // Act
-        original.add("AMPLIACION_DE_PLAZO");
-
-        // Assert
-        assertThat(query.tipos()).containsExactly("CAMBIO_DE_ASESOR");
-        assertThatThrownBy(() -> query.tipos().add("OTRO"))
-                .isInstanceOf(UnsupportedOperationException.class);
+    void debeLanzarApplicationValidationException_cuandoElActorEsNulo() {
+        // Act & Assert
+        assertThatThrownBy(() -> ConsultarTiposSolicitudQuery.crear(null, List.of("ESTUDIANTE")))
+                .isInstanceOfSatisfying(ApplicationValidationException.class, ex ->
+                        assertThat(ex.getValidationResult().getErrores()).singleElement().satisfies(error -> {
+                            assertThat(error.campo()).isEqualTo(SolicitudesFields.TipoSolicitud.ACTOR);
+                            assertThat(error.codigoError()).isEqualTo(SolicitudesCodes.TipoSolicitud.ACTOR_REQUERIDO);
+                        }));
     }
 }

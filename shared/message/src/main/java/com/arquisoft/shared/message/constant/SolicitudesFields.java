@@ -62,6 +62,7 @@ public final class SolicitudesFields {
 
         private TipoSolicitud() {}
 
-        public static final String TIPOS = "tipos";
+        public static final String ACTOR = "actor";
+        public static final String ROLES = "roles";
     }
 }

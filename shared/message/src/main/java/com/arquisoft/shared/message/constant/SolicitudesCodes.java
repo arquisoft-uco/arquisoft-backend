@@ -90,6 +90,7 @@ public final class SolicitudesCodes {
         private TipoSolicitud() {}
 
         public static final String TIPO_NO_ENCONTRADO = "TIPO_SOLICITUD_NO_ENCONTRADO";
-        public static final String TIPOS_REQUERIDOS = "TIPO_SOLICITUD_TIPOS_REQUERIDOS";
+        public static final String ACTOR_REQUERIDO = "TIPO_SOLICITUD_ACTOR_REQUERIDO";
+        public static final String ROLES_REQUERIDO = "TIPO_SOLICITUD_ROLES_REQUERIDO";
     }
 }

@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.impl;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.criteria.TipoSolicitudCriteria;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.model.ConsultarTiposSolicitudQuery;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
@@ -12,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,9 +29,10 @@ class ConsultarTiposSolicitudInteractorImplTest {
     private ConsultarTiposSolicitudInteractorImpl interactor;
 
     @Test
-    void debeConvertirQueryACriteria_yDelegarEnUseCase() {
+    void debeDelegarEnUseCaseConActorYRolesDelQuery_yRetornarSuResultado() {
         // Arrange
-        var query = ConsultarTiposSolicitudQuery.crear(Set.of("CAMBIO_DE_ASESOR"));
+        var actor = UtilUUID.generarNuevoUUID();
+        var query = ConsultarTiposSolicitudQuery.crear(actor, List.of("ESTUDIANTE"));
         var resultadoEsperado = List.of(
                 new TipoSolicitudReadModel("CAMBIO_DE_ASESOR", "Cambio de Asesor",
                         "Solicitud para modificar el asesor"));
@@ -43,7 +44,8 @@ class ConsultarTiposSolicitudInteractorImplTest {
         // Assert
         var captor = ArgumentCaptor.forClass(TipoSolicitudCriteria.class);
         verify(consultarTiposSolicitudUseCase).ejecutar(captor.capture());
-        assertThat(captor.getValue().tipos()).containsExactly("CAMBIO_DE_ASESOR");
+        assertThat(captor.getValue().actor()).isEqualTo(actor);
+        assertThat(captor.getValue().rolesIdentidad()).containsExactly("ESTUDIANTE");
         assertThat(resultado).isSameAs(resultadoEsperado);
     }
 }

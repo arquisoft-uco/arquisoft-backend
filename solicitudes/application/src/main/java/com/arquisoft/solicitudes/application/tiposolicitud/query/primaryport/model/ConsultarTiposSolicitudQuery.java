@@ -5,19 +5,23 @@ import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 
-import java.util.Set;
+import java.util.List;
+import java.util.UUID;
 
-public record ConsultarTiposSolicitudQuery(Set<String> tipos) {
+public record ConsultarTiposSolicitudQuery(UUID actor, List<String> rolesIdentidad) {
 
-    public static ConsultarTiposSolicitudQuery crear(Set<String> tipos) {
+    public static ConsultarTiposSolicitudQuery crear(UUID actor, List<String> rolesIdentidad) {
         var result = new ValidationResult();
 
-        ValidatorObjeto.noNulo(tipos,
-                SolicitudesFields.TipoSolicitud.TIPOS,
-                SolicitudesCodes.TipoSolicitud.TIPOS_REQUERIDOS, result);
+        ValidatorObjeto.noNulo(actor,
+                SolicitudesFields.TipoSolicitud.ACTOR,
+                SolicitudesCodes.TipoSolicitud.ACTOR_REQUERIDO, result);
+        ValidatorObjeto.noNulo(rolesIdentidad,
+                SolicitudesFields.TipoSolicitud.ROLES,
+                SolicitudesCodes.TipoSolicitud.ROLES_REQUERIDO, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new ConsultarTiposSolicitudQuery(Set.copyOf(tipos));
+        return new ConsultarTiposSolicitudQuery(actor, rolesIdentidad);
     }
 }

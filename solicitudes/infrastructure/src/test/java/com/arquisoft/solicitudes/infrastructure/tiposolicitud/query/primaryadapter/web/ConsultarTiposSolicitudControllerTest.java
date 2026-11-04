@@ -3,11 +3,13 @@ package com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadap
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.UsuariosRoles;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.ConsultarTiposSolicitudInteractor;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.model.ConsultarTiposSolicitudQuery;
 import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
+import com.arquisoft.solicitudes.infrastructure.security.SolicitudesRoles;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ConsultarTiposSolicitudControllerTest {
 
     private static final String RUTA = "/solicitudes/tipos-solicitud";
-    private static final UUID ACTOR = UUID.randomUUID();
+    private static final UUID ACTOR = UtilUUID.generarNuevoUUID();
 
     @TestConfiguration
     @EnableWebSecurity
@@ -77,11 +79,11 @@ class ConsultarTiposSolicitudControllerTest {
     }
 
     @Test
-    void debe200ConLosTiposDeEstudiante_cuandoElLlamanteEsEstudiante() throws Exception {
+    void debe200ConLosTiposDelRol_cuandoElLlamanteEsEstudiante() throws Exception {
         // Arrange
         var tipos = List.of(
                 new TipoSolicitudReadModel("NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
-                        "Solicitud para temas que surgen de improvisto y que no están tipados"),
+                        "Solicitud para temas que surgen de improvisto"),
                 new TipoSolicitudReadModel("CAMBIO_DE_ASESOR", "Cambio de Asesor",
                         "Solicitud para modificar el asesor"));
         when(consultarTiposSolicitudInteractor.ejecutar(any(ConsultarTiposSolicitudQuery.class))).thenReturn(tipos);
@@ -95,30 +97,13 @@ class ConsultarTiposSolicitudControllerTest {
                 .andExpect(jsonPath("$[0].nombre").value("Novedad para el Coordinador"))
                 .andExpect(jsonPath("$[0].descripcion").exists())
                 .andExpect(jsonPath("$[1].id").value("CAMBIO_DE_ASESOR"));
-        assertThat(queryInvocada().tipos()).containsExactlyInAnyOrder(
-                "NOVEDAD_PARA_EL_COORDINADOR", "NOVEDAD_PARA_EL_ASESOR",
-                "CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO");
+        var query = queryInvocada();
+        assertThat(query.actor()).isEqualTo(ACTOR);
+        assertThat(query.rolesIdentidad()).containsExactly(SolicitudesRoles.Negocio.ESTUDIANTE);
     }
 
     @Test
-    void debe200ConSoloRegistroDeUsuarios_cuandoEsCoordinador() throws Exception {
-        // Arrange
-        when(consultarTiposSolicitudInteractor.ejecutar(any(ConsultarTiposSolicitudQuery.class))).thenReturn(List.of(
-                new TipoSolicitudReadModel("REGISTRO_Y_MODIFICACION_DE_USUARIOS",
-                        "Registro y modificación de Usuarios",
-                        "Solicitud para el registro o modificación de usuarios")));
-
-        // Act
-        mockMvc.perform(get(RUTA).with(conRoles(UsuariosRoles.COORDINADOR)))
-                // Assert
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id").value("REGISTRO_Y_MODIFICACION_DE_USUARIOS"));
-        assertThat(queryInvocada().tipos()).containsExactly("REGISTRO_Y_MODIFICACION_DE_USUARIOS");
-    }
-
-    @Test
-    void debe200ConListaVacia_cuandoElRolNoEnviaSolicitudes() throws Exception {
+    void debe200ConListaVacia_cuandoElLlamanteNoTieneRolReconocido() throws Exception {
         // Arrange
         when(consultarTiposSolicitudInteractor.ejecutar(any(ConsultarTiposSolicitudQuery.class)))
                 .thenReturn(List.of());
@@ -128,23 +113,7 @@ class ConsultarTiposSolicitudControllerTest {
                 // Assert
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-        assertThat(queryInvocada().tipos()).isEmpty();
-    }
-
-    @Test
-    void debePasarLosCincoTipos_cuandoCombinaRolesDeEstudianteYCoordinador() throws Exception {
-        // Arrange
-        when(consultarTiposSolicitudInteractor.ejecutar(any(ConsultarTiposSolicitudQuery.class)))
-                .thenReturn(List.of());
-
-        // Act
-        mockMvc.perform(get(RUTA).with(conRoles(UsuariosRoles.ESTUDIANTE, UsuariosRoles.COORDINADOR)))
-                // Assert
-                .andExpect(status().isOk());
-        assertThat(queryInvocada().tipos()).containsExactlyInAnyOrder(
-                "NOVEDAD_PARA_EL_COORDINADOR", "NOVEDAD_PARA_EL_ASESOR",
-                "CAMBIO_DE_ASESOR", "AMPLIACION_DE_PLAZO",
-                "REGISTRO_Y_MODIFICACION_DE_USUARIOS");
+        assertThat(queryInvocada().rolesIdentidad()).isEmpty();
     }
 
     @Test

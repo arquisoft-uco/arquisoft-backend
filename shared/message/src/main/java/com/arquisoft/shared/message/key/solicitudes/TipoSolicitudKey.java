@@ -8,7 +8,7 @@ public enum TipoSolicitudKey implements ClaveMensaje {
     ERROR_TIPO_NO_ENCONTRADO("solicitudes.dominio.tiposolicitud.error.no-encontrado", 0),
     ERROR_TIPO_NO_ENCONTRADO_DETALLE("solicitudes.dominio.tiposolicitud.error.no-encontrado-detalle", 1),
     LOG_CONSULTA_COMPLETADA("solicitudes.aplicacion.tiposolicitud.log.consulta-completada", 1),
-    LOG_CONSULTANDO("solicitudes.aplicacion.tiposolicitud.log.consultando", 1);
+    LOG_CONSULTANDO("solicitudes.aplicacion.tiposolicitud.log.consultando", 2);
 
     private final String clave;
     private final int parametros;

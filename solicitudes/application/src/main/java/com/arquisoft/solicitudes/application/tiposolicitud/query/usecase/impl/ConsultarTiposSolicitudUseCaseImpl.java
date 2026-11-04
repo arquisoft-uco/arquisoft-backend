@@ -20,11 +20,9 @@ public class ConsultarTiposSolicitudUseCaseImpl implements ConsultarTiposSolicit
 
     @Override
     public List<TipoSolicitudReadModel> ejecutar(TipoSolicitudCriteria entrada) {
-        logger.debug(TipoSolicitudKey.LOG_CONSULTANDO, entrada.tipos().size());
+        logger.debug(TipoSolicitudKey.LOG_CONSULTANDO, entrada.actor(), entrada.rolesIdentidad());
 
-        var resultado = entrada.tipos().isEmpty()
-                ? List.<TipoSolicitudReadModel>of()
-                : queryOutputPort.consultarPorIds(entrada.tipos());
+        var resultado = queryOutputPort.consultarPorRoles(entrada.rolesIdentidad());
 
         logger.debug(TipoSolicitudKey.LOG_CONSULTA_COMPLETADA, resultado.size());
 

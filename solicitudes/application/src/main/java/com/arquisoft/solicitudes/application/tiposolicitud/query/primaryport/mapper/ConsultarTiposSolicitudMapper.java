@@ -8,6 +8,6 @@ public final class ConsultarTiposSolicitudMapper {
     private ConsultarTiposSolicitudMapper() {}
 
     public static TipoSolicitudCriteria toCriteria(ConsultarTiposSolicitudQuery query) {
-        return new TipoSolicitudCriteria(query.tipos());
+        return new TipoSolicitudCriteria(query.actor(), query.rolesIdentidad());
     }
 }
