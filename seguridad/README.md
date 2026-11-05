@@ -29,10 +29,11 @@ seguridad/
     │   ├── primaryadapter/web/                      ResolvedorPlantillaRuta (recurso = prefijo + plantilla MVC), AutorizarAccesoRequestMapper
     │   └── secondaryadapter/                        pep/, equivalencias/ (role-table), none/, DecisionAccesoPorEmisorOutputAdapter
     ├── auth/command/secondaryadapter/               keycloak/ (login directo), jwt/, redis/ (lista negra), security/ (IdentidadActualSeguridadAdapter)
-    ├── config/autenticacion/                        AutenticacionProperties, DecodificadoresPorEmisor, AutenticacionPorEmisorConfig
+    ├── config/autenticacion/                        AutenticacionProperties, DecodificadoresPorEmisor, AutenticacionPorEmisorConfig,
+    │                                                IdentidadAutenticada, ProveedorAutenticacion (ProveedorBearer, ProveedorSesionPdp)
     ├── config/security/                             SeguridadConfig, RutasPublicas, ValidadorConfiguracionSeguridad,
     │                                                NoAutenticadoEntryPoint, AccesoDenegadoHandler, AudienciaValidator
-    └── filter/                                      AutorizacionAccesoFilter, JwtListaNegraFilter, IdentidadTrazaFilter, LimitadorSolicitudesFilter
+    └── filter/                                      AutorizacionAccesoFilter (filtro único), LimitadorSolicitudesFilter
 ```
 
 ---
@@ -54,7 +55,7 @@ Existen solo mientras dure la transición y se retiran con `security.direct-logi
 
 ### Autenticación y autorización
 - Cada emisor se declara en `security.authentication.issuers[*]` (`id`, `issuer`, `jwks-uri`, `audiences`, `authorization`, `blacklist`, `claims`). Un token de un emisor ausente, deshabilitado, con audiencia ajena o expirado se rechaza con **401**.
-- `AutorizacionAccesoFilter` pregunta, en cada solicitud protegida, si el usuario puede ejecutar el método sobre el recurso (plantilla de ruta con prefijo, p. ej. `/api/fichas-perfil/{fichaPerfilId}/items`). 2xx permite, 401 y 403 se propagan, y cualquier otro resultado o fallo de transporte responde **503** (falla cerrado). No se cachea ninguna decisión ni viaja ningún permiso en el token.
+- `AutorizacionAccesoFilter` es el único filtro de acceso: elige el `ProveedorAutenticacion` (Bearer o cookie de sesión, `X-Proveedor-Identidad` fuerza uno), autentica, aplica la lista negra, registra el sujeto en la traza y pregunta, en cada solicitud protegida, si el usuario puede ejecutar el método sobre el recurso (plantilla de ruta con prefijo, p. ej. `/api/fichas-perfil/{fichaPerfilId}/items`). 2xx permite, 401 y 403 se propagan, y cualquier otro resultado o fallo de transporte responde **503** (falla cerrado). No se cachea ninguna decisión ni viaja ningún permiso en el token.
 - Rutas públicas y exentas del PEP: `security.authorization.public-paths` y `authenticated-paths`.
 - Un endpoint nuevo se registra como recurso en el proveedor de autorización y, mientras exista el emisor legado, con una fila en `autorizacion-equivalencias.yml` (`CompletitudEquivalenciasAutorizacionTest` lo exige; escribe `build/reports/autorizacion/recursos-pdp.csv`).
 - En producción el arranque falla si el modo es `none`, si `security.enabled=false`, si falta cualquier dato obligatorio del PEP o si se permite HTTP inseguro.
@@ -64,7 +65,7 @@ Existen solo mientras dure la transición y se retiran con `security.direct-logi
 
 ### Lista negra de tokens (logout)
 - Al cerrar sesión, el JTI se guarda en Redis con TTL igual al tiempo de vida restante.
-- `JwtListaNegraFilter` consulta Redis solo para emisores con `blacklist: true`; ante una caída de Redis acepta el token hasta que expire (fail-open acotado).
+- `AplicadorListaNegra` (paso del filtro único, tras autenticar y antes de la traza y la decisión) consulta Redis solo para emisores con `blacklist: true`; ante una caída de Redis acepta el token hasta que expire (fail-open acotado).
 
 ### Rate limiting
 - Implementado con Bucket4j + Redis (distribuido, apto para múltiples instancias).

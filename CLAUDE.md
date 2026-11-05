@@ -405,13 +405,19 @@ Java puro.
   `TrazabilidadFilter` abre uno por petición HTTP y `AbstractEventConsumer` uno por consumo AMQP,
   pero un `@Scheduled` **no recibe ninguno**: debe abrir el suyo con
   `gestorTraza.abrir(SolicitudTraza.paraProgramado())` o sus líneas salen sin traza.
-- **Dos filtros, y el orden importa:** `TrazabilidadFilter` (`shared:web`, `@Order(-300)`) es el más
-  externo y dueño del alcance y de la línea `AUDIT`; `IdentidadTrazaFilter`
-  (`seguridad:infrastructure`) solo añade el usuario y se registra **dentro** de la cadena de Spring
-  Security (`addFilterAfter(BearerTokenAuthenticationFilter.class)`) — en `LOWEST_PRECEDENCE`
-  quedaría tras `AuthorizationFilter` y todo 403 se auditaría como anónimo. Va declarado como `@Bean`
-  más un `FilterRegistrationBean` deshabilitado, porque si no el servlet container lo registraría
-  también y `OncePerRequestFilter` saltaría la segunda pasada.
+- **El orden de los filtros importa:** `TrazabilidadFilter` (`shared:web`, `@Order(-300)`) es el más
+  externo y dueño del alcance y de la línea `AUDIT`; `AutorizacionAccesoFilter`
+  (`seguridad:infrastructure`) es el **único** filtro de seguridad propio y se registra **dentro** de la
+  cadena de Spring Security (`addFilterAfter(BearerTokenAuthenticationFilter.class)`) — en
+  `LOWEST_PRECEDENCE` quedaría tras `AuthorizationFilter` y todo 403 se auditaría como anónimo. Va
+  declarado como `@Bean` más un `FilterRegistrationBean` deshabilitado, porque si no el servlet
+  container lo registraría también y `OncePerRequestFilter` saltaría la segunda pasada. Ese único
+  filtro elige el proveedor (`SeleccionProveedor` sobre el registro `ProveedoresAutenticacion`, donde
+  Bearer es `ProveedorBearer` y la cookie del BFF es `ProveedorSesionPdp`), valida CSRF si el
+  proveedor lo exige, autentica, aplica la lista negra (`AplicadorListaNegra`), registra el usuario en
+  la traza y consulta la decisión de acceso (`AplicadorDecisionAcceso`). Los consumidores del
+  contexto de seguridad leen `IdentidadAutenticada`, nunca un token concreto; no hay `instanceof` de
+  un proveedor fuera de su propia clase.
 - **MDC a través de `@Async`:** la externalización de eventos de Spring Modulith a RabbitMQ corre en
   otro hilo (`applicationTaskExecutor`, tras el commit), donde el MDC estaría vacío y
   `TrazaMessagePostProcessor` fabricaría una correlación nueva. `MdcTaskDecorator`
@@ -493,7 +499,7 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
     es por instancia: N réplicas dan N× cuota — sigue siendo un límite, y es el precio de no tener
     estado compartido justo cuando el estado compartido es lo que falló.
 
-  `JwtListaNegraFilter` **sí** falla abierto, y ahí es lo correcto por una razón que no aplica arriba:
+  `AplicadorListaNegra` **sí** falla abierto, y ahí es lo correcto por una razón que no aplica arriba:
   el radio de impacto está acotado porque la entrada de la lista negra expira con el propio token
   (5–15 min), así que una caída solo puede honrar un token revocado hasta que habría expirado igual.
   Detalle: [docs/fail-open-vs-fail-closed.md](docs/fail-open-vs-fail-closed.md).

@@ -5,7 +5,7 @@ dependencies {
     implementation project(':shared:web')
     implementation project(':shared:logger')
 
-    // shared:tracing — IdentidadTrazaFilter enriquece la traza con el sub del JWT y
+    // shared:tracing — el filtro de acceso enriquece la traza con el sujeto de la identidad y
     // SeguridadRestTemplateConfig propaga la correlacion en las llamadas salientes a Keycloak.
     implementation project(':shared:tracing')
 

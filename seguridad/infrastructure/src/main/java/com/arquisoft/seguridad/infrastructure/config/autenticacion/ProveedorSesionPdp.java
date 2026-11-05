@@ -12,7 +12,6 @@ import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -38,13 +37,23 @@ public class ProveedorSesionPdp implements ProveedorAutenticacion {
     }
 
     @Override
-    public ModoAutorizacion autorizacion() {
-        return ModoAutorizacion.PEP;
+    public Optional<ModoAutorizacion> autorizacion(String emisor) {
+        return propiedades.id().equals(emisor) ? Optional.of(ModoAutorizacion.PEP) : Optional.empty();
     }
 
     @Override
     public boolean exigeProteccionCsrf() {
         return true;
+    }
+
+    @Override
+    public boolean autenticaPrimero() {
+        return false;
+    }
+
+    @Override
+    public boolean actuaEnRutasNoDeNegocio() {
+        return false;
     }
 
     @Override
@@ -67,7 +76,7 @@ public class ProveedorSesionPdp implements ProveedorAutenticacion {
     }
 
     @Override
-    public Authentication autenticar(String credencial) {
+    public IdentidadAutenticada autenticar(String credencial) {
         var resultado = resolverIdentidadSesionInteractor.ejecutar(ResolverIdentidadSesionCommand.crear(credencial));
         return switch (resultado) {
             case ResolucionSesionResult.Resuelta resuelta -> new SesionAuthenticationToken(

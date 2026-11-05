@@ -4,11 +4,17 @@ import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.mo
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.http.HttpHeaders;
+
 import java.time.Duration;
+import java.util.function.BiConsumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PepSolicitudMapperTest {
+
+    private static final BiConsumer<HttpHeaders, String> ADJUNTAR_BEARER =
+            (cabeceras, credencial) -> cabeceras.set(HttpHeaders.AUTHORIZATION, "Bearer " + credencial);
 
     private final PepProperties propiedades = new PepProperties("https://pep", "app", "lab", "cred", false,
             Duration.ofSeconds(1), Duration.ofSeconds(3), 0, Duration.ofMillis(1));
@@ -20,7 +26,7 @@ class PepSolicitudMapperTest {
 
         // Act
         var cuerpo = PepSolicitudMapper.toCuerpo(propiedades, solicitud);
-        var cabeceras = PepSolicitudMapper.toCabeceras(propiedades, solicitud, PepSolicitudMapper::adjuntarBearer);
+        var cabeceras = PepSolicitudMapper.toCabeceras(propiedades, solicitud, ADJUNTAR_BEARER);
 
         // Assert
         assertThat(cuerpo).containsEntry("applicationName", "app").containsEntry("environment", "lab")
@@ -37,8 +43,8 @@ class PepSolicitudMapperTest {
         var vacia = new SolicitudAcceso("GET", "/api/x", "tok", "principal", null);
 
         // Act
-        var cabecerasInvalida = PepSolicitudMapper.toCabeceras(propiedades, invalida, PepSolicitudMapper::adjuntarBearer);
-        var cabecerasVacia = PepSolicitudMapper.toCabeceras(propiedades, vacia, PepSolicitudMapper::adjuntarBearer);
+        var cabecerasInvalida = PepSolicitudMapper.toCabeceras(propiedades, invalida, ADJUNTAR_BEARER);
+        var cabecerasVacia = PepSolicitudMapper.toCabeceras(propiedades, vacia, ADJUNTAR_BEARER);
 
         // Assert
         assertThat(cabecerasInvalida.getFirst("X-Correlation-Id")).isEqualTo(cabecerasInvalida.getFirst("X-Request-Id"));

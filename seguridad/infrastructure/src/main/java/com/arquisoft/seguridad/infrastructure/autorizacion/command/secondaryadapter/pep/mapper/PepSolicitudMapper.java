@@ -20,7 +20,6 @@ public final class PepSolicitudMapper {
     public static final String CABECERA_CORRELATION_ID = "X-Correlation-Id";
     public static final String CABECERA_DECISION_ID = "X-Decision-Id";
 
-    private static final String PREFIJO_BEARER = "Bearer ";
     private static final Pattern CORRELACION_VALIDA = Pattern.compile("[A-Za-z0-9_.:-]{1,128}");
 
     private PepSolicitudMapper() {}
@@ -45,10 +44,6 @@ public final class PepSolicitudMapper {
         cabeceras.set(CABECERA_REQUEST_ID, requestId);
         cabeceras.set(CABECERA_CORRELATION_ID, sanearCorrelacion(solicitud.correlacion(), requestId));
         return cabeceras;
-    }
-
-    public static void adjuntarBearer(HttpHeaders cabeceras, String credencial) {
-        cabeceras.set(HttpHeaders.AUTHORIZATION, PREFIJO_BEARER + credencial);
     }
 
     private static String sanearCorrelacion(String correlacion, String requestId) {

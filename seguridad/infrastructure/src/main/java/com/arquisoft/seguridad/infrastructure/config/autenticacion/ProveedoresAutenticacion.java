@@ -22,11 +22,25 @@ public class ProveedoresAutenticacion {
         return proveedores.stream().filter(ProveedorAutenticacion::habilitado).toList();
     }
 
+    public List<ProveedorAutenticacion> aplicables(boolean rutaNoDeNegocio) {
+        return habilitados().stream()
+                .filter(proveedor -> !rutaNoDeNegocio || proveedor.actuaEnRutasNoDeNegocio())
+                .toList();
+    }
+
     public Optional<ProveedorAutenticacion> porId(String id) {
-        return habilitados().stream().filter(proveedor -> proveedor.id().equals(id)).findFirst();
+        return habilitados().stream().filter(proveedor -> proveedor.id().equalsIgnoreCase(id)).findFirst();
+    }
+
+    public Optional<ProveedorAutenticacion> porEmisor(String emisor) {
+        return habilitados().stream().filter(proveedor -> proveedor.autorizacion(emisor).isPresent()).findFirst();
+    }
+
+    public Optional<ModoAutorizacion> modoDe(String emisor) {
+        return porEmisor(emisor).flatMap(proveedor -> proveedor.autorizacion(emisor));
     }
 
     public boolean contiene(String id) {
-        return proveedores.stream().anyMatch(proveedor -> proveedor.id().equals(id));
+        return proveedores.stream().anyMatch(proveedor -> proveedor.id().equalsIgnoreCase(id));
     }
 }

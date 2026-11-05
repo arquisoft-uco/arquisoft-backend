@@ -1,6 +1,5 @@
 package com.arquisoft.seguridad.infrastructure.config.autenticacion;
 
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -16,7 +15,9 @@ import static org.mockito.Mockito.when;
 class SeleccionProveedorTest {
 
     private static final String COOKIE = "SECURITY_BASELINE_SESSION=abc";
+    private static final String TOKEN = "tok-1";
 
+    private ProveedorAutenticacion bearer;
     private ProveedorAutenticacion sesion;
     private ProveedorAutenticacion apagado;
     private ProveedoresAutenticacion registro;
@@ -24,91 +25,130 @@ class SeleccionProveedorTest {
 
     @BeforeEach
     void preparar() {
+        bearer = mock(ProveedorAutenticacion.class);
+        when(bearer.id()).thenReturn("bearer");
+        when(bearer.habilitado()).thenReturn(true);
+        when(bearer.actuaEnRutasNoDeNegocio()).thenReturn(true);
         sesion = mock(ProveedorAutenticacion.class);
         when(sesion.id()).thenReturn("sesion-pdp");
         when(sesion.habilitado()).thenReturn(true);
+        when(sesion.actuaEnRutasNoDeNegocio()).thenReturn(false);
         apagado = mock(ProveedorAutenticacion.class);
         when(apagado.id()).thenReturn("apagado");
         when(apagado.habilitado()).thenReturn(false);
-        registro = new ProveedoresAutenticacion(List.of(sesion, apagado));
+        registro = new ProveedoresAutenticacion(List.of(bearer, sesion, apagado));
         request = new MockHttpServletRequest("POST", "/api/fichas-perfil");
     }
 
     private void conCookie() {
-        request.setCookies(new Cookie("SECURITY_BASELINE_SESSION", "abc"));
         when(sesion.extraerCredencial(any())).thenReturn(Optional.of(COOKIE));
     }
 
-    private void sinCookie() {
+    private void conBearer() {
+        when(bearer.extraerCredencial(any())).thenReturn(Optional.of(TOKEN));
+    }
+
+    private void sinCredenciales() {
+        when(bearer.extraerCredencial(any())).thenReturn(Optional.empty());
         when(sesion.extraerCredencial(any())).thenReturn(Optional.empty());
     }
 
     @Test
-    void debeNoActuar_cuandoHayBearerSinCabecera() {
+    void debeElegirBearer_cuandoHayBearerYCookieSinEncabezado() {
         // Arrange
+        conBearer();
         conCookie();
 
         // Act
-        var seleccion = SeleccionProveedor.resolver(request, true, registro);
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
-        assertThat(seleccion).isInstanceOf(SeleccionProveedor.Seleccion.NoActua.class);
+        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(bearer, TOKEN));
     }
 
     @Test
     void debeElegirSesion_cuandoSoloHayCookie() {
         // Arrange
+        when(bearer.extraerCredencial(any())).thenReturn(Optional.empty());
         conCookie();
 
         // Act
-        var seleccion = SeleccionProveedor.resolver(request, false, registro);
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
         assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(sesion, COOKIE));
     }
 
     @Test
-    void debeNoActuar_cuandoNoHayCredenciales() {
+    void debeNoActuar_cuandoNingunProveedorTraeCredencial() {
         // Arrange
-        sinCookie();
+        sinCredenciales();
 
         // Act
-        var seleccion = SeleccionProveedor.resolver(request, false, registro);
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
         assertThat(seleccion).isInstanceOf(SeleccionProveedor.Seleccion.NoActua.class);
     }
 
     @Test
-    void debeNoActuar_cuandoCabeceraBearerAunqueHayaCookie() {
+    void debeElegirBearer_cuandoElEncabezadoDiceBearer() {
         // Arrange
+        conBearer();
         conCookie();
         request.addHeader(SeleccionProveedor.CABECERA, "BEARER");
 
         // Act
-        var seleccion = SeleccionProveedor.resolver(request, false, registro);
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
-        assertThat(seleccion).isInstanceOf(SeleccionProveedor.Seleccion.NoActua.class);
+        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(bearer, TOKEN));
     }
 
     @Test
     void debeElegirSesion_cuandoCabeceraIdAunqueHayaBearer() {
         // Arrange
+        conBearer();
         conCookie();
         request.addHeader(SeleccionProveedor.CABECERA, " sesion-pdp ");
 
         // Act
-        var seleccion = SeleccionProveedor.resolver(request, true, registro);
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
         assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(sesion, COOKIE));
     }
 
     @Test
-    void debeRechazar_cuandoValorDesconocidoDeshabilitadoONone() {
+    void debeIgnorarLaCookie_cuandoLaRutaEsNoDeNegocioYNoHayEncabezado() {
         // Arrange
         conCookie();
+        when(bearer.extraerCredencial(any())).thenReturn(Optional.empty());
+
+        // Act
+        var seleccion = SeleccionProveedor.resolver(request, registro, true);
+
+        // Assert
+        assertThat(seleccion).isInstanceOf(SeleccionProveedor.Seleccion.NoActua.class);
+    }
+
+    @Test
+    void debeRechazar_cuandoElEncabezadoNombraUnProveedorNoAplicableEnRutaNoDeNegocio() {
+        // Arrange
+        conCookie();
+        request.addHeader(SeleccionProveedor.CABECERA, "sesion-pdp");
+
+        // Act
+        var seleccion = SeleccionProveedor.resolver(request, registro, true);
+
+        // Assert
+        assertThat(seleccion)
+                .isEqualTo(new SeleccionProveedor.Seleccion.Rechazada(SeleccionProveedor.MOTIVO_NO_APLICABLE));
+    }
+
+    @Test
+    void debeRechazar_cuandoValorDesconocidoODeshabilitado() {
+        // Arrange
         var desconocido = new MockHttpServletRequest();
         desconocido.addHeader(SeleccionProveedor.CABECERA, "principal");
         var none = new MockHttpServletRequest();
@@ -117,9 +157,9 @@ class SeleccionProveedorTest {
         deshabilitado.addHeader(SeleccionProveedor.CABECERA, "apagado");
 
         // Act
-        var seleccionDesconocido = SeleccionProveedor.resolver(desconocido, false, registro);
-        var seleccionNone = SeleccionProveedor.resolver(none, true, registro);
-        var seleccionDeshabilitado = SeleccionProveedor.resolver(deshabilitado, false, registro);
+        var seleccionDesconocido = SeleccionProveedor.resolver(desconocido, registro, false);
+        var seleccionNone = SeleccionProveedor.resolver(none, registro, true);
+        var seleccionDeshabilitado = SeleccionProveedor.resolver(deshabilitado, registro, false);
 
         // Assert
         assertThat(seleccionDesconocido)
@@ -133,11 +173,11 @@ class SeleccionProveedorTest {
     @Test
     void debeRechazar_cuandoProveedorForzadoSinCredencial() {
         // Arrange
-        sinCookie();
+        sinCredenciales();
         request.addHeader(SeleccionProveedor.CABECERA, "sesion-pdp");
 
         // Act
-        var seleccion = SeleccionProveedor.resolver(request, true, registro);
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
         assertThat(seleccion)

@@ -1,10 +1,12 @@
 package com.arquisoft.seguridad.infrastructure.config.autenticacion;
 
+import com.arquisoft.shared.util.UtilTexto;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 
+import java.time.Instant;
 import java.util.List;
 
-public final class SesionAuthenticationToken extends AbstractAuthenticationToken implements AutenticacionAutorizada {
+public final class SesionAuthenticationToken extends AbstractAuthenticationToken implements IdentidadAutenticada {
 
     private final String proveedor;
     private final String sujeto;
@@ -22,24 +24,48 @@ public final class SesionAuthenticationToken extends AbstractAuthenticationToken
         setAuthenticated(true);
     }
 
-    public String getProveedor() {
+    public String getTenant() {
+        return tenant;
+    }
+
+    @Override
+    public String proveedor() {
         return proveedor;
     }
 
-    public String getSujeto() {
+    @Override
+    public String emisor() {
+        return proveedor;
+    }
+
+    @Override
+    public String sujeto() {
         return sujeto;
     }
 
-    public String getNombre() {
-        return nombre;
-    }
-
-    public String getCorreo() {
+    @Override
+    public String correo() {
         return correo;
     }
 
-    public String getTenant() {
-        return tenant;
+    @Override
+    public String nombreUsuario() {
+        return UtilTexto.esVacioONulo(nombre) ? correo : nombre;
+    }
+
+    @Override
+    public List<String> roles() {
+        return List.of();
+    }
+
+    @Override
+    public String idToken() {
+        return null;
+    }
+
+    @Override
+    public Instant expiraEn() {
+        return null;
     }
 
     @Override

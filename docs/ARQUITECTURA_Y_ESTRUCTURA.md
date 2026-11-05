@@ -191,7 +191,7 @@ arquisoft-backend/
 │           │   └── http/SeguridadRestTemplateConfig.java  # SimpleClientHttpRequestFactory (SB4 compat)
 │           └── filter/
 │               ├── LimitadorSolicitudesFilter.java  # OncePerRequestFilter: evalúa límite por IP
-│               └── IdentidadTrazaFilter.java # Añade el sub del JWT a la traza abierta
+│               └── AutorizacionAccesoFilter.java # Filtro único: autentica (Bearer o sesión), lista negra, traza y decisión de acceso
 │
 ├── usuarios/                              # CONTEXTO: andamiaje (flujo CrearUsuario retirado; HU "registrar usuario" pendiente)
 │   ├── domain/                            # sin código

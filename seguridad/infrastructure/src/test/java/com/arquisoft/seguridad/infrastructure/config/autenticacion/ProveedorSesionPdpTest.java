@@ -63,12 +63,15 @@ class ProveedorSesionPdpTest {
         // Assert
         assertThat(cabeceras.getFirst(HttpHeaders.COOKIE)).isEqualTo(COOKIE);
         assertThat(cabeceras.containsHeader(HttpHeaders.AUTHORIZATION)).isFalse();
-        assertThat(proveedor().autorizacion()).isEqualTo(ModoAutorizacion.PEP);
+        assertThat(proveedor().autorizacion("sesion-pdp")).contains(ModoAutorizacion.PEP);
+        assertThat(proveedor().autorizacion("principal")).isEmpty();
+        assertThat(proveedor().autenticaPrimero()).isFalse();
+        assertThat(proveedor().actuaEnRutasNoDeNegocio()).isFalse();
         assertThat(proveedor().exigeProteccionCsrf()).isTrue();
     }
 
     @Test
-    void debeAutenticar_cuandoResuelta() {
+    void debeAutenticarComoIdentidadConContrato_cuandoLaSesionResuelve() {
         // Arrange
         when(interactor.ejecutar(ResolverIdentidadSesionCommand.crear(COOKIE)))
                 .thenReturn(new ResolucionSesionResult.Resuelta("sub-1", "Ana", "ana@uco.edu.co", "t-1"));
@@ -77,18 +80,30 @@ class ProveedorSesionPdpTest {
         var autenticacion = proveedor().autenticar(COOKIE);
 
         // Assert
-        assertThat(autenticacion).isInstanceOf(AutenticacionAutorizada.class);
         assertThat(autenticacion.isAuthenticated()).isTrue();
         assertThat(autenticacion).isInstanceOfSatisfying(SesionAuthenticationToken.class, token -> {
-            assertThat(token.getProveedor()).isEqualTo("sesion-pdp");
-            assertThat(token.getSujeto()).isEqualTo("sub-1");
-            assertThat(token.getNombre()).isEqualTo("Ana");
-            assertThat(token.getCorreo()).isEqualTo("ana@uco.edu.co");
+            assertThat(token.proveedor()).isEqualTo("sesion-pdp");
+            assertThat(token.emisor()).isEqualTo("sesion-pdp");
+            assertThat(token.sujeto()).isEqualTo("sub-1");
+            assertThat(token.nombreUsuario()).isEqualTo("Ana");
+            assertThat(token.correo()).isEqualTo("ana@uco.edu.co");
             assertThat(token.getTenant()).isEqualTo("t-1");
             assertThat(token.getName()).isEqualTo("sub-1");
+            assertThat(token.roles()).isEmpty();
+            assertThat(token.idToken()).isNull();
+            assertThat(token.expiraEn()).isNull();
             assertThat(token.getAuthorities()).isEmpty();
             assertThat(token.getCredentials()).isNull();
         });
+    }
+
+    @Test
+    void debeUsarElCorreoComoNombreUsuario_cuandoLaSesionNoTraeNombre() {
+        // Arrange
+        var token = new SesionAuthenticationToken("sesion-pdp", "sub-1", "", "ana@uco.edu.co", "t-1");
+
+        // Act / Assert
+        assertThat(token.nombreUsuario()).isEqualTo("ana@uco.edu.co");
     }
 
     @Test

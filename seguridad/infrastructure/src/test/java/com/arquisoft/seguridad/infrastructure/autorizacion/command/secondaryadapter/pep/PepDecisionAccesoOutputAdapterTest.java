@@ -1,5 +1,9 @@
 package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorBearer;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorSesionPdp;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.interactor.ResolverIdentidadSesionInteractor;
@@ -15,6 +19,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -56,10 +61,16 @@ class PepDecisionAccesoOutputAdapterTest {
         logger = mock(AppLogger.class);
     }
 
+    private static ProveedorBearer proveedorBearer() {
+        var emisor = new AutenticacionProperties.Emisor("principal", true, "https://idp.test", "", List.of(),
+                ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "preferred_username", "name", ""));
+        return new ProveedorBearer(new AutenticacionProperties(List.of(emisor)), mock(AuthenticationManager.class));
+    }
+
     private PepDecisionAccesoOutputAdapter adaptador(int reintentos) {
         var propiedades = new PepProperties("https://pep.test/", "arquisoft", "lab", "cred-app", false,
                 Duration.ofSeconds(1), Duration.ofSeconds(3), reintentos, Duration.ofMillis(1));
-        return new PepDecisionAccesoOutputAdapter(restTemplate, propiedades, new ProveedoresAutenticacion(List.of()), logger);
+        return new PepDecisionAccesoOutputAdapter(restTemplate, propiedades, new ProveedoresAutenticacion(List.of(proveedorBearer())), logger);
     }
 
     @Test
@@ -231,6 +242,20 @@ class PepDecisionAccesoOutputAdapterTest {
 
         // Assert
         assertThat(decision).isInstanceOf(DecisionAcceso.Permitida.class);
+        server.verify();
+    }
+
+    @Test
+    void debeLanzarNoDisponible_cuandoNoHayProveedorDelEmisor() {
+        // Arrange
+        var propiedades = new PepProperties("https://pep.test/", "arquisoft", "lab", "cred-app", false,
+                Duration.ofSeconds(1), Duration.ofSeconds(3), 0, Duration.ofMillis(1));
+        var adaptador = new PepDecisionAccesoOutputAdapter(restTemplate, propiedades,
+                new ProveedoresAutenticacion(List.of()), logger);
+
+        // Act / Assert
+        assertThatThrownBy(() -> adaptador.decidir(solicitud))
+                .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
         server.verify();
     }
 }

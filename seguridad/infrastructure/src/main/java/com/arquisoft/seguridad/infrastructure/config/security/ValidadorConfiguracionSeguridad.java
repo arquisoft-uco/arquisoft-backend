@@ -50,7 +50,9 @@ public class ValidadorConfiguracionSeguridad {
     private static final String SEGURIDAD_DESHABILITADA_EN_PRODUCCION =
             "security.enabled=false no se permite en produccion";
     private static final String ID_PROVEEDOR_INVALIDO =
-            "id de proveedor de autenticacion vacio, duplicado, igual a un emisor o a la palabra reservada %s: %s";
+            "id de proveedor de autenticacion vacio, duplicado o igual a un emisor: %s";
+    private static final String ID_EMISOR_RESERVADO =
+            "el id de emisor %s esta reservado al proveedor de autenticacion Bearer";
     private static final String SESION_SIN_CREDENCIALES_CORS =
             "el canal de sesion exige security.cors.allow-credentials=true";
     private static final String SESION_ORIGENES_INVALIDOS =
@@ -108,6 +110,9 @@ public class ValidadorConfiguracionSeguridad {
             if (UtilTexto.esVacioONulo(emisor.id()) || !ids.add(emisor.id())) {
                 problemas.add(ID_EMISOR_INVALIDO.formatted(emisor.id()));
             }
+            if (SeleccionProveedor.BEARER.equalsIgnoreCase(emisor.id())) {
+                problemas.add(ID_EMISOR_RESERVADO.formatted(emisor.id()));
+            }
         }
         for (var emisor : habilitados) {
             if (UtilTexto.esVacioONulo(emisor.issuer())) {
@@ -153,8 +158,8 @@ public class ValidadorConfiguracionSeguridad {
         var ids = new HashSet<>(idsEmisores);
         for (var proveedor : proveedores.todos()) {
             var id = proveedor.id();
-            if (UtilTexto.esVacioONulo(id) || SeleccionProveedor.BEARER.equalsIgnoreCase(id) || !ids.add(id)) {
-                problemas.add(ID_PROVEEDOR_INVALIDO.formatted(SeleccionProveedor.BEARER, id));
+            if (UtilTexto.esVacioONulo(id) || !ids.add(id)) {
+                problemas.add(ID_PROVEEDOR_INVALIDO.formatted(id));
             }
         }
         if (sesion.enabled()) {

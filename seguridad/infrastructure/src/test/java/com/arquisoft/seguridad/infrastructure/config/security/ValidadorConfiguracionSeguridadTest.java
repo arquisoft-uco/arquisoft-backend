@@ -280,21 +280,41 @@ class ValidadorConfiguracionSeguridadTest {
     }
 
     @Test
-    void debeFallar_cuandoIdDeProveedorRepetidoOIgualAEmisorOABearer() {
+    void debeFallar_cuandoIdDeProveedorRepetidoOIgualAEmisor() {
         // Arrange
         var pepValido = pep("cred", false, "https://pep.test");
         var repetido = validadorConSesion(sesion(false, "", false, "pep"), pepValido,
                 List.of(proveedor("a"), proveedor("a")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
         var igualAEmisor = validadorConSesion(sesion(false, "", false, "pep"), pepValido,
                 List.of(proveedor("principal")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
-        var igualABearer = validadorConSesion(sesion(false, "", false, "pep"), pepValido,
-                List.of(proveedor("Bearer")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
 
         // Act / Assert
         assertThat(repetido.problemas()).hasSize(1).first().asString().contains("proveedor");
         assertThat(igualAEmisor.problemas()).hasSize(1).first().asString().contains("proveedor");
-        assertThat(igualABearer.problemas()).hasSize(1).first().asString().contains("proveedor");
         assertThatThrownBy(repetido::validar).isInstanceOf(InfrastructureException.class);
+    }
+
+    @Test
+    void debeRechazar_cuandoUnEmisorSeLlamaBearer() {
+        // Arrange
+        var validador = new ValidadorConfiguracionSeguridad(mock(AppLogger.class),
+                new AutenticacionProperties(List.of(emisor("Bearer", true, ModoAutorizacion.PEP))),
+                pep("cred", false, "https://pep.test"), sesionApagada(), new ProveedoresAutenticacion(List.of()),
+                new OrigenesPermitidos(ORIGEN_PRUEBA), expansionValida(), keycloakValido(),
+                mock(RutasPublicas.class), new MockEnvironment());
+
+        // Act / Assert
+        assertThat(validador.problemas()).anySatisfy(problema -> assertThat(problema).contains("reservado"));
+    }
+
+    @Test
+    void debeAceptar_cuandoElProveedorBearerUsaElIdReservado() {
+        // Arrange
+        var validador = validadorConSesion(sesion(false, "", false, "pep"), pep("cred", false, "https://pep.test"),
+                List.of(proveedor("bearer")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
+
+        // Act / Assert
+        assertThat(validador.problemas()).isEmpty();
     }
 
     @Test

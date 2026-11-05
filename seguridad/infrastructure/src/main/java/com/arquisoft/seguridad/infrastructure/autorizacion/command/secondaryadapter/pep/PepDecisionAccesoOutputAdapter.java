@@ -14,7 +14,6 @@ import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilObjeto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -22,8 +21,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.function.BiConsumer;
 
 @Component
 public class PepDecisionAccesoOutputAdapter implements DecisionAccesoOutputPort {
@@ -48,12 +45,12 @@ public class PepDecisionAccesoOutputAdapter implements DecisionAccesoOutputPort 
 
     @Override
     public DecisionAcceso decidir(SolicitudAcceso solicitud) {
-        var adjuntarCredencial = proveedores.porId(solicitud.emisor())
-                .<BiConsumer<HttpHeaders, String>>map(proveedor -> proveedor::adjuntarCredencial)
-                .orElse(PepSolicitudMapper::adjuntarBearer);
+        var proveedor = proveedores.porEmisor(solicitud.emisor())
+                .orElseThrow(() -> new ProveedorAutorizacionNoDisponibleException(
+                        Mensajes.obtener(AutorizacionKey.ERROR_PROVEEDOR_NO_DISPONIBLE)));
         var peticion = new HttpEntity<>(
                 PepSolicitudMapper.toCuerpo(propiedades, solicitud),
-                PepSolicitudMapper.toCabeceras(propiedades, solicitud, adjuntarCredencial));
+                PepSolicitudMapper.toCabeceras(propiedades, solicitud, proveedor::adjuntarCredencial));
         var url = propiedades.url().replaceAll("/+$", "") + RUTA_DECISION;
         RuntimeException ultimoFallo = null;
 

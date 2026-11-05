@@ -2,7 +2,6 @@ package com.arquisoft.seguridad.infrastructure.config.autenticacion;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.core.Authentication;
 
 import java.util.Optional;
 
@@ -12,13 +11,17 @@ public interface ProveedorAutenticacion {
 
     boolean habilitado();
 
-    ModoAutorizacion autorizacion();
+    Optional<ModoAutorizacion> autorizacion(String emisor);
 
     boolean exigeProteccionCsrf();
+
+    boolean autenticaPrimero();
+
+    boolean actuaEnRutasNoDeNegocio();
 
     Optional<String> extraerCredencial(HttpServletRequest request);
 
     void adjuntarCredencial(HttpHeaders cabeceras, String credencial);
 
-    Authentication autenticar(String credencial);
+    IdentidadAutenticada autenticar(String credencial);
 }
