@@ -111,7 +111,7 @@ class EstudianteCommandOutputAdapterTest {
         var guardado = entityManager.find(EstudianteJpaEntity.class, id);
         assertThat(guardado.getEliminadoEn()).isEqualTo(baja);
         assertThat(guardado.getOcurridoEn()).isEqualTo(baja);
-        verify(logger).debug(EstudianteProyectosKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(EstudianteProyectosKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Test
@@ -133,7 +133,7 @@ class EstudianteCommandOutputAdapterTest {
         assertThat(guardado.getNombre()).isEqualTo("Ana Gomez");
         assertThat(guardado.getEmail()).isEqualTo("ana.gomez@uco.edu.co");
         assertThat(guardado.getOcurridoEn()).isEqualTo(ocurridoEn);
-        verify(logger).debug(EstudianteProyectosKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(EstudianteProyectosKey.LOG_FILA_REACTIVADA, id);
     }
 
     @Test
@@ -152,7 +152,7 @@ class EstudianteCommandOutputAdapterTest {
         assertThat(guardado.getIdentificador()).isEqualTo("20161020999");
         assertThat(guardado.getNombre()).isEqualTo("Ana Actualizada");
         assertThat(guardado.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
-        verify(logger).debug(EstudianteProyectosKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(EstudianteProyectosKey.LOG_FILA_ACTUALIZADA, id);
     }
 
     @Test

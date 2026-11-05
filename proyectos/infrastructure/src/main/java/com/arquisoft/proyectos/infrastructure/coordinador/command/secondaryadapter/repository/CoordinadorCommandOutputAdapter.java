@@ -28,14 +28,14 @@ public class CoordinadorCommandOutputAdapter implements CoordinadorOutputPort {
     @Override
     public void eliminarLogica(UUID id, Instant ocurridoEn) {
         coordinadorCommandRepository.eliminarLogica(id, ocurridoEn);
-        logger.debug(CoordinadorKey.LOG_ACTUALIZADO, id);
+        logger.debug(CoordinadorKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Override
     public void reactivar(CoordinadorEntity coordinador) {
         coordinadorCommandRepository.reactivar(coordinador.id(), coordinador.identificador(), coordinador.nombre(),
                 coordinador.email(), coordinador.ocurridoEn());
-        logger.debug(CoordinadorKey.LOG_ACTUALIZADO, coordinador.id());
+        logger.debug(CoordinadorKey.LOG_FILA_REACTIVADA, coordinador.id());
     }
 
     @Override
@@ -46,6 +46,6 @@ public class CoordinadorCommandOutputAdapter implements CoordinadorOutputPort {
     @Override
     public void actualizar(CoordinadorEntity coordinador) {
         coordinadorCommandRepository.save(CoordinadorJpaMapper.toJpaEntity(coordinador));
-        logger.debug(CoordinadorKey.LOG_ACTUALIZADO, coordinador.id());
+        logger.debug(CoordinadorKey.LOG_FILA_ACTUALIZADA, coordinador.id());
     }
 }

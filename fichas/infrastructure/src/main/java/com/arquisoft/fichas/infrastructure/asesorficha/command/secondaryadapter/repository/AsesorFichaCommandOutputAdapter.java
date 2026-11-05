@@ -38,20 +38,20 @@ public class AsesorFichaCommandOutputAdapter implements AsesorFichaOutputPort {
     @Override
     public void actualizar(AsesorFichaEntity asesorFicha) {
         asesorFichaCommandRepository.save(AsesorFichaJpaMapper.toJpaEntity(asesorFicha));
-        logger.debug(AsesorFichaKey.LOG_ACTUALIZADO, asesorFicha.id());
+        logger.debug(AsesorFichaKey.LOG_FILA_ACTUALIZADA, asesorFicha.id());
     }
 
     @Override
     public void eliminarLogica(UUID id, Instant ocurridoEn) {
         asesorFichaCommandRepository.eliminarLogica(id, ocurridoEn);
-        logger.debug(AsesorFichaKey.LOG_ACTUALIZADO, id);
+        logger.debug(AsesorFichaKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Override
     public void reactivar(AsesorFichaEntity asesorFicha) {
         asesorFichaCommandRepository.reactivar(asesorFicha.id(), asesorFicha.identificador(), asesorFicha.nombre(),
                 asesorFicha.email(), asesorFicha.ocurridoEn());
-        logger.debug(AsesorFichaKey.LOG_ACTUALIZADO, asesorFicha.id());
+        logger.debug(AsesorFichaKey.LOG_FILA_REACTIVADA, asesorFicha.id());
     }
 
     @Override

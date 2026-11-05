@@ -6,5 +6,7 @@ import java.util.List;
 
 public interface TipoSolicitudQueryOutputPort {
 
-    List<TipoSolicitudReadModel> findAll();
+    List<TipoSolicitudReadModel> consultarPorRoles(List<String> roles);
+
+    List<TipoSolicitudReadModel> consultarRecibiblesPorRoles(List<String> roles);
 }

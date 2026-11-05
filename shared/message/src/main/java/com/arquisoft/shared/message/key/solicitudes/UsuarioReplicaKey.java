@@ -15,6 +15,7 @@ public enum UsuarioReplicaKey implements ClaveMensaje {
     LOG_DESCARTADO("solicitudes.infraestructura.usuarioreplica.log.descartado", 2),
     LOG_REPLICA_GUARDADA("solicitudes.aplicacion.usuarioreplica.log.replica-guardada", 1),
     LOG_ACTUALIZADO("solicitudes.infraestructura.usuarioreplica.log.actualizado", 1),
+    LOG_FILA_ACTUALIZADA("solicitudes.infraestructura.usuarioreplica.log.fila-actualizada", 1),
     LOG_USUARIO_MODIFICADO_RECIBIDO(
             "solicitudes.infraestructura.usuarioreplica.log.usuario-modificado-recibido", 2),
     LOG_VERIFICACION_ACTUALIZAR("solicitudes.aplicacion.usuarioreplica.log.verificacion-actualizar", 2),
@@ -23,7 +24,13 @@ public enum UsuarioReplicaKey implements ClaveMensaje {
     LOG_ACTUALIZACION_NO_REPLICADO(
             "solicitudes.infraestructura.usuarioreplica.log.actualizacion-no-replicado", 1),
     LOG_ADMINISTRADOR_REMOVIDO_RECIBIDO_STUB(
-            "solicitudes.infraestructura.usuarioreplica.log.administrador-removido-recibido-stub", 2);
+            "solicitudes.infraestructura.usuarioreplica.log.administrador-removido-recibido-stub", 2),
+    LOG_ESTUDIANTE_REMOVIDO_RECIBIDO_STUB(
+            "solicitudes.infraestructura.usuarioreplica.log.estudiante-removido-recibido-stub", 2),
+    LOG_COORDINADOR_REMOVIDO_RECIBIDO_STUB(
+            "solicitudes.infraestructura.usuarioreplica.log.coordinador-removido-recibido-stub", 2),
+    LOG_ASESOR_REMOVIDO_RECIBIDO_STUB(
+            "solicitudes.infraestructura.usuarioreplica.log.asesor-removido-recibido-stub", 2);
 
     private final String clave;
     private final int parametros;

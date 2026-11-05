@@ -94,7 +94,7 @@ class AsesorCommandOutputAdapterTest {
         assertThat(resultado.get().identificador()).isEqualTo("20161020999");
         assertThat(resultado.get().nombre()).isEqualTo("Ana Actualizada");
         assertThat(resultado.get().ocurridoEn()).isEqualTo(nuevoOcurridoEn);
-        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorKey.LOG_FILA_ACTUALIZADA, id);
     }
 
     private UUID sembrarAsesor(Instant ocurridoEn, Instant eliminadoEn) {
@@ -119,7 +119,7 @@ class AsesorCommandOutputAdapterTest {
         var fila = entityManager.find(AsesorJpaEntity.class, id);
         assertThat(fila.getEliminadoEn()).isEqualTo(ocurridoEn);
         assertThat(fila.getOcurridoEn()).isEqualTo(ocurridoEn);
-        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Test
@@ -141,7 +141,7 @@ class AsesorCommandOutputAdapterTest {
         assertThat(fila.getNombre()).isEqualTo("Ana Gomez");
         assertThat(fila.getEmail()).isEqualTo("ana.gomez@uco.edu.co");
         assertThat(fila.getOcurridoEn()).isEqualTo(ocurridoEn);
-        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorKey.LOG_FILA_REACTIVADA, id);
     }
 
     @Test

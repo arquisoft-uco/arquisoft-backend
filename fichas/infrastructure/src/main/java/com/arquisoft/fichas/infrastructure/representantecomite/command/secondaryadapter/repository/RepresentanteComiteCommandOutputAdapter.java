@@ -38,19 +38,19 @@ public class RepresentanteComiteCommandOutputAdapter implements RepresentanteCom
     @Override
     public void actualizar(RepresentanteComiteEntity representanteComite) {
         representanteComiteCommandRepository.save(RepresentanteComiteJpaMapper.toJpaEntity(representanteComite));
-        logger.debug(RepresentanteComiteKey.LOG_ACTUALIZADO, representanteComite.id());
+        logger.debug(RepresentanteComiteKey.LOG_FILA_ACTUALIZADA, representanteComite.id());
     }
 
     @Override
     public void reactivar(RepresentanteComiteEntity representanteComite) {
         representanteComiteCommandRepository.reactivar(representanteComite.id(), representanteComite.identificador(),
                 representanteComite.nombre(), representanteComite.email(), representanteComite.ocurridoEn());
-        logger.debug(RepresentanteComiteKey.LOG_ACTUALIZADO, representanteComite.id());
+        logger.debug(RepresentanteComiteKey.LOG_FILA_REACTIVADA, representanteComite.id());
     }
 
     @Override
     public void eliminarLogica(UUID id, Instant ocurridoEn) {
         representanteComiteCommandRepository.eliminarLogica(id, ocurridoEn);
-        logger.debug(RepresentanteComiteKey.LOG_ACTUALIZADO, id);
+        logger.debug(RepresentanteComiteKey.LOG_FILA_ELIMINADA, id);
     }
 }

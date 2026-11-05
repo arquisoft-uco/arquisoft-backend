@@ -21,6 +21,7 @@ rutas:
       por-correo: /por-correo
       estado: /{usuarioId}/estado
       usuarios-administrador: /administrador
+      administradores-vigentes: /administradores/vigentes
       coordinadores-vigentes: /coordinadores/vigentes
       jurados-vigentes: /jurados/vigentes
       estudiantes-vigentes: /estudiantes/vigentes
