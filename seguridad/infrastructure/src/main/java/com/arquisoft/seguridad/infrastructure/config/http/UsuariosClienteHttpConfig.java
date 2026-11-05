@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.http;
 
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesionProperties;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.webclient.ClienteHttp;
 import com.arquisoft.shared.webclient.ConfiguracionClienteHttp;
@@ -39,7 +40,7 @@ public class UsuariosClienteHttpConfig {
     public static String origen(String url) {
         try {
             var uri = URI.create(UtilTexto.aplicarTrim(url));
-            return uri.getScheme() == null ? UtilTexto.VACIO : uri.getScheme() + "://" + uri.getRawAuthority();
+            return UtilObjeto.esNulo(uri.getScheme()) ? UtilTexto.VACIO : uri.getScheme() + "://" + uri.getRawAuthority();
         } catch (IllegalArgumentException e) {
             return UtilTexto.VACIO;
         }
@@ -48,7 +49,7 @@ public class UsuariosClienteHttpConfig {
     public static String ruta(String url) {
         try {
             var ruta = URI.create(UtilTexto.aplicarTrim(url)).getRawPath();
-            return ruta == null ? UtilTexto.VACIO : ruta;
+            return UtilObjeto.esNulo(ruta) ? UtilTexto.VACIO : ruta;
         } catch (IllegalArgumentException e) {
             return UtilTexto.VACIO;
         }

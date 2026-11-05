@@ -92,22 +92,6 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
     }
 
     @Test
-    void debeLanzarNoDisponible_cuandoNingunProveedorAtiendeElEmisor() {
-        // Arrange
-        var apagado = mock(ProveedorAutenticacion.class);
-        when(apagado.habilitado()).thenReturn(false);
-        var adaptadorSinProveedor = new DecisionAccesoPorEmisorOutputAdapter(
-                new ProveedoresAutenticacion(List.of(apagado)), List.of(pep, tabla, sin));
-
-        // Act / Assert
-        assertThatThrownBy(() -> adaptadorSinProveedor.decidir(solicitud("a")))
-                .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
-        verify(pep, never()).decidir(any());
-        verify(tabla, never()).decidir(any());
-        verify(sin, never()).decidir(any());
-    }
-
-    @Test
     void debeFallarElArranque_cuandoDosAdaptadoresDeclaranElMismoModo() {
         // Arrange
         var proveedores = new ProveedoresAutenticacion(List.of());

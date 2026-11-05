@@ -8,6 +8,7 @@ import com.arquisoft.seguridad.infrastructure.config.http.UsuariosClienteHttpCon
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.webclient.ClienteHttp;
@@ -41,7 +42,7 @@ public class CredencialServicioUsuarios {
     }
 
     public synchronized String token() {
-        if (UtilObjeto.esNulo(token) || !Instant.now().isBefore(vigenteHasta)) {
+        if (UtilObjeto.esNulo(token) || !UtilFecha.generarInstanteActual().isBefore(vigenteHasta)) {
             renovar();
         }
         return token;
@@ -62,7 +63,7 @@ public class CredencialServicioUsuarios {
                 throw noDisponible(MOTIVO_RESPUESTA_INVALIDA, respuesta.estado(), null);
             }
             token = respuesta.cuerpo().accessToken();
-            vigenteHasta = Instant.now().plusSeconds(respuesta.cuerpo().expiresIn()).minus(MARGEN_EXPIRACION);
+            vigenteHasta = UtilFecha.generarInstanteActual().plusSeconds(respuesta.cuerpo().expiresIn()).minus(MARGEN_EXPIRACION);
         } catch (ClienteHttpTransporteException e) {
             throw noDisponible(e.getClass().getSimpleName(), 0, e);
         }
