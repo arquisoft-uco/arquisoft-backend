@@ -424,6 +424,11 @@ Java puro.
   la traza y consulta la decisión de acceso (`AplicadorDecisionAcceso`). Los consumidores del
   contexto de seguridad leen `IdentidadAutenticada`, nunca un token concreto; no hay `instanceof` de
   un proveedor fuera de su propia clase.
+  `X-Proveedor-Identidad` elige el canal (`bearer` o el id de la sesión) **o el emisor de un Bearer**
+  (`legado`, `principal`): sin él, el emisor sale del `iss` del token y, si dos emisores comparten
+  issuer, gana el primero habilitado. Con él, el `iss` y la audiencia del token deben coincidir con el
+  emisor elegido, y la decisión de acceso usa el modo de ese emisor (PEP o tabla de roles). Cualquier
+  cliente puede elegir cualquier emisor habilitado.
 - **MDC a través de `@Async`:** la externalización de eventos de Spring Modulith a RabbitMQ corre en
   otro hilo (`applicationTaskExecutor`, tras el commit), donde el MDC estaría vacío y
   `TrazaMessagePostProcessor` fabricaría una correlación nueva. `MdcTaskDecorator`
