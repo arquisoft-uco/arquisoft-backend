@@ -28,6 +28,7 @@ import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
 import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
 import com.arquisoft.shared.message.key.entregables.EstadoEntregableKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
+import com.arquisoft.shared.message.key.app.ClienteHttpKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.message.key.app.PaginacionKey;
@@ -100,6 +101,7 @@ import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
 import com.arquisoft.shared.message.key.seguridad.MapeoRolesKey;
+import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
@@ -120,6 +122,7 @@ import com.arquisoft.shared.message.key.usuarios.ConsultarJuradosVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstadosUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarIdentidadUsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarUsuarioPorCorreoKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuariosAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.CambiarEstadoUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.EliminarUsuarioKey;
@@ -143,6 +146,7 @@ public final class ClavesCatalogo {
     public static final Set<Class<? extends ClaveMensaje>> ENUMS = Set.of(
             AlmacenamientoKey.class,
             ConsultaKey.class,
+            ClienteHttpKey.class,
             HttpKey.class,
             MensajeriaKey.class,
             PaginacionKey.class,
@@ -196,6 +200,7 @@ public final class ClavesCatalogo {
             IniciarSesionKey.class,
             LimiteSolicitudesKey.class,
             MapeoRolesKey.class,
+            ResolucionSesionKey.class,
             SesionKey.class,
             TokenInvalidadoKey.class,
             TokenKey.class,
@@ -270,6 +275,7 @@ public final class ClavesCatalogo {
             ConsultarUsuariosAdministradorKey.class,
             ConsultarEstadosUsuarioKey.class,
             ConsultarIdentidadUsuarioKey.class,
+            ConsultarUsuarioPorCorreoKey.class,
             AsignacionProyectoKey.class,
             MapaRutaKey.class,
             TareaKey.class,

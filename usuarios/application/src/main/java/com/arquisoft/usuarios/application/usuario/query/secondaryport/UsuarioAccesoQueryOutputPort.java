@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface UsuarioAccesoQueryOutputPort {
 
     Optional<UsuarioAccesoEntity> obtenerPorId(UUID usuario);
+
+    Optional<UsuarioAccesoEntity> obtenerPorCorreo(String correo);
 }

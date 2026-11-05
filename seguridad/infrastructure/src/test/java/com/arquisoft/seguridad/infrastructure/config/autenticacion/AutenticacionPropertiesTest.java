@@ -37,4 +37,17 @@ class AutenticacionPropertiesTest {
         assertThat(propiedades.porId("legado").orElseThrow().audiences()).containsExactly("a");
         assertThat(new AutenticacionProperties(null).issuers()).isEmpty();
     }
+
+    @Test
+    void debeResolverSinMayusculasSoloHabilitados_yDeclararTambienLosApagados() {
+        // Arrange
+        var propiedades = new AutenticacionProperties(List.of(emisor("principal", true, false), emisor("legado", false, true)));
+
+        // Act / Assert
+        assertThat(propiedades.porIdIgnorandoMayusculas("PRINCIPAL")).map(AutenticacionProperties.Emisor::id)
+                .contains("principal");
+        assertThat(propiedades.porIdIgnorandoMayusculas("legado")).isEmpty();
+        assertThat(propiedades.declara("LEGADO")).isTrue();
+        assertThat(propiedades.declara("otro")).isFalse();
+    }
 }

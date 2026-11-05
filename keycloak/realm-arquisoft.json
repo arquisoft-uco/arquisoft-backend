@@ -484,6 +484,22 @@
         "clientRole": false,
         "containerId": "053aee0b-1eeb-4991-926a-dca686ac045b",
         "attributes": {}
+      },
+      {
+        "id": "c45fab72-ad8a-4ced-8e97-c05e42d56768",
+        "name": "servicio-identidad",
+        "description": "Rol de servicio: solo resolver el id de un usuario por su correo",
+        "composite": true,
+        "composites": {
+          "client": {
+            "arquisoft-api": [
+              "usuarios:usuario-por-correo:view"
+            ]
+          }
+        },
+        "clientRole": false,
+        "containerId": "053aee0b-1eeb-4991-926a-dca686ac045b",
+        "attributes": {}
       }
     ],
     "client": {
@@ -2854,6 +2870,15 @@
           "clientRole": true,
           "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
           "attributes": {}
+        },
+        {
+          "id": "a4e76f4d-e01d-4890-bb46-c225f9dc7abf",
+          "name": "usuarios:usuario-por-correo:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
         }
       ],
       "broker": [
@@ -3119,6 +3144,22 @@
       },
       "notBefore": 0,
       "groups": []
+    },
+    {
+      "id": "6ca9d6e0-b95d-43d7-a672-198865c4b715",
+      "username": "service-account-arquisoft-seguridad-usuarios",
+      "emailVerified": false,
+      "enabled": true,
+      "createdTimestamp": 1793849667140,
+      "totp": false,
+      "serviceAccountClientId": "arquisoft-seguridad-usuarios",
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "servicio-identidad"
+      ],
+      "notBefore": 0,
+      "groups": []
     }
   ],
   "scopeMappings": [
@@ -3370,6 +3411,65 @@
         "organization",
         "microprofile-jwt"
       ]
+    },
+    {
+      "id": "f685a401-ee8c-449a-a95e-5e7c8288982e",
+      "clientId": "arquisoft-seguridad-usuarios",
+      "name": "",
+      "description": "Cuenta de servicio del contexto seguridad para resolver el id de usuario por correo",
+      "rootUrl": "",
+      "adminUrl": "",
+      "baseUrl": "",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [],
+      "webOrigins": [],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "realm_client": "false",
+        "client_credentials.use_refresh_token": "false",
+        "display.on.consent.screen": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "protocolMappers": [
+        {
+          "id": "eff6087d-684e-4e6f-aa3a-ee934f8182a7",
+          "name": "audience-arquisoft-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "arquisoft-api",
+            "id.token.claim": "false",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "service_account",
+        "acr",
+        "profile",
+        "roles",
+        "basic",
+        "email"
+      ],
+      "optionalClientScopes": []
     },
     {
       "id": "31ffd405-e2fe-4e76-92bd-e4db1032f260",

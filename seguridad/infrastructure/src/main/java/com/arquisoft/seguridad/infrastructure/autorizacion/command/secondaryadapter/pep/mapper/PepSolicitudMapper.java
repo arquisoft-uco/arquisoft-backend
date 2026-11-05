@@ -2,6 +2,7 @@ package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryada
 
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.PresentadorCredencial;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +20,6 @@ public final class PepSolicitudMapper {
     public static final String CABECERA_CORRELATION_ID = "X-Correlation-Id";
     public static final String CABECERA_DECISION_ID = "X-Decision-Id";
 
-    private static final String PREFIJO_BEARER = "Bearer ";
     private static final Pattern CORRELACION_VALIDA = Pattern.compile("[A-Za-z0-9_.:-]{1,128}");
 
     private PepSolicitudMapper() {}
@@ -33,12 +33,13 @@ public final class PepSolicitudMapper {
         return cuerpo;
     }
 
-    public static HttpHeaders toCabeceras(PepProperties propiedades, SolicitudAcceso solicitud) {
+    public static HttpHeaders toCabeceras(PepProperties propiedades, SolicitudAcceso solicitud,
+                                          PresentadorCredencial presentador) {
         var requestId = UtilUUID.generarNuevoUUID().toString();
         var cabeceras = new HttpHeaders();
         cabeceras.setContentType(MediaType.APPLICATION_JSON);
         cabeceras.setAccept(List.of(MediaType.APPLICATION_JSON));
-        cabeceras.set(HttpHeaders.AUTHORIZATION, PREFIJO_BEARER + solicitud.credencial());
+        presentador.adjuntarCredencial(cabeceras, solicitud.credencial());
         cabeceras.set(CABECERA_CREDENCIAL_APLICACION, propiedades.credential());
         cabeceras.set(CABECERA_REQUEST_ID, requestId);
         cabeceras.set(CABECERA_CORRELATION_ID, sanearCorrelacion(solicitud.correlacion(), requestId));
