@@ -3,6 +3,7 @@ package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryad
 import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.dto.UsuarioPorCorreoRequestDTO;
 import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.dto.UsuarioPorCorreoResponseDTO;
 import com.arquisoft.seguridad.infrastructure.autenticacion.exception.UsuariosNoDisponibleException;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesionProperties;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.util.UtilUUID;
@@ -15,6 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,7 +43,10 @@ class UsuarioPorCorreoWebClientOutputAdapterTest {
     private AppLogger logger;
 
     private UsuarioPorCorreoWebClientOutputAdapter adaptador() {
-        return new UsuarioPorCorreoWebClientOutputAdapter(clienteUsuarios, credencial, logger);
+        var propiedades = new UsuarioSesionProperties("https://usuarios.test", false, Duration.ofSeconds(1),
+                Duration.ofSeconds(3), Duration.ofMinutes(5), "https://kc.test/token", "cliente", "secreto",
+                "/api/usuarios/por-correo");
+        return new UsuarioPorCorreoWebClientOutputAdapter(clienteUsuarios, credencial, propiedades, logger);
     }
 
     private void conRespuesta(int estado, UsuarioPorCorreoResponseDTO cuerpo) {

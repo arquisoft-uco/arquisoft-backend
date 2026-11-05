@@ -18,7 +18,8 @@ public record UsuarioSesionProperties(
         @DefaultValue("PT5M") Duration cacheTtl,
         @DefaultValue("") String tokenUrl,
         @DefaultValue("") String clientId,
-        @DefaultValue("") String clientSecret) {
+        @DefaultValue("") String clientSecret,
+        @DefaultValue("/api/usuarios/por-correo") String porCorreoPath) {
 
     private static final String PROPIEDAD_URL = "security.authentication.session.usuarios.url";
     private static final String PROPIEDAD_TOKEN_URL = "security.authentication.session.usuarios.token-url";

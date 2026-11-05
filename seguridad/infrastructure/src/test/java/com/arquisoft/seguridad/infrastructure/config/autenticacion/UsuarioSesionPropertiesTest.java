@@ -11,7 +11,7 @@ class UsuarioSesionPropertiesTest {
     private static UsuarioSesionProperties propiedades(String url, boolean inseguro, String tokenUrl, String cliente,
                                                        String secreto, Duration ttl) {
         return new UsuarioSesionProperties(url, inseguro, Duration.ofSeconds(1), Duration.ofSeconds(3), ttl, tokenUrl,
-                cliente, secreto);
+                cliente, secreto, "/api/usuarios/por-correo");
     }
 
     @Test

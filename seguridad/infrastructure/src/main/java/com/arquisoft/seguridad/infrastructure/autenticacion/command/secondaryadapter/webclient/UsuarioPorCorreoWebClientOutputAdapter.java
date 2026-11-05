@@ -3,6 +3,7 @@ package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryad
 import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.dto.UsuarioPorCorreoResponseDTO;
 import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.mapper.UsuarioPorCorreoMapper;
 import com.arquisoft.seguridad.infrastructure.autenticacion.exception.UsuariosNoDisponibleException;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesionProperties;
 import com.arquisoft.seguridad.infrastructure.config.http.UsuariosClienteHttpConfig;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
@@ -28,14 +29,17 @@ public class UsuarioPorCorreoWebClientOutputAdapter implements UsuarioPorCorreoW
 
     private final ClienteHttp clienteUsuarios;
     private final CredencialServicioUsuarios credencial;
+    private final UsuarioSesionProperties propiedades;
     private final AppLogger logger;
 
     public UsuarioPorCorreoWebClientOutputAdapter(
             @Qualifier(UsuariosClienteHttpConfig.CLIENTE_USUARIOS) ClienteHttp clienteUsuarios,
             CredencialServicioUsuarios credencial,
+            UsuarioSesionProperties propiedades,
             AppLogger logger) {
         this.clienteUsuarios = clienteUsuarios;
         this.credencial = credencial;
+        this.propiedades = propiedades;
         this.logger = logger;
     }
 
@@ -57,7 +61,7 @@ public class UsuarioPorCorreoWebClientOutputAdapter implements UsuarioPorCorreoW
     }
 
     private RespuestaHttp<UsuarioPorCorreoResponseDTO> enviar(String correo) {
-        var solicitud = UsuarioPorCorreoMapper.toSolicitud(credencial.token(), correo);
+        var solicitud = UsuarioPorCorreoMapper.toSolicitud(propiedades.porCorreoPath(), credencial.token(), correo);
         try {
             return clienteUsuarios.ejecutar(solicitud, UsuarioPorCorreoResponseDTO.class);
         } catch (ClienteHttpTransporteException e) {

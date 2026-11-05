@@ -15,6 +15,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -36,7 +39,7 @@ class CredencialServicioUsuariosTest {
     private CredencialServicioUsuarios credencial() {
         var propiedades = new UsuarioSesionProperties("https://usuarios.test", false, Duration.ofSeconds(1),
                 Duration.ofSeconds(3), Duration.ofMinutes(5), "https://kc.test/realms/arquisoft/protocol/openid-connect/token",
-                "arquisoft-seguridad-usuarios", "secreto");
+                "arquisoft-seguridad-usuarios", "secreto", "/api/usuarios/por-correo");
         return new CredencialServicioUsuarios(clienteToken, propiedades, logger);
     }
 
@@ -127,5 +130,27 @@ class CredencialServicioUsuariosTest {
 
         // Act / Assert
         assertThatThrownBy(credencial::token).isInstanceOf(UsuariosNoDisponibleException.class);
+    }
+
+    @Test
+    void debeRenovarUnaSolaVez_cuandoHayLlamadasConcurrentes() throws Exception {
+        // Arrange
+        when(clienteToken.ejecutar(any(SolicitudHttp.class), eq(TokenServicioResponseDTO.class)))
+                .thenReturn(new RespuestaHttp<>(200, new TokenServicioResponseDTO("tok-1", 300)));
+        var credencial = credencial();
+        var tareas = new ArrayList<Future<String>>();
+
+        // Act
+        try (var ejecutor = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (var i = 0; i < 20; i++) {
+                tareas.add(ejecutor.submit(credencial::token));
+            }
+        }
+
+        // Assert
+        for (var tarea : tareas) {
+            assertThat(tarea.get()).isEqualTo("tok-1");
+        }
+        verify(clienteToken, times(1)).ejecutar(any(SolicitudHttp.class), eq(TokenServicioResponseDTO.class));
     }
 }

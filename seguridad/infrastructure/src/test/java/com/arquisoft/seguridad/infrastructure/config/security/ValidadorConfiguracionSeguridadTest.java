@@ -267,7 +267,8 @@ class ValidadorConfiguracionSeguridadTest {
 
     private static UsuarioSesionProperties usuariosSesion(String url, String secreto) {
         return new UsuarioSesionProperties(url, false, Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofMinutes(5),
-                url.isEmpty() ? "" : url + "/token", url.isEmpty() ? "" : "arquisoft-seguridad-usuarios", secreto);
+                url.isEmpty() ? "" : url + "/token", url.isEmpty() ? "" : "arquisoft-seguridad-usuarios", secreto,
+                "/api/usuarios/por-correo");
     }
 
     private record Canal(SesionProperties sesion, UsuarioSesionProperties usuarios,

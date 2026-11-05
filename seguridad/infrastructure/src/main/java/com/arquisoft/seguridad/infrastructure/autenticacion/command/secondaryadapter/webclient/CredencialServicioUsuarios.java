@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Component
 public class CredencialServicioUsuarios {
@@ -28,6 +29,7 @@ public class CredencialServicioUsuarios {
     private final ClienteHttp clienteToken;
     private final UsuarioSesionProperties propiedades;
     private final AppLogger logger;
+    private final ReentrantLock cerrojo = new ReentrantLock();
 
     private String token;
     private Instant vigenteHasta = Instant.MIN;
@@ -41,16 +43,26 @@ public class CredencialServicioUsuarios {
         this.logger = logger;
     }
 
-    public synchronized String token() {
-        if (UtilObjeto.esNulo(token) || !UtilFecha.generarInstanteActual().isBefore(vigenteHasta)) {
-            renovar();
+    public String token() {
+        cerrojo.lock();
+        try {
+            if (UtilObjeto.esNulo(token) || !UtilFecha.generarInstanteActual().isBefore(vigenteHasta)) {
+                renovar();
+            }
+            return token;
+        } finally {
+            cerrojo.unlock();
         }
-        return token;
     }
 
-    public synchronized void invalidar() {
-        token = null;
-        vigenteHasta = Instant.MIN;
+    public void invalidar() {
+        cerrojo.lock();
+        try {
+            token = null;
+            vigenteHasta = Instant.MIN;
+        } finally {
+            cerrojo.unlock();
+        }
     }
 
     private void renovar() {

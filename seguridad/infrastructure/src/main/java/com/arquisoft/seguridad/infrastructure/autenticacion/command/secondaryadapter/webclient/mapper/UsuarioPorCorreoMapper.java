@@ -16,13 +16,12 @@ import java.util.UUID;
 
 public final class UsuarioPorCorreoMapper {
 
-    public static final String RUTA = "/api/usuarios/por-correo";
     private static final String ESQUEMA_BEARER = "Bearer ";
 
     private UsuarioPorCorreoMapper() {}
 
-    public static SolicitudHttp toSolicitud(String token, String correo) {
-        return new SolicitudHttp(MetodoHttp.POST, RUTA,
+    public static SolicitudHttp toSolicitud(String ruta, String token, String correo) {
+        return new SolicitudHttp(MetodoHttp.POST, ruta,
                 Map.of(HttpHeaders.AUTHORIZATION, ESQUEMA_BEARER + token,
                         HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE),
                 new UsuarioPorCorreoRequestDTO(correo), TipoContenido.JSON);

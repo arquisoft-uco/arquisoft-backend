@@ -31,7 +31,7 @@ public class ClienteHttpRestClient implements ClienteHttp {
             return conCuerpo.exchange((request, response) -> {
                 var estado = response.getStatusCode().value();
                 var exitosa = response.getStatusCode().is2xxSuccessful();
-                R cuerpo = exitosa && !Void.class.equals(tipoRespuesta) ? response.bodyTo(tipoRespuesta) : null;
+                var cuerpo = exitosa && !Void.class.equals(tipoRespuesta) ? response.bodyTo(tipoRespuesta) : null;
                 return new RespuestaHttp<>(estado, cuerpo);
             });
         } catch (RestClientException e) {
