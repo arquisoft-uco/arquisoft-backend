@@ -7,6 +7,7 @@ security:
         # usuarios
         - {method: POST, path: "/api/usuarios", role: "usuarios:usuario:create"}
         - {method: POST, path: "/api/usuarios/administrador", role: "usuarios:usuario-administrador:view"}
+        - {method: POST, path: "/api/usuarios/administradores/vigentes", role: "usuarios:administrador-vigente:view"}
         - {method: POST, path: "/api/usuarios/asesores-ficha/vigentes", role: "usuarios:asesor-ficha-vigente:view"}
         - {method: POST, path: "/api/usuarios/asesores/vigentes", role: "usuarios:asesor-vigente:view"}
         - {method: POST, path: "/api/usuarios/coordinadores/vigentes", role: "usuarios:coordinador-vigente:view"}
