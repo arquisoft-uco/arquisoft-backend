@@ -61,7 +61,7 @@ class ValidadorConfiguracionSeguridadTest {
     private static final String ORIGEN_PRUEBA = "http://localhost:3000";
 
     private static SesionProperties sesionApagada() {
-        return new SesionProperties("sesion-pdp", false, "pep", "SECURITY_BASELINE_SESSION", "", false,
+        return new SesionProperties("sesion-pdp", false, "SECURITY_BASELINE_SESSION", "", false,
                 Duration.ofSeconds(1), Duration.ofSeconds(3), new SesionProperties.Cache(Duration.ofSeconds(60), 10000));
     }
 
@@ -245,8 +245,8 @@ class ValidadorConfiguracionSeguridadTest {
 
     private static final String CABECERAS_CANAL = "Authorization,Content-Type,X-Correlation-Id,X-XSRF-TOKEN,X-Proveedor-Identidad";
 
-    private static SesionProperties sesion(boolean habilitada, String url, boolean inseguro, String authorization) {
-        return new SesionProperties("sesion-pdp", habilitada, authorization, "SECURITY_BASELINE_SESSION", url, inseguro,
+    private static SesionProperties sesion(boolean habilitada, String url, boolean inseguro) {
+        return new SesionProperties("sesion-pdp", habilitada, "SECURITY_BASELINE_SESSION", url, inseguro,
                 Duration.ofSeconds(1), Duration.ofSeconds(3), new SesionProperties.Cache(Duration.ofSeconds(60), 100));
     }
 
@@ -301,9 +301,9 @@ class ValidadorConfiguracionSeguridadTest {
     void debeFallar_cuandoIdDeProveedorRepetidoOIgualAEmisor() {
         // Arrange
         var pepValido = pep("cred", false, "https://pep.test");
-        var repetido = validadorConSesion(sesion(false, "", false, "pep"), pepValido,
+        var repetido = validadorConSesion(sesion(false, "", false), pepValido,
                 List.of(proveedor("a"), proveedor("a")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
-        var igualAEmisor = validadorConSesion(sesion(false, "", false, "pep"), pepValido,
+        var igualAEmisor = validadorConSesion(sesion(false, "", false), pepValido,
                 List.of(proveedor("principal")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
 
         // Act / Assert
@@ -328,7 +328,7 @@ class ValidadorConfiguracionSeguridadTest {
     @Test
     void debeAceptar_cuandoElProveedorBearerUsaElIdReservado() {
         // Arrange
-        var validador = validadorConSesion(sesion(false, "", false, "pep"), pep("cred", false, "https://pep.test"),
+        var validador = validadorConSesion(sesion(false, "", false), pep("cred", false, "https://pep.test"),
                 List.of(proveedor("bearer")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
 
         // Act / Assert
@@ -338,25 +338,16 @@ class ValidadorConfiguracionSeguridadTest {
     @Test
     void debeFallar_cuandoSesionHabilitadaSinUrl() {
         // Arrange
-        var validador = validadorCanal(sesion(true, "", false, "pep"));
+        var validador = validadorCanal(sesion(true, "", false));
 
         // Act / Assert
         assertThat(validador.problemas()).hasSize(1).first().asString().contains("pdp-url");
     }
 
     @Test
-    void debeFallar_cuandoSesionNoEsPep() {
-        // Arrange
-        var validador = validadorCanal(sesion(true, "https://pdp.test", false, "role-table"));
-
-        // Act / Assert
-        assertThat(validador.problemas()).hasSize(1).first().asString().contains("authorization");
-    }
-
-    @Test
     void debeFallar_cuandoPepSinConfigurarConSesionHabilitada() {
         // Arrange
-        var validador = validadorConSesion(sesion(true, "https://pdp.test", false, "pep"), pep("", false, ""),
+        var validador = validadorConSesion(sesion(true, "https://pdp.test", false), pep("", false, ""),
                 List.of(proveedor("sesion-pdp")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
 
         // Act / Assert
@@ -366,7 +357,7 @@ class ValidadorConfiguracionSeguridadTest {
     @Test
     void debeFallar_cuandoSesionSinAllowCredentialsOOrigenesInvalidos() {
         // Arrange
-        var configuracion = sesion(true, "https://pdp.test", false, "pep");
+        var configuracion = sesion(true, "https://pdp.test", false);
         var pepValido = pep("cred", false, "https://pep.test");
         var sinCredenciales = validadorConSesion(configuracion, pepValido, List.of(proveedor("sesion-pdp")),
                 ORIGEN_PRUEBA, false, CABECERAS_CANAL, null);
@@ -384,7 +375,7 @@ class ValidadorConfiguracionSeguridadTest {
     @Test
     void debeFallar_cuandoAllowedHeadersSinLasCabecerasDelCanal() {
         // Arrange
-        var configuracion = sesion(true, "https://pdp.test", false, "pep");
+        var configuracion = sesion(true, "https://pdp.test", false);
         var pepValido = pep("cred", false, "https://pep.test");
         var sinXsrf = validadorConSesion(configuracion, pepValido, List.of(proveedor("sesion-pdp")),
                 ORIGEN_PRUEBA, true, "Authorization,X-Proveedor-Identidad", null);
@@ -399,7 +390,7 @@ class ValidadorConfiguracionSeguridadTest {
     @Test
     void debeFallar_enProdConHttpInseguroDeSesion() {
         // Arrange
-        var validador = validadorConSesion(sesion(true, "http://pdp.test", true, "pep"),
+        var validador = validadorConSesion(sesion(true, "http://pdp.test", true),
                 pep("cred", false, "https://pep.test"), List.of(proveedor("sesion-pdp")), ORIGEN_PRUEBA, true,
                 CABECERAS_CANAL, "prod");
 
@@ -410,9 +401,9 @@ class ValidadorConfiguracionSeguridadTest {
     @Test
     void debeAceptar_cuandoSesionDeshabilitadaOBienConfigurada() {
         // Arrange
-        var deshabilitada = validadorConSesion(sesion(false, "", false, "pep"), pep("cred", false, "https://pep.test"),
+        var deshabilitada = validadorConSesion(sesion(false, "", false), pep("cred", false, "https://pep.test"),
                 List.of(proveedor("sesion-pdp")), ORIGEN_PRUEBA, false, "Authorization", null);
-        var bienConfigurada = validadorCanal(sesion(true, "https://pdp.test", false, "pep"));
+        var bienConfigurada = validadorCanal(sesion(true, "https://pdp.test", false));
 
         // Act / Assert
         assertThat(deshabilitada.problemas()).isEmpty();
@@ -424,7 +415,7 @@ class ValidadorConfiguracionSeguridadTest {
                                                                         boolean legadoHabilitado) {
         var emisores = List.of(emisor("principal", true, ModoAutorizacion.PEP),
                 emisor("legado", legadoHabilitado, ModoAutorizacion.PEP));
-        var canal = new Canal(sesion(true, "https://pdp.test", false, "pep"), usuarios, emisores);
+        var canal = new Canal(sesion(true, "https://pdp.test", false), usuarios, emisores);
         return validadorConSesion(canal, pep("cred", false, "https://pep.test"), List.of(proveedor("sesion-pdp")),
                 ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
     }
@@ -443,7 +434,7 @@ class ValidadorConfiguracionSeguridadTest {
     @Test
     void debeIgnorarLaConfiguracionDeUsuarios_cuandoSesionDeshabilitada() {
         // Arrange
-        var canal = new Canal(sesion(false, "", false, "pep"), usuariosSesion("", ""),
+        var canal = new Canal(sesion(false, "", false), usuariosSesion("", ""),
                 List.of(emisor("principal", true, ModoAutorizacion.PEP)));
         var validador = validadorConSesion(canal, pep("cred", false, "https://pep.test"), List.of(), ORIGEN_PRUEBA,
                 true, CABECERAS_CANAL, null);

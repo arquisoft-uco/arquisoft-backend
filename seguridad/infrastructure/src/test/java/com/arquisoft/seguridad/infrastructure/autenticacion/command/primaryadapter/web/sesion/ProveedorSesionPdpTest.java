@@ -33,7 +33,7 @@ class ProveedorSesionPdpTest {
     private ResolverIdentidadSesionInteractor interactor;
 
     private ProveedorSesionPdp proveedor() {
-        var propiedades = new SesionProperties("sesion-pdp", true, "pep", "SECURITY_BASELINE_SESSION",
+        var propiedades = new SesionProperties("sesion-pdp", true, "SECURITY_BASELINE_SESSION",
                 "https://pdp.test", false, Duration.ofSeconds(1), Duration.ofSeconds(3),
                 new SesionProperties.Cache(Duration.ofSeconds(60), 100));
         return new ProveedorSesionPdp(propiedades, interactor);

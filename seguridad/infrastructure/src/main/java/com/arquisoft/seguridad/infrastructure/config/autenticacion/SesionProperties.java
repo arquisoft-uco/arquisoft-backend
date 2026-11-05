@@ -13,7 +13,6 @@ import java.util.List;
 public record SesionProperties(
         @DefaultValue("sesion-pdp") String id,
         @DefaultValue("false") boolean enabled,
-        @DefaultValue("pep") String authorization,
         @DefaultValue("SECURITY_BASELINE_SESSION") String cookieName,
         @DefaultValue("") String pdpUrl,
         @DefaultValue("false") boolean allowInsecureHttp,
@@ -21,14 +20,10 @@ public record SesionProperties(
         @DefaultValue("3s") Duration readTimeout,
         @DefaultValue Cache cache) {
 
-    public static final String MODO_PEP = "pep";
-
     private static final String PROPIEDAD_URL = "security.authentication.session.pdp-url";
     private static final String FALTA_ID = "falta security.authentication.session.id";
     private static final String FALTA_COOKIE = "falta security.authentication.session.cookie-name";
     private static final String FALTA_URL = "falta " + PROPIEDAD_URL;
-    private static final String AUTHORIZATION_NO_PEP =
-            "security.authentication.session.authorization debe ser pep";
 
     public record Cache(
             @DefaultValue("PT60S") Duration ttl,
@@ -51,9 +46,6 @@ public record SesionProperties(
             problemas.add(FALTA_URL);
         } else {
             problemas.addAll(UrlProveedor.problemas(PROPIEDAD_URL, pdpUrl, allowInsecureHttp));
-        }
-        if (!MODO_PEP.equalsIgnoreCase(UtilTexto.aplicarTrim(authorization))) {
-            problemas.add(AUTHORIZATION_NO_PEP);
         }
         return problemas;
     }

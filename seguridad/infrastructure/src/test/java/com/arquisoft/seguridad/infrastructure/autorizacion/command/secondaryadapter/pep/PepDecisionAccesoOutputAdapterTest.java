@@ -221,7 +221,7 @@ class PepDecisionAccesoOutputAdapterTest {
     @Test
     void debeEnviarCookie_cuandoEmisorEsProveedorDeSesion() {
         // Arrange
-        var sesion = new SesionProperties("sesion-pdp", true, "pep", "SECURITY_BASELINE_SESSION", "https://pdp.test",
+        var sesion = new SesionProperties("sesion-pdp", true, "SECURITY_BASELINE_SESSION", "https://pdp.test",
                 false, Duration.ofSeconds(1), Duration.ofSeconds(3),
                 new SesionProperties.Cache(Duration.ofSeconds(60), 100));
         var proveedores = new ProveedoresAutenticacion(

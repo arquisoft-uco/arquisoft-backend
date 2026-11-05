@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SesionPropertiesTest {
 
-    private static SesionProperties conUrl(String url, boolean inseguro, String cookie, String authorization) {
-        return new SesionProperties("sesion-pdp", true, authorization, cookie, url, inseguro, Duration.ofSeconds(1),
+    private static SesionProperties conUrl(String url, boolean inseguro, String cookie) {
+        return new SesionProperties("sesion-pdp", true, cookie, url, inseguro, Duration.ofSeconds(1),
                 Duration.ofSeconds(3), new SesionProperties.Cache(Duration.ofSeconds(60), 100));
     }
 
@@ -27,7 +27,6 @@ class SesionPropertiesTest {
         // Assert
         assertThat(propiedades.enabled()).isFalse();
         assertThat(propiedades.id()).isEqualTo("sesion-pdp");
-        assertThat(propiedades.authorization()).isEqualTo("pep");
         assertThat(propiedades.cookieName()).isEqualTo("SECURITY_BASELINE_SESSION");
         assertThat(propiedades.pdpUrl()).isEmpty();
         assertThat(propiedades.allowInsecureHttp()).isFalse();
@@ -39,20 +38,18 @@ class SesionPropertiesTest {
     }
 
     @Test
-    void debeReportarUrlVaciaHttpInseguraCookieVaciaOAuthorizationDistintoDePep() {
+    void debeReportarUrlVaciaHttpInseguraCookieVacia() {
         // Act
-        var sinUrl = conUrl("", false, "SECURITY_BASELINE_SESSION", "pep").problemas();
-        var http = conUrl("http://pdp.test", false, "SECURITY_BASELINE_SESSION", "pep").problemas();
-        var sinCookie = conUrl("https://pdp.test", false, "", "pep").problemas();
-        var otroModo = conUrl("https://pdp.test", false, "SECURITY_BASELINE_SESSION", "role-table").problemas();
-        var valida = conUrl("http://pdp.test", true, "SECURITY_BASELINE_SESSION", "pep").problemas();
+        var sinUrl = conUrl("", false, "SECURITY_BASELINE_SESSION").problemas();
+        var http = conUrl("http://pdp.test", false, "SECURITY_BASELINE_SESSION").problemas();
+        var sinCookie = conUrl("https://pdp.test", false, "").problemas();
+        var valida = conUrl("http://pdp.test", true, "SECURITY_BASELINE_SESSION").problemas();
         var ttlCero = new SesionProperties.Cache(Duration.ZERO, 100);
 
         // Assert
         assertThat(sinUrl).hasSize(1).first().asString().contains("pdp-url");
         assertThat(http).hasSize(1).first().asString().contains("HTTPS");
         assertThat(sinCookie).hasSize(1).first().asString().contains("cookie-name");
-        assertThat(otroModo).hasSize(1).first().asString().contains("authorization");
         assertThat(valida).isEmpty();
         assertThat(ttlCero.habilitada()).isFalse();
     }

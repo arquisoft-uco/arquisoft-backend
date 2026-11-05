@@ -41,7 +41,7 @@ class PdpResolucionSesionOutputAdapterTest {
         var restTemplate = new RestTemplate();
         server = MockRestServiceServer.bindTo(restTemplate).build();
         logger = mock(AppLogger.class);
-        var propiedades = new SesionProperties("sesion-pdp", true, "pep", "SECURITY_BASELINE_SESSION",
+        var propiedades = new SesionProperties("sesion-pdp", true, "SECURITY_BASELINE_SESSION",
                 "https://pdp.test/", false, Duration.ofSeconds(1), Duration.ofSeconds(3),
                 new SesionProperties.Cache(Duration.ofSeconds(60), 100));
         adaptador = new PdpResolucionSesionOutputAdapter(restTemplate, propiedades, logger);

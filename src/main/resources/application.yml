@@ -403,7 +403,6 @@ security:
     session:
       id: ${SESSION_PROVIDER_ID:sesion-pdp}
       enabled: ${SESSION_AUTH_ENABLED:false}
-      authorization: ${SESSION_AUTHORIZATION:pep}
       cookie-name: ${SESSION_COOKIE_NAME:SECURITY_BASELINE_SESSION}
       pdp-url: ${SESSION_PDP_URL:}
       allow-insecure-http: ${SESSION_ALLOW_INSECURE_HTTP:false}
