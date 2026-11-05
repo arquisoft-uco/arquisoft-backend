@@ -17,7 +17,8 @@ public enum ResolucionSesionKey implements ClaveMensaje {
     LOG_CACHE_USUARIO_DEGRADADA("seguridad.infraestructura.sesion-externa.log.cache-usuario-degradada", 1),
     ERROR_PROVEEDOR_NO_DISPONIBLE("seguridad.infraestructura.sesion-externa.error.proveedor-no-disponible", 0),
     ERROR_USUARIO_NO_REGISTRADO("seguridad.infraestructura.sesion-externa.error.usuario-no-registrado", 0),
-    ERROR_USUARIOS_NO_DISPONIBLE("seguridad.infraestructura.sesion-externa.error.usuarios-no-disponible", 0);
+    ERROR_USUARIOS_NO_DISPONIBLE("seguridad.infraestructura.sesion-externa.error.usuarios-no-disponible", 0),
+    ERROR_USUARIOS_HTTP_EN_PRODUCCION("seguridad.infraestructura.sesion-externa.error.usuarios-http-en-produccion", 0);
 
     private final String clave;
     private final int parametros;

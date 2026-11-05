@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.cache;
 
 import com.arquisoft.seguridad.application.autenticacion.command.secondaryport.UsuarioPorCorreoOutputPort;
-import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.UsuarioPorCorreoWebClientOutputPort;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.UsuarioPorCorreoWebClient;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesionProperties;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
@@ -21,12 +21,12 @@ public class UsuarioPorCorreoConCacheOutputAdapter implements UsuarioPorCorreoOu
 
     private static final String PREFIJO_CLAVE = "arquisoft:seguridad:usuario-por-correo:";
 
-    private final UsuarioPorCorreoWebClientOutputPort delegado;
+    private final UsuarioPorCorreoWebClient delegado;
     private final StringRedisTemplate redis;
     private final UsuarioSesionProperties propiedades;
     private final AppLogger logger;
 
-    public UsuarioPorCorreoConCacheOutputAdapter(UsuarioPorCorreoWebClientOutputPort delegado,
+    public UsuarioPorCorreoConCacheOutputAdapter(UsuarioPorCorreoWebClient delegado,
                                                  StringRedisTemplate redis,
                                                  UsuarioSesionProperties propiedades,
                                                  AppLogger logger) {

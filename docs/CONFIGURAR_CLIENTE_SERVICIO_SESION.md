@@ -126,12 +126,16 @@ de la Admin API qué realm roles otorgan cada client role.
 
 ### Por qué la llamada envía `X-Proveedor-Identidad`
 
-El token de servicio es del realm `arquisoft`. Si el emisor `principal` (PEP) y el emisor `legado`
-(tabla de roles) comparten issuer, sin header el backend asigna el token al primero habilitado,
-`principal`, y su decisión de acceso va al PEP, que no conoce ese token. Por eso la llamada a
-`/usuarios/por-correo` envía `X-Proveedor-Identidad: legado` (`SESSION_USUARIOS_PROVEEDOR`): el token
-se autentica y se autoriza como el emisor `legado`. El `iss` y la audiencia del token deben coincidir
-con ese emisor, o la respuesta es 401.
+El token de servicio es del realm `arquisoft`, cuyo issuer es el del emisor `legado` (tabla de roles);
+el emisor `principal` (PEP) tiene otro issuer (el realm `security-baseline`). La llamada a
+`/usuarios/por-correo` envía `X-Proveedor-Identidad: legado` (`SESSION_USUARIOS_PROVEEDOR`) para fijar
+ese emisor de forma explícita: el token se autentica y se autoriza como `legado`, y su decisión de
+acceso va a la tabla de roles, no al PEP, que no conoce ese token. El `iss` y la audiencia del token
+deben coincidir con ese emisor, o la respuesta es 401.
+
+Si se configura `AUTH_ISSUER_URI` igual al issuer de `legado`, los emisores habilitados con el mismo
+`issuer` deben declarar la misma `blacklist`, `audiences` y `authorization`; si no, el arranque falla
+con `seguridad.infraestructura.autorizacion.error.emisores-politica-distinta`.
 
 ## 4. Verificar el token antes de arrancar
 
@@ -165,8 +169,8 @@ Resultado esperado:
 | 503 al abrir una sesión con cookie | El PDP, Keycloak o `usuarios` no responden, o el token de servicio no se obtiene |
 | 403 con cookie válida y PEP que permite | El correo de la sesión no existe, o está dado de baja, en `usuarios` |
 | 403 en `/usuarios/por-correo` con el token de servicio | Falta el paso 2 o el 5, o el índice de roles aún no se refrescó |
-| 401 en `/usuarios/por-correo` con el token de servicio | Falta la audiencia (paso 4), `AUTH_LEGACY_ENABLED` no está activo, o `SESSION_USUARIOS_PROVEEDOR` apunta a un emisor cuyo `iss` o audiencia no coinciden con el token |
-| 503 `USUARIOS_NO_DISPONIBLE` con el PEP en 401/403 sobre el token de servicio | El token cayó en `principal` en vez de `legado`: revisa que la llamada envíe `X-Proveedor-Identidad` y que `SESSION_USUARIOS_PROVEEDOR` sea un emisor habilitado |
+| 401 en `/usuarios/por-correo` con el token de servicio | Falta la audiencia (paso 4) o `AUTH_LEGACY_ENABLED` no está activo |
+| 503 `USUARIOS_NO_DISPONIBLE` con el log `estado-inesperado` 401 al pedir el id por correo | `SESSION_USUARIOS_PROVEEDOR` apunta a `principal`: el `iss` del token de servicio (realm `arquisoft`) no coincide con el de ese emisor y `usuarios` responde 401 incluso tras el reintento; debe ser `legado` |
 | El cliente reintenta una vez y falla | El token de servicio caducó o fue revocado; el cliente invalida el token y reintenta una sola vez |
 
 ## Referencias

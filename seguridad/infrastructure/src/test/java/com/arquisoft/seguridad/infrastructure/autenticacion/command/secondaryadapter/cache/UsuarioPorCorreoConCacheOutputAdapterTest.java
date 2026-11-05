@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.cache;
 
-import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.UsuarioPorCorreoWebClientOutputPort;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.UsuarioPorCorreoWebClient;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesionProperties;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
@@ -33,7 +33,7 @@ class UsuarioPorCorreoConCacheOutputAdapterTest {
     private static final Duration TTL = Duration.ofMinutes(5);
 
     @Mock
-    private UsuarioPorCorreoWebClientOutputPort delegado;
+    private UsuarioPorCorreoWebClient delegado;
 
     @Mock
     private StringRedisTemplate redis;

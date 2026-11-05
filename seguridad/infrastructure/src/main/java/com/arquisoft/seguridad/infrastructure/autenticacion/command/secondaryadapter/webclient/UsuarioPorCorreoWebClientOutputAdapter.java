@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class UsuarioPorCorreoWebClientOutputAdapter implements UsuarioPorCorreoWebClientOutputPort {
+public class UsuarioPorCorreoWebClientOutputAdapter implements UsuarioPorCorreoWebClient {
 
     private static final int ESTADO_OK = 200;
     private static final int ESTADO_UNPROCESSABLE = 422;

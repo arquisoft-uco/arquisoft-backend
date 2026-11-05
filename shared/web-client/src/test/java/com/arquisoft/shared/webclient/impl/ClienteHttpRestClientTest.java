@@ -1,5 +1,7 @@
 package com.arquisoft.shared.webclient.impl;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.ClienteHttpKey;
 import com.arquisoft.shared.webclient.MetodoHttp;
 import com.arquisoft.shared.webclient.SolicitudHttp;
 import com.arquisoft.shared.webclient.TipoContenido;
@@ -122,7 +124,14 @@ class ClienteHttpRestClientTest {
         // Act & Assert
         assertThatThrownBy(() -> cliente.ejecutar(solicitud, Eco.class))
                 .isInstanceOf(ClienteHttpTransporteException.class)
-                .hasRootCauseInstanceOf(IOException.class);
+                .hasRootCauseInstanceOf(IOException.class)
+                .satisfies(fallo -> {
+                    var excepcion = (ClienteHttpTransporteException) fallo;
+                    assertThat(excepcion.getError().getMessage())
+                            .isEqualTo(Mensajes.obtener(ClienteHttpKey.ERROR_TRANSPORTE))
+                            .doesNotContain("ResourceAccessException");
+                    assertThat(excepcion.getError().getDetalle()).isEqualTo("ResourceAccessException");
+                });
     }
 
     @Test

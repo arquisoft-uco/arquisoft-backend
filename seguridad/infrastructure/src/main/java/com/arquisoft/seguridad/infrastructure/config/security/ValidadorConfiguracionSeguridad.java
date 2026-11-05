@@ -12,6 +12,7 @@ import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesion
 import com.arquisoft.seguridad.infrastructure.config.cors.OrigenesPermitidos;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.message.key.seguridad.AutorizacionKey;
 import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
@@ -21,6 +22,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
@@ -29,11 +31,13 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Component
+@DependsOn("catalogoMensajesRedis")
 @RequiredArgsConstructor
 public class ValidadorConfiguracionSeguridad {
 
@@ -128,6 +132,7 @@ public class ValidadorConfiguracionSeguridad {
             }
         }
         problemas.addAll(problemasDeProveedores(ids));
+        problemas.addAll(problemasDeEmisoresConMismoIssuer(habilitados));
         var usaPep = habilitados.stream().anyMatch(emisor -> emisor.authorization() == ModoAutorizacion.PEP);
         if (usaPep) {
             problemas.addAll(pep.problemas());
@@ -157,7 +162,28 @@ public class ValidadorConfiguracionSeguridad {
             if (sesion.enabled() && sesion.allowInsecureHttp()) {
                 problemas.add(SESION_HTTP_EN_PRODUCCION);
             }
+            if (sesion.enabled() && usuariosSesion.allowInsecureHttp()) {
+                problemas.add(Mensajes.obtener(ResolucionSesionKey.ERROR_USUARIOS_HTTP_EN_PRODUCCION));
+            }
         }
+        return problemas;
+    }
+
+    private List<String> problemasDeEmisoresConMismoIssuer(List<AutenticacionProperties.Emisor> habilitados) {
+        var problemas = new ArrayList<String>();
+        var porIssuer = habilitados.stream()
+                .filter(emisor -> !UtilTexto.esVacioONulo(emisor.issuer()))
+                .collect(Collectors.groupingBy(AutenticacionProperties.Emisor::issuer, LinkedHashMap::new, Collectors.toList()));
+        porIssuer.forEach((issuer, emisores) -> {
+            var politicas = emisores.stream()
+                    .map(emisor -> List.of(emisor.blacklist(), emisor.authorization(), new HashSet<>(emisor.audiences())))
+                    .distinct()
+                    .count();
+            if (politicas > 1) {
+                var ids = emisores.stream().map(AutenticacionProperties.Emisor::id).collect(Collectors.joining(SEPARADOR_LISTA));
+                problemas.add(Mensajes.formatear(AutorizacionKey.ERROR_EMISORES_POLITICA_DISTINTA, ids, issuer));
+            }
+        });
         return problemas;
     }
 

@@ -2,5 +2,5 @@ package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryad
 
 import com.arquisoft.seguridad.application.autenticacion.command.secondaryport.UsuarioPorCorreoOutputPort;
 
-public interface UsuarioPorCorreoWebClientOutputPort extends UsuarioPorCorreoOutputPort {
+public interface UsuarioPorCorreoWebClient extends UsuarioPorCorreoOutputPort {
 }

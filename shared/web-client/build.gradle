@@ -1,5 +1,6 @@
 dependencies {
     implementation project(':shared:exception')
+    implementation project(':shared:message')
 
     // TrazaClientHttpRequestInterceptor: propaga la correlacion en toda llamada saliente.
     implementation project(':shared:web')
