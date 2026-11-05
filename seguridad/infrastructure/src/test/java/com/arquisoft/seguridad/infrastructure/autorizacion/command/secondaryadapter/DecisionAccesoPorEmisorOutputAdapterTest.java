@@ -20,10 +20,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,7 +58,10 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
     void preparar() {
         var proveedores = new ProveedoresAutenticacion(List.of(proveedor("a", ModoAutorizacion.PEP),
                 proveedor("b", ModoAutorizacion.ROLE_TABLE), proveedor("c", ModoAutorizacion.NONE)));
-        adaptador = new DecisionAccesoPorEmisorOutputAdapter(proveedores, pep, tabla, sin);
+        lenient().when(pep.modo()).thenReturn(ModoAutorizacion.PEP);
+        lenient().when(tabla.modo()).thenReturn(ModoAutorizacion.ROLE_TABLE);
+        lenient().when(sin.modo()).thenReturn(ModoAutorizacion.NONE);
+        adaptador = new DecisionAccesoPorEmisorOutputAdapter(proveedores, List.of(pep, tabla, sin));
     }
 
     @Test
@@ -82,7 +86,9 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
         // Act / Assert
         assertThatThrownBy(() -> adaptador.decidir(solicitud("zzz")))
                 .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
-        verifyNoInteractions(pep, tabla, sin);
+        verify(pep, never()).decidir(any());
+        verify(tabla, never()).decidir(any());
+        verify(sin, never()).decidir(any());
     }
 
     @Test
@@ -91,11 +97,39 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
         var apagado = mock(ProveedorAutenticacion.class);
         when(apagado.habilitado()).thenReturn(false);
         var adaptadorSinProveedor = new DecisionAccesoPorEmisorOutputAdapter(
-                new ProveedoresAutenticacion(List.of(apagado)), pep, tabla, sin);
+                new ProveedoresAutenticacion(List.of(apagado)), List.of(pep, tabla, sin));
 
         // Act / Assert
         assertThatThrownBy(() -> adaptadorSinProveedor.decidir(solicitud("a")))
                 .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
-        verifyNoInteractions(pep, tabla, sin);
+        verify(pep, never()).decidir(any());
+        verify(tabla, never()).decidir(any());
+        verify(sin, never()).decidir(any());
+    }
+
+    @Test
+    void debeFallarElArranque_cuandoDosAdaptadoresDeclaranElMismoModo() {
+        // Arrange
+        var proveedores = new ProveedoresAutenticacion(List.of());
+        var duplicado = mock(SinDecisionAccesoOutputAdapter.class);
+        when(duplicado.modo()).thenReturn(ModoAutorizacion.PEP);
+        var adaptadores = List.<DecisionAccesoPorModo>of(pep, duplicado, tabla, sin);
+
+        // Act / Assert
+        assertThatThrownBy(() -> new DecisionAccesoPorEmisorOutputAdapter(proveedores, adaptadores))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("PEP");
+    }
+
+    @Test
+    void debeFallarElArranque_cuandoUnModoNoTieneAdaptador() {
+        // Arrange
+        var proveedores = new ProveedoresAutenticacion(List.of());
+        var adaptadores = List.<DecisionAccesoPorModo>of(pep, tabla);
+
+        // Act / Assert
+        assertThatThrownBy(() -> new DecisionAccesoPorEmisorOutputAdapter(proveedores, adaptadores))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("NONE");
     }
 }
