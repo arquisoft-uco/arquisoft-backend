@@ -38,17 +38,19 @@ public class AplicadorListaNegra {
         if (!emisorConListaNegra || UtilObjeto.esNulo(idToken)) {
             return true;
         }
+        var revocado = false;
         try {
-            if (tokenInvalidadoPort.estaInvalidado(idToken)) {
-                logger.warn(TokenInvalidadoKey.LOG_TOKEN_REVOCADO, idToken, request.getRequestURI());
-                escribirRespuesta401(response, request);
-                return false;
-            }
+            revocado = tokenInvalidadoPort.estaInvalidado(idToken);
         } catch (RuntimeException e) {
             // Fail open acotado: sin Redis no se puede saber si el token fue revocado, y
             // rechazar dejaria la API inutilizable. La entrada de la lista negra caduca con
             // el propio token (5-15 min), asi que la ventana es la vida restante de este.
             logger.error(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE, e, e.getMessage());
+        }
+        if (revocado) {
+            logger.warn(TokenInvalidadoKey.LOG_TOKEN_REVOCADO, idToken, request.getRequestURI());
+            escribirRespuesta401(response, request);
+            return false;
         }
         return true;
     }

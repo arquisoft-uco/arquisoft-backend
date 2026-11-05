@@ -21,7 +21,12 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
+import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -138,5 +143,35 @@ class AplicadorListaNegraTest {
         // Assert
         assertThat(continua).isTrue();
         verify(logger).error(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE, fallo, "redis caido");
+    }
+
+    @Test
+    void debeNoDejarPasar_cuandoElTokenEstaRevocadoYNoSePuedeEscribirLa401() throws Exception {
+        // Arrange
+        var respuestaRota = mock(HttpServletResponse.class);
+        when(respuestaRota.getWriter()).thenThrow(new IOException("canal cerrado"));
+        when(tokenInvalidadoPort.estaInvalidado(JTI)).thenReturn(true);
+        var identidad = identidad(JTI);
+        var continua = new AtomicBoolean(false);
+
+        // Act
+        catchThrowable(() -> continua.set(aplicador.aplicar(request, respuestaRota, identidad)));
+
+        // Assert
+        assertThat(continua).isFalse();
+    }
+
+    @Test
+    void debeOmitirLaConsulta_cuandoElEmisorNoEstaConfigurado() {
+        // Arrange
+        var ajena = new BearerAuthenticationToken("otro-emisor", "sub-1", null, null, List.of(), JTI,
+                Instant.now().plusSeconds(60));
+
+        // Act
+        var continua = aplicador.aplicar(request, response, ajena);
+
+        // Assert
+        assertThat(continua).isTrue();
+        verify(tokenInvalidadoPort, never()).estaInvalidado(anyString());
     }
 }
