@@ -8,6 +8,7 @@ import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapte
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesionProperties;
 import com.arquisoft.seguridad.infrastructure.config.cors.OrigenesPermitidos;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -37,6 +38,7 @@ public class ValidadorConfiguracionSeguridad {
 
     private static final String PERFIL_PRODUCCION = "prod";
     private static final String MODO_TEMPLATE = "template";
+    private static final String EMISOR_LEGADO = "legado";
 
     private static final String ERROR_CONFIGURACION_INSEGURA = "Configuración de seguridad inválida: %s";
     private static final String SEPARADOR_PROBLEMAS = "; ";
@@ -61,6 +63,9 @@ public class ValidadorConfiguracionSeguridad {
             "el canal de sesion exige la cabecera %s en security.cors.allowed-headers";
     private static final String SESION_HTTP_EN_PRODUCCION =
             "security.authentication.session.allow-insecure-http=true no se permite en produccion";
+    private static final String SESION_SIN_EMISOR_LEGADO =
+            "el canal de sesion exige el emisor legado habilitado (AUTH_LEGACY_ENABLED=true): el token de servicio "
+                    + "con el que consulta a usuarios es del realm arquisoft";
     private static final String COMODIN = "*";
     private static final String SEPARADOR_LISTA = ",";
     private static final String PEP_HTTP_EN_PRODUCCION =
@@ -70,6 +75,7 @@ public class ValidadorConfiguracionSeguridad {
     private final AutenticacionProperties propiedadesAutenticacion;
     private final PepProperties pep;
     private final SesionProperties sesion;
+    private final UsuarioSesionProperties usuariosSesion;
     private final ProveedoresAutenticacion proveedores;
     private final OrigenesPermitidos origenesPermitidos;
     private final MapeoRolesProperties mapeoRoles;
@@ -164,6 +170,10 @@ public class ValidadorConfiguracionSeguridad {
         }
         if (sesion.enabled()) {
             problemas.addAll(sesion.problemas());
+            problemas.addAll(usuariosSesion.problemas());
+            if (propiedadesAutenticacion.porId(EMISOR_LEGADO).isEmpty()) {
+                problemas.add(SESION_SIN_EMISOR_LEGADO);
+            }
             problemas.addAll(pep.problemas());
             problemas.addAll(problemasDeCorsParaSesion());
         }

@@ -80,6 +80,32 @@ class UsuarioAccesoQueryOutputAdapterTest {
         assertThat(resultado).isEmpty();
     }
 
+    @Test
+    void debeEncontrarPorCorreo_sinDistinguirMayusculas() {
+        // Arrange
+        var usuario = persistirUsuario("1004", "Diana Rios", "ACTIVO", null);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.obtenerPorCorreo("1004@UCO.edu.co");
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(usuario));
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoElCorreoNoExiste() {
+        // Arrange
+        persistirUsuario("1005", "Eva Mora", "ACTIVO", null);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.obtenerPorCorreo("nadie@uco.edu.co");
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
     private UUID persistirUsuario(String identificador, String nombre, String estado, Instant eliminadoEn) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(UsuarioJpaEntity.builder()

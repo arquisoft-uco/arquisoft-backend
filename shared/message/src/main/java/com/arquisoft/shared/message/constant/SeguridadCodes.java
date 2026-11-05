@@ -14,6 +14,7 @@ public final class SeguridadCodes {
         public static final String AUTENTICACION_ERROR = "AUTENTICACION_ERROR";
         public static final String CREDENCIALES_INVALIDAS = "CREDENCIALES_INVALIDAS";
         public static final String PROVEEDOR_IDENTIDAD_NO_DISPONIBLE = "PROVEEDOR_IDENTIDAD_NO_DISPONIBLE";
+        public static final String USUARIOS_NO_DISPONIBLE = "USUARIOS_NO_DISPONIBLE";
         public static final String EMAIL_REQUERIDO = "EMAIL_REQUERIDO";
         public static final String EMAIL_FORMATO_INVALIDO = "EMAIL_FORMATO_INVALIDO";
         public static final String CONTRASENA_REQUERIDA = "CONTRASENA_REQUERIDA";

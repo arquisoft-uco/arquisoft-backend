@@ -412,6 +412,18 @@ security:
       cache:
         ttl: ${SESSION_CACHE_TTL:PT60S}
         max-size: ${SESSION_CACHE_MAX_SIZE:10000}
+      # Id de usuario de la sesion: se resuelve por correo contra el contexto usuarios (POST /usuarios/por-correo)
+      # con una credencial de servicio (client_credentials del cliente arquisoft-seguridad-usuarios, realm arquisoft).
+      # Exige AUTH_LEGACY_ENABLED=true: ese token lo valida el emisor legado.
+      usuarios:
+        url: ${SESSION_USUARIOS_URL:http://localhost:${server.port:8080}}
+        allow-insecure-http: ${SESSION_USUARIOS_ALLOW_INSECURE_HTTP:false}
+        connect-timeout: ${SESSION_USUARIOS_CONNECT_TIMEOUT:1s}
+        read-timeout: ${SESSION_USUARIOS_READ_TIMEOUT:3s}
+        cache-ttl: ${SESSION_USUARIOS_CACHE_TTL:PT5M}
+        token-url: ${SESSION_USUARIOS_TOKEN_URL:${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/token}
+        client-id: ${SESSION_USUARIOS_CLIENT_ID:arquisoft-seguridad-usuarios}
+        client-secret: ${SESSION_USUARIOS_CLIENT_SECRET:}
   authorization:
     public-paths: ${SECURITY_PUBLIC_PATHS:/actuator/health/**,/actuator/prometheus,/swagger-ui/**,/v3/api-docs/**,/swagger-resources/**}
     authenticated-paths: ${SECURITY_AUTHENTICATED_PATHS:/auth/logout}

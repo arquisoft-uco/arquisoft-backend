@@ -1,0 +1,37 @@
+package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.mapper;
+
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.dto.UsuarioPorCorreoRequestDTO;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.dto.UsuarioPorCorreoResponseDTO;
+import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.webclient.MetodoHttp;
+import com.arquisoft.shared.webclient.SolicitudHttp;
+import com.arquisoft.shared.webclient.TipoContenido;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+public final class UsuarioPorCorreoMapper {
+
+    public static final String RUTA = "/api/usuarios/por-correo";
+    private static final String ESQUEMA_BEARER = "Bearer ";
+
+    private UsuarioPorCorreoMapper() {}
+
+    public static SolicitudHttp toSolicitud(String token, String correo) {
+        return new SolicitudHttp(MetodoHttp.POST, RUTA,
+                Map.of(HttpHeaders.AUTHORIZATION, ESQUEMA_BEARER + token,
+                        HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE),
+                new UsuarioPorCorreoRequestDTO(correo), TipoContenido.JSON);
+    }
+
+    public static Optional<UUID> toId(UsuarioPorCorreoResponseDTO respuesta) {
+        if (UtilObjeto.esNulo(respuesta)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(UtilUUID.generarUUIDDesdeTexto(respuesta.id()));
+    }
+}

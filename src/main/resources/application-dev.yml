@@ -28,6 +28,8 @@ security:
   authentication:
     session:
       allow-insecure-http: ${SESSION_ALLOW_INSECURE_HTTP:true}
+      usuarios:
+        allow-insecure-http: ${SESSION_USUARIOS_ALLOW_INSECURE_HTTP:true}
   authorization:
     pep:
       url: ${PEP_URL:http://localhost:18081}

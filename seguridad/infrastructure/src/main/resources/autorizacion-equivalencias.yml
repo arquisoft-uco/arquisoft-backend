@@ -13,6 +13,7 @@ security:
         - {method: GET, path: "/api/usuarios/estados", role: "usuarios:estado-usuario:view"}
         - {method: POST, path: "/api/usuarios/estudiantes/vigentes", role: "usuarios:estudiante-vigente:view"}
         - {method: POST, path: "/api/usuarios/jurados/vigentes", role: "usuarios:jurado-vigente:view"}
+        - {method: POST, path: "/api/usuarios/por-correo", role: "usuarios:usuario-por-correo:view"}
         - {method: POST, path: "/api/usuarios/representantes-comite/vigentes", role: "usuarios:representante-comite-vigente:view"}
         - {method: DELETE, path: "/api/usuarios/{usuarioId}", role: "usuarios:usuario:delete"}
         - {method: GET, path: "/api/usuarios/{usuarioId}", role: "usuarios:usuario-identidad:view"}

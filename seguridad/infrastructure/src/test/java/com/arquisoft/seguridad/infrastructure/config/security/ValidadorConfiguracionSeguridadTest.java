@@ -6,6 +6,7 @@ import com.arquisoft.seguridad.infrastructure.config.autenticacion.Autenticacion
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesionProperties;
 import com.arquisoft.seguridad.infrastructure.config.cors.OrigenesPermitidos;
 import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapter.keycloak.KeycloakFuenteMapeoRolesProperties;
 import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapter.redis.MapeoRolesProperties;
@@ -78,7 +79,7 @@ class ValidadorConfiguracionSeguridadTest {
             entorno.setActiveProfiles(perfil);
         }
         var validador = new ValidadorConfiguracionSeguridad(mock(AppLogger.class), new AutenticacionProperties(emisores),
-                pep, sesionApagada(), new ProveedoresAutenticacion(List.of()), new OrigenesPermitidos(ORIGEN_PRUEBA),
+                pep, sesionApagada(), usuariosSesion("", ""), new ProveedoresAutenticacion(List.of()), new OrigenesPermitidos(ORIGEN_PRUEBA),
                 expansion, keycloak, mock(RutasPublicas.class), entorno);
         ReflectionTestUtils.setField(validador, "seguridadHabilitada", habilitada);
         ReflectionTestUtils.setField(validador, "modoRuta", modoRuta);
@@ -230,7 +231,7 @@ class ValidadorConfiguracionSeguridadTest {
                 ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "u", "n", ""));
         var validador = new ValidadorConfiguracionSeguridad(logger,
                 new AutenticacionProperties(List.of(emisor("sin", true, ModoAutorizacion.PEP), conAudiencia)),
-                pep("cred", false, "https://pep.test"), sesionApagada(), new ProveedoresAutenticacion(List.of()),
+                pep("cred", false, "https://pep.test"), sesionApagada(), usuariosSesion("", ""), new ProveedoresAutenticacion(List.of()),
                 new OrigenesPermitidos(ORIGEN_PRUEBA), expansionValida(), keycloakValido(),
                 mock(RutasPublicas.class), new MockEnvironment());
 
@@ -259,12 +260,29 @@ class ValidadorConfiguracionSeguridadTest {
                                                                       List<ProveedorAutenticacion> proveedores,
                                                                       String origenes, boolean credenciales,
                                                                       String cabeceras, String perfil) {
+        var canal = new Canal(sesion, usuariosSesion("https://usuarios.test", "secreto"),
+                List.of(emisor("principal", true, ModoAutorizacion.PEP), emisor("legado", true, ModoAutorizacion.PEP)));
+        return validadorConSesion(canal, pep, proveedores, origenes, credenciales, cabeceras, perfil);
+    }
+
+    private static UsuarioSesionProperties usuariosSesion(String url, String secreto) {
+        return new UsuarioSesionProperties(url, false, Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofMinutes(5),
+                url.isEmpty() ? "" : url + "/token", url.isEmpty() ? "" : "arquisoft-seguridad-usuarios", secreto);
+    }
+
+    private record Canal(SesionProperties sesion, UsuarioSesionProperties usuarios,
+                         List<AutenticacionProperties.Emisor> emisores) {}
+
+    private static ValidadorConfiguracionSeguridad validadorConSesion(Canal canal, PepProperties pep,
+                                                                      List<ProveedorAutenticacion> proveedores,
+                                                                      String origenes, boolean credenciales,
+                                                                      String cabeceras, String perfil) {
         var entorno = new MockEnvironment();
         if (perfil != null) {
             entorno.setActiveProfiles(perfil);
         }
         var validador = new ValidadorConfiguracionSeguridad(mock(AppLogger.class),
-                new AutenticacionProperties(List.of(emisor("principal", true, ModoAutorizacion.PEP))), pep, sesion,
+                new AutenticacionProperties(canal.emisores()), pep, canal.sesion(), canal.usuarios(),
                 new ProveedoresAutenticacion(proveedores), new OrigenesPermitidos(origenes), expansionValida(),
                 keycloakValido(), mock(RutasPublicas.class), entorno);
         ReflectionTestUtils.setField(validador, "seguridadHabilitada", true);
@@ -299,7 +317,7 @@ class ValidadorConfiguracionSeguridadTest {
         // Arrange
         var validador = new ValidadorConfiguracionSeguridad(mock(AppLogger.class),
                 new AutenticacionProperties(List.of(emisor("Bearer", true, ModoAutorizacion.PEP))),
-                pep("cred", false, "https://pep.test"), sesionApagada(), new ProveedoresAutenticacion(List.of()),
+                pep("cred", false, "https://pep.test"), sesionApagada(), usuariosSesion("", ""), new ProveedoresAutenticacion(List.of()),
                 new OrigenesPermitidos(ORIGEN_PRUEBA), expansionValida(), keycloakValido(),
                 mock(RutasPublicas.class), new MockEnvironment());
 
@@ -400,5 +418,46 @@ class ValidadorConfiguracionSeguridadTest {
         assertThat(deshabilitada.problemas()).isEmpty();
         assertThat(bienConfigurada.problemas()).isEmpty();
         bienConfigurada.validar();
+    }
+
+    private static ValidadorConfiguracionSeguridad validadorConUsuarios(UsuarioSesionProperties usuarios,
+                                                                        boolean legadoHabilitado) {
+        var emisores = List.of(emisor("principal", true, ModoAutorizacion.PEP),
+                emisor("legado", legadoHabilitado, ModoAutorizacion.PEP));
+        var canal = new Canal(sesion(true, "https://pdp.test", false, "pep"), usuarios, emisores);
+        return validadorConSesion(canal, pep("cred", false, "https://pep.test"), List.of(proveedor("sesion-pdp")),
+                ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
+    }
+
+    @Test
+    void debeRechazar_cuandoFaltaUrlOCredencialConSesionHabilitada() {
+        // Arrange
+        var sinUrl = validadorConUsuarios(usuariosSesion("", "secreto"), true);
+        var sinSecreto = validadorConUsuarios(usuariosSesion("https://usuarios.test", ""), true);
+
+        // Act / Assert
+        assertThat(sinUrl.problemas()).anySatisfy(problema -> assertThat(problema).contains("usuarios.url"));
+        assertThat(sinSecreto.problemas()).anySatisfy(problema -> assertThat(problema).contains("client-secret"));
+    }
+
+    @Test
+    void debeIgnorarLaConfiguracionDeUsuarios_cuandoSesionDeshabilitada() {
+        // Arrange
+        var canal = new Canal(sesion(false, "", false, "pep"), usuariosSesion("", ""),
+                List.of(emisor("principal", true, ModoAutorizacion.PEP)));
+        var validador = validadorConSesion(canal, pep("cred", false, "https://pep.test"), List.of(), ORIGEN_PRUEBA,
+                true, CABECERAS_CANAL, null);
+
+        // Act / Assert
+        assertThat(validador.problemas()).isEmpty();
+    }
+
+    @Test
+    void debeRechazar_cuandoSesionHabilitadaSinEmisorLegado() {
+        // Arrange
+        var validador = validadorConUsuarios(usuariosSesion("https://usuarios.test", "secreto"), false);
+
+        // Act / Assert
+        assertThat(validador.problemas()).hasSize(1).first().asString().contains("AUTH_LEGACY_ENABLED");
     }
 }

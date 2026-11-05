@@ -3,6 +3,7 @@ package com.arquisoft.seguridad.infrastructure.config.autenticacion;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.interactor.ResolverIdentidadSesionInteractor;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.model.ResolverIdentidadSesionCommand;
 import com.arquisoft.seguridad.application.autenticacion.command.result.ResolucionSesionResult;
+import com.arquisoft.shared.util.UtilUUID;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 
 import java.time.Duration;
@@ -116,5 +118,30 @@ class ProveedorSesionPdpTest {
         // Act / Assert
         assertThatThrownBy(() -> proveedor.autenticar(COOKIE)).isInstanceOf(InsufficientAuthenticationException.class);
         verify(interactor).ejecutar(ResolverIdentidadSesionCommand.crear(COOKIE));
+    }
+
+    @Test
+    void debeLanzarAccesoDenegado_cuandoUsuarioNoRegistrado() {
+        // Arrange
+        when(interactor.ejecutar(ResolverIdentidadSesionCommand.crear(COOKIE)))
+                .thenReturn(new ResolucionSesionResult.UsuarioNoRegistrado());
+        var proveedor = proveedor();
+
+        // Act / Assert
+        assertThatThrownBy(() -> proveedor.autenticar(COOKIE)).isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void debeAutenticarConElIdDeUsuario_cuandoResuelta() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID().toString();
+        when(interactor.ejecutar(ResolverIdentidadSesionCommand.crear(COOKIE)))
+                .thenReturn(new ResolucionSesionResult.Resuelta(usuario, "Ana", "ana@uco.edu.co", "t-1"));
+
+        // Act
+        var autenticacion = proveedor().autenticar(COOKIE);
+
+        // Assert
+        assertThat(autenticacion.sujeto()).isEqualTo(usuario);
     }
 }

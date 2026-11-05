@@ -137,8 +137,8 @@ Lo que hay que saber de cada uno para no romper el grafo:
 **Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
 crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
 prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
-tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Aún
-no existe (lo trae una HT aparte). Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
+tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Existe
+desde HT-016-AJ3, sobre `RestClient`, con `seguridad` de primer consumidor. Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
 (`shared:web`, paquete `identidad`) traduce `IdentidadActual.roles()` a los roles de negocio de un
 contexto con un mapa que declara el propio contexto (claves de `UsuariosRoles`, valores en su
 `{Contexto}Roles`). Hoy su único consumidor es `estados-ficha`; el segundo previsto es el filtro de
@@ -151,7 +151,12 @@ replica local, A lee su tabla. Se recurre a una consulta HTTP síncrona **solo**
 tres: (1) el dato es una **precondición de una escritura** en A y debe ser correcto al instante de
 escribir, no eventualmente — una réplica desactualizada dejaría pasar un comando inválido; (2) A no
 necesita el dato para nada más, así que mantener una réplica (más su backfill y su consumer) es puro
-lastre; (3) B ya expone una consulta que responde. Hoy no hay ningún caso implementado.
+lastre; (3) B ya expone una consulta que responde. Único caso implementado, y excepción deliberada a
+las tres condiciones (HT-016-AJ3): `seguridad` resuelve correo → id de `usuarios` con
+`POST /usuarios/por-correo` para que `IdentidadActual.id` del canal de sesión sea el id de aplicación y
+no el `subject` del PDP. No es precondición de una escritura; se aceptó porque la identidad se resuelve
+en cada petición con sesión y una réplica en `seguridad` (sin DB) sería lastre. Va con Bearer de servicio
+(`client_credentials`, nunca la cookie: recursaría), caché Redis y fallo cerrado con 503.
 
 Forma, espejando cualquier otro puerto secundario:
 - Puerto en `application/{feature}/command/secondaryport/{Concepto}OutputPort` (o su propio paquete

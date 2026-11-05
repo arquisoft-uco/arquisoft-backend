@@ -5,12 +5,14 @@ import com.arquisoft.seguridad.application.autenticacion.command.primaryport.mod
 import com.arquisoft.seguridad.application.autenticacion.command.result.ResolucionSesionResult;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
+import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.stereotype.Component;
 
@@ -83,6 +85,8 @@ public class ProveedorSesionPdp implements ProveedorAutenticacion {
                     propiedades.id(), resuelta.sujeto(), resuelta.nombre(), resuelta.correo(), resuelta.tenant());
             case ResolucionSesionResult.SinSesion ignorada ->
                     throw new InsufficientAuthenticationException(Mensajes.obtener(IniciarSesionKey.ERROR_HTTP_401));
+            case ResolucionSesionResult.UsuarioNoRegistrado ignorada ->
+                    throw new AccessDeniedException(Mensajes.obtener(ResolucionSesionKey.ERROR_USUARIO_NO_REGISTRADO));
         };
     }
 }

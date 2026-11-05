@@ -3,6 +3,7 @@ package com.arquisoft.seguridad.infrastructure.filter;
 import com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.AplicadorListaNegra;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.AplicadorDecisionAcceso;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.BearerAuthenticationToken;
+import com.arquisoft.seguridad.infrastructure.autenticacion.exception.UsuariosNoDisponibleException;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorAutenticacion;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SeleccionProveedor;
@@ -339,6 +340,42 @@ class AutorizacionAccesoFilterTest {
         orden.verify(gestorTraza).registrarUsuario("sub-2");
         verify(cadena).doFilter(request, response);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isSameAs(identidadSesion);
+    }
+
+    @Test
+    void debeDelegarAlResolvedor403_cuandoUsuarioNoRegistrado() throws Exception {
+        // Arrange
+        conCookieValida();
+        when(proteccionCsrf.evaluar(any(), any(), any(), any())).thenReturn(ProteccionCsrf.Resultado.PERMITIDA);
+        when(aplicadorDecision.aplicar(request, response, "sesion-pdp", COOKIE)).thenReturn(true);
+        var fallo = new AccessDeniedException("sin usuario");
+        when(sesion.autenticar(COOKIE)).thenThrow(fallo);
+
+        // Act
+        filtro(true).doFilter(request, response, cadena);
+
+        // Assert
+        verify(resolvedorExcepciones).resolveException(request, response, null, fallo);
+        verify(gestorTraza, never()).registrarUsuario(anyString());
+        verify(cadena, never()).doFilter(any(), any());
+    }
+
+    @Test
+    void debeDelegarAlResolvedor503_cuandoUsuariosNoDisponible() throws Exception {
+        // Arrange
+        conCookieValida();
+        when(proteccionCsrf.evaluar(any(), any(), any(), any())).thenReturn(ProteccionCsrf.Resultado.PERMITIDA);
+        when(aplicadorDecision.aplicar(request, response, "sesion-pdp", COOKIE)).thenReturn(true);
+        var fallo = new UsuariosNoDisponibleException("usuarios caido", null);
+        when(sesion.autenticar(COOKIE)).thenThrow(fallo);
+
+        // Act
+        filtro(true).doFilter(request, response, cadena);
+
+        // Assert
+        verify(resolvedorExcepciones).resolveException(request, response, null, fallo);
+        verify(entryPoint, never()).commence(any(), any(), any());
+        verify(cadena, never()).doFilter(any(), any());
     }
 
     @Test

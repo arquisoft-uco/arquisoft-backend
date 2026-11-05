@@ -168,6 +168,9 @@ security:
   authentication:
     session:
       allow-insecure-http: false
+      # Exige AUTH_LEGACY_ENABLED=true: el token de servicio hacia usuarios lo valida el emisor legado.
+      usuarios:
+        allow-insecure-http: false
   authorization:
     pep:
       url: ${PEP_URL}

@@ -3,6 +3,7 @@ dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:application')
     implementation project(':shared:web')
+    implementation project(':shared:web-client')
     implementation project(':shared:logger')
 
     // shared:tracing — el filtro de acceso enriquece la traza con el sujeto de la identidad y

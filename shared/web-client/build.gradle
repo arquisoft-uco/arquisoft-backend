@@ -1,0 +1,18 @@
+dependencies {
+    implementation project(':shared:exception')
+
+    // TrazaClientHttpRequestInterceptor: propaga la correlacion en toda llamada saliente.
+    implementation project(':shared:web')
+    implementation project(':shared:tracing')
+
+    implementation "org.springframework.boot:spring-boot-starter"
+    implementation "org.springframework:spring-web"
+    implementation "org.springframework.boot:spring-boot-starter-jackson"
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework:spring-test"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
