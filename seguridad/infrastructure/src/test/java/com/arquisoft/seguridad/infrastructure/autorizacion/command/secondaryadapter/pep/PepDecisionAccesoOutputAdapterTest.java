@@ -258,4 +258,35 @@ class PepDecisionAccesoOutputAdapterTest {
                 .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
         server.verify();
     }
+
+    @Test
+    void debeLanzar503SinReintentar_cuandoElPepResponde3xx() {
+        // Arrange
+        server.expect(ExpectedCount.once(), requestTo(URL)).andRespond(withStatus(HttpStatus.FOUND));
+        var adaptador = adaptador(3);
+
+        // Act / Assert
+        assertThatThrownBy(() -> adaptador.decidir(solicitud))
+                .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
+        server.verify();
+    }
+
+    @Test
+    void debeLanzar503YConservarLaInterrupcion_cuandoSeInterrumpeLaEsperaDelReintento() {
+        // Arrange
+        server.expect(ExpectedCount.once(), requestTo(URL)).andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
+        var adaptador = adaptador(2);
+        Thread.currentThread().interrupt();
+
+        try {
+            // Act / Assert
+            assertThatThrownBy(() -> adaptador.decidir(solicitud))
+                    .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class)
+                    .hasCauseInstanceOf(InterruptedException.class);
+            assertThat(Thread.currentThread().isInterrupted()).isTrue();
+            server.verify();
+        } finally {
+            Thread.interrupted();
+        }
+    }
 }

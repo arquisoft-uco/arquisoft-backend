@@ -425,4 +425,66 @@ class AutorizacionAccesoFilterTest {
         verify(bearer, never()).autenticar(anyString());
         verify(cadena).doFilter(request, response);
     }
+
+    @Test
+    void debeAutenticarSinDecidir_cuandoCookieYSecurityDeshabilitado() throws Exception {
+        // Arrange
+        conCookieValida();
+        when(proteccionCsrf.evaluar(any(), any(), any(), any())).thenReturn(ProteccionCsrf.Resultado.PERMITIDA);
+
+        // Act
+        filtro(false).doFilter(request, response, cadena);
+
+        // Assert
+        verify(aplicadorDecision, never()).aplicar(any(), any(), anyString(), anyString());
+        verify(gestorTraza).registrarUsuario("sub-2");
+        verify(cadena).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isSameAs(identidadSesion);
+    }
+
+    @Test
+    void debeCortarSinRegistrarUsuario_cuandoLaListaNegraRechazaLaSesion() throws Exception {
+        // Arrange
+        conCookieValida();
+        when(proteccionCsrf.evaluar(any(), any(), any(), any())).thenReturn(ProteccionCsrf.Resultado.PERMITIDA);
+        when(aplicadorDecision.aplicar(request, response, "sesion-pdp", COOKIE)).thenReturn(true);
+        when(aplicadorListaNegra.aplicar(request, response, identidadSesion)).thenReturn(false);
+
+        // Act
+        filtro(true).doFilter(request, response, cadena);
+
+        // Assert
+        verify(gestorTraza, never()).registrarUsuario(anyString());
+        verify(cadena, never()).doFilter(any(), any());
+    }
+
+    @Test
+    void debeDelegarAlResolvedor_cuandoLaSeleccionFallaConUnErrorInesperado() throws Exception {
+        // Arrange
+        var fallo = new IllegalStateException("fallo inesperado");
+        when(bearer.extraerCredencial(any())).thenThrow(fallo);
+
+        // Act
+        filtro(true).doFilter(request, response, cadena);
+
+        // Assert
+        verify(resolvedorExcepciones).resolveException(request, response, null, fallo);
+        verify(entryPoint, never()).commence(any(), any(), any());
+        verify(cadena, never()).doFilter(any(), any());
+    }
+
+    @Test
+    void debeIgnorarLaCookie_cuandoLaRutaEsTecnica() throws Exception {
+        // Arrange
+        var swagger = new MockHttpServletRequest("GET", "/api/swagger-ui/index.html");
+        conCookieValida();
+
+        // Act
+        filtro(true).doFilter(swagger, response, cadena);
+
+        // Assert
+        verify(entryPoint).commence(eq(swagger), any(), any(InsufficientAuthenticationException.class));
+        verify(sesion, never()).autenticar(anyString());
+        verify(cadena, never()).doFilter(any(), any());
+    }
 }

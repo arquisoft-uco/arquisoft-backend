@@ -2,6 +2,7 @@ package com.arquisoft.usuarios.infrastructure.usuario.query.primaryadapter.web;
 
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.UsuariosCodes;
+import com.arquisoft.shared.message.constant.UsuariosFields;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -105,5 +106,27 @@ class ConsultarUsuarioPorCorreoControllerTest {
                         .content("{\"correo\":\"ana@uco.edu.co\"}"))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(UsuariosCodes.Usuario.NO_ENCONTRADO));
+    }
+
+    @Test
+    void debeResponder400SinConsultar_cuandoElCuerpoNoTraeCorreo() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post(RUTA).with(servicio()).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value(UsuariosFields.Usuario.CORREO));
+        verify(consultarUsuarioPorCorreoInteractor, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeRecortarElCorreo_cuandoLlegaConEspacios() throws Exception {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        when(consultarUsuarioPorCorreoInteractor.ejecutar(any())).thenReturn(new UsuarioPorCorreoReadModel(usuario));
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA).with(servicio()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"correo\":\"  ana@uco.edu.co  \"}"))
+                .andExpect(status().isOk());
+        verify(consultarUsuarioPorCorreoInteractor).ejecutar(new ConsultarUsuarioPorCorreoQuery("ana@uco.edu.co"));
     }
 }

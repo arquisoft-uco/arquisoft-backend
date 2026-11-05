@@ -136,4 +136,55 @@ class ClienteHttpRestClientTest {
         assertThatThrownBy(() -> cliente.ejecutar(solicitud, Eco.class))
                 .isInstanceOf(ClienteHttpTransporteException.class);
     }
+
+    @Test
+    void debeIgnorarElCuerpo_cuandoElTipoDeRespuestaEsVoid() {
+        // Arrange
+        servidor.expect(requestTo(BASE + "/eco"))
+                .andRespond(withSuccess("{\"valor\":\"b\"}", MediaType.APPLICATION_JSON));
+        var solicitud = new SolicitudHttp(MetodoHttp.GET, "/eco", null, null, null);
+
+        // Act
+        var respuesta = cliente.ejecutar(solicitud, Void.class);
+
+        // Assert
+        assertThat(respuesta.estado()).isEqualTo(200);
+        assertThat(respuesta.cuerpo()).isNull();
+        assertThat(respuesta.esExitosa()).isTrue();
+    }
+
+    @Test
+    void debeDevolverCuerpoNulo_cuandoLa2xxNoTraeCuerpo() {
+        // Arrange
+        servidor.expect(requestTo(BASE + "/eco")).andRespond(withStatus(HttpStatus.NO_CONTENT));
+        var solicitud = new SolicitudHttp(MetodoHttp.GET, "/eco", null, null, null);
+
+        // Act
+        var respuesta = cliente.ejecutar(solicitud, Eco.class);
+
+        // Assert
+        assertThat(respuesta.estado()).isEqualTo(204);
+        assertThat(respuesta.cuerpo()).isNull();
+    }
+
+    @Test
+    void debeUsarElMetodoIndicado_cuandoEsPutODelete() {
+        // Arrange
+        servidor.expect(requestTo(BASE + "/eco/1")).andExpect(method(HttpMethod.PUT))
+                .andExpect(content().json("{\"valor\":\"a\"}"))
+                .andRespond(withStatus(HttpStatus.NO_CONTENT));
+        servidor.expect(requestTo(BASE + "/eco/1")).andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.NO_CONTENT));
+        var put = new SolicitudHttp(MetodoHttp.PUT, "/eco/1", null, new Eco("a"), TipoContenido.JSON);
+        var delete = new SolicitudHttp(MetodoHttp.DELETE, "/eco/1", null, null, null);
+
+        // Act
+        var respuestaPut = cliente.ejecutar(put, Void.class);
+        var respuestaDelete = cliente.ejecutar(delete, Void.class);
+
+        // Assert
+        assertThat(respuestaPut.estado()).isEqualTo(204);
+        assertThat(respuestaDelete.estado()).isEqualTo(204);
+        servidor.verify();
+    }
 }

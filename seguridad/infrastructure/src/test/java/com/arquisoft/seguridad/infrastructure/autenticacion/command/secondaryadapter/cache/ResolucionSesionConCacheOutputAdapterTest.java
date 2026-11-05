@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.times;
@@ -100,5 +101,42 @@ class ResolucionSesionConCacheOutputAdapterTest {
                 .map(String::valueOf)
                 .toList();
         assertThat(argumentosLogueados).noneMatch(argumento -> argumento.contains("valor-secreto"));
+    }
+
+    @Test
+    void debeConsultarPorSeparado_cuandoLasCookiesSonDistintas() {
+        // Arrange
+        var otraCookie = "SECURITY_BASELINE_SESSION=otro-valor";
+        var luis = new ResolucionSesion.Resuelta("s2", "Luis", "l@uco.edu.co", "t");
+        var adaptador = adaptador(Duration.ofSeconds(60));
+        when(pdp.resolver(COOKIE)).thenReturn(ANA);
+        when(pdp.resolver(otraCookie)).thenReturn(luis);
+
+        // Act
+        var deAna = adaptador.resolver(COOKIE);
+        var deLuis = adaptador.resolver(otraCookie);
+        var deAnaCacheada = adaptador.resolver(COOKIE);
+
+        // Assert
+        assertThat(deAna).isEqualTo(ANA);
+        assertThat(deLuis).isEqualTo(luis);
+        assertThat(deAnaCacheada).isEqualTo(ANA);
+        verify(pdp, times(1)).resolver(COOKIE);
+        verify(pdp, times(1)).resolver(otraCookie);
+    }
+
+    @Test
+    void debePropagarYNoCachear_cuandoElPdpFalla() {
+        // Arrange
+        var adaptador = adaptador(Duration.ofSeconds(60));
+        when(pdp.resolver(COOKIE)).thenThrow(new IllegalStateException("pdp caido")).thenReturn(ANA);
+
+        // Act
+        assertThatThrownBy(() -> adaptador.resolver(COOKIE)).isInstanceOf(IllegalStateException.class);
+        var recuperada = adaptador.resolver(COOKIE);
+
+        // Assert
+        assertThat(recuperada).isEqualTo(ANA);
+        verify(pdp, times(2)).resolver(COOKIE);
     }
 }

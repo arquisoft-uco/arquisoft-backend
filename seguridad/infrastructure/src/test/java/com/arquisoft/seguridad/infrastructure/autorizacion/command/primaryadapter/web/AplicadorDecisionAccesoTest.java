@@ -122,4 +122,18 @@ class AplicadorDecisionAccesoTest {
         assertThat(continuar).isFalse();
         verify(resolvedorExcepciones).resolveException(request, response, null, fallo);
     }
+
+    @Test
+    void debeContinuarSinCabeceraDeDecision_cuandoPermitidaSinIdDecision() {
+        // Arrange
+        when(interactor.ejecutar(any(AutorizarAccesoCommand.class))).thenReturn(new DecisionAccesoResult.Permitida("  "));
+
+        // Act
+        var continuar = aplicador.aplicar(request, response, "principal", "tok");
+
+        // Assert
+        assertThat(continuar).isTrue();
+        assertThat(response.containsHeader("X-Decision-Id")).isFalse();
+        verifyNoInteractions(entryPoint, accesoDenegadoHandler, resolvedorExcepciones);
+    }
 }

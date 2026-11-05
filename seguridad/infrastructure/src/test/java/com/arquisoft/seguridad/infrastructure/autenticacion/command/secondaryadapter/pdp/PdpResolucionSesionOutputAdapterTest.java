@@ -129,4 +129,16 @@ class PdpResolucionSesionOutputAdapterTest {
                 .toList();
         assertThat(argumentosLogueados).isNotEmpty().noneMatch(argumento -> argumento.contains("valor-secreto"));
     }
+
+    @ParameterizedTest
+    @ValueSource(ints = {204, 302})
+    void debeLanzar503_cuandoElPdpRespondeSinErrorPeroSinSesionUtil(int estado) {
+        // Arrange
+        server.expect(requestTo(URL)).andRespond(withStatus(HttpStatus.valueOf(estado)));
+
+        // Act / Assert
+        assertThatThrownBy(() -> adaptador.resolver(COOKIE))
+                .isInstanceOf(ProveedorIdentidadNoDisponibleException.class);
+        server.verify();
+    }
 }

@@ -132,4 +132,19 @@ class ProveedorSesionPdpTest {
         // Act / Assert
         assertThatThrownBy(() -> proveedor.autenticar(COOKIE)).isInstanceOf(AccessDeniedException.class);
     }
+
+    @Test
+    void debeExponerIdYHabilitacion_segunLasPropiedades() {
+        // Arrange
+        var apagado = new ProveedorSesionPdp(new SesionProperties("otra-sesion", false, "COOKIE",
+                "https://pdp.test", false, Duration.ofSeconds(1), Duration.ofSeconds(3),
+                new SesionProperties.Cache(Duration.ofSeconds(60), 100)), interactor);
+
+        // Act / Assert
+        assertThat(proveedor().id()).isEqualTo("sesion-pdp");
+        assertThat(proveedor().habilitado()).isTrue();
+        assertThat(apagado.id()).isEqualTo("otra-sesion");
+        assertThat(apagado.habilitado()).isFalse();
+        assertThat(apagado.autorizacion("sesion-pdp")).isEmpty();
+    }
 }

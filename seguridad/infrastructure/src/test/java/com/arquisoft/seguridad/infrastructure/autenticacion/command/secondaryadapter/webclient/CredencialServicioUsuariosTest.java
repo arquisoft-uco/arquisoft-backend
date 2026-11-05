@@ -153,4 +153,34 @@ class CredencialServicioUsuariosTest {
         }
         verify(clienteToken, times(1)).ejecutar(any(SolicitudHttp.class), eq(TokenServicioResponseDTO.class));
     }
+
+    @Test
+    void debeLanzarNoDisponible_cuandoLaRespuestaNoTraeTokenUtil() {
+        // Arrange
+        when(clienteToken.ejecutar(any(SolicitudHttp.class), eq(TokenServicioResponseDTO.class)))
+                .thenReturn(new RespuestaHttp<>(200, null))
+                .thenReturn(new RespuestaHttp<>(200, new TokenServicioResponseDTO("  ", 300)));
+        var credencial = credencial();
+
+        // Act / Assert
+        assertThatThrownBy(credencial::token).isInstanceOf(UsuariosNoDisponibleException.class);
+        assertThatThrownBy(credencial::token).isInstanceOf(UsuariosNoDisponibleException.class);
+    }
+
+    @Test
+    void debeVolverAPedirElToken_cuandoLaRenovacionAnteriorFallo() {
+        // Arrange
+        when(clienteToken.ejecutar(any(SolicitudHttp.class), eq(TokenServicioResponseDTO.class)))
+                .thenThrow(new ClienteHttpTransporteException("timeout", null))
+                .thenReturn(new RespuestaHttp<>(200, new TokenServicioResponseDTO("tok-1", 300)));
+        var credencial = credencial();
+
+        // Act
+        assertThatThrownBy(credencial::token).isInstanceOf(UsuariosNoDisponibleException.class);
+        var token = credencial.token();
+
+        // Assert
+        assertThat(token).isEqualTo("tok-1");
+        verify(clienteToken, times(2)).ejecutar(any(SolicitudHttp.class), eq(TokenServicioResponseDTO.class));
+    }
 }

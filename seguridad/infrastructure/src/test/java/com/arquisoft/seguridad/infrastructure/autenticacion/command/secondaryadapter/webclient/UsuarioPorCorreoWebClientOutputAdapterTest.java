@@ -195,4 +195,16 @@ class UsuarioPorCorreoWebClientOutputAdapterTest {
         verify(credencial).invalidar();
         verify(clienteUsuarios, times(2)).ejecutar(any(SolicitudHttp.class), eq(UsuarioPorCorreoResponseDTO.class));
     }
+
+    @Test
+    void debeLanzarNoDisponible_cuando200SinCuerpo() {
+        // Arrange
+        when(credencial.token()).thenReturn("tok");
+        conRespuesta(200, null);
+        var adaptador = adaptador();
+
+        // Act / Assert
+        assertThatThrownBy(() -> adaptador.obtenerIdPorCorreo(CORREO))
+                .isInstanceOf(UsuariosNoDisponibleException.class);
+    }
 }
