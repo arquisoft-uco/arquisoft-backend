@@ -12,5 +12,5 @@ public interface CanalAutenticacion {
 
     Optional<String> extraerCredencial(HttpServletRequest request);
 
-    IdentidadAutenticada autenticar(String credencial);
+    IdentidadAutenticada autenticar(String credencial, String emisor);
 }

@@ -51,7 +51,7 @@ class UsuarioPorCorreoConCacheOutputAdapterTest {
 
     private UsuarioPorCorreoConCacheOutputAdapter adaptador(Duration ttl) {
         var propiedades = new UsuarioSesionProperties("https://usuarios.test", false, Duration.ofSeconds(1),
-                Duration.ofSeconds(3), ttl, "https://kc.test/token", "cliente", "secreto", "/api/usuarios/por-correo");
+                Duration.ofSeconds(3), ttl, "https://kc.test/token", "cliente", "secreto", "/api/usuarios/por-correo", "legado");
         return new UsuarioPorCorreoConCacheOutputAdapter(delegado, redis, propiedades, logger);
     }
 

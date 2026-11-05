@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.sesion;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SeleccionProveedor;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionAuthenticationToken;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
@@ -81,7 +82,7 @@ class ProveedorSesionPdpTest {
                 .thenReturn(new ResolucionSesionResult.Resuelta("sub-1", "Ana", "ana@uco.edu.co", "t-1"));
 
         // Act
-        var autenticacion = proveedor().autenticar(COOKIE);
+        var autenticacion = proveedor().autenticar(COOKIE, SeleccionProveedor.SIN_EMISOR);
 
         // Assert
         assertThat(autenticacion.isAuthenticated()).isTrue();
@@ -118,7 +119,7 @@ class ProveedorSesionPdpTest {
         var proveedor = proveedor();
 
         // Act / Assert
-        assertThatThrownBy(() -> proveedor.autenticar(COOKIE)).isInstanceOf(InsufficientAuthenticationException.class);
+        assertThatThrownBy(() -> proveedor.autenticar(COOKIE, SeleccionProveedor.SIN_EMISOR)).isInstanceOf(InsufficientAuthenticationException.class);
         verify(interactor).ejecutar(ResolverIdentidadSesionCommand.crear(COOKIE));
     }
 
@@ -130,7 +131,7 @@ class ProveedorSesionPdpTest {
         var proveedor = proveedor();
 
         // Act / Assert
-        assertThatThrownBy(() -> proveedor.autenticar(COOKIE)).isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> proveedor.autenticar(COOKIE, SeleccionProveedor.SIN_EMISOR)).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -146,5 +147,15 @@ class ProveedorSesionPdpTest {
         assertThat(apagado.id()).isEqualTo("otra-sesion");
         assertThat(apagado.habilitado()).isFalse();
         assertThat(apagado.autorizacion("sesion-pdp")).isEmpty();
+    }
+
+    @Test
+    void debeNoDeclararEmisores_cuandoElProveedorEsLaSesion() {
+        // Arrange
+        var proveedor = proveedor();
+
+        // Act / Assert
+        assertThat(proveedor.emisorHabilitado("legado")).isEmpty();
+        assertThat(proveedor.declaraEmisor("legado")).isFalse();
     }
 }

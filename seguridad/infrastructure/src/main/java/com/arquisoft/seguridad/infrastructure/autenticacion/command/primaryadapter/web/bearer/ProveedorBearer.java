@@ -2,6 +2,7 @@ package com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadap
 
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionPorEmisorConfig;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.BearerEmisorForzadoToken;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.IdentidadAutenticada;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorAutenticacion;
@@ -52,6 +53,16 @@ public class ProveedorBearer implements ProveedorAutenticacion {
     }
 
     @Override
+    public Optional<String> emisorHabilitado(String selector) {
+        return propiedades.porIdIgnorandoMayusculas(selector).map(AutenticacionProperties.Emisor::id);
+    }
+
+    @Override
+    public boolean declaraEmisor(String selector) {
+        return propiedades.declara(selector);
+    }
+
+    @Override
     public boolean exigeProteccionCsrf() {
         return false;
     }
@@ -77,7 +88,10 @@ public class ProveedorBearer implements ProveedorAutenticacion {
     }
 
     @Override
-    public IdentidadAutenticada autenticar(String credencial) {
-        return (IdentidadAutenticada) gestorAutenticacion.authenticate(new BearerTokenAuthenticationToken(credencial));
+    public IdentidadAutenticada autenticar(String credencial, String emisor) {
+        var token = UtilTexto.esVacioONulo(emisor)
+                ? new BearerTokenAuthenticationToken(credencial)
+                : new BearerEmisorForzadoToken(credencial, emisor);
+        return (IdentidadAutenticada) gestorAutenticacion.authenticate(token);
     }
 }

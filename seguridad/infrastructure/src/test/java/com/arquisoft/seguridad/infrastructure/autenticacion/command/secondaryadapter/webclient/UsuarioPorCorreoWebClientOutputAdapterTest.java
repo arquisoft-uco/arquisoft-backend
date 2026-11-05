@@ -3,6 +3,7 @@ package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryad
 import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.dto.UsuarioPorCorreoRequestDTO;
 import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.dto.UsuarioPorCorreoResponseDTO;
 import com.arquisoft.seguridad.infrastructure.autenticacion.exception.UsuariosNoDisponibleException;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SeleccionProveedor;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesionProperties;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -45,7 +46,7 @@ class UsuarioPorCorreoWebClientOutputAdapterTest {
     private UsuarioPorCorreoWebClientOutputAdapter adaptador() {
         var propiedades = new UsuarioSesionProperties("https://usuarios.test", false, Duration.ofSeconds(1),
                 Duration.ofSeconds(3), Duration.ofMinutes(5), "https://kc.test/token", "cliente", "secreto",
-                "/api/usuarios/por-correo");
+                "/api/usuarios/por-correo", "legado");
         return new UsuarioPorCorreoWebClientOutputAdapter(clienteUsuarios, credencial, propiedades, logger);
     }
 
@@ -206,5 +207,21 @@ class UsuarioPorCorreoWebClientOutputAdapterTest {
         // Act / Assert
         assertThatThrownBy(() -> adaptador.obtenerIdPorCorreo(CORREO))
                 .isInstanceOf(UsuariosNoDisponibleException.class);
+    }
+
+    @Test
+    void debeEnviarElEncabezadoDeProveedor_cuandoConsultaPorCorreo() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        when(credencial.token()).thenReturn("tok");
+        conRespuesta(200, new UsuarioPorCorreoResponseDTO(usuario.toString()));
+        var captor = ArgumentCaptor.forClass(SolicitudHttp.class);
+
+        // Act
+        adaptador().obtenerIdPorCorreo(CORREO);
+
+        // Assert
+        verify(clienteUsuarios).ejecutar(captor.capture(), eq(UsuarioPorCorreoResponseDTO.class));
+        assertThat(captor.getValue().cabeceras()).containsEntry(SeleccionProveedor.CABECERA, "legado");
     }
 }

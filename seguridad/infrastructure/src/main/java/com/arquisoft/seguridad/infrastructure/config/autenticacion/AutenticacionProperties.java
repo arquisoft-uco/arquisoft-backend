@@ -22,6 +22,14 @@ public record AutenticacionProperties(List<Emisor> issuers) {
         return habilitados().stream().filter(emisor -> emisor.id().equals(id)).findFirst();
     }
 
+    public Optional<Emisor> porIdIgnorandoMayusculas(String id) {
+        return habilitados().stream().filter(emisor -> emisor.id().equalsIgnoreCase(id)).findFirst();
+    }
+
+    public boolean declara(String id) {
+        return issuers.stream().anyMatch(emisor -> emisor.id().equalsIgnoreCase(id));
+    }
+
     public Optional<Emisor> porIssuer(String issuer) {
         return habilitados().stream().filter(emisor -> emisor.issuer().equals(issuer)).findFirst();
     }

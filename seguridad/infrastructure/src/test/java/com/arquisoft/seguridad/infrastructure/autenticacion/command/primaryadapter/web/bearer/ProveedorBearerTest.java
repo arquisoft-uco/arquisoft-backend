@@ -1,5 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.bearer;
 
+import org.mockito.ArgumentCaptor;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.BearerEmisorForzadoToken;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SeleccionProveedor;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.BearerAuthenticationToken;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
@@ -72,7 +75,7 @@ class ProveedorBearerTest {
         when(gestor.authenticate(any(BearerTokenAuthenticationToken.class))).thenReturn(identidad);
 
         // Act
-        var resultado = proveedor(true).autenticar("tok-1");
+        var resultado = proveedor(true).autenticar("tok-1", SeleccionProveedor.SIN_EMISOR);
 
         // Assert
         assertThat(resultado).isSameAs(identidad);
@@ -105,5 +108,59 @@ class ProveedorBearerTest {
         assertThat(proveedor.autenticaPrimero()).isTrue();
         assertThat(proveedor.actuaEnRutasNoDeNegocio()).isTrue();
         assertThat(proveedor.exigeProteccionCsrf()).isFalse();
+    }
+
+    @Test
+    void debeAutenticarConTokenForzado_cuandoSeIndicaEmisor() {
+        // Arrange
+        var identidad = new BearerAuthenticationToken("legado", "sub-1", null, null, null, null, null);
+        when(gestor.authenticate(any(BearerTokenAuthenticationToken.class))).thenReturn(identidad);
+        var captor = ArgumentCaptor.forClass(BearerTokenAuthenticationToken.class);
+
+        // Act
+        var resultado = proveedor(true).autenticar("tok-1", "principal");
+
+        // Assert
+        assertThat(resultado).isSameAs(identidad);
+        verify(gestor).authenticate(captor.capture());
+        assertThat(captor.getValue()).isInstanceOfSatisfying(BearerEmisorForzadoToken.class,
+                forzado -> assertThat(forzado.emisor()).isEqualTo("principal"));
+        assertThat(captor.getValue().getToken()).isEqualTo("tok-1");
+    }
+
+    @Test
+    void debeAutenticarConTokenSimple_cuandoElEmisorEstaVacio() {
+        // Arrange
+        var identidad = new BearerAuthenticationToken("principal", "sub-1", null, null, null, null, null);
+        when(gestor.authenticate(any(BearerTokenAuthenticationToken.class))).thenReturn(identidad);
+        var captor = ArgumentCaptor.forClass(BearerTokenAuthenticationToken.class);
+
+        // Act
+        proveedor(true).autenticar("tok-1", SeleccionProveedor.SIN_EMISOR);
+
+        // Assert
+        verify(gestor).authenticate(captor.capture());
+        assertThat(captor.getValue()).isNotInstanceOf(BearerEmisorForzadoToken.class);
+    }
+
+    @Test
+    void debeDevolverIdCanonico_cuandoElSelectorEsUnEmisorHabilitado() {
+        // Arrange
+        var proveedor = proveedor(true);
+
+        // Act / Assert
+        assertThat(proveedor.emisorHabilitado("PRINCIPAL")).contains("principal");
+        assertThat(proveedor.emisorHabilitado("otro")).isEmpty();
+        assertThat(proveedor(false).emisorHabilitado("principal")).isEmpty();
+    }
+
+    @Test
+    void debeDeclarar_cuandoElEmisorEstaApagado() {
+        // Arrange
+        var proveedor = proveedor(false);
+
+        // Act / Assert
+        assertThat(proveedor.declaraEmisor("Principal")).isTrue();
+        assertThat(proveedor.declaraEmisor("otro")).isFalse();
     }
 }

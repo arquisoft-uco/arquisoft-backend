@@ -8,6 +8,8 @@ import java.util.Optional;
 @Component
 public class ProveedoresAutenticacion {
 
+    public record EmisorSeleccionado(ProveedorAutenticacion proveedor, String emisor) {}
+
     private final List<ProveedorAutenticacion> proveedores;
 
     public ProveedoresAutenticacion(List<ProveedorAutenticacion> proveedores) {
@@ -34,6 +36,17 @@ public class ProveedoresAutenticacion {
 
     public Optional<ProveedorAutenticacion> porEmisor(String emisor) {
         return habilitados().stream().filter(proveedor -> proveedor.autorizacion(emisor).isPresent()).findFirst();
+    }
+
+    public Optional<EmisorSeleccionado> porSelectorDeEmisor(String selector) {
+        return habilitados().stream()
+                .flatMap(proveedor -> proveedor.emisorHabilitado(selector)
+                        .map(emisor -> new EmisorSeleccionado(proveedor, emisor)).stream())
+                .findFirst();
+    }
+
+    public boolean declaraEmisor(String selector) {
+        return proveedores.stream().anyMatch(proveedor -> proveedor.declaraEmisor(selector));
     }
 
     public Optional<ModoAutorizacion> modoDe(String emisor) {

@@ -77,4 +77,37 @@ class ProveedoresAutenticacionTest {
         // Assert
         assertThat(presentador).isEmpty();
     }
+
+    @Test
+    void debeDevolverProveedorYEmisorCanonico_cuandoUnProveedorHabilitadoDeclaraElSelector() {
+        // Arrange
+        var bearer = mock(ProveedorAutenticacion.class);
+        when(bearer.habilitado()).thenReturn(true);
+        when(bearer.emisorHabilitado("LEGADO")).thenReturn(Optional.of("legado"));
+        var sesion = mock(ProveedorAutenticacion.class);
+        when(sesion.habilitado()).thenReturn(true);
+        when(sesion.emisorHabilitado("LEGADO")).thenReturn(Optional.empty());
+        var registro = new ProveedoresAutenticacion(List.of(sesion, bearer));
+
+        // Act
+        var seleccionado = registro.porSelectorDeEmisor("LEGADO");
+
+        // Assert
+        assertThat(seleccionado).contains(new ProveedoresAutenticacion.EmisorSeleccionado(bearer, "legado"));
+    }
+
+    @Test
+    void debeDeclararEmisorApagado_yDevolverVacioAlSeleccionarlo() {
+        // Arrange
+        var bearer = mock(ProveedorAutenticacion.class);
+        when(bearer.habilitado()).thenReturn(true);
+        when(bearer.emisorHabilitado("legado")).thenReturn(Optional.empty());
+        when(bearer.declaraEmisor("legado")).thenReturn(true);
+        var registro = new ProveedoresAutenticacion(List.of(bearer));
+
+        // Act / Assert
+        assertThat(registro.porSelectorDeEmisor("legado")).isEmpty();
+        assertThat(registro.declaraEmisor("legado")).isTrue();
+        assertThat(registro.declaraEmisor("otro")).isFalse();
+    }
 }

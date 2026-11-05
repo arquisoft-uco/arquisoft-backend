@@ -36,6 +36,9 @@ class SeleccionProveedorTest {
         apagado = mock(ProveedorAutenticacion.class);
         when(apagado.id()).thenReturn("apagado");
         when(apagado.habilitado()).thenReturn(false);
+        when(bearer.emisorHabilitado("legado")).thenReturn(Optional.of("legado"));
+        when(bearer.emisorHabilitado("LEGADO")).thenReturn(Optional.of("legado"));
+        when(bearer.declaraEmisor("inactivo")).thenReturn(true);
         registro = new ProveedoresAutenticacion(List.of(bearer, sesion, apagado));
         request = new MockHttpServletRequest("POST", "/api/fichas-perfil");
     }
@@ -63,7 +66,7 @@ class SeleccionProveedorTest {
         var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
-        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(bearer, TOKEN));
+        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(bearer, TOKEN, SeleccionProveedor.SIN_EMISOR));
     }
 
     @Test
@@ -76,7 +79,7 @@ class SeleccionProveedorTest {
         var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
-        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(sesion, COOKIE));
+        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(sesion, COOKIE, SeleccionProveedor.SIN_EMISOR));
     }
 
     @Test
@@ -102,7 +105,7 @@ class SeleccionProveedorTest {
         var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
-        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(bearer, TOKEN));
+        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(bearer, TOKEN, SeleccionProveedor.SIN_EMISOR));
     }
 
     @Test
@@ -116,7 +119,7 @@ class SeleccionProveedorTest {
         var seleccion = SeleccionProveedor.resolver(request, registro, false);
 
         // Assert
-        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(sesion, COOKIE));
+        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(sesion, COOKIE, SeleccionProveedor.SIN_EMISOR));
     }
 
     @Test
@@ -182,5 +185,88 @@ class SeleccionProveedorTest {
         // Assert
         assertThat(seleccion)
                 .isEqualTo(new SeleccionProveedor.Seleccion.Rechazada(SeleccionProveedor.MOTIVO_SIN_CREDENCIAL));
+    }
+
+    @Test
+    void debeElegirBearerConEmisor_cuandoElEncabezadoEsUnEmisorHabilitado() {
+        // Arrange
+        conBearer();
+        request.addHeader(SeleccionProveedor.CABECERA, "legado");
+
+        // Act
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
+
+        // Assert
+        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(bearer, TOKEN, "legado"));
+    }
+
+    @Test
+    void debeUsarElIdCanonicoDelEmisor_cuandoElEncabezadoViajaConOtrasMayusculas() {
+        // Arrange
+        conBearer();
+        request.addHeader(SeleccionProveedor.CABECERA, " LEGADO ");
+
+        // Act
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
+
+        // Assert
+        assertThat(seleccion).isEqualTo(new SeleccionProveedor.Seleccion.Elegida(bearer, TOKEN, "legado"));
+    }
+
+    @Test
+    void debeRechazarDeshabilitado_cuandoElEmisorEstaDeclaradoPeroApagado() {
+        // Arrange
+        conBearer();
+        request.addHeader(SeleccionProveedor.CABECERA, "inactivo");
+
+        // Act
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
+
+        // Assert
+        assertThat(seleccion)
+                .isEqualTo(new SeleccionProveedor.Seleccion.Rechazada(SeleccionProveedor.MOTIVO_DESHABILITADO));
+    }
+
+    @Test
+    void debeRechazarDesconocido_cuandoNingunEmisorNiCanalCoincide() {
+        // Arrange
+        conBearer();
+        request.addHeader(SeleccionProveedor.CABECERA, "inexistente");
+
+        // Act
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
+
+        // Assert
+        assertThat(seleccion)
+                .isEqualTo(new SeleccionProveedor.Seleccion.Rechazada(SeleccionProveedor.MOTIVO_DESCONOCIDO));
+    }
+
+    @Test
+    void debeRechazarSinCredencial_cuandoElEmisorSeEligeSinBearer() {
+        // Arrange
+        sinCredenciales();
+        request.addHeader(SeleccionProveedor.CABECERA, "legado");
+
+        // Act
+        var seleccion = SeleccionProveedor.resolver(request, registro, false);
+
+        // Assert
+        assertThat(seleccion)
+                .isEqualTo(new SeleccionProveedor.Seleccion.Rechazada(SeleccionProveedor.MOTIVO_SIN_CREDENCIAL));
+    }
+
+    @Test
+    void debeRechazarNoAplicable_cuandoLaRutaEsNoDeNegocioYElProveedorNoActua() {
+        // Arrange
+        when(bearer.actuaEnRutasNoDeNegocio()).thenReturn(false);
+        conBearer();
+        request.addHeader(SeleccionProveedor.CABECERA, "legado");
+
+        // Act
+        var seleccion = SeleccionProveedor.resolver(request, registro, true);
+
+        // Assert
+        assertThat(seleccion)
+                .isEqualTo(new SeleccionProveedor.Seleccion.Rechazada(SeleccionProveedor.MOTIVO_NO_APLICABLE));
     }
 }

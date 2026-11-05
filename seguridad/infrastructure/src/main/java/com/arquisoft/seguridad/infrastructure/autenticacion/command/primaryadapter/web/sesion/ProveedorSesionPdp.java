@@ -49,6 +49,16 @@ public class ProveedorSesionPdp implements ProveedorAutenticacion {
     }
 
     @Override
+    public Optional<String> emisorHabilitado(String selector) {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean declaraEmisor(String selector) {
+        return false;
+    }
+
+    @Override
     public boolean exigeProteccionCsrf() {
         return true;
     }
@@ -83,7 +93,7 @@ public class ProveedorSesionPdp implements ProveedorAutenticacion {
     }
 
     @Override
-    public IdentidadAutenticada autenticar(String credencial) {
+    public IdentidadAutenticada autenticar(String credencial, String emisor) {
         var resultado = resolverIdentidadSesionInteractor.ejecutar(ResolverIdentidadSesionCommand.crear(credencial));
         return switch (resultado) {
             case ResolucionSesionResult.Resuelta resuelta -> new SesionAuthenticationToken(

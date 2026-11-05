@@ -66,7 +66,7 @@ Copia `.env.example` a `.env`. Las variables clave son:
 
 Con `SESSION_AUTH_ENABLED=true` el backend acepta la cookie de sesión además de Bearer. Por cada petición con cookie consulta primero al PEP (reenviando solo esa cookie) y, solo si permite, obtiene la identidad con `GET {SESSION_PDP_URL}/api/v1/session` (caché en memoria de la identidad, nunca de decisiones). El arranque falla si falta la URL, si `CORS_ALLOW_CREDENTIALS` no es `true`, si los orígenes no son explícitos o si `CORS_ALLOWED_HEADERS` no incluye `X-XSRF-TOKEN` y `X-Proveedor-Identidad`.
 
-- **Selector:** el encabezado opcional `X-Proveedor-Identidad` elige el proveedor (`sesion-pdp`, o `bearer`). Sin él, gana Bearer y, sin Bearer, la cookie. Un valor desconocido, deshabilitado o `none` responde 401.
+- **Selector:** el encabezado opcional `X-Proveedor-Identidad` elige el proveedor (`sesion-pdp`, `bearer` o el id de un emisor habilitado como `legado` o `principal`, que autentica el Bearer con ese emisor aunque comparta issuer con otro). Sin él, gana Bearer y, sin Bearer, la cookie. Un valor desconocido, deshabilitado o `none` responde 401.
 - **CSRF:** una escritura (cualquier método salvo GET, HEAD, OPTIONS y TRACE) por cookie exige `X-XSRF-TOKEN` no vacío y un `Origin` (o el origen de `Referer`) dentro de `CORS_ALLOWED_ORIGINS`; si no, 403.
 - `/auth/logout` con solo cookie responde 401.
 - `accessTokenLifespan` = 300 s: la sesión BFF se corta cada ~5 minutos y PEP/PDP responden 401; este backend no la renueva (lo resuelve el borde o el front).

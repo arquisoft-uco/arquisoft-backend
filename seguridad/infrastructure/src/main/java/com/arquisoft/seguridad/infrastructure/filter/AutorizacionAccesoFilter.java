@@ -85,7 +85,7 @@ public class AutorizacionAccesoFilter extends OncePerRequestFilter {
                 puntoEntradaNoAutenticado.commence(request, response, sinAutenticacion());
             }
             case SeleccionProveedor.Seleccion.Elegida elegida -> {
-                if (procesar(request, response, elegida.proveedor(), elegida.credencial(), rutaExenta)) {
+                if (procesar(request, response, elegida.proveedor(), elegida.credencial(), elegida.emisor(), rutaExenta)) {
                     filterChain.doFilter(request, response);
                 }
             }
@@ -93,14 +93,14 @@ public class AutorizacionAccesoFilter extends OncePerRequestFilter {
     }
 
     private boolean procesar(HttpServletRequest request, HttpServletResponse response, ProveedorAutenticacion proveedor,
-                             String credencial, boolean rutaExenta) {
+                             String credencial, String emisor, boolean rutaExenta) {
         if (proveedor.exigeProteccionCsrf() && !csrfPermitido(request, response)) {
             return false;
         }
         var decidir = decisionHabilitada && !rutaExenta;
 
         if (proveedor.autenticaPrimero()) {
-            var identidad = autenticar(request, response, proveedor, credencial);
+            var identidad = autenticar(request, response, proveedor, credencial, emisor);
             if (identidad.isEmpty() || !aplicadorListaNegra.aplicar(request, response, identidad.get())) {
                 return false;
             }
@@ -112,7 +112,7 @@ public class AutorizacionAccesoFilter extends OncePerRequestFilter {
         if (decidir && !aplicadorDecisionAcceso.aplicar(request, response, proveedor.id(), credencial)) {
             return false;
         }
-        var identidad = autenticar(request, response, proveedor, credencial);
+        var identidad = autenticar(request, response, proveedor, credencial, emisor);
         if (identidad.isEmpty() || !aplicadorListaNegra.aplicar(request, response, identidad.get())) {
             return false;
         }
@@ -132,9 +132,10 @@ public class AutorizacionAccesoFilter extends OncePerRequestFilter {
     }
 
     private Optional<IdentidadAutenticada> autenticar(HttpServletRequest request, HttpServletResponse response,
-                                                      ProveedorAutenticacion proveedor, String credencial) {
+                                                      ProveedorAutenticacion proveedor, String credencial,
+                                                      String emisor) {
         try {
-            var identidad = proveedor.autenticar(credencial);
+            var identidad = proveedor.autenticar(credencial, emisor);
             var contexto = SecurityContextHolder.createEmptyContext();
             contexto.setAuthentication(identidad);
             SecurityContextHolder.setContext(contexto);

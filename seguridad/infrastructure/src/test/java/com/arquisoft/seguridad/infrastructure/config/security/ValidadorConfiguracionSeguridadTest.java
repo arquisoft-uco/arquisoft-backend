@@ -266,9 +266,13 @@ class ValidadorConfiguracionSeguridadTest {
     }
 
     private static UsuarioSesionProperties usuariosSesion(String url, String secreto) {
+        return usuariosSesion(url, secreto, "legado");
+    }
+
+    private static UsuarioSesionProperties usuariosSesion(String url, String secreto, String proveedor) {
         return new UsuarioSesionProperties(url, false, Duration.ofSeconds(1), Duration.ofSeconds(3), Duration.ofMinutes(5),
                 url.isEmpty() ? "" : url + "/token", url.isEmpty() ? "" : "arquisoft-seguridad-usuarios", secreto,
-                "/api/usuarios/por-correo");
+                "/api/usuarios/por-correo", proveedor);
     }
 
     private record Canal(SesionProperties sesion, UsuarioSesionProperties usuarios,
@@ -445,11 +449,52 @@ class ValidadorConfiguracionSeguridadTest {
     }
 
     @Test
-    void debeRechazar_cuandoSesionHabilitadaSinEmisorLegado() {
+    void debeRechazar_cuandoElProveedorDeUsuariosNoEsUnEmisorHabilitadoConSesionActiva() {
         // Arrange
-        var validador = validadorConUsuarios(usuariosSesion("https://usuarios.test", "secreto"), false);
+        var apagado = validadorConUsuarios(usuariosSesion("https://usuarios.test", "secreto"), false);
+        var inexistente = validadorConUsuarios(usuariosSesion("https://usuarios.test", "secreto", "otro"), true);
 
         // Act / Assert
-        assertThat(validador.problemas()).hasSize(1).first().asString().contains("AUTH_LEGACY_ENABLED");
+        assertThat(apagado.problemas()).hasSize(1).first().asString()
+                .contains("AUTH_LEGACY_ENABLED").contains("session.usuarios.proveedor");
+        assertThat(inexistente.problemas()).hasSize(1).first().asString().contains("session.usuarios.proveedor (otro)");
+    }
+
+    @Test
+    void debeAceptar_cuandoElProveedorDeUsuariosEsOtroEmisorHabilitado() {
+        // Arrange
+        var validador = validadorConUsuarios(usuariosSesion("https://usuarios.test", "secreto", "PRINCIPAL"), false);
+
+        // Act / Assert
+        assertThat(validador.problemas()).isEmpty();
+    }
+
+    @Test
+    void debeRechazar_cuandoUnEmisorSeLlamaComoElIdDeSesionOBearerIgnorandoMayusculas() {
+        // Arrange
+        var comoSesion = validadorConEmisores(List.of(emisor("principal", true, ModoAutorizacion.PEP),
+                emisor("Sesion-PDP", true, ModoAutorizacion.PEP)));
+        var comoBearer = validadorConEmisores(List.of(emisor("principal", true, ModoAutorizacion.PEP),
+                emisor("BEARER", true, ModoAutorizacion.PEP)));
+
+        // Act / Assert
+        assertThat(comoSesion.problemas()).anySatisfy(problema -> assertThat(problema).contains("reservado"));
+        assertThat(comoBearer.problemas()).anySatisfy(problema -> assertThat(problema).contains("reservado"));
+    }
+
+    @Test
+    void debeRechazar_cuandoDosEmisoresSoloDifierenEnMayusculas() {
+        // Arrange
+        var validador = validadorConEmisores(List.of(emisor("legado", true, ModoAutorizacion.PEP),
+                emisor("Legado", true, ModoAutorizacion.PEP)));
+
+        // Act / Assert
+        assertThat(validador.problemas()).anySatisfy(problema -> assertThat(problema).contains("duplicado"));
+    }
+
+    private static ValidadorConfiguracionSeguridad validadorConEmisores(List<AutenticacionProperties.Emisor> emisores) {
+        var canal = new Canal(sesion(false, "", false), usuariosSesion("", ""), emisores);
+        return validadorConSesion(canal, pep("cred", false, "https://pep.test"), List.of(proveedor("sesion-pdp")),
+                ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
     }
 }

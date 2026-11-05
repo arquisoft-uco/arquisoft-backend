@@ -2,6 +2,7 @@ package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryad
 
 import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.dto.UsuarioPorCorreoRequestDTO;
 import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.webclient.dto.UsuarioPorCorreoResponseDTO;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SeleccionProveedor;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.webclient.MetodoHttp;
@@ -20,10 +21,11 @@ public final class UsuarioPorCorreoMapper {
 
     private UsuarioPorCorreoMapper() {}
 
-    public static SolicitudHttp toSolicitud(String ruta, String token, String correo) {
+    public static SolicitudHttp toSolicitud(String ruta, String token, String correo, String proveedor) {
         return new SolicitudHttp(MetodoHttp.POST, ruta,
                 Map.of(HttpHeaders.AUTHORIZATION, ESQUEMA_BEARER + token,
-                        HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE),
+                        HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE,
+                        SeleccionProveedor.CABECERA, proveedor),
                 new UsuarioPorCorreoRequestDTO(correo), TipoContenido.JSON);
     }
 

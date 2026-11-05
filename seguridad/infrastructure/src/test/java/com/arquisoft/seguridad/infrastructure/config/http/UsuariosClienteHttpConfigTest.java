@@ -30,7 +30,7 @@ class UsuariosClienteHttpConfigTest {
         // Arrange
         var propiedades = new UsuarioSesionProperties(" https://usuarios.test/ ", false, Duration.ofSeconds(1),
                 Duration.ofSeconds(3), Duration.ofMinutes(5), "https://kc.test:8443/realms/a/protocol/token",
-                "cliente", "secreto", "/api/usuarios/por-correo");
+                "cliente", "secreto", "/api/usuarios/por-correo", "legado");
         when(fabrica.crear(any(ConfiguracionClienteHttp.class))).thenReturn(mock(ClienteHttp.class));
         var config = new UsuariosClienteHttpConfig(propiedades, fabrica);
         var captor = ArgumentCaptor.forClass(ConfiguracionClienteHttp.class);

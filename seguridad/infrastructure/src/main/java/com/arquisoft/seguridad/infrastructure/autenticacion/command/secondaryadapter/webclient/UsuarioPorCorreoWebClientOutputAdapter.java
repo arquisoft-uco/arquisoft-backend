@@ -61,7 +61,8 @@ public class UsuarioPorCorreoWebClientOutputAdapter implements UsuarioPorCorreoW
     }
 
     private RespuestaHttp<UsuarioPorCorreoResponseDTO> enviar(String correo) {
-        var solicitud = UsuarioPorCorreoMapper.toSolicitud(propiedades.porCorreoPath(), credencial.token(), correo);
+        var solicitud = UsuarioPorCorreoMapper.toSolicitud(propiedades.porCorreoPath(), credencial.token(), correo,
+                propiedades.proveedor());
         try {
             return clienteUsuarios.ejecutar(solicitud, UsuarioPorCorreoResponseDTO.class);
         } catch (ClienteHttpTransporteException e) {

@@ -19,7 +19,10 @@ public record UsuarioSesionProperties(
         @DefaultValue("") String tokenUrl,
         @DefaultValue("") String clientId,
         @DefaultValue("") String clientSecret,
-        @DefaultValue("/api/usuarios/por-correo") String porCorreoPath) {
+        @DefaultValue("/api/usuarios/por-correo") String porCorreoPath,
+        @DefaultValue(UsuarioSesionProperties.PROVEEDOR_POR_DEFECTO) String proveedor) {
+
+    public static final String PROVEEDOR_POR_DEFECTO = "legado";
 
     private static final String PROPIEDAD_URL = "security.authentication.session.usuarios.url";
     private static final String PROPIEDAD_TOKEN_URL = "security.authentication.session.usuarios.token-url";
@@ -27,6 +30,7 @@ public record UsuarioSesionProperties(
     private static final String FALTA_TOKEN_URL = "falta " + PROPIEDAD_TOKEN_URL;
     private static final String FALTA_CLIENT_ID = "falta security.authentication.session.usuarios.client-id";
     private static final String FALTA_CLIENT_SECRET = "falta security.authentication.session.usuarios.client-secret";
+    private static final String FALTA_PROVEEDOR = "falta security.authentication.session.usuarios.proveedor";
     private static final String TTL_NEGATIVO = "security.authentication.session.usuarios.cache-ttl no puede ser negativo";
 
     public boolean cacheHabilitada() {
@@ -42,6 +46,9 @@ public record UsuarioSesionProperties(
         }
         if (UtilTexto.esVacioONulo(clientSecret)) {
             problemas.add(FALTA_CLIENT_SECRET);
+        }
+        if (UtilTexto.esVacioONulo(proveedor)) {
+            problemas.add(FALTA_PROVEEDOR);
         }
         if (cacheTtl.isNegative()) {
             problemas.add(TTL_NEGATIVO);
@@ -60,6 +67,7 @@ public record UsuarioSesionProperties(
     @Override
     public String toString() {
         return "UsuarioSesionProperties[url=" + url + ", tokenUrl=" + tokenUrl + ", clientId=" + clientId
-                + ", cacheTtl=" + cacheTtl + "]";
+                + ", cacheTtl=" + cacheTtl
+                + ", proveedor=" + proveedor + "]";
     }
 }

@@ -10,6 +10,8 @@ public final class SeleccionProveedor {
     public static final String CABECERA = "X-Proveedor-Identidad";
     public static final String BEARER = "bearer";
 
+    public static final String SIN_EMISOR = UtilTexto.VACIO;
+
     public static final String MOTIVO_DESCONOCIDO = "desconocido";
     public static final String MOTIVO_DESHABILITADO = "deshabilitado";
     public static final String MOTIVO_SIN_CREDENCIAL = "sin-credencial";
@@ -23,7 +25,7 @@ public final class SeleccionProveedor {
 
         record Rechazada(String motivo) implements Seleccion {}
 
-        record Elegida(ProveedorAutenticacion proveedor, String credencial) implements Seleccion {}
+        record Elegida(ProveedorAutenticacion proveedor, String credencial, String emisor) implements Seleccion {}
     }
 
     public static Seleccion resolver(HttpServletRequest request, ProveedoresAutenticacion registro,
@@ -34,15 +36,24 @@ public final class SeleccionProveedor {
             return primeroConCredencial(request, aplicables);
         }
         var forzado = registro.porId(valor);
-        if (forzado.isEmpty()) {
-            return new Seleccion.Rechazada(registro.contiene(valor) ? MOTIVO_DESHABILITADO : MOTIVO_DESCONOCIDO);
+        if (forzado.isPresent()) {
+            return elegir(request, aplicables, forzado.get(), SIN_EMISOR);
         }
-        var proveedor = forzado.get();
+        var porEmisor = registro.porSelectorDeEmisor(valor);
+        if (porEmisor.isPresent()) {
+            return elegir(request, aplicables, porEmisor.get().proveedor(), porEmisor.get().emisor());
+        }
+        return new Seleccion.Rechazada(
+                registro.contiene(valor) || registro.declaraEmisor(valor) ? MOTIVO_DESHABILITADO : MOTIVO_DESCONOCIDO);
+    }
+
+    private static Seleccion elegir(HttpServletRequest request, List<ProveedorAutenticacion> aplicables,
+                                    ProveedorAutenticacion proveedor, String emisor) {
         if (!aplicables.contains(proveedor)) {
             return new Seleccion.Rechazada(MOTIVO_NO_APLICABLE);
         }
         return proveedor.extraerCredencial(request)
-                .<Seleccion>map(credencial -> new Seleccion.Elegida(proveedor, credencial))
+                .<Seleccion>map(credencial -> new Seleccion.Elegida(proveedor, credencial, emisor))
                 .orElseGet(() -> new Seleccion.Rechazada(MOTIVO_SIN_CREDENCIAL));
     }
 
@@ -51,7 +62,7 @@ public final class SeleccionProveedor {
         for (var proveedor : aplicables) {
             var credencial = proveedor.extraerCredencial(request);
             if (credencial.isPresent()) {
-                return new Seleccion.Elegida(proveedor, credencial.get());
+                return new Seleccion.Elegida(proveedor, credencial.get(), SIN_EMISOR);
             }
         }
         return new Seleccion.NoActua();

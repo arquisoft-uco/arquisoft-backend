@@ -424,6 +424,7 @@ security:
         client-id: ${SESSION_USUARIOS_CLIENT_ID:arquisoft-seguridad-usuarios}
         client-secret: ${SESSION_USUARIOS_CLIENT_SECRET:}
         por-correo-path: ${SESSION_USUARIOS_POR_CORREO_PATH:/api/usuarios/por-correo}
+        proveedor: ${SESSION_USUARIOS_PROVEEDOR:legado}
   authorization:
     public-paths: ${SECURITY_PUBLIC_PATHS:/actuator/health/**,/actuator/prometheus,/swagger-ui/**,/v3/api-docs/**,/swagger-resources/**}
     authenticated-paths: ${SECURITY_AUTHENTICATED_PATHS:/auth/logout}

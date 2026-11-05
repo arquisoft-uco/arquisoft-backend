@@ -122,12 +122,12 @@ class AutorizacionAccesoFilterTest {
 
     private void conBearerValido() {
         when(bearer.extraerCredencial(any())).thenReturn(Optional.of("tok-1"));
-        when(bearer.autenticar("tok-1")).thenReturn(identidadBearer);
+        when(bearer.autenticar("tok-1", SeleccionProveedor.SIN_EMISOR)).thenReturn(identidadBearer);
     }
 
     private void conCookieValida() {
         lenient().when(sesion.extraerCredencial(any())).thenReturn(Optional.of(COOKIE));
-        lenient().when(sesion.autenticar(COOKIE)).thenReturn(identidadSesion);
+        lenient().when(sesion.autenticar(COOKIE, SeleccionProveedor.SIN_EMISOR)).thenReturn(identidadSesion);
     }
 
     @Test
@@ -177,7 +177,7 @@ class AutorizacionAccesoFilterTest {
         // Arrange
         when(bearer.extraerCredencial(any())).thenReturn(Optional.of("tok-malo"));
         var fallo = new BadCredentialsException("invalido");
-        when(bearer.autenticar("tok-malo")).thenThrow(fallo);
+        when(bearer.autenticar("tok-malo", SeleccionProveedor.SIN_EMISOR)).thenThrow(fallo);
 
         // Act
         filtro(true).doFilter(request, response, cadena);
@@ -253,7 +253,7 @@ class AutorizacionAccesoFilterTest {
         // Arrange
         when(bearer.extraerCredencial(any())).thenReturn(Optional.of("tok-1"));
         var fallo = new AuthenticationServiceException("jwks caido");
-        when(bearer.autenticar("tok-1")).thenThrow(fallo);
+        when(bearer.autenticar("tok-1", SeleccionProveedor.SIN_EMISOR)).thenThrow(fallo);
 
         // Act
         filtro(true).doFilter(request, response, cadena);
@@ -269,7 +269,7 @@ class AutorizacionAccesoFilterTest {
         // Arrange
         var logout = new MockHttpServletRequest("POST", "/api/auth/logout");
         when(bearer.extraerCredencial(any())).thenReturn(Optional.of("tok-1"));
-        when(bearer.autenticar("tok-1")).thenReturn(identidadBearer);
+        when(bearer.autenticar("tok-1", SeleccionProveedor.SIN_EMISOR)).thenReturn(identidadBearer);
 
         // Act
         filtro(true).doFilter(logout, response, cadena);
@@ -290,7 +290,7 @@ class AutorizacionAccesoFilterTest {
 
         // Assert
         verify(entryPoint).commence(eq(logout), any(), any(InsufficientAuthenticationException.class));
-        verify(sesion, never()).autenticar(anyString());
+        verify(sesion, never()).autenticar(anyString(), anyString());
         verify(cadena, never()).doFilter(any(), any());
     }
 
@@ -320,7 +320,7 @@ class AutorizacionAccesoFilterTest {
         // Assert
         verify(accesoDenegadoHandler).handle(eq(request), eq(response), any(AccessDeniedException.class));
         verify(aplicadorDecision, never()).aplicar(any(), any(), anyString(), anyString());
-        verify(sesion, never()).autenticar(anyString());
+        verify(sesion, never()).autenticar(anyString(), anyString());
     }
 
     @Test
@@ -336,7 +336,7 @@ class AutorizacionAccesoFilterTest {
         // Assert
         InOrder orden = inOrder(aplicadorDecision, sesion, gestorTraza);
         orden.verify(aplicadorDecision).aplicar(request, response, "sesion-pdp", COOKIE);
-        orden.verify(sesion).autenticar(COOKIE);
+        orden.verify(sesion).autenticar(COOKIE, SeleccionProveedor.SIN_EMISOR);
         orden.verify(gestorTraza).registrarUsuario("sub-2");
         verify(cadena).doFilter(request, response);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isSameAs(identidadSesion);
@@ -349,7 +349,7 @@ class AutorizacionAccesoFilterTest {
         when(proteccionCsrf.evaluar(any(), any(), any(), any())).thenReturn(ProteccionCsrf.Resultado.PERMITIDA);
         when(aplicadorDecision.aplicar(request, response, "sesion-pdp", COOKIE)).thenReturn(true);
         var fallo = new AccessDeniedException("sin usuario");
-        when(sesion.autenticar(COOKIE)).thenThrow(fallo);
+        when(sesion.autenticar(COOKIE, SeleccionProveedor.SIN_EMISOR)).thenThrow(fallo);
 
         // Act
         filtro(true).doFilter(request, response, cadena);
@@ -367,7 +367,7 @@ class AutorizacionAccesoFilterTest {
         when(proteccionCsrf.evaluar(any(), any(), any(), any())).thenReturn(ProteccionCsrf.Resultado.PERMITIDA);
         when(aplicadorDecision.aplicar(request, response, "sesion-pdp", COOKIE)).thenReturn(true);
         var fallo = new UsuariosNoDisponibleException("usuarios caido", null);
-        when(sesion.autenticar(COOKIE)).thenThrow(fallo);
+        when(sesion.autenticar(COOKIE, SeleccionProveedor.SIN_EMISOR)).thenThrow(fallo);
 
         // Act
         filtro(true).doFilter(request, response, cadena);
@@ -389,7 +389,7 @@ class AutorizacionAccesoFilterTest {
         filtro(true).doFilter(request, response, cadena);
 
         // Assert
-        verify(sesion, never()).autenticar(anyString());
+        verify(sesion, never()).autenticar(anyString(), anyString());
         verify(cadena, never()).doFilter(any(), any());
     }
 
@@ -404,8 +404,8 @@ class AutorizacionAccesoFilterTest {
         filtro(true).doFilter(request, response, cadena);
 
         // Assert
-        verify(bearer).autenticar("tok-1");
-        verify(sesion, never()).autenticar(anyString());
+        verify(bearer).autenticar("tok-1", SeleccionProveedor.SIN_EMISOR);
+        verify(sesion, never()).autenticar(anyString(), anyString());
         verify(cadena).doFilter(request, response);
     }
 
@@ -422,7 +422,7 @@ class AutorizacionAccesoFilterTest {
         filtro(true).doFilter(request, response, cadena);
 
         // Assert
-        verify(bearer, never()).autenticar(anyString());
+        verify(bearer, never()).autenticar(anyString(), anyString());
         verify(cadena).doFilter(request, response);
     }
 
@@ -484,7 +484,7 @@ class AutorizacionAccesoFilterTest {
 
         // Assert
         verify(entryPoint).commence(eq(swagger), any(), any(InsufficientAuthenticationException.class));
-        verify(sesion, never()).autenticar(anyString());
+        verify(sesion, never()).autenticar(anyString(), anyString());
         verify(cadena, never()).doFilter(any(), any());
     }
 }

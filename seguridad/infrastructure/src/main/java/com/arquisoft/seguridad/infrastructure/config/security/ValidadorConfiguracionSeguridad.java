@@ -15,6 +15,7 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.message.key.seguridad.AutorizacionKey;
 import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,6 @@ public class ValidadorConfiguracionSeguridad {
 
     private static final String PERFIL_PRODUCCION = "prod";
     private static final String MODO_TEMPLATE = "template";
-    private static final String EMISOR_LEGADO = "legado";
 
     private static final String ERROR_CONFIGURACION_INSEGURA = "Configuración de seguridad inválida: %s";
     private static final String SEPARADOR_PROBLEMAS = "; ";
@@ -54,7 +54,7 @@ public class ValidadorConfiguracionSeguridad {
     private static final String ID_PROVEEDOR_INVALIDO =
             "id de proveedor de autenticacion vacio, duplicado o igual a un emisor: %s";
     private static final String ID_EMISOR_RESERVADO =
-            "el id de emisor %s esta reservado al proveedor de autenticacion Bearer";
+            "el id de emisor %s esta reservado a un canal de autenticacion";
     private static final String SESION_SIN_CREDENCIALES_CORS =
             "el canal de sesion exige security.cors.allow-credentials=true";
     private static final String SESION_ORIGENES_INVALIDOS =
@@ -63,9 +63,10 @@ public class ValidadorConfiguracionSeguridad {
             "el canal de sesion exige la cabecera %s en security.cors.allowed-headers";
     private static final String SESION_HTTP_EN_PRODUCCION =
             "security.authentication.session.allow-insecure-http=true no se permite en produccion";
-    private static final String SESION_SIN_EMISOR_LEGADO =
-            "el canal de sesion exige el emisor legado habilitado (AUTH_LEGACY_ENABLED=true): el token de servicio "
-                    + "con el que consulta a usuarios es del realm arquisoft";
+    private static final String SESION_SIN_EMISOR_USUARIOS =
+            "el canal de sesion exige que security.authentication.session.usuarios.proveedor (%s) sea un emisor "
+                    + "habilitado (para legado, AUTH_LEGACY_ENABLED=true): el token de servicio con el que consulta "
+                    + "a usuarios es del realm arquisoft";
     private static final String COMODIN = "*";
     private static final String SEPARADOR_LISTA = ",";
     private static final String PEP_HTTP_EN_PRODUCCION =
@@ -113,10 +114,11 @@ public class ValidadorConfiguracionSeguridad {
         }
         var ids = new HashSet<String>();
         for (var emisor : propiedadesAutenticacion.issuers()) {
-            if (UtilTexto.esVacioONulo(emisor.id()) || !ids.add(emisor.id())) {
+            if (UtilTexto.esVacioONulo(emisor.id()) || !ids.add(emisor.id().toLowerCase(Locale.ROOT))) {
                 problemas.add(ID_EMISOR_INVALIDO.formatted(emisor.id()));
             }
-            if (SeleccionProveedor.BEARER.equalsIgnoreCase(emisor.id())) {
+            if (SeleccionProveedor.BEARER.equalsIgnoreCase(emisor.id())
+                    || (UtilObjeto.noEsNulo(sesion.id()) && sesion.id().equalsIgnoreCase(emisor.id()))) {
                 problemas.add(ID_EMISOR_RESERVADO.formatted(emisor.id()));
             }
         }
@@ -164,15 +166,15 @@ public class ValidadorConfiguracionSeguridad {
         var ids = new HashSet<>(idsEmisores);
         for (var proveedor : proveedores.todos()) {
             var id = proveedor.id();
-            if (UtilTexto.esVacioONulo(id) || !ids.add(id)) {
+            if (UtilTexto.esVacioONulo(id) || !ids.add(id.toLowerCase(Locale.ROOT))) {
                 problemas.add(ID_PROVEEDOR_INVALIDO.formatted(id));
             }
         }
         if (sesion.enabled()) {
             problemas.addAll(sesion.problemas());
             problemas.addAll(usuariosSesion.problemas());
-            if (propiedadesAutenticacion.porId(EMISOR_LEGADO).isEmpty()) {
-                problemas.add(SESION_SIN_EMISOR_LEGADO);
+            if (propiedadesAutenticacion.porIdIgnorandoMayusculas(usuariosSesion.proveedor()).isEmpty()) {
+                problemas.add(SESION_SIN_EMISOR_USUARIOS.formatted(usuariosSesion.proveedor()));
             }
             problemas.addAll(pep.problemas());
             problemas.addAll(problemasDeCorsParaSesion());

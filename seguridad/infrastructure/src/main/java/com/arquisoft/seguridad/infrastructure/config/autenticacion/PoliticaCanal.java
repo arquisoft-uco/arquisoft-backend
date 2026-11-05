@@ -11,4 +11,8 @@ public interface PoliticaCanal {
     boolean actuaEnRutasNoDeNegocio();
 
     Optional<ModoAutorizacion> autorizacion(String emisor);
+
+    Optional<String> emisorHabilitado(String selector);
+
+    boolean declaraEmisor(String selector);
 }

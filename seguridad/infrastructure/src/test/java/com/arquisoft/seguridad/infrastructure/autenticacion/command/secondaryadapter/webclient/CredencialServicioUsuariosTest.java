@@ -39,7 +39,7 @@ class CredencialServicioUsuariosTest {
     private CredencialServicioUsuarios credencial() {
         var propiedades = new UsuarioSesionProperties("https://usuarios.test", false, Duration.ofSeconds(1),
                 Duration.ofSeconds(3), Duration.ofMinutes(5), "https://kc.test/realms/arquisoft/protocol/openid-connect/token",
-                "arquisoft-seguridad-usuarios", "secreto", "/api/usuarios/por-correo");
+                "arquisoft-seguridad-usuarios", "secreto", "/api/usuarios/por-correo", "legado");
         return new CredencialServicioUsuarios(clienteToken, propiedades, logger);
     }
 

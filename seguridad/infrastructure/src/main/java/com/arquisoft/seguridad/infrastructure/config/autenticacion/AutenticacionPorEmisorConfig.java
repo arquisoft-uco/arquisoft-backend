@@ -24,6 +24,7 @@ public class AutenticacionPorEmisorConfig {
     public static final String BEAN_GESTOR_BEARER = "seguridadAutenticacionBearerManager";
 
     private static final String EMISOR_DESCONOCIDO = "Emisor del token no configurado o deshabilitado";
+    private static final String EMISOR_NO_COINCIDE = "El token no corresponde al emisor indicado";
     private static final String TOKEN_ILEGIBLE = "Token ilegible";
 
     @Bean
@@ -36,11 +37,23 @@ public class AutenticacionPorEmisorConfig {
             DecodificadoresPorEmisor decodersPorEmisor, AutenticacionProperties propiedades) {
         var managers = new ConcurrentHashMap<String, AuthenticationManager>();
         return autenticacion -> {
-            var emisor = propiedades.porIssuer(issuerDe(((BearerTokenAuthenticationToken) autenticacion).getToken()))
-                    .orElseThrow(() -> new InvalidBearerTokenException(EMISOR_DESCONOCIDO));
+            var emisor = emisorDe((BearerTokenAuthenticationToken) autenticacion, propiedades);
             return managers.computeIfAbsent(emisor.id(), id -> manager(emisor, decodersPorEmisor))
                     .authenticate(autenticacion);
         };
+    }
+
+    private static Emisor emisorDe(BearerTokenAuthenticationToken token, AutenticacionProperties propiedades) {
+        var issuer = issuerDe(token.getToken());
+        if (token instanceof BearerEmisorForzadoToken forzado) {
+            var emisor = propiedades.porId(forzado.emisor())
+                    .orElseThrow(() -> new InvalidBearerTokenException(EMISOR_DESCONOCIDO));
+            if (!emisor.issuer().equals(issuer)) {
+                throw new InvalidBearerTokenException(EMISOR_NO_COINCIDE);
+            }
+            return emisor;
+        }
+        return propiedades.porIssuer(issuer).orElseThrow(() -> new InvalidBearerTokenException(EMISOR_DESCONOCIDO));
     }
 
     private static String issuerDe(String token) {

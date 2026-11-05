@@ -11,7 +11,7 @@ class UsuarioSesionPropertiesTest {
     private static UsuarioSesionProperties propiedades(String url, boolean inseguro, String tokenUrl, String cliente,
                                                        String secreto, Duration ttl) {
         return new UsuarioSesionProperties(url, inseguro, Duration.ofSeconds(1), Duration.ofSeconds(3), ttl, tokenUrl,
-                cliente, secreto, "/api/usuarios/por-correo");
+                cliente, secreto, "/api/usuarios/por-correo", "legado");
     }
 
     @Test
@@ -66,5 +66,23 @@ class UsuarioSesionPropertiesTest {
 
         // Assert
         assertThat(texto).doesNotContain("super-secreto");
+    }
+
+    @Test
+    void debeProblema_cuandoProveedorVacio() {
+        // Arrange
+        var sinProveedor = new UsuarioSesionProperties("https://u.test", false, Duration.ofSeconds(1),
+                Duration.ofSeconds(3), Duration.ofMinutes(5), "https://kc.test/t", "c", "s", "/api/usuarios/por-correo", " ");
+
+        // Act / Assert
+        assertThat(sinProveedor.problemas()).hasSize(1).first().asString().contains("usuarios.proveedor");
+    }
+
+    @Test
+    void debeUsarLegado_porDefecto() {
+        // Act / Assert
+        assertThat(UsuarioSesionProperties.PROVEEDOR_POR_DEFECTO).isEqualTo("legado");
+        assertThat(propiedades("https://u.test", false, "https://kc.test/t", "c", "s", Duration.ofMinutes(5)).proveedor())
+                .isEqualTo("legado");
     }
 }
