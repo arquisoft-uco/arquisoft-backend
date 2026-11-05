@@ -3,11 +3,13 @@ package com.arquisoft.seguridad.infrastructure.filter;
 import com.arquisoft.seguridad.application.autorizacion.command.primaryport.interactor.AutorizarAccesoInteractor;
 import com.arquisoft.seguridad.application.autorizacion.command.primaryport.model.AutorizarAccesoCommand;
 import com.arquisoft.seguridad.application.autorizacion.command.result.DecisionAccesoResult;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.AplicadorDecisionAcceso;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.ResolvedorPlantillaRuta;
 import com.arquisoft.seguridad.infrastructure.autorizacion.exception.ProveedorAutorizacionNoDisponibleException;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionAuthenticationToken;
 import com.arquisoft.seguridad.infrastructure.config.security.AccesoDenegadoHandler;
 import com.arquisoft.seguridad.infrastructure.config.security.NoAutenticadoEntryPoint;
 import com.arquisoft.seguridad.infrastructure.config.security.RutasPublicas;
@@ -76,8 +78,10 @@ class AutorizacionAccesoFilterTest {
                 ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "preferred_username", "name", ""));
         var rutas = new RutasPublicas("/api", List.of("/actuator/health/**"), List.of("/auth/logout"), "none",
                 new MockEnvironment());
-        filtro = new AutorizacionAccesoFilter(interactor, resolvedor, gestorTraza, rutas,
-                new AutenticacionProperties(List.of(emisor)), entryPoint, accesoDenegadoHandler, resolvedorExcepciones);
+        var aplicador = new AplicadorDecisionAcceso(interactor, resolvedor, gestorTraza, entryPoint,
+                accesoDenegadoHandler, resolvedorExcepciones);
+        filtro = new AutorizacionAccesoFilter(aplicador, rutas, new AutenticacionProperties(List.of(emisor)),
+                entryPoint);
         request = new MockHttpServletRequest("GET", "/api/fichas-perfil/123");
         request.setContextPath("/api");
         response = new MockHttpServletResponse();
@@ -218,5 +222,20 @@ class AutorizacionAccesoFilterTest {
         // Assert
         verify(resolvedorExcepciones).resolveException(request, response, null, fallo);
         verify(cadena, never()).doFilter(any(), any());
+    }
+
+    @Test
+    void debeDejarPasarSinDecidir_cuandoAutenticacionAutorizada() throws Exception {
+        // Arrange
+        SecurityContextHolder.getContext().setAuthentication(
+                new SesionAuthenticationToken("sesion-pdp", "sub-1", "Ana", "a@uco.edu.co", "t"));
+
+        // Act
+        filtro.doFilter(request, response, cadena);
+
+        // Assert
+        verify(cadena).doFilter(request, response);
+        verify(interactor, never()).ejecutar(any());
+        verify(entryPoint, never()).commence(any(), any(), any());
     }
 }

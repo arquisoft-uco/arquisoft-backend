@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 public final class PepSolicitudMapper {
@@ -33,16 +34,21 @@ public final class PepSolicitudMapper {
         return cuerpo;
     }
 
-    public static HttpHeaders toCabeceras(PepProperties propiedades, SolicitudAcceso solicitud) {
+    public static HttpHeaders toCabeceras(PepProperties propiedades, SolicitudAcceso solicitud,
+                                          BiConsumer<HttpHeaders, String> adjuntarCredencial) {
         var requestId = UtilUUID.generarNuevoUUID().toString();
         var cabeceras = new HttpHeaders();
         cabeceras.setContentType(MediaType.APPLICATION_JSON);
         cabeceras.setAccept(List.of(MediaType.APPLICATION_JSON));
-        cabeceras.set(HttpHeaders.AUTHORIZATION, PREFIJO_BEARER + solicitud.credencial());
+        adjuntarCredencial.accept(cabeceras, solicitud.credencial());
         cabeceras.set(CABECERA_CREDENCIAL_APLICACION, propiedades.credential());
         cabeceras.set(CABECERA_REQUEST_ID, requestId);
         cabeceras.set(CABECERA_CORRELATION_ID, sanearCorrelacion(solicitud.correlacion(), requestId));
         return cabeceras;
+    }
+
+    public static void adjuntarBearer(HttpHeaders cabeceras, String credencial) {
+        cabeceras.set(HttpHeaders.AUTHORIZATION, PREFIJO_BEARER + credencial);
     }
 
     private static String sanearCorrelacion(String correlacion, String requestId) {

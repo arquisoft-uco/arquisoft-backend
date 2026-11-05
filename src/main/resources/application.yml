@@ -397,6 +397,21 @@ security:
           nombre-usuario: preferred_username
           nombre: name
           roles: realm_access.roles
+    # Canal de autenticacion por la cookie de sesion del BFF de Security Baseline, junto a Bearer.
+    # Apagado por defecto: se enciende con SESSION_AUTH_ENABLED=true y SESSION_PDP_URL.
+    # Con el canal encendido el arranque exige CORS_ALLOW_CREDENTIALS=true y origenes explicitos.
+    session:
+      id: ${SESSION_PROVIDER_ID:sesion-pdp}
+      enabled: ${SESSION_AUTH_ENABLED:false}
+      authorization: ${SESSION_AUTHORIZATION:pep}
+      cookie-name: ${SESSION_COOKIE_NAME:SECURITY_BASELINE_SESSION}
+      pdp-url: ${SESSION_PDP_URL:}
+      allow-insecure-http: ${SESSION_ALLOW_INSECURE_HTTP:false}
+      connect-timeout: ${SESSION_CONNECT_TIMEOUT:1s}
+      read-timeout: ${SESSION_READ_TIMEOUT:3s}
+      cache:
+        ttl: ${SESSION_CACHE_TTL:PT60S}
+        max-size: ${SESSION_CACHE_MAX_SIZE:10000}
   authorization:
     public-paths: ${SECURITY_PUBLIC_PATHS:/actuator/health/**,/actuator/prometheus,/swagger-ui/**,/v3/api-docs/**,/swagger-resources/**}
     authenticated-paths: ${SECURITY_AUTHENTICATED_PATHS:/auth/logout}
@@ -445,9 +460,9 @@ security:
       client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
       client-secret: ${KEYCLOAK_CLIENT_SECRET:}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173,http://localhost:5174}
     allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
-    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type,X-Correlation-Id}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type,X-Correlation-Id,X-XSRF-TOKEN,X-Proveedor-Identidad}
     max-age: ${CORS_MAX_AGE:3600}
     allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
   rate-limit:

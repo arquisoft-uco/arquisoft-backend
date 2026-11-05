@@ -56,7 +56,20 @@ Copia `.env.example` a `.env`. Las variables clave son:
 | `ROLE_EXPANSION_*` | Opcionales: `REFRESH_INTERVAL` (PT5M), `TTL` (PT15M), `CHECK_INTERVAL` (PT30S), `LOCK_LEASE` (PT60S), `CONNECT_TIMEOUT` (2s), `READ_TIMEOUT` (3s) del índice en Redis |
 | `AUTH_ISSUER_URI`, `AUTH_AUDIENCES` | Emisor principal (Security Baseline). En dev: `http://keycloak.localhost:19090/realms/security-baseline` |
 | `PEP_URL`, `PEP_APPLICATION_NAME`, `PEP_ENVIRONMENT`, `PEP_REGISTRATION_TOKEN` | PEP de Security Baseline (laboratorio: PEP `http://localhost:18081`, PDP `18080`, Keycloak `19090`). `PEP_ALLOW_INSECURE_HTTP=true` por defecto en dev |
+| `SESSION_AUTH_ENABLED`, `SESSION_PDP_URL` | Canal de la cookie de sesión del BFF (`SECURITY_BASELINE_SESSION`) como proveedor `sesion-pdp`, junto a Bearer. Apagado por defecto; en dev se enciende con `SESSION_AUTH_ENABLED=true`, `SESSION_PDP_URL=http://localhost:18080` y `CORS_ALLOW_CREDENTIALS=true`. Opcionales: `SESSION_PROVIDER_ID`, `SESSION_COOKIE_NAME`, `SESSION_CONNECT_TIMEOUT` (1s), `SESSION_READ_TIMEOUT` (3s), `SESSION_CACHE_TTL` (PT60S; `PT0S` apaga la caché de identidad), `SESSION_CACHE_MAX_SIZE` (10000), `SESSION_ALLOW_INSECURE_HTTP` (`true` por defecto solo en dev) |
 | `AUTH_LEGACY_ENABLED` | `true` por defecto en dev; `false` apaga el emisor Keycloak del realm `arquisoft` |
 | `DIRECT_LOGIN_PROVIDER=none` | Retira los cuatro endpoints `/auth/*` (deprecados) |
 | `IDENTITY_PROVISIONING_PROVIDER=none` | Los endpoints de `usuarios` que aprovisionan identidad responden 503 |
 | `SECURITY_ENABLED=false` | Desinstala el filtro de autorizacion (solo local; el arranque en `prod` lo rechaza) |
+
+## Canal de la cookie de sesión del BFF (Security Baseline 0.1.6)
+
+Con `SESSION_AUTH_ENABLED=true` el backend acepta la cookie de sesión además de Bearer. Por cada petición con cookie consulta primero al PEP (reenviando solo esa cookie) y, solo si permite, obtiene la identidad con `GET {SESSION_PDP_URL}/api/v1/session` (caché en memoria de la identidad, nunca de decisiones). El arranque falla si falta la URL, si `CORS_ALLOW_CREDENTIALS` no es `true`, si los orígenes no son explícitos o si `CORS_ALLOWED_HEADERS` no incluye `X-XSRF-TOKEN` y `X-Proveedor-Identidad`.
+
+- **Selector:** el encabezado opcional `X-Proveedor-Identidad` elige el proveedor (`sesion-pdp`, o `bearer`). Sin él, gana Bearer y, sin Bearer, la cookie. Un valor desconocido, deshabilitado o `none` responde 401.
+- **CSRF:** una escritura (cualquier método salvo GET, HEAD, OPTIONS y TRACE) por cookie exige `X-XSRF-TOKEN` no vacío y un `Origin` (o el origen de `Referer`) dentro de `CORS_ALLOWED_ORIGINS`; si no, 403.
+- `/auth/logout` con solo cookie responde 401.
+- `accessTokenLifespan` = 300 s: la sesión BFF se corta cada ~5 minutos y PEP/PDP responden 401; este backend no la renueva (lo resuelve el borde o el front).
+- La cookie es `SameSite=Lax`: PDP, frontend y API deben compartir dominio registrable.
+- La CSRF (`XSRF-TOKEN` / `X-XSRF-TOKEN`) solo la aplica el BFF a sus rutas; ni el PEP ni su starter la exigen a la API, por eso la cierra este backend.
+- El PEP en modo proxy no reenvía Bearer ni cookies: no es alternativa.

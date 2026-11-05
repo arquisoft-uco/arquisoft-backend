@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionAuthenticationToken;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.security.RutasPublicas;
@@ -157,5 +158,22 @@ class JwtListaNegraFilterTest {
         // Assert
         verify(tokenInvalidadoPort, never()).estaInvalidado(JTI);
         verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void debeOmitirConsulta_cuandoAutenticacionPorSesion() throws Exception {
+        // Arrange
+        SecurityContextHolder.getContext().setAuthentication(
+                new SesionAuthenticationToken("sesion-pdp", "sub-1", "Ana", "ana@uco.edu.co", "t-1"));
+        var request = mock(HttpServletRequest.class);
+        var response = mock(HttpServletResponse.class);
+        var filterChain = mock(FilterChain.class);
+
+        // Act
+        filter.doFilterInternal(request, response, filterChain);
+
+        // Assert
+        verify(filterChain).doFilter(request, response);
+        verify(tokenInvalidadoPort, never()).estaInvalidado(org.mockito.ArgumentMatchers.anyString());
     }
 }

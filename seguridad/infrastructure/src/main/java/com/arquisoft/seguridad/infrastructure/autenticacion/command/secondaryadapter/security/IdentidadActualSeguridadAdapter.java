@@ -2,6 +2,7 @@ package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryad
 
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ExtractorClaims;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionAuthenticationToken;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
@@ -12,6 +13,8 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -24,6 +27,9 @@ public class IdentidadActualSeguridadAdapter implements ProveedorIdentidadActual
     @Override
     public IdentidadActual obtener() {
         var actual = SecurityContextHolder.getContext().getAuthentication();
+        if (actual instanceof SesionAuthenticationToken sesion && sesion.isAuthenticated()) {
+            return desdeSesion(sesion);
+        }
         if (!(actual instanceof JwtAuthenticationToken jwtAuth) || !jwtAuth.isAuthenticated()) {
             throw new AuthenticationCredentialsNotFoundException(SIN_IDENTIDAD);
         }
@@ -46,5 +52,19 @@ public class IdentidadActualSeguridadAdapter implements ProveedorIdentidadActual
                 ExtractorClaims.lista(claims, claimsEmisor.roles()),
                 jwt.getId(),
                 jwt.getExpiresAt());
+    }
+
+    private static IdentidadActual desdeSesion(SesionAuthenticationToken sesion) {
+        var id = UtilUUID.generarUUIDDesdeTexto(sesion.getSujeto());
+        if (UtilObjeto.esNulo(id)) {
+            throw new AuthenticationCredentialsNotFoundException(SIN_IDENTIDAD);
+        }
+        return new IdentidadActual(
+                id,
+                sesion.getCorreo(),
+                UtilTexto.esVacioONulo(sesion.getNombre()) ? sesion.getCorreo() : sesion.getNombre(),
+                List.of(),
+                null,
+                null);
     }
 }

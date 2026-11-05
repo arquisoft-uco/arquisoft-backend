@@ -20,7 +20,7 @@ class PepSolicitudMapperTest {
 
         // Act
         var cuerpo = PepSolicitudMapper.toCuerpo(propiedades, solicitud);
-        var cabeceras = PepSolicitudMapper.toCabeceras(propiedades, solicitud);
+        var cabeceras = PepSolicitudMapper.toCabeceras(propiedades, solicitud, PepSolicitudMapper::adjuntarBearer);
 
         // Assert
         assertThat(cuerpo).containsEntry("applicationName", "app").containsEntry("environment", "lab")
@@ -37,8 +37,8 @@ class PepSolicitudMapperTest {
         var vacia = new SolicitudAcceso("GET", "/api/x", "tok", "principal", null);
 
         // Act
-        var cabecerasInvalida = PepSolicitudMapper.toCabeceras(propiedades, invalida);
-        var cabecerasVacia = PepSolicitudMapper.toCabeceras(propiedades, vacia);
+        var cabecerasInvalida = PepSolicitudMapper.toCabeceras(propiedades, invalida, PepSolicitudMapper::adjuntarBearer);
+        var cabecerasVacia = PepSolicitudMapper.toCabeceras(propiedades, vacia, PepSolicitudMapper::adjuntarBearer);
 
         // Assert
         assertThat(cabecerasInvalida.getFirst("X-Correlation-Id")).isEqualTo(cabecerasInvalida.getFirst("X-Request-Id"));

@@ -25,6 +25,9 @@ security:
   defaults:
     legacy-enabled: true
     issuer-uri: http://keycloak.localhost:19090/realms/security-baseline
+  authentication:
+    session:
+      allow-insecure-http: ${SESSION_ALLOW_INSECURE_HTTP:true}
   authorization:
     pep:
       url: ${PEP_URL:http://localhost:18081}

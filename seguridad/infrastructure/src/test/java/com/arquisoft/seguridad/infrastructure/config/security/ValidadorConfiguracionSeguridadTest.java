@@ -1,15 +1,19 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
+import com.arquisoft.seguridad.infrastructure.config.cors.OrigenesPermitidos;
 import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapter.keycloak.KeycloakFuenteMapeoRolesProperties;
 import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapter.redis.MapeoRolesProperties;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.message.key.seguridad.AutorizacionKey;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorAutenticacion;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -20,6 +24,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -52,6 +57,13 @@ class ValidadorConfiguracionSeguridadTest {
                 ModoAutorizacion.ROLE_TABLE, true, new ClaimsIdentidad("sub", "email", "u", "n", roles));
     }
 
+    private static final String ORIGEN_PRUEBA = "http://localhost:3000";
+
+    private static SesionProperties sesionApagada() {
+        return new SesionProperties("sesion-pdp", false, "pep", "SECURITY_BASELINE_SESSION", "", false,
+                Duration.ofSeconds(1), Duration.ofSeconds(3), new SesionProperties.Cache(Duration.ofSeconds(60), 10000));
+    }
+
     private static ValidadorConfiguracionSeguridad validador(List<AutenticacionProperties.Emisor> emisores, PepProperties pep,
                                                              String perfil, boolean habilitada, String modoRuta) {
         return validador(emisores, pep, expansionValida(), keycloakValido(), perfil, habilitada, modoRuta);
@@ -66,7 +78,8 @@ class ValidadorConfiguracionSeguridadTest {
             entorno.setActiveProfiles(perfil);
         }
         var validador = new ValidadorConfiguracionSeguridad(mock(AppLogger.class), new AutenticacionProperties(emisores),
-                pep, expansion, keycloak, mock(RutasPublicas.class), entorno);
+                pep, sesionApagada(), new ProveedoresAutenticacion(List.of()), new OrigenesPermitidos(ORIGEN_PRUEBA),
+                expansion, keycloak, mock(RutasPublicas.class), entorno);
         ReflectionTestUtils.setField(validador, "seguridadHabilitada", habilitada);
         ReflectionTestUtils.setField(validador, "modoRuta", modoRuta);
         return validador;
@@ -217,7 +230,8 @@ class ValidadorConfiguracionSeguridadTest {
                 ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "u", "n", ""));
         var validador = new ValidadorConfiguracionSeguridad(logger,
                 new AutenticacionProperties(List.of(emisor("sin", true, ModoAutorizacion.PEP), conAudiencia)),
-                pep("cred", false, "https://pep.test"), expansionValida(), keycloakValido(),
+                pep("cred", false, "https://pep.test"), sesionApagada(), new ProveedoresAutenticacion(List.of()),
+                new OrigenesPermitidos(ORIGEN_PRUEBA), expansionValida(), keycloakValido(),
                 mock(RutasPublicas.class), new MockEnvironment());
 
         // Act
@@ -226,5 +240,145 @@ class ValidadorConfiguracionSeguridadTest {
         // Assert
         verify(logger).warn(AutorizacionKey.LOG_AUDIENCIA_SIN_VALIDAR, "sin");
         verify(logger, never()).warn(AutorizacionKey.LOG_AUDIENCIA_SIN_VALIDAR, "con");
+    }
+
+    private static final String CABECERAS_CANAL = "Authorization,Content-Type,X-Correlation-Id,X-XSRF-TOKEN,X-Proveedor-Identidad";
+
+    private static SesionProperties sesion(boolean habilitada, String url, boolean inseguro, String authorization) {
+        return new SesionProperties("sesion-pdp", habilitada, authorization, "SECURITY_BASELINE_SESSION", url, inseguro,
+                Duration.ofSeconds(1), Duration.ofSeconds(3), new SesionProperties.Cache(Duration.ofSeconds(60), 100));
+    }
+
+    private static ProveedorAutenticacion proveedor(String id) {
+        var proveedor = mock(ProveedorAutenticacion.class);
+        when(proveedor.id()).thenReturn(id);
+        return proveedor;
+    }
+
+    private static ValidadorConfiguracionSeguridad validadorConSesion(SesionProperties sesion, PepProperties pep,
+                                                                      List<ProveedorAutenticacion> proveedores,
+                                                                      String origenes, boolean credenciales,
+                                                                      String cabeceras, String perfil) {
+        var entorno = new MockEnvironment();
+        if (perfil != null) {
+            entorno.setActiveProfiles(perfil);
+        }
+        var validador = new ValidadorConfiguracionSeguridad(mock(AppLogger.class),
+                new AutenticacionProperties(List.of(emisor("principal", true, ModoAutorizacion.PEP))), pep, sesion,
+                new ProveedoresAutenticacion(proveedores), new OrigenesPermitidos(origenes), expansionValida(),
+                keycloakValido(), mock(RutasPublicas.class), entorno);
+        ReflectionTestUtils.setField(validador, "seguridadHabilitada", true);
+        ReflectionTestUtils.setField(validador, "modoRuta", "template");
+        ReflectionTestUtils.setField(validador, "permiteCredencialesCors", credenciales);
+        ReflectionTestUtils.setField(validador, "cabecerasPermitidasCors", cabeceras);
+        return validador;
+    }
+
+    private static ValidadorConfiguracionSeguridad validadorCanal(SesionProperties sesion) {
+        return validadorConSesion(sesion, pep("cred", false, "https://pep.test"), List.of(proveedor("sesion-pdp")),
+                ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
+    }
+
+    @Test
+    void debeFallar_cuandoIdDeProveedorRepetidoOIgualAEmisorOABearer() {
+        // Arrange
+        var pepValido = pep("cred", false, "https://pep.test");
+        var repetido = validadorConSesion(sesion(false, "", false, "pep"), pepValido,
+                List.of(proveedor("a"), proveedor("a")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
+        var igualAEmisor = validadorConSesion(sesion(false, "", false, "pep"), pepValido,
+                List.of(proveedor("principal")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
+        var igualABearer = validadorConSesion(sesion(false, "", false, "pep"), pepValido,
+                List.of(proveedor("Bearer")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
+
+        // Act / Assert
+        assertThat(repetido.problemas()).hasSize(1).first().asString().contains("proveedor");
+        assertThat(igualAEmisor.problemas()).hasSize(1).first().asString().contains("proveedor");
+        assertThat(igualABearer.problemas()).hasSize(1).first().asString().contains("proveedor");
+        assertThatThrownBy(repetido::validar).isInstanceOf(InfrastructureException.class);
+    }
+
+    @Test
+    void debeFallar_cuandoSesionHabilitadaSinUrl() {
+        // Arrange
+        var validador = validadorCanal(sesion(true, "", false, "pep"));
+
+        // Act / Assert
+        assertThat(validador.problemas()).hasSize(1).first().asString().contains("pdp-url");
+    }
+
+    @Test
+    void debeFallar_cuandoSesionNoEsPep() {
+        // Arrange
+        var validador = validadorCanal(sesion(true, "https://pdp.test", false, "role-table"));
+
+        // Act / Assert
+        assertThat(validador.problemas()).hasSize(1).first().asString().contains("authorization");
+    }
+
+    @Test
+    void debeFallar_cuandoPepSinConfigurarConSesionHabilitada() {
+        // Arrange
+        var validador = validadorConSesion(sesion(true, "https://pdp.test", false, "pep"), pep("", false, ""),
+                List.of(proveedor("sesion-pdp")), ORIGEN_PRUEBA, true, CABECERAS_CANAL, null);
+
+        // Act / Assert
+        assertThat(validador.problemas()).isNotEmpty();
+    }
+
+    @Test
+    void debeFallar_cuandoSesionSinAllowCredentialsOOrigenesInvalidos() {
+        // Arrange
+        var configuracion = sesion(true, "https://pdp.test", false, "pep");
+        var pepValido = pep("cred", false, "https://pep.test");
+        var sinCredenciales = validadorConSesion(configuracion, pepValido, List.of(proveedor("sesion-pdp")),
+                ORIGEN_PRUEBA, false, CABECERAS_CANAL, null);
+        var comodin = validadorConSesion(configuracion, pepValido, List.of(proveedor("sesion-pdp")),
+                "*", true, CABECERAS_CANAL, null);
+        var vacios = validadorConSesion(configuracion, pepValido, List.of(proveedor("sesion-pdp")),
+                " , ", true, CABECERAS_CANAL, null);
+
+        // Act / Assert
+        assertThat(sinCredenciales.problemas()).hasSize(1).first().asString().contains("allow-credentials");
+        assertThat(comodin.problemas()).hasSize(1).first().asString().contains("allowed-origins");
+        assertThat(vacios.problemas()).hasSize(1).first().asString().contains("allowed-origins");
+    }
+
+    @Test
+    void debeFallar_cuandoAllowedHeadersSinLasCabecerasDelCanal() {
+        // Arrange
+        var configuracion = sesion(true, "https://pdp.test", false, "pep");
+        var pepValido = pep("cred", false, "https://pep.test");
+        var sinXsrf = validadorConSesion(configuracion, pepValido, List.of(proveedor("sesion-pdp")),
+                ORIGEN_PRUEBA, true, "Authorization,X-Proveedor-Identidad", null);
+        var sinSelector = validadorConSesion(configuracion, pepValido, List.of(proveedor("sesion-pdp")),
+                ORIGEN_PRUEBA, true, "Authorization, x-xsrf-token", null);
+
+        // Act / Assert
+        assertThat(sinXsrf.problemas()).hasSize(1).first().asString().contains("X-XSRF-TOKEN");
+        assertThat(sinSelector.problemas()).hasSize(1).first().asString().contains("X-Proveedor-Identidad");
+    }
+
+    @Test
+    void debeFallar_enProdConHttpInseguroDeSesion() {
+        // Arrange
+        var validador = validadorConSesion(sesion(true, "http://pdp.test", true, "pep"),
+                pep("cred", false, "https://pep.test"), List.of(proveedor("sesion-pdp")), ORIGEN_PRUEBA, true,
+                CABECERAS_CANAL, "prod");
+
+        // Act / Assert
+        assertThat(validador.problemas()).hasSize(1).first().asString().contains("session.allow-insecure-http");
+    }
+
+    @Test
+    void debeAceptar_cuandoSesionDeshabilitadaOBienConfigurada() {
+        // Arrange
+        var deshabilitada = validadorConSesion(sesion(false, "", false, "pep"), pep("cred", false, "https://pep.test"),
+                List.of(proveedor("sesion-pdp")), ORIGEN_PRUEBA, false, "Authorization", null);
+        var bienConfigurada = validadorCanal(sesion(true, "https://pdp.test", false, "pep"));
+
+        // Act / Assert
+        assertThat(deshabilitada.problemas()).isEmpty();
+        assertThat(bienConfigurada.problemas()).isEmpty();
+        bienConfigurada.validar();
     }
 }

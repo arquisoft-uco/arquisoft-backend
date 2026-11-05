@@ -36,21 +36,20 @@ public class CorsConfig {
 
     private final AppLogger logger;
     
-    @Value("${security.cors.allowed-origins:http://localhost:3000,http://localhost:4200}")
-    private String allowedOrigins;
-    
+    private final OrigenesPermitidos origenesPermitidos;
+
     @Value("${security.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS,PATCH}")
     private String allowedMethods;
     
-    // La SPA autentica con Bearer token (header Authorization); si el borde convierte una cookie en
-    // Bearer es asunto del borde. Solo se aceptan estos headers en las requests entrantes. Evitamos "*".
-    @Value("${security.cors.allowed-headers:Authorization,Content-Type,X-Correlation-Id}")
+    // La SPA autentica con Bearer o con la cookie de sesion del BFF (X-XSRF-TOKEN y el selector
+    // X-Proveedor-Identidad). Solo se aceptan estos headers en las requests entrantes. Evitamos "*".
+    @Value("${security.cors.allowed-headers:Authorization,Content-Type,X-Correlation-Id,X-XSRF-TOKEN,X-Proveedor-Identidad}")
     private String allowedHeaders;
 
     @Value("${security.cors.max-age:3600}")
     private long maxAge;
 
-    // Credenciales configurables: con true el navegador acepta cookies del borde, y CORS exige
+    // Credenciales configurables: con true el navegador envia la cookie de sesion del BFF, y CORS exige
     // orígenes explícitos (nunca comodín).
     @Value("${security.cors.allow-credentials:false}")
     private boolean allowCredentials;
@@ -59,8 +58,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         var configuration = new CorsConfiguration();
         
-        List<String> origins = Arrays.asList(allowedOrigins.split(SEPARADOR_LISTA));
-        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedOrigins(origenesPermitidos.lista());
         
         List<String> methods = Arrays.asList(allowedMethods.split(SEPARADOR_LISTA));
         configuration.setAllowedMethods(methods);
@@ -95,7 +93,7 @@ public class CorsConfig {
     @EventListener(ApplicationReadyEvent.class)
     public void registrarConfiguracionAplicada() {
         logger.info(ConfiguracionKey.LOG_CORS_CONFIGURADO,
-                Arrays.asList(allowedOrigins.split(SEPARADOR_LISTA)),
+                origenesPermitidos.lista(),
                 Arrays.asList(allowedMethods.split(SEPARADOR_LISTA)),
                 maxAge);
     }

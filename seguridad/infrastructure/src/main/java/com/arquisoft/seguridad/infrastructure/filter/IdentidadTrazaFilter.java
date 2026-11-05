@@ -1,6 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionAuthenticationToken;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import com.arquisoft.shared.util.UtilObjeto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,8 +23,12 @@ public class IdentidadTrazaFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         var autenticacion = SecurityContextHolder.getContext().getAuthentication();
-        if (autenticacion != null && autenticacion.getPrincipal() instanceof Jwt jwt) {
-            gestorTraza.registrarUsuario(jwt.getSubject());
+        if (UtilObjeto.noEsNulo(autenticacion)) {
+            if (autenticacion.getPrincipal() instanceof Jwt jwt) {
+                gestorTraza.registrarUsuario(jwt.getSubject());
+            } else if (autenticacion instanceof SesionAuthenticationToken sesion) {
+                gestorTraza.registrarUsuario(sesion.getSujeto());
+            }
         }
         filterChain.doFilter(request, response);
     }

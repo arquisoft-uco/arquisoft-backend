@@ -1,13 +1,15 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
-import com.arquisoft.seguridad.application.autorizacion.command.primaryport.interactor.AutorizarAccesoInteractor;
-import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.ResolvedorPlantillaRuta;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.AplicadorDecisionAcceso;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias.EquivalenciasProperties;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
 import com.arquisoft.seguridad.infrastructure.filter.AutorizacionAccesoFilter;
 import com.arquisoft.seguridad.infrastructure.filter.IdentidadTrazaFilter;
 import com.arquisoft.seguridad.infrastructure.filter.JwtListaNegraFilter;
+import com.arquisoft.seguridad.infrastructure.filter.ProveedorAutenticacionFilter;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -34,7 +36,7 @@ import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties({PepProperties.class, EquivalenciasProperties.class})
+@EnableConfigurationProperties({PepProperties.class, EquivalenciasProperties.class, SesionProperties.class})
 @RequiredArgsConstructor
 public class SeguridadConfig {
 
@@ -61,12 +63,29 @@ public class SeguridadConfig {
 
     @Bean
     @ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
-    public AutorizacionAccesoFilter seguridadAutorizacionAccesoFilter(
-            AutorizarAccesoInteractor autorizarAccesoInteractor,
-            ResolvedorPlantillaRuta resolvedorPlantillaRuta,
+    public AutorizacionAccesoFilter seguridadAutorizacionAccesoFilter(AplicadorDecisionAcceso aplicadorDecisionAcceso) {
+        return new AutorizacionAccesoFilter(aplicadorDecisionAcceso, rutasPublicas, propiedadesAutenticacion,
+                noAutenticadoEntryPoint);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
+    public ProveedorAutenticacionFilter seguridadProveedorAutenticacionFilter(
+            ProveedoresAutenticacion proveedores,
+            ProteccionCsrf proteccionCsrf,
+            AplicadorDecisionAcceso aplicadorDecisionAcceso,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolvedorExcepciones) {
-        return new AutorizacionAccesoFilter(autorizarAccesoInteractor, resolvedorPlantillaRuta, gestorTraza,
-                rutasPublicas, propiedadesAutenticacion, noAutenticadoEntryPoint, accesoDenegadoHandler, resolvedorExcepciones);
+        return new ProveedorAutenticacionFilter(proveedores, proteccionCsrf, aplicadorDecisionAcceso, rutasPublicas,
+                noAutenticadoEntryPoint, accesoDenegadoHandler, resolvedorExcepciones, logger);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
+    public FilterRegistrationBean<ProveedorAutenticacionFilter> seguridadProveedorAutenticacionFilterSinRegistroServlet(
+            ProveedorAutenticacionFilter filtro) {
+        var registro = new FilterRegistrationBean<>(filtro);
+        registro.setEnabled(false);
+        return registro;
     }
 
     @Bean
@@ -82,6 +101,7 @@ public class SeguridadConfig {
     public SecurityFilterChain seguridadFilterChain(
             HttpSecurity http,
             AuthenticationManagerResolver<HttpServletRequest> seguridadAutenticacionPorEmisorResolver,
+            ObjectProvider<ProveedorAutenticacionFilter> proveedorAutenticacionFilter,
             ObjectProvider<AutorizacionAccesoFilter> autorizacionAccesoFilter) throws Exception {
         http
                 .cors(cors -> { })
@@ -99,6 +119,10 @@ public class SeguridadConfig {
                         .authenticationEntryPoint(noAutenticadoEntryPoint)
                         .accessDeniedHandler(accesoDenegadoHandler)
                 );
+
+        // Canales de autenticacion distintos de Bearer (cookie de sesion del BFF): corre justo despues de
+        // BearerTokenAuthenticationFilter y antes de la blacklist y de la traza, que leen el contexto que deja.
+        proveedorAutenticacionFilter.ifAvailable(filtro -> http.addFilterAfter(filtro, BearerTokenAuthenticationFilter.class));
 
         // Verifica blacklist de tokens revocados en cada request autenticado.
         // Corre despues de BearerTokenAuthenticationFilter (autenticacion ya verificada).

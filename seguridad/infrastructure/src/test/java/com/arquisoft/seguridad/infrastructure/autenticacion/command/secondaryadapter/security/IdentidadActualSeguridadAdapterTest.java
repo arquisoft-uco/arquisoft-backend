@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.security;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionAuthenticationToken;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
@@ -74,6 +75,39 @@ class IdentidadActualSeguridadAdapterTest {
         // Act / Assert
         assertThatThrownBy(adaptador::obtener).isInstanceOf(AuthenticationCredentialsNotFoundException.class);
         SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken("u", "p"));
+        assertThatThrownBy(adaptador::obtener).isInstanceOf(AuthenticationCredentialsNotFoundException.class);
+    }
+
+    @Test
+    void debeConstruirIdentidad_conSesion() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        SecurityContextHolder.getContext().setAuthentication(
+                new SesionAuthenticationToken("sesion-pdp", id.toString(), "Ana", "ana@uco.edu.co", "t-1"));
+        var sinNombre = new SesionAuthenticationToken("sesion-pdp", id.toString(), "", "ana@uco.edu.co", "t-1");
+
+        // Act
+        var identidad = adaptador.obtener();
+        SecurityContextHolder.getContext().setAuthentication(sinNombre);
+        var identidadSinNombre = adaptador.obtener();
+
+        // Assert
+        assertThat(identidad.id()).isEqualTo(id);
+        assertThat(identidad.correo()).isEqualTo("ana@uco.edu.co");
+        assertThat(identidad.nombreUsuario()).isEqualTo("Ana");
+        assertThat(identidad.roles()).isEmpty();
+        assertThat(identidad.idToken()).isNull();
+        assertThat(identidad.expiraEn()).isNull();
+        assertThat(identidadSinNombre.nombreUsuario()).isEqualTo("ana@uco.edu.co");
+    }
+
+    @Test
+    void debeFallar_cuandoSubjectDeSesionNoEsUuid() {
+        // Arrange
+        SecurityContextHolder.getContext().setAuthentication(
+                new SesionAuthenticationToken("sesion-pdp", "no-es-uuid", "Ana", "ana@uco.edu.co", "t-1"));
+
+        // Act / Assert
         assertThatThrownBy(adaptador::obtener).isInstanceOf(AuthenticationCredentialsNotFoundException.class);
     }
 }

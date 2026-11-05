@@ -1,7 +1,9 @@
 package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorAutenticacion;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.DecisionAcceso;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias.TablaEquivalenciasDecisionAccesoOutputAdapter;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.none.SinDecisionAccesoOutputAdapter;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepDecisionAccesoOutputAdapter;
@@ -19,6 +21,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -50,7 +53,7 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
     void preparar() {
         var propiedades = new AutenticacionProperties(List.of(emisor("a", ModoAutorizacion.PEP),
                 emisor("b", ModoAutorizacion.ROLE_TABLE), emisor("c", ModoAutorizacion.NONE)));
-        adaptador = new DecisionAccesoPorEmisorOutputAdapter(propiedades, pep, tabla, sin);
+        adaptador = new DecisionAccesoPorEmisorOutputAdapter(propiedades, new ProveedoresAutenticacion(List.of()), pep, tabla, sin);
     }
 
     @Test
@@ -74,6 +77,40 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
     void debeLanzar503_cuandoElEmisorEsDesconocido() {
         // Act / Assert
         assertThatThrownBy(() -> adaptador.decidir(solicitud("zzz")))
+                .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
+        verifyNoInteractions(pep, tabla, sin);
+    }
+
+    @Test
+    void debeDelegarEnPep_cuandoEmisorEsProveedorDeSesion() {
+        // Arrange
+        var proveedor = mock(ProveedorAutenticacion.class);
+        when(proveedor.id()).thenReturn("sesion-pdp");
+        when(proveedor.habilitado()).thenReturn(true);
+        when(proveedor.autorizacion()).thenReturn(ModoAutorizacion.PEP);
+        var adaptadorConSesion = new DecisionAccesoPorEmisorOutputAdapter(new AutenticacionProperties(List.of()),
+                new ProveedoresAutenticacion(List.of(proveedor)), pep, tabla, sin);
+        var permitida = new DecisionAcceso.Permitida("d-1");
+        when(pep.decidir(solicitud("sesion-pdp"))).thenReturn(permitida);
+
+        // Act
+        var decision = adaptadorConSesion.decidir(solicitud("sesion-pdp"));
+
+        // Assert
+        assertThat(decision).isSameAs(permitida);
+        verifyNoInteractions(tabla, sin);
+    }
+
+    @Test
+    void debeLanzar_cuandoProveedorDeshabilitado() {
+        // Arrange
+        var proveedor = mock(ProveedorAutenticacion.class);
+        when(proveedor.habilitado()).thenReturn(false);
+        var adaptadorConSesion = new DecisionAccesoPorEmisorOutputAdapter(new AutenticacionProperties(List.of()),
+                new ProveedoresAutenticacion(List.of(proveedor)), pep, tabla, sin);
+
+        // Act / Assert
+        assertThatThrownBy(() -> adaptadorConSesion.decidir(solicitud("sesion-pdp")))
                 .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
         verifyNoInteractions(pep, tabla, sin);
     }

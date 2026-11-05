@@ -78,4 +78,12 @@ public final class SeguridadCodes {
         public static final String PROVEEDOR_AUTORIZACION_NO_DISPONIBLE = "PROVEEDOR_AUTORIZACION_NO_DISPONIBLE";
         public static final String CONFIGURACION_INSEGURA = "CONFIGURACION_INSEGURA";
     }
+
+    public static final class CredencialSesion {
+
+        private CredencialSesion() {}
+
+        public static final String SESION_CREDENCIAL_REQUERIDA = "SESION_CREDENCIAL_REQUERIDA";
+        public static final String SESION_CREDENCIAL_EXCEDE_LIMITE = "SESION_CREDENCIAL_EXCEDE_LIMITE";
+    }
 }
