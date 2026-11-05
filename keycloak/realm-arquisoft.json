@@ -66,6 +66,7 @@
               "fichas:estudiante-ficha-perfil:create",
               "fichas:estado-ficha-perfil-aprobacion:create",
               "usuarios:jurado-vigente:view",
+              "usuarios:administrador-vigente:view",
               "usuarios:coordinador-vigente:view",
               "fichas:estudiante-ficha-perfil-coordinador:view",
               "usuarios:representante-comite-vigente:view",
@@ -769,6 +770,15 @@
         {
           "id": "cecbc258-f325-47d8-9778-ea6a7b838772",
           "name": "usuarios:bibliotecario:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7c3e5f1a-2b84-4d96-a1c7-9e0d4b6f8a23",
+          "name": "usuarios:administrador-vigente:view",
           "description": "",
           "composite": false,
           "clientRole": true,
