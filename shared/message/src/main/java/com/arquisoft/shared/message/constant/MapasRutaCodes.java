@@ -66,6 +66,13 @@ public final class MapasRutaCodes {
         public static final String PLAN_ESTIMADO_NO_ENCONTRADO = "PLAN_ESTIMADO_NO_ENCONTRADO";
     }
 
+    public static final class PlanReal {
+
+        private PlanReal() {}
+
+        public static final String PLAN_REAL_TAREA_REQUERIDA = "PLAN_REAL_TAREA_REQUERIDA";
+    }
+
     public static final class AsignacionAsesor {
 
         private AsignacionAsesor() {}
