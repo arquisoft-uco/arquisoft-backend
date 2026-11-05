@@ -2,7 +2,7 @@ package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryad
 
 import com.arquisoft.seguridad.application.autenticacion.command.secondaryport.ResolucionSesionOutputPort;
 import com.arquisoft.seguridad.application.autenticacion.command.secondaryport.model.ResolucionSesion;
-import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.pdp.ResolucionSesionPdpOutputPort;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.pdp.ResolucionSesionPdpClient;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
@@ -21,12 +21,12 @@ public class ResolucionSesionConCacheOutputAdapter implements ResolucionSesionOu
 
     private static final String ALGORITMO_HUELLA = "SHA-256";
 
-    private final ResolucionSesionPdpOutputPort pdp;
+    private final ResolucionSesionPdpClient pdp;
     private final AppLogger logger;
     private final boolean cacheHabilitada;
     private final IdentidadesEnMemoria identidades;
 
-    public ResolucionSesionConCacheOutputAdapter(ResolucionSesionPdpOutputPort pdp, SesionProperties propiedades,
+    public ResolucionSesionConCacheOutputAdapter(ResolucionSesionPdpClient pdp, SesionProperties propiedades,
                                                  AppLogger logger) {
         this.pdp = pdp;
         this.logger = logger;

@@ -10,7 +10,7 @@ import com.arquisoft.seguridad.infrastructure.config.autenticacion.Autenticacion
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.BearerAuthenticationToken;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
-import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorBearer;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.bearer.ProveedorBearer;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
 import com.arquisoft.seguridad.infrastructure.config.security.AccesoDenegadoHandler;
 import com.arquisoft.seguridad.infrastructure.config.security.NoAutenticadoEntryPoint;

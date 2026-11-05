@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.cache;
 
 import com.arquisoft.seguridad.application.autenticacion.command.secondaryport.model.ResolucionSesion;
-import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.pdp.ResolucionSesionPdpOutputPort;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryadapter.pdp.ResolucionSesionPdpClient;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class ResolucionSesionConCacheOutputAdapterTest {
     private static final ResolucionSesion.Resuelta ANA = new ResolucionSesion.Resuelta("s1", "Ana", "a@uco.edu.co", "t");
 
     @Mock
-    private ResolucionSesionPdpOutputPort pdp;
+    private ResolucionSesionPdpClient pdp;
 
     @Mock
     private AppLogger logger;

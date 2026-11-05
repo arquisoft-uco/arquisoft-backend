@@ -1,5 +1,10 @@
-package com.arquisoft.seguridad.infrastructure.config.autenticacion;
+package com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.sesion;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.IdentidadAutenticada;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorAutenticacion;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionAuthenticationToken;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.interactor.ResolverIdentidadSesionInteractor;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.model.ResolverIdentidadSesionCommand;
 import com.arquisoft.seguridad.application.autenticacion.command.result.ResolucionSesionResult;

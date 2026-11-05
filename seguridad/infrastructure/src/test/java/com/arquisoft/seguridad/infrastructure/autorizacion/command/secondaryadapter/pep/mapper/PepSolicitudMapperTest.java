@@ -2,18 +2,17 @@ package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryada
 
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.PresentadorCredencial;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.http.HttpHeaders;
 
 import java.time.Duration;
-import java.util.function.BiConsumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PepSolicitudMapperTest {
 
-    private static final BiConsumer<HttpHeaders, String> ADJUNTAR_BEARER =
+    private static final PresentadorCredencial ADJUNTAR_BEARER =
             (cabeceras, credencial) -> cabeceras.set(HttpHeaders.AUTHORIZATION, "Bearer " + credencial);
 
     private final PepProperties propiedades = new PepProperties("https://pep", "app", "lab", "cred", false,

@@ -3,9 +3,9 @@ package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryada
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
-import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorBearer;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.bearer.ProveedorBearer;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
-import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorSesionPdp;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.sesion.ProveedorSesionPdp;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.interactor.ResolverIdentidadSesionInteractor;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.DecisionAcceso;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;

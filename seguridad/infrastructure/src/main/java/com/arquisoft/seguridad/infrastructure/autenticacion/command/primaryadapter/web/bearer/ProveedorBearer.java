@@ -1,5 +1,11 @@
-package com.arquisoft.seguridad.infrastructure.config.autenticacion;
+package com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.bearer;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionPorEmisorConfig;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.IdentidadAutenticada;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorAutenticacion;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SeleccionProveedor;
 import com.arquisoft.shared.util.UtilTexto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -19,7 +19,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class PdpResolucionSesionOutputAdapter implements ResolucionSesionPdpOutputPort {
+public class PdpResolucionSesionOutputAdapter implements ResolucionSesionPdpClient {
 
     private static final String RUTA_SESION = "/api/v1/session";
     private static final String MOTIVO_RESPUESTA_INVALIDA = "respuesta-invalida";

@@ -45,12 +45,12 @@ public class PepDecisionAccesoOutputAdapter implements DecisionAccesoOutputPort 
 
     @Override
     public DecisionAcceso decidir(SolicitudAcceso solicitud) {
-        var proveedor = proveedores.porEmisor(solicitud.emisor())
+        var presentador = proveedores.presentadorDe(solicitud.emisor())
                 .orElseThrow(() -> new ProveedorAutorizacionNoDisponibleException(
                         Mensajes.obtener(AutorizacionKey.ERROR_PROVEEDOR_NO_DISPONIBLE)));
         var peticion = new HttpEntity<>(
                 PepSolicitudMapper.toCuerpo(propiedades, solicitud),
-                PepSolicitudMapper.toCabeceras(propiedades, solicitud, proveedor::adjuntarCredencial));
+                PepSolicitudMapper.toCabeceras(propiedades, solicitud, presentador));
         var url = propiedades.url().replaceAll("/+$", "") + RUTA_DECISION;
         RuntimeException ultimoFallo = null;
 

@@ -2,5 +2,5 @@ package com.arquisoft.seguridad.infrastructure.autenticacion.command.secondaryad
 
 import com.arquisoft.seguridad.application.autenticacion.command.secondaryport.ResolucionSesionOutputPort;
 
-public interface ResolucionSesionPdpOutputPort extends ResolucionSesionOutputPort {
+public interface ResolucionSesionPdpClient extends ResolucionSesionOutputPort {
 }

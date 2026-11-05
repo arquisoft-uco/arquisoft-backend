@@ -29,8 +29,10 @@ seguridad/
     │   ├── primaryadapter/web/                      ResolvedorPlantillaRuta (recurso = prefijo + plantilla MVC), AutorizarAccesoRequestMapper
     │   └── secondaryadapter/                        pep/, equivalencias/ (role-table), none/, DecisionAccesoPorEmisorOutputAdapter
     ├── auth/command/secondaryadapter/               keycloak/ (login directo), jwt/, redis/ (lista negra), security/ (IdentidadActualSeguridadAdapter)
+    ├── autenticacion/command/primaryadapter/web/    bearer/ProveedorBearer, sesion/ProveedorSesionPdp
     ├── config/autenticacion/                        AutenticacionProperties, DecodificadoresPorEmisor, AutenticacionPorEmisorConfig,
-    │                                                IdentidadAutenticada, ProveedorAutenticacion (ProveedorBearer, ProveedorSesionPdp)
+    │                                                IdentidadAutenticada, ProveedorAutenticacion = CanalAutenticacion + PoliticaCanal
+    │                                                + PresentadorCredencial, ProveedoresAutenticacion
     ├── config/security/                             SeguridadConfig, RutasPublicas, ValidadorConfiguracionSeguridad,
     │                                                NoAutenticadoEntryPoint, AccesoDenegadoHandler, AudienciaValidator
     └── filter/                                      AutorizacionAccesoFilter (filtro único), LimitadorSolicitudesFilter

@@ -2,6 +2,7 @@ package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryada
 
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.PresentadorCredencial;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import org.springframework.http.HttpHeaders;
@@ -10,7 +11,6 @@ import org.springframework.http.MediaType;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 public final class PepSolicitudMapper {
@@ -34,12 +34,12 @@ public final class PepSolicitudMapper {
     }
 
     public static HttpHeaders toCabeceras(PepProperties propiedades, SolicitudAcceso solicitud,
-                                          BiConsumer<HttpHeaders, String> adjuntarCredencial) {
+                                          PresentadorCredencial presentador) {
         var requestId = UtilUUID.generarNuevoUUID().toString();
         var cabeceras = new HttpHeaders();
         cabeceras.setContentType(MediaType.APPLICATION_JSON);
         cabeceras.setAccept(List.of(MediaType.APPLICATION_JSON));
-        adjuntarCredencial.accept(cabeceras, solicitud.credencial());
+        presentador.adjuntarCredencial(cabeceras, solicitud.credencial());
         cabeceras.set(CABECERA_CREDENCIAL_APLICACION, propiedades.credential());
         cabeceras.set(CABECERA_REQUEST_ID, requestId);
         cabeceras.set(CABECERA_CORRELATION_ID, sanearCorrelacion(solicitud.correlacion(), requestId));

@@ -1,5 +1,9 @@
-package com.arquisoft.seguridad.infrastructure.config.autenticacion;
+package com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.bearer;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.BearerAuthenticationToken;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;

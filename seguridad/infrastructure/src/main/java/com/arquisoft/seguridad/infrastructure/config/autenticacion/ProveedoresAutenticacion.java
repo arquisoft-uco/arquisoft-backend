@@ -40,6 +40,10 @@ public class ProveedoresAutenticacion {
         return porEmisor(emisor).flatMap(proveedor -> proveedor.autorizacion(emisor));
     }
 
+    public Optional<PresentadorCredencial> presentadorDe(String emisor) {
+        return porEmisor(emisor).<PresentadorCredencial>map(proveedor -> proveedor);
+    }
+
     public boolean contiene(String id) {
         return proveedores.stream().anyMatch(proveedor -> proveedor.id().equalsIgnoreCase(id));
     }

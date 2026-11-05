@@ -47,4 +47,34 @@ class ProveedoresAutenticacionTest {
         assertThat(registro.aplicables(false)).containsExactly(bearer, sesion);
         assertThat(registro.aplicables(true)).containsExactly(bearer);
     }
+
+    @Test
+    void debeDevolverElPresentador_cuandoElEmisorTieneProveedorHabilitado() {
+        // Arrange
+        var bearer = mock(ProveedorAutenticacion.class);
+        when(bearer.habilitado()).thenReturn(true);
+        when(bearer.autorizacion("principal")).thenReturn(Optional.of(ModoAutorizacion.ROLE_TABLE));
+        var registro = new ProveedoresAutenticacion(List.of(bearer));
+
+        // Act
+        var presentador = registro.presentadorDe("principal");
+
+        // Assert
+        assertThat(presentador).containsSame(bearer);
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoNingunProveedorAtiendeAlEmisor() {
+        // Arrange
+        var bearer = mock(ProveedorAutenticacion.class);
+        when(bearer.habilitado()).thenReturn(true);
+        when(bearer.autorizacion("otro")).thenReturn(Optional.empty());
+        var registro = new ProveedoresAutenticacion(List.of(bearer));
+
+        // Act
+        var presentador = registro.presentadorDe("otro");
+
+        // Assert
+        assertThat(presentador).isEmpty();
+    }
 }
