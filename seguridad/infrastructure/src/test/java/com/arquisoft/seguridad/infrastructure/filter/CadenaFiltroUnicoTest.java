@@ -31,7 +31,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.context.ContextConfiguration;
@@ -170,6 +175,30 @@ class CadenaFiltroUnicoTest {
         verify(INTERACTOR).ejecutar(captor.capture());
         assertThat(captor.getValue().emisor()).isEqualTo("principal");
         assertThat(captor.getValue().credencial()).isEqualTo("bueno");
+    }
+
+    @Test
+    void debeUbicarElFiltroUnicoDespuesDeCorsYAntesDeAutorizacionYTraduccionDeExcepciones_cuandoSeArmaLaCadenaReal() {
+        // Arrange
+        var proxy = contexto.getBean("springSecurityFilterChain", FilterChainProxy.class);
+
+        // Act
+        var filtros = proxy.getFilterChains().get(0).getFilters().stream().map(Object::getClass).toList();
+        var posicionCors = filtros.indexOf(CorsFilter.class);
+        var posicionFiltro = filtros.indexOf(AutorizacionAccesoFilter.class);
+        var posicionTraduccion = filtros.indexOf(ExceptionTranslationFilter.class);
+        var posicionAutorizacion = filtros.indexOf(AuthorizationFilter.class);
+
+        // Assert
+        var motivo = "AutorizacionAccesoFilter debe quedar tras CorsFilter y antes de ExceptionTranslationFilter y "
+                + "AuthorizationFilter: en LOWEST_PRECEDENCE quedaria tras AuthorizationFilter y todo 403 se "
+                + "auditaria como anonimo. Cadena actual: " + filtros;
+        assertThat(posicionCors).as(motivo).isNotNegative();
+        assertThat(posicionFiltro).as(motivo).isGreaterThan(posicionCors);
+        assertThat(posicionTraduccion).as(motivo).isGreaterThan(posicionFiltro);
+        assertThat(posicionAutorizacion).as(motivo).isGreaterThan(posicionFiltro);
+        assertThat(filtros).as("BearerTokenAuthenticationFilter es solo un ancla de orden: no debe estar en la cadena")
+                .doesNotContain(BearerTokenAuthenticationFilter.class);
     }
 
     @Test
