@@ -152,7 +152,7 @@ class AsesorFichaCommandOutputAdapterTest {
 
         // Assert
         verify(asesorFichaRepository, times(1)).save(any(AsesorFichaJpaEntity.class));
-        verify(logger).debug(AsesorFichaKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorFichaKey.LOG_FILA_ACTUALIZADA, id);
     }
 
     @Test
@@ -182,7 +182,7 @@ class AsesorFichaCommandOutputAdapterTest {
 
         // Assert
         verify(asesorFichaRepository).eliminarLogica(id, baja);
-        verify(logger).debug(AsesorFichaKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorFichaKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Test
@@ -198,7 +198,7 @@ class AsesorFichaCommandOutputAdapterTest {
 
         // Assert
         verify(asesorFichaRepository).reactivar(id, "20161020999", "Ana Gomez", "ana.gomez@uco.edu.co", ocurridoEn);
-        verify(logger).debug(AsesorFichaKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorFichaKey.LOG_FILA_REACTIVADA, id);
     }
 
     @Test

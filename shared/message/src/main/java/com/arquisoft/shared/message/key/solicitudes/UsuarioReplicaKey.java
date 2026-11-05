@@ -15,6 +15,7 @@ public enum UsuarioReplicaKey implements ClaveMensaje {
     LOG_DESCARTADO("solicitudes.infraestructura.usuarioreplica.log.descartado", 2),
     LOG_REPLICA_GUARDADA("solicitudes.aplicacion.usuarioreplica.log.replica-guardada", 1),
     LOG_ACTUALIZADO("solicitudes.infraestructura.usuarioreplica.log.actualizado", 1),
+    LOG_FILA_ACTUALIZADA("solicitudes.infraestructura.usuarioreplica.log.fila-actualizada", 1),
     LOG_USUARIO_MODIFICADO_RECIBIDO(
             "solicitudes.infraestructura.usuarioreplica.log.usuario-modificado-recibido", 2),
     LOG_VERIFICACION_ACTUALIZAR("solicitudes.aplicacion.usuarioreplica.log.verificacion-actualizar", 2),
