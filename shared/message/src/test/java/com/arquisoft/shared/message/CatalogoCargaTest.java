@@ -39,6 +39,7 @@ class CatalogoCargaTest {
 
     private static final String SEPARADOR = Pattern.quote(".");
     private static final int SEGMENTO_TIPO = 3;
+    private static final int LIMITE_LONGITUD_CLAVE = 100;
 
     // El cuarto segmento de la clave. Los cuatro primeros son los nombres de CategoriaMensaje, que
     // deciden el texto de respaldo; los otros son segmentos propios de un grupo de claves cuyo
@@ -133,6 +134,20 @@ class CatalogoCargaTest {
                         + "cuarto segmento, así que un 'erorr' mal escrito pasaría inadvertido y su "
                         + "texto de respaldo sería el equivocado. Un segmento nuevo tiene que ser "
                         + "una decisión: o se le da su CategoriaMensaje, o se añade a esta lista")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("toda clave declarada mide menos de 100 caracteres")
+    void debeMedirMenosDelLimite_cuandoSeRecorrenLasClaves() {
+        var excedidas = clavesDeclaradas().stream()
+                .map(ClaveMensaje::clave)
+                .filter(clave -> clave.length() >= LIMITE_LONGITUD_CLAVE)
+                .toList();
+
+        assertThat(excedidas)
+                .as("una clave se acorta por su descripción, sin abreviar contexto, capa ni objeto, "
+                        + "y conservando lo que la distingue de sus hermanas")
                 .isEmpty();
     }
 

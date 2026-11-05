@@ -34,7 +34,7 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
     ERROR_TIPO_NO_PERMITIDO(
             "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tipo-no-permitido", 1),
     ERROR_TIPO_CONTENIDO_NO_COINCIDE_EXTENSION(
-            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tipo-contenido-no-coincide-extension", 1),
+            "repositorio_artefactos.dominio.versionrepositorioartefacto.error.tipo-contenido-distinto-extension", 1),
     LOG_SOLICITANDO_CARGA(
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.solicitando-carga", 2),
     LOG_VERIFICACION_SOLICITAR_CARGA(
@@ -57,9 +57,9 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
     ERROR_VERSION_NO_ENCONTRADA_DETALLE(
             "repositorio_artefactos.dominio.versionrepositorioartefacto.error.version-no-encontrada-detalle", 1),
     ERROR_ARCHIVO_NO_DISPONIBLE(
-            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.error.archivo-no-disponible", 0),
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.error.archivo-ausente", 0),
     ERROR_ARCHIVO_NO_DISPONIBLE_DETALLE(
-            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.error.archivo-no-disponible-detalle", 2),
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.error.archivo-ausente-detalle", 2),
     LOG_DESCARGANDO("repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.descargando", 1),
     LOG_DESCARGA_GENERADA(
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.descarga-generada", 2),
@@ -69,7 +69,7 @@ public enum VersionRepositorioArtefactoKey implements ClaveMensaje {
     LOG_ELIMINACION_RECIBIDA(
             "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminacion-recibida", 2),
     LOG_ELIMINACION_REINTENTO_PROGRAMADO(
-            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminacion-reintento-programado", 4),
+            "repositorio_artefactos.infraestructura.versionrepositorioartefacto.log.eliminacion-reintento", 4),
     LOG_VERIFICACION_ELIMINAR(
             "repositorio_artefactos.aplicacion.versionrepositorioartefacto.log.verificacion-eliminar", 2),
     LOG_VERSION_ELIMINADA(
