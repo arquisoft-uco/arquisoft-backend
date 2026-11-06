@@ -17,7 +17,7 @@ public enum VersionArtefactoKey implements ClaveMensaje {
     ERROR_NOMBRE_ARCHIVO_INVALIDO("artefactos.dominio.versionartefacto.error.nombre-archivo-invalido", 1),
     ERROR_TIPO_NO_PERMITIDO("artefactos.dominio.versionartefacto.error.tipo-no-permitido", 1),
     ERROR_TIPO_CONTENIDO_NO_COINCIDE_EXTENSION(
-            "artefactos.dominio.versionartefacto.error.tipo-contenido-no-coincide-extension", 1),
+            "artefactos.dominio.versionartefacto.error.tipo-contenido-distinto-extension", 1),
     ERROR_NO_ENCONTRADA("artefactos.dominio.versionartefacto.error.no-encontrada", 0),
     ERROR_NO_ENCONTRADA_DETALLE("artefactos.dominio.versionartefacto.error.no-encontrada-detalle", 1),
     ERROR_NO_ES_ULTIMA("artefactos.dominio.versionartefacto.error.no-es-ultima", 1),
@@ -26,9 +26,9 @@ public enum VersionArtefactoKey implements ClaveMensaje {
     ERROR_ACCESO_DENEGADO_DETALLE("artefactos.dominio.versionartefacto.error.acceso-denegado-detalle", 2),
     ERROR_NO_DISPONIBLE("artefactos.infraestructura.versionartefacto.error.no-disponible", 0),
     ERROR_NO_DISPONIBLE_DETALLE("artefactos.infraestructura.versionartefacto.error.no-disponible-detalle", 1),
-    ERROR_ARCHIVO_NO_DISPONIBLE("artefactos.infraestructura.versionartefacto.error.archivo-no-disponible", 0),
+    ERROR_ARCHIVO_NO_DISPONIBLE("artefactos.infraestructura.versionartefacto.error.archivo-ausente", 0),
     ERROR_ARCHIVO_NO_DISPONIBLE_DETALLE(
-            "artefactos.infraestructura.versionartefacto.error.archivo-no-disponible-detalle", 2),
+            "artefactos.infraestructura.versionartefacto.error.archivo-ausente-detalle", 2),
     LOG_SOLICITANDO_CARGA("artefactos.aplicacion.versionartefacto.log.solicitando-carga", 2),
     LOG_VERIFICACION_SOLICITAR_CARGA("artefactos.aplicacion.versionartefacto.log.verificacion-solicitar-carga", 4),
     LOG_CARGA_SOLICITADA("artefactos.aplicacion.versionartefacto.log.carga-solicitada", 2),
