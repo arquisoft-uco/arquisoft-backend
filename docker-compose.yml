@@ -263,12 +263,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      secrets:
+        - github_packages_user
+        - github_packages_token
     container_name: arquisoft-backend
     environment:
       # Sin esto el contenedor arrancaba SIN perfil activo: caia en el fallback
       # '!dev & !prod' de logback-spring.xml y en los niveles base de application.yml,
       # ignorando el SPRING_PROFILES_ACTIVE del .env.
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Fuente del catalogo (ADR-017). Desde el contenedor, MessageUcoLab se alcanza por el host.
+      CATALOGO_FUENTE: ${CATALOGO_FUENTE:-redis}
+      MESSAGEUCO_URL: ${MESSAGEUCO_URL_CONTENEDOR:-http://host.docker.internal:8000}
+      MESSAGEUCO_APPLICATION_ID: ${MESSAGEUCO_APPLICATION_ID:-}
+      MESSAGEUCO_ENVIRONMENT_ID: ${MESSAGEUCO_ENVIRONMENT_ID:-}
+      MESSAGEUCO_INTERVALO: ${MESSAGEUCO_INTERVALO:-PT5M}
       # Niveles de log. Los defaults de aqui son los del perfil dev, que es el que
       # docker-compose levanta: NO se puede dejar `${VAR:-}` porque Compose inyectaria
       # cadena vacia y Spring haria LogLevel.valueOf("") -> fallo de arranque.
@@ -349,6 +358,12 @@ services:
         condition: service_completed_successfully
     networks:
       - arquisoft-network
+
+secrets:
+  github_packages_user:
+    environment: GITHUB_PACKAGES_USER
+  github_packages_token:
+    environment: GITHUB_PACKAGES_TOKEN
 
 volumes:
   postgres_data:

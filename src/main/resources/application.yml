@@ -344,11 +344,25 @@ arquisoft:
   # cuando el catálogo quedó degradado. Solo consulta Redis mientras está en ese estado.
   catalogo:
     reintento-intervalo: PT30S
+    # Quien alimenta el catálogo en Redis (ADR-017). La aplicación siempre lee de Redis.
+    #   redis:      los textos los carga catalogo/cargar.sh; no se consulta MessageUcoLab.
+    #   messageuco: los trae de MessageUcoLab al arrancar, antes de validar, y luego cada intervalo.
+    fuente: ${CATALOGO_FUENTE:redis}
+    messageuco:
+      intervalo: ${MESSAGEUCO_INTERVALO:PT5M}
 
   # Limitador de peticiones. Mismo patrón que el catálogo: cuando Redis cae, el limitador degrada
   # a cuota local por instancia y este monitor es quien lo devuelve a la cuota distribuida.
   limite-solicitudes:
     reintento-intervalo: PT30S
+
+# ==================== MESSAGEUCOLAB ====================
+# Conexion del starter. Se autoconfigura siempre, pero solo se consulta con la fuente messageuco.
+messageucolab:
+  url: ${MESSAGEUCO_URL:http://localhost:8000}
+  application-id: ${MESSAGEUCO_APPLICATION_ID:}
+  environment-id: ${MESSAGEUCO_ENVIRONMENT_ID:}
+  timeout: ${MESSAGEUCO_TIMEOUT:PT30S}
 
 # ==================== SERVER ====================
 # ==================== CORS Y RATE LIMITING (BASE) ====================
