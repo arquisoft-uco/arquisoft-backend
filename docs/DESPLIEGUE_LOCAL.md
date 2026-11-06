@@ -132,7 +132,7 @@ Configura también en **Environment Variables** del servicio (Runtime ON, Build 
 JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70.0 -XX:InitialRAMPercentage=40.0
 ```
 
-Java 21 es _container-aware_: lee el `Maximum Memory Limit` de Docker y calcula el heap como porcentaje de ese valor.
+Java 25 es _container-aware_: lee el `Maximum Memory Limit` de Docker y calcula el heap como porcentaje de ese valor.
 
 | Porcentaje | Con límite 700MB | Propósito |
 |---|---|---|

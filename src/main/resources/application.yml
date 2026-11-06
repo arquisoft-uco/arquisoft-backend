@@ -36,7 +36,7 @@ spring:
     version: 1.0.0
 
   # ==================== VIRTUAL THREADS (ADR-008) ====================
-  # Java 21 + Spring Boot 4.x: habilita virtual threads en Tomcat, @Async y RabbitMQ listeners.
+  # Java 25 + Spring Boot 4.x: habilita virtual threads en Tomcat, @Async y RabbitMQ listeners.
   # Beneficio: I/O bloqueante (Keycloak, JDBC, Redis) sin consumo de OS threads.
   threads:
     virtual:
