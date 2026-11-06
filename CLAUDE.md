@@ -446,7 +446,7 @@ Java puro.
 
 | Component | Version |
 |-----------|---------|
-| Java | 21 (Virtual Threads activos automáticamente) |
+| Java | 25 (Virtual Threads activos automáticamente) |
 | Spring Boot | 4.0.5 |
 | Gradle | 9.8.0 |
 | PostgreSQL | 18 (una **base** por contexto, con su DataSource, EntityManagerFactory y Flyway) |
@@ -457,7 +457,7 @@ Java puro.
 | JUnit | 6.0.3 (Jupiter) |
 | Spring Modulith | 2.0.0 |
 | Jackson | 3 — `tools.jackson.databind.*` |
-| Lombok | 1.18.36 |
+| Lombok | 1.18.48 |
 | Bucket4j | 8.18.0 (`com.bucket4j:bucket4j_jdk17-core`) |
 
 La autoconfiguración de `DataSource` está excluida globalmente. Ninguno es `@Primary` salvo

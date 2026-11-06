@@ -2,7 +2,7 @@
 
 ## Prerrequisitos
 
-- Java 21 instalado
+- Java 25 instalado
 - Archivo `.env` en la raíz del proyecto (copiar desde `.env.example`)
 
 ## Pasos

@@ -26,7 +26,7 @@ dependencies {
     // (NimbusJwtDecoder + org.springframework.security.oauth2.jwt.Jwt). jjwt eliminado — no se usa.
 
     // Rate Limiting — Bucket4j oficial Maven Central (com.bucket4j).
-    // bucket4j_jdk17-core: requiere Java 17+, compatible con Java 21 y Virtual Threads.
+    // bucket4j_jdk17-core: requiere Java 17+, compatible con Java 25 y Virtual Threads.
     implementation "com.bucket4j:bucket4j_jdk17-core"
 
     // Rate Limiting distribuido con Redis via Lettuce

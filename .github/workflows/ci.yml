@@ -51,11 +51,11 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      # ── Setup Java 21 ──
-      - name: Setup Java 21 (Temurin)
+      # ── Setup Java 25 ──
+      - name: Setup Java 25 (Temurin)
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
 
       # ── Cache Gradle ──

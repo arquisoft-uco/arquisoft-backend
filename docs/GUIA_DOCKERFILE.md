@@ -3,7 +3,7 @@
 ## Segmento 1 — Base image del build stage
 
 ```dockerfile
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 WORKDIR /build
 ```
 
@@ -46,7 +46,7 @@ RUN chmod +x gradlew && \
 ## Segmento 4 — Base image del runtime stage
 
 ```dockerfile
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 ```
 

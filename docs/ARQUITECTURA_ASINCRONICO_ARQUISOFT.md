@@ -344,7 +344,7 @@ de hilo (request → executor async) antes de que el evento llegue al broker.
 | Cache | Redis 7 (Lettuce) |
 | Almacenamiento de archivos | MinIO (`shared:minio`) — lo consume `repositorio_artefactos` (carga directa del navegador por formulario POST firmado) |
 | Autenticación | Keycloak 26.6 (OAuth2/OIDC Resource Server) |
-| Framework | Spring Boot 4.0.5, Java 21 (Virtual Threads habilitados) |
+| Framework | Spring Boot 4.0.5, Java 25 (Virtual Threads habilitados) |
 | Build | Gradle 9.0.0 |
 | Testing | JUnit 6.0.3 + Mockito + AssertJ |
 
