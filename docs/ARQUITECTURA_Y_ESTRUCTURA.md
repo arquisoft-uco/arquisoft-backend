@@ -976,7 +976,7 @@ con hexagonal:  Controller → Port (interface) ← Repository
 | **BD** | PostgreSQL 18 (1 schema por contexto) |
 | **Migraciones** | Flyway 12.4.0 |
 | **Build** | Gradle 9.0.0 con Wrapper |
-| **Java** | 21 (Virtual Threads habilitados) |
+| **Java** | 25 (Virtual Threads habilitados) |
 | **Testing** | JUnit 6.0.3 + Mockito + AssertJ |
 | **Auth** | Keycloak 26.6 (OAuth2/OIDC Resource Server) |
 | **Rate Limiting** | Bucket4j 8.18.0 (`com.bucket4j:bucket4j_jdk17-core`) |
