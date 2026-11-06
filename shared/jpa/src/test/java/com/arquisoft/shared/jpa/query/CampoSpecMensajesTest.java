@@ -49,7 +49,7 @@ class CampoSpecMensajesTest {
 
         assertThatThrownBy(() -> campo.construirSpec(FiltroOperador.CONTIENE, "x"))
                 .isInstanceOf(FiltroInvalidoException.class)
-                .hasMessageContaining("El operador 'CONTIENE' no es aplicable a campos de tipo UUID")
+                .hasMessageContaining("El operador 'CONTIENE' no es aplicable a campos de tipo identificador UUID")
                 .hasMessageContaining(FiltroOperador.ES.name());
     }
 
@@ -68,7 +68,7 @@ class CampoSpecMensajesTest {
 
         assertThatThrownBy(() -> campo.construirSpecMultivalor(FiltroOperador.IN, List.of("true")))
                 .isInstanceOf(FiltroInvalidoException.class)
-                .hasMessageContaining("El operador 'IN' no es aplicable a campos de tipo booleano");
+                .hasMessageContaining("El operador 'IN' no es aplicable a campos de tipo valor booleano");
     }
 
     @Test
