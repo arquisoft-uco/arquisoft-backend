@@ -5,6 +5,7 @@ import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionReposi
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.exception.VersionRepositorioArtefactoEnUsoException;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.exception.VersionRepositorioArtefactoNoEncontradaException;
+import com.arquisoft.artefactos.domain.versionrepositorioartefacto.exception.VersionRepositorioArtefactoNoEsUltimaParaEliminarException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
@@ -24,35 +25,59 @@ class EliminarVersionRepositorioArtefactoValidatorImplTest {
         var eliminacion = EliminacionVersionRepositorioArtefactoDomain.crear(UtilUUID.generarNuevoUUID());
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(eliminacion, VersionRepositorioArtefactoDomain.VACIO, true))
+        assertThatThrownBy(() -> validator.validar(eliminacion, VersionRepositorioArtefactoDomain.VACIO, 0, true))
                 .isInstanceOf(VersionRepositorioArtefactoNoEncontradaException.class);
     }
 
     @Test
-    void debeLanzarEnUso_cuandoEstaEnUso() {
+    void debeLanzarNoEsUltima_cuandoHayUnaMasReciente() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var eliminacion = EliminacionVersionRepositorioArtefactoDomain.crear(id);
-        var version = crearVersion(id);
+        var version = crearVersion(id, 2);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(eliminacion, version, true))
+        assertThatThrownBy(() -> validator.validar(eliminacion, version, 3, false))
+                .isInstanceOf(VersionRepositorioArtefactoNoEsUltimaParaEliminarException.class);
+    }
+
+    @Test
+    void debeLanzarNoEsUltima_antesQueEnUso_cuandoAmbasFallan() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var eliminacion = EliminacionVersionRepositorioArtefactoDomain.crear(id);
+        var version = crearVersion(id, 2);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(eliminacion, version, 3, true))
+                .isInstanceOf(VersionRepositorioArtefactoNoEsUltimaParaEliminarException.class);
+    }
+
+    @Test
+    void debeLanzarEnUso_cuandoEsLaUltimaYEstaEnUso() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var eliminacion = EliminacionVersionRepositorioArtefactoDomain.crear(id);
+        var version = crearVersion(id, 3);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(eliminacion, version, 3, true))
                 .isInstanceOf(VersionRepositorioArtefactoEnUsoException.class);
     }
 
     @Test
-    void debeNoLanzar_cuandoExisteYNoEstaEnUso() {
+    void debeNoLanzar_cuandoEsLaUltimaYNoEstaEnUso() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var eliminacion = EliminacionVersionRepositorioArtefactoDomain.crear(id);
-        var version = crearVersion(id);
+        var version = crearVersion(id, 3);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(eliminacion, version, false)).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validar(eliminacion, version, 3, false)).doesNotThrowAnyException();
     }
 
-    private VersionRepositorioArtefactoDomain crearVersion(UUID id) {
-        return VersionRepositorioArtefactoDomain.reconstruir(id, "Doc", 1, UtilUUID.generarNuevoUUID(), "Repo",
+    private VersionRepositorioArtefactoDomain crearVersion(UUID id, int numero) {
+        return VersionRepositorioArtefactoDomain.reconstruir(id, "Doc", numero, UtilUUID.generarNuevoUUID(), "Repo",
                 new DatosArchivo("a.pdf", "application/pdf", 10L));
     }
 }

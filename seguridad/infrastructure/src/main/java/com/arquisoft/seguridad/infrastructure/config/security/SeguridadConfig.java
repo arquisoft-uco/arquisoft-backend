@@ -1,28 +1,25 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
-import com.arquisoft.seguridad.application.autorizacion.command.primaryport.interactor.AutorizarAccesoInteractor;
-import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.ResolvedorPlantillaRuta;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.AplicadorListaNegra;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.AplicadorDecisionAcceso;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias.EquivalenciasProperties;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
 import com.arquisoft.seguridad.infrastructure.filter.AutorizacionAccesoFilter;
-import com.arquisoft.seguridad.infrastructure.filter.IdentidadTrazaFilter;
-import com.arquisoft.seguridad.infrastructure.filter.JwtListaNegraFilter;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -34,43 +31,31 @@ import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties({PepProperties.class, EquivalenciasProperties.class})
+@EnableConfigurationProperties({PepProperties.class, EquivalenciasProperties.class, SesionProperties.class})
 @RequiredArgsConstructor
 public class SeguridadConfig {
 
     private final AppLogger logger;
     private final AccesoDenegadoHandler accesoDenegadoHandler;
     private final NoAutenticadoEntryPoint noAutenticadoEntryPoint;
-    private final JwtListaNegraFilter jwtBlacklistFilter;
     private final GestorTraza gestorTraza;
     private final RutasPublicas rutasPublicas;
     private final AutenticacionProperties propiedadesAutenticacion;
 
     @Bean
-    public IdentidadTrazaFilter seguridadIdentidadTrazaFilter() {
-        return new IdentidadTrazaFilter(gestorTraza);
-    }
-
-    @Bean
-    public FilterRegistrationBean<IdentidadTrazaFilter> seguridadIdentidadTrazaFilterSinRegistroServlet(
-            IdentidadTrazaFilter filtro) {
-        var registro = new FilterRegistrationBean<>(filtro);
-        registro.setEnabled(false);
-        return registro;
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
     public AutorizacionAccesoFilter seguridadAutorizacionAccesoFilter(
-            AutorizarAccesoInteractor autorizarAccesoInteractor,
-            ResolvedorPlantillaRuta resolvedorPlantillaRuta,
-            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolvedorExcepciones) {
-        return new AutorizacionAccesoFilter(autorizarAccesoInteractor, resolvedorPlantillaRuta, gestorTraza,
-                rutasPublicas, propiedadesAutenticacion, noAutenticadoEntryPoint, accesoDenegadoHandler, resolvedorExcepciones);
+            ProveedoresAutenticacion proveedores,
+            ProteccionCsrf proteccionCsrf,
+            AplicadorDecisionAcceso aplicadorDecisionAcceso,
+            AplicadorListaNegra aplicadorListaNegra,
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolvedorExcepciones,
+            @Value("${security.enabled:true}") boolean decisionHabilitada) {
+        return new AutorizacionAccesoFilter(proveedores, proteccionCsrf, aplicadorDecisionAcceso, aplicadorListaNegra,
+                gestorTraza, rutasPublicas, noAutenticadoEntryPoint, accesoDenegadoHandler, resolvedorExcepciones,
+                logger, decisionHabilitada);
     }
 
     @Bean
-    @ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
     public FilterRegistrationBean<AutorizacionAccesoFilter> seguridadAutorizacionAccesoFilterSinRegistroServlet(
             AutorizacionAccesoFilter filtro) {
         var registro = new FilterRegistrationBean<>(filtro);
@@ -79,10 +64,8 @@ public class SeguridadConfig {
     }
 
     @Bean
-    public SecurityFilterChain seguridadFilterChain(
-            HttpSecurity http,
-            AuthenticationManagerResolver<HttpServletRequest> seguridadAutenticacionPorEmisorResolver,
-            ObjectProvider<AutorizacionAccesoFilter> autorizacionAccesoFilter) throws Exception {
+    public SecurityFilterChain seguridadFilterChain(HttpSecurity http, AutorizacionAccesoFilter autorizacionAccesoFilter)
+            throws Exception {
         http
                 .cors(cors -> { })
                 .csrf(csrf -> csrf.disable())
@@ -91,23 +74,14 @@ public class SeguridadConfig {
                         .requestMatchers(rutasPublicas.patronesPublicos()).permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .authenticationEntryPoint(noAutenticadoEntryPoint)
-                        .authenticationManagerResolver(seguridadAutenticacionPorEmisorResolver)
-                )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(noAutenticadoEntryPoint)
                         .accessDeniedHandler(accesoDenegadoHandler)
                 );
 
-        // Verifica blacklist de tokens revocados en cada request autenticado.
-        // Corre despues de BearerTokenAuthenticationFilter (autenticacion ya verificada).
-        http.addFilterAfter(jwtBlacklistFilter, BearerTokenAuthenticationFilter.class);
-
-        http.addFilterAfter(seguridadIdentidadTrazaFilter(), BearerTokenAuthenticationFilter.class);
-
-        // Tras seguridadIdentidadTrazaFilter: cuando el proveedor responde 401/403/503 la traza ya lleva el sub.
-        autorizacionAccesoFilter.ifAvailable(filtro -> http.addFilterAfter(filtro, BearerTokenAuthenticationFilter.class));
+        // BearerTokenAuthenticationFilter ya no esta en la cadena (el Bearer es un ProveedorAutenticacion mas);
+        // solo se usa como ancla de orden. El filtro unico autentica, aplica lista negra y traza, y decide el acceso.
+        http.addFilterAfter(autorizacionAccesoFilter, BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }

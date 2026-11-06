@@ -93,7 +93,7 @@ El backend usa `StructuredLogEncoder` (Spring Boot 4.x nativo, perfil `prod`). C
 | `transaccionId` | idem — **nuevo en cada salto** | idem |
 | `transaccionPadreId` | idem — solo si hay un salto anterior conocido | Ver tabla "Origen del `transaccionPadreId`" abajo |
 | `origen` | idem — `HTTP`, `EVENTO`, `PROGRAMADO` | idem |
-| `usuarioId` | `IdentidadTrazaFilter` (`seguridad`) / consumidor AMQP | Todo el request; ver semillas abajo |
+| `usuarioId` | `AutorizacionAccesoFilter` (`seguridad`) / consumidor AMQP | Todo el request; ver semillas abajo |
 | `clienteIp`, `metodoHttp`, `rutaUri` | `TrazabilidadFilter` | **Solo `origen=HTTP`** |
 | `colaEvento` | `AbstractEventConsumer` | **Solo `origen=EVENTO`** — nombre de la cola/routing key que entregó el mensaje |
 | `tiempoEntrada` | `TrazabilidadFilter` / `AbstractEventConsumer` / `@Scheduled` | Todo request, consumo o job programado |
@@ -129,8 +129,8 @@ No es "ausente o presente": lleva una semilla según el origen, y sólo se sobre
 | `EVENT` | Consumo AMQP sin `X-User-Id` en el mensaje |
 | `SYSTEM` | Tarea programada (`origen=PROGRAMADO`) |
 
-Un **403 sí lleva el `sub` real**: `IdentidadTrazaFilter` se registra dentro de la cadena de Spring Security,
-después de `BearerTokenAuthenticationFilter` y antes de `AuthorizationFilter`.
+Un **403 sí lleva el `sub` real**: `AutorizacionAccesoFilter` registra el sujeto en la traza tras autenticar y antes de consultar la decisión de acceso;
+se ancla después de `BearerTokenAuthenticationFilter` (solo como ancla de orden) y antes de `AuthorizationFilter`.
 
 ### Qué NO se registra
 

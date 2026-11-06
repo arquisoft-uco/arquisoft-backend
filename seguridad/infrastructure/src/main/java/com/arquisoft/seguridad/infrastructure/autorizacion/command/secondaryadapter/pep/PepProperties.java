@@ -1,10 +1,9 @@
 package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep;
 
-import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.seguridad.infrastructure.config.security.UrlProveedor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +24,7 @@ public record PepProperties(
     private static final String FALTA_APPLICATION_NAME = "falta security.authorization.pep.application-name";
     private static final String FALTA_ENVIRONMENT = "falta security.authorization.pep.environment";
     private static final String FALTA_CREDENCIAL = "falta la credencial de la aplicacion ante el PEP";
-    private static final String URL_NO_HTTPS =
-            "security.authorization.pep.url debe ser HTTPS (HTTP solo con allow-insecure-http=true)";
-    private static final String URL_CON_PARTES_PROHIBIDAS =
-            "security.authorization.pep.url no admite userinfo, query ni fragmento";
-    private static final String URL_INVALIDA = "security.authorization.pep.url no es una URI valida";
-    private static final String ESQUEMA_HTTPS = "https";
-    private static final String ESQUEMA_HTTP = "http";
+    private static final String PROPIEDAD_URL = "security.authorization.pep.url";
 
     public List<String> problemas() {
         var problemas = new ArrayList<String>();
@@ -53,22 +46,7 @@ public record PepProperties(
     }
 
     private List<String> problemasDeUrl() {
-        try {
-            var uri = URI.create(url);
-            var problemas = new ArrayList<String>();
-            var esHttps = ESQUEMA_HTTPS.equalsIgnoreCase(uri.getScheme());
-            var esHttp = ESQUEMA_HTTP.equalsIgnoreCase(uri.getScheme());
-            if (!esHttps && !(esHttp && allowInsecureHttp)) {
-                problemas.add(URL_NO_HTTPS);
-            }
-            if (UtilObjeto.noEsNulo(uri.getUserInfo()) || UtilObjeto.noEsNulo(uri.getQuery())
-                    || UtilObjeto.noEsNulo(uri.getFragment())) {
-                problemas.add(URL_CON_PARTES_PROHIBIDAS);
-            }
-            return problemas;
-        } catch (IllegalArgumentException e) {
-            return List.of(URL_INVALIDA);
-        }
+        return UrlProveedor.problemas(PROPIEDAD_URL, url, allowInsecureHttp);
     }
 
     @Override

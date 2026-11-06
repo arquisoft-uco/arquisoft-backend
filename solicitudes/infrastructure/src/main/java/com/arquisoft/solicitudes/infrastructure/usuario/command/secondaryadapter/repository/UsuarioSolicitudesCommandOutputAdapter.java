@@ -32,6 +32,6 @@ public class UsuarioSolicitudesCommandOutputAdapter implements UsuarioOutputPort
     @Override
     public void actualizar(UsuarioEntity usuario) {
         usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
-        logger.debug(UsuarioReplicaKey.LOG_ACTUALIZADO, usuario.id());
+        logger.debug(UsuarioReplicaKey.LOG_FILA_ACTUALIZADA, usuario.id());
     }
 }

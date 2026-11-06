@@ -17,6 +17,7 @@ public final class UsuariosFields {
         public static final String NOMBRES = "nombres";
         public static final String APELLIDOS = "apellidos";
         public static final String EMAIL = "email";
+        public static final String CORREO = "correo";
         public static final String CONTACTO = "contacto";
         public static final String ESTADO = "estado";
         public static final String ROLES = "roles";

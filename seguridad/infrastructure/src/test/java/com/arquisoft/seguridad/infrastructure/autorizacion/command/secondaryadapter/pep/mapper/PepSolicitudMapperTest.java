@@ -2,13 +2,18 @@ package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryada
 
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.PresentadorCredencial;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PepSolicitudMapperTest {
+
+    private static final PresentadorCredencial ADJUNTAR_BEARER =
+            (cabeceras, credencial) -> cabeceras.set(HttpHeaders.AUTHORIZATION, "Bearer " + credencial);
 
     private final PepProperties propiedades = new PepProperties("https://pep", "app", "lab", "cred", false,
             Duration.ofSeconds(1), Duration.ofSeconds(3), 0, Duration.ofMillis(1));
@@ -20,7 +25,7 @@ class PepSolicitudMapperTest {
 
         // Act
         var cuerpo = PepSolicitudMapper.toCuerpo(propiedades, solicitud);
-        var cabeceras = PepSolicitudMapper.toCabeceras(propiedades, solicitud);
+        var cabeceras = PepSolicitudMapper.toCabeceras(propiedades, solicitud, ADJUNTAR_BEARER);
 
         // Assert
         assertThat(cuerpo).containsEntry("applicationName", "app").containsEntry("environment", "lab")
@@ -37,8 +42,8 @@ class PepSolicitudMapperTest {
         var vacia = new SolicitudAcceso("GET", "/api/x", "tok", "principal", null);
 
         // Act
-        var cabecerasInvalida = PepSolicitudMapper.toCabeceras(propiedades, invalida);
-        var cabecerasVacia = PepSolicitudMapper.toCabeceras(propiedades, vacia);
+        var cabecerasInvalida = PepSolicitudMapper.toCabeceras(propiedades, invalida, ADJUNTAR_BEARER);
+        var cabecerasVacia = PepSolicitudMapper.toCabeceras(propiedades, vacia, ADJUNTAR_BEARER);
 
         // Assert
         assertThat(cabecerasInvalida.getFirst("X-Correlation-Id")).isEqualTo(cabecerasInvalida.getFirst("X-Request-Id"));

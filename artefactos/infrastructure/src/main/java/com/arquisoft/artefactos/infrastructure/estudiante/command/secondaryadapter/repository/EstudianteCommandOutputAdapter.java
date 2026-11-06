@@ -43,14 +43,14 @@ public class EstudianteCommandOutputAdapter implements EstudianteOutputPort {
     @Override
     public void eliminarLogica(UUID id, Instant ocurridoEn) {
         estudianteCommandRepository.eliminarLogica(id, ocurridoEn);
-        logger.debug(EstudianteKey.LOG_ACTUALIZADO, id);
+        logger.debug(EstudianteKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Override
     public void reactivar(EstudianteEntity estudiante) {
         estudianteCommandRepository.reactivar(estudiante.id(), estudiante.identificador(), estudiante.nombre(),
                 estudiante.email(), estudiante.ocurridoEn());
-        logger.debug(EstudianteKey.LOG_ACTUALIZADO, estudiante.id());
+        logger.debug(EstudianteKey.LOG_FILA_REACTIVADA, estudiante.id());
     }
 
     @Override
@@ -61,6 +61,6 @@ public class EstudianteCommandOutputAdapter implements EstudianteOutputPort {
     @Override
     public void actualizar(EstudianteEntity estudiante) {
         estudianteCommandRepository.save(EstudianteJpaMapper.toJpaEntity(estudiante));
-        logger.debug(EstudianteKey.LOG_ACTUALIZADO, estudiante.id());
+        logger.debug(EstudianteKey.LOG_FILA_ACTUALIZADA, estudiante.id());
     }
 }

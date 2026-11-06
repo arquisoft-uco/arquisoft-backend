@@ -4,7 +4,6 @@ import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.interactor.ValidarTokenInteractor;
 import com.arquisoft.seguridad.application.autenticacion.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.model.ValidarTokenCommand;
-import com.arquisoft.seguridad.infrastructure.filter.JwtListaNegraFilter;
 import com.arquisoft.seguridad.infrastructure.filter.LimitadorSolicitudesFilter;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -30,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = ValidarTokenController.class,
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
-                classes = {JwtListaNegraFilter.class, LimitadorSolicitudesFilter.class}))
+                classes = LimitadorSolicitudesFilter.class))
 @Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class, SeguridadWebTestConfig.class, AppLoggerConfig.class})
 class ValidarTokenControllerTest {
 

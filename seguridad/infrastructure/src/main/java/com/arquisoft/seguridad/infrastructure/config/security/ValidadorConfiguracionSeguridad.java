@@ -1,30 +1,43 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SeleccionProveedor;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
 import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapter.keycloak.KeycloakFuenteMapeoRolesProperties;
 import com.arquisoft.seguridad.infrastructure.mapeoroles.command.secondaryadapter.redis.MapeoRolesProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.UsuarioSesionProperties;
+import com.arquisoft.seguridad.infrastructure.config.cors.OrigenesPermitidos;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.message.key.seguridad.AutorizacionKey;
+import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Component
+@DependsOn("catalogoMensajesRedis")
 @RequiredArgsConstructor
 public class ValidadorConfiguracionSeguridad {
 
@@ -42,12 +55,34 @@ public class ValidadorConfiguracionSeguridad {
     private static final String MODO_NONE_EN_PRODUCCION = "el modo de autorizacion none no se permite en produccion";
     private static final String SEGURIDAD_DESHABILITADA_EN_PRODUCCION =
             "security.enabled=false no se permite en produccion";
+    private static final String ID_PROVEEDOR_INVALIDO =
+            "id de proveedor de autenticacion vacio, duplicado o igual a un emisor: %s";
+    private static final String ID_EMISOR_RESERVADO =
+            "el id de emisor %s esta reservado a un canal de autenticacion";
+    private static final String SESION_SIN_CREDENCIALES_CORS =
+            "el canal de sesion exige security.cors.allow-credentials=true";
+    private static final String SESION_ORIGENES_INVALIDOS =
+            "el canal de sesion exige security.cors.allowed-origins explicitos (sin vacios ni comodin)";
+    private static final String SESION_CABECERA_CORS_FALTANTE =
+            "el canal de sesion exige la cabecera %s en security.cors.allowed-headers";
+    private static final String SESION_HTTP_EN_PRODUCCION =
+            "security.authentication.session.allow-insecure-http=true no se permite en produccion";
+    private static final String SESION_SIN_EMISOR_USUARIOS =
+            "el canal de sesion exige que security.authentication.session.usuarios.proveedor (%s) sea un emisor "
+                    + "habilitado (para legado, AUTH_LEGACY_ENABLED=true): el token de servicio con el que consulta "
+                    + "a usuarios es del realm arquisoft";
+    private static final String COMODIN = "*";
+    private static final String SEPARADOR_LISTA = ",";
     private static final String PEP_HTTP_EN_PRODUCCION =
             "security.authorization.pep.allow-insecure-http=true no se permite en produccion";
 
     private final AppLogger logger;
     private final AutenticacionProperties propiedadesAutenticacion;
     private final PepProperties pep;
+    private final SesionProperties sesion;
+    private final UsuarioSesionProperties usuariosSesion;
+    private final ProveedoresAutenticacion proveedores;
+    private final OrigenesPermitidos origenesPermitidos;
     private final MapeoRolesProperties mapeoRoles;
     private final KeycloakFuenteMapeoRolesProperties fuenteMapeoRoles;
     private final RutasPublicas rutasPublicas;
@@ -59,12 +94,18 @@ public class ValidadorConfiguracionSeguridad {
     @Value("${security.authorization.resource.path-mode:template}")
     private String modoRuta;
 
+    @Value("${security.cors.allow-credentials:false}")
+    private boolean permiteCredencialesCors;
+
+    @Value("${security.cors.allowed-headers:Authorization,Content-Type,X-Correlation-Id,X-XSRF-TOKEN,X-Proveedor-Identidad}")
+    private String cabecerasPermitidasCors;
+
     @PostConstruct
     void validar() {
         var problemas = problemas();
         if (!problemas.isEmpty()) {
             throw new InfrastructureException(
-                    ERROR_CONFIGURACION_INSEGURA.formatted(String.join(SEPARADOR_PROBLEMAS, problemas)),
+                    ERROR_CONFIGURACION_INSEGURA.formatted(String.join(SEPARADOR_PROBLEMAS, problemas.stream().distinct().toList())),
                     SeguridadCodes.Autorizacion.CONFIGURACION_INSEGURA);
         }
     }
@@ -77,8 +118,12 @@ public class ValidadorConfiguracionSeguridad {
         }
         var ids = new HashSet<String>();
         for (var emisor : propiedadesAutenticacion.issuers()) {
-            if (UtilTexto.esVacioONulo(emisor.id()) || !ids.add(emisor.id())) {
+            if (UtilTexto.esVacioONulo(emisor.id()) || !ids.add(emisor.id().toLowerCase(Locale.ROOT))) {
                 problemas.add(ID_EMISOR_INVALIDO.formatted(emisor.id()));
+            }
+            if (SeleccionProveedor.BEARER.equalsIgnoreCase(emisor.id())
+                    || (UtilObjeto.noEsNulo(sesion.id()) && sesion.id().equalsIgnoreCase(emisor.id()))) {
+                problemas.add(ID_EMISOR_RESERVADO.formatted(emisor.id()));
             }
         }
         for (var emisor : habilitados) {
@@ -86,6 +131,8 @@ public class ValidadorConfiguracionSeguridad {
                 problemas.add(EMISOR_SIN_ISSUER.formatted(emisor.id()));
             }
         }
+        problemas.addAll(problemasDeProveedores(ids));
+        problemas.addAll(problemasDeEmisoresConMismoIssuer(habilitados));
         var usaPep = habilitados.stream().anyMatch(emisor -> emisor.authorization() == ModoAutorizacion.PEP);
         if (usaPep) {
             problemas.addAll(pep.problemas());
@@ -112,6 +159,72 @@ public class ValidadorConfiguracionSeguridad {
             if (pep.allowInsecureHttp()) {
                 problemas.add(PEP_HTTP_EN_PRODUCCION);
             }
+            if (sesion.enabled() && sesion.allowInsecureHttp()) {
+                problemas.add(SESION_HTTP_EN_PRODUCCION);
+            }
+            if (sesion.enabled() && usuariosSesion.allowInsecureHttp()) {
+                problemas.add(Mensajes.obtener(ResolucionSesionKey.ERROR_USUARIOS_HTTP_EN_PRODUCCION));
+            }
+        }
+        return problemas;
+    }
+
+    private List<String> problemasDeEmisoresConMismoIssuer(List<AutenticacionProperties.Emisor> habilitados) {
+        var problemas = new ArrayList<String>();
+        var porIssuer = habilitados.stream()
+                .filter(emisor -> !UtilTexto.esVacioONulo(emisor.issuer()))
+                .collect(Collectors.groupingBy(AutenticacionProperties.Emisor::issuer, LinkedHashMap::new, Collectors.toList()));
+        porIssuer.forEach((issuer, emisores) -> {
+            var politicas = emisores.stream()
+                    .map(emisor -> List.of(emisor.blacklist(), emisor.authorization(), new HashSet<>(emisor.audiences())))
+                    .distinct()
+                    .count();
+            if (politicas > 1) {
+                var ids = emisores.stream().map(AutenticacionProperties.Emisor::id).collect(Collectors.joining(SEPARADOR_LISTA));
+                problemas.add(Mensajes.formatear(AutorizacionKey.ERROR_EMISORES_POLITICA_DISTINTA, ids, issuer));
+            }
+        });
+        return problemas;
+    }
+
+    private List<String> problemasDeProveedores(HashSet<String> idsEmisores) {
+        var problemas = new ArrayList<String>();
+        var ids = new HashSet<>(idsEmisores);
+        for (var proveedor : proveedores.todos()) {
+            var id = proveedor.id();
+            if (UtilTexto.esVacioONulo(id) || !ids.add(id.toLowerCase(Locale.ROOT))) {
+                problemas.add(ID_PROVEEDOR_INVALIDO.formatted(id));
+            }
+        }
+        if (sesion.enabled()) {
+            problemas.addAll(sesion.problemas());
+            problemas.addAll(usuariosSesion.problemas());
+            if (propiedadesAutenticacion.porIdIgnorandoMayusculas(usuariosSesion.proveedor()).isEmpty()) {
+                problemas.add(SESION_SIN_EMISOR_USUARIOS.formatted(usuariosSesion.proveedor()));
+            }
+            problemas.addAll(pep.problemas());
+            problemas.addAll(problemasDeCorsParaSesion());
+        }
+        return problemas;
+    }
+
+    private List<String> problemasDeCorsParaSesion() {
+        var problemas = new ArrayList<String>();
+        if (!permiteCredencialesCors) {
+            problemas.add(SESION_SIN_CREDENCIALES_CORS);
+        }
+        var origenes = origenesPermitidos.lista();
+        if (origenes.isEmpty() || origenes.stream().anyMatch(origen -> origen.contains(COMODIN))) {
+            problemas.add(SESION_ORIGENES_INVALIDOS);
+        }
+        var cabeceras = Arrays.stream(cabecerasPermitidasCors.split(SEPARADOR_LISTA))
+                .map(UtilTexto::aplicarTrim)
+                .map(cabecera -> cabecera.toLowerCase(Locale.ROOT))
+                .toList();
+        for (var requerida : List.of(ProteccionCsrf.CABECERA_XSRF, SeleccionProveedor.CABECERA)) {
+            if (!cabeceras.contains(requerida.toLowerCase(Locale.ROOT))) {
+                problemas.add(SESION_CABECERA_CORS_FALTANTE.formatted(requerida));
+            }
         }
         return problemas;
     }
@@ -128,5 +241,9 @@ public class ValidadorConfiguracionSeguridad {
         propiedadesAutenticacion.habilitados().stream()
                 .filter(emisor -> emisor.audiences().isEmpty())
                 .forEach(emisor -> logger.warn(AutorizacionKey.LOG_AUDIENCIA_SIN_VALIDAR, emisor.id()));
+        if (sesion.enabled()) {
+            logger.info(ResolucionSesionKey.LOG_CONFIGURACION_SESION, sesion.id(), sesion.cookieName(),
+                    sesion.pdpUrl(), sesion.cache().ttl(), sesion.cache().maxSize());
+        }
     }
 }

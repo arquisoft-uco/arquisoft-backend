@@ -13,7 +13,13 @@ contextos*). Una **consulta HTTP síncrona** solo procede si se cumplen las **tr
 2. A **no necesita el dato para nada más**, así que una réplica (con backfill y consumer) sería lastre.
 3. B ya **expone una consulta** que responde.
 
-Hoy no hay ningún caso implementado.
+Único caso implementado, **excepción deliberada** a las tres (HT-016-AJ3): `seguridad` resuelve
+correo → id de `usuarios` (`POST /usuarios/por-correo`, solo `{id}`) para el canal de sesión. No es
+precondición de una escritura; se aceptó porque la identidad se resuelve en cada petición y `seguridad`
+no tiene DB donde mantener una réplica. Credencial: Bearer de servicio por `client_credentials` con
+cliente dedicado (nunca la cookie del usuario: la llamada pasa por el mismo filtro y recursaría);
+caché Redis (TTL configurable, solo aciertos); 422 de `usuarios` = «no registrado»; cualquier otro
+fallo = 503. Modelo a copiar para la forma del adaptador, no para justificar un caso nuevo.
 
 | Pieza | Dónde | Regla |
 |---|---|---|
@@ -21,7 +27,8 @@ Hoy no hay ningún caso implementado.
 | `Finder` | `application/{feature}/command/finder/` | Lo consume igual que un chequeo contra réplica |
 | Adaptador | `infrastructure/{feature}/command/secondaryadapter/webclient/{Concepto}OutputAdapter`, `@Component` | Habla por **`shared:web-client`** — nunca `RestClient`/`WebClient` inline ni un cliente generado que importe B. Reenvía el bearer del llamante. Fallo de transporte → `InfrastructureException` (503): un peer caído falla la petición, no salta el chequeo |
 
-**`shared:web-client` no existe todavía** (lo trae una HT aparte). Hasta entonces se embarcan puerto,
+**`shared:web-client` existe desde HT-016-AJ3** (RestClient, `seguridad` primer consumidor); un
+contexto que aún no pueda cablear el peer real puede, hasta entonces, embarcar puerto,
 `Rule` y `Finder` **cableados y activos**, con el adaptador como **stub** documentado (devuelve el valor
 permisivo, loguea `warn`) y registrado en `CLAUDE.md` → *Desviaciones conocidas*; activarlo es cambiar
 solo el adaptador. Si A necesita el dato para algo más que un chequeo puntual de escritura, sigue

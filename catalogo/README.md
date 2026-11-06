@@ -188,7 +188,7 @@ degradar y un fallo silencioso no lo vería nadie.
 
 `CatalogoCargaTest` es la compuerta, y comprueba las dos direcciones: clave sin texto, texto sin
 clave, aridad que no coincide con los marcadores reales del patrón —`%s`, o `{}` si es de log—,
-clave declarada en dos archivos, y
+clave declarada en dos archivos, clave de 100 caracteres o más, y
 enums que `ClavesCatalogo.ENUMS` no registra. Aquí es donde el error sale gratis.
 
 **4.** Cargar en Redis antes de desplegar (ver arriba).

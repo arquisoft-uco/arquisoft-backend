@@ -20,9 +20,9 @@ public enum EvaluacionCuantitativaJuradoKey implements ClaveMensaje {
     ERROR_EVALUACIONES_NO_ENCONTRADAS_DETALLE(
             "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluaciones-no-encontradas-detalle", 2),
     ERROR_OMISION_EVALUACION_JURADO_FINALIZADA(
-            "evaluaciones.dominio.evaluacioncuantitativajurado.error.omision-evaluacion-jurado-finalizada", 0),
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.omision-jurado-finalizada", 0),
     ERROR_OMISION_EVALUACION_JURADO_FINALIZADA_DETALLE(
-            "evaluaciones.dominio.evaluacioncuantitativajurado.error.omision-evaluacion-jurado-finalizada-detalle", 1),
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.omision-jurado-finalizada-detalle", 1),
     ERROR_EVALUACIONES_CON_OBSERVACIONES(
             "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluaciones-con-observaciones", 0),
     ERROR_EVALUACIONES_CON_OBSERVACIONES_DETALLE(

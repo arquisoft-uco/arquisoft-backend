@@ -290,8 +290,9 @@ acción necesita*). Sin ese caso, el mapper devuelve el domain directo.
   Sin FK entre contextos: réplica local por eventos.
 - **Entre contextos:** réplica + evento por defecto. Un dato que solo es precondición de una
   escritura y el contexto no usa para más → *Consultas síncronas entre contextos*
-  (`arquisoft-arquitectura`); mientras no exista `shared:web-client`, adaptador stub declarado en
-  *Fuera de alcance*. "Esta entidad debe existir también en X" sin rechazo posible del destino es
+  (`arquisoft-arquitectura`), con el adaptador sobre `shared:web-client`; solo si el contexto destino
+  aún no expone la consulta, adaptador stub declarado en *Fuera de alcance*. "Esta entidad debe
+  existir también en X" sin rechazo posible del destino es
   replicación eventual, no saga (`ocurrido_en`, baja lógica, lápida, sin cascada).
 - **Fallos de terceros:** si el use case captura el rechazo para seguir, es una `sealed interface`
   de resultado, no excepción. El reintento sale de la base con `@Scheduled`, y entonces se persiste

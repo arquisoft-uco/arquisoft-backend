@@ -41,6 +41,8 @@ public final class ArtefactosCodes {
         public static final String VERSION_NO_ENCONTRADA =
                 "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_VERSION_NO_ENCONTRADA";
         public static final String EN_USO = "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_EN_USO";
+        public static final String NO_ES_ULTIMA_PARA_ELIMINAR =
+                "ARTEFACTOS_VERSION_REPOSITORIO_ARTEFACTO_NO_ES_ULTIMA_PARA_ELIMINAR";
     }
 
     public static final class Artefacto {

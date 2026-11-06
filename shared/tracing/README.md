@@ -70,7 +70,7 @@ spring-security, para que `shared:amqp` pueda consumirlo sin arrastrar la capa w
 | `correlacionId` | `TrazabilidadFilter` / `AbstractEventConsumer` | Todo el request o consumo |
 | `transaccionId` | idem — **nuevo en cada salto** | Todo el request o consumo |
 | `origen` | idem (`HTTP`, `EVENTO`, `PROGRAMADO`) | Todo el request o consumo |
-| `usuarioId` | semilla por origen; `IdentidadTrazaFilter` la sobrescribe | Todo el request |
+| `usuarioId` | semilla por origen; `AutorizacionAccesoFilter` (`seguridad`) la sobrescribe al autenticar | Todo el request |
 | `clienteIp`, `metodoHttp`, `rutaUri`, `tiempoEntrada` | `TrazabilidadFilter` | Todo el request |
 | `codigoEstado`, `duracionMs`, `tiempoSalida` | `TrazabilidadFilter` al cerrar | Solo línea `AUDIT` |
 
@@ -117,7 +117,7 @@ arquisoft:
   aplicación arranca **sin trazas y sin ningún error**.
 - Los slices `@WebMvcTest` que importan `GlobalAppExceptionHandler` deben importar también
   `TrazabilidadConfig.class`, porque el handler inyecta `GestorTraza`.
-- `IdentidadTrazaFilter` se declara como `@Bean` más un `FilterRegistrationBean` deshabilitado.
+- `AutorizacionAccesoFilter` se declara como `@Bean` más un `FilterRegistrationBean` deshabilitado.
   Todo bean de tipo `Filter` es auto-registrado en la cadena de servlet, y al añadirlo también
   con `addFilterAfter` el atributo de `OncePerRequestFilter` haría que la segunda pasada se
   saltara entera.

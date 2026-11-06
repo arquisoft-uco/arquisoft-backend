@@ -288,6 +288,11 @@ public final class EvaluacionesApiMessages {
                 "Consulta de forma paginada las evaluaciones asociadas al asesor autenticado con su entregable y "
                         + "su estado, con filtro por estado, proyecto o identificador del entregable y orden por "
                         + "proyecto (por defecto, ascendente) o estado";
+        public static final String CONSULTAR_JURADO_SUMMARY = "Filtrar evaluaciones (jurado)";
+        public static final String CONSULTAR_JURADO_DESCRIPTION =
+                "Consulta de forma paginada las evaluaciones asociadas al jurado autenticado con su entregable y "
+                        + "su estado, con filtro por estado, proyecto o identificador del entregable y orden por "
+                        + "proyecto (por defecto, ascendente) o estado";
         public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Filtrar evaluaciones (estudiante)";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Consulta de forma paginada las evaluaciones de los entregables del proyecto de grado del "

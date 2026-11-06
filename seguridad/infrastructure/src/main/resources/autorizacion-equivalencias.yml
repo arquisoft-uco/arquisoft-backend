@@ -7,12 +7,14 @@ security:
         # usuarios
         - {method: POST, path: "/api/usuarios", role: "usuarios:usuario:create"}
         - {method: POST, path: "/api/usuarios/administrador", role: "usuarios:usuario-administrador:view"}
+        - {method: POST, path: "/api/usuarios/administradores/vigentes", role: "usuarios:administrador-vigente:view"}
         - {method: POST, path: "/api/usuarios/asesores-ficha/vigentes", role: "usuarios:asesor-ficha-vigente:view"}
         - {method: POST, path: "/api/usuarios/asesores/vigentes", role: "usuarios:asesor-vigente:view"}
         - {method: POST, path: "/api/usuarios/coordinadores/vigentes", role: "usuarios:coordinador-vigente:view"}
         - {method: GET, path: "/api/usuarios/estados", role: "usuarios:estado-usuario:view"}
         - {method: POST, path: "/api/usuarios/estudiantes/vigentes", role: "usuarios:estudiante-vigente:view"}
         - {method: POST, path: "/api/usuarios/jurados/vigentes", role: "usuarios:jurado-vigente:view"}
+        - {method: POST, path: "/api/usuarios/por-correo", role: "usuarios:usuario-por-correo:view"}
         - {method: POST, path: "/api/usuarios/representantes-comite/vigentes", role: "usuarios:representante-comite-vigente:view"}
         - {method: DELETE, path: "/api/usuarios/{usuarioId}", role: "usuarios:usuario:delete"}
         - {method: GET, path: "/api/usuarios/{usuarioId}", role: "usuarios:usuario-identidad:view"}
@@ -105,6 +107,7 @@ security:
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas/estudiante", role: "evaluaciones:evaluacion-cuantitativa-asesor-estudiante:view"}
         - {method: POST, path: "/api/evaluaciones-jurado/{evaluacionJuradoId}/evaluaciones-cualitativas", role: "evaluaciones:evaluacion-cualitativa-jurado:create"}
         - {method: POST, path: "/api/evaluaciones/asesor", role: "evaluaciones:evaluacion-asesor:view"}
+        - {method: POST, path: "/api/evaluaciones/jurado", role: "evaluaciones:evaluacion-jurado:view"}
         - {method: GET, path: "/api/evaluaciones/categorias-item-cuantitativo-asesor", role: "evaluaciones:categoria-item-cuantitativo-asesor:view"}
         - {method: GET, path: "/api/evaluaciones/categorias-item-cuantitativo-jurado", role: "evaluaciones:categoria-item-cuantitativo-jurado:view"}
         - {method: POST, path: "/api/evaluaciones/coordinador", role: "evaluaciones:evaluacion-coordinador:view"}
@@ -183,6 +186,7 @@ security:
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/respuestas/enviadas", role: "solicitudes:respuesta-registro-modificacion-usuarios-enviada:view"}
         - {method: DELETE, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}", role: "solicitudes:solicitud-registro-modificacion-usuarios:delete"}
         - {method: GET, path: "/api/solicitudes/tipos-solicitud", role: "solicitudes:tipo-solicitud:view"}
+        - {method: GET, path: "/api/solicitudes/tipos-solicitud/recibidas", role: "solicitudes:tipo-solicitud-recibida:view"}
         # repositorio_artefactos
         - {method: POST, path: "/api/repositorio-artefactos", role: "repositorio-artefactos:repositorio-artefacto:create"}
         - {method: POST, path: "/api/repositorio-artefactos/administrador", role: "repositorio-artefactos:repositorio-artefacto:view"}
@@ -239,6 +243,7 @@ security:
         - {method: DELETE, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:delete"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados", role: "mapas-ruta:plan-estimado:create"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados/estudiante", role: "mapas-ruta:plan-estimado-tarea-estudiante:view"}
+        - {method: POST, path: "/api/mapas-ruta/tareas/{tareaId}/planes-reales/estudiante", role: "mapas-ruta:plan-real-tarea-estudiante:view"}
         - {method: PATCH, path: "/api/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:update"}
         - {method: DELETE, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:delete"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}

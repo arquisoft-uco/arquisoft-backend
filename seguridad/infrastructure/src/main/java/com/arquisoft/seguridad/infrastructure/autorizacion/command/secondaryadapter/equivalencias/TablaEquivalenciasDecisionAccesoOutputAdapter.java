@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias;
 
-import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.DecisionAccesoOutputPort;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.DecisionAccesoPorModo;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.DecisionAcceso;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
 import com.arquisoft.seguridad.application.mapeoroles.command.secondaryport.RolClienteOtorgadoOutputPort;
@@ -18,7 +19,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @Component
-public class TablaEquivalenciasDecisionAccesoOutputAdapter implements DecisionAccesoOutputPort {
+public class TablaEquivalenciasDecisionAccesoOutputAdapter implements DecisionAccesoPorModo {
 
     private final Map<String, String> rolPorRecurso = new HashMap<>();
     private final AutenticacionProperties propiedadesAutenticacion;
@@ -30,6 +31,11 @@ public class TablaEquivalenciasDecisionAccesoOutputAdapter implements DecisionAc
         equivalencias.entries().forEach(entrada -> rolPorRecurso.put(entrada.clave(), entrada.role()));
         this.propiedadesAutenticacion = autenticacion;
         this.rolClienteOtorgadoOutputPort = rolClienteOtorgadoOutputPort;
+    }
+
+    @Override
+    public ModoAutorizacion modo() {
+        return ModoAutorizacion.ROLE_TABLE;
     }
 
     @Override

@@ -1,6 +1,6 @@
 ---
 name: context7-stack
-description: IDs de librerias Context7 del stack Arquisoft (Spring Boot 4.0.5, Java 21, Gradle 9.8.0). Usar antes de generar cualquier archivo Java o de configuracion para obtener documentacion actualizada y especifica por version de cada dependencia del proyecto. Incluye tabla de IDs directos validados, IDs alternativos con mas snippets, y ejemplos de consulta por tipo de archivo.
+description: IDs de librerias Context7 del stack Arquisoft (Spring Boot 4.0.5, Java 25, Gradle 9.8.0). Usar antes de generar cualquier archivo Java o de configuracion para obtener documentacion actualizada y especifica por version de cada dependencia del proyecto. Incluye tabla de IDs directos validados, IDs alternativos con mas snippets, y ejemplos de consulta por tipo de archivo.
 ---
 
 # Skill: context7-stack
@@ -26,7 +26,7 @@ tabla se actualiza: no la des por buena sin mirarla.
 | JUnit 5 | `/websites/junit_current` | 5 740 | **6.0.3** (compatible con anotaciones JUnit 5) |
 | Mockito | `/mockito/mockito` | 120 | via Boot 4.0 |
 | AssertJ | `/assertj/assertj` | 81 | via Boot 4.0 |
-| Lombok | `/projectlombok/lombok` | 638 | **1.18.36** |
+| Lombok | `/projectlombok/lombok` | 638 | **1.18.48** |
 | Gradle | `/websites/gradle_current_userguide` | 4 607 | **9.8.0** |
 | Keycloak | `/keycloak/keycloak` | 2 453 | **26.6** (solo como IdP — sin `keycloak-admin-client`) |
 | Bucket4j | `/bucket4j/bucket4j` | 301 | **8.18.0** (`com.bucket4j:bucket4j_jdk17-core`) |

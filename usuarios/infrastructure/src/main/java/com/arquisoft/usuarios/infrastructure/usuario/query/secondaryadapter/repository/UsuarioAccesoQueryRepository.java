@@ -2,7 +2,10 @@ package com.arquisoft.usuarios.infrastructure.usuario.query.secondaryadapter.rep
 
 import com.arquisoft.shared.jpa.repository.QueryRepository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UsuarioAccesoQueryRepository extends QueryRepository<UsuarioAccesoJpaQueryEntity, UUID> {
+
+    Optional<UsuarioAccesoJpaQueryEntity> findFirstByEmailIgnoreCase(String email);
 }

@@ -150,6 +150,22 @@ public final class MapasRutaApiMessages {
         public static final String REMOVER_RESP_422 = "Plan estimado inexistente";
     }
 
+    public static final class PlanReal {
+
+        private PlanReal() {}
+
+        public static final String TAG_NAME = "Planes reales";
+        public static final String TAG_DESCRIPTION = "Planes reales de las tareas del mapa de ruta";
+        public static final String CONSULTAR_SUMMARY = "Consultar los planes reales de una tarea";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve, paginados, filtrados y ordenados, los planes reales de una tarea. Filtros por tiempo "
+                        + "real y descripción; sin orden se ordena por tiempo real ascendente. Si la tarea "
+                        + "no tiene plan real la página llega vacía";
+        public static final String CONSULTAR_RESP_200 = "Página de planes reales de la tarea";
+        public static final String CONSULTAR_RESP_400 =
+                "Identificador de tarea inválido, o filtro u ordenamiento no permitido";
+    }
+
     public static final class EstadoItem {
 
         private EstadoItem() {}

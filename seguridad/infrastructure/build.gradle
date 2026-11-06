@@ -3,9 +3,10 @@ dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:application')
     implementation project(':shared:web')
+    implementation project(':shared:web-client')
     implementation project(':shared:logger')
 
-    // shared:tracing — IdentidadTrazaFilter enriquece la traza con el sub del JWT y
+    // shared:tracing — el filtro de acceso enriquece la traza con el sujeto de la identidad y
     // SeguridadRestTemplateConfig propaga la correlacion en las llamadas salientes a Keycloak.
     implementation project(':shared:tracing')
 
@@ -25,7 +26,7 @@ dependencies {
     // (NimbusJwtDecoder + org.springframework.security.oauth2.jwt.Jwt). jjwt eliminado — no se usa.
 
     // Rate Limiting — Bucket4j oficial Maven Central (com.bucket4j).
-    // bucket4j_jdk17-core: requiere Java 17+, compatible con Java 21 y Virtual Threads.
+    // bucket4j_jdk17-core: requiere Java 17+, compatible con Java 25 y Virtual Threads.
     implementation "com.bucket4j:bucket4j_jdk17-core"
 
     // Rate Limiting distribuido con Redis via Lettuce

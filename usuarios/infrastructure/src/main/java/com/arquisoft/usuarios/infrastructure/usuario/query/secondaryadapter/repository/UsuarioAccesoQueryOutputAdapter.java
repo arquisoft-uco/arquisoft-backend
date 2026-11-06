@@ -19,4 +19,9 @@ public class UsuarioAccesoQueryOutputAdapter implements UsuarioAccesoQueryOutput
     public Optional<UsuarioAccesoEntity> obtenerPorId(UUID usuario) {
         return usuarioAccesoQueryRepository.findById(usuario).map(UsuarioAccesoQueryMapper::toEntity);
     }
+
+    @Override
+    public Optional<UsuarioAccesoEntity> obtenerPorCorreo(String correo) {
+        return usuarioAccesoQueryRepository.findFirstByEmailIgnoreCase(correo).map(UsuarioAccesoQueryMapper::toEntity);
+    }
 }

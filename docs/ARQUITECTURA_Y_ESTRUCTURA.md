@@ -27,7 +27,7 @@
 
 ## Visión General
 
-Este proyecto implementa una **Arquitectura Hexagonal Modular** usando **Spring Boot 4.0.5** y **Gradle 9.0.0** como herramienta de construcción. La arquitectura se basa en el patrón de **Puertos y Adaptadores** con **9 contextos independientes** (4 con implementación real: `seguridad`, `usuarios`, `fichas`, `notificaciones`; 5 en scaffolding), Java 21 y Virtual Threads habilitados.
+Este proyecto implementa una **Arquitectura Hexagonal Modular** usando **Spring Boot 4.0.5** y **Gradle 9.0.0** como herramienta de construcción. La arquitectura se basa en el patrón de **Puertos y Adaptadores** con **9 contextos independientes** (4 con implementación real: `seguridad`, `usuarios`, `fichas`, `notificaciones`; 5 en scaffolding), Java 25 y Virtual Threads habilitados.
 
 ### Ventajas Principales
 
@@ -191,7 +191,7 @@ arquisoft-backend/
 │           │   └── http/SeguridadRestTemplateConfig.java  # SimpleClientHttpRequestFactory (SB4 compat)
 │           └── filter/
 │               ├── LimitadorSolicitudesFilter.java  # OncePerRequestFilter: evalúa límite por IP
-│               └── IdentidadTrazaFilter.java # Añade el sub del JWT a la traza abierta
+│               └── AutorizacionAccesoFilter.java # Filtro único: autentica (Bearer o sesión), lista negra, traza y decisión de acceso
 │
 ├── usuarios/                              # CONTEXTO: andamiaje (flujo CrearUsuario retirado; HU "registrar usuario" pendiente)
 │   ├── domain/                            # sin código
@@ -672,7 +672,7 @@ eventPublisher.publish(new AsesorFichaCambiadoEvent(fichaPerfil, ficha.getTitulo
 >     virtual:
 >       enabled: true
 > ```
-> Java 21 + Spring Boot 4.x: la propiedad hace que Tomcat, `@Async` y los listeners de
+> Java 25 + Spring Boot 4.x: la propiedad hace que Tomcat, `@Async` y los listeners de
 > RabbitMQ usen virtual threads automáticamente — no requiere configuración adicional en
 > código más allá de esa línea.
 
@@ -797,7 +797,7 @@ Ejemplo real con Mockito + AAA:
 javaVersion=21
 springBootVersion=4.0.5
 jUnitVersion=6.0.3
-lombokVersion=1.18.36
+lombokVersion=1.18.48
 h2Version=2.3.232
 flywaydbVersion=11.20.3
 keycloakVersion=25.0.3
@@ -976,7 +976,7 @@ con hexagonal:  Controller → Port (interface) ← Repository
 | **BD** | PostgreSQL 18 (1 schema por contexto) |
 | **Migraciones** | Flyway 12.4.0 |
 | **Build** | Gradle 9.0.0 con Wrapper |
-| **Java** | 21 (Virtual Threads habilitados) |
+| **Java** | 25 (Virtual Threads habilitados) |
 | **Testing** | JUnit 6.0.3 + Mockito + AssertJ |
 | **Auth** | Keycloak 26.6 (OAuth2/OIDC Resource Server) |
 | **Rate Limiting** | Bucket4j 8.18.0 (`com.bucket4j:bucket4j_jdk17-core`) |

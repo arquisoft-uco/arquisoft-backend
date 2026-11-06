@@ -1,7 +1,9 @@
 package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.mapper.PepSolicitudMapper;
-import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.DecisionAccesoOutputPort;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.DecisionAccesoPorModo;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.DecisionAcceso;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
 import com.arquisoft.seguridad.infrastructure.autorizacion.exception.ProveedorAutorizacionNoDisponibleException;
@@ -22,28 +24,39 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class PepDecisionAccesoOutputAdapter implements DecisionAccesoOutputPort {
+public class PepDecisionAccesoOutputAdapter implements DecisionAccesoPorModo {
 
     private static final String RUTA_DECISION = "/internal/v1/embedded-access-decisions";
 
     private final RestTemplate restTemplate;
     private final PepProperties propiedades;
+    private final ProveedoresAutenticacion proveedores;
     private final AppLogger logger;
 
     public PepDecisionAccesoOutputAdapter(
             @Qualifier(PepRestTemplateConfig.BEAN) RestTemplate restTemplate,
             PepProperties propiedades,
+            ProveedoresAutenticacion proveedores,
             AppLogger logger) {
         this.restTemplate = restTemplate;
         this.propiedades = propiedades;
+        this.proveedores = proveedores;
         this.logger = logger;
     }
 
     @Override
+    public ModoAutorizacion modo() {
+        return ModoAutorizacion.PEP;
+    }
+
+    @Override
     public DecisionAcceso decidir(SolicitudAcceso solicitud) {
+        var presentador = proveedores.presentadorDe(solicitud.emisor())
+                .orElseThrow(() -> new ProveedorAutorizacionNoDisponibleException(
+                        Mensajes.obtener(AutorizacionKey.ERROR_PROVEEDOR_NO_DISPONIBLE)));
         var peticion = new HttpEntity<>(
                 PepSolicitudMapper.toCuerpo(propiedades, solicitud),
-                PepSolicitudMapper.toCabeceras(propiedades, solicitud));
+                PepSolicitudMapper.toCabeceras(propiedades, solicitud, presentador));
         var url = propiedades.url().replaceAll("/+$", "") + RUTA_DECISION;
         RuntimeException ultimoFallo = null;
 

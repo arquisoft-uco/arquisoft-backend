@@ -18,6 +18,8 @@ public interface VersionRepositorioArtefactoOutputPort {
 
     Optional<VersionRepositorioArtefactoEntity> obtenerPorArtefacto(UUID artefacto);
 
+    int obtenerUltimaVersionDocumentoDe(UUID version);
+
     List<VersionRepositorioArtefactoEntity> consultarVersionesAsignadas(UUID proyectoGrado);
 
     void actualizarNombreRepositorio(UUID repositorioArtefacto, String nombreRepositorio);

@@ -28,6 +28,7 @@ import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
 import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
 import com.arquisoft.shared.message.key.entregables.EstadoEntregableKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
+import com.arquisoft.shared.message.key.app.ClienteHttpKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.message.key.app.PaginacionKey;
@@ -71,6 +72,7 @@ import com.arquisoft.shared.message.key.mapas_ruta.AsignacionProyectoKey;
 import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
 import com.arquisoft.shared.message.key.mapas_ruta.EstadoItemKey;
 import com.arquisoft.shared.message.key.mapas_ruta.PlanEstimadoKey;
+import com.arquisoft.shared.message.key.mapas_ruta.PlanRealKey;
 import com.arquisoft.shared.message.key.mapas_ruta.TareaKey;
 import com.arquisoft.shared.message.key.mapas_ruta.ProyectoGradoMapasRutaKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
@@ -100,6 +102,7 @@ import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
 import com.arquisoft.shared.message.key.seguridad.MapeoRolesKey;
+import com.arquisoft.shared.message.key.seguridad.ResolucionSesionKey;
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
@@ -114,11 +117,13 @@ import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarAdministradoresVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarJuradosVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstadosUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarIdentidadUsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarUsuarioPorCorreoKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuariosAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.CambiarEstadoUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.EliminarUsuarioKey;
@@ -142,6 +147,7 @@ public final class ClavesCatalogo {
     public static final Set<Class<? extends ClaveMensaje>> ENUMS = Set.of(
             AlmacenamientoKey.class,
             ConsultaKey.class,
+            ClienteHttpKey.class,
             HttpKey.class,
             MensajeriaKey.class,
             PaginacionKey.class,
@@ -195,6 +201,7 @@ public final class ClavesCatalogo {
             IniciarSesionKey.class,
             LimiteSolicitudesKey.class,
             MapeoRolesKey.class,
+            ResolucionSesionKey.class,
             SesionKey.class,
             TokenInvalidadoKey.class,
             TokenKey.class,
@@ -259,6 +266,7 @@ public final class ClavesCatalogo {
             EstadoProyectoKey.class,
             AsesorProyectoGradoKey.class,
             EstadoAsesorKey.class,
+            ConsultarAdministradoresVigentesKey.class,
             ConsultarCoordinadoresVigentesKey.class,
             ConsultarJuradosVigentesKey.class,
             ConsultarEstudiantesVigentesKey.class,
@@ -268,6 +276,7 @@ public final class ClavesCatalogo {
             ConsultarUsuariosAdministradorKey.class,
             ConsultarEstadosUsuarioKey.class,
             ConsultarIdentidadUsuarioKey.class,
+            ConsultarUsuarioPorCorreoKey.class,
             AsignacionProyectoKey.class,
             MapaRutaKey.class,
             TareaKey.class,
@@ -280,7 +289,8 @@ public final class ClavesCatalogo {
             com.arquisoft.shared.message.key.entregables.EstudianteProyectoGradoKey.class,
             AsignacionAsesorKey.class,
             ProyectoGradoMapasRutaKey.class,
-            PlanEstimadoKey.class
+            PlanEstimadoKey.class,
+            PlanRealKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

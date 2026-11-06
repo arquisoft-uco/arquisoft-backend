@@ -2,16 +2,20 @@ package com.arquisoft.seguridad.application.autenticacion.command.primaryport.in
 
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.model.AutenticarUsuarioCommand;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.model.RefrescarTokenCommand;
+import com.arquisoft.seguridad.application.autenticacion.command.primaryport.model.ResolverIdentidadSesionCommand;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.autenticacion.command.primaryport.model.ValidarTokenCommand;
 import com.arquisoft.seguridad.application.autenticacion.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.application.autenticacion.command.result.RefrescoTokenResult;
+import com.arquisoft.seguridad.application.autenticacion.command.result.ResolucionSesionResult;
 import com.arquisoft.seguridad.application.autenticacion.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.autenticacion.command.usecase.AutenticarUsuarioUseCase;
 import com.arquisoft.seguridad.application.autenticacion.command.usecase.CerrarSesionUseCase;
 import com.arquisoft.seguridad.application.autenticacion.command.usecase.RefrescarTokenUseCase;
+import com.arquisoft.seguridad.application.autenticacion.command.usecase.ResolverIdentidadSesionUseCase;
 import com.arquisoft.seguridad.application.autenticacion.command.usecase.ValidarTokenUseCase;
 import com.arquisoft.seguridad.domain.autenticacion.AutenticacionDomain;
+import com.arquisoft.seguridad.domain.autenticacion.CredencialSesionDomain;
 import com.arquisoft.seguridad.domain.autenticacion.SesionDomain;
 import com.arquisoft.seguridad.domain.autenticacion.TokenDomain;
 import org.junit.jupiter.api.DisplayName;
@@ -47,6 +51,9 @@ class InteractoresSeguridadTest {
     @Mock
     private ValidarTokenUseCase validarTokenUseCase;
 
+    @Mock
+    private ResolverIdentidadSesionUseCase resolverIdentidadSesionUseCase;
+
     @DisplayName("El interactor de seguridad no declara transacción: el contexto no tiene DataSource")
     @ParameterizedTest(name = "{0}")
     @ValueSource(classes = {
@@ -54,6 +61,7 @@ class InteractoresSeguridadTest {
             RefrescarTokenInteractorImpl.class,
             CerrarSesionInteractorImpl.class,
             ValidarTokenInteractorImpl.class,
+            ResolverIdentidadSesionInteractorImpl.class,
             com.arquisoft.seguridad.application.mapeoroles.command.primaryport.interactor.impl
                     .ActualizarMapeoRolesInteractorImpl.class,
             com.arquisoft.seguridad.application.autorizacion.command.primaryport.interactor.impl
@@ -141,5 +149,21 @@ class InteractoresSeguridadTest {
         verify(validarTokenUseCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getValor()).isEqualTo("eyJhbGc...");
     }
-}
 
+    @Test
+    void debeConstruirLaCredencialYDelegarEnElUseCase_cuandoResolverIdentidadSesion() {
+        // Arrange
+        var esperado = new ResolucionSesionResult.SinSesion();
+        var captor = ArgumentCaptor.forClass(CredencialSesionDomain.class);
+        when(resolverIdentidadSesionUseCase.ejecutar(any(CredencialSesionDomain.class))).thenReturn(esperado);
+
+        // Act
+        var resultado = new ResolverIdentidadSesionInteractorImpl(resolverIdentidadSesionUseCase)
+                .ejecutar(ResolverIdentidadSesionCommand.crear("SECURITY_BASELINE_SESSION=abc"));
+
+        // Assert
+        assertThat(resultado).isSameAs(esperado);
+        verify(resolverIdentidadSesionUseCase).ejecutar(captor.capture());
+        assertThat(captor.getValue().getCredencial()).isEqualTo("SECURITY_BASELINE_SESSION=abc");
+    }
+}

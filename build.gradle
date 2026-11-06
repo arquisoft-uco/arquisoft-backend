@@ -71,7 +71,7 @@ dependencyManagement {
         dependency "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 
         // Rate Limiting (no gestionado por el BOM). Fuente: Maven Central (com.bucket4j).
-        // bucket4j_jdk17-core: artefacto oficial para Java 17+, compatible con Java 21 y Virtual Threads.
+        // bucket4j_jdk17-core: artefacto oficial para Java 17+, compatible con Java 25 y Virtual Threads.
         dependency "com.bucket4j:bucket4j_jdk17-core:${bucket4jVersion}"
     }
 }
@@ -166,7 +166,7 @@ subprojects { subproject ->
         dependencies {
             dependency "org.postgresql:postgresql:${postgresVersion}"
             dependency "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
-            // bucket4j_jdk17-core: artefacto oficial Maven Central para Java 17+ / Java 21 / Virtual Threads
+            // bucket4j_jdk17-core: artefacto oficial Maven Central para Java 17+ / Java 25 / Virtual Threads
             dependency "com.bucket4j:bucket4j_jdk17-core:${bucket4jVersion}"
         }
     }
@@ -191,7 +191,7 @@ subprojects { subproject ->
         apply plugin: 'jacoco'
 
         jacoco {
-            toolVersion = '0.8.12'
+            toolVersion = '0.8.16'
         }
 
         def jacocoExcludes = [

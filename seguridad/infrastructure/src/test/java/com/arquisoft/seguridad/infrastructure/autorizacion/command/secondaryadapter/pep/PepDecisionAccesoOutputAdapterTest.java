@@ -1,7 +1,15 @@
 package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.bearer.ProveedorBearer;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
+import com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapter.web.sesion.ProveedorSesionPdp;
+import com.arquisoft.seguridad.application.autenticacion.command.primaryport.interactor.ResolverIdentidadSesionInteractor;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.DecisionAcceso;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
 import com.arquisoft.seguridad.infrastructure.autorizacion.exception.ProveedorAutorizacionNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
@@ -11,6 +19,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -18,6 +27,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,6 +36,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.headerDoesNotExist;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -50,10 +61,16 @@ class PepDecisionAccesoOutputAdapterTest {
         logger = mock(AppLogger.class);
     }
 
+    private static ProveedorBearer proveedorBearer() {
+        var emisor = new AutenticacionProperties.Emisor("principal", true, "https://idp.test", "", List.of(),
+                ModoAutorizacion.PEP, false, new ClaimsIdentidad("sub", "email", "preferred_username", "name", ""));
+        return new ProveedorBearer(new AutenticacionProperties(List.of(emisor)), mock(AuthenticationManager.class));
+    }
+
     private PepDecisionAccesoOutputAdapter adaptador(int reintentos) {
         var propiedades = new PepProperties("https://pep.test/", "arquisoft", "lab", "cred-app", false,
                 Duration.ofSeconds(1), Duration.ofSeconds(3), reintentos, Duration.ofMillis(1));
-        return new PepDecisionAccesoOutputAdapter(restTemplate, propiedades, logger);
+        return new PepDecisionAccesoOutputAdapter(restTemplate, propiedades, new ProveedoresAutenticacion(List.of(proveedorBearer())), logger);
     }
 
     @Test
@@ -199,5 +216,77 @@ class PepDecisionAccesoOutputAdapterTest {
         // Assert
         verify(logger).error(any(ClaveMensaje.class), captor.capture(), captor.capture());
         assertThat(captor.getAllValues()).noneMatch(valor -> String.valueOf(valor).contains(TOKEN));
+    }
+
+    @Test
+    void debeEnviarCookie_cuandoEmisorEsProveedorDeSesion() {
+        // Arrange
+        var sesion = new SesionProperties("sesion-pdp", true, "SECURITY_BASELINE_SESSION", "https://pdp.test",
+                false, Duration.ofSeconds(1), Duration.ofSeconds(3),
+                new SesionProperties.Cache(Duration.ofSeconds(60), 100));
+        var proveedores = new ProveedoresAutenticacion(
+                List.of(new ProveedorSesionPdp(sesion, mock(ResolverIdentidadSesionInteractor.class))));
+        var propiedades = new PepProperties("https://pep.test/", "arquisoft", "lab", "cred-app", false,
+                Duration.ofSeconds(1), Duration.ofSeconds(3), 0, Duration.ofMillis(1));
+        var adaptador = new PepDecisionAccesoOutputAdapter(restTemplate, propiedades, proveedores, logger);
+        var cookie = "SECURITY_BASELINE_SESSION=valor";
+        var solicitudCookie = new SolicitudAcceso("POST", "/api/fichas-perfil", cookie, "sesion-pdp", "corr-1");
+        server.expect(requestTo(URL))
+                .andExpect(header("Cookie", cookie))
+                .andExpect(header("X-Application-Credential", "cred-app"))
+                .andExpect(headerDoesNotExist("Authorization"))
+                .andRespond(withStatus(HttpStatus.NO_CONTENT));
+
+        // Act
+        var decision = adaptador.decidir(solicitudCookie);
+
+        // Assert
+        assertThat(decision).isInstanceOf(DecisionAcceso.Permitida.class);
+        server.verify();
+    }
+
+    @Test
+    void debeLanzarNoDisponible_cuandoNoHayProveedorDelEmisor() {
+        // Arrange
+        var propiedades = new PepProperties("https://pep.test/", "arquisoft", "lab", "cred-app", false,
+                Duration.ofSeconds(1), Duration.ofSeconds(3), 0, Duration.ofMillis(1));
+        var adaptador = new PepDecisionAccesoOutputAdapter(restTemplate, propiedades,
+                new ProveedoresAutenticacion(List.of()), logger);
+
+        // Act / Assert
+        assertThatThrownBy(() -> adaptador.decidir(solicitud))
+                .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
+        server.verify();
+    }
+
+    @Test
+    void debeLanzar503SinReintentar_cuandoElPepResponde3xx() {
+        // Arrange
+        server.expect(ExpectedCount.once(), requestTo(URL)).andRespond(withStatus(HttpStatus.FOUND));
+        var adaptador = adaptador(3);
+
+        // Act / Assert
+        assertThatThrownBy(() -> adaptador.decidir(solicitud))
+                .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
+        server.verify();
+    }
+
+    @Test
+    void debeLanzar503YConservarLaInterrupcion_cuandoSeInterrumpeLaEsperaDelReintento() {
+        // Arrange
+        server.expect(ExpectedCount.once(), requestTo(URL)).andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
+        var adaptador = adaptador(2);
+        Thread.currentThread().interrupt();
+
+        try {
+            // Act / Assert
+            assertThatThrownBy(() -> adaptador.decidir(solicitud))
+                    .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class)
+                    .hasCauseInstanceOf(InterruptedException.class);
+            assertThat(Thread.currentThread().isInterrupted()).isTrue();
+            server.verify();
+        } finally {
+            Thread.interrupted();
+        }
     }
 }
