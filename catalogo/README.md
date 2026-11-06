@@ -151,6 +151,31 @@ declaradas, «no sobra nada» y «sobra todo» son la misma lectura. Hay dos cor
 
 Es re-ejecutable: una segunda pasada informa de 0 sobrantes y sale con éxito.
 
+## Alimentar Redis desde MessageUcoLab
+
+La aplicación siempre lee de Redis. `arquisoft.catalogo.fuente` decide quién lo alimenta (ADR-017):
+
+| `CATALOGO_FUENTE` | Quién escribe los textos |
+|---|---|
+| `redis` (por defecto) | Solo `cargar.sh`. No se consulta MessageUcoLab |
+| `messageuco` | MessageUcoLab, al arrancar y luego cada `MESSAGEUCO_INTERVALO` (`PT5M` por defecto) |
+
+La lectura usa `messageucolab-spring-boot-starter`, que se descarga de GitHub Packages: compilar el
+proyecto exige `GITHUB_PACKAGES_USER` y `GITHUB_PACKAGES_TOKEN` (permiso `read:packages`) con
+cualquier fuente.
+
+Con `messageuco` hay que configurar además `MESSAGEUCO_URL`, `MESSAGEUCO_APPLICATION_ID` y
+`MESSAGEUCO_ENVIRONMENT_ID`. El **título** del mensaje debe ser la clave semántica exacta y el
+**contenido** su texto, con los mismos marcadores.
+
+- Solo se escriben claves declaradas en `ClavesCatalogo`, y solo las que cambiaron.
+- Un texto vacío o con la aridad equivocada se rechaza, y Redis conserva el anterior.
+- Una clave que no llega no se borra: desactivar un mensaje deja su último texto en Redis.
+- Si MessageUcoLab no responde al arrancar, el fail-fast valida lo que ya tenga Redis.
+
+`cargar.sh` sigue siendo necesario: deja el catálogo base para que la aplicación pueda arrancar con
+MessageUcoLab caído. Los textos que escribe se reemplazan en la carga inicial de la aplicación.
+
 ## Añadir un mensaje
 
 **1.** Declarar la clave en su enum de `shared/message/.../key/`, con su aridad:

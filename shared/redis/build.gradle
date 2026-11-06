@@ -25,6 +25,9 @@ dependencies {
     // no viene transitivo. Necesario para GenericJacksonJsonRedisSerializer.
     implementation "tools.jackson.core:jackson-databind"
 
+    // Starter de MessageUcoLab — MessageReader, con el que se sincroniza el catálogo (ADR-017).
+    implementation "co.edu.uco:messageucolab-spring-boot-starter:${messageUcoLabVersion}"
+
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
