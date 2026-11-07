@@ -95,6 +95,8 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_ASESOR_EVALUACION_ASESOR_REQUERIDO";
         public static final String ASESOR_REQUERIDO =
                 "EVALUACION_CUALITATIVA_ASESOR_ASESOR_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO =
+                "EVALUACION_CUALITATIVA_ASESOR_ESTUDIANTE_REQUERIDO";
         public static final String EVALUACION_ASESOR_NO_ENCONTRADA =
                 "EVALUACION_CUALITATIVA_ASESOR_EVALUACION_ASESOR_NO_ENCONTRADA";
         public static final String NO_PERTENECE_ASESOR =

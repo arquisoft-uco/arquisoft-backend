@@ -1,0 +1,11 @@
+package com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.query.primaryport.interactor;
+
+import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.query.primaryport.model.ConsultarEvaluacionesCualitativasAsesorEstudianteQuery;
+import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.query.readmodel.EvaluacionCualitativaAsesorEstudianteReadModel;
+import com.arquisoft.shared.interactor.Interactor;
+
+import java.util.List;
+
+public interface ConsultarEvaluacionesCualitativasAsesorEstudianteInteractor
+        extends Interactor<ConsultarEvaluacionesCualitativasAsesorEstudianteQuery, List<EvaluacionCualitativaAsesorEstudianteReadModel>> {
+}
