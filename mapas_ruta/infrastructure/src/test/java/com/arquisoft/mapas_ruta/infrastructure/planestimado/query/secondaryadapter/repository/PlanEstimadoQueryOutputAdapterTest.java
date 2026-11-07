@@ -17,6 +17,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +39,7 @@ class PlanEstimadoQueryOutputAdapterTest {
                 .id(id)
                 .tareaId(tarea)
                 .tiempoEstimadoDias(dias)
+                .creadoEn(Instant.now())
                 .descripcionEstimado(descripcion)
                 .build());
         return id;

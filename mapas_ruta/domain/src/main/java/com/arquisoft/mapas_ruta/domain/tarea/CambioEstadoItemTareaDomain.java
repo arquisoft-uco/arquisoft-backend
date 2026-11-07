@@ -63,4 +63,8 @@ public final class CambioEstadoItemTareaDomain {
     public EstadoItem getEstadoItem() {
         return estadoItem;
     }
+
+    public boolean esFinalizacion() {
+        return estadoItem == EstadoItem.FINALIZADA;
+    }
 }
