@@ -25,6 +25,23 @@ public final class EvaluacionesCodes {
                 "ITEM_CUALITATIVO_JURADO_EN_USO";
     }
 
+    public static final class ItemCuantitativoAsesor {
+
+        private ItemCuantitativoAsesor() {}
+
+        public static final String NOMBRE_REQUERIDO = "ITEM_CUANTITATIVO_ASESOR_NOMBRE_REQUERIDO";
+        public static final String NOMBRE_DEMASIADO_LARGO = "ITEM_CUANTITATIVO_ASESOR_NOMBRE_DEMASIADO_LARGO";
+        public static final String DESCRIPCION_REQUERIDA = "ITEM_CUANTITATIVO_ASESOR_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_DEMASIADO_LARGA =
+                "ITEM_CUANTITATIVO_ASESOR_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String CATEGORIA_REQUERIDA = "ITEM_CUANTITATIVO_ASESOR_CATEGORIA_REQUERIDA";
+        public static final String VALOR_REQUERIDO = "ITEM_CUANTITATIVO_ASESOR_VALOR_REQUERIDO";
+        public static final String VALOR_FUERA_DE_RANGO = "ITEM_CUANTITATIVO_ASESOR_VALOR_FUERA_DE_RANGO";
+        public static final String CATEGORIA_NO_ENCONTRADA = "ITEM_CUANTITATIVO_ASESOR_CATEGORIA_NO_ENCONTRADA";
+        public static final String NOMBRE_CATEGORIA_DUPLICADO =
+                "ITEM_CUANTITATIVO_ASESOR_NOMBRE_CATEGORIA_DUPLICADO";
+    }
+
     public static final class CriterioItemCualitativoJurado {
 
         private CriterioItemCualitativoJurado() {}
