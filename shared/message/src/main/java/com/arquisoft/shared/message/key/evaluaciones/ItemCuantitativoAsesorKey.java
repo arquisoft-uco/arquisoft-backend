@@ -12,6 +12,15 @@ public enum ItemCuantitativoAsesorKey implements ClaveMensaje {
             "evaluaciones.dominio.itemcuantitativoasesor.error.nombre-categoria-duplicado", 1),
     ERROR_NOMBRE_CATEGORIA_DUPLICADO_DETALLE(
             "evaluaciones.dominio.itemcuantitativoasesor.error.nombre-categoria-duplicado-detalle", 2),
+    ERROR_NO_ENCONTRADO("evaluaciones.dominio.itemcuantitativoasesor.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE(
+            "evaluaciones.dominio.itemcuantitativoasesor.error.no-encontrado-detalle", 1),
+    LOG_MODIFICANDO("evaluaciones.aplicacion.itemcuantitativoasesor.log.modificando", 1),
+    LOG_VERIFICACION_MODIFICAR(
+            "evaluaciones.aplicacion.itemcuantitativoasesor.log.verificacion-modificar", 1),
+    LOG_MODIFICADO("evaluaciones.aplicacion.itemcuantitativoasesor.log.modificado", 1),
+    LOG_DESCRIPCION_ACTUALIZADA(
+            "evaluaciones.infraestructura.itemcuantitativoasesor.log.descripcion-actualizada", 1),
     LOG_REGISTRANDO("evaluaciones.aplicacion.itemcuantitativoasesor.log.registrando", 2),
     LOG_VERIFICACION_REGISTRAR(
             "evaluaciones.aplicacion.itemcuantitativoasesor.log.verificacion-registrar", 2),

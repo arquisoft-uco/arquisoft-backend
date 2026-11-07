@@ -39,4 +39,15 @@ public class ItemCuantitativoAsesorCommandOutputAdapter implements ItemCuantitat
     public boolean existePorNombreYCategoriaIgnorandoMayusculas(String nombre, UUID categoriaId) {
         return repository.existsByNombreIgnoreCaseAndCategoria(nombre, categoriaId);
     }
+
+    @Override
+    public boolean existePorId(UUID id) {
+        return repository.existsById(id);
+    }
+
+    @Override
+    public void actualizarDescripcion(UUID id, String descripcion) {
+        repository.actualizarDescripcion(id, descripcion);
+        logger.debug(ItemCuantitativoAsesorKey.LOG_DESCRIPCION_ACTUALIZADA, id);
+    }
 }

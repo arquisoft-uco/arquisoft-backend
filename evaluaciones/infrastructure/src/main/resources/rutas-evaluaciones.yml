@@ -42,6 +42,7 @@ rutas:
       base: /evaluaciones/items-cualitativos-asesor
     items-cuantitativos-asesor:
       base: /evaluaciones/items-cuantitativos-asesor
+      por-id: /{itemId}
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
       por-id: /{itemId}
