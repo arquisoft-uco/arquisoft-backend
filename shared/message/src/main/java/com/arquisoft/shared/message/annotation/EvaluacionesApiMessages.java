@@ -108,12 +108,20 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Ítems cuantitativos del asesor";
         public static final String TAG_DESCRIPTION =
-                "Consulta de los ítems cuantitativos usados por el asesor";
+                "Administración y consulta de los ítems cuantitativos usados por el asesor";
         public static final String CONSULTAR_SUMMARY = "Consultar ítems cuantitativos del asesor";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta todos los ítems cuantitativos disponibles para el asesor, "
                         + "ordenados por categoría y nombre";
         public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del asesor";
+        public static final String REGISTRAR_SUMMARY = "Registrar ítem cuantitativo del asesor";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra un nuevo ítem cuantitativo del asesor con su nombre, descripción, categoría "
+                        + "y valor máximo. El nombre debe ser único dentro de la categoría";
+        public static final String REGISTRAR_RESP_201 = "Ítem cuantitativo del asesor registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La categoría no existe o ya hay un ítem con ese nombre en la categoría";
     }
 
     public static final class CategoriaItemCuantitativoJurado {

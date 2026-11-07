@@ -14,4 +14,6 @@ public interface ItemCuantitativoAsesorCommandRepository extends JpaRepository<I
 
     @Query("select e.id as id, e.valor as valor from ItemCuantitativoAsesorJpaEntity e where e.id in :ids")
     List<ValorMaximoItemCuantitativoAsesorProjection> findValoresMaximosByIdIn(@Param("ids") Set<UUID> ids);
+
+    boolean existsByNombreIgnoreCaseAndCategoria(String nombre, UUID categoria);
 }

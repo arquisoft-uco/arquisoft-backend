@@ -1,6 +1,9 @@
 package com.arquisoft.evaluaciones.infrastructure.itemcuantitativoasesor.command.secondaryadapter.repository;
 
+import com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.secondaryport.entity.ItemCuantitativoAsesorEntity;
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativoasesor.command.secondaryadapter.entity.ItemCuantitativoAsesorJpaEntity;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,11 +11,15 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 
 @DataJpaTest
 @Import(ItemCuantitativoAsesorCommandOutputAdapter.class)
@@ -27,6 +34,9 @@ class ItemCuantitativoAsesorCommandOutputAdapterTest {
 
     @Autowired
     private TestEntityManager entityManager;
+
+    @MockitoBean
+    private AppLogger logger;
 
     @Test
     void debeRetornarValorPorIdSoloDeLosSembrados_cuandoConsultaValoresMaximos() {
@@ -54,6 +64,46 @@ class ItemCuantitativoAsesorCommandOutputAdapterTest {
 
         // Assert
         assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debePersistirYLoguear_cuandoRegistraUnItem() {
+        // Arrange
+        var entity = new ItemCuantitativoAsesorEntity(
+                UtilUUID.generarNuevoUUID(), "Avance", "Porcentaje", UtilUUID.generarNuevoUUID(), 80);
+
+        // Act
+        adapter.registrar(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var persistido = entityManager.find(ItemCuantitativoAsesorJpaEntity.class, entity.id());
+        assertThat(persistido.getNombre()).isEqualTo("Avance");
+        assertThat(persistido.getDescripcion()).isEqualTo("Porcentaje");
+        assertThat(persistido.getCategoria()).isEqualTo(entity.categoriaId());
+        assertThat(persistido.getValor()).isEqualTo(80);
+        verify(logger).debug(any(ClaveMensaje.class), eq(entity.id()));
+    }
+
+    @Test
+    void debeDetectarNombreIgnorandoMayusculasSoloEnLaMismaCategoria_cuandoConsultaExistencia() {
+        // Arrange
+        var categoria = UtilUUID.generarNuevoUUID();
+        var otraCategoria = UtilUUID.generarNuevoUUID();
+        sembrar("Avance", categoria, 10);
+        entityManager.flush();
+
+        // Act
+        var mismaCategoriaOtraCapitalizacion =
+                adapter.existePorNombreYCategoriaIgnorandoMayusculas("aVANCE", categoria);
+        var otraCategoriaMismoNombre = adapter.existePorNombreYCategoriaIgnorandoMayusculas("Avance", otraCategoria);
+        var otroNombre = adapter.existePorNombreYCategoriaIgnorandoMayusculas("Otro", categoria);
+
+        // Assert
+        assertThat(mismaCategoriaOtraCapitalizacion).isTrue();
+        assertThat(otraCategoriaMismoNombre).isFalse();
+        assertThat(otroNombre).isFalse();
     }
 
     private UUID sembrar(String nombre, UUID categoria, int valor) {

@@ -12,6 +12,16 @@ public final class EvaluacionesLimits {
         public static final int DESCRIPCION_MAX = 300;
     }
 
+    public static final class ItemCuantitativoAsesor {
+
+        private ItemCuantitativoAsesor() {}
+
+        public static final int NOMBRE_MAX = 100;
+        public static final int DESCRIPCION_MAX = 300;
+        public static final int VALOR_MIN = 0;
+        public static final int VALOR_MAX = 500;
+    }
+
     public static final class CriterioItemCualitativoJurado {
 
         private CriterioItemCualitativoJurado() {}
