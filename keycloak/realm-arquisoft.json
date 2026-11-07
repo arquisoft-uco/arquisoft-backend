@@ -329,6 +329,7 @@
               "fichas:item-ficha-perfil:delete",
               "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view",
               "evaluaciones:evaluacion-cuantitativa-asesor-estudiante:view",
+              "evaluaciones:evaluacion-cualitativa-asesor-estudiante:view",
               "fichas:item-ficha-perfil:update",
               "fichas:estado-ficha-perfil-estudiante:view",
               "evaluaciones:estado-evaluacion:view",
@@ -2336,6 +2337,15 @@
         {
           "id": "fbce4dd3-8be2-4e3b-83d3-311b8f7404d5",
           "name": "evaluaciones:evaluacion-cuantitativa-asesor-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "dca26948-26d6-45fd-a74d-2d851d30d846",
+          "name": "evaluaciones:evaluacion-cualitativa-asesor-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
