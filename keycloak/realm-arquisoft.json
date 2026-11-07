@@ -366,6 +366,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "mapas-ruta:tarea-mapa-ruta-asesor:view",
               "entregables:estado-entregable:view",
               "entregables:entregable-proyecto-grado:create",
               "entregables:entregable-proyecto-grado-estado:update",
@@ -1303,6 +1304,15 @@
         {
           "id": "35fe0366-a963-4efb-a707-c61e86241bc5",
           "name": "mapas-ruta:tarea:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "220f4abb-0288-41d3-8446-9c9df46b1cbc",
+          "name": "mapas-ruta:tarea-mapa-ruta-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
