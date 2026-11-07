@@ -87,6 +87,16 @@ public final class MapasRutaApiMessages {
         public static final String CONSULTAR_POR_MAPA_RUTA_RESP_200 = "Página de tareas del mapa de ruta";
         public static final String CONSULTAR_POR_MAPA_RUTA_RESP_400 =
                 "Identificador de mapa de ruta inválido, o filtro u ordenamiento no permitido";
+        public static final String CONSULTAR_POR_MAPA_RUTA_ASESOR_SUMMARY =
+                "Consultar las tareas de un mapa de ruta que asesora";
+        public static final String CONSULTAR_POR_MAPA_RUTA_ASESOR_DESCRIPTION =
+                "Devuelve, paginadas, filtradas y ordenadas, las tareas de un mapa de ruta para que el asesor "
+                        + "verifique el alcance del proyecto. Filtros por descripción, estado y asesor; sin orden se "
+                        + "ordena por descripción ascendente. Si el mapa no tiene tareas la página llega vacía";
+        public static final String CONSULTAR_POR_MAPA_RUTA_ASESOR_RESP_200 =
+                "Página de tareas del mapa de ruta";
+        public static final String CONSULTAR_POR_MAPA_RUTA_ASESOR_RESP_400 =
+                "Identificador de mapa de ruta inválido, o filtro u ordenamiento no permitido";
         public static final String CAMBIAR_ESTADO_ITEM_SUMMARY = "Cambiar el estado de una tarea";
         public static final String CAMBIAR_ESTADO_ITEM_DESCRIPTION =
                 "Cambia el estado de una tarea de Nueva a En progreso o Finalizada, o de En progreso a Finalizada. "
