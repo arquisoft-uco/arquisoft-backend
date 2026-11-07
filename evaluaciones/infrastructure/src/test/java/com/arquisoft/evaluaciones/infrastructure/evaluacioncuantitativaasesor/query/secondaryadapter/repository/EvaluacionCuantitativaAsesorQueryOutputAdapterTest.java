@@ -96,6 +96,35 @@ class EvaluacionCuantitativaAsesorQueryOutputAdapterTest {
     }
 
     @Test
+    void debeConsultarPorEvaluacionAsesor_ordenadoPorNombreDeItemEId() {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var categoria = UtilUUID.generarNuevoUUID();
+        var itemRigor = sembrarItem("Rigor", "desc", categoria, 5);
+        var itemAportes = sembrarItem("Aportes", "desc", categoria, 5);
+        sembrarCuantitativa(evaluacionAsesor, itemRigor, 3);
+        sembrarCuantitativa(evaluacionAsesor, itemAportes, 5);
+        sembrarCuantitativa(UtilUUID.generarNuevoUUID(), itemAportes, 1);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorEvaluacionAsesor(evaluacionAsesor);
+
+        // Assert
+        assertThat(resultado).extracting(r -> r.item().nombre()).containsExactly("Aportes", "Rigor");
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoNoHayCuantitativas() {
+        // Act
+        var resultado = adapter.consultarPorEvaluacionAsesor(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
     void debeRetornarListaVacia_cuandoLaEvaluacionNoTieneCuantitativas() {
         // Act
         var resultado = adapter.consultar(criteria(UtilUUID.generarNuevoUUID()));

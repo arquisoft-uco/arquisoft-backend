@@ -9,6 +9,9 @@ public enum EvaluacionAsesorKey implements ClaveMensaje {
             "evaluaciones.dominio.evaluacionasesor.error.sin-evaluacion-asesor-detalle", 1),
     ERROR_NO_DISPONIBLE("evaluaciones.infraestructura.evaluacionasesor.error.no-disponible", 0),
     ERROR_NO_DISPONIBLE_DETALLE("evaluaciones.infraestructura.evaluacionasesor.error.no-disponible-detalle", 1),
+    ERROR_NO_PERTENECE_ESTUDIANTE("evaluaciones.dominio.evaluacionasesor.error.no-pertenece-estudiante", 0),
+    ERROR_NO_PERTENECE_ESTUDIANTE_DETALLE(
+            "evaluaciones.dominio.evaluacionasesor.error.no-pertenece-estudiante-detalle", 2),
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacionasesor.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacionasesor.log.consulta-completada", 1),
     ERROR_REALIZADA_NO_DISPONIBLE(
