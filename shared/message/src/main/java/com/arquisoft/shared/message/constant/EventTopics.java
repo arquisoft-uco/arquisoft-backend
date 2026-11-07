@@ -206,5 +206,7 @@ public final class EventTopics {
                 "mapas_ruta.mapa_ruta.agregado";
         public static final String MAPA_RUTA_FECHA_FIN_CAMBIADA =
                 "mapas_ruta.mapa_ruta.fecha_fin_cambiada";
+        public static final String TAREA_FINALIZADA =
+                "mapas_ruta.tarea.finalizada";
     }
 }

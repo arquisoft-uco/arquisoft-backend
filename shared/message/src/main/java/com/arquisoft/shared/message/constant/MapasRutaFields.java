@@ -42,5 +42,9 @@ public final class MapasRutaFields {
         private PlanReal() {}
 
         public static final String TAREA = "tarea";
+        public static final String TIEMPO_REAL_DIAS = "tiempoRealDias";
+        public static final String DESCRIPCION_REAL = "descripcionReal";
+        public static final String CREADO_EN = "creadoEn";
+        public static final String FINALIZADA_EN = "finalizadaEn";
     }
 }
