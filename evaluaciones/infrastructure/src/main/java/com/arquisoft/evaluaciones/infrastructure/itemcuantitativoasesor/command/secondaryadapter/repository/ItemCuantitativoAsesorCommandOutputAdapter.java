@@ -50,4 +50,10 @@ public class ItemCuantitativoAsesorCommandOutputAdapter implements ItemCuantitat
         repository.actualizarDescripcion(id, descripcion);
         logger.debug(ItemCuantitativoAsesorKey.LOG_DESCRIPCION_ACTUALIZADA, id);
     }
+
+    @Override
+    public void eliminar(UUID id) {
+        repository.deleteById(id);
+        logger.debug(ItemCuantitativoAsesorKey.LOG_ELIMINADO, id);
+    }
 }

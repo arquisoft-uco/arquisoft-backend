@@ -142,6 +142,26 @@ class ItemCuantitativoAsesorCommandOutputAdapterTest {
         verify(logger).debug(any(ClaveMensaje.class), eq(id));
     }
 
+    @Test
+    void debeEliminarSoloElItemIndicadoYLoguear_cuandoElimina() {
+        // Arrange
+        var categoria = UtilUUID.generarNuevoUUID();
+        var aEliminar = sembrar("Item a eliminar", categoria, 10);
+        var conservado = sembrar("Item conservado", categoria, 20);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminar(aEliminar);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ItemCuantitativoAsesorJpaEntity.class, aEliminar)).isNull();
+        assertThat(entityManager.find(ItemCuantitativoAsesorJpaEntity.class, conservado)).isNotNull();
+        verify(logger).debug(any(ClaveMensaje.class), eq(aEliminar));
+    }
+
     private UUID sembrar(String nombre, UUID categoria, int valor) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(ItemCuantitativoAsesorJpaEntity.builder()

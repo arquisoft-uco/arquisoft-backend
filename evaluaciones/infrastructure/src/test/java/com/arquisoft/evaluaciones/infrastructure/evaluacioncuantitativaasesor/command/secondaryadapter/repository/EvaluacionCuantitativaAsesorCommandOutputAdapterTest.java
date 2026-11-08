@@ -61,6 +61,25 @@ class EvaluacionCuantitativaAsesorCommandOutputAdapterTest {
     }
 
     @Test
+    void debeDetectarSoloElItemUsado_cuandoConsultaExistenciaPorItem() {
+        // Arrange
+        var itemUsado = UtilUUID.generarNuevoUUID();
+        var itemSinUso = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCuantitativaAsesorEntity(UtilUUID.generarNuevoUUID(),
+                        UtilUUID.generarNuevoUUID(), itemUsado, 10)));
+        repository.flush();
+
+        // Act
+        var usado = adapter.existePorItem(itemUsado);
+        var sinUso = adapter.existePorItem(itemSinUso);
+
+        // Assert
+        assertThat(usado).isTrue();
+        assertThat(sinUso).isFalse();
+    }
+
+    @Test
     void debeRetornarSoloItemsDeEsaEvaluacion_cuandoConsultaItemsRegistrados() {
         // Arrange
         var evaluacionAsesor = UtilUUID.generarNuevoUUID();

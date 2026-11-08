@@ -17,4 +17,6 @@ public interface ItemCuantitativoAsesorOutputPort {
     boolean existePorId(UUID id);
 
     void actualizarDescripcion(UUID id, String descripcion);
+
+    void eliminar(UUID id);
 }
