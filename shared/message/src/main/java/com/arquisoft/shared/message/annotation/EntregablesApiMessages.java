@@ -92,4 +92,23 @@ public final class EntregablesApiMessages {
         public static final String CONSULTAR_RESP_400 = "El identificador del entregable no es un UUID válido";
         public static final String CONSULTAR_RESP_422 = "El entregable no existe o no es del asesor autenticado";
     }
+
+    public static final class PaqueteEntregable {
+
+        private PaqueteEntregable() {}
+
+        public static final String TAG_NAME = "Paquete de entregable";
+        public static final String TAG_DESCRIPTION = "Descarga del paquete ZIP congelado de un entregable de proyecto de grado";
+        public static final String PARAM_ENTREGABLE = "Identificador del entregable de proyecto de grado";
+        public static final String DESCARGAR_SUMMARY = "Descargar el paquete de un entregable de proyecto de grado";
+        public static final String DESCARGAR_DESCRIPTION =
+                "El asesor del entregable o un estudiante vigente del proyecto obtiene un enlace firmado y temporal "
+                        + "para descargar el paquete ZIP del entregable, que reúne la última versión cerrada de cada "
+                        + "artefacto y un manifiesto";
+        public static final String DESCARGAR_RESP_200 = "Enlace de descarga firmado y su fecha de expiración";
+        public static final String DESCARGAR_RESP_400 = "El identificador del entregable no es un UUID válido";
+        public static final String DESCARGAR_RESP_422 =
+                "El entregable no existe, el solicitante no tiene acceso o el paquete aún está en preparación";
+        public static final String DESCARGAR_RESP_503 = "El servicio de almacenamiento no está disponible";
+    }
 }

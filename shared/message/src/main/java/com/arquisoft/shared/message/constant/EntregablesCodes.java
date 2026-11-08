@@ -33,6 +33,24 @@ public final class EntregablesCodes {
         public static final String ESTUDIANTE_REQUERIDO = "ENTREGABLES_ENTREGABLE_PROYECTO_GRADO_ESTUDIANTE_REQUERIDO";
     }
 
+    public static final class PaqueteEntregable {
+
+        private PaqueteEntregable() {}
+
+        public static final String ID_REQUERIDO = "ENTREGABLES_PAQUETE_ENTREGABLE_ID_REQUERIDO";
+        public static final String ENTREGABLE_PROYECTO_GRADO_REQUERIDO =
+                "ENTREGABLES_PAQUETE_ENTREGABLE_ENTREGABLE_PROYECTO_GRADO_REQUERIDO";
+        public static final String BUCKET_REQUERIDO = "ENTREGABLES_PAQUETE_ENTREGABLE_BUCKET_REQUERIDO";
+        public static final String CLAVE_OBJETO_REQUERIDA = "ENTREGABLES_PAQUETE_ENTREGABLE_CLAVE_OBJETO_REQUERIDA";
+        public static final String NOMBRE_ARCHIVO_REQUERIDO = "ENTREGABLES_PAQUETE_ENTREGABLE_NOMBRE_ARCHIVO_REQUERIDO";
+        public static final String TAMANO_BYTES_INVALIDO = "ENTREGABLES_PAQUETE_ENTREGABLE_TAMANO_BYTES_INVALIDO";
+        public static final String GENERADO_EN_REQUERIDO = "ENTREGABLES_PAQUETE_ENTREGABLE_GENERADO_EN_REQUERIDO";
+        public static final String ACTOR_REQUERIDO = "ENTREGABLES_PAQUETE_ENTREGABLE_ACTOR_REQUERIDO";
+        public static final String ROLES_REQUERIDOS = "ENTREGABLES_PAQUETE_ENTREGABLE_ROLES_REQUERIDOS";
+        public static final String ACCESO_DENEGADO = "ENTREGABLES_PAQUETE_ENTREGABLE_ACCESO_DENEGADO";
+        public static final String EN_PREPARACION = "ENTREGABLES_PAQUETE_ENTREGABLE_EN_PREPARACION";
+    }
+
     public static final class ProyectoGrado {
 
         private ProyectoGrado() {}

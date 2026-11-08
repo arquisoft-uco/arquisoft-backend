@@ -103,4 +103,24 @@ class ProyectoGradoCommandOutputAdapterTest {
         assertThat(encontrado).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(proyecto));
         assertThat(ausente).isEmpty();
     }
+
+    @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(id).nombre("Sistema de gestion").build());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorId(id);
+        var ausente = adapter.obtenerPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(id);
+            assertThat(entity.nombre()).isEqualTo("Sistema de gestion");
+        });
+        assertThat(ausente).isEmpty();
+    }
 }

@@ -16,6 +16,21 @@ public final class EntregablesFields {
         public static final String ESTADO_ENTREGABLE = "estadoEntregable";
     }
 
+    public static final class PaqueteEntregable {
+
+        private PaqueteEntregable() {}
+
+        public static final String ID = "paqueteEntregable";
+        public static final String ENTREGABLE_PROYECTO_GRADO = "entregableProyectoGrado";
+        public static final String BUCKET = "bucket";
+        public static final String CLAVE_OBJETO = "claveObjeto";
+        public static final String NOMBRE_ARCHIVO = "nombreArchivo";
+        public static final String TAMANO_BYTES = "tamanoBytes";
+        public static final String GENERADO_EN = "generadoEn";
+        public static final String ACTOR = "actor";
+        public static final String ROLES = "roles";
+    }
+
     public static final class ProyectoGrado {
 
         private ProyectoGrado() {}

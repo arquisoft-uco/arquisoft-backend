@@ -12,10 +12,17 @@ import java.util.UUID;
 public class EntregableProyectoGradoAccesoQueryOutputAdapter implements EntregableProyectoGradoAccesoQueryOutputPort {
 
     private final EntregableProyectoGradoAccesoQueryRepository repository;
+    private final EstudianteEntregableAccesoQueryRepository estudianteEntregableAccesoQueryRepository;
 
     @Override
     public Optional<UUID> obtenerAsesorPorId(UUID entregableProyectoGrado) {
         return repository.findById(entregableProyectoGrado)
                 .map(EntregableProyectoGradoAccesoJpaQueryEntity::getAsesorId);
+    }
+
+    @Override
+    public boolean estudianteParticipa(UUID entregableProyectoGrado, UUID estudiante) {
+        return estudianteEntregableAccesoQueryRepository.existsByEntregableProyectoGradoIdAndEstudianteId(
+                entregableProyectoGrado, estudiante);
     }
 }

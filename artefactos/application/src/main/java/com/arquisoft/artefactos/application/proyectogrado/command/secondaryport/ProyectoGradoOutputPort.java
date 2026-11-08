@@ -11,6 +11,8 @@ public interface ProyectoGradoOutputPort {
 
     boolean existePorId(UUID id);
 
+    Optional<ProyectoGradoEntity> obtenerPorId(UUID id);
+
     Optional<ProyectoGradoEntity> obtenerPorArtefacto(UUID artefacto);
 
     Optional<ProyectoGradoEntity> obtenerBloqueadoPorArtefacto(UUID artefacto);
