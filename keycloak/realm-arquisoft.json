@@ -339,6 +339,7 @@
               "fichas:estado-ficha-perfil-estudiante:view",
               "evaluaciones:estado-evaluacion:view",
               "proyectos:proyecto-grado-estudiante:view",
+              "proyectos:asesor-actual-proyecto-grado-estudiante:view",
               "fichas:observacion-evaluacion-estudiante:view",
               "artefactos:revision-asesor-estudiante:view",
               "artefactos:artefacto-estudiante:view",
@@ -1966,6 +1967,15 @@
         {
           "id": "c076a3f3-d0b5-4e8b-b02b-682b9d572d2b",
           "name": "proyectos:proyecto-grado-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "d663c150-801a-4702-86ed-adebc1b95faa",
+          "name": "proyectos:asesor-actual-proyecto-grado-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
