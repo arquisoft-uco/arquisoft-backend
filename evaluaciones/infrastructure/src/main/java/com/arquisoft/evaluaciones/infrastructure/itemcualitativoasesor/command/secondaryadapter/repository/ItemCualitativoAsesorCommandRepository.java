@@ -12,4 +12,6 @@ public interface ItemCualitativoAsesorCommandRepository extends JpaRepository<It
 
     @Query("select e.id from ItemCualitativoAsesorJpaEntity e where e.id in :ids")
     Set<UUID> findIdsByIdIn(@Param("ids") Set<UUID> ids);
+
+    boolean existsByNombreIgnoreCase(String nombre);
 }

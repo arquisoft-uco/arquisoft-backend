@@ -13,6 +13,14 @@ public final class EvaluacionesFields {
         public static final String ITEM = "itemCualitativoJurado";
     }
 
+    public static final class ItemCualitativoAsesor {
+
+        private ItemCualitativoAsesor() {}
+
+        public static final String NOMBRE = "nombre";
+        public static final String DESCRIPCION = "descripcion";
+    }
+
     public static final class ItemCuantitativoAsesor {
 
         private ItemCuantitativoAsesor() {}

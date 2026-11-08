@@ -25,6 +25,18 @@ public final class EvaluacionesCodes {
                 "ITEM_CUALITATIVO_JURADO_EN_USO";
     }
 
+    public static final class ItemCualitativoAsesor {
+
+        private ItemCualitativoAsesor() {}
+
+        public static final String NOMBRE_REQUERIDO = "ITEM_CUALITATIVO_ASESOR_NOMBRE_REQUERIDO";
+        public static final String NOMBRE_DEMASIADO_LARGO = "ITEM_CUALITATIVO_ASESOR_NOMBRE_DEMASIADO_LARGO";
+        public static final String DESCRIPCION_REQUERIDA = "ITEM_CUALITATIVO_ASESOR_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_DEMASIADO_LARGA =
+                "ITEM_CUALITATIVO_ASESOR_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String NOMBRE_DUPLICADO = "ITEM_CUALITATIVO_ASESOR_NOMBRE_DUPLICADO";
+    }
+
     public static final class ItemCuantitativoAsesor {
 
         private ItemCuantitativoAsesor() {}
