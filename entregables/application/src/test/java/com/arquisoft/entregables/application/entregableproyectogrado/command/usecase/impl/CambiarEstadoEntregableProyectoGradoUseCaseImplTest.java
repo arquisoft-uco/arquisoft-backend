@@ -5,8 +5,10 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.sec
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.CambiarEstadoEntregableProyectoGradoValidator;
 import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
+import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCanceladoEvent;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCerradoEvent;
 import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
+import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
@@ -82,20 +84,30 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
     }
 
     @Test
-    void noDebePublicarEvento_cuandoElEstadoDestinoEsCancelado() {
+    void debePublicarEventoCancelado_cuandoElEstadoDestinoEsCancelado() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
+        var proyecto = UtilUUID.generarNuevoUUID();
         var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CANCELADO");
-        var entregable = EntregableProyectoGradoDomain.reconstruir(id, UtilUUID.generarNuevoUUID(), 1,
-                UtilUUID.generarNuevoUUID(), EstadoEntregable.APROBADO);
+        var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 4,
+                UtilUUID.generarNuevoUUID(), EstadoEntregable.EN_EVALUACION);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
 
         // Act
         useCase.ejecutar(cambio);
 
         // Assert
-        verify(entregableProyectoGradoOutputPort).actualizarEstado(id, "CANCELADO");
-        verifyNoInteractions(eventPublisher);
+        var orden = inOrder(entregableProyectoGradoOutputPort, eventPublisher, logger);
+        var captor = ArgumentCaptor.forClass(DomainEvent.class);
+        orden.verify(entregableProyectoGradoOutputPort).actualizarEstado(id, "CANCELADO");
+        orden.verify(eventPublisher).publish(captor.capture());
+        orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "EN_EVALUACION", "CANCELADO");
+        verify(eventPublisher, times(1)).publish(any());
+        assertThat(captor.getValue()).isInstanceOfSatisfying(EntregableProyectoGradoCanceladoEvent.class, evento -> {
+            assertThat(evento.getEntregableProyectoGrado()).isEqualTo(id);
+            assertThat(evento.getProyectoGrado()).isEqualTo(proyecto);
+            assertThat(evento.getVersion()).isEqualTo(4);
+        });
     }
 
     @Test
