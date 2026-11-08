@@ -203,6 +203,7 @@
           "client": {
             "arquisoft-api": [
               "evaluaciones:item-cuantitativo-asesor:create",
+              "evaluaciones:item-cuantitativo-asesor:delete",
               "evaluaciones:item-cuantitativo-asesor:update",
               "evaluaciones:item-cuantitativo-asesor:view",
               "evaluaciones:item-cualitativo-asesor:view",
@@ -1548,6 +1549,15 @@
         {
           "id": "802b50cc-b93f-4dd2-b88c-697512a55fd7",
           "name": "evaluaciones:item-cuantitativo-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3ffc7737-aa17-4531-b159-5ad2813acef9",
+          "name": "evaluaciones:item-cuantitativo-asesor:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

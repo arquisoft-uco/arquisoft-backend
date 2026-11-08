@@ -11,6 +11,8 @@ import java.util.UUID;
 public interface EvaluacionCuantitativaAsesorCommandRepository
         extends JpaRepository<EvaluacionCuantitativaAsesorJpaEntity, UUID> {
 
+    boolean existsByItem(UUID item);
+
     @Query("select e.item from EvaluacionCuantitativaAsesorJpaEntity e "
             + "where e.evaluacionAsesor = :evaluacionAsesor and e.item in :items")
     Set<UUID> findItemsRegistrados(

@@ -42,6 +42,7 @@ public final class EvaluacionesCodes {
                 "ITEM_CUANTITATIVO_ASESOR_NOMBRE_CATEGORIA_DUPLICADO";
         public static final String ITEM_ID_REQUERIDO = "ITEM_CUANTITATIVO_ASESOR_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO = "ITEM_CUANTITATIVO_ASESOR_NO_ENCONTRADO";
+        public static final String ITEM_EN_USO = "ITEM_CUANTITATIVO_ASESOR_EN_USO";
     }
 
     public static final class CriterioItemCualitativoJurado {

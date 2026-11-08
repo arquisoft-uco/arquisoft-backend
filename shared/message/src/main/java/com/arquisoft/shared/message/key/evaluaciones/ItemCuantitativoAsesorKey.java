@@ -15,6 +15,13 @@ public enum ItemCuantitativoAsesorKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADO("evaluaciones.dominio.itemcuantitativoasesor.error.no-encontrado", 0),
     ERROR_NO_ENCONTRADO_DETALLE(
             "evaluaciones.dominio.itemcuantitativoasesor.error.no-encontrado-detalle", 1),
+    ERROR_EN_USO("evaluaciones.dominio.itemcuantitativoasesor.error.en-uso", 0),
+    ERROR_EN_USO_DETALLE("evaluaciones.dominio.itemcuantitativoasesor.error.en-uso-detalle", 1),
+    LOG_REMOVIENDO("evaluaciones.aplicacion.itemcuantitativoasesor.log.removiendo", 1),
+    LOG_VERIFICACION_REMOVER(
+            "evaluaciones.aplicacion.itemcuantitativoasesor.log.verificacion-remover", 2),
+    LOG_REMOVIDO("evaluaciones.aplicacion.itemcuantitativoasesor.log.removido", 1),
+    LOG_ELIMINADO("evaluaciones.infraestructura.itemcuantitativoasesor.log.eliminado", 1),
     LOG_MODIFICANDO("evaluaciones.aplicacion.itemcuantitativoasesor.log.modificando", 1),
     LOG_VERIFICACION_MODIFICAR(
             "evaluaciones.aplicacion.itemcuantitativoasesor.log.verificacion-modificar", 1),
