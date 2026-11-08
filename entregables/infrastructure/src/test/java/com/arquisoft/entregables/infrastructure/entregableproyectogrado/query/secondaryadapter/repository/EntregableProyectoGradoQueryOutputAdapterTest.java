@@ -59,7 +59,7 @@ class EntregableProyectoGradoQueryOutputAdapterTest {
 
     private UUID sembrarProyecto(String nombre) {
         var id = UtilUUID.generarNuevoUUID();
-        entityManager.persist(ProyectoGradoJpaEntity.builder().id(id).nombre(nombre).build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(id).nombre(nombre).estadoProyectoId("EN_PROCESO").build());
         return id;
     }
 

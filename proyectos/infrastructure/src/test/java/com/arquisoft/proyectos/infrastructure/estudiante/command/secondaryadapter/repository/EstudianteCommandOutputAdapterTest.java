@@ -3,6 +3,7 @@ package com.arquisoft.proyectos.infrastructure.estudiante.command.secondaryadapt
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.proyectos.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import com.arquisoft.proyectos.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
+import com.arquisoft.proyectos.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.EstudianteProyectosKey;
 import org.junit.jupiter.api.Test;
@@ -170,6 +171,31 @@ class EstudianteCommandOutputAdapterTest {
         // Assert
         var guardado = entityManager.find(EstudianteJpaEntity.class, id);
         assertThat(guardado.getEliminadoEn()).isEqualTo(baja);
+    }
+
+    @Test
+    void debeExcluirEliminadosYDeOtroProyecto_cuandoSeObtienenLosVigentesDelProyecto() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var instante = Instant.parse("2026-09-01T10:00:00Z");
+        var proyectoGrado = UUID.randomUUID();
+        var vigente = sembrar(instante, null);
+        var dadoDeBaja = sembrar(instante, instante);
+        var deOtroProyecto = sembrar(instante, null);
+        vincular(vigente, proyectoGrado);
+        vincular(dadoDeBaja, proyectoGrado);
+        vincular(deOtroProyecto, UUID.randomUUID());
+
+        // Act
+        var resultado = adapter.obtenerVigentesPorProyectoGrado(proyectoGrado);
+
+        // Assert
+        assertThat(resultado).extracting(EstudianteEntity::id).containsExactly(vigente);
+    }
+
+    private void vincular(UUID estudiante, UUID proyectoGrado) {
+        entityManager.persistAndFlush(EstudianteProyectoGradoJpaEntity.builder()
+                .id(UUID.randomUUID()).estudianteId(estudiante).proyectoGradoId(proyectoGrado).build());
     }
 
     @Test

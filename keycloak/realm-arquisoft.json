@@ -370,6 +370,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "proyectos:proyecto-grado-estado:update",
               "mapas-ruta:tarea-mapa-ruta-asesor:view",
               "mapas-ruta:plan-estimado-proyecto-asesor:view",
               "entregables:estado-entregable:view",
@@ -1517,6 +1518,15 @@
         {
           "id": "ffaeac40-94b6-4d4a-8765-655de4fd8570",
           "name": "proyectos:asesor-proyecto-grado:update-estado",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "93728f6f-99a6-41a1-940f-b52793233d7e",
+          "name": "proyectos:proyecto-grado-estado:update",
           "description": "",
           "composite": false,
           "clientRole": true,

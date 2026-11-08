@@ -14,4 +14,6 @@ public interface EntregableProyectoGradoOutputPort {
     Optional<EntregableProyectoGradoEntity> obtenerPorId(UUID id);
 
     void actualizarEstado(UUID entregableProyectoGrado, String estadoEntregable);
+
+    boolean existeVigentePorProyectoGrado(UUID proyectoGrado, String estadoExcluido);
 }

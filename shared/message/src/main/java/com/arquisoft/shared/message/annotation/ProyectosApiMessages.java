@@ -74,6 +74,27 @@ public final class ProyectosApiMessages {
                         + "permitida";
     }
 
+    public static final class CambioEstadoProyectoGrado {
+
+        private CambioEstadoProyectoGrado() {}
+
+        public static final String TAG_NAME = "Estado del Proyecto de Grado";
+        public static final String TAG_DESCRIPTION = "Gestión del estado de un proyecto de grado";
+
+        public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_DESCRIPTION =
+                "Permite al asesor asignado al proyecto de grado finalizarlo cuando su último entregable está "
+                        + "cerrado o cancelado. El estado finalizado es terminal: bloquea nuevas entregas y los "
+                        + "estudiantes reciben un correo de notificación";
+        public static final String CAMBIAR_ESTADO_RESP_204 = "Nuevo estado del proyecto de grado registrado exitosamente";
+        public static final String CAMBIAR_ESTADO_RESP_400 = "Estado del proyecto de grado ausente";
+        public static final String CAMBIAR_ESTADO_RESP_403 =
+                "Sin permiso para cambiar el estado de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_RESP_422 =
+                "Estado fuera del catálogo, proyecto de grado no encontrado o sin vínculo con el asesor, "
+                        + "transición de estado no permitida, sin entregables o último entregable sin terminar";
+    }
+
     public static final class ConsultaAsesorProyectoGrado {
 
         private ConsultaAsesorProyectoGrado() {}

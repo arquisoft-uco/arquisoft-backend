@@ -1,8 +1,10 @@
 package com.arquisoft.proyectos.domain.estadoproyectogrado;
 
 import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ProyectosCodes;
 import com.arquisoft.shared.message.constant.ProyectosFields;
+import com.arquisoft.shared.message.key.proyectos.EstadoProyectoKey;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -39,6 +41,19 @@ public final class EstadoProyectoGradoDomain {
         return estado;
     }
 
+    public static EstadoProyectoGradoDomain crearConEstado(UUID proyectoGrado, EstadoProyecto estadoProyecto) {
+        var estado = new EstadoProyectoGradoDomain();
+        var result = new ValidationResult();
+
+        estado.setId();
+        estado.setProyectoGrado(proyectoGrado, result);
+        estado.setEstadoProyecto(estadoProyecto, result);
+        estado.setFechaActualizacion();
+
+        result.lanzarSiTieneErrores();
+        return estado;
+    }
+
     public static EstadoProyectoGradoDomain reconstruir(UUID id, UUID proyectoGrado, EstadoProyecto estadoProyecto,
                                                         Instant fechaActualizacion) {
         var estado = new EstadoProyectoGradoDomain();
@@ -60,6 +75,22 @@ public final class EstadoProyectoGradoDomain {
             return;
         }
         this.proyectoGrado = proyectoGrado;
+    }
+
+    private void setEstadoProyecto(EstadoProyecto estadoProyecto, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(estadoProyecto,
+                ProyectosFields.EstadoProyectoGrado.ESTADO_PROYECTO,
+                ProyectosCodes.EstadoProyectoGrado.ESTADO_PROYECTO_REQUERIDO, result)) {
+            return;
+        }
+        if (estadoProyecto == EstadoProyecto.VACIO) {
+            result.agregarError(
+                    ProyectosFields.EstadoProyectoGrado.ESTADO_PROYECTO,
+                    ProyectosCodes.EstadoProyectoGrado.ESTADO_PROYECTO_REQUERIDO,
+                    Mensajes.formatear(EstadoProyectoKey.ERROR_NO_ENCONTRADO));
+            return;
+        }
+        this.estadoProyecto = estadoProyecto;
     }
 
     private void setEstadoProyectoInicial() {

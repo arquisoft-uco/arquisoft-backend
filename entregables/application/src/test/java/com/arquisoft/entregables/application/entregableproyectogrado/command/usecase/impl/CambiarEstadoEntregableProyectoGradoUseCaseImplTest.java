@@ -1,6 +1,8 @@
 package com.arquisoft.entregables.application.entregableproyectogrado.command.usecase.impl;
 
 import com.arquisoft.entregables.application.entregableproyectogrado.command.finder.EntregableProyectoGradoPorIdFinder;
+import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoDeEntregableFinder;
+import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.EntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.CambiarEstadoEntregableProyectoGradoValidator;
 import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntregableProyectoGradoDomain;
@@ -45,6 +47,9 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
     private EntregableProyectoGradoPorIdFinder entregableProyectoGradoPorIdFinder;
 
     @Mock
+    private ProyectoGradoDeEntregableFinder proyectoGradoDeEntregableFinder;
+
+    @Mock
     private CambiarEstadoEntregableProyectoGradoValidator cambiarEstadoEntregableProyectoGradoValidator;
 
     @Mock
@@ -65,16 +70,19 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 2,
                 UtilUUID.generarNuevoUUID(), EstadoEntregable.APROBADO);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
+        when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
 
         // Act
         useCase.ejecutar(cambio);
 
         // Assert
-        var orden = inOrder(entregableProyectoGradoPorIdFinder, cambiarEstadoEntregableProyectoGradoValidator,
-                entregableProyectoGradoOutputPort, eventPublisher, logger);
+        var orden = inOrder(entregableProyectoGradoPorIdFinder, proyectoGradoDeEntregableFinder,
+                cambiarEstadoEntregableProyectoGradoValidator, entregableProyectoGradoOutputPort, eventPublisher,
+                logger);
         var captor = ArgumentCaptor.forClass(EntregableProyectoGradoCerradoEvent.class);
         orden.verify(entregableProyectoGradoPorIdFinder, times(1)).obtener(id);
-        orden.verify(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable);
+        orden.verify(proyectoGradoDeEntregableFinder, times(1)).obtener(id);
+        orden.verify(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable, ProyectoGradoDomain.VACIO);
         orden.verify(entregableProyectoGradoOutputPort).actualizarEstado(id, "CERRADO");
         orden.verify(eventPublisher).publish(captor.capture());
         orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "APROBADO", "CERRADO");
@@ -92,6 +100,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 4,
                 UtilUUID.generarNuevoUUID(), EstadoEntregable.EN_EVALUACION);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
+        when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
 
         // Act
         useCase.ejecutar(cambio);
@@ -118,8 +127,9 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         var entregable = EntregableProyectoGradoDomain.reconstruir(id, UtilUUID.generarNuevoUUID(), 1,
                 UtilUUID.generarNuevoUUID(), EstadoEntregable.CERRADO);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
+        when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
         doThrow(new DomainException("rechazado", "COD"))
-                .when(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable);
+                .when(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable, ProyectoGradoDomain.VACIO);
 
         // Act
         assertThatThrownBy(() -> useCase.ejecutar(cambio)).isInstanceOf(DomainException.class);

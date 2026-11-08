@@ -4,6 +4,7 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.fin
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.EntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.usecase.CambiarEstadoEntregableProyectoGradoUseCase;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.CambiarEstadoEntregableProyectoGradoValidator;
+import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoDeEntregableFinder;
 import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCanceladoEvent;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCerradoEvent;
@@ -21,6 +22,7 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
 
     private final EntregableProyectoGradoOutputPort entregableProyectoGradoOutputPort;
     private final EntregableProyectoGradoPorIdFinder entregableProyectoGradoPorIdFinder;
+    private final ProyectoGradoDeEntregableFinder proyectoGradoDeEntregableFinder;
     private final CambiarEstadoEntregableProyectoGradoValidator cambiarEstadoEntregableProyectoGradoValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
@@ -31,11 +33,13 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
                 cambio.getEntregableProyectoGrado(), cambio.getEstadoEntregable().getId());
 
         var entregable = entregableProyectoGradoPorIdFinder.obtener(cambio.getEntregableProyectoGrado());
+        var proyecto = proyectoGradoDeEntregableFinder.obtener(cambio.getEntregableProyectoGrado());
 
         logger.debug(EntregableProyectoGradoKey.LOG_VERIFICACION_CAMBIAR_ESTADO,
-                !entregable.esVacio(), entregable.getEstadoEntregable().getId());
+                !entregable.esVacio(), entregable.getEstadoEntregable().getId(),
+                !proyecto.esVacio(), proyecto.getEstadoProyecto().getId());
 
-        cambiarEstadoEntregableProyectoGradoValidator.validar(cambio, entregable);
+        cambiarEstadoEntregableProyectoGradoValidator.validar(cambio, entregable, proyecto);
 
         entregableProyectoGradoOutputPort.actualizarEstado(
                 cambio.getEntregableProyectoGrado(), cambio.getEstadoEntregable().getId());

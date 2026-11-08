@@ -25,4 +25,7 @@ public class ProyectoGradoJpaEntity {
 
     @Column(name = "nombre", nullable = false, length = 200)
     private String nombre;
+
+    @Column(name = "estado_proyecto_id", nullable = false, length = 60)
+    private String estadoProyectoId;
 }

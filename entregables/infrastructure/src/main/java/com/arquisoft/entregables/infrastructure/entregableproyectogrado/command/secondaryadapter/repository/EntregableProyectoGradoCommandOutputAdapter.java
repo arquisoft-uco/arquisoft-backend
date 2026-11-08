@@ -40,4 +40,10 @@ public class EntregableProyectoGradoCommandOutputAdapter implements EntregablePr
         entregableProyectoGradoCommandRepository.actualizarEstado(entregableProyectoGrado, estadoEntregable);
         logger.debug(EntregableProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, entregableProyectoGrado);
     }
+
+    @Override
+    public boolean existeVigentePorProyectoGrado(UUID proyectoGrado, String estadoExcluido) {
+        return entregableProyectoGradoCommandRepository
+                .existsByProyectoGradoAndEstadoEntregableNot(proyectoGrado, estadoExcluido);
+    }
 }
