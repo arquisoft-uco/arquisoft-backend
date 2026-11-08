@@ -5,8 +5,11 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.sec
 import com.arquisoft.entregables.application.entregableproyectogrado.command.usecase.CambiarEstadoEntregableProyectoGradoUseCase;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.CambiarEstadoEntregableProyectoGradoValidator;
 import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntregableProyectoGradoDomain;
+import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCerradoEvent;
+import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
+import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +21,7 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
     private final EntregableProyectoGradoOutputPort entregableProyectoGradoOutputPort;
     private final EntregableProyectoGradoPorIdFinder entregableProyectoGradoPorIdFinder;
     private final CambiarEstadoEntregableProyectoGradoValidator cambiarEstadoEntregableProyectoGradoValidator;
+    private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
@@ -34,6 +38,11 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
 
         entregableProyectoGradoOutputPort.actualizarEstado(
                 cambio.getEntregableProyectoGrado(), cambio.getEstadoEntregable().getId());
+
+        if (cambio.getEstadoEntregable() == EstadoEntregable.CERRADO) {
+            eventPublisher.publish(new EntregableProyectoGradoCerradoEvent(
+                    cambio.getEntregableProyectoGrado(), entregable.getProyectoGrado(), entregable.getVersion()));
+        }
 
         logger.info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO,
                 cambio.getEntregableProyectoGrado(), entregable.getEstadoEntregable().getId(),
