@@ -10,4 +10,8 @@ public final class ProyectoGradoMapper {
     public static ProyectoGradoEntity toEntity(ProyectoGradoDomain proyecto) {
         return new ProyectoGradoEntity(proyecto.getId(), proyecto.getNombre());
     }
+
+    public static ProyectoGradoDomain toDomain(ProyectoGradoEntity entity) {
+        return ProyectoGradoDomain.reconstruir(entity.id(), entity.nombre());
+    }
 }

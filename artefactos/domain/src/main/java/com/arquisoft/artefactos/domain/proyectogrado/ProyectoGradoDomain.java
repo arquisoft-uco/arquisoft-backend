@@ -4,6 +4,7 @@ import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.message.constant.ArtefactosLimits;
 import com.arquisoft.shared.util.UtilTexto;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorObjeto;
@@ -12,6 +13,8 @@ import com.arquisoft.shared.validation.ValidatorTexto;
 import java.util.UUID;
 
 public final class ProyectoGradoDomain {
+
+    public static final ProyectoGradoDomain VACIO = reconstruir(UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO);
 
     private UUID id;
     private String nombre;
@@ -24,6 +27,13 @@ public final class ProyectoGradoDomain {
         proyecto.setId(id, result);
         proyecto.setNombre(nombre, result);
         result.lanzarSiTieneErrores();
+        return proyecto;
+    }
+
+    public static ProyectoGradoDomain reconstruir(UUID id, String nombre) {
+        var proyecto = new ProyectoGradoDomain();
+        proyecto.id = id;
+        proyecto.nombre = nombre;
         return proyecto;
     }
 
@@ -58,5 +68,9 @@ public final class ProyectoGradoDomain {
 
     public String getNombre() {
         return nombre;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

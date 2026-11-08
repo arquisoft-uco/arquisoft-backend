@@ -81,7 +81,7 @@ class EliminarVersionArtefactoUseCaseImplTest {
         var versionId = UtilUUID.generarNuevoUUID();
         var artefactoId = UtilUUID.generarNuevoUUID();
         eliminacion = EliminacionVersionArtefactoDomain.crear(versionId, UtilUUID.generarNuevoUUID());
-        version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 2, Instant.now(), URI);
+        version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 2, Instant.now(), URI, 1024L);
         artefacto = ArtefactoDomain.reconstruir(artefactoId, UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
         revisionAnterior = RevisionAsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(),

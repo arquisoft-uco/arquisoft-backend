@@ -197,6 +197,8 @@ public final class ArtefactosCodes {
         public static final String CARGA_NO_CORRESPONDE = "VERSION_ARTEFACTO_CARGA_NO_CORRESPONDE";
         public static final String CARGA_MODIFICADA = "VERSION_ARTEFACTO_CARGA_MODIFICADA";
         public static final String TAMANO_ARCHIVO_EXCEDIDO = "VERSION_ARTEFACTO_TAMANO_ARCHIVO_EXCEDIDO";
+        public static final String CUOTA_PROYECTO_GRADO_EXCEDIDA =
+                "VERSION_ARTEFACTO_CUOTA_PROYECTO_GRADO_EXCEDIDA";
         public static final String TIPO_ARCHIVO_NO_COINCIDE = "VERSION_ARTEFACTO_TIPO_ARCHIVO_NO_COINCIDE";
         public static final String NO_ENCONTRADA = "VERSION_ARTEFACTO_NO_ENCONTRADA";
         public static final String NO_ES_ULTIMA = "VERSION_ARTEFACTO_NO_ES_ULTIMA";

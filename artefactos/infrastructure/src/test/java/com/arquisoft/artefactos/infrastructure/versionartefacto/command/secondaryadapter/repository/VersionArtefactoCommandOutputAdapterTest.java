@@ -1,7 +1,9 @@
 package com.arquisoft.artefactos.infrastructure.versionartefacto.command.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.entity.VersionArtefactoEntity;
+import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstudianteArtefactoTestEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.RevisionAsesorTestEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EliminarVersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
@@ -35,7 +37,7 @@ class VersionArtefactoCommandOutputAdapterTest {
 
     private static VersionArtefactoEntity version(UUID artefacto, int numero) {
         var id = UtilUUID.generarNuevoUUID();
-        return new VersionArtefactoEntity(id, artefacto, numero, Instant.now(), "versiones/" + id);
+        return new VersionArtefactoEntity(id, artefacto, numero, Instant.now(), "versiones/" + id, 1024L);
     }
 
     @Test
@@ -184,5 +186,141 @@ class VersionArtefactoCommandOutputAdapterTest {
         assertThat(repository.findById(primera.id())).isPresent();
         assertThat(adapter().ultimoNumeroPorArtefacto(artefacto)).isEqualTo(1);
         verify(logger).debug(EliminarVersionArtefactoKey.LOG_ELIMINADO, segunda.id());
+    }
+
+    private UUID artefactoDe(UUID proyecto, boolean omitido) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ArtefactoJpaEntity.builder()
+                .id(id)
+                .proyectoGrado(proyecto)
+                .versionRepositorioArtefacto(UtilUUID.generarNuevoUUID())
+                .asesor(UtilUUID.generarNuevoUUID())
+                .omitidoEn(omitido ? Instant.now() : null)
+                .build());
+        return id;
+    }
+
+    private UUID versionDe(UUID artefacto, int numero, long tamano) {
+        var id = UtilUUID.generarNuevoUUID();
+        adapter().registrar(new VersionArtefactoEntity(id, artefacto, numero, Instant.now(), "versiones/" + id, tamano));
+        return id;
+    }
+
+    private void revisionDe(UUID version, String estado) {
+        entityManager.persist(new RevisionAsesorTestEntity(UtilUUID.generarNuevoUUID(), version, estado));
+    }
+
+    @Test
+    void debePersistirTamano() {
+        // Arrange
+        var entity = new VersionArtefactoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 1,
+                Instant.now(), "versiones/x", 7_340_032L);
+
+        // Act
+        adapter().registrar(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(repository.findById(entity.id()).orElseThrow().getTamanoBytes()).isEqualTo(7_340_032L);
+    }
+
+    @Test
+    void debeSumarTodas_cuandoSinRevisionCerrada() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var artefacto = artefactoDe(proyecto, false);
+        var otroArtefacto = artefactoDe(proyecto, false);
+        var primera = versionDe(artefacto, 1, 100L);
+        versionDe(artefacto, 2, 200L);
+        versionDe(otroArtefacto, 1, 50L);
+        revisionDe(primera, "ENVIADA");
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().tamanoVigenteDelProyectoDeArtefacto(artefacto, "CERRADA")).isEqualTo(350L);
+    }
+
+    @Test
+    void debeSumarDesdeLaUltimaCerrada() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var artefacto = artefactoDe(proyecto, false);
+        var otroArtefacto = artefactoDe(proyecto, false);
+        versionDe(artefacto, 1, 100L);
+        var segunda = versionDe(artefacto, 2, 200L);
+        var tercera = versionDe(artefacto, 3, 400L);
+        versionDe(otroArtefacto, 1, 50L);
+        revisionDe(segunda, "CERRADA");
+        revisionDe(tercera, "PENDIENTE");
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().tamanoVigenteDelProyectoDeArtefacto(artefacto, "CERRADA")).isEqualTo(650L);
+        assertThat(adapter().tamanoVigenteDelArtefacto(artefacto, "CERRADA")).isEqualTo(600L);
+    }
+
+    @Test
+    void debeIgnorarOtrosProyectos() {
+        // Arrange
+        var artefacto = artefactoDe(UtilUUID.generarNuevoUUID(), false);
+        var ajeno = artefactoDe(UtilUUID.generarNuevoUUID(), false);
+        versionDe(artefacto, 1, 100L);
+        versionDe(ajeno, 1, 999L);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().tamanoVigenteDelProyectoDeArtefacto(artefacto, "CERRADA")).isEqualTo(100L);
+    }
+
+    @Test
+    void debeExcluirArtefactosOmitidos() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var activo = artefactoDe(proyecto, false);
+        var omitido = artefactoDe(proyecto, true);
+        versionDe(activo, 1, 100L);
+        versionDe(omitido, 1, 1000L);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().tamanoVigenteDelProyectoDeArtefacto(activo, "CERRADA")).isEqualTo(100L);
+    }
+
+    @Test
+    void debeSumarDesdeArtefactoOmitido_cuandoBaseEsOmitido() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var activo = artefactoDe(proyecto, false);
+        var omitido = artefactoDe(proyecto, true);
+        versionDe(activo, 1, 100L);
+        versionDe(omitido, 1, 1000L);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().tamanoVigenteDelProyectoDeArtefacto(omitido, "CERRADA")).isEqualTo(100L);
+    }
+
+    @Test
+    void debeRetornarCero_cuandoProyectoSinVersiones() {
+        // Arrange
+        var artefacto = artefactoDe(UtilUUID.generarNuevoUUID(), false);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().tamanoVigenteDelProyectoDeArtefacto(artefacto, "CERRADA")).isZero();
+        assertThat(adapter().tamanoVigenteDelArtefacto(artefacto, "CERRADA")).isZero();
+    }
+
+    @Test
+    void debeCalcularPesoDeArtefactoOmitido_sinFiltrarPorOmision() {
+        // Arrange
+        var omitido = artefactoDe(UtilUUID.generarNuevoUUID(), true);
+        versionDe(omitido, 1, 50L);
+        versionDe(omitido, 2, 70L);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().tamanoVigenteDelArtefacto(omitido, "CERRADA")).isEqualTo(120L);
     }
 }

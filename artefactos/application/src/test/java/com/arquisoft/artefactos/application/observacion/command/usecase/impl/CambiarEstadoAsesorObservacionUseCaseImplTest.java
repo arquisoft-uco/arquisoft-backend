@@ -117,7 +117,7 @@ class CambiarEstadoAsesorObservacionUseCaseImplTest {
         asesor = AsesorDomain.reconstruir(
                 asesorId, "20161020123", "Ana Perez", "ana@uco.edu.co", UtilFecha.generarInstanteActual(), null);
         version = VersionArtefactoDomain.reconstruir(
-                versionId, artefacto.getId(), 3, UtilFecha.generarInstanteActual(), "uri");
+                versionId, artefacto.getId(), 3, UtilFecha.generarInstanteActual(), "uri", 1024L);
         versionRepositorio = VersionRepositorioArtefactoDomain.reconstruir(
                 versionRepositorioId, "Anteproyecto", 1, UtilUUID.generarNuevoUUID(), "Repo",
                 new DatosArchivo("a.pdf", "application/pdf", 10L));

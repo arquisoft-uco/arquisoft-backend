@@ -23,7 +23,7 @@ class VersionArtefactoDomainTest {
         var antes = Instant.now();
 
         // Act
-        var version = VersionArtefactoDomain.crear(generacion, 4);
+        var version = VersionArtefactoDomain.crear(generacion, 4, 1024L);
 
         // Assert
         assertThat(UtilUUID.esPorDefecto(version.getId())).isFalse();
@@ -31,6 +31,7 @@ class VersionArtefactoDomainTest {
         assertThat(version.getNumeroVersion()).isEqualTo(5);
         assertThat(version.getUriArchivo()).isEqualTo(ArtefactosAlmacenamiento.PREFIJO_VERSIONES + version.getId());
         assertThat(version.getFechaCreacion()).isAfterOrEqualTo(antes);
+        assertThat(version.getTamanoBytes()).isEqualTo(1024L);
     }
 
     @Test
@@ -40,7 +41,7 @@ class VersionArtefactoDomainTest {
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
 
         // Act
-        var version = VersionArtefactoDomain.crear(generacion, 0);
+        var version = VersionArtefactoDomain.crear(generacion, 0, 1024L);
 
         // Assert
         assertThat(version.getNumeroVersion()).isEqualTo(1);
@@ -54,7 +55,7 @@ class VersionArtefactoDomainTest {
         var fecha = Instant.parse("2026-10-28T10:00:00Z");
 
         // Act
-        var version = VersionArtefactoDomain.reconstruir(id, artefacto, 3, fecha, "versiones/uri");
+        var version = VersionArtefactoDomain.reconstruir(id, artefacto, 3, fecha, "versiones/uri", 1024L);
 
         // Assert
         assertThat(version.getId()).isEqualTo(id);
@@ -62,6 +63,7 @@ class VersionArtefactoDomainTest {
         assertThat(version.getNumeroVersion()).isEqualTo(3);
         assertThat(version.getFechaCreacion()).isEqualTo(fecha);
         assertThat(version.getUriArchivo()).isEqualTo("versiones/uri");
+        assertThat(version.getTamanoBytes()).isEqualTo(1024L);
         assertThat(version.esVacio()).isFalse();
     }
 
@@ -80,7 +82,7 @@ class VersionArtefactoDomainTest {
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
 
         // Act & Assert
-        assertThatThrownBy(() -> VersionArtefactoDomain.crear(generacion, -1))
+        assertThatThrownBy(() -> VersionArtefactoDomain.crear(generacion, -1, 1024L))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> {
                     var errores = ((DomainValidationException) ex).getValidationResult().getErrores();
@@ -89,5 +91,36 @@ class VersionArtefactoDomainTest {
                     assertThat(errores).extracting("codigoError")
                             .contains(ArtefactosCodes.VersionArtefacto.NUMERO_VERSION_INVALIDO);
                 });
+    }
+
+    @Test
+    void debeAcumularError_cuandoTamanoCero() {
+        // Arrange
+        var generacion = GeneracionVersionArtefactoDomain.crear(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+
+        // Act & Assert
+        assertThatThrownBy(() -> VersionArtefactoDomain.crear(generacion, 0, 0L))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> {
+                    var errores = ((DomainValidationException) ex).getValidationResult().getErrores();
+                    assertThat(errores).extracting("campo").contains(ArtefactosFields.VersionArtefacto.TAMANO_BYTES);
+                    assertThat(errores).extracting("codigoError")
+                            .contains(ArtefactosCodes.VersionArtefacto.TAMANO_BYTES_INVALIDO);
+                });
+    }
+
+    @Test
+    void debeReconstruirSinValidar_cuandoTamanoCeroDeFilaAnterior() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var version = VersionArtefactoDomain.reconstruir(
+                id, UtilUUID.generarNuevoUUID(), 1, Instant.now(), "versiones/uri", 0L);
+
+        // Assert
+        assertThat(version.getId()).isEqualTo(id);
+        assertThat(version.getTamanoBytes()).isZero();
     }
 }

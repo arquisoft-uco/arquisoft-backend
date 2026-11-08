@@ -4,10 +4,13 @@ import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBl
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.EstudianteArtefactoExisteFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.model.ParticipacionEstudianteArtefacto;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.AnalisisCargaFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.CargaPendienteFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.CuotaProyectoGradoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoMaximoArchivoFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoVigenteProyectoGradoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.result.VersionArtefactoGeneradaResult;
 import com.arquisoft.artefactos.application.versionartefacto.command.result.mapper.VersionArtefactoGeneradaResultMapper;
@@ -16,12 +19,14 @@ import com.arquisoft.artefactos.application.versionartefacto.command.secondarypo
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.mapper.VersionArtefactoMapper;
 import com.arquisoft.artefactos.application.versionartefacto.command.usecase.GenerarVersionArtefactoUseCase;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoContenidoValidator;
+import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoCuotaValidator;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.versionartefacto.GeneracionVersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.VersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.event.VersionArtefactoGeneradaEvent;
 import com.arquisoft.artefactos.domain.revisionasesor.model.RevisionVersionAnterior;
+import com.arquisoft.artefactos.domain.versionartefacto.model.AlmacenamientoProyectoGrado;
 import com.arquisoft.artefactos.domain.versionartefacto.model.CargaAnalizada;
 import com.arquisoft.artefactos.domain.versionartefacto.model.ContactoAsesor;
 import com.arquisoft.artefactos.domain.versionartefacto.model.PrecondicionesGeneracionVersion;
@@ -46,6 +51,10 @@ public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefac
     private final TamanoMaximoArchivoFinder tamanoMaximoArchivoFinder;
     private final GenerarVersionArtefactoValidator generarVersionValidator;
     private final GenerarVersionArtefactoContenidoValidator generarVersionContenidoValidator;
+    private final ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
+    private final CuotaProyectoGradoFinder cuotaProyectoGradoFinder;
+    private final TamanoVigenteProyectoGradoFinder tamanoVigenteProyectoGradoFinder;
+    private final GenerarVersionArtefactoCuotaValidator generarVersionCuotaValidator;
     private final AlmacenamientoVersionOutputPort almacenamientoVersionOutputPort;
     private final VersionArtefactoOutputPort versionArtefactoOutputPort;
     private final EventPublisher eventPublisher;
@@ -77,7 +86,15 @@ public class GenerarVersionArtefactoUseCaseImpl implements GenerarVersionArtefac
         var analisis = analisisCargaFinder.obtener(generacion.getCarga());
         generarVersionContenidoValidator.validar(generacion, new CargaAnalizada(carga, analisis));
 
-        var version = VersionArtefactoDomain.crear(generacion, ultimoNumero);
+        var proyectoGrado = proyectoGradoBloqueadoPorArtefactoFinder.obtener(generacion.getArtefacto());
+        var cuota = cuotaProyectoGradoFinder.obtener();
+        var uso = tamanoVigenteProyectoGradoFinder.obtener(generacion.getArtefacto());
+        logger.debug(VersionArtefactoKey.LOG_VERIFICACION_CUOTA_GENERAR, !proyectoGrado.esVacio(), uso);
+
+        generarVersionCuotaValidator.validar(
+                artefacto, carga, new AlmacenamientoProyectoGrado(proyectoGrado, cuota, uso));
+
+        var version = VersionArtefactoDomain.crear(generacion, ultimoNumero, carga.getTamanoBytes());
 
         almacenamientoVersionOutputPort.copiarCargaAUri(carga.getCarga(), carga.getEtag(), version.getUriArchivo());
         versionArtefactoOutputPort.registrar(VersionArtefactoMapper.toEntity(version));

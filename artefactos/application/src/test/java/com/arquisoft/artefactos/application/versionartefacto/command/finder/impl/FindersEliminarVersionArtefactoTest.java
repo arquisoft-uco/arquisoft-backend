@@ -39,7 +39,7 @@ class FindersEliminarVersionArtefactoTest {
         var id = UtilUUID.generarNuevoUUID();
         var artefacto = UtilUUID.generarNuevoUUID();
         when(versionOutputPort.obtenerBloqueadaPorId(id)).thenReturn(Optional.of(
-                new VersionArtefactoEntity(id, artefacto, 2, Instant.now(), "versiones/x")));
+                new VersionArtefactoEntity(id, artefacto, 2, Instant.now(), "versiones/x", 1024L)));
 
         // Act
         var resultado = new VersionArtefactoBloqueadaPorIdFinderImpl(versionOutputPort).obtener(id);
