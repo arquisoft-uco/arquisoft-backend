@@ -35,6 +35,8 @@ public final class EvaluacionesCodes {
         public static final String DESCRIPCION_DEMASIADO_LARGA =
                 "ITEM_CUALITATIVO_ASESOR_DESCRIPCION_DEMASIADO_LARGA";
         public static final String NOMBRE_DUPLICADO = "ITEM_CUALITATIVO_ASESOR_NOMBRE_DUPLICADO";
+        public static final String ITEM_ID_REQUERIDO = "ITEM_CUALITATIVO_ASESOR_ID_REQUERIDO";
+        public static final String ITEM_NO_ENCONTRADO = "ITEM_CUALITATIVO_ASESOR_NO_ENCONTRADO";
     }
 
     public static final class ItemCuantitativoAsesor {

@@ -12,4 +12,8 @@ public interface ItemCualitativoAsesorOutputPort {
     void registrar(ItemCualitativoAsesorEntity entity);
 
     boolean existePorNombreIgnorandoMayusculas(String nombre);
+
+    boolean existePorId(UUID id);
+
+    void actualizarDescripcion(UUID id, String descripcion);
 }
