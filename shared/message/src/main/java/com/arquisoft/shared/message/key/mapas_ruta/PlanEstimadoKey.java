@@ -15,6 +15,9 @@ public enum PlanEstimadoKey implements ClaveMensaje {
     LOG_AGREGADO("mapas_ruta.aplicacion.planestimado.log.agregado", 2),
     LOG_CONSULTANDO("mapas_ruta.aplicacion.planestimado.log.consultando", 5),
     LOG_CONSULTA_COMPLETADA("mapas_ruta.aplicacion.planestimado.log.consulta-completada", 3),
+    LOG_CONSULTANDO_POR_PROYECTO_GRADO("mapas_ruta.aplicacion.planestimado.log.consultando-por-proyecto-grado", 5),
+    LOG_CONSULTA_POR_PROYECTO_GRADO_COMPLETADA(
+            "mapas_ruta.aplicacion.planestimado.log.consulta-por-proyecto-grado-completada", 3),
     LOG_MODIFICANDO("mapas_ruta.aplicacion.planestimado.log.modificando", 1),
     LOG_VERIFICACION_MODIFICAR("mapas_ruta.aplicacion.planestimado.log.verificacion-modificar", 1),
     LOG_MODIFICADO("mapas_ruta.aplicacion.planestimado.log.modificado", 1),
