@@ -95,11 +95,18 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Ítems cualitativos del asesor";
         public static final String TAG_DESCRIPTION =
-                "Consulta de los ítems cualitativos usados por el asesor";
+                "Administración y consulta de los ítems cualitativos usados por el asesor";
         public static final String CONSULTAR_SUMMARY = "Consultar ítems cualitativos del asesor";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta todos los ítems cualitativos disponibles para el asesor, ordenados por nombre";
         public static final String CONSULTAR_RESP_200 = "Listado de ítems cualitativos del asesor";
+        public static final String REGISTRAR_SUMMARY = "Registrar ítem cualitativo del asesor";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra un nuevo ítem cualitativo del asesor con su nombre y descripción. "
+                        + "El nombre debe ser único sin distinguir mayúsculas";
+        public static final String REGISTRAR_RESP_201 = "Ítem cualitativo del asesor registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 = "Ya existe un ítem cualitativo del asesor con ese nombre";
     }
 
     public static final class ItemCuantitativoAsesor {
