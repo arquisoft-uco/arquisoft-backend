@@ -16,6 +16,7 @@ rutas:
       planes-estimados: /planes-estimados/{planEstimadoId}
       planes-estimados-proyecto-asesor: /proyectos-grado/{proyectoGradoId}/planes-estimados/asesor
       planes-reales-estudiante: /tareas/{tareaId}/planes-reales/estudiante
+      planes-reales-proyecto-asesor: /proyectos-grado/{proyectoGradoId}/planes-reales/asesor
     tareas:
       base: /tareas
       por-id: /{tareaId}

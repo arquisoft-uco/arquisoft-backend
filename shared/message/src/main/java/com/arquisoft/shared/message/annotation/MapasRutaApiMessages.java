@@ -185,6 +185,17 @@ public final class MapasRutaApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de planes reales de la tarea";
         public static final String CONSULTAR_RESP_400 =
                 "Identificador de tarea inválido, o filtro u ordenamiento no permitido";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_SUMMARY =
+                "Consultar los planes reales de un proyecto de grado";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_DESCRIPTION =
+                "Devuelve, paginados, filtrados y ordenados, los planes reales de todas las tareas de un "
+                        + "proyecto de grado, con la descripción de la tarea de cada plan. Filtros por tiempo "
+                        + "real, descripción del plan y descripción de la tarea; sin orden se ordena por "
+                        + "tiempo real ascendente. Si el proyecto no tiene planes reales la página llega vacía";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_200 =
+                "Página de planes reales del proyecto de grado";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_400 =
+                "Identificador de proyecto de grado inválido, o filtro u ordenamiento no permitido";
     }
 
     public static final class EstadoItem {

@@ -251,6 +251,7 @@ security:
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados", role: "mapas-ruta:plan-estimado:create"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados/estudiante", role: "mapas-ruta:plan-estimado-tarea-estudiante:view"}
         - {method: POST, path: "/api/mapas-ruta/tareas/{tareaId}/planes-reales/estudiante", role: "mapas-ruta:plan-real-tarea-estudiante:view"}
+        - {method: POST, path: "/api/mapas-ruta/proyectos-grado/{proyectoGradoId}/planes-reales/asesor", role: "mapas-ruta:plan-real-proyecto-asesor:view"}
         - {method: PATCH, path: "/api/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:update"}
         - {method: DELETE, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:delete"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
