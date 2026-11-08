@@ -64,6 +64,7 @@ public final class MapasRutaCodes {
         public static final String PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO = "PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO";
         public static final String PLAN_ESTIMADO_REQUERIDO = "PLAN_ESTIMADO_REQUERIDO";
         public static final String PLAN_ESTIMADO_NO_ENCONTRADO = "PLAN_ESTIMADO_NO_ENCONTRADO";
+        public static final String PLAN_ESTIMADO_PROYECTO_GRADO_REQUERIDO = "PLAN_ESTIMADO_PROYECTO_GRADO_REQUERIDO";
     }
 
     public static final class PlanReal {
