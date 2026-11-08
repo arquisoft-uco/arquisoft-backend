@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,4 +72,13 @@ public interface VersionArtefactoCommandRepository extends JpaRepository<Version
                     WHERE c.artefacto_id = v.artefacto_id AND r.estado_revision_asesor_id = :estadoCerrada), 0)
             """)
     long tamanoVigenteDelArtefacto(@Param("artefacto") UUID artefacto, @Param("estadoCerrada") String estadoCerrada);
+
+    @NativeQuery("""
+            SELECT v.uri_archivo
+            FROM version_artefacto v
+            JOIN artefacto a ON a.id = v.artefacto_id
+            WHERE a.proyecto_grado_id = :proyectoGrado
+            ORDER BY v.id
+            """)
+    List<String> obtenerUrisArchivoPorProyectoGrado(@Param("proyectoGrado") UUID proyectoGrado);
 }

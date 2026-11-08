@@ -80,6 +80,10 @@ public final class ArtefactosCodes {
         public static final String NOMBRE_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_NOMBRE_REQUERIDO";
         public static final String NOMBRE_DEMASIADO_LARGO = "ARTEFACTOS_PROYECTO_GRADO_NOMBRE_DEMASIADO_LARGO";
         public static final String NO_ENCONTRADO = "ARTEFACTOS_PROYECTO_GRADO_NO_ENCONTRADO";
+        public static final String ENTREGADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_ENTREGADO_EN_REQUERIDO";
+        public static final String FINALIZADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_FINALIZADO_EN_REQUERIDO";
+        public static final String CONGELADO = "ARTEFACTOS_PROYECTO_GRADO_CONGELADO";
+        public static final String NO_FINALIZADO = "ARTEFACTOS_PROYECTO_GRADO_NO_FINALIZADO";
     }
 
     public static final class PaqueteEntregable {
@@ -192,6 +196,7 @@ public final class ArtefactosCodes {
 
         private VersionArtefacto() {}
 
+        public static final String ARCHIVO_PURGADO = "VERSION_ARTEFACTO_ARCHIVO_PURGADO";
         public static final String ASESOR_REQUERIDO = "VERSION_ARTEFACTO_ASESOR_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO = "VERSION_ARTEFACTO_ESTUDIANTE_REQUERIDO";
         public static final String ARTEFACTO_REQUERIDO = "VERSION_ARTEFACTO_ARTEFACTO_REQUERIDO";

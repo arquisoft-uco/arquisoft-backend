@@ -1,6 +1,8 @@
 package com.arquisoft.artefactos.application.versionartefacto.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBloqueadoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAnteriorBloqueadaDeVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionDeVersionExisteFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.EstudianteParticipaVersionArtefactoExisteFinder;
@@ -10,6 +12,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.secondarypo
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.VersionArtefactoOutputPort;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.EliminarVersionArtefactoValidator;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.exception.RevisionAnteriorNoPermiteEliminarVersionException;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
@@ -65,6 +68,10 @@ class EliminarVersionArtefactoUseCaseImplTest {
     @Mock
     private VersionArtefactoOutputPort versionOutputPort;
     @Mock
+    private ProyectoGradoPorVersionArtefactoFinder proyectoGradoPorVersionArtefactoFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     private EliminarVersionArtefactoUseCaseImpl useCase;
@@ -77,7 +84,8 @@ class EliminarVersionArtefactoUseCaseImplTest {
     void setUp() {
         useCase = new EliminarVersionArtefactoUseCaseImpl(artefactoFinder, revisionAnteriorFinder, versionFinder,
                 participaFinder, esUltimaFinder, revisionDeVersionFinder, validator, almacenamiento,
-                versionOutputPort, logger);
+                versionOutputPort, proyectoGradoPorVersionArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
+        when(proyectoGradoPorVersionArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         var versionId = UtilUUID.generarNuevoUUID();
         var artefactoId = UtilUUID.generarNuevoUUID();
         eliminacion = EliminacionVersionArtefactoDomain.crear(versionId, UtilUUID.generarNuevoUUID());
@@ -102,7 +110,7 @@ class EliminarVersionArtefactoUseCaseImplTest {
         // Assert
         var id = eliminacion.getVersionArtefacto();
         var orden = inOrder(logger, artefactoFinder, revisionAnteriorFinder, versionFinder, participaFinder,
-                esUltimaFinder, revisionDeVersionFinder, validator, almacenamiento, versionOutputPort);
+                esUltimaFinder, revisionDeVersionFinder, validator, almacenamiento, versionOutputPort, proyectoGradoNoCongeladoValidator);
         orden.verify(logger).info(any(ClaveMensaje.class), eq(id), eq(eliminacion.getSolicitante()));
         orden.verify(artefactoFinder).obtener(id);
         orden.verify(revisionAnteriorFinder).obtener(id);
@@ -112,6 +120,8 @@ class EliminarVersionArtefactoUseCaseImplTest {
         orden.verify(revisionDeVersionFinder).obtener(id);
         var captor = ArgumentCaptor.forClass(PrecondicionesEliminacionVersion.class);
         orden.verify(validator).validar(eq(eliminacion), captor.capture());
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoPorVersionArtefactoFinder, times(1)).obtener(any());
         orden.verify(almacenamiento).eliminarArchivo(URI);
         orden.verify(versionOutputPort).eliminar(id);
         orden.verify(logger).info(any(ClaveMensaje.class), eq(id), eq(2), eq(artefacto.getId()));

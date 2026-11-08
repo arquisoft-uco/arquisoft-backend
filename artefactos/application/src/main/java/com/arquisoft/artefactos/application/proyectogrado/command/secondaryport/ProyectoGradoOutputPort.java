@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.application.proyectogrado.command.secondaryport
 
 import com.arquisoft.artefactos.application.proyectogrado.command.secondaryport.entity.ProyectoGradoEntity;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,4 +17,14 @@ public interface ProyectoGradoOutputPort {
     Optional<ProyectoGradoEntity> obtenerPorArtefacto(UUID artefacto);
 
     Optional<ProyectoGradoEntity> obtenerBloqueadoPorArtefacto(UUID artefacto);
+
+    Optional<ProyectoGradoEntity> obtenerPorRevisionAsesor(UUID revisionAsesor);
+
+    Optional<ProyectoGradoEntity> obtenerPorObservacion(UUID observacion);
+
+    Optional<ProyectoGradoEntity> obtenerPorVersionArtefacto(UUID versionArtefacto);
+
+    void marcarEntregado(UUID id, Instant entregadoEn);
+
+    void marcarFinalizado(UUID id, Instant finalizadoEn);
 }

@@ -8,11 +8,13 @@ import com.arquisoft.artefactos.application.artefacto.command.validator.Registra
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoExisteFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RegistrarArtefactoUseCaseImpl implements RegistrarArtefactoUseCase {
 
-    private final ProyectoGradoExisteFinder proyectoGradoExisteFinder;
+    private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
     private final VinculosMasRecientesProyectoGradoFinder vinculosMasRecientesProyectoGradoFinder;
     private final VersionRepositorioArtefactoBloqueadaPorIdFinder versionRepositorioArtefactoBloqueadaPorIdFinder;
@@ -30,24 +32,28 @@ public class RegistrarArtefactoUseCaseImpl implements RegistrarArtefactoUseCase 
     private final RegistrarArtefactoValidator registrarArtefactoValidator;
     private final ArtefactoOutputPort artefactoOutputPort;
     private final AsignarEstudiantesArtefactoUseCase asignarEstudiantesArtefactoUseCase;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
     public UUID ejecutar(AsignacionArtefactoDomain registro) {
         var artefacto = registro.getArtefacto();
 
-        var proyectoExiste = proyectoGradoExisteFinder.obtener(artefacto.getProyectoGrado());
+        var proyecto = proyectoGradoPorIdFinder.obtener(artefacto.getProyectoGrado());
         var asesor = asesorPorIdFinder.obtener(artefacto.getAsesor());
         var vinculosMasRecientes = vinculosMasRecientesProyectoGradoFinder.obtener(artefacto.getProyectoGrado());
         var versionRepositorio = versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(
                 artefacto.getVersionRepositorioArtefacto());
         var versionesAsignadas = versionesAsignadasProyectoFinder.obtener(artefacto.getProyectoGrado());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_REGISTRAR,
-                proyectoExiste, !asesor.esVacio() && !asesor.estaEliminado(),
+                !proyecto.esVacio(), !asesor.esVacio() && !asesor.estaEliminado(),
                 vinculosMasRecientes.size(), !versionRepositorio.esVacio(), versionesAsignadas.size());
 
         registrarArtefactoValidator.validar(
-                registro, proyectoExiste, asesor, vinculosMasRecientes, versionRepositorio, versionesAsignadas);
+                registro, !proyecto.esVacio(), asesor, vinculosMasRecientes, versionRepositorio, versionesAsignadas);
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         artefactoOutputPort.registrar(ArtefactoMapper.toEntity(artefacto));
         asignarEstudiantesArtefactoUseCase.ejecutar(registro.getEstudiantes());

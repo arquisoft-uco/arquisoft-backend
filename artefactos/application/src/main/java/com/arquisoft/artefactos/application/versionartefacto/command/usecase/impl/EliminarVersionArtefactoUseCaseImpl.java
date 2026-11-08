@@ -1,6 +1,8 @@
 package com.arquisoft.artefactos.application.versionartefacto.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBloqueadoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAnteriorBloqueadaDeVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionDeVersionExisteFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.EstudianteParticipaVersionArtefactoExisteFinder;
@@ -14,6 +16,7 @@ import com.arquisoft.artefactos.domain.versionartefacto.EliminacionVersionArtefa
 import com.arquisoft.artefactos.domain.versionartefacto.model.PrecondicionesEliminacionVersion;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EliminarVersionArtefactoKey;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +33,8 @@ public class EliminarVersionArtefactoUseCaseImpl implements EliminarVersionArtef
     private final EliminarVersionArtefactoValidator eliminarVersionArtefactoValidator;
     private final AlmacenamientoVersionOutputPort almacenamientoVersionOutputPort;
     private final VersionArtefactoOutputPort versionArtefactoOutputPort;
+    private final ProyectoGradoPorVersionArtefactoFinder proyectoGradoPorVersionArtefactoFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -45,11 +50,15 @@ public class EliminarVersionArtefactoUseCaseImpl implements EliminarVersionArtef
         var esUltima = versionArtefactoEsUltimaFinder.obtener(versionArtefacto);
         var tieneRevision = revisionDeVersionExisteFinder.obtener(versionArtefacto);
 
+        var proyecto = proyectoGradoPorVersionArtefactoFinder.obtener(versionArtefacto);
         logger.debug(EliminarVersionArtefactoKey.LOG_VERIFICACION_ELIMINAR,
                 !version.esVacio(), participa, esUltima, tieneRevision, revisionAnterior.getEstado().getId());
 
         eliminarVersionArtefactoValidator.validar(eliminacion, new PrecondicionesEliminacionVersion(
                 version, artefacto, revisionAnterior, participa, esUltima, tieneRevision));
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         almacenamientoVersionOutputPort.eliminarArchivo(version.getUriArchivo());
         versionArtefactoOutputPort.eliminar(version.getId());

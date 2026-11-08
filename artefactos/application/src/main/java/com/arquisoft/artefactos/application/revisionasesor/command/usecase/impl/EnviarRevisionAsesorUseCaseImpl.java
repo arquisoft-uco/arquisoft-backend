@@ -5,6 +5,8 @@ import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFin
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.usecase.AvanzarObservacionesRevisionUseCase;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.command.usecase.EnviarRevisionAsesorUseCase;
@@ -19,6 +21,7 @@ import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor
 import com.arquisoft.artefactos.domain.revisionasesor.model.ObservacionesDeRevision;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EnviarRevisionAsesorKey;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -38,6 +41,8 @@ public class EnviarRevisionAsesorUseCaseImpl implements EnviarRevisionAsesorUseC
     private final RevisionAsesorOutputPort revisionAsesorOutputPort;
     private final AvanzarObservacionesRevisionUseCase avanzarObservacionesRevisionUseCase;
     private final EventPublisher eventPublisher;
+    private final ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -55,12 +60,16 @@ public class EnviarRevisionAsesorUseCaseImpl implements EnviarRevisionAsesorUseC
         var estudiantes = estudiantesVinculadosArtefactoFinder.obtener(artefacto.getId());
         var observacionesExisten = observacionesDeRevisionExistenFinder.obtener(revisionAsesor);
 
+        var proyecto = proyectoGradoPorRevisionAsesorFinder.obtener(revisionAsesor);
         logger.debug(EnviarRevisionAsesorKey.LOG_VERIFICACION_ENVIO,
                 !revision.esVacio(), !artefacto.esVacio(), !asesor.esVacio(), !version.esVacio(),
                 !versionRepositorio.esVacio(), estudiantes.size(), observacionesExisten);
 
         enviarRevisionAsesorValidator.validar(envio, revision, artefacto, asesor, version, versionRepositorio,
                 new ObservacionesDeRevision(revisionAsesor, observacionesExisten));
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         revisionAsesorOutputPort.actualizarEstado(revisionAsesor, EstadoRevisionAsesor.EN_PROGRESO.getId());
         avanzarObservacionesRevisionUseCase.ejecutar(envio.getObservaciones());

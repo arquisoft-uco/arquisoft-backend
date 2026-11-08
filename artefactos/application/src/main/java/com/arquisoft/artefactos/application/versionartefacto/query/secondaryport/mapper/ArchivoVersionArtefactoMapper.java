@@ -9,6 +9,7 @@ public final class ArchivoVersionArtefactoMapper {
 
     public static ArchivoVersionArtefactoDomain toDomain(ArchivoVersionArtefactoEntity entity) {
         return ArchivoVersionArtefactoDomain.reconstruir(
-                entity.asesor(), entity.uriArchivo(), entity.numeroVersion(), entity.nombreDocumento());
+                entity.asesor(), entity.uriArchivo(), entity.numeroVersion(), entity.nombreDocumento(),
+                entity.nombreProyecto(), entity.proyectoFinalizado());
     }
 }

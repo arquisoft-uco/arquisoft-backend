@@ -8,6 +8,8 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.m
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.EstudianteArtefactoOutputPort;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.RemoverEstudianteArtefactoUseCase;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.validator.RemoverEstudianteArtefactoValidator;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.estudianteartefacto.RemocionEstudianteArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.event.EstudianteArtefactoRemovidoEvent;
@@ -15,6 +17,7 @@ import com.arquisoft.artefactos.domain.estudianteartefacto.model.ContactoAsesor;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.ContactoEstudiante;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -31,6 +34,8 @@ public class RemoverEstudianteArtefactoUseCaseImpl implements RemoverEstudianteA
     private final RemoverEstudianteArtefactoValidator removerEstudianteArtefactoValidator;
     private final EstudianteArtefactoOutputPort estudianteArtefactoOutputPort;
     private final EventPublisher eventPublisher;
+    private final ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -45,12 +50,16 @@ public class RemoverEstudianteArtefactoUseCaseImpl implements RemoverEstudianteA
         var estudiante = estudiantePorIdFinder.obtener(entrada.getEstudiante());
         var vinculado = estudianteArtefactoExisteFinder.obtener(
                 new ParticipacionEstudianteArtefacto(entrada.getEstudiante(), entrada.getArtefacto()));
+        var proyecto = proyectoGradoPorArtefactoFinder.obtener(entrada.getArtefacto());
         logger.debug(EstudianteArtefactoKey.LOG_VERIFICACION_REMOVER,
                 !artefacto.esVacio(), !asesor.esVacio(), !versionRepositorio.esVacio(), !estudiante.esVacio(),
                 vinculado);
 
         removerEstudianteArtefactoValidator.validar(
                 entrada, artefacto, asesor, versionRepositorio, estudiante, vinculado);
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         estudianteArtefactoOutputPort.eliminarPorArtefactoYEstudiante(
                 entrada.getArtefacto(), entrada.getEstudiante());

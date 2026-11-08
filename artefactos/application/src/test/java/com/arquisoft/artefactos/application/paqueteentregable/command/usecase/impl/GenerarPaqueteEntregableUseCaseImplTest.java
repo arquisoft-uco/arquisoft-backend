@@ -97,7 +97,7 @@ class GenerarPaqueteEntregableUseCaseImplTest {
     void debeArmarRegistrarYPublicarEnOrden_cuandoTodoEsValido() {
         // Arrange
         var generacion = generacion();
-        var proyecto = ProyectoGradoDomain.reconstruir(generacion.getProyectoGrado(), "Proyecto");
+        var proyecto = ProyectoGradoDomain.reconstruir(generacion.getProyectoGrado(), "Proyecto", null, null);
         var incluido = new ArtefactoIncluidoPaquete(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                 "Doc", 1, 1, Instant.now(), "uri");
         var excluido = new ArtefactoExcluidoPaquete(
@@ -169,7 +169,7 @@ class GenerarPaqueteEntregableUseCaseImplTest {
     void debeArmarIgual_cuandoNoHayArtefactosIncluidos() {
         // Arrange
         var generacion = generacion();
-        var proyecto = ProyectoGradoDomain.reconstruir(generacion.getProyectoGrado(), "Proyecto");
+        var proyecto = ProyectoGradoDomain.reconstruir(generacion.getProyectoGrado(), "Proyecto", null, null);
         when(paqueteEntregableExisteFinder.obtener(generacion.getEntregableProyectoGrado())).thenReturn(false);
         when(proyectoGradoPorIdFinder.obtener(generacion.getProyectoGrado())).thenReturn(proyecto);
         when(artefactosParaPaqueteFinder.obtener(generacion.getProyectoGrado()))
