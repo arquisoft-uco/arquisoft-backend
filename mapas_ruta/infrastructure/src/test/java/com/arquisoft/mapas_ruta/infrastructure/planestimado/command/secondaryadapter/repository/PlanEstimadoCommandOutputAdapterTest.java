@@ -14,6 +14,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,6 +52,7 @@ class PlanEstimadoCommandOutputAdapterTest {
                 .id(UtilUUID.generarNuevoUUID())
                 .tareaId(tarea)
                 .tiempoEstimadoDias(dias)
+                .creadoEn(Instant.now())
                 .build());
     }
 
@@ -58,7 +60,7 @@ class PlanEstimadoCommandOutputAdapterTest {
     void debePersistirElPlan_cuandoSeRegistra() {
         // Arrange
         var entity = new PlanEstimadoEntity(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 5, "Revisar");
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 5, "Revisar", Instant.now());
 
         // Act
         adapter.registrar(entity);
@@ -74,10 +76,49 @@ class PlanEstimadoCommandOutputAdapterTest {
     }
 
     @Test
+    void debePersistirCreadoEn_cuandoSeRegistra() {
+        // Arrange
+        var creadoEn = Instant.parse("2026-11-01T10:00:00Z");
+        var entity = new PlanEstimadoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 5, "Revisar", creadoEn);
+
+        // Act
+        adapter.registrar(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(PlanEstimadoJpaEntity.class, entity.id()).getCreadoEn()).isEqualTo(creadoEn);
+    }
+
+    @Test
+    void debeObtenerPorTarea_cuandoExiste() {
+        // Arrange
+        var creadoEn = Instant.parse("2026-11-01T10:00:00Z");
+        var entity = new PlanEstimadoEntity(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 5, UtilTexto.VACIO, creadoEn);
+        adapter.registrar(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var obtenido = adapter.obtenerPorTarea(entity.tarea());
+
+        // Assert
+        assertThat(obtenido).contains(entity);
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaTareaNoTienePlan() {
+        // Act & Assert
+        assertThat(adapter.obtenerPorTarea(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
     void debeGuardarNull_cuandoLaDescripcionEsVacia() {
         // Arrange
         var entity = new PlanEstimadoEntity(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2, UtilTexto.VACIO);
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2, UtilTexto.VACIO, Instant.now());
 
         // Act
         adapter.registrar(entity);
@@ -108,6 +149,7 @@ class PlanEstimadoCommandOutputAdapterTest {
                 .id(id)
                 .tareaId(tarea)
                 .tiempoEstimadoDias(dias)
+                .creadoEn(Instant.now())
                 .descripcionEstimado(descripcion)
                 .build());
         return id;

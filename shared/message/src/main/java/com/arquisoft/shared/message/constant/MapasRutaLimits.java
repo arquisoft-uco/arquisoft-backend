@@ -18,4 +18,12 @@ public final class MapasRutaLimits {
         public static final int TIEMPO_ESTIMADO_DIAS_MIN = 1;
         public static final int DESCRIPCION_ESTIMADO_MAX = 200;
     }
+
+    public static final class PlanReal {
+
+        private PlanReal() {}
+
+        public static final int TIEMPO_REAL_DIAS_MIN = 1;
+        public static final int DESCRIPCION_REAL_MAX = 200;
+    }
 }

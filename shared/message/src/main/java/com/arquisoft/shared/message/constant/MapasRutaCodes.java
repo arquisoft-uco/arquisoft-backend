@@ -71,6 +71,10 @@ public final class MapasRutaCodes {
         private PlanReal() {}
 
         public static final String PLAN_REAL_TAREA_REQUERIDA = "PLAN_REAL_TAREA_REQUERIDA";
+        public static final String PLAN_REAL_TAREA_INVALIDA = "PLAN_REAL_TAREA_INVALIDA";
+        public static final String PLAN_REAL_CREADO_EN_REQUERIDO = "PLAN_REAL_CREADO_EN_REQUERIDO";
+        public static final String PLAN_REAL_FINALIZADA_EN_REQUERIDA = "PLAN_REAL_FINALIZADA_EN_REQUERIDA";
+        public static final String PLAN_REAL_DESCRIPCION_DEMASIADO_LARGA = "PLAN_REAL_DESCRIPCION_DEMASIADO_LARGA";
     }
 
     public static final class AsignacionAsesor {
