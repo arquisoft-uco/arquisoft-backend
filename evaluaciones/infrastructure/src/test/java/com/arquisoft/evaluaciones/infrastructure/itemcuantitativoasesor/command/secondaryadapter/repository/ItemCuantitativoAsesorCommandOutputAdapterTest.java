@@ -106,6 +106,42 @@ class ItemCuantitativoAsesorCommandOutputAdapterTest {
         assertThat(otroNombre).isFalse();
     }
 
+    @Test
+    void debeConsultarExistenciaPorId_cuandoElItemEstaSembrado() {
+        // Arrange
+        var sembrado = sembrar("Item existente", UtilUUID.generarNuevoUUID(), 10);
+        entityManager.flush();
+
+        // Act
+        var existe = adapter.existePorId(sembrado);
+        var noExiste = adapter.existePorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(existe).isTrue();
+        assertThat(noExiste).isFalse();
+    }
+
+    @Test
+    void debeActualizarSoloDescripcionYLoguear_cuandoActualizaDescripcion() {
+        // Arrange
+        var categoria = UtilUUID.generarNuevoUUID();
+        var id = sembrar("Avance", categoria, 70);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarDescripcion(id, "Descripción nueva");
+        entityManager.clear();
+
+        // Assert
+        var persistido = entityManager.find(ItemCuantitativoAsesorJpaEntity.class, id);
+        assertThat(persistido.getDescripcion()).isEqualTo("Descripción nueva");
+        assertThat(persistido.getNombre()).isEqualTo("Avance");
+        assertThat(persistido.getCategoria()).isEqualTo(categoria);
+        assertThat(persistido.getValor()).isEqualTo(70);
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
     private UUID sembrar(String nombre, UUID categoria, int valor) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(ItemCuantitativoAsesorJpaEntity.builder()
