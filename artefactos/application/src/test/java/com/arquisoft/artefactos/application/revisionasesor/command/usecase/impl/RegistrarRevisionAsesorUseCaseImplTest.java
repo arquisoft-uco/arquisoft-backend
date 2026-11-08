@@ -73,7 +73,7 @@ class RegistrarRevisionAsesorUseCaseImplTest {
         versionId = UtilUUID.generarNuevoUUID();
         var artefactoId = UtilUUID.generarNuevoUUID();
         registro = RegistroRevisionAsesorDomain.crear(RevisionAsesorDomain.crear(versionId), asesorId);
-        version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 3, Instant.now(), "versiones/uri");
+        version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 3, Instant.now(), "versiones/uri", 1024L);
         artefacto = ArtefactoDomain.reconstruir(artefactoId, UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), asesorId, null);
         when(versionArtefactoBloqueadaPorIdFinder.obtener(versionId)).thenReturn(version);

@@ -50,4 +50,26 @@ class ProyectoGradoDomainTest {
                         .satisfies(error -> assertThat(error.codigoError())
                                 .isEqualTo(ArtefactosCodes.ProyectoGrado.NOMBRE_DEMASIADO_LARGO)));
     }
+
+    @Test
+    void debeSerVacio_cuandoEsElCentinela() {
+        // Act & Assert
+        assertThat(ProyectoGradoDomain.VACIO.esVacio()).isTrue();
+        assertThat(UtilUUID.esPorDefecto(ProyectoGradoDomain.VACIO.getId())).isTrue();
+        assertThat(ProyectoGradoDomain.VACIO.getNombre()).isEmpty();
+    }
+
+    @Test
+    void debeReconstruirSinValidar_cuandoDatosInvalidos() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var proyecto = ProyectoGradoDomain.reconstruir(id, " ");
+
+        // Assert
+        assertThat(proyecto.getId()).isEqualTo(id);
+        assertThat(proyecto.getNombre()).isEqualTo(" ");
+        assertThat(proyecto.esVacio()).isFalse();
+    }
 }

@@ -34,7 +34,7 @@ class VersionArtefactoRulesImplTest {
         var regla = new VersionArtefactoExisteRuleImpl();
         var id = UtilUUID.generarNuevoUUID();
         var version = VersionArtefactoDomain.reconstruir(id, UtilUUID.generarNuevoUUID(), 1,
-                UtilFecha.generarInstanteActual(), "uri");
+                UtilFecha.generarInstanteActual(), "uri", 1024L);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(new ExistenciaVersionArtefacto(id, version))).doesNotThrowAnyException();

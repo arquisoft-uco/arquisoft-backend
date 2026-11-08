@@ -44,4 +44,31 @@ public interface VersionArtefactoCommandRepository extends JpaRepository<Version
             )
             """)
     boolean existeParticipacion(@Param("versionArtefacto") UUID versionArtefacto, @Param("estudiante") UUID estudiante);
+
+    @NativeQuery("""
+            SELECT COALESCE(SUM(v.tamano_bytes), 0)
+            FROM artefacto base
+            JOIN artefacto a ON a.proyecto_grado_id = base.proyecto_grado_id AND a.omitido_en IS NULL
+            JOIN version_artefacto v ON v.artefacto_id = a.id
+            WHERE base.id = :artefacto
+              AND v.version_artefacto >= COALESCE((
+                    SELECT MAX(c.version_artefacto)
+                    FROM version_artefacto c
+                    JOIN revision_asesor r ON r.version_artefacto_id = c.id
+                    WHERE c.artefacto_id = a.id AND r.estado_revision_asesor_id = :estadoCerrada), 0)
+            """)
+    long tamanoVigenteDelProyectoDeArtefacto(
+            @Param("artefacto") UUID artefacto, @Param("estadoCerrada") String estadoCerrada);
+
+    @NativeQuery("""
+            SELECT COALESCE(SUM(v.tamano_bytes), 0)
+            FROM version_artefacto v
+            WHERE v.artefacto_id = :artefacto
+              AND v.version_artefacto >= COALESCE((
+                    SELECT MAX(c.version_artefacto)
+                    FROM version_artefacto c
+                    JOIN revision_asesor r ON r.version_artefacto_id = c.id
+                    WHERE c.artefacto_id = v.artefacto_id AND r.estado_revision_asesor_id = :estadoCerrada), 0)
+            """)
+    long tamanoVigenteDelArtefacto(@Param("artefacto") UUID artefacto, @Param("estadoCerrada") String estadoCerrada);
 }

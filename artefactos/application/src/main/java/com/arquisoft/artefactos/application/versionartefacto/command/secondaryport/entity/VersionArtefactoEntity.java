@@ -3,5 +3,6 @@ package com.arquisoft.artefactos.application.versionartefacto.command.secondaryp
 import java.time.Instant;
 import java.util.UUID;
 
-public record VersionArtefactoEntity(UUID id, UUID artefacto, int numeroVersion, Instant fechaCreacion, String uriArchivo) {
+public record VersionArtefactoEntity(UUID id, UUID artefacto, int numeroVersion, Instant fechaCreacion, String uriArchivo,
+                                    long tamanoBytes) {
 }

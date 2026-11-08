@@ -55,4 +55,14 @@ public class VersionArtefactoCommandOutputAdapter implements VersionArtefactoOut
         versionArtefactoCommandRepository.deleteById(versionArtefacto);
         logger.debug(EliminarVersionArtefactoKey.LOG_ELIMINADO, versionArtefacto);
     }
+
+    @Override
+    public long tamanoVigenteDelProyectoDeArtefacto(UUID artefacto, String estadoCerrada) {
+        return versionArtefactoCommandRepository.tamanoVigenteDelProyectoDeArtefacto(artefacto, estadoCerrada);
+    }
+
+    @Override
+    public long tamanoVigenteDelArtefacto(UUID artefacto, String estadoCerrada) {
+        return versionArtefactoCommandRepository.tamanoVigenteDelArtefacto(artefacto, estadoCerrada);
+    }
 }

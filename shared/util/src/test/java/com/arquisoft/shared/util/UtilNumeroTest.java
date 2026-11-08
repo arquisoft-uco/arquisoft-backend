@@ -85,4 +85,15 @@ class UtilNumeroTest {
         assertThat(UtilNumero.formatearMegabytes(1_000_000L)).isEqualTo("0.95");
         assertThat(UtilNumero.formatearMegabytes(0L)).isEqualTo("0");
     }
+
+    @Test
+    void debeFormatearTamano_cuandoEsMenorQueUnGigabyte() {
+        assertThat(UtilNumero.formatearTamano(536_870_912L)).isEqualTo("512 MB");
+    }
+
+    @Test
+    void debeFormatearTamano_cuandoEsUnGigabyteOMas() {
+        assertThat(UtilNumero.formatearTamano(1_073_741_824L)).isEqualTo("1 GB");
+        assertThat(UtilNumero.formatearTamano(1_610_612_736L)).isEqualTo("1.5 GB");
+    }
 }

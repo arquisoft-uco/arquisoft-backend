@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -26,5 +27,15 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     @Override
     public boolean existePorId(UUID id) {
         return proyectoGradoCommandRepository.existsById(id);
+    }
+
+    @Override
+    public Optional<ProyectoGradoEntity> obtenerPorArtefacto(UUID artefacto) {
+        return proyectoGradoCommandRepository.obtenerPorArtefacto(artefacto).map(ProyectoGradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public Optional<ProyectoGradoEntity> obtenerBloqueadoPorArtefacto(UUID artefacto) {
+        return proyectoGradoCommandRepository.bloquearPorArtefacto(artefacto).map(ProyectoGradoJpaMapper::toEntity);
     }
 }

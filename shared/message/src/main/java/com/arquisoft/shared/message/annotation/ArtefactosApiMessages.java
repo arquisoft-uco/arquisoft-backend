@@ -209,8 +209,8 @@ public final class ArtefactosApiMessages {
         public static final String SOLICITAR_CARGA_RESP_200 = "Formulario de carga generado";
         public static final String SOLICITAR_CARGA_RESP_400 = "Datos de entrada inválidos";
         public static final String SOLICITAR_CARGA_RESP_422 =
-                "Artefacto inexistente, estudiante no vinculado, tipo o tamaño de archivo no permitido, o la última "
-                        + "versión no tiene una revisión en progreso (sin revisión, pendiente, resuelta o cerrada)";
+                "Artefacto inexistente, estudiante no vinculado, archivo no permitido, proyecto de grado sin espacio "
+                        + "o la última versión sin una revisión en progreso (sin revisión, pendiente, resuelta o cerrada)";
         public static final String SOLICITAR_CARGA_RESP_503 = "Almacenamiento de objetos no disponible";
         public static final String GENERAR_SUMMARY = "Confirmar la carga de una nueva versión del artefacto";
         public static final String GENERAR_DESCRIPTION =
@@ -220,8 +220,8 @@ public final class ArtefactosApiMessages {
         public static final String GENERAR_RESP_400 = "Datos de entrada inválidos";
         public static final String GENERAR_RESP_422 =
                 "Artefacto inexistente, estudiante no vinculado, asesor dado de baja, carga inexistente o ajena, "
-                        + "archivo inválido, o la última versión no tiene una revisión en progreso (sin revisión, "
-                        + "pendiente, resuelta o cerrada)";
+                        + "archivo inválido, el proyecto de grado no tiene almacenamiento suficiente, o la última versión "
+                        + "no tiene una revisión en progreso (sin revisión, pendiente, resuelta o cerrada)";
         public static final String GENERAR_RESP_503 = "Almacenamiento de objetos no disponible";
         public static final String PARAM_ARTEFACTO = "Identificador del artefacto";
         public static final String ELIMINAR_SUMMARY = "Eliminar una versión del artefacto";
@@ -480,7 +480,8 @@ public final class ArtefactosApiMessages {
                 "El proyecto, el asesor o la versión no existe, el asesor no está asignado al proyecto, "
                         + "el repositorio ya está asignado, la lista de estudiantes está vacía o repetida, o algún "
                         + "estudiante no existe, está dado de baja, no pertenece al proyecto de grado o ya está "
-                        + "vinculado al artefacto";
+                        + "vinculado al artefacto, o al reactivar un artefacto omitido el proyecto de grado no tiene "
+                        + "almacenamiento suficiente";
     }
 
     public static final class EstadoRevisionAsesor {

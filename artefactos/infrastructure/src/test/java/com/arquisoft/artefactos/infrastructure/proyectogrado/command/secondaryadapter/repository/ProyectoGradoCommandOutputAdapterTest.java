@@ -1,6 +1,7 @@
 package com.arquisoft.artefactos.infrastructure.proyectogrado.command.secondaryadapter.repository;
 
 import com.arquisoft.artefactos.application.proyectogrado.command.secondaryport.entity.ProyectoGradoEntity;
+import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
@@ -48,5 +49,58 @@ class ProyectoGradoCommandOutputAdapterTest {
         assertThat(adapter.existePorId(id)).isTrue();
         assertThat(adapter.existePorId(UtilUUID.generarNuevoUUID())).isFalse();
         verify(logger).debug(ProyectoGradoKey.LOG_GUARDADO, id);
+    }
+
+    @Test
+    void debeObtenerPorArtefactoYRetornarVacio_cuandoElArtefactoNoExiste() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var otroProyecto = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Sistema de gestion").build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(otroProyecto).nombre("Otro").build());
+        var artefacto = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ArtefactoJpaEntity.builder()
+                .id(artefacto)
+                .proyectoGrado(proyecto)
+                .versionRepositorioArtefacto(UtilUUID.generarNuevoUUID())
+                .asesor(UtilUUID.generarNuevoUUID())
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorArtefacto(artefacto);
+        var ausente = adapter.obtenerPorArtefacto(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(proyecto);
+            assertThat(entity.nombre()).isEqualTo("Sistema de gestion");
+        });
+        assertThat(ausente).isEmpty();
+    }
+
+    @Test
+    void debeObtenerBloqueadoPorArtefacto() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Sistema de gestion").build());
+        var artefacto = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ArtefactoJpaEntity.builder()
+                .id(artefacto)
+                .proyectoGrado(proyecto)
+                .versionRepositorioArtefacto(UtilUUID.generarNuevoUUID())
+                .asesor(UtilUUID.generarNuevoUUID())
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerBloqueadoPorArtefacto(artefacto);
+        var ausente = adapter.obtenerBloqueadoPorArtefacto(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrado).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(proyecto));
+        assertThat(ausente).isEmpty();
     }
 }
