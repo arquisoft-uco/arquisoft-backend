@@ -20,4 +20,8 @@ public interface VersionArtefactoOutputPort {
     boolean existeParticipacion(UUID versionArtefacto, UUID estudiante);
 
     void eliminar(UUID versionArtefacto);
+
+    long tamanoVigenteDelProyectoDeArtefacto(UUID artefacto, String estadoCerrada);
+
+    long tamanoVigenteDelArtefacto(UUID artefacto, String estadoCerrada);
 }

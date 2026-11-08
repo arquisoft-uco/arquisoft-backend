@@ -28,6 +28,9 @@ public class VersionArtefactoTestEntity {
     @Column(name = "uri_archivo")
     private String uriArchivo;
 
+    @Column(name = "tamano_bytes")
+    private long tamanoBytes = 1024L;
+
     protected VersionArtefactoTestEntity() {}
 
     public VersionArtefactoTestEntity(UUID id, UUID artefactoId, int version) {

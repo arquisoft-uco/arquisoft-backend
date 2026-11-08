@@ -1,5 +1,6 @@
 package com.arquisoft.artefactos.application.artefacto.command.usecase.impl;
 
+import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBloqueadoPorIdFinder;
 import com.arquisoft.artefactos.application.artefacto.command.secondaryport.ArtefactoOutputPort;
 import com.arquisoft.artefactos.application.artefacto.command.validator.ReactivarArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
@@ -8,12 +9,22 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.E
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.DepurarEstudiantesArtefactoUseCase;
 import com.arquisoft.artefactos.application.estudianteproyectogrado.command.finder.EstudiantesVigentesProyectoGradoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.CuotaProyectoGradoFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoVigenteArtefactoFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoVigenteProyectoGradoFinder;
+import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
+import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.ReactivacionArtefactoDomain;
+import com.arquisoft.artefactos.domain.artefacto.model.PesoArtefactoReactivable;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.DepuracionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.exception.EstudiantesSuperanProyectoException;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.CupoEstudiantesArtefacto;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.versionartefacto.model.AlmacenamientoProyectoGrado;
+import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -41,6 +52,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ReactivarArtefactoUseCaseImplTest {
 
+    private static final long PESO = 1024L;
+    private static final long CUOTA = 1_073_741_824L;
+    private static final long USO = 4096L;
+
+    @Mock
+    private ArtefactoBloqueadoPorIdFinder artefactoBloqueadoPorIdFinder;
     @Mock
     private AsesorPorIdFinder asesorPorIdFinder;
     @Mock
@@ -49,6 +66,16 @@ class ReactivarArtefactoUseCaseImplTest {
     private EstudiantesVigentesProyectoGradoFinder estudiantesVigentesProyectoGradoFinder;
     @Mock
     private EstudiantesVigentesVinculadosArtefactoFinder estudiantesVigentesVinculadosArtefactoFinder;
+    @Mock
+    private VersionRepositorioArtefactoPorIdFinder versionRepositorioArtefactoPorIdFinder;
+    @Mock
+    private TamanoVigenteArtefactoFinder tamanoVigenteArtefactoFinder;
+    @Mock
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
+    @Mock
+    private CuotaProyectoGradoFinder cuotaProyectoGradoFinder;
+    @Mock
+    private TamanoVigenteProyectoGradoFinder tamanoVigenteProyectoGradoFinder;
     @Mock
     private ReactivarArtefactoValidator reactivarArtefactoValidator;
     @Mock
@@ -73,13 +100,22 @@ class ReactivarArtefactoUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new ReactivarArtefactoUseCaseImpl(
+        useCase = new ReactivarArtefactoUseCaseImpl(artefactoBloqueadoPorIdFinder,
                 asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder, estudiantesVigentesProyectoGradoFinder,
-                estudiantesVigentesVinculadosArtefactoFinder, reactivarArtefactoValidator, artefactoOutputPort,
+                estudiantesVigentesVinculadosArtefactoFinder, versionRepositorioArtefactoPorIdFinder,
+                tamanoVigenteArtefactoFinder, proyectoGradoBloqueadoPorArtefactoFinder, cuotaProyectoGradoFinder,
+                tamanoVigenteProyectoGradoFinder, reactivarArtefactoValidator, artefactoOutputPort,
                 depurarEstudiantesArtefactoUseCase, asignarEstudiantesArtefactoUseCase, logger);
         artefacto = UtilUUID.generarNuevoUUID();
         proyecto = UtilUUID.generarNuevoUUID();
         asesor = UtilUUID.generarNuevoUUID();
+        when(artefactoBloqueadoPorIdFinder.obtener(artefacto)).thenReturn(ArtefactoDomain.VACIO);
+        when(versionRepositorioArtefactoPorIdFinder.obtener(ArtefactoDomain.VACIO.getVersionRepositorioArtefacto()))
+                .thenReturn(VersionRepositorioArtefactoDomain.VACIO);
+        when(tamanoVigenteArtefactoFinder.obtener(artefacto)).thenReturn(PESO);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(artefacto)).thenReturn(ProyectoGradoDomain.VACIO);
+        when(cuotaProyectoGradoFinder.obtener()).thenReturn(CUOTA);
+        when(tamanoVigenteProyectoGradoFinder.obtener(artefacto)).thenReturn(USO);
         when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
         when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
     }
@@ -105,10 +141,12 @@ class ReactivarArtefactoUseCaseImplTest {
         orden.verify(vinculosMasRecientesProyectoGradoFinder, times(1)).obtener(proyecto);
         orden.verify(estudiantesVigentesProyectoGradoFinder, times(1)).obtener(proyecto);
         orden.verify(estudiantesVigentesVinculadosArtefactoFinder, times(1)).obtener(artefacto);
-        orden.verify(logger).debug(ArtefactoKey.LOG_VERIFICACION_REACTIVAR, false, 0, 2, 1);
+        orden.verify(logger).debug(ArtefactoKey.LOG_VERIFICACION_REACTIVAR, false, 0, 2, 1, false, USO, PESO);
         orden.verify(reactivarArtefactoValidator).validar(reactivacion, AsesorDomain.VACIO, List.of(),
                 new CupoEstudiantesArtefacto(List.of(conservado, nuevo), List.of(conservado),
-                        List.of(conservado, nuevo)));
+                        List.of(conservado, nuevo)),
+                new PesoArtefactoReactivable(ArtefactoDomain.VACIO, VersionRepositorioArtefactoDomain.VACIO, PESO),
+                new AlmacenamientoProyectoGrado(ProyectoGradoDomain.VACIO, CUOTA, USO));
         orden.verify(artefactoOutputPort).reactivar(artefacto, asesor);
         orden.verify(depurarEstudiantesArtefactoUseCase).ejecutar(depuracionCaptor.capture());
         orden.verify(asignarEstudiantesArtefactoUseCase).ejecutar(agregacionCaptor.capture());
@@ -149,7 +187,7 @@ class ReactivarArtefactoUseCaseImplTest {
         when(estudiantesVigentesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
         when(estudiantesVigentesVinculadosArtefactoFinder.obtener(artefacto)).thenReturn(List.of());
         doThrow(new EstudiantesSuperanProyectoException(0, 1)).when(reactivarArtefactoValidator)
-                .validar(any(), any(), any(), any());
+                .validar(any(), any(), any(), any(), any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(reactivacion))
@@ -157,5 +195,29 @@ class ReactivarArtefactoUseCaseImplTest {
         verify(artefactoOutputPort, never()).reactivar(any(), any());
         verify(depurarEstudiantesArtefactoUseCase, never()).ejecutar(any());
         verify(asignarEstudiantesArtefactoUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeBloquearArtefactoAntesQueProyecto_yConsultarPesoYUsoAntesDeValidar() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var reactivacion = ReactivacionArtefactoDomain.crear(artefacto, proyecto, asesor, List.of(estudiante));
+        when(estudiantesVigentesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of(estudiante));
+        when(estudiantesVigentesVinculadosArtefactoFinder.obtener(artefacto)).thenReturn(List.of(estudiante));
+
+        // Act
+        useCase.ejecutar(reactivacion);
+
+        // Assert
+        var orden = inOrder(artefactoBloqueadoPorIdFinder, versionRepositorioArtefactoPorIdFinder,
+                tamanoVigenteArtefactoFinder, proyectoGradoBloqueadoPorArtefactoFinder, cuotaProyectoGradoFinder,
+                tamanoVigenteProyectoGradoFinder, reactivarArtefactoValidator);
+        orden.verify(artefactoBloqueadoPorIdFinder, times(1)).obtener(artefacto);
+        orden.verify(versionRepositorioArtefactoPorIdFinder, times(1)).obtener(any());
+        orden.verify(tamanoVigenteArtefactoFinder, times(1)).obtener(artefacto);
+        orden.verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(artefacto);
+        orden.verify(cuotaProyectoGradoFinder, times(1)).obtener();
+        orden.verify(tamanoVigenteProyectoGradoFinder, times(1)).obtener(artefacto);
+        orden.verify(reactivarArtefactoValidator).validar(any(), any(), any(), any(), any(), any());
     }
 }

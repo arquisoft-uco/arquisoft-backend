@@ -30,6 +30,7 @@ class AlmacenamientoVersionMinioOutputAdapterTest {
 
     private static final String BUCKET = "artefactos";
     private static final long MAXIMO = 5_242_880L;
+    private static final long CUOTA = 1_073_741_824L;
 
     @Mock
     private AlmacenamientoObjetos almacenamientoObjetos;
@@ -43,6 +44,7 @@ class AlmacenamientoVersionMinioOutputAdapterTest {
         var propiedades = new ArtefactosAlmacenamientoProperties();
         propiedades.setBucket(BUCKET);
         propiedades.setTamanoMaximoBytes(MAXIMO);
+        propiedades.setCuotaProyectoGradoBytes(CUOTA);
         adaptador = new AlmacenamientoVersionMinioOutputAdapter(almacenamientoObjetos, propiedades, logger);
     }
 
@@ -164,5 +166,11 @@ class AlmacenamientoVersionMinioOutputAdapterTest {
         // Assert
         verify(almacenamientoObjetos).eliminar(BUCKET, "versiones/abc");
         verify(logger).debug(EliminarVersionArtefactoKey.LOG_ARCHIVO_ELIMINADO, "versiones/abc");
+    }
+
+    @Test
+    void debeRetornarCuotaConfigurada() {
+        // Act & Assert
+        assertThat(adaptador.cuotaProyectoGradoBytes()).isEqualTo(CUOTA);
     }
 }

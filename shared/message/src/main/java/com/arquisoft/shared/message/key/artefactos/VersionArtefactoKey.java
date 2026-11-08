@@ -12,6 +12,9 @@ public enum VersionArtefactoKey implements ClaveMensaje {
     ERROR_CARGA_MODIFICADA_DETALLE("artefactos.dominio.versionartefacto.error.carga-modificada-detalle", 1),
     ERROR_TAMANO_EXCEDIDO("artefactos.dominio.versionartefacto.error.tamano-excedido", 2),
     ERROR_TAMANO_EXCEDIDO_DETALLE("artefactos.dominio.versionartefacto.error.tamano-excedido-detalle", 2),
+    ERROR_CUOTA_PROYECTO_EXCEDIDA("artefactos.dominio.versionartefacto.error.cuota-proyecto-excedida", 4),
+    ERROR_CUOTA_PROYECTO_EXCEDIDA_DETALLE(
+            "artefactos.dominio.versionartefacto.error.cuota-proyecto-excedida-detalle", 4),
     ERROR_TIPO_NO_COINCIDE("artefactos.dominio.versionartefacto.error.tipo-no-coincide", 1),
     ERROR_TIPO_NO_COINCIDE_DETALLE("artefactos.dominio.versionartefacto.error.tipo-no-coincide-detalle", 2),
     ERROR_NOMBRE_ARCHIVO_INVALIDO("artefactos.dominio.versionartefacto.error.nombre-archivo-invalido", 1),
@@ -30,10 +33,11 @@ public enum VersionArtefactoKey implements ClaveMensaje {
     ERROR_ARCHIVO_NO_DISPONIBLE_DETALLE(
             "artefactos.infraestructura.versionartefacto.error.archivo-ausente-detalle", 2),
     LOG_SOLICITANDO_CARGA("artefactos.aplicacion.versionartefacto.log.solicitando-carga", 2),
-    LOG_VERIFICACION_SOLICITAR_CARGA("artefactos.aplicacion.versionartefacto.log.verificacion-solicitar-carga", 4),
+    LOG_VERIFICACION_SOLICITAR_CARGA("artefactos.aplicacion.versionartefacto.log.verificacion-solicitar-carga", 6),
     LOG_CARGA_SOLICITADA("artefactos.aplicacion.versionartefacto.log.carga-solicitada", 2),
     LOG_GENERANDO("artefactos.aplicacion.versionartefacto.log.generando", 3),
     LOG_VERIFICACION_GENERAR("artefactos.aplicacion.versionartefacto.log.verificacion-generar", 7),
+    LOG_VERIFICACION_CUOTA_GENERAR("artefactos.aplicacion.versionartefacto.log.verificacion-cuota-generar", 2),
     LOG_GENERADA("artefactos.aplicacion.versionartefacto.log.generada", 3),
     LOG_CONSULTANDO_ASESOR("artefactos.aplicacion.versionartefacto.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("artefactos.aplicacion.versionartefacto.log.consulta-asesor-completada", 1),

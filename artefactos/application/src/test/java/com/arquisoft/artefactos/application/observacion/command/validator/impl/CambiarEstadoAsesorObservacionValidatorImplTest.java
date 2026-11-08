@@ -55,7 +55,7 @@ class CambiarEstadoAsesorObservacionValidatorImplTest {
     private final AsesorDomain asesor = AsesorDomain.reconstruir(
             asesorId, "20161020123", "Ana", "ana@uco.edu.co", UtilFecha.generarInstanteActual(), null);
     private final VersionArtefactoDomain version = VersionArtefactoDomain.reconstruir(
-            versionId, artefacto.getId(), 1, UtilFecha.generarInstanteActual(), "uri");
+            versionId, artefacto.getId(), 1, UtilFecha.generarInstanteActual(), "uri", 1024L);
     private final VersionRepositorioArtefactoDomain versionRepositorio =
             VersionRepositorioArtefactoDomain.reconstruir(versionRepositorioId, "Anteproyecto", 1,
                     UtilUUID.generarNuevoUUID(), "Repo", new DatosArchivo("a.pdf", "application/pdf", 10L));
