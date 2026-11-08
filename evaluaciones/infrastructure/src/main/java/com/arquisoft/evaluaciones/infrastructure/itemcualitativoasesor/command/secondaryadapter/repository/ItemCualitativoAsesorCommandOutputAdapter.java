@@ -33,4 +33,15 @@ public class ItemCualitativoAsesorCommandOutputAdapter implements ItemCualitativ
     public boolean existePorNombreIgnorandoMayusculas(String nombre) {
         return repository.existsByNombreIgnoreCase(nombre);
     }
+
+    @Override
+    public boolean existePorId(UUID id) {
+        return repository.existsById(id);
+    }
+
+    @Override
+    public void actualizarDescripcion(UUID id, String descripcion) {
+        repository.actualizarDescripcion(id, descripcion);
+        logger.debug(ItemCualitativoAsesorKey.LOG_DESCRIPCION_ACTUALIZADA, id);
+    }
 }

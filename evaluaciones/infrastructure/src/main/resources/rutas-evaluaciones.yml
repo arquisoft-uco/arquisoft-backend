@@ -40,6 +40,7 @@ rutas:
       base: /evaluaciones/criterios-item-cualitativo-asesor
     items-cualitativos-asesor:
       base: /evaluaciones/items-cualitativos-asesor
+      por-id: /{itemId}
     items-cuantitativos-asesor:
       base: /evaluaciones/items-cuantitativos-asesor
       por-id: /{itemId}

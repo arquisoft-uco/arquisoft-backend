@@ -19,6 +19,7 @@ public final class EvaluacionesFields {
 
         public static final String NOMBRE = "nombre";
         public static final String DESCRIPCION = "descripcion";
+        public static final String ITEM = "item";
     }
 
     public static final class ItemCuantitativoAsesor {

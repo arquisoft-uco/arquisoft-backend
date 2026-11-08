@@ -107,6 +107,12 @@ public final class EvaluacionesApiMessages {
         public static final String REGISTRAR_RESP_201 = "Ítem cualitativo del asesor registrado";
         public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
         public static final String REGISTRAR_RESP_422 = "Ya existe un ítem cualitativo del asesor con ese nombre";
+        public static final String MODIFICAR_SUMMARY = "Modificar descripción del ítem cualitativo del asesor";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica la descripción de un ítem cualitativo existente del asesor";
+        public static final String MODIFICAR_RESP_204 = "Descripción actualizada";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 = "El ítem cualitativo del asesor no existe";
     }
 
     public static final class ItemCuantitativoAsesor {
