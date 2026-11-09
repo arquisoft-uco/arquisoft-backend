@@ -11,6 +11,12 @@ public final class ProyectoGradoJpaMapper {
         return ProyectoGradoJpaEntity.builder()
                 .id(entity.id())
                 .nombre(entity.nombre())
+                .estadoProyectoId(entity.estadoProyecto())
                 .build();
+    }
+
+    public static ProyectoGradoEntity toEntity(ProyectoGradoJpaEntity jpaEntity) {
+        return new ProyectoGradoEntity(
+                jpaEntity.getId(), jpaEntity.getNombre(), jpaEntity.getEstadoProyectoId());
     }
 }

@@ -32,7 +32,7 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
         var entregable = UtilUUID.generarNuevoUUID();
-        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Proyecto").build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Proyecto").estadoProyectoId("EN_PROCESO").build());
         entityManager.persist(AsesorJpaEntity.builder()
                 .id(asesor).identificador("ID-A").nombre("Asesor").email("a@uco.edu.co")
                 .ocurridoEn(Instant.parse("2026-01-01T00:00:00Z")).build());
@@ -59,7 +59,7 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
     private UUID sembrarEntregable(UUID proyecto) {
         var asesor = UtilUUID.generarNuevoUUID();
         var entregable = UtilUUID.generarNuevoUUID();
-        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Proyecto").build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Proyecto").estadoProyectoId("EN_PROCESO").build());
         entityManager.persist(AsesorJpaEntity.builder()
                 .id(asesor).identificador("ID-B").nombre("Asesor").email("b@uco.edu.co")
                 .ocurridoEn(Instant.parse("2026-01-01T00:00:00Z")).build());
@@ -108,7 +108,7 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
         var otroProyecto = UtilUUID.generarNuevoUUID();
         var estudiante = UtilUUID.generarNuevoUUID();
         var entregable = sembrarEntregable(proyecto);
-        entityManager.persist(ProyectoGradoJpaEntity.builder().id(otroProyecto).nombre("Otro").build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(otroProyecto).nombre("Otro").estadoProyectoId("EN_PROCESO").build());
         sembrarEstudiante(estudiante, otroProyecto, null);
         entityManager.flush();
         entityManager.clear();

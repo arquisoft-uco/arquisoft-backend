@@ -64,6 +64,29 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeIgnorarLosCanceladosYOtrosProyectos_cuandoConsultaSiHayEntregableVigente() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var conVigente = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(
+                UtilUUID.generarNuevoUUID(), proyecto, 1, asesor, "CANCELADO"));
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(
+                UtilUUID.generarNuevoUUID(), conVigente, 1, asesor, "CERRADO"));
+        entityManager.flush();
+
+        // Act
+        var soloCancelados = adapter.existeVigentePorProyectoGrado(proyecto, "CANCELADO");
+        var conCerrado = adapter.existeVigentePorProyectoGrado(conVigente, "CANCELADO");
+        var sinEntregables = adapter.existeVigentePorProyectoGrado(UtilUUID.generarNuevoUUID(), "CANCELADO");
+
+        // Assert
+        assertThat(soloCancelados).isFalse();
+        assertThat(conCerrado).isTrue();
+        assertThat(sinEntregables).isFalse();
+    }
+
+    @Test
     void debeRetornarCero_cuandoElProyectoNoTieneEntregables() {
         // Arrange
         sembrar(UtilUUID.generarNuevoUUID(), 4);

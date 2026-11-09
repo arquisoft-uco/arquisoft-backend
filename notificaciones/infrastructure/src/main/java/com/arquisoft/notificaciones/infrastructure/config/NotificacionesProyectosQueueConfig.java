@@ -67,4 +67,18 @@ public class NotificacionesProyectosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String PROYECTO_GRADO_FINALIZADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_FINALIZADO;
+
+    @Bean
+    public Declarables notificacionesProyectoGradoFinalizadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                PROYECTO_GRADO_FINALIZADO_QUEUE,
+                EventTopics.Proyectos.PROYECTO_GRADO_FINALIZADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

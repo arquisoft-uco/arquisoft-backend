@@ -27,7 +27,20 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     ERROR_FINALIZADO("proyectos.dominio.proyectogrado.error.finalizado", 1),
     ERROR_FINALIZADO_DETALLE("proyectos.dominio.proyectogrado.error.finalizado-detalle", 1),
     ERROR_NO_PERTENECE_COORDINADOR("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador", 0),
-    ERROR_NO_PERTENECE_COORDINADOR_DETALLE("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador-detalle", 2);
+    ERROR_NO_PERTENECE_COORDINADOR_DETALLE("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador-detalle", 2),
+    LOG_CAMBIANDO_ESTADO("proyectos.aplicacion.proyectogrado.log.cambiando-estado", 3),
+    LOG_VERIFICACION_CAMBIO_ESTADO("proyectos.aplicacion.proyectogrado.log.verificacion-cambio-estado", 5),
+    LOG_ESTADO_CAMBIADO("proyectos.aplicacion.proyectogrado.log.estado-cambiado", 3),
+    ERROR_TRANSICION_ESTADO_NO_PERMITIDA(
+            "proyectos.dominio.proyectogrado.error.transicion-estado-no-permitida", 3),
+    ERROR_TRANSICION_ESTADO_NO_PERMITIDA_DETALLE(
+            "proyectos.dominio.proyectogrado.error.transicion-estado-no-permitida-detalle", 3),
+    ERROR_SIN_ENTREGABLE("proyectos.dominio.proyectogrado.error.sin-entregable", 1),
+    ERROR_SIN_ENTREGABLE_DETALLE("proyectos.dominio.proyectogrado.error.sin-entregable-detalle", 1),
+    ERROR_ULTIMO_ENTREGABLE_NO_TERMINAL(
+            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-terminal", 3),
+    ERROR_ULTIMO_ENTREGABLE_NO_TERMINAL_DETALLE(
+            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-terminal-detalle", 3);
 
     private final String clave;
     private final int parametros;

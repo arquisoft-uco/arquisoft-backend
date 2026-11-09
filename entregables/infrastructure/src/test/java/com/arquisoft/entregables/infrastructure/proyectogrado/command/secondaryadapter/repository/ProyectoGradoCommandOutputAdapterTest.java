@@ -1,6 +1,7 @@
 package com.arquisoft.entregables.infrastructure.proyectogrado.command.secondaryadapter.repository;
 
 import com.arquisoft.entregables.application.proyectogrado.command.secondaryport.entity.ProyectoGradoEntity;
+import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ProyectoGradoKey;
@@ -39,7 +40,7 @@ class ProyectoGradoCommandOutputAdapterTest {
         var id = UtilUUID.generarNuevoUUID();
 
         // Act
-        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion"));
+        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion", "EN_PROCESO"));
         entityManager.flush();
         entityManager.clear();
 
@@ -48,5 +49,64 @@ class ProyectoGradoCommandOutputAdapterTest {
         assertThat(adapter.existePorId(id)).isTrue();
         assertThat(adapter.existePorId(UtilUUID.generarNuevoUUID())).isFalse();
         verify(logger).debug(ProyectoGradoKey.LOG_GUARDADO, id);
+    }
+
+    @Test
+    void debeCambiarSoloElEstado_cuandoSeActualizaElProyecto() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion", "EN_PROCESO"));
+        adapter.guardar(new ProyectoGradoEntity(otro, "Otro proyecto", "EN_PROCESO"));
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(id, "FINALIZADO");
+        entityManager.clear();
+
+        // Assert
+        var actualizado = entityManager.find(ProyectoGradoJpaEntity.class, id);
+        assertThat(actualizado.getEstadoProyectoId()).isEqualTo("FINALIZADO");
+        assertThat(actualizado.getNombre()).isEqualTo("Sistema de gestion");
+        assertThat(entityManager.find(ProyectoGradoJpaEntity.class, otro).getEstadoProyectoId())
+                .isEqualTo("EN_PROCESO");
+        verify(logger).debug(ProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, id, "FINALIZADO");
+    }
+
+    @Test
+    void debeObtenerElProyectoConSuEstado_cuandoSeConsultaPorId() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion", "FINALIZADO"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).hasValue(new ProyectoGradoEntity(id, "Sistema de gestion", "FINALIZADO"));
+        assertThat(adapter.obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeObtenerElProyectoDelEntregable_cuandoElEntregableExiste() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var otroProyecto = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+        adapter.guardar(new ProyectoGradoEntity(proyectoGrado, "Sistema de gestion", "EN_PROCESO"));
+        adapter.guardar(new ProyectoGradoEntity(otroProyecto, "Otro proyecto", "EN_PROCESO"));
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(
+                entregable, proyectoGrado, 1, UtilUUID.generarNuevoUUID(), "APROBADO"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerPorEntregable(entregable);
+
+        // Assert
+        assertThat(resultado).map(ProyectoGradoEntity::id).contains(proyectoGrado);
+        assertThat(adapter.obtenerPorEntregable(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 }
