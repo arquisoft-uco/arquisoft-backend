@@ -18,4 +18,10 @@ public interface ArtefactoParaPaqueteProjection {
     Instant getFechaVersion();
 
     Integer getUltimaVersion();
+
+    UUID getVersionRepositorioArtefacto();
+
+    UUID getRepositorio();
+
+    String getNombreRepositorio();
 }

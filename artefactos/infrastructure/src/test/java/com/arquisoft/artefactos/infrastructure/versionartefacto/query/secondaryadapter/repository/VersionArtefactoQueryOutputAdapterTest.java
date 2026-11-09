@@ -76,7 +76,7 @@ class VersionArtefactoQueryOutputAdapterTest {
 
     private UUID sembrarProyecto(String nombre) {
         var id = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(id, nombre));
+        entityManager.persist(new ProyectoGradoJpaEntity(id, nombre, null, null));
         return id;
     }
 

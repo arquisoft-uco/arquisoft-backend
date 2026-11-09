@@ -61,7 +61,7 @@ public final class ProyectosCodes {
         public static final String ESTADO_PROYECTO_INVALIDO = "PROYECTO_GRADO_ESTADO_PROYECTO_INVALIDO";
         public static final String TRANSICION_ESTADO_NO_PERMITIDA = "PROYECTO_GRADO_TRANSICION_ESTADO_NO_PERMITIDA";
         public static final String SIN_ENTREGABLE = "PROYECTO_GRADO_SIN_ENTREGABLE";
-        public static final String ULTIMO_ENTREGABLE_NO_TERMINAL = "PROYECTO_GRADO_ULTIMO_ENTREGABLE_NO_TERMINAL";
+        public static final String ULTIMO_ENTREGABLE_NO_DEFINITIVO = "PROYECTO_GRADO_ULTIMO_ENTREGABLE_NO_DEFINITIVO";
     }
 
     public static final class EstudianteProyectoGrado {

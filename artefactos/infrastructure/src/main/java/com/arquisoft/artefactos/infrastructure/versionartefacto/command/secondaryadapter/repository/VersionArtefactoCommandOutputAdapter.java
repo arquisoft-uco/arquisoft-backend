@@ -9,6 +9,7 @@ import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,5 +65,10 @@ public class VersionArtefactoCommandOutputAdapter implements VersionArtefactoOut
     @Override
     public long tamanoVigenteDelArtefacto(UUID artefacto, String estadoCerrada) {
         return versionArtefactoCommandRepository.tamanoVigenteDelArtefacto(artefacto, estadoCerrada);
+    }
+
+    @Override
+    public List<String> obtenerUrisArchivoPorProyectoGrado(UUID proyectoGrado) {
+        return versionArtefactoCommandRepository.obtenerUrisArchivoPorProyectoGrado(proyectoGrado);
     }
 }

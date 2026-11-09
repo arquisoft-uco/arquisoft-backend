@@ -15,7 +15,9 @@ public enum PaqueteEntregableKey implements ClaveMensaje {
     ERROR_ACCESO_DENEGADO("entregables.dominio.paqueteentregable.error.acceso-denegado", 0),
     ERROR_ACCESO_DENEGADO_DETALLE("entregables.dominio.paqueteentregable.error.acceso-denegado-detalle", 2),
     ERROR_EN_PREPARACION("entregables.dominio.paqueteentregable.error.en-preparacion", 0),
-    ERROR_EN_PREPARACION_DETALLE("entregables.dominio.paqueteentregable.error.en-preparacion-detalle", 1);
+    ERROR_EN_PREPARACION_DETALLE("entregables.dominio.paqueteentregable.error.en-preparacion-detalle", 1),
+    ERROR_CANCELADO("entregables.dominio.paqueteentregable.error.cancelado", 1),
+    ERROR_CANCELADO_DETALLE("entregables.dominio.paqueteentregable.error.cancelado-detalle", 1);
 
     private final String clave;
     private final int parametros;

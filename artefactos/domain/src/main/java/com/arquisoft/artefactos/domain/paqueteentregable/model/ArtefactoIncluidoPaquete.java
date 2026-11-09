@@ -10,5 +10,8 @@ public record ArtefactoIncluidoPaquete(
         int numeroVersion,
         int ultimaVersion,
         Instant fechaVersion,
-        String uriArchivo
+        String uriArchivo,
+        UUID versionRepositorioArtefacto,
+        UUID repositorio,
+        String nombreRepositorio
 ) {}

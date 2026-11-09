@@ -10,6 +10,9 @@ public record ArtefactoParaPaqueteEntity(
         int numeroVersionCerrada,
         String uriArchivo,
         Instant fechaVersion,
-        int ultimaVersion
+        int ultimaVersion,
+        UUID versionRepositorioArtefacto,
+        UUID repositorio,
+        String nombreRepositorio
 ) {
 }

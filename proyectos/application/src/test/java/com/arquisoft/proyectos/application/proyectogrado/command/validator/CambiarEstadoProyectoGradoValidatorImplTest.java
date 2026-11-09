@@ -12,7 +12,7 @@ import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoSinEntregableException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.TransicionEstadoProyectoNoPermitidaException;
-import com.arquisoft.proyectos.domain.proyectogrado.exception.UltimoEntregableNoTerminalException;
+import com.arquisoft.proyectos.domain.proyectogrado.exception.UltimoEntregableNoDefinitivoException;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -45,9 +45,22 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
         // Act & Assert
         assertThatCode(() -> validator.validar(cambio, proyecto, enProceso, true, entregable(EstadoEntregable.CERRADO)))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debePasar_cuandoElUltimoEstaRechazado() {
+        // Act & Assert
         assertThatCode(() -> validator.validar(
-                cambio, proyecto, enProceso, true, entregable(EstadoEntregable.CANCELADO)))
+                cambio, proyecto, enProceso, true, entregable(EstadoEntregable.RECHAZADO)))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarUltimoNoDefinitivo_cuandoElUltimoEstaCancelado() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cambio, proyecto, enProceso, true, entregable(EstadoEntregable.CANCELADO)))
+                .isInstanceOf(UltimoEntregableNoDefinitivoException.class);
     }
 
     @Test
@@ -91,11 +104,11 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     }
 
     @Test
-    void debeLanzarUltimoNoTerminal_cuandoElUltimoEstaDisponibleEvaluacion() {
+    void debeLanzarUltimoNoDefinitivo_cuandoElUltimoEstaDisponibleEvaluacion() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, true,
                 entregable(EstadoEntregable.DISPONIBLE_EVALUACION)))
-                .isInstanceOf(UltimoEntregableNoTerminalException.class);
+                .isInstanceOf(UltimoEntregableNoDefinitivoException.class);
     }
 
     @Test

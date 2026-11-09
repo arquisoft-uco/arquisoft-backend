@@ -5,6 +5,7 @@ import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryp
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoIncluidoEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ContenidoPaqueteEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.model.ArchivoPaqueteArmado;
+import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
 import com.arquisoft.artefactos.infrastructure.config.ArtefactosAlmacenamientoProperties;
 import com.arquisoft.artefactos.infrastructure.versionartefacto.exception.ArchivoVersionNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -66,10 +67,19 @@ public class ArmadoPaqueteMinioOutputAdapter implements AlmacenamientoPaqueteOut
             var tamano = tamanoDe(temporal);
             subir(bucket, clave, temporal, tamano);
             logger.debug(PaqueteEntregableKey.LOG_ARCHIVO_SUBIDO, bucket, clave, tamano);
-            return new ArchivoPaqueteArmado(bucket, clave, nombreArchivo(contenido), tamano);
+            return new ArchivoPaqueteArmado(
+                    bucket, clave, nombreArchivo(contenido), tamano,
+                    entradas.stream().map(ArmadoPaqueteMinioOutputAdapter::toEntradaArmada).toList());
         } finally {
             borrar(temporal);
         }
+    }
+
+    @Override
+    public void eliminar(String claveObjeto) {
+        var bucket = propiedades.getBucket();
+        almacenamientoObjetos.eliminar(bucket, claveObjeto);
+        logger.debug(PaqueteEntregableKey.LOG_PAQUETE_ELIMINADO, bucket, claveObjeto);
     }
 
     private List<EntradaPaquete> prepararEntradas(String bucket, ContenidoPaqueteEntity contenido) {
@@ -180,6 +190,10 @@ public class ArmadoPaqueteMinioOutputAdapter implements AlmacenamientoPaqueteOut
 
     private static String ultimoSegmento(String ruta) {
         return ruta.substring(ruta.lastIndexOf(SEPARADOR_RUTA) + 1);
+    }
+
+    private static EntradaPaqueteArmada toEntradaArmada(EntradaPaquete entrada) {
+        return new EntradaPaqueteArmada(entrada.incluido().artefacto(), entrada.ruta());
     }
 
     private static IncluidoManifiesto toIncluidoManifiesto(EntradaPaquete entrada) {

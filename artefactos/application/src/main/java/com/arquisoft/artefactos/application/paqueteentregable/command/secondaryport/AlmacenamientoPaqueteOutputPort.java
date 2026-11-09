@@ -6,4 +6,6 @@ import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryp
 public interface AlmacenamientoPaqueteOutputPort {
 
     ArchivoPaqueteArmado armar(ContenidoPaqueteEntity contenido);
+
+    void eliminar(String claveObjeto);
 }

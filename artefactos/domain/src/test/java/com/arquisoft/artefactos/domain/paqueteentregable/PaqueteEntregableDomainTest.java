@@ -1,14 +1,11 @@
 package com.arquisoft.artefactos.domain.paqueteentregable;
 
-import com.arquisoft.artefactos.domain.paqueteentregable.model.ArtefactoIncluidoPaquete;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,11 +20,9 @@ class PaqueteEntregableDomainTest {
     void debeCrearConIdYFechaDeLaGeneracion_cuandoDatosValidos() {
         // Arrange
         var generacion = generacion();
-        var incluido = new ArtefactoIncluidoPaquete(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                "Doc", 2, 3, Instant.now(), "uri");
 
         // Act
-        var paquete = PaqueteEntregableDomain.crear(generacion, List.of(incluido), " paquetes/x.zip ", 100L);
+        var paquete = PaqueteEntregableDomain.crear(generacion, " paquetes/x.zip ", 100L);
 
         // Assert
         assertThat(paquete.getId()).isNotNull();
@@ -35,7 +30,6 @@ class PaqueteEntregableDomainTest {
         assertThat(paquete.getProyectoGrado()).isEqualTo(generacion.getProyectoGrado());
         assertThat(paquete.getVersionEntregable()).isEqualTo(3);
         assertThat(paquete.getGeneradoEn()).isEqualTo(generacion.getGeneradoEn());
-        assertThat(paquete.getIncluidos()).containsExactly(incluido);
         assertThat(paquete.getClaveObjeto()).isEqualTo("paquetes/x.zip");
         assertThat(paquete.getTamanoBytes()).isEqualTo(100L);
     }
@@ -44,10 +38,9 @@ class PaqueteEntregableDomainTest {
     void debeAcumularErrores_cuandoClaveVaciaYTamanoCero() {
         // Arrange
         var generacion = generacion();
-        var incluidos = List.<ArtefactoIncluidoPaquete>of();
 
         // Act & Assert
-        assertThatThrownBy(() -> PaqueteEntregableDomain.crear(generacion, incluidos, " ", 0L))
+        assertThatThrownBy(() -> PaqueteEntregableDomain.crear(generacion, " ", 0L))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> {
                     var errores = ((DomainValidationException) ex).getValidationResult().getErrores();
@@ -65,18 +58,9 @@ class PaqueteEntregableDomainTest {
     }
 
     @Test
-    void debeAceptarIncluidosVacios() {
-        // Act
-        var paquete = PaqueteEntregableDomain.crear(generacion(), List.of(), "paquetes/x.zip", 5L);
-
-        // Assert
-        assertThat(paquete.getIncluidos()).isEmpty();
-    }
-
-    @Test
     void debeRechazarSinNullPointer_cuandoLaGeneracionEsNula() {
         // Act & Assert
-        assertThatThrownBy(() -> PaqueteEntregableDomain.crear(null, List.of(), "paquetes/x.zip", 5L))
+        assertThatThrownBy(() -> PaqueteEntregableDomain.crear(null, "paquetes/x.zip", 5L))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                         .anySatisfy(error -> {

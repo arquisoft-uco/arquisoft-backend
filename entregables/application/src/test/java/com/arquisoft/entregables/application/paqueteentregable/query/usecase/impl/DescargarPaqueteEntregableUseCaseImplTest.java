@@ -1,6 +1,6 @@
 package com.arquisoft.entregables.application.paqueteentregable.query.usecase.impl;
 
-import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.AsesorDeEntregableProyectoGradoQueryFinder;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.EntregableProyectoGradoAccesoQueryFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.EstudianteParticipaEntregableQueryFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.model.EstudianteEntregable;
 import com.arquisoft.entregables.application.paqueteentregable.query.criteria.DescargaPaqueteEntregableCriteria;
@@ -8,6 +8,8 @@ import com.arquisoft.entregables.application.paqueteentregable.query.finder.Paqu
 import com.arquisoft.entregables.application.paqueteentregable.query.readmodel.EnlaceDescargaPaqueteEntregableReadModel;
 import com.arquisoft.entregables.application.paqueteentregable.query.secondaryport.EnlaceDescargaPaqueteQueryOutputPort;
 import com.arquisoft.entregables.application.paqueteentregable.query.validator.DescargarPaqueteEntregableValidator;
+import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
+import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.entregables.domain.paqueteentregable.PaqueteEntregableDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.util.UtilUUID;
@@ -34,7 +36,7 @@ import static org.mockito.Mockito.when;
 class DescargarPaqueteEntregableUseCaseImplTest {
 
     @Mock
-    private AsesorDeEntregableProyectoGradoQueryFinder asesorDeEntregableProyectoGradoQueryFinder;
+    private EntregableProyectoGradoAccesoQueryFinder entregableProyectoGradoAccesoQueryFinder;
 
     @Mock
     private EstudianteParticipaEntregableQueryFinder estudianteParticipaEntregableQueryFinder;
@@ -59,12 +61,13 @@ class DescargarPaqueteEntregableUseCaseImplTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var actor = UtilUUID.generarNuevoUUID();
-        var asesor = UtilUUID.generarNuevoUUID();
+        var entregableDomain = EntregableProyectoGradoDomain.reconstruir(entregable, UtilUUID.generarNuevoUUID(), 1,
+                UtilUUID.generarNuevoUUID(), EstadoEntregable.DISPONIBLE_EVALUACION);
         var criteria = new DescargaPaqueteEntregableCriteria(entregable, actor, false, true);
         var paquete = PaqueteEntregableDomain.crear(UtilUUID.generarNuevoUUID(), entregable, "bucket",
                 "paquetes/x.zip", "p.zip", 10L, Instant.now());
         var enlace = new EnlaceDescargaPaqueteEntregableReadModel("https://url", Instant.now());
-        when(asesorDeEntregableProyectoGradoQueryFinder.obtener(entregable)).thenReturn(asesor);
+        when(entregableProyectoGradoAccesoQueryFinder.obtener(entregable)).thenReturn(entregableDomain);
         when(estudianteParticipaEntregableQueryFinder.obtener(new EstudianteEntregable(actor, entregable)))
                 .thenReturn(true);
         when(paqueteEntregableQueryFinder.obtener(entregable)).thenReturn(paquete);
@@ -74,14 +77,14 @@ class DescargarPaqueteEntregableUseCaseImplTest {
         var resultado = useCase.ejecutar(criteria);
 
         // Assert
-        var orden = inOrder(asesorDeEntregableProyectoGradoQueryFinder, estudianteParticipaEntregableQueryFinder,
+        var orden = inOrder(entregableProyectoGradoAccesoQueryFinder, estudianteParticipaEntregableQueryFinder,
                 paqueteEntregableQueryFinder, descargarPaqueteEntregableValidator,
                 enlaceDescargaPaqueteQueryOutputPort);
-        orden.verify(asesorDeEntregableProyectoGradoQueryFinder, times(1)).obtener(entregable);
+        orden.verify(entregableProyectoGradoAccesoQueryFinder, times(1)).obtener(entregable);
         orden.verify(estudianteParticipaEntregableQueryFinder, times(1))
                 .obtener(new EstudianteEntregable(actor, entregable));
         orden.verify(paqueteEntregableQueryFinder, times(1)).obtener(entregable);
-        orden.verify(descargarPaqueteEntregableValidator).validar(criteria, asesor, true, paquete);
+        orden.verify(descargarPaqueteEntregableValidator).validar(criteria, entregableDomain, true, paquete);
         orden.verify(enlaceDescargaPaqueteQueryOutputPort).generar("bucket", "paquetes/x.zip", "p.zip");
         assertThat(resultado).isSameAs(enlace);
     }
@@ -92,8 +95,8 @@ class DescargarPaqueteEntregableUseCaseImplTest {
         var entregable = UtilUUID.generarNuevoUUID();
         var actor = UtilUUID.generarNuevoUUID();
         var criteria = new DescargaPaqueteEntregableCriteria(entregable, actor, true, false);
-        when(asesorDeEntregableProyectoGradoQueryFinder.obtener(entregable))
-                .thenReturn(UtilUUID.obtenerUUIDPorDefecto());
+        when(entregableProyectoGradoAccesoQueryFinder.obtener(entregable))
+                .thenReturn(EntregableProyectoGradoDomain.VACIO);
         when(estudianteParticipaEntregableQueryFinder.obtener(any())).thenReturn(false);
         when(paqueteEntregableQueryFinder.obtener(entregable)).thenReturn(PaqueteEntregableDomain.VACIO);
         doThrow(new IllegalStateException("rechazado")).when(descargarPaqueteEntregableValidator)

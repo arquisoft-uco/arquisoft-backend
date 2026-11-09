@@ -5,11 +5,14 @@ import com.arquisoft.artefactos.application.artefacto.command.secondaryport.Arte
 import com.arquisoft.artefactos.application.artefacto.command.validator.CambiarAsesorArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.CambioAsesorArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontradoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
@@ -49,6 +52,10 @@ class CambiarAsesorArtefactoUseCaseImplTest {
     @Mock
     private ArtefactoOutputPort artefactoOutputPort;
     @Mock
+    private ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -62,6 +69,7 @@ class CambiarAsesorArtefactoUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
+        when(proyectoGradoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         artefactoId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         proyecto = UtilUUID.generarNuevoUUID();
@@ -87,12 +95,14 @@ class CambiarAsesorArtefactoUseCaseImplTest {
 
         // Assert
         var orden = inOrder(artefactoPorIdFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
-                cambiarAsesorArtefactoValidator, artefactoOutputPort, logger);
+                cambiarAsesorArtefactoValidator, artefactoOutputPort, logger, proyectoGradoNoCongeladoValidator);
         orden.verify(logger).info(any(ClaveMensaje.class), eq(artefactoId), eq(asesorId));
         orden.verify(artefactoPorIdFinder, times(1)).obtener(artefactoId);
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesorId);
         orden.verify(vinculosMasRecientesProyectoGradoFinder, times(1)).obtener(proyecto);
         orden.verify(cambiarAsesorArtefactoValidator).validar(cambio, artefacto, asesor, vinculos);
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoPorArtefactoFinder, times(1)).obtener(any());
         orden.verify(artefactoOutputPort).cambiarAsesor(artefactoId, asesorId);
         orden.verify(logger).info(eq(ArtefactoKey.LOG_ASESOR_CAMBIADO), eq(artefactoId), eq(asesorId));
     }

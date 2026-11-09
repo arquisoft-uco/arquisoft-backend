@@ -13,6 +13,7 @@ import com.arquisoft.artefactos.application.proyectogrado.command.finder.Proyect
 import com.arquisoft.artefactos.domain.paqueteentregable.GeneracionPaqueteEntregableDomain;
 import com.arquisoft.artefactos.domain.paqueteentregable.PaqueteEntregableDomain;
 import com.arquisoft.artefactos.domain.paqueteentregable.event.PaqueteEntregableGeneradoEvent;
+import com.arquisoft.artefactos.domain.paqueteentregable.model.ArchivoPaquete;
 import com.arquisoft.artefactos.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.PaqueteEntregableKey;
@@ -55,12 +56,15 @@ public class GenerarPaqueteEntregableUseCaseImpl implements GenerarPaqueteEntreg
                 PaqueteEntregableMapper.toContenido(generacion, proyecto, artefactos));
 
         var paquete = PaqueteEntregableDomain.crear(
-                generacion, artefactos.incluidos(), archivo.claveObjeto(), archivo.tamanoBytes());
+                generacion, archivo.claveObjeto(), archivo.tamanoBytes());
         paqueteEntregableOutputPort.registrar(PaqueteEntregableMapper.toEntity(paquete));
 
-        eventPublisher.publish(new PaqueteEntregableGeneradoEvent(
-                paquete.getId(), generacion.getEntregableProyectoGrado(), archivo.bucket(),
-                archivo.claveObjeto(), archivo.nombreArchivo(), archivo.tamanoBytes(), paquete.getGeneradoEn()));
+        eventPublisher.publish(PaqueteEntregableGeneradoEvent.de(
+                paquete.getId(), generacion.getEntregableProyectoGrado(),
+                new ArchivoPaquete(
+                        archivo.bucket(), archivo.claveObjeto(), archivo.nombreArchivo(), archivo.tamanoBytes()),
+                paquete.getGeneradoEn(),
+                PaqueteEntregableMapper.toArtefactosGenerados(artefactos.incluidos(), archivo.entradas())));
 
         return GeneracionPaqueteEntregableResultMapper.toResultGenerado(paquete);
     }

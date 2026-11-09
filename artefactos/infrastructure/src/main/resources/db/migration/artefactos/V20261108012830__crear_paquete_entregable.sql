@@ -1,7 +1,6 @@
 -- HU-147-AJ1 — Registro propio del paquete ZIP congelado de un entregable de proyecto de grado.
 -- No está en el MER. El paquete no cuenta para la cuota de HT-020 (que suma solo version_artefacto.tamano_bytes).
 -- entregable_proyecto_grado_id no lleva FK: el entregable es de otro contexto (entregables).
--- numero_version y no una FK a version_artefacto: la versión puede borrarse después sin que el registro cambie.
 CREATE TABLE paquete_entregable (
     id                           UUID          PRIMARY KEY,
     entregable_proyecto_grado_id UUID          NOT NULL,
@@ -17,12 +16,3 @@ CREATE TABLE paquete_entregable (
 );
 
 CREATE INDEX idx_pe_proyecto ON paquete_entregable (proyecto_grado_id, version_entregable);
-
-CREATE TABLE paquete_entregable_artefacto (
-    paquete_entregable_id UUID    NOT NULL,
-    artefacto_id          UUID    NOT NULL,
-    numero_version        INTEGER NOT NULL,
-    PRIMARY KEY (paquete_entregable_id, artefacto_id),
-    CONSTRAINT fk_pea_paquete FOREIGN KEY (paquete_entregable_id) REFERENCES paquete_entregable(id) ON DELETE CASCADE,
-    CONSTRAINT fk_pea_artefacto FOREIGN KEY (artefacto_id) REFERENCES artefacto(id)
-);

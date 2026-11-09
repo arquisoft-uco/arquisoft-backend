@@ -323,4 +323,35 @@ class VersionArtefactoCommandOutputAdapterTest {
         // Act & Assert
         assertThat(adapter().tamanoVigenteDelArtefacto(omitido, "CERRADA")).isEqualTo(120L);
     }
+
+    @Test
+    void debeListarUris_delProyectoIncluyendoOmitidosYSinOtrosProyectos() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var activo = artefactoDe(proyecto, false);
+        var omitido = artefactoDe(proyecto, true);
+        var ajeno = artefactoDe(UtilUUID.generarNuevoUUID(), false);
+        var v1 = versionDe(activo, 1, 10L);
+        var v2 = versionDe(activo, 2, 10L);
+        var v3 = versionDe(omitido, 1, 10L);
+        versionDe(ajeno, 1, 10L);
+        entityManager.flush();
+
+        // Act
+        var uris = adapter().obtenerUrisArchivoPorProyectoGrado(proyecto);
+
+        // Assert
+        assertThat(uris).containsExactlyInAnyOrder("versiones/" + v1, "versiones/" + v2, "versiones/" + v3);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElProyectoNoTieneVersiones() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        artefactoDe(proyecto, false);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter().obtenerUrisArchivoPorProyectoGrado(proyecto)).isEmpty();
+    }
 }

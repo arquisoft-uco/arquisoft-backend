@@ -33,7 +33,10 @@ public final class ArtefactoParaPaqueteMapper {
                 fila.numeroVersionCerrada(),
                 fila.ultimaVersion(),
                 fila.fechaVersion(),
-                fila.uriArchivo());
+                fila.uriArchivo(),
+                fila.versionRepositorioArtefacto(),
+                fila.repositorio(),
+                fila.nombreRepositorio());
     }
 
     private static ArtefactoExcluidoPaquete toExcluido(ArtefactoParaPaqueteEntity fila) {

@@ -17,6 +17,10 @@ public enum EntregableProyectoGradoKey implements ClaveMensaje {
     ERROR_CIERRE_NO_PERMITIDO("entregables.dominio.entregableproyectogrado.error.cierre-no-permitido", 1),
     ERROR_CIERRE_NO_PERMITIDO_DETALLE(
             "entregables.dominio.entregableproyectogrado.error.cierre-no-permitido-detalle", 2),
+    ERROR_CANCELACION_NO_PERMITIDA(
+            "entregables.dominio.entregableproyectogrado.error.cancelacion-no-permitida", 1),
+    ERROR_CANCELACION_NO_PERMITIDA_DETALLE(
+            "entregables.dominio.entregableproyectogrado.error.cancelacion-no-permitida-detalle", 2),
     ERROR_ESTADO_TERMINAL("entregables.dominio.entregableproyectogrado.error.estado-terminal", 1),
     ERROR_ESTADO_TERMINAL_DETALLE(
             "entregables.dominio.entregableproyectogrado.error.estado-terminal-detalle", 2),

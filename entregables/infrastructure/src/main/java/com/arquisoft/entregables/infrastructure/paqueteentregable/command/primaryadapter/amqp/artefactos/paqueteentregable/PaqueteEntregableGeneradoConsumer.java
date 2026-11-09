@@ -2,12 +2,15 @@ package com.arquisoft.entregables.infrastructure.paqueteentregable.command.prima
 
 import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.interactor.AgregarPaqueteEntregableInteractor;
 import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.model.AgregarPaqueteEntregableCommand;
+import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.model.DatosArchivoPaquete;
+import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.model.DatosArtefactoPaquete;
 import com.arquisoft.entregables.application.paqueteentregable.command.result.AgregacionPaqueteEntregableResult;
 import com.arquisoft.entregables.infrastructure.config.EntregablesArtefactosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import com.arquisoft.shared.util.UtilColeccion;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class PaqueteEntregableGeneradoConsumer extends AbstractEventConsumer {
@@ -41,8 +45,10 @@ public class PaqueteEntregableGeneradoConsumer extends AbstractEventConsumer {
                     payload.idEvento(), payload.entregableProyectoGrado(), payload.tamanoBytes());
 
             var resultado = agregarPaqueteEntregableInteractor.ejecutar(AgregarPaqueteEntregableCommand.crear(
-                    payload.paqueteEntregable(), payload.entregableProyectoGrado(), payload.bucket(),
-                    payload.claveObjeto(), payload.nombreArchivo(), payload.tamanoBytes(), payload.generadoEn()));
+                    payload.paqueteEntregable(), payload.entregableProyectoGrado(),
+                    new DatosArchivoPaquete(payload.bucket(), payload.claveObjeto(), payload.nombreArchivo(),
+                            payload.tamanoBytes()),
+                    payload.generadoEn(), toArtefactos(payload)));
 
             switch (resultado) {
                 case AgregacionPaqueteEntregableResult.Agregado agregado ->
@@ -51,5 +57,13 @@ public class PaqueteEntregableGeneradoConsumer extends AbstractEventConsumer {
                         logger.info(PaqueteEntregableKey.LOG_DUPLICADO, duplicado.entregableProyectoGrado());
             }
         });
+    }
+
+    private static List<DatosArtefactoPaquete> toArtefactos(PaqueteEntregableGeneradoPayload payload) {
+        return UtilColeccion.aplicarPorDefecto(payload.artefactos()).stream()
+                .map(item -> new DatosArtefactoPaquete(
+                        item.artefacto(), item.numeroVersion(), item.versionRepositorioArtefacto(), item.nombreDocumento(),
+                        item.repositorio(), item.nombreRepositorio(), item.rutaEnPaquete()))
+                .toList();
     }
 }

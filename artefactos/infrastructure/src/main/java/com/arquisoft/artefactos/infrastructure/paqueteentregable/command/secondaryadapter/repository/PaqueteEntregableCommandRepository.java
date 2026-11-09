@@ -4,6 +4,7 @@ import com.arquisoft.artefactos.infrastructure.paqueteentregable.command.seconda
 import com.arquisoft.artefactos.infrastructure.paqueteentregable.command.secondaryadapter.projection.ArtefactoParaPaqueteProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.NativeQuery;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -13,6 +14,11 @@ public interface PaqueteEntregableCommandRepository extends JpaRepository<Paquet
 
     boolean existsByEntregableProyectoGrado(UUID entregableProyectoGrado);
 
+    @Query("SELECT p.claveObjeto FROM PaqueteEntregableJpaEntity p "
+            + "WHERE p.proyectoGrado = :proyectoGrado AND p.versionEntregable < :versionEntregable")
+    List<String> obtenerClavesAnteriores(
+            @Param("proyectoGrado") UUID proyectoGrado, @Param("versionEntregable") int versionEntregable);
+
     @NativeQuery("""
             SELECT a.id AS artefacto,
                    vra.nombre_documento AS "nombreDocumento",
@@ -21,7 +27,10 @@ public interface PaqueteEntregableCommandRepository extends JpaRepository<Paquet
                    v.uri_archivo AS "uriArchivo",
                    v.fecha_creacion AS "fechaVersion",
                    COALESCE((SELECT MAX(u.version_artefacto) FROM version_artefacto u
-                             WHERE u.artefacto_id = a.id), 0) AS "ultimaVersion"
+                             WHERE u.artefacto_id = a.id), 0) AS "ultimaVersion",
+                   vra.id AS "versionRepositorioArtefacto",
+                   vra.id_repositorio AS "repositorio",
+                   vra.nombre_repositorio AS "nombreRepositorio"
             FROM artefacto a
             JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
             LEFT JOIN version_artefacto v ON v.artefacto_id = a.id

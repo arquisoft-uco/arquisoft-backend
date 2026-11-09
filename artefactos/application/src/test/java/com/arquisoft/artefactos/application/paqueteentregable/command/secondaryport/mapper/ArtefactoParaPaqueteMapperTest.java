@@ -18,7 +18,10 @@ class ArtefactoParaPaqueteMapperTest {
         var artefacto = UtilUUID.generarNuevoUUID();
         var version = UtilUUID.generarNuevoUUID();
         var fecha = Instant.now();
-        var fila = new ArtefactoParaPaqueteEntity(artefacto, "Doc", version, 2, "uri", fecha, 3);
+        var versionRepositorio = UtilUUID.generarNuevoUUID();
+        var repositorio = UtilUUID.generarNuevoUUID();
+        var fila = new ArtefactoParaPaqueteEntity(artefacto, "Doc", version, 2, "uri", fecha, 3,
+                versionRepositorio, repositorio, "Repo");
 
         // Act
         var resultado = ArtefactoParaPaqueteMapper.toDomain(List.of(fila));
@@ -33,6 +36,9 @@ class ArtefactoParaPaqueteMapperTest {
             assertThat(incluido.ultimaVersion()).isEqualTo(3);
             assertThat(incluido.fechaVersion()).isEqualTo(fecha);
             assertThat(incluido.uriArchivo()).isEqualTo("uri");
+            assertThat(incluido.versionRepositorioArtefacto()).isEqualTo(versionRepositorio);
+            assertThat(incluido.repositorio()).isEqualTo(repositorio);
+            assertThat(incluido.nombreRepositorio()).isEqualTo("Repo");
         });
     }
 
@@ -40,7 +46,8 @@ class ArtefactoParaPaqueteMapperTest {
     void debeClasificarSinVersiones_cuandoNoHayVersiones() {
         // Arrange
         var fila = new ArtefactoParaPaqueteEntity(UtilUUID.generarNuevoUUID(), "Doc",
-                UtilUUID.obtenerUUIDPorDefecto(), 0, "", Instant.now(), 0);
+                UtilUUID.obtenerUUIDPorDefecto(), 0, "", Instant.now(), 0,
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Repo");
 
         // Act
         var resultado = ArtefactoParaPaqueteMapper.toDomain(List.of(fila));
@@ -57,7 +64,8 @@ class ArtefactoParaPaqueteMapperTest {
     void debeClasificarSinRevisionCerrada_cuandoHayVersionesSinCerrar() {
         // Arrange
         var fila = new ArtefactoParaPaqueteEntity(UtilUUID.generarNuevoUUID(), "Doc",
-                UtilUUID.obtenerUUIDPorDefecto(), 0, "", Instant.now(), 4);
+                UtilUUID.obtenerUUIDPorDefecto(), 0, "", Instant.now(), 4,
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Repo");
 
         // Act
         var resultado = ArtefactoParaPaqueteMapper.toDomain(List.of(fila));

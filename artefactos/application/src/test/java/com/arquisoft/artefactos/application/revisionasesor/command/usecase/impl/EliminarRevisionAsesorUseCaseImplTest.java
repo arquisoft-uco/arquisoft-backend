@@ -9,11 +9,15 @@ import com.arquisoft.artefactos.domain.revisionasesor.EliminacionRevisionAsesorD
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorNoEliminableException;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.key.artefactos.EliminarRevisionAsesorKey;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,10 +46,19 @@ class EliminarRevisionAsesorUseCaseImplTest {
     @Mock
     private RevisionAsesorOutputPort revisionAsesorOutputPort;
     @Mock
+    private ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
     private EliminarRevisionAsesorUseCaseImpl useCase;
+
+    @BeforeEach
+    void setUp() {
+        when(proyectoGradoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+    }
 
     @Test
     void debeEliminar_cuandoElValidatorPasa() {
@@ -65,13 +78,15 @@ class EliminarRevisionAsesorUseCaseImplTest {
 
         // Assert
         var orden = inOrder(revisionAsesorFinder, artefactoPorRevisionAsesorFinder, validator,
-                revisionAsesorOutputPort, logger);
+                revisionAsesorOutputPort, logger, proyectoGradoNoCongeladoValidator);
         orden.verify(logger).info(EliminarRevisionAsesorKey.LOG_ELIMINANDO, revisionId, asesor);
         orden.verify(revisionAsesorFinder).obtener(revisionId);
         orden.verify(artefactoPorRevisionAsesorFinder).obtener(revisionId);
         orden.verify(logger).debug(EliminarRevisionAsesorKey.LOG_VERIFICACION_ELIMINAR, true, true,
                 EstadoRevisionAsesor.PENDIENTE.getId());
         orden.verify(validator).validar(eliminacion, revision, artefacto);
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoPorRevisionAsesorFinder, times(1)).obtener(any());
         orden.verify(revisionAsesorOutputPort).eliminar(revisionId);
         orden.verify(logger).info(EliminarRevisionAsesorKey.LOG_ELIMINADA, revisionId);
         verify(revisionAsesorFinder, times(1)).obtener(any());

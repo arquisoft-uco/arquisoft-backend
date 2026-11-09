@@ -37,6 +37,11 @@ public class PaqueteEntregableCommandOutputAdapter implements PaqueteEntregableO
     }
 
     @Override
+    public List<String> obtenerClavesAnteriores(UUID proyectoGrado, int versionEntregable) {
+        return paqueteEntregableCommandRepository.obtenerClavesAnteriores(proyectoGrado, versionEntregable);
+    }
+
+    @Override
     public List<ArtefactoParaPaqueteEntity> obtenerArtefactosParaPaquete(UUID proyectoGrado, String estadoCerrada) {
         return paqueteEntregableCommandRepository.obtenerArtefactosParaPaquete(proyectoGrado, estadoCerrada).stream()
                 .map(PaqueteEntregableCommandOutputAdapter::toEntity)
@@ -52,6 +57,9 @@ public class PaqueteEntregableCommandOutputAdapter implements PaqueteEntregableO
                 UtilNumero.obtenerPorDefecto(fila.getNumeroVersionCerrada()),
                 UtilObjeto.esNulo(fila.getUriArchivo()) ? UtilTexto.VACIO : fila.getUriArchivo(),
                 UtilObjeto.esNulo(fila.getFechaVersion()) ? UtilFecha.VACIO : fila.getFechaVersion(),
-                UtilNumero.obtenerPorDefecto(fila.getUltimaVersion()));
+                UtilNumero.obtenerPorDefecto(fila.getUltimaVersion()),
+                fila.getVersionRepositorioArtefacto(),
+                fila.getRepositorio(),
+                fila.getNombreRepositorio());
     }
 }

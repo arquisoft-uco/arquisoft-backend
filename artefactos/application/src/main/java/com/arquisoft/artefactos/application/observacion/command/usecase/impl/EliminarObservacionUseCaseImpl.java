@@ -5,11 +5,14 @@ import com.arquisoft.artefactos.application.observacion.command.finder.Observaci
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.ObservacionOutputPort;
 import com.arquisoft.artefactos.application.observacion.command.usecase.EliminarObservacionUseCase;
 import com.arquisoft.artefactos.application.observacion.command.validator.EliminarObservacionValidator;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorObservacionFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorPorObservacionFinder;
 import com.arquisoft.artefactos.domain.observacion.EliminacionObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.model.EstadoObservacion;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EliminarObservacionKey;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +25,8 @@ public class EliminarObservacionUseCaseImpl implements EliminarObservacionUseCas
     private final ArtefactoPorObservacionFinder artefactoPorObservacionFinder;
     private final EliminarObservacionValidator eliminarObservacionValidator;
     private final ObservacionOutputPort observacionOutputPort;
+    private final ProyectoGradoPorObservacionFinder proyectoGradoPorObservacionFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -34,11 +39,15 @@ public class EliminarObservacionUseCaseImpl implements EliminarObservacionUseCas
         var observacion = observacionPorIdFinder.obtener(observacionId);
         var artefacto = artefactoPorObservacionFinder.obtener(observacionId);
 
+        var proyecto = proyectoGradoPorObservacionFinder.obtener(observacionId);
         logger.debug(EliminarObservacionKey.LOG_VERIFICACION_ELIMINAR,
                 !observacion.esVacio(), !revision.esVacio(), !artefacto.esVacio(), revision.getEstado().getId(),
                 observacion.esContinuacion());
 
         eliminarObservacionValidator.validar(eliminacion, observacion, revision, artefacto);
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         observacionOutputPort.eliminar(observacionId);
 

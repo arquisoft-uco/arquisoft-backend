@@ -12,10 +12,14 @@ import com.arquisoft.artefactos.domain.observacion.exception.ObservacionNoEncont
 import com.arquisoft.artefactos.domain.observacion.model.EstadoObservacion;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorObservacionFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EliminarObservacionKey;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,10 +51,19 @@ class EliminarObservacionUseCaseImplTest {
     @Mock
     private ObservacionOutputPort observacionOutputPort;
     @Mock
+    private ProyectoGradoPorObservacionFinder proyectoGradoPorObservacionFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
     private EliminarObservacionUseCaseImpl useCase;
+
+    @BeforeEach
+    void setUp() {
+        when(proyectoGradoPorObservacionFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+    }
 
     @Test
     void debeEliminar_cuandoValidacionPasa() {
@@ -73,12 +86,14 @@ class EliminarObservacionUseCaseImplTest {
 
         // Assert
         var orden = inOrder(revisionAsesorPorObservacionFinder, observacionPorIdFinder, artefactoPorObservacionFinder,
-                validator, observacionOutputPort, logger);
+                validator, observacionOutputPort, logger, proyectoGradoNoCongeladoValidator);
         orden.verify(logger).info(EliminarObservacionKey.LOG_ELIMINANDO, observacion, asesor);
         orden.verify(revisionAsesorPorObservacionFinder).obtener(observacion);
         orden.verify(observacionPorIdFinder).obtener(observacion);
         orden.verify(artefactoPorObservacionFinder).obtener(observacion);
         orden.verify(validator).validar(eliminacion, observacionDomain, revision, artefacto);
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoPorObservacionFinder, times(1)).obtener(any());
         orden.verify(observacionOutputPort).eliminar(observacion);
         orden.verify(logger).info(EliminarObservacionKey.LOG_ELIMINADA, observacion);
         verify(revisionAsesorPorObservacionFinder, times(1)).obtener(any());

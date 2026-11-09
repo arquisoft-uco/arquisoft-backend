@@ -69,7 +69,16 @@ class PaqueteEntregableGeneradoConsumerTest {
                     "claveObjeto": "paquetes/x.zip",
                     "nombreArchivo": "p.zip",
                     "tamanoBytes": 2048,
-                    "generadoEn": "2026-11-08T09:59:00Z"
+                    "generadoEn": "2026-11-08T09:59:00Z",
+                    "artefactos": [{
+                        "artefacto": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                        "numeroVersion": 3,
+                        "versionRepositorioArtefacto": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+                        "nombreDocumento": "Informe",
+                        "repositorio": "cccccccc-cccc-cccc-cccc-cccccccccccc",
+                        "nombreRepositorio": "Repo",
+                        "rutaEnPaquete": "01-Informe/v3-informe.pdf"
+                    }]
                 }
                 """.formatted(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), entregable);
 
@@ -81,7 +90,7 @@ class PaqueteEntregableGeneradoConsumerTest {
     }
 
     @Test
-    void debeInvocarInteractorYConfirmar_cuandoEventoValido() throws Exception {
+    void debePasarLosArtefactosAlCommandYConfirmar_cuandoEventoValido() throws Exception {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
 
@@ -97,6 +106,15 @@ class PaqueteEntregableGeneradoConsumerTest {
         assertThat(captor.getValue().nombreArchivo()).isEqualTo("p.zip");
         assertThat(captor.getValue().tamanoBytes()).isEqualTo(2048L);
         assertThat(captor.getValue().generadoEn()).isEqualTo(Instant.parse("2026-11-08T09:59:00Z"));
+        assertThat(captor.getValue().artefactos()).singleElement().satisfies(item -> {
+            assertThat(item.artefacto()).hasToString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            assertThat(item.numeroVersion()).isEqualTo(3);
+            assertThat(item.versionRepositorioArtefacto()).hasToString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+            assertThat(item.repositorio()).hasToString("cccccccc-cccc-cccc-cccc-cccccccccccc");
+            assertThat(item.nombreDocumento()).isEqualTo("Informe");
+            assertThat(item.nombreRepositorio()).isEqualTo("Repo");
+            assertThat(item.rutaEnPaquete()).isEqualTo("01-Informe/v3-informe.pdf");
+        });
         verify(logger).info(eq(PaqueteEntregableKey.LOG_AGREGADO), any());
         verify(channel).basicAck(1L, false);
     }

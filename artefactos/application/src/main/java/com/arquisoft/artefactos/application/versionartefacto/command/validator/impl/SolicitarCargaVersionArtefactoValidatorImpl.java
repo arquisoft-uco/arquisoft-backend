@@ -11,9 +11,12 @@ import com.arquisoft.artefactos.domain.artefacto.rules.EstudiantePropietarioArte
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoExisteRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.ArtefactoNoOmitidoRuleImpl;
 import com.arquisoft.artefactos.domain.artefacto.rules.impl.EstudiantePropietarioArtefactoRuleImpl;
+import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyectoGrado;
 import com.arquisoft.artefactos.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.artefactos.domain.proyectogrado.rules.ProyectoGradoExisteRule;
+import com.arquisoft.artefactos.domain.proyectogrado.rules.ProyectoGradoNoCongeladoRule;
 import com.arquisoft.artefactos.domain.proyectogrado.rules.impl.ProyectoGradoExisteRuleImpl;
+import com.arquisoft.artefactos.domain.proyectogrado.rules.impl.ProyectoGradoNoCongeladoRuleImpl;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.RevisionVersionAnterior;
 import com.arquisoft.artefactos.domain.revisionasesor.rules.ArtefactoNoCerradoRule;
@@ -43,6 +46,7 @@ public class SolicitarCargaVersionArtefactoValidatorImpl implements SolicitarCar
     private final RevisionVersionAnteriorEnProgresoRule revisionVersionAnteriorEnProgresoRule;
     private final TamanoArchivoPermitidoRule tamanoArchivoPermitidoRule;
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
+    private final ProyectoGradoNoCongeladoRule proyectoGradoNoCongeladoRule;
     private final CuotaProyectoGradoNoExcedidaRule cuotaProyectoGradoNoExcedidaRule;
 
     public SolicitarCargaVersionArtefactoValidatorImpl() {
@@ -54,6 +58,7 @@ public class SolicitarCargaVersionArtefactoValidatorImpl implements SolicitarCar
         this.revisionVersionAnteriorEnProgresoRule = new RevisionVersionAnteriorEnProgresoRuleImpl();
         this.tamanoArchivoPermitidoRule = new TamanoArchivoPermitidoRuleImpl();
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
+        this.proyectoGradoNoCongeladoRule = new ProyectoGradoNoCongeladoRuleImpl();
         this.cuotaProyectoGradoNoExcedidaRule = new CuotaProyectoGradoNoExcedidaRuleImpl();
     }
 
@@ -73,6 +78,8 @@ public class SolicitarCargaVersionArtefactoValidatorImpl implements SolicitarCar
                 solicitud.getNombreArchivo(), solicitud.getTamanoBytes(), tamanoMaximoBytes));
         var proyecto = almacenamiento.proyectoGrado();
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(artefacto.getProyectoGrado(), !proyecto.esVacio()));
+        proyectoGradoNoCongeladoRule.validar(new EstadoProyectoGrado(
+                artefacto.getProyectoGrado(), proyecto.getNombre(), proyecto.estaCongelado(), proyecto.estaFinalizado()));
         cuotaProyectoGradoNoExcedidaRule.validar(new CuotaProyectoGrado(
                 artefacto.getProyectoGrado(), proyecto.getNombre(), solicitud.getNombreArchivo(),
                 almacenamiento.cuotaBytes(), almacenamiento.usoBytes(), solicitud.getTamanoBytes()));

@@ -1,6 +1,7 @@
 package com.arquisoft.entregables.application.paqueteentregable.command.primaryport.interactor.impl;
 
 import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.model.AgregarPaqueteEntregableCommand;
+import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.model.DatosArchivoPaquete;
 import com.arquisoft.entregables.application.paqueteentregable.command.result.AgregacionPaqueteEntregableResult;
 import com.arquisoft.entregables.application.paqueteentregable.command.usecase.AgregarPaqueteEntregableUseCase;
 import com.arquisoft.shared.util.UtilUUID;
@@ -31,7 +32,8 @@ class AgregarPaqueteEntregableInteractorImplTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var command = AgregarPaqueteEntregableCommand.crear(UtilUUID.generarNuevoUUID().toString(),
-                entregable.toString(), "bucket", "paquetes/x.zip", "p.zip", 10L, Instant.now());
+                entregable.toString(), new DatosArchivoPaquete("bucket", "paquetes/x.zip", "p.zip", 10L),
+                Instant.now(), null);
         var esperado = new AgregacionPaqueteEntregableResult.Agregado(entregable);
         when(agregarPaqueteEntregableUseCase.ejecutar(any())).thenReturn(esperado);
 

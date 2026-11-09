@@ -7,6 +7,7 @@ import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,6 +16,10 @@ class PaqueteEntregableGeneradoPayloadTest {
 
     private final tools.jackson.databind.json.JsonMapper mapper =
             new RabbitMQConfig().rabbitObjectMapper();
+
+    private record ArtefactoDePrueba(UUID artefacto, int numeroVersion, UUID versionRepositorioArtefacto,
+                                     String nombreDocumento, UUID repositorio, String nombreRepositorio,
+                                     String rutaEnPaquete) {}
 
     private static final class PaqueteEntregableGeneradoEventoDePrueba extends DomainEvent {
 
@@ -25,18 +30,20 @@ class PaqueteEntregableGeneradoPayloadTest {
         private final String nombreArchivo;
         private final long tamanoBytes;
         private final Instant generadoEn;
+        private final List<ArtefactoDePrueba> artefactos;
 
         private PaqueteEntregableGeneradoEventoDePrueba(UUID paqueteEntregable, UUID entregableProyectoGrado,
-                                                        String bucket, String claveObjeto, String nombreArchivo,
-                                                        long tamanoBytes, Instant generadoEn) {
+                                                        long tamanoBytes, Instant generadoEn,
+                                                        List<ArtefactoDePrueba> artefactos) {
             super(EventTopics.Artefactos.PAQUETE_ENTREGABLE_GENERADO, "PaqueteEntregableGeneradoEvent");
             this.paqueteEntregable = paqueteEntregable;
             this.entregableProyectoGrado = entregableProyectoGrado;
-            this.bucket = bucket;
-            this.claveObjeto = claveObjeto;
-            this.nombreArchivo = nombreArchivo;
+            this.bucket = "bucket";
+            this.claveObjeto = "paquetes/x.zip";
+            this.nombreArchivo = "p.zip";
             this.tamanoBytes = tamanoBytes;
             this.generadoEn = generadoEn;
+            this.artefactos = artefactos;
         }
 
         public UUID getPaqueteEntregable() {
@@ -63,16 +70,22 @@ class PaqueteEntregableGeneradoPayloadTest {
             return tamanoBytes;
         }
 
+        public List<ArtefactoDePrueba> getArtefactos() {
+            return artefactos;
+        }
+
         public Instant getGeneradoEn() {
             return generadoEn;
         }
     }
 
     @Test
-    void debeDeserializarEventoReal_conTodosLosCampos() {
+    void debeDeserializarEventoReal_conArtefactos() {
         // Arrange
+        var item = new ArtefactoDePrueba(UtilUUID.generarNuevoUUID(), 3, UtilUUID.generarNuevoUUID(), "Informe",
+                UtilUUID.generarNuevoUUID(), "Repo", "01-Informe/v3-informe.pdf");
         var evento = new PaqueteEntregableGeneradoEventoDePrueba(UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), "bucket", "paquetes/x.zip", "p.zip", 1234L, Instant.now());
+                UtilUUID.generarNuevoUUID(), 1234L, Instant.now(), List.of(item));
 
         // Act
         var payload = mapper.readValue(mapper.writeValueAsString(evento), PaqueteEntregableGeneradoPayload.class);
@@ -87,6 +100,15 @@ class PaqueteEntregableGeneradoPayloadTest {
         assertThat(payload.nombreArchivo()).isEqualTo("p.zip");
         assertThat(payload.tamanoBytes()).isEqualTo(1234L);
         assertThat(payload.generadoEn()).isEqualTo(evento.getGeneradoEn());
+        assertThat(payload.artefactos()).singleElement().satisfies(artefacto -> {
+            assertThat(artefacto.artefacto()).isEqualTo(item.artefacto().toString());
+            assertThat(artefacto.numeroVersion()).isEqualTo(3);
+            assertThat(artefacto.versionRepositorioArtefacto()).isEqualTo(item.versionRepositorioArtefacto().toString());
+            assertThat(artefacto.nombreDocumento()).isEqualTo("Informe");
+            assertThat(artefacto.repositorio()).isEqualTo(item.repositorio().toString());
+            assertThat(artefacto.nombreRepositorio()).isEqualTo("Repo");
+            assertThat(artefacto.rutaEnPaquete()).isEqualTo("01-Informe/v3-informe.pdf");
+        });
     }
 
     @Test
@@ -104,5 +126,6 @@ class PaqueteEntregableGeneradoPayloadTest {
         assertThat(payload.tamanoBytes()).isNull();
         assertThat(payload.ocurridoEn()).isNull();
         assertThat(payload.nombreArchivo()).isNull();
+        assertThat(payload.artefactos()).isNull();
     }
 }

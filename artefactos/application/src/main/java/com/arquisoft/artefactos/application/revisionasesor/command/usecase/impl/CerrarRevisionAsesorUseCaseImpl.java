@@ -5,6 +5,8 @@ import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFin
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesVersionAnteriorSinCerrarExistenFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.command.usecase.CerrarRevisionAsesorUseCase;
@@ -19,6 +21,7 @@ import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor
 import com.arquisoft.artefactos.domain.revisionasesor.model.ObservacionesParaCierre;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.CerrarRevisionAsesorKey;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -38,6 +41,8 @@ public class CerrarRevisionAsesorUseCaseImpl implements CerrarRevisionAsesorUseC
     private final CerrarRevisionAsesorValidator cerrarRevisionAsesorValidator;
     private final RevisionAsesorOutputPort revisionAsesorOutputPort;
     private final EventPublisher eventPublisher;
+    private final ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -56,12 +61,16 @@ public class CerrarRevisionAsesorUseCaseImpl implements CerrarRevisionAsesorUseC
         var existenPropias = observacionesDeRevisionExistenFinder.obtener(revisionAsesor);
         var existenSinCerrarVersionAnterior = observacionesVersionAnteriorSinCerrarExistenFinder.obtener(revisionAsesor);
 
+        var proyecto = proyectoGradoPorRevisionAsesorFinder.obtener(revisionAsesor);
         logger.debug(CerrarRevisionAsesorKey.LOG_VERIFICACION_CIERRE,
                 !revision.esVacio(), !artefacto.esVacio(), !asesor.esVacio(), !version.esVacio(),
                 !versionRepositorio.esVacio(), estudiantes.size(), existenPropias, existenSinCerrarVersionAnterior);
 
         cerrarRevisionAsesorValidator.validar(cierre, revision, artefacto, asesor, version, versionRepositorio,
                 new ObservacionesParaCierre(existenPropias, existenSinCerrarVersionAnterior));
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         revisionAsesorOutputPort.actualizarEstado(revisionAsesor, EstadoRevisionAsesor.CERRADA.getId());
 

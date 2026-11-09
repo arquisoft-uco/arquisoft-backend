@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,5 +43,41 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     @Override
     public Optional<ProyectoGradoEntity> obtenerBloqueadoPorArtefacto(UUID artefacto) {
         return proyectoGradoCommandRepository.bloquearPorArtefacto(artefacto).map(ProyectoGradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public Optional<ProyectoGradoEntity> obtenerPorRevisionAsesor(UUID revisionAsesor) {
+        return proyectoGradoCommandRepository.obtenerPorRevisionAsesor(revisionAsesor)
+                .map(ProyectoGradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public Optional<ProyectoGradoEntity> obtenerPorObservacion(UUID observacion) {
+        return proyectoGradoCommandRepository.obtenerPorObservacion(observacion)
+                .map(ProyectoGradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public Optional<ProyectoGradoEntity> obtenerPorVersionArtefacto(UUID versionArtefacto) {
+        return proyectoGradoCommandRepository.obtenerPorVersionArtefacto(versionArtefacto)
+                .map(ProyectoGradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public void marcarEntregado(UUID id, Instant entregadoEn) {
+        proyectoGradoCommandRepository.marcarEntregado(id, entregadoEn);
+        logger.debug(ProyectoGradoKey.LOG_ENTREGADO_MARCADO, id, entregadoEn);
+    }
+
+    @Override
+    public void limpiarEntregado(UUID id, Instant hasta) {
+        proyectoGradoCommandRepository.limpiarEntregado(id, hasta);
+        logger.debug(ProyectoGradoKey.LOG_ENTREGADO_LIMPIADO, id, hasta);
+    }
+
+    @Override
+    public void marcarFinalizado(UUID id, Instant finalizadoEn) {
+        proyectoGradoCommandRepository.marcarFinalizado(id, finalizadoEn);
+        logger.debug(ProyectoGradoKey.LOG_FINALIZADO_MARCADO, id, finalizadoEn);
     }
 }

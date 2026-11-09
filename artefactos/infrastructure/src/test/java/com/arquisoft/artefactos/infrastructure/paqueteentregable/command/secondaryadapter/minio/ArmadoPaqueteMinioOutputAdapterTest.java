@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.infrastructure.paqueteentregable.command.second
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoExcluidoEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoIncluidoEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ContenidoPaqueteEntity;
+import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
 import com.arquisoft.artefactos.infrastructure.config.ArtefactosAlmacenamientoProperties;
 import com.arquisoft.artefactos.infrastructure.versionartefacto.exception.ArchivoVersionNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -169,6 +170,29 @@ class ArmadoPaqueteMinioOutputAdapterTest {
     }
 
     @Test
+    void debeDevolverLaMismaRutaQueLaEntradaDelZipYElManifiesto_cuandoArmaElPaquete() throws Exception {
+        // Arrange
+        var primero = incluir("Doc: A/B", "in?forme.pdf", PDF, repetido('a'));
+        var segundo = incluir("Anexo", "anexo.md", MARKDOWN, repetido('b'));
+
+        // Act
+        var archivo = adapter.armar(
+                contenido(UtilUUID.generarNuevoUUID(), "Proyecto", List.of(primero, segundo), List.of()));
+
+        // Assert
+        assertThat(archivo.entradas()).extracting(EntradaPaqueteArmada::artefacto)
+                .containsExactly(primero.artefacto(), segundo.artefacto());
+        try (var zip = abrirZip()) {
+            var manifiesto = mapper.readTree(zip.getInputStream(zip.getEntry("manifiesto.json")).readAllBytes());
+            for (var i = 0; i < archivo.entradas().size(); i++) {
+                var ruta = archivo.entradas().get(i).rutaEnPaquete();
+                assertThat(zip.getEntry(ruta)).isNotNull();
+                assertThat(manifiesto.get("incluidos").get(i).get("archivo").asString()).isEqualTo(ruta);
+            }
+        }
+    }
+
+    @Test
     void debeGenerarSoloManifiesto_cuandoNoHayIncluidos() throws Exception {
         // Act
         var archivo = adapter.armar(contenido(UtilUUID.generarNuevoUUID(), "   ", List.of(), List.of()));
@@ -229,6 +253,18 @@ class ArmadoPaqueteMinioOutputAdapterTest {
         assertThat(despues).isEmpty();
     }
 
+    @Test
+    void debeEliminarElObjetoEnElBucketConfigurado() {
+        // Arrange
+        var clave = "paquetes/" + UtilUUID.generarNuevoUUID() + ".zip";
+
+        // Act
+        adapter.eliminar(clave);
+
+        // Assert
+        assertThat(almacenamiento.eliminado).containsExactly(BUCKET + "/" + clave);
+    }
+
     private record Objeto(byte[] contenido, String tipo, Map<String, String> metadatos) {}
 
     private static final class AlmacenamientoFalso implements AlmacenamientoObjetos {
@@ -240,6 +276,7 @@ class ArmadoPaqueteMinioOutputAdapterTest {
         private long tamanoDeclarado;
         private String tipoSubida;
         private boolean fallarSubida;
+        private final List<String> eliminado = new ArrayList<>();
 
         @Override
         public FormularioCarga generarFormularioCarga(SolicitudFormularioCarga solicitud) {
@@ -289,7 +326,7 @@ class ArmadoPaqueteMinioOutputAdapterTest {
 
         @Override
         public void eliminar(String bucket, String key) {
-            throw new UnsupportedOperationException();
+            eliminado.add(bucket + "/" + key);
         }
     }
 }
