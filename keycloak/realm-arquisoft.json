@@ -373,6 +373,7 @@
             "arquisoft-api": [
               "mapas-ruta:tarea-mapa-ruta-asesor:view",
               "mapas-ruta:plan-estimado-proyecto-asesor:view",
+              "mapas-ruta:plan-estimado-asesor:update",
               "mapas-ruta:plan-real-proyecto-asesor:view",
               "entregables:estado-entregable:view",
               "entregables:entregable-proyecto-grado:create",
@@ -2913,6 +2914,15 @@
         {
           "id": "a70f38c6-84f1-44f6-a8f0-277ad3bad60b",
           "name": "mapas-ruta:plan-estimado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3b8f1d46-9a2e-4c75-b0d3-6e5a7c4f2918",
+          "name": "mapas-ruta:plan-estimado-asesor:update",
           "description": "",
           "composite": false,
           "clientRole": true,

@@ -60,6 +60,7 @@ public final class MapasRutaCodes {
         public static final String PLAN_ESTIMADO_TIEMPO_INVALIDO = "PLAN_ESTIMADO_TIEMPO_INVALIDO";
         public static final String PLAN_ESTIMADO_DESCRIPCION_DEMASIADO_LARGA =
                 "PLAN_ESTIMADO_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String PLAN_ESTIMADO_DESCRIPCION_REQUERIDA = "PLAN_ESTIMADO_DESCRIPCION_REQUERIDA";
         public static final String PLAN_ESTIMADO_DUPLICADO = "PLAN_ESTIMADO_DUPLICADO";
         public static final String PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO = "PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO";
         public static final String PLAN_ESTIMADO_REQUERIDO = "PLAN_ESTIMADO_REQUERIDO";
