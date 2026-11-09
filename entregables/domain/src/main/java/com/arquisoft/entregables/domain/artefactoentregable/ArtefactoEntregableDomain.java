@@ -7,6 +7,7 @@ import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
+import com.arquisoft.shared.validation.ValidatorNumero;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 
@@ -19,6 +20,7 @@ public final class ArtefactoEntregableDomain {
     private UUID entregableProyectoGrado;
     private String uriArchivo;
     private UUID artefacto;
+    private int numeroVersion;
     private UUID versionRepositorioArtefacto;
     private String nombreDocumento;
     private UUID repositorio;
@@ -26,9 +28,11 @@ public final class ArtefactoEntregableDomain {
 
     private ArtefactoEntregableDomain() {}
 
+    public record DatosRepositorioArtefacto(UUID versionRepositorioArtefacto, UUID repositorio, String nombreRepositorio) {}
+
     public static ArtefactoEntregableDomain crear(UUID entregableProyectoGrado, String uriArchivo, UUID artefacto,
-                                                  UUID versionRepositorioArtefacto, String nombreDocumento,
-                                                  UUID repositorio, String nombreRepositorio) {
+                                                  int numeroVersion, String nombreDocumento,
+                                                  DatosRepositorioArtefacto datosRepositorio) {
         var snapshot = new ArtefactoEntregableDomain();
         var result = new ValidationResult();
         snapshot.setId();
@@ -36,10 +40,11 @@ public final class ArtefactoEntregableDomain {
         snapshot.setEntregableProyectoGrado(entregableProyectoGrado, result);
         snapshot.setUriArchivo(uriArchivo, result);
         snapshot.setArtefacto(artefacto, result);
-        snapshot.setVersionRepositorioArtefacto(versionRepositorioArtefacto, result);
+        snapshot.setNumeroVersion(numeroVersion, result);
         snapshot.setNombreDocumento(nombreDocumento, result);
-        snapshot.setRepositorio(repositorio, result);
-        snapshot.setNombreRepositorio(nombreRepositorio, result);
+        snapshot.setVersionRepositorioArtefacto(datosRepositorio.versionRepositorioArtefacto(), result);
+        snapshot.setRepositorio(datosRepositorio.repositorio(), result);
+        snapshot.setNombreRepositorio(datosRepositorio.nombreRepositorio(), result);
         result.lanzarSiTieneErrores();
         return snapshot;
     }
@@ -83,6 +88,15 @@ public final class ArtefactoEntregableDomain {
             return;
         }
         this.artefacto = artefacto;
+    }
+
+    private void setNumeroVersion(int numeroVersion, ValidationResult result) {
+        if (!ValidatorNumero.valorMinimo(numeroVersion, EntregablesLimits.ArtefactoEntregable.NUMERO_VERSION_MIN,
+                EntregablesFields.ArtefactoEntregable.NUMERO_VERSION,
+                EntregablesCodes.ArtefactoEntregable.NUMERO_VERSION_INVALIDO, result)) {
+            return;
+        }
+        this.numeroVersion = numeroVersion;
     }
 
     private void setVersionRepositorioArtefacto(UUID versionRepositorioArtefacto, ValidationResult result) {
@@ -151,6 +165,10 @@ public final class ArtefactoEntregableDomain {
 
     public UUID getArtefacto() {
         return artefacto;
+    }
+
+    public int getNumeroVersion() {
+        return numeroVersion;
     }
 
     public UUID getVersionRepositorioArtefacto() {

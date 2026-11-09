@@ -2,7 +2,6 @@ package com.arquisoft.artefactos.application.paqueteentregable.command.secondary
 
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoExcluidoEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoIncluidoEntity;
-import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoPaqueteEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ContenidoPaqueteEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.PaqueteEntregableEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
@@ -29,10 +28,7 @@ public final class PaqueteEntregableMapper {
                 paquete.getVersionEntregable(),
                 paquete.getClaveObjeto(),
                 paquete.getTamanoBytes(),
-                paquete.getGeneradoEn(),
-                paquete.getIncluidos().stream()
-                        .map(incluido -> new ArtefactoPaqueteEntity(incluido.artefacto(), incluido.numeroVersion()))
-                        .toList());
+                paquete.getGeneradoEn());
     }
 
     public static ContenidoPaqueteEntity toContenido(

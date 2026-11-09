@@ -137,8 +137,6 @@ class GenerarPaqueteEntregableUseCaseImplTest {
                 .satisfies(e -> assertThat(e.motivo()).isEqualTo("SIN_VERSIONES"));
         assertThat(entity.getValue().claveObjeto()).isEqualTo("paquetes/x.zip");
         assertThat(entity.getValue().tamanoBytes()).isEqualTo(500L);
-        assertThat(entity.getValue().artefactos()).singleElement()
-                .satisfies(a -> assertThat(a.artefacto()).isEqualTo(incluido.artefacto()));
         assertThat(evento.getValue().getPaqueteEntregable()).isEqualTo(entity.getValue().id());
         assertThat(evento.getValue().getEntregableProyectoGrado()).isEqualTo(generacion.getEntregableProyectoGrado());
         assertThat(evento.getValue().getBucket()).isEqualTo("bucket");
@@ -219,7 +217,6 @@ class GenerarPaqueteEntregableUseCaseImplTest {
         var entity = ArgumentCaptor.forClass(PaqueteEntregableEntity.class);
         verify(paqueteEntregableOutputPort).registrar(entity.capture());
         verify(eventPublisher).publish(any(PaqueteEntregableGeneradoEvent.class));
-        assertThat(entity.getValue().artefactos()).isEmpty();
         assertThat(resultado).isInstanceOf(GeneracionPaqueteEntregableResult.Generado.class);
     }
 }

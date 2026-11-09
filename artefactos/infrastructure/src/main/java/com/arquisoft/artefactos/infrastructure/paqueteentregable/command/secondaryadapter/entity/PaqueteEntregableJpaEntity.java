@@ -1,11 +1,8 @@
 package com.arquisoft.artefactos.infrastructure.paqueteentregable.command.secondaryadapter.entity;
 
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -45,9 +41,4 @@ public class PaqueteEntregableJpaEntity {
 
     @Column(name = "generado_en", nullable = false)
     private Instant generadoEn;
-
-    @ElementCollection
-    @CollectionTable(name = "paquete_entregable_artefacto",
-            joinColumns = @JoinColumn(name = "paquete_entregable_id"))
-    private List<ArtefactoPaqueteJpa> artefactos;
 }

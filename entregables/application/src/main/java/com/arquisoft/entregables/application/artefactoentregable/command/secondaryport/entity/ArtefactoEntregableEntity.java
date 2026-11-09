@@ -8,6 +8,7 @@ public record ArtefactoEntregableEntity(
         UUID entregableProyectoGrado,
         String uriArchivo,
         UUID artefacto,
+        int numeroVersion,
         UUID versionRepositorioArtefacto,
         String nombreDocumento,
         UUID repositorio,

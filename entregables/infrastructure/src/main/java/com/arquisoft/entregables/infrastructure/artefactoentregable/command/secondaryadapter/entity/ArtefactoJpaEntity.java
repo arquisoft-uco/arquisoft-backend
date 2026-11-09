@@ -29,6 +29,9 @@ public class ArtefactoJpaEntity {
     @Column(name = "id_artefacto", nullable = false, columnDefinition = "UUID")
     private UUID artefacto;
 
+    @Column(name = "version_artefacto", nullable = false)
+    private int numeroVersion;
+
     @Column(name = "id_repositorio_artefacto", nullable = false, columnDefinition = "UUID")
     private UUID versionRepositorioArtefacto;
 

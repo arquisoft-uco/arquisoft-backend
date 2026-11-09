@@ -105,7 +105,6 @@ public final class ArtefactosFields {
         public static final String VERSION_ENTREGABLE = "versionEntregable";
         public static final String GENERACION = "generacion";
         public static final String GENERADO_EN = "generadoEn";
-        public static final String INCLUIDOS = "incluidos";
         public static final String CLAVE_OBJETO = "claveObjeto";
         public static final String TAMANO_BYTES = "tamanoBytes";
     }

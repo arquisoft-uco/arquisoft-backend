@@ -38,6 +38,7 @@ public final class EntregablesFields {
         public static final String ENTREGABLE_PROYECTO_GRADO = "entregableProyectoGrado";
         public static final String URI_ARCHIVO = "rutaEnPaquete";
         public static final String ARTEFACTO = "artefacto";
+        public static final String NUMERO_VERSION = "numeroVersion";
         public static final String VERSION_REPOSITORIO_ARTEFACTO = "versionRepositorioArtefacto";
         public static final String NOMBRE_DOCUMENTO = "nombreDocumento";
         public static final String REPOSITORIO = "repositorio";

@@ -78,6 +78,13 @@ public record AgregarPaqueteEntregableCommand(
         ValidatorUUID.uuidValido(item.artefacto(),
                 EntregablesFields.ArtefactoEntregable.ARTEFACTO,
                 EntregablesCodes.ArtefactoEntregable.ARTEFACTO_INVALIDO, result);
+        if (ValidatorObjeto.noNulo(item.numeroVersion(),
+                EntregablesFields.ArtefactoEntregable.NUMERO_VERSION,
+                EntregablesCodes.ArtefactoEntregable.NUMERO_VERSION_INVALIDO, result)) {
+            ValidatorNumero.valorMinimo(item.numeroVersion(), EntregablesLimits.ArtefactoEntregable.NUMERO_VERSION_MIN,
+                    EntregablesFields.ArtefactoEntregable.NUMERO_VERSION,
+                    EntregablesCodes.ArtefactoEntregable.NUMERO_VERSION_INVALIDO, result);
+        }
         ValidatorUUID.uuidValido(item.versionRepositorioArtefacto(),
                 EntregablesFields.ArtefactoEntregable.VERSION_REPOSITORIO_ARTEFACTO,
                 EntregablesCodes.ArtefactoEntregable.VERSION_REPOSITORIO_ARTEFACTO_INVALIDA, result);
@@ -104,6 +111,7 @@ public record AgregarPaqueteEntregableCommand(
     private static ArtefactoPaqueteCommand toArtefacto(DatosArtefactoPaquete item) {
         return new ArtefactoPaqueteCommand(
                 UtilUUID.generarUUIDDesdeTexto(item.artefacto()),
+                item.numeroVersion(),
                 UtilUUID.generarUUIDDesdeTexto(item.versionRepositorioArtefacto()),
                 item.nombreDocumento(),
                 UtilUUID.generarUUIDDesdeTexto(item.repositorio()),

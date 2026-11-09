@@ -1,7 +1,6 @@
 package com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 public record PaqueteEntregableEntity(
@@ -11,7 +10,6 @@ public record PaqueteEntregableEntity(
         int versionEntregable,
         String claveObjeto,
         long tamanoBytes,
-        Instant generadoEn,
-        List<ArtefactoPaqueteEntity> artefactos
+        Instant generadoEn
 ) {
 }

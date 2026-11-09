@@ -1,6 +1,5 @@
 package com.arquisoft.artefactos.infrastructure.paqueteentregable.command.secondaryadapter.repository;
 
-import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoPaqueteEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.PaqueteEntregableEntity;
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.paqueteentregable.command.secondaryadapter.entity.PaqueteEntregableJpaEntity;
@@ -166,18 +165,15 @@ class PaqueteEntregableCommandOutputAdapterTest {
     }
 
     @Test
-    void debeRegistrarPaqueteConSusArtefactos() {
+    void debeRegistrarPaquete() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var entregable = UtilUUID.generarNuevoUUID();
         var proyecto = sembrarProyecto();
-        var artefacto = sembrarArtefacto(proyecto, "Doc", null);
-        entityManager.flush();
         var generadoEn = Instant.parse("2026-11-08T10:00:00Z");
 
         // Act
-        adapter.registrar(new PaqueteEntregableEntity(id, entregable, proyecto, 2, "paquetes/x.zip", 99L, generadoEn,
-                List.of(new ArtefactoPaqueteEntity(artefacto, 3))));
+        adapter.registrar(new PaqueteEntregableEntity(id, entregable, proyecto, 2, "paquetes/x.zip", 99L, generadoEn));
         entityManager.flush();
         entityManager.clear();
 
@@ -189,10 +185,6 @@ class PaqueteEntregableCommandOutputAdapterTest {
         assertThat(guardado.getClaveObjeto()).isEqualTo("paquetes/x.zip");
         assertThat(guardado.getTamanoBytes()).isEqualTo(99L);
         assertThat(guardado.getGeneradoEn()).isEqualTo(generadoEn);
-        assertThat(guardado.getArtefactos()).singleElement().satisfies(a -> {
-            assertThat(a.getArtefacto()).isEqualTo(artefacto);
-            assertThat(a.getNumeroVersion()).isEqualTo(3);
-        });
         verify(logger).debug(PaqueteEntregableKey.LOG_GUARDADO, id);
     }
 
@@ -203,13 +195,13 @@ class PaqueteEntregableCommandOutputAdapterTest {
         var otroProyecto = sembrarProyecto();
         var generadoEn = Instant.parse("2026-11-08T10:00:00Z");
         adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                proyecto, 1, "paquetes/v1.zip", 1L, generadoEn, List.of()));
+                proyecto, 1, "paquetes/v1.zip", 1L, generadoEn));
         adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                proyecto, 2, "paquetes/v2.zip", 1L, generadoEn, List.of()));
+                proyecto, 2, "paquetes/v2.zip", 1L, generadoEn));
         adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                proyecto, 3, "paquetes/v3.zip", 1L, generadoEn, List.of()));
+                proyecto, 3, "paquetes/v3.zip", 1L, generadoEn));
         adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                otroProyecto, 1, "paquetes/ajeno.zip", 1L, generadoEn, List.of()));
+                otroProyecto, 1, "paquetes/ajeno.zip", 1L, generadoEn));
         entityManager.flush();
         entityManager.clear();
 
@@ -228,7 +220,7 @@ class PaqueteEntregableCommandOutputAdapterTest {
         var entregable = UtilUUID.generarNuevoUUID();
         var proyecto = sembrarProyecto();
         adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), entregable, proyecto, 1,
-                "paquetes/x.zip", 1L, Instant.now(), List.of()));
+                "paquetes/x.zip", 1L, Instant.now()));
         entityManager.flush();
 
         // Act & Assert

@@ -1,6 +1,5 @@
 package com.arquisoft.artefactos.domain.paqueteentregable;
 
-import com.arquisoft.artefactos.domain.paqueteentregable.model.ArtefactoIncluidoPaquete;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.message.constant.ArtefactosLimits;
@@ -13,7 +12,6 @@ import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 public final class PaqueteEntregableDomain {
@@ -26,15 +24,13 @@ public final class PaqueteEntregableDomain {
     private UUID proyectoGrado;
     private int versionEntregable;
     private Instant generadoEn;
-    private List<ArtefactoIncluidoPaquete> incluidos;
     private String claveObjeto;
     private long tamanoBytes;
 
     private PaqueteEntregableDomain() {}
 
     public static PaqueteEntregableDomain crear(
-            GeneracionPaqueteEntregableDomain generacion, List<ArtefactoIncluidoPaquete> incluidos,
-            String claveObjeto, long tamanoBytes) {
+            GeneracionPaqueteEntregableDomain generacion, String claveObjeto, long tamanoBytes) {
         var paquete = new PaqueteEntregableDomain();
         var result = new ValidationResult();
         paquete.setId();
@@ -46,7 +42,6 @@ public final class PaqueteEntregableDomain {
             paquete.setVersionEntregable(generacion.getVersionEntregable(), result);
             paquete.setGeneradoEn(generacion.getGeneradoEn(), result);
         }
-        paquete.setIncluidos(incluidos, result);
         paquete.setClaveObjeto(claveObjeto, result);
         paquete.setTamanoBytes(tamanoBytes, result);
         result.lanzarSiTieneErrores();
@@ -93,15 +88,6 @@ public final class PaqueteEntregableDomain {
         this.generadoEn = generadoEn;
     }
 
-    private void setIncluidos(List<ArtefactoIncluidoPaquete> incluidos, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(incluidos,
-                ArtefactosFields.PaqueteEntregable.INCLUIDOS,
-                ArtefactosCodes.PaqueteEntregable.INCLUIDOS_REQUERIDOS, result)) {
-            return;
-        }
-        this.incluidos = List.copyOf(incluidos);
-    }
-
     private void setClaveObjeto(String claveObjeto, ValidationResult result) {
         var recortada = UtilTexto.aplicarTrim(claveObjeto);
         if (!ValidatorTexto.noEnBlanco(recortada,
@@ -145,10 +131,6 @@ public final class PaqueteEntregableDomain {
 
     public Instant getGeneradoEn() {
         return generadoEn;
-    }
-
-    public List<ArtefactoIncluidoPaquete> getIncluidos() {
-        return incluidos;
     }
 
     public String getClaveObjeto() {

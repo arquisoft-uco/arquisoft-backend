@@ -13,6 +13,7 @@ public final class ArtefactoEntregableJpaMapper {
                 .id(entity.versionArtefacto())
                 .uriArchivo(entity.uriArchivo())
                 .artefacto(entity.artefacto())
+                .numeroVersion(entity.numeroVersion())
                 .versionRepositorioArtefacto(entity.versionRepositorioArtefacto())
                 .nombreDocumento(entity.nombreDocumento())
                 .repositorio(entity.repositorio())

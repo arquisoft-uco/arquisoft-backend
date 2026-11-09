@@ -14,6 +14,7 @@ public final class ArtefactoEntregableMapper {
                 artefacto.getEntregableProyectoGrado(),
                 artefacto.getUriArchivo(),
                 artefacto.getArtefacto(),
+                artefacto.getNumeroVersion(),
                 artefacto.getVersionRepositorioArtefacto(),
                 artefacto.getNombreDocumento(),
                 artefacto.getRepositorio(),

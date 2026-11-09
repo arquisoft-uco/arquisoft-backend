@@ -15,7 +15,7 @@ class AgregarArtefactosEntregableMapperTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var artefacto = UtilUUID.generarNuevoUUID();
-        var item = new ArtefactoPaqueteCommand(artefacto, UtilUUID.generarNuevoUUID(), "Informe",
+        var item = new ArtefactoPaqueteCommand(artefacto, 3, UtilUUID.generarNuevoUUID(), "Informe",
                 UtilUUID.generarNuevoUUID(), "Repo", "01-Informe/v3-informe.pdf");
 
         // Act
@@ -28,6 +28,7 @@ class AgregarArtefactosEntregableMapperTest {
             assertThat(snapshot.getEntregableProyectoGrado()).isEqualTo(entregable);
             assertThat(snapshot.getUriArchivo()).isEqualTo("01-Informe/v3-informe.pdf");
             assertThat(snapshot.getArtefacto()).isEqualTo(artefacto);
+            assertThat(snapshot.getNumeroVersion()).isEqualTo(3);
             assertThat(snapshot.getVersionRepositorioArtefacto()).isEqualTo(item.versionRepositorioArtefacto());
         });
         assertThat(agregacion.getArtefactos().get(0).getVersionArtefacto())

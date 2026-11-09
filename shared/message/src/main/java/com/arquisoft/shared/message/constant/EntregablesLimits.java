@@ -18,5 +18,6 @@ public final class EntregablesLimits {
         public static final int NOMBRE_DOCUMENTO_MAX = 100;
         public static final int NOMBRE_REPOSITORIO_MAX = 100;
         public static final int URI_ARCHIVO_MAX = 2000;
+        public static final int NUMERO_VERSION_MIN = 1;
     }
 }

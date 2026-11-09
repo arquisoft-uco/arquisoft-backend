@@ -39,7 +39,8 @@ class AgregarArtefactosEntregableUseCaseImplTest {
 
     private static ArtefactoEntregableDomain snapshot(UUID entregable, String ruta) {
         return ArtefactoEntregableDomain.crear(entregable, ruta, UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), "Informe", UtilUUID.generarNuevoUUID(), "Repo");
+                1, "Informe", new ArtefactoEntregableDomain.DatosRepositorioArtefacto(
+                        UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Repo"));
     }
 
     @Test

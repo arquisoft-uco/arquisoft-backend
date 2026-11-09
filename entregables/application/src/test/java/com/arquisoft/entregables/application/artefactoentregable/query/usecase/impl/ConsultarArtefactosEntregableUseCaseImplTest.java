@@ -44,7 +44,7 @@ class ConsultarArtefactosEntregableUseCaseImplTest {
 
     private static ArtefactoEntregableReadModel artefacto(UUID entregable) {
         return new ArtefactoEntregableReadModel(UtilUUID.generarNuevoUUID(), entregable,
-                UtilUUID.generarNuevoUUID(), "uri", UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), 1, "uri", UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                 "Doc", UtilUUID.generarNuevoUUID(), "Repo");
     }
 

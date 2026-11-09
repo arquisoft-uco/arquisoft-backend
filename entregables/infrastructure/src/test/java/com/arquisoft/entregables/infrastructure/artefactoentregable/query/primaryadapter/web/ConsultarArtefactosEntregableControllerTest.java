@@ -81,7 +81,7 @@ class ConsultarArtefactosEntregableControllerTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var id = UtilUUID.generarNuevoUUID();
-        var readModel = new ArtefactoEntregableReadModel(id, entregable, UtilUUID.generarNuevoUUID(), "uri",
+        var readModel = new ArtefactoEntregableReadModel(id, entregable, UtilUUID.generarNuevoUUID(), 3, "uri",
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Doc", UtilUUID.generarNuevoUUID(), "Repo");
         var asesor = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(any(ConsultarArtefactosEntregableQuery.class))).thenReturn(List.of(readModel));
@@ -92,6 +92,7 @@ class ConsultarArtefactosEntregableControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(id.toString()))
                 .andExpect(jsonPath("$[0].entregableProyectoGrado").value(entregable.toString()))
+                .andExpect(jsonPath("$[0].numeroVersion").value(3))
                 .andExpect(jsonPath("$[0].nombreDocumento").value("Doc"))
                 .andExpect(jsonPath("$[0].nombreRepositorio").value("Repo"))
                 .andExpect(jsonPath("$[0].uriArchivo").value("uri"));

@@ -56,7 +56,7 @@ public class GenerarPaqueteEntregableUseCaseImpl implements GenerarPaqueteEntreg
                 PaqueteEntregableMapper.toContenido(generacion, proyecto, artefactos));
 
         var paquete = PaqueteEntregableDomain.crear(
-                generacion, artefactos.incluidos(), archivo.claveObjeto(), archivo.tamanoBytes());
+                generacion, archivo.claveObjeto(), archivo.tamanoBytes());
         paqueteEntregableOutputPort.registrar(PaqueteEntregableMapper.toEntity(paquete));
 
         eventPublisher.publish(PaqueteEntregableGeneradoEvent.de(

@@ -62,7 +62,7 @@ public class PaqueteEntregableGeneradoConsumer extends AbstractEventConsumer {
     private static List<DatosArtefactoPaquete> toArtefactos(PaqueteEntregableGeneradoPayload payload) {
         return UtilColeccion.aplicarPorDefecto(payload.artefactos()).stream()
                 .map(item -> new DatosArtefactoPaquete(
-                        item.artefacto(), item.versionRepositorioArtefacto(), item.nombreDocumento(),
+                        item.artefacto(), item.numeroVersion(), item.versionRepositorioArtefacto(), item.nombreDocumento(),
                         item.repositorio(), item.nombreRepositorio(), item.rutaEnPaquete()))
                 .toList();
     }

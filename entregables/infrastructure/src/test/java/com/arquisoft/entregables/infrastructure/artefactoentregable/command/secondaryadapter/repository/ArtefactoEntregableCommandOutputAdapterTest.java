@@ -48,8 +48,13 @@ class ArtefactoEntregableCommandOutputAdapterTest {
 
     private static ArtefactoEntregableEntity entity(UUID entregable, UUID artefacto, UUID versionRepositorio,
                                                     String documento, String ruta) {
+        return entity(entregable, artefacto, versionRepositorio, documento, ruta, 3);
+    }
+
+    private static ArtefactoEntregableEntity entity(UUID entregable, UUID artefacto, UUID versionRepositorio,
+                                                    String documento, String ruta, int numeroVersion) {
         return new ArtefactoEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), entregable,
-                ruta, artefacto, versionRepositorio, documento, UtilUUID.generarNuevoUUID(), "Repo");
+                ruta, artefacto, numeroVersion, versionRepositorio, documento, UtilUUID.generarNuevoUUID(), "Repo");
     }
 
     @Test
@@ -70,6 +75,7 @@ class ArtefactoEntregableCommandOutputAdapterTest {
         var artefacto = entityManager.find(ArtefactoJpaEntity.class, primero.versionArtefacto());
         assertThat(artefacto.getUriArchivo()).isEqualTo("01-Informe/v3-informe.pdf");
         assertThat(artefacto.getArtefacto()).isEqualTo(primero.artefacto());
+        assertThat(artefacto.getNumeroVersion()).isEqualTo(3);
         assertThat(artefacto.getVersionRepositorioArtefacto()).isEqualTo(primero.versionRepositorioArtefacto());
         assertThat(artefacto.getNombreDocumento()).isEqualTo("Informe");
         assertThat(artefacto.getRepositorio()).isEqualTo(primero.repositorio());
@@ -88,8 +94,8 @@ class ArtefactoEntregableCommandOutputAdapterTest {
         var nuevo = UtilUUID.generarNuevoUUID();
         var artefacto = UtilUUID.generarNuevoUUID();
         var versionRepositorio = UtilUUID.generarNuevoUUID();
-        var delCancelado = entity(cancelado, artefacto, versionRepositorio, "Informe", "01-Informe/v1-v1.pdf");
-        var delNuevo = entity(nuevo, artefacto, versionRepositorio, "Informe", "01-Informe/v1-v2.pdf");
+        var delCancelado = entity(cancelado, artefacto, versionRepositorio, "Informe", "01-Informe/v1-v1.pdf", 1);
+        var delNuevo = entity(nuevo, artefacto, versionRepositorio, "Informe", "01-Informe/v1-v2.pdf", 2);
         adapter.guardarTodos(List.of(delCancelado));
         adapter.guardarTodos(List.of(delNuevo));
         entityManager.flush();
@@ -104,11 +110,13 @@ class ArtefactoEntregableCommandOutputAdapterTest {
         assertThat(delEntregableCancelado).singleElement().satisfies(readModel -> {
             assertThat(readModel.versionArtefacto()).isEqualTo(delCancelado.versionArtefacto());
             assertThat(readModel.uriArchivo()).isEqualTo("01-Informe/v1-v1.pdf");
+            assertThat(readModel.numeroVersion()).isEqualTo(1);
             assertThat(readModel.artefacto()).isEqualTo(artefacto);
         });
         assertThat(delEntregableNuevo).singleElement().satisfies(readModel -> {
             assertThat(readModel.versionArtefacto()).isEqualTo(delNuevo.versionArtefacto());
             assertThat(readModel.uriArchivo()).isEqualTo("01-Informe/v1-v2.pdf");
+            assertThat(readModel.numeroVersion()).isEqualTo(2);
             assertThat(readModel.artefacto()).isEqualTo(artefacto);
         });
         assertThat(delCancelado.versionArtefacto()).isNotEqualTo(delNuevo.versionArtefacto());

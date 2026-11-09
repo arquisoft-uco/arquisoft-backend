@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record ArtefactoPaqueteCommand(
         UUID artefacto,
+        int numeroVersion,
         UUID versionRepositorioArtefacto,
         String nombreDocumento,
         UUID repositorio,
