@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.infrastructure.paqueteentregable.command.second
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoExcluidoEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoIncluidoEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ContenidoPaqueteEntity;
+import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
 import com.arquisoft.artefactos.infrastructure.config.ArtefactosAlmacenamientoProperties;
 import com.arquisoft.artefactos.infrastructure.versionartefacto.exception.ArchivoVersionNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -165,6 +166,29 @@ class ArmadoPaqueteMinioOutputAdapterTest {
         try (var zip = abrirZip()) {
             assertThat(nombresDe(zip)).containsExactly(
                     "01-Doc_ A_B/v2-in_forme_.pdf", "02-Doc_ A_B/v2-in_forme_.pdf", "manifiesto.json");
+        }
+    }
+
+    @Test
+    void debeDevolverLaMismaRutaQueLaEntradaDelZipYElManifiesto_cuandoArmaElPaquete() throws Exception {
+        // Arrange
+        var primero = incluir("Doc: A/B", "in?forme.pdf", PDF, repetido('a'));
+        var segundo = incluir("Anexo", "anexo.md", MARKDOWN, repetido('b'));
+
+        // Act
+        var archivo = adapter.armar(
+                contenido(UtilUUID.generarNuevoUUID(), "Proyecto", List.of(primero, segundo), List.of()));
+
+        // Assert
+        assertThat(archivo.entradas()).extracting(EntradaPaqueteArmada::artefacto)
+                .containsExactly(primero.artefacto(), segundo.artefacto());
+        try (var zip = abrirZip()) {
+            var manifiesto = mapper.readTree(zip.getInputStream(zip.getEntry("manifiesto.json")).readAllBytes());
+            for (var i = 0; i < archivo.entradas().size(); i++) {
+                var ruta = archivo.entradas().get(i).rutaEnPaquete();
+                assertThat(zip.getEntry(ruta)).isNotNull();
+                assertThat(manifiesto.get("incluidos").get(i).get("archivo").asString()).isEqualTo(ruta);
+            }
         }
     }
 

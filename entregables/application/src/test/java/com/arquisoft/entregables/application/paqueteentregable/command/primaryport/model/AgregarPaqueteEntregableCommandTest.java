@@ -6,6 +6,7 @@ import com.arquisoft.shared.validation.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,7 +22,8 @@ class AgregarPaqueteEntregableCommandTest {
 
         // Act
         var command = AgregarPaqueteEntregableCommand.crear(
-                paquete.toString(), entregable.toString(), "bucket", "paquetes/x.zip", "p.zip", 10L, generadoEn);
+                paquete.toString(), entregable.toString(),
+                new DatosArchivoPaquete("bucket", "paquetes/x.zip", "p.zip", 10L), generadoEn, null);
 
         // Assert
         assertThat(command.paqueteEntregable()).isEqualTo(paquete);
@@ -33,10 +35,73 @@ class AgregarPaqueteEntregableCommandTest {
         assertThat(command.generadoEn()).isEqualTo(generadoEn);
     }
 
+    private static DatosArtefactoPaquete item(String artefacto, String nombreDocumento, String ruta) {
+        return new DatosArtefactoPaquete(artefacto, UtilUUID.generarNuevoUUID().toString(), nombreDocumento,
+                UtilUUID.generarNuevoUUID().toString(), "Repo", ruta);
+    }
+
+    @Test
+    void debeCrear_cuandoHayArtefactosValidos() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var datos = item(artefacto.toString(), "Informe", "01-Informe/v3-informe.pdf");
+
+        // Act
+        var command = AgregarPaqueteEntregableCommand.crear(
+                UtilUUID.generarNuevoUUID().toString(), UtilUUID.generarNuevoUUID().toString(),
+                new DatosArchivoPaquete("bucket", "paquetes/x.zip", "p.zip", 10L), Instant.now(), List.of(datos));
+
+        // Assert
+        assertThat(command.artefactos()).singleElement().satisfies(creado -> {
+            assertThat(creado.artefacto()).isEqualTo(artefacto);
+            assertThat(creado.versionRepositorioArtefacto()).hasToString(datos.versionRepositorioArtefacto());
+            assertThat(creado.repositorio()).hasToString(datos.repositorio());
+            assertThat(creado.nombreDocumento()).isEqualTo("Informe");
+            assertThat(creado.nombreRepositorio()).isEqualTo("Repo");
+            assertThat(creado.rutaEnPaquete()).isEqualTo("01-Informe/v3-informe.pdf");
+        });
+    }
+
+    @Test
+    void debeTratarComoVacia_cuandoArtefactosEsNulo() {
+        // Act
+        var command = AgregarPaqueteEntregableCommand.crear(
+                UtilUUID.generarNuevoUUID().toString(), UtilUUID.generarNuevoUUID().toString(),
+                new DatosArchivoPaquete("bucket", "paquetes/x.zip", "p.zip", 10L), Instant.now(), null);
+
+        // Assert
+        assertThat(command.artefactos()).isEmpty();
+    }
+
+    @Test
+    void debeAcumularErrores_cuandoUnItemEstaMalformado() {
+        // Arrange
+        var malformado = new DatosArtefactoPaquete("no-uuid", null, " ", "tampoco", "x".repeat(101),
+                "r".repeat(2001));
+
+        // Act & Assert
+        assertThatThrownBy(() -> AgregarPaqueteEntregableCommand.crear(
+                UtilUUID.generarNuevoUUID().toString(), UtilUUID.generarNuevoUUID().toString(),
+                new DatosArchivoPaquete("bucket", "paquetes/x.zip", "p.zip", 10L), Instant.now(), List.of(malformado)))
+                .isInstanceOfSatisfying(ApplicationValidationException.class, ex -> {
+                    var resultado = ex.getValidationResult();
+                    assertThat(resultado.tieneErroresDeCampo(EntregablesFields.ArtefactoEntregable.ARTEFACTO)).isTrue();
+                    assertThat(resultado.tieneErroresDeCampo(
+                            EntregablesFields.ArtefactoEntregable.VERSION_REPOSITORIO_ARTEFACTO)).isTrue();
+                    assertThat(resultado.tieneErroresDeCampo(EntregablesFields.ArtefactoEntregable.REPOSITORIO)).isTrue();
+                    assertThat(resultado.tieneErroresDeCampo(
+                            EntregablesFields.ArtefactoEntregable.NOMBRE_DOCUMENTO)).isTrue();
+                    assertThat(resultado.tieneErroresDeCampo(
+                            EntregablesFields.ArtefactoEntregable.NOMBRE_REPOSITORIO)).isTrue();
+                    assertThat(resultado.tieneErroresDeCampo(EntregablesFields.ArtefactoEntregable.URI_ARCHIVO)).isTrue();
+                });
+    }
+
     @Test
     void debeLanzarValidacionDeEntrada_cuandoUuidTamanoOTextoInvalido() {
         // Act & Assert
-        assertThatThrownBy(() -> AgregarPaqueteEntregableCommand.crear("no-uuid", null, " ", "", null, 0L, null))
+        assertThatThrownBy(() -> AgregarPaqueteEntregableCommand.crear(
+                "no-uuid", null, new DatosArchivoPaquete(" ", "", null, 0L), null, null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, ex -> {
                     var resultado = ex.getValidationResult();
                     assertThat(resultado.tieneErroresDeCampo(EntregablesFields.PaqueteEntregable.ID)).isTrue();

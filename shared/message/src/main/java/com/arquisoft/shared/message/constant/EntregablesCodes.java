@@ -56,6 +56,25 @@ public final class EntregablesCodes {
         public static final String CANCELADO = "ENTREGABLES_PAQUETE_ENTREGABLE_CANCELADO";
     }
 
+    public static final class ArtefactoEntregable {
+
+        private ArtefactoEntregable() {}
+
+        public static final String ENTREGABLE_PROYECTO_GRADO_REQUERIDO =
+                "ENTREGABLES_ARTEFACTO_ENTREGABLE_ENTREGABLE_PROYECTO_GRADO_REQUERIDO";
+        public static final String URI_ARCHIVO_INVALIDA = "ENTREGABLES_ARTEFACTO_ENTREGABLE_URI_ARCHIVO_INVALIDA";
+        public static final String ARTEFACTO_INVALIDO = "ENTREGABLES_ARTEFACTO_ENTREGABLE_ARTEFACTO_INVALIDO";
+        public static final String VERSION_REPOSITORIO_ARTEFACTO_INVALIDA =
+                "ENTREGABLES_ARTEFACTO_ENTREGABLE_VERSION_REPOSITORIO_ARTEFACTO_INVALIDA";
+        public static final String NOMBRE_DOCUMENTO_INVALIDO =
+                "ENTREGABLES_ARTEFACTO_ENTREGABLE_NOMBRE_DOCUMENTO_INVALIDO";
+        public static final String REPOSITORIO_INVALIDO = "ENTREGABLES_ARTEFACTO_ENTREGABLE_REPOSITORIO_INVALIDO";
+        public static final String NOMBRE_REPOSITORIO_INVALIDO =
+                "ENTREGABLES_ARTEFACTO_ENTREGABLE_NOMBRE_REPOSITORIO_INVALIDO";
+        public static final String PAQUETE_REQUERIDO = "ENTREGABLES_ARTEFACTO_ENTREGABLE_PAQUETE_REQUERIDO";
+        public static final String ARTEFACTOS_REQUERIDOS = "ENTREGABLES_ARTEFACTO_ENTREGABLE_ARTEFACTOS_REQUERIDOS";
+    }
+
     public static final class ProyectoGrado {
 
         private ProyectoGrado() {}

@@ -5,12 +5,17 @@ import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryp
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ArtefactoPaqueteEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ContenidoPaqueteEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.PaqueteEntregableEntity;
+import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
 import com.arquisoft.artefactos.domain.paqueteentregable.GeneracionPaqueteEntregableDomain;
 import com.arquisoft.artefactos.domain.paqueteentregable.PaqueteEntregableDomain;
 import com.arquisoft.artefactos.domain.paqueteentregable.model.ArtefactoExcluidoPaquete;
 import com.arquisoft.artefactos.domain.paqueteentregable.model.ArtefactoIncluidoPaquete;
+import com.arquisoft.artefactos.domain.paqueteentregable.model.ArtefactoPaqueteGenerado;
 import com.arquisoft.artefactos.domain.paqueteentregable.model.ArtefactosDelPaquete;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public final class PaqueteEntregableMapper {
 
@@ -39,6 +44,22 @@ public final class PaqueteEntregableMapper {
                 generacion.getGeneradoEn(),
                 artefactos.incluidos().stream().map(PaqueteEntregableMapper::toIncluidoEntity).toList(),
                 artefactos.excluidos().stream().map(PaqueteEntregableMapper::toExcluidoEntity).toList());
+    }
+
+    public static List<ArtefactoPaqueteGenerado> toArtefactosGenerados(
+            List<ArtefactoIncluidoPaquete> incluidos, List<EntradaPaqueteArmada> entradas) {
+        var rutaPorArtefacto = entradas.stream().collect(
+                Collectors.toMap(EntradaPaqueteArmada::artefacto, EntradaPaqueteArmada::rutaEnPaquete));
+        return incluidos.stream()
+                .map(incluido -> new ArtefactoPaqueteGenerado(
+                        incluido.artefacto(),
+                        incluido.numeroVersion(),
+                        incluido.versionRepositorioArtefacto(),
+                        incluido.nombreDocumento(),
+                        incluido.repositorio(),
+                        incluido.nombreRepositorio(),
+                        rutaPorArtefacto.get(incluido.artefacto())))
+                .toList();
     }
 
     private static ArtefactoIncluidoEntity toIncluidoEntity(ArtefactoIncluidoPaquete incluido) {

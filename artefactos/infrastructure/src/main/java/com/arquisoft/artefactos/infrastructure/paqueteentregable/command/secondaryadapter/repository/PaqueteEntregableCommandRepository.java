@@ -27,7 +27,10 @@ public interface PaqueteEntregableCommandRepository extends JpaRepository<Paquet
                    v.uri_archivo AS "uriArchivo",
                    v.fecha_creacion AS "fechaVersion",
                    COALESCE((SELECT MAX(u.version_artefacto) FROM version_artefacto u
-                             WHERE u.artefacto_id = a.id), 0) AS "ultimaVersion"
+                             WHERE u.artefacto_id = a.id), 0) AS "ultimaVersion",
+                   vra.id AS "versionRepositorioArtefacto",
+                   vra.id_repositorio AS "repositorio",
+                   vra.nombre_repositorio AS "nombreRepositorio"
             FROM artefacto a
             JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
             LEFT JOIN version_artefacto v ON v.artefacto_id = a.id

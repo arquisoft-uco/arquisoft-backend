@@ -30,7 +30,8 @@ class ArtefactosParaPaqueteFinderImplTest {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var fila = new ArtefactoParaPaqueteEntity(UtilUUID.generarNuevoUUID(), "Doc",
-                UtilUUID.generarNuevoUUID(), 1, "uri", Instant.now(), 1);
+                UtilUUID.generarNuevoUUID(), 1, "uri", Instant.now(), 1,
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Repo");
         when(paqueteEntregableOutputPort.obtenerArtefactosParaPaquete(proyecto, EstadoRevisionAsesor.CERRADA.getId()))
                 .thenReturn(List.of(fila));
 

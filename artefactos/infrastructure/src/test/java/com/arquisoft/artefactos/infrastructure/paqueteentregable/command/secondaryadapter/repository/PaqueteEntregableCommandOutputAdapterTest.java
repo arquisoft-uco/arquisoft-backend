@@ -263,6 +263,40 @@ class PaqueteEntregableCommandOutputAdapterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void debeTraerRepositorioYNombre_cuandoObtieneArtefactosParaPaquete() throws Exception {
+        // Arrange
+        var proyecto = sembrarProyecto();
+        var versionRepositorio = UtilUUID.generarNuevoUUID();
+        var repositorio = UtilUUID.generarNuevoUUID();
+        entityManager.persist(VersionRepositorioArtefactoJpaEntity.builder()
+                .id(versionRepositorio).nombreDocumento("Doc").versionDocumento(1)
+                .repositorioArtefacto(repositorio).nombreRepositorio("Repo Central")
+                .nombreArchivo("a.pdf").tipoContenido("application/pdf").tamanoBytes(1L).build());
+        entityManager.persist(ArtefactoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID()).proyectoGrado(proyecto).versionRepositorioArtefacto(versionRepositorio)
+                .asesor(UtilUUID.generarNuevoUUID()).build());
+        entityManager.flush();
+        entityManager.clear();
+        var sql = PaqueteEntregableCommandRepository.class
+                .getMethod("obtenerArtefactosParaPaquete", UUID.class, String.class)
+                .getAnnotation(NativeQuery.class).value();
+
+        // Act
+        var filas = (List<Object[]>) entityManager.getEntityManager().createNativeQuery(sql)
+                .setParameter("proyectoGrado", proyecto)
+                .setParameter("estadoCerrada", CERRADA)
+                .getResultList();
+
+        // Assert
+        assertThat(filas).singleElement().satisfies(fila -> {
+            assertThat(comoUuid(fila[7])).isEqualTo(versionRepositorio);
+            assertThat(comoUuid(fila[8])).isEqualTo(repositorio);
+            assertThat(fila[9]).isEqualTo("Repo Central");
+        });
+    }
+
+    @Test
     void debeExcluirArtefactosOmitidos() {
         // Arrange
         var proyecto = sembrarProyecto();

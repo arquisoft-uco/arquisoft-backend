@@ -24,7 +24,8 @@ class PaqueteEntregableDomainTest {
         // Arrange
         var generacion = generacion();
         var incluido = new ArtefactoIncluidoPaquete(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                "Doc", 2, 3, Instant.now(), "uri");
+                "Doc", 2, 3, Instant.now(), "uri",
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Repo");
 
         // Act
         var paquete = PaqueteEntregableDomain.crear(generacion, List.of(incluido), " paquetes/x.zip ", 100L);

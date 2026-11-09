@@ -57,6 +57,9 @@ public class PaqueteEntregableCommandOutputAdapter implements PaqueteEntregableO
                 UtilNumero.obtenerPorDefecto(fila.getNumeroVersionCerrada()),
                 UtilObjeto.esNulo(fila.getUriArchivo()) ? UtilTexto.VACIO : fila.getUriArchivo(),
                 UtilObjeto.esNulo(fila.getFechaVersion()) ? UtilFecha.VACIO : fila.getFechaVersion(),
-                UtilNumero.obtenerPorDefecto(fila.getUltimaVersion()));
+                UtilNumero.obtenerPorDefecto(fila.getUltimaVersion()),
+                fila.getVersionRepositorioArtefacto(),
+                fila.getRepositorio(),
+                fila.getNombreRepositorio());
     }
 }

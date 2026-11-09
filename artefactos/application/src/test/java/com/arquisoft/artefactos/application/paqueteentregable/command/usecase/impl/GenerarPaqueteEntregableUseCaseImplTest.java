@@ -8,6 +8,7 @@ import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryp
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.ContenidoPaqueteEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.entity.PaqueteEntregableEntity;
 import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.model.ArchivoPaqueteArmado;
+import com.arquisoft.artefactos.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
 import com.arquisoft.artefactos.application.paqueteentregable.command.validator.GenerarPaqueteEntregableValidator;
 import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.artefactos.domain.paqueteentregable.GeneracionPaqueteEntregableDomain;
@@ -99,11 +100,12 @@ class GenerarPaqueteEntregableUseCaseImplTest {
         var generacion = generacion();
         var proyecto = ProyectoGradoDomain.reconstruir(generacion.getProyectoGrado(), "Proyecto", null, null);
         var incluido = new ArtefactoIncluidoPaquete(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                "Doc", 1, 1, Instant.now(), "uri");
+                "Doc", 1, 1, Instant.now(), "uri",
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Repo");
         var excluido = new ArtefactoExcluidoPaquete(
                 UtilUUID.generarNuevoUUID(), "Otro", MotivoExclusionPaquete.SIN_VERSIONES, 0);
         var artefactos = new ArtefactosDelPaquete(List.of(incluido), List.of(excluido));
-        var archivo = new ArchivoPaqueteArmado("bucket", "paquetes/x.zip", "proyecto.zip", 500L);
+        var archivo = new ArchivoPaqueteArmado("bucket", "paquetes/x.zip", "proyecto.zip", 500L, List.of());
         when(paqueteEntregableExisteFinder.obtener(generacion.getEntregableProyectoGrado())).thenReturn(false);
         when(proyectoGradoPorIdFinder.obtener(generacion.getProyectoGrado())).thenReturn(proyecto);
         when(artefactosParaPaqueteFinder.obtener(generacion.getProyectoGrado())).thenReturn(artefactos);
@@ -149,6 +151,39 @@ class GenerarPaqueteEntregableUseCaseImplTest {
     }
 
     @Test
+    void debePublicarEventoConArtefactosYRutas_cuandoSeGeneraElPaquete() {
+        // Arrange
+        var generacion = generacion();
+        var proyecto = ProyectoGradoDomain.reconstruir(generacion.getProyectoGrado(), "Proyecto", null, null);
+        var incluido = new ArtefactoIncluidoPaquete(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                "Doc", 1, 1, Instant.now(), "uri",
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Repo");
+        var archivo = new ArchivoPaqueteArmado("bucket", "paquetes/x.zip", "proyecto.zip", 500L,
+                List.of(new EntradaPaqueteArmada(incluido.artefacto(), "01-Doc/v1-doc.pdf")));
+        when(paqueteEntregableExisteFinder.obtener(generacion.getEntregableProyectoGrado())).thenReturn(false);
+        when(proyectoGradoPorIdFinder.obtener(generacion.getProyectoGrado())).thenReturn(proyecto);
+        when(artefactosParaPaqueteFinder.obtener(generacion.getProyectoGrado()))
+                .thenReturn(new ArtefactosDelPaquete(List.of(incluido), List.of()));
+        when(almacenamientoPaqueteOutputPort.armar(any())).thenReturn(archivo);
+
+        // Act
+        useCase.ejecutar(generacion);
+
+        // Assert
+        var evento = ArgumentCaptor.forClass(PaqueteEntregableGeneradoEvent.class);
+        verify(eventPublisher).publish(evento.capture());
+        assertThat(evento.getValue().getArtefactos()).singleElement().satisfies(item -> {
+            assertThat(item.artefacto()).isEqualTo(incluido.artefacto());
+            assertThat(item.numeroVersion()).isEqualTo(incluido.numeroVersion());
+            assertThat(item.versionRepositorioArtefacto()).isEqualTo(incluido.versionRepositorioArtefacto());
+            assertThat(item.nombreDocumento()).isEqualTo("Doc");
+            assertThat(item.repositorio()).isEqualTo(incluido.repositorio());
+            assertThat(item.nombreRepositorio()).isEqualTo("Repo");
+            assertThat(item.rutaEnPaquete()).isEqualTo("01-Doc/v1-doc.pdf");
+        });
+    }
+
+    @Test
     void noDebeArmarNiPublicar_cuandoElValidatorRechaza() {
         // Arrange
         var generacion = generacion();
@@ -175,7 +210,7 @@ class GenerarPaqueteEntregableUseCaseImplTest {
         when(artefactosParaPaqueteFinder.obtener(generacion.getProyectoGrado()))
                 .thenReturn(new ArtefactosDelPaquete(List.of(), List.of()));
         when(almacenamientoPaqueteOutputPort.armar(any()))
-                .thenReturn(new ArchivoPaqueteArmado("bucket", "paquetes/x.zip", "proyecto.zip", 120L));
+                .thenReturn(new ArchivoPaqueteArmado("bucket", "paquetes/x.zip", "proyecto.zip", 120L, List.of()));
 
         // Act
         var resultado = useCase.ejecutar(generacion);
