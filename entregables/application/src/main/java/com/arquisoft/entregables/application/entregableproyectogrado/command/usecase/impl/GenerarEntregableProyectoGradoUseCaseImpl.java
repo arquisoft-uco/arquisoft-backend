@@ -10,9 +10,11 @@ import com.arquisoft.entregables.application.proyectogrado.command.finder.Proyec
 import com.arquisoft.entregables.domain.asesor.model.VigenciaAsesor;
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.GeneracionEntregableProyectoGradoDomain;
+import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoGeneradoEvent;
 import com.arquisoft.entregables.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
+import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,7 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
     private final AsesorVigenteFinder asesorVigenteFinder;
     private final UltimaVersionEntregableProyectoGradoFinder ultimaVersionEntregableProyectoGradoFinder;
     private final GenerarEntregableProyectoGradoValidator generarEntregableProyectoGradoValidator;
+    private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
@@ -47,6 +50,9 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
         var entregable = EntregableProyectoGradoDomain.crear(
                 entrada.getProyectoGrado(), ultimaVersion, entrada.getAsesor());
         entregableProyectoGradoOutputPort.registrar(EntregableProyectoGradoMapper.toEntity(entregable));
+
+        eventPublisher.publish(new EntregableProyectoGradoGeneradoEvent(
+                entregable.getId(), entregable.getProyectoGrado(), entregable.getVersion()));
 
         logger.info(EntregableProyectoGradoKey.LOG_GENERADO,
                 entregable.getId(), entregable.getProyectoGrado(), entregable.getVersion());

@@ -13,6 +13,7 @@ import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.http.Method;
 import io.minio.MinioClient;
 import io.minio.PostPolicy;
+import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import io.minio.StatObjectArgs;
 import io.minio.StatObjectResponse;
@@ -308,6 +309,35 @@ class MinioAlmacenamientoObjetosTest {
         // Act & Assert
         assertThatThrownBy(() -> almacenamiento.eliminar(BUCKET, "pendientes/c-1"))
                 .isInstanceOf(MinioOperationException.class);
+    }
+
+    @Test
+    void debeSubirObjetoConTamanoYTipo_cuandoMinioResponde() throws Exception {
+        // Arrange
+        var contenido = new ByteArrayInputStream("zip".getBytes(StandardCharsets.UTF_8));
+
+        // Act
+        almacenamiento.subir(BUCKET, "paquetes/e-1.zip", contenido, 3L, "application/zip");
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(PutObjectArgs.class);
+        verify(minioClient).putObject(captor.capture());
+        assertThat(captor.getValue().bucket()).isEqualTo(BUCKET);
+        assertThat(captor.getValue().object()).isEqualTo("paquetes/e-1.zip");
+        assertThat(captor.getValue().objectSize()).isEqualTo(3L);
+        assertThat(captor.getValue().contentType()).isEqualTo("application/zip");
+    }
+
+    @Test
+    void debeLanzarSubidaFallida_cuandoMinioFalla() throws Exception {
+        // Arrange
+        org.mockito.Mockito.doThrow(new IOException("caido")).when(minioClient).putObject(any(PutObjectArgs.class));
+        var contenido = new ByteArrayInputStream(new byte[] {1});
+
+        // Act & Assert
+        assertThatThrownBy(() -> almacenamiento.subir(BUCKET, "paquetes/e-1.zip", contenido, 1L, "application/zip"))
+                .isInstanceOfSatisfying(MinioOperationException.class,
+                        ex -> assertThat(ex.getCodigoError()).isEqualTo(AppCodes.Minio.SUBIDA_FALLIDA));
     }
 
     private GetPresignedObjectUrlArgs firmar(String nombreArchivo) throws Exception {

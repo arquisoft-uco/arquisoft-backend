@@ -289,6 +289,7 @@
               "artefactos:version-artefacto:delete",
               "repositorio-artefactos:version-repositorio-artefacto:download",
               "entregables:entregable-proyecto-grado-estudiante:view",
+              "entregables:paquete-entregable:download",
               "solicitudes:respuesta-cambio-asesor-recibida:view",
               "solicitudes:respuesta-ampliacion-plazo-recibida:view",
               "solicitudes:solicitud-novedad-asesor:delete",
@@ -379,6 +380,7 @@
               "entregables:entregable-proyecto-grado-estado:update",
               "entregables:entregable-proyecto-grado-asesor:view",
               "entregables:artefacto-entregable:view",
+              "entregables:paquete-entregable:download",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
@@ -1275,6 +1277,15 @@
         {
           "id": "78db41e4-837c-4639-b863-86b3ba644930",
           "name": "entregables:artefacto-entregable:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "2dce97b6-1297-43ef-9726-2435b50fafa7",
+          "name": "entregables:paquete-entregable:download",
           "description": "",
           "composite": false,
           "clientRole": true,

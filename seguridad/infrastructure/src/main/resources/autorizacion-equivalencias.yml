@@ -265,3 +265,4 @@ security:
         - {method: POST, path: "/api/entregables-proyecto-grado/jurado", role: "entregables:entregable-proyecto-grado-jurado:view"}
         - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/entregables/estudiante", role: "entregables:entregable-proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/entregables-proyecto-grado/{entregableProyectoGradoId}/artefactos", role: "entregables:artefacto-entregable:view"}
+        - {method: GET, path: "/api/entregables/{entregableProyectoGradoId}/paquete", role: "entregables:paquete-entregable:download"}

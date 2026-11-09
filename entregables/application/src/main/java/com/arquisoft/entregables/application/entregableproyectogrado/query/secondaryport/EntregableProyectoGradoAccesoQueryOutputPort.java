@@ -6,4 +6,6 @@ import java.util.UUID;
 public interface EntregableProyectoGradoAccesoQueryOutputPort {
 
     Optional<UUID> obtenerAsesorPorId(UUID entregableProyectoGrado);
+
+    boolean estudianteParticipa(UUID entregableProyectoGrado, UUID estudiante);
 }

@@ -196,6 +196,8 @@ public final class EventTopics {
                 "artefactos.estudiante_artefacto.removido";
         public static final String VERSION_REPOSITORIO_ARTEFACTO_ELIMINACION_AUTORIZADA =
                 "artefactos.version_repositorio_artefacto.eliminacion_autorizada";
+        public static final String PAQUETE_ENTREGABLE_GENERADO =
+                "artefactos.paquete_entregable.generado";
     }
 
     public static final class MapasRuta {
@@ -216,6 +218,9 @@ public final class EventTopics {
 
         public static final String ENTREGABLE_PROYECTO_GRADO_CERRADO =
                 "entregables.entregable_proyecto_grado.cerrado";
+
+        public static final String ENTREGABLE_PROYECTO_GRADO_GENERADO =
+                "entregables.entregable_proyecto_grado.generado";
         public static final String ENTREGABLE_PROYECTO_GRADO_CANCELADO =
                 "entregables.entregable_proyecto_grado.cancelado";
     }
