@@ -8,9 +8,11 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.model.Transicion
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.CierreEntregablePermitidoRule;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.EntregableProyectoGradoExisteRule;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.EstadoDestinoEntregablePermitidoRule;
+import com.arquisoft.entregables.domain.entregableproyectogrado.rules.EstadoEntregableNoTerminalRule;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.CierreEntregablePermitidoRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EntregableProyectoGradoExisteRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EstadoDestinoEntregablePermitidoRuleImpl;
+import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EstadoEntregableNoTerminalRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,11 +20,13 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
         implements CambiarEstadoEntregableProyectoGradoValidator {
 
     private final EntregableProyectoGradoExisteRule entregableProyectoGradoExisteRule;
+    private final EstadoEntregableNoTerminalRule estadoEntregableNoTerminalRule;
     private final EstadoDestinoEntregablePermitidoRule estadoDestinoEntregablePermitidoRule;
     private final CierreEntregablePermitidoRule cierreEntregablePermitidoRule;
 
     public CambiarEstadoEntregableProyectoGradoValidatorImpl() {
         this.entregableProyectoGradoExisteRule = new EntregableProyectoGradoExisteRuleImpl();
+        this.estadoEntregableNoTerminalRule = new EstadoEntregableNoTerminalRuleImpl();
         this.estadoDestinoEntregablePermitidoRule = new EstadoDestinoEntregablePermitidoRuleImpl();
         this.cierreEntregablePermitidoRule = new CierreEntregablePermitidoRuleImpl();
     }
@@ -33,6 +37,7 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
                 new ExistenciaEntregableProyectoGrado(cambio.getEntregableProyectoGrado(), !entregable.esVacio()));
         var transicion = new TransicionEstadoEntregable(
                 cambio.getEntregableProyectoGrado(), entregable.getEstadoEntregable(), cambio.getEstadoEntregable());
+        estadoEntregableNoTerminalRule.validar(transicion);
         estadoDestinoEntregablePermitidoRule.validar(transicion);
         cierreEntregablePermitidoRule.validar(transicion);
     }

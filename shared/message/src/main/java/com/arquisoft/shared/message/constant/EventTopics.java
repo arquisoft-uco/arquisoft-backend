@@ -209,4 +209,14 @@ public final class EventTopics {
         public static final String TAREA_FINALIZADA =
                 "mapas_ruta.tarea.finalizada";
     }
+
+    public static final class Entregables {
+
+        private Entregables() {}
+
+        public static final String ENTREGABLE_PROYECTO_GRADO_CERRADO =
+                "entregables.entregable_proyecto_grado.cerrado";
+        public static final String ENTREGABLE_PROYECTO_GRADO_CANCELADO =
+                "entregables.entregable_proyecto_grado.cancelado";
+    }
 }
