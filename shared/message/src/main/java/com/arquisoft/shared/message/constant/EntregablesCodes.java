@@ -30,6 +30,8 @@ public final class EntregablesCodes {
         public static final String ESTADO_DESTINO_NO_PERMITIDO =
                 "ENTREGABLES_ENTREGABLE_PROYECTO_GRADO_ESTADO_DESTINO_NO_PERMITIDO";
         public static final String CIERRE_NO_PERMITIDO = "ENTREGABLES_ENTREGABLE_PROYECTO_GRADO_CIERRE_NO_PERMITIDO";
+        public static final String CANCELACION_NO_PERMITIDA =
+                "ENTREGABLES_ENTREGABLE_PROYECTO_GRADO_CANCELACION_NO_PERMITIDA";
         public static final String ESTADO_TERMINAL = "ENTREGABLES_ENTREGABLE_PROYECTO_GRADO_ESTADO_TERMINAL";
         public static final String ESTUDIANTE_REQUERIDO = "ENTREGABLES_ENTREGABLE_PROYECTO_GRADO_ESTUDIANTE_REQUERIDO";
         public static final String VIGENTE_YA_EXISTE = "ENTREGABLES_ENTREGABLE_PROYECTO_GRADO_VIGENTE_YA_EXISTE";
@@ -51,6 +53,7 @@ public final class EntregablesCodes {
         public static final String ROLES_REQUERIDOS = "ENTREGABLES_PAQUETE_ENTREGABLE_ROLES_REQUERIDOS";
         public static final String ACCESO_DENEGADO = "ENTREGABLES_PAQUETE_ENTREGABLE_ACCESO_DENEGADO";
         public static final String EN_PREPARACION = "ENTREGABLES_PAQUETE_ENTREGABLE_EN_PREPARACION";
+        public static final String CANCELADO = "ENTREGABLES_PAQUETE_ENTREGABLE_CANCELADO";
     }
 
     public static final class ProyectoGrado {

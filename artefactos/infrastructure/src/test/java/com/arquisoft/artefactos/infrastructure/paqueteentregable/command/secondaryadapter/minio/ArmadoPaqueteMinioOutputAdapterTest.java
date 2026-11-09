@@ -229,6 +229,18 @@ class ArmadoPaqueteMinioOutputAdapterTest {
         assertThat(despues).isEmpty();
     }
 
+    @Test
+    void debeEliminarElObjetoEnElBucketConfigurado() {
+        // Arrange
+        var clave = "paquetes/" + UtilUUID.generarNuevoUUID() + ".zip";
+
+        // Act
+        adapter.eliminar(clave);
+
+        // Assert
+        assertThat(almacenamiento.eliminado).containsExactly(BUCKET + "/" + clave);
+    }
+
     private record Objeto(byte[] contenido, String tipo, Map<String, String> metadatos) {}
 
     private static final class AlmacenamientoFalso implements AlmacenamientoObjetos {
@@ -240,6 +252,7 @@ class ArmadoPaqueteMinioOutputAdapterTest {
         private long tamanoDeclarado;
         private String tipoSubida;
         private boolean fallarSubida;
+        private final List<String> eliminado = new ArrayList<>();
 
         @Override
         public FormularioCarga generarFormularioCarga(SolicitudFormularioCarga solicitud) {
@@ -289,7 +302,7 @@ class ArmadoPaqueteMinioOutputAdapterTest {
 
         @Override
         public void eliminar(String bucket, String key) {
-            throw new UnsupportedOperationException();
+            eliminado.add(bucket + "/" + key);
         }
     }
 }

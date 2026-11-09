@@ -5,10 +5,12 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntr
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.model.ExistenciaEntregableProyectoGrado;
 import com.arquisoft.entregables.domain.entregableproyectogrado.model.TransicionEstadoEntregable;
+import com.arquisoft.entregables.domain.entregableproyectogrado.rules.CancelacionEntregablePermitidaRule;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.CierreEntregablePermitidoRule;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.EntregableProyectoGradoExisteRule;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.EstadoDestinoEntregablePermitidoRule;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.EstadoEntregableNoTerminalRule;
+import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.CancelacionEntregablePermitidaRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.CierreEntregablePermitidoRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EntregableProyectoGradoExisteRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EstadoDestinoEntregablePermitidoRuleImpl;
@@ -32,6 +34,7 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
     private final EstadoEntregableNoTerminalRule estadoEntregableNoTerminalRule;
     private final EstadoDestinoEntregablePermitidoRule estadoDestinoEntregablePermitidoRule;
     private final CierreEntregablePermitidoRule cierreEntregablePermitidoRule;
+    private final CancelacionEntregablePermitidaRule cancelacionEntregablePermitidaRule;
 
     public CambiarEstadoEntregableProyectoGradoValidatorImpl() {
         this.entregableProyectoGradoExisteRule = new EntregableProyectoGradoExisteRuleImpl();
@@ -40,6 +43,7 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
         this.estadoEntregableNoTerminalRule = new EstadoEntregableNoTerminalRuleImpl();
         this.estadoDestinoEntregablePermitidoRule = new EstadoDestinoEntregablePermitidoRuleImpl();
         this.cierreEntregablePermitidoRule = new CierreEntregablePermitidoRuleImpl();
+        this.cancelacionEntregablePermitidaRule = new CancelacionEntregablePermitidaRuleImpl();
     }
 
     @Override
@@ -56,5 +60,6 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
         estadoEntregableNoTerminalRule.validar(transicion);
         estadoDestinoEntregablePermitidoRule.validar(transicion);
         cierreEntregablePermitidoRule.validar(transicion);
+        cancelacionEntregablePermitidaRule.validar(transicion);
     }
 }

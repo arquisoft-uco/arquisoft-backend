@@ -37,6 +37,11 @@ public class PaqueteEntregableCommandOutputAdapter implements PaqueteEntregableO
     }
 
     @Override
+    public List<String> obtenerClavesAnteriores(UUID proyectoGrado, int versionEntregable) {
+        return paqueteEntregableCommandRepository.obtenerClavesAnteriores(proyectoGrado, versionEntregable);
+    }
+
+    @Override
     public List<ArtefactoParaPaqueteEntity> obtenerArtefactosParaPaquete(UUID proyectoGrado, String estadoCerrada) {
         return paqueteEntregableCommandRepository.obtenerArtefactosParaPaquete(proyectoGrado, estadoCerrada).stream()
                 .map(PaqueteEntregableCommandOutputAdapter::toEntity)

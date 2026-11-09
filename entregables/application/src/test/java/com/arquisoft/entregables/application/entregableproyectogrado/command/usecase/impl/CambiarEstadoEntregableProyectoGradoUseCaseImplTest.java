@@ -98,7 +98,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CANCELADO");
         var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 4,
-                UtilUUID.generarNuevoUUID(), EstadoEntregable.EN_EVALUACION);
+                UtilUUID.generarNuevoUUID(), EstadoEntregable.DISPONIBLE_EVALUACION);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
         when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
 
@@ -110,7 +110,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         var captor = ArgumentCaptor.forClass(DomainEvent.class);
         orden.verify(entregableProyectoGradoOutputPort).actualizarEstado(id, "CANCELADO");
         orden.verify(eventPublisher).publish(captor.capture());
-        orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "EN_EVALUACION", "CANCELADO");
+        orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "DISPONIBLE_EVALUACION", "CANCELADO");
         verify(eventPublisher, times(1)).publish(any());
         assertThat(captor.getValue()).isInstanceOfSatisfying(EntregableProyectoGradoCanceladoEvent.class, evento -> {
             assertThat(evento.getEntregableProyectoGrado()).isEqualTo(id);

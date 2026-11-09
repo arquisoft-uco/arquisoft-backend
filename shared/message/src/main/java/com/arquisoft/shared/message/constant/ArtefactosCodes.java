@@ -82,6 +82,7 @@ public final class ArtefactosCodes {
         public static final String NO_ENCONTRADO = "ARTEFACTOS_PROYECTO_GRADO_NO_ENCONTRADO";
         public static final String ENTREGADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_ENTREGADO_EN_REQUERIDO";
         public static final String FINALIZADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_FINALIZADO_EN_REQUERIDO";
+        public static final String CANCELADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_CANCELADO_EN_REQUERIDO";
         public static final String CONGELADO = "ARTEFACTOS_PROYECTO_GRADO_CONGELADO";
         public static final String NO_FINALIZADO = "ARTEFACTOS_PROYECTO_GRADO_NO_FINALIZADO";
     }

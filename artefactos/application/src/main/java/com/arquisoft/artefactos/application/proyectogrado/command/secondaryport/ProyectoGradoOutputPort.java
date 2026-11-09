@@ -26,5 +26,7 @@ public interface ProyectoGradoOutputPort {
 
     void marcarEntregado(UUID id, Instant entregadoEn);
 
+    void limpiarEntregado(UUID id, Instant hasta);
+
     void marcarFinalizado(UUID id, Instant finalizadoEn);
 }

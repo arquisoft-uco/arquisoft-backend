@@ -70,6 +70,12 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     }
 
     @Override
+    public void limpiarEntregado(UUID id, Instant hasta) {
+        proyectoGradoCommandRepository.limpiarEntregado(id, hasta);
+        logger.debug(ProyectoGradoKey.LOG_ENTREGADO_LIMPIADO, id, hasta);
+    }
+
+    @Override
     public void marcarFinalizado(UUID id, Instant finalizadoEn) {
         proyectoGradoCommandRepository.marcarFinalizado(id, finalizadoEn);
         logger.debug(ProyectoGradoKey.LOG_FINALIZADO_MARCADO, id, finalizadoEn);

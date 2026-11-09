@@ -2,6 +2,7 @@ package com.arquisoft.entregables.application.entregableproyectogrado.command.va
 
 import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
+import com.arquisoft.entregables.domain.entregableproyectogrado.exception.CancelacionEntregableNoPermitidaException;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.CierreEntregableNoPermitidoException;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.EntregableProyectoGradoNoEncontradoException;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.EstadoDestinoEntregableNoPermitidoException;
@@ -38,9 +39,8 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = EstadoEntregable.class, mode = EnumSource.Mode.EXCLUDE,
-            names = {"CERRADO", "CANCELADO", "VACIO"})
-    void debePasar_cuandoCancelaDesdeUnEstadoNoTerminal(EstadoEntregable origen) {
+    @EnumSource(value = EstadoEntregable.class, mode = EnumSource.Mode.INCLUDE, names = {"DISPONIBLE_EVALUACION"})
+    void debePasar_cuandoCancelaDesdeDisponibleEvaluacion(EstadoEntregable origen) {
         // Arrange
         var cambio = cambio("CANCELADO");
         var entregable = entregable(origen);
@@ -51,9 +51,9 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
 
     @ParameterizedTest
     @CsvSource({
-            "CERRADO,CANCELADO", "CERRADO,CERRADO", "CERRADO,RECHAZADO",
+            "CERRADO,CANCELADO", "CERRADO,CERRADO", "CERRADO,RECHAZADO", "RECHAZADO,CANCELADO", "RECHAZADO,CERRADO",
             "CANCELADO,CANCELADO", "CANCELADO,CERRADO", "CANCELADO,RECHAZADO"})
-    void debeLanzarTerminal_cuandoElEntregableEstaCerradoOCancelado(EstadoEntregable origen, String destino) {
+    void debeLanzarTerminal_cuandoElEntregableEsTerminal(EstadoEntregable origen, String destino) {
         // Arrange
         var cambio = cambio(destino);
         var entregable = entregable(origen);
@@ -106,10 +106,10 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
     }
 
     @Test
-    void debeLanzarCierreNoPermitido_cuandoCierraDesdeRechazado() {
+    void debeLanzarCierreNoPermitido_cuandoCierraDesdeEnEvaluacion() {
         // Arrange
         var cambio = cambio("CERRADO");
-        var entregable = entregable(EstadoEntregable.RECHAZADO);
+        var entregable = entregable(EstadoEntregable.EN_EVALUACION);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, entregable, PROYECTO))
@@ -151,13 +151,26 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
     }
 
     @Test
-    void debePriorizarDestino_cuandoDestinoYCierreNoSePuedenCumplirJuntos() {
+    void debePriorizarTerminal_cuandoElEntregableEstaRechazadoYElDestinoEsInvalido() {
         // Arrange
         var cambio = cambio("EN_EVALUACION");
         var entregable = entregable(EstadoEntregable.RECHAZADO);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, entregable, PROYECTO))
-                .isInstanceOf(EstadoDestinoEntregableNoPermitidoException.class);
+                .isInstanceOf(EstadoEntregableTerminalException.class);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EstadoEntregable.class, mode = EnumSource.Mode.INCLUDE,
+            names = {"EN_EVALUACION", "APROBADO", "APROBADO_CON_OBSERVACIONES"})
+    void debeLanzarCancelacionNoPermitida_cuandoCancelaDesdeUnEstadoDistintoDeDisponible(EstadoEntregable origen) {
+        // Arrange
+        var cambio = cambio("CANCELADO");
+        var entregable = entregable(origen);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, PROYECTO))
+                .isInstanceOf(CancelacionEntregableNoPermitidaException.class);
     }
 }

@@ -1,7 +1,9 @@
 package com.arquisoft.artefactos.infrastructure.paqueteentregable.command.primaryadapter.amqp.entregables.entregableproyectogrado;
 
 import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.interactor.GenerarPaqueteEntregableInteractor;
+import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.interactor.PurgarPaquetesAnterioresInteractor;
 import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.model.GenerarPaqueteEntregableCommand;
+import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.model.PurgarPaquetesAnterioresCommand;
 import com.arquisoft.artefactos.application.paqueteentregable.command.result.GeneracionPaqueteEntregableResult;
 import com.arquisoft.artefactos.application.proyectogrado.command.primaryport.interactor.CongelarProyectoGradoInteractor;
 import com.arquisoft.artefactos.application.proyectogrado.command.primaryport.model.CongelarProyectoGradoCommand;
@@ -28,17 +30,20 @@ public class EntregableProyectoGradoGeneradoConsumer extends AbstractEventConsum
 
     private final CongelarProyectoGradoInteractor congelarProyectoGradoInteractor;
     private final GenerarPaqueteEntregableInteractor generarPaqueteEntregableInteractor;
+    private final PurgarPaquetesAnterioresInteractor purgarPaquetesAnterioresInteractor;
     private final AppLogger logger;
 
     public EntregableProyectoGradoGeneradoConsumer(
             CongelarProyectoGradoInteractor congelarProyectoGradoInteractor,
             GenerarPaqueteEntregableInteractor generarPaqueteEntregableInteractor,
+            PurgarPaquetesAnterioresInteractor purgarPaquetesAnterioresInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza, logger);
         this.congelarProyectoGradoInteractor = congelarProyectoGradoInteractor;
         this.generarPaqueteEntregableInteractor = generarPaqueteEntregableInteractor;
+        this.purgarPaquetesAnterioresInteractor = purgarPaquetesAnterioresInteractor;
         this.logger = logger;
     }
 
@@ -71,6 +76,10 @@ public class EntregableProyectoGradoGeneradoConsumer extends AbstractEventConsum
                 case GeneracionPaqueteEntregableResult.Duplicado duplicado ->
                         logger.info(PaqueteEntregableKey.LOG_DUPLICADO, duplicado.entregableProyectoGrado());
             }
+
+            var purga = purgarPaquetesAnterioresInteractor.ejecutar(
+                    PurgarPaquetesAnterioresCommand.crear(payload.proyectoGrado(), payload.version()));
+            logger.info(PaqueteEntregableKey.LOG_ANTERIORES_PURGADOS, purga.proyectoGrado(), purga.eliminados());
         });
     }
 }

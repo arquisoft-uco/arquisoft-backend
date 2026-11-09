@@ -12,5 +12,7 @@ public interface PaqueteEntregableOutputPort {
 
     boolean existePorEntregable(UUID entregableProyectoGrado);
 
+    List<String> obtenerClavesAnteriores(UUID proyectoGrado, int versionEntregable);
+
     List<ArtefactoParaPaqueteEntity> obtenerArtefactosParaPaquete(UUID proyectoGrado, String estadoCerrada);
 }

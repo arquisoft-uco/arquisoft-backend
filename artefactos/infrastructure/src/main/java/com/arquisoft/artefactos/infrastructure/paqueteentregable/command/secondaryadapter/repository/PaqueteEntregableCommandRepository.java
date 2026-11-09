@@ -4,6 +4,7 @@ import com.arquisoft.artefactos.infrastructure.paqueteentregable.command.seconda
 import com.arquisoft.artefactos.infrastructure.paqueteentregable.command.secondaryadapter.projection.ArtefactoParaPaqueteProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.NativeQuery;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -12,6 +13,11 @@ import java.util.UUID;
 public interface PaqueteEntregableCommandRepository extends JpaRepository<PaqueteEntregableJpaEntity, UUID> {
 
     boolean existsByEntregableProyectoGrado(UUID entregableProyectoGrado);
+
+    @Query("SELECT p.claveObjeto FROM PaqueteEntregableJpaEntity p "
+            + "WHERE p.proyectoGrado = :proyectoGrado AND p.versionEntregable < :versionEntregable")
+    List<String> obtenerClavesAnteriores(
+            @Param("proyectoGrado") UUID proyectoGrado, @Param("versionEntregable") int versionEntregable);
 
     @NativeQuery("""
             SELECT a.id AS artefacto,

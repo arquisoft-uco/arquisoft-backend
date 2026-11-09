@@ -4,8 +4,11 @@ import com.arquisoft.artefactos.application.proyectogrado.command.primaryport.in
 import com.arquisoft.artefactos.application.proyectogrado.command.primaryport.model.CongelarProyectoGradoCommand;
 import com.arquisoft.artefactos.application.proyectogrado.command.result.CongelacionProyectoGradoResult;
 import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.interactor.GenerarPaqueteEntregableInteractor;
+import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.interactor.PurgarPaquetesAnterioresInteractor;
 import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.model.GenerarPaqueteEntregableCommand;
+import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.model.PurgarPaquetesAnterioresCommand;
 import com.arquisoft.artefactos.application.paqueteentregable.command.result.GeneracionPaqueteEntregableResult;
+import com.arquisoft.artefactos.application.paqueteentregable.command.result.PurgaPaquetesAnterioresResult;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.PaqueteEntregableKey;
 import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
@@ -47,6 +50,9 @@ class EntregableProyectoGradoGeneradoConsumerTest {
     private GenerarPaqueteEntregableInteractor generarPaqueteEntregableInteractor;
 
     @Mock
+    private PurgarPaquetesAnterioresInteractor purgarPaquetesAnterioresInteractor;
+
+    @Mock
     private Channel channel;
 
     @Mock
@@ -59,6 +65,7 @@ class EntregableProyectoGradoGeneradoConsumerTest {
         consumer = new EntregableProyectoGradoGeneradoConsumer(
                 congelarProyectoGradoInteractor,
                 generarPaqueteEntregableInteractor,
+                purgarPaquetesAnterioresInteractor,
                 new ObjectMapper(),
                 logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
@@ -68,6 +75,8 @@ class EntregableProyectoGradoGeneradoConsumerTest {
         lenient().when(generarPaqueteEntregableInteractor.ejecutar(any()))
                 .thenReturn(new GeneracionPaqueteEntregableResult.Generado(
                         UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 10L));
+        lenient().when(purgarPaquetesAnterioresInteractor.ejecutar(any()))
+                .thenReturn(new PurgaPaquetesAnterioresResult(UtilUUID.generarNuevoUUID(), 0));
     }
 
     private Message mensajeCon(String entregable, String proyecto, Integer version, long deliveryTag,
@@ -111,6 +120,22 @@ class EntregableProyectoGradoGeneradoConsumerTest {
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyecto);
         assertThat(captor.getValue().versionEntregable()).isEqualTo(3);
         verify(channel).basicAck(1L, false);
+    }
+
+    @Test
+    void debePurgarAnteriores_cuandoSeGeneraElPaquete() throws Exception {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+
+        // Act
+        consumer.onEntregableProyectoGradoGenerado(
+                mensajeCon(UtilUUID.generarNuevoUUID().toString(), proyecto.toString(), 4, 5L, false), channel);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(PurgarPaquetesAnterioresCommand.class);
+        verify(purgarPaquetesAnterioresInteractor).ejecutar(captor.capture());
+        assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyecto);
+        assertThat(captor.getValue().versionEntregable()).isEqualTo(4);
     }
 
     @Test
@@ -205,5 +230,49 @@ class EntregableProyectoGradoGeneradoConsumerTest {
         // Assert
         verify(generarPaqueteEntregableInteractor, never()).ejecutar(any());
         verify(channel).basicNack(8L, false, true);
+    }
+
+    @Test
+    void debePurgarAnteriores_cuandoElPaqueteYaExiste() throws Exception {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        when(generarPaqueteEntregableInteractor.ejecutar(any()))
+                .thenReturn(new GeneracionPaqueteEntregableResult.Duplicado(UtilUUID.generarNuevoUUID()));
+
+        // Act
+        consumer.onEntregableProyectoGradoGenerado(
+                mensajeCon(UtilUUID.generarNuevoUUID().toString(), proyecto.toString(), 2, 9L, false), channel);
+
+        // Assert
+        var orden = inOrder(generarPaqueteEntregableInteractor, purgarPaquetesAnterioresInteractor, channel);
+        orden.verify(generarPaqueteEntregableInteractor).ejecutar(any());
+        orden.verify(purgarPaquetesAnterioresInteractor).ejecutar(any());
+        orden.verify(channel).basicAck(9L, false);
+    }
+
+    @Test
+    void noDebePurgar_cuandoGenerarElPaqueteFalla() throws Exception {
+        // Arrange
+        doThrow(new QueryTimeoutException("timeout")).when(generarPaqueteEntregableInteractor).ejecutar(any());
+
+        // Act
+        consumer.onEntregableProyectoGradoGenerado(mensajeValido(10L, false), channel);
+
+        // Assert
+        verify(purgarPaquetesAnterioresInteractor, never()).ejecutar(any());
+        verify(channel).basicNack(10L, false, true);
+    }
+
+    @Test
+    void debeReencolarSinConfirmar_cuandoLaPurgaFalla() throws Exception {
+        // Arrange
+        doThrow(new QueryTimeoutException("timeout")).when(purgarPaquetesAnterioresInteractor).ejecutar(any());
+
+        // Act
+        consumer.onEntregableProyectoGradoGenerado(mensajeValido(11L, false), channel);
+
+        // Assert
+        verify(channel).basicNack(11L, false, true);
+        verify(channel, never()).basicAck(11L, false);
     }
 }

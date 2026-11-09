@@ -61,8 +61,14 @@ public interface ProyectoGradoCommandRepository extends JpaRepository<ProyectoGr
     Optional<ProyectoGradoJpaEntity> obtenerPorVersionArtefacto(@Param("versionArtefacto") UUID versionArtefacto);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE ProyectoGradoJpaEntity p SET p.entregadoEn = :entregadoEn WHERE p.id = :id AND p.entregadoEn IS NULL")
+    @Query("UPDATE ProyectoGradoJpaEntity p SET p.entregadoEn = :entregadoEn "
+            + "WHERE p.id = :id AND (p.entregadoEn IS NULL OR p.entregadoEn < :entregadoEn)")
     int marcarEntregado(@Param("id") UUID id, @Param("entregadoEn") Instant entregadoEn);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE ProyectoGradoJpaEntity p SET p.entregadoEn = NULL "
+            + "WHERE p.id = :id AND p.entregadoEn <= :hasta")
+    int limpiarEntregado(@Param("id") UUID id, @Param("hasta") Instant hasta);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE ProyectoGradoJpaEntity p SET p.finalizadoEn = :finalizadoEn "

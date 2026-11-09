@@ -72,6 +72,13 @@ public class ArmadoPaqueteMinioOutputAdapter implements AlmacenamientoPaqueteOut
         }
     }
 
+    @Override
+    public void eliminar(String claveObjeto) {
+        var bucket = propiedades.getBucket();
+        almacenamientoObjetos.eliminar(bucket, claveObjeto);
+        logger.debug(PaqueteEntregableKey.LOG_PAQUETE_ELIMINADO, bucket, claveObjeto);
+    }
+
     private List<EntradaPaquete> prepararEntradas(String bucket, ContenidoPaqueteEntity contenido) {
         var entradas = new ArrayList<EntradaPaquete>();
         for (var incluido : contenido.incluidos()) {

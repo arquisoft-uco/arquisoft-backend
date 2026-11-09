@@ -197,6 +197,32 @@ class PaqueteEntregableCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerSoloLasClavesDeVersionesMenoresDelMismoProyecto() {
+        // Arrange
+        var proyecto = sembrarProyecto();
+        var otroProyecto = sembrarProyecto();
+        var generadoEn = Instant.parse("2026-11-08T10:00:00Z");
+        adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                proyecto, 1, "paquetes/v1.zip", 1L, generadoEn, List.of()));
+        adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                proyecto, 2, "paquetes/v2.zip", 1L, generadoEn, List.of()));
+        adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                proyecto, 3, "paquetes/v3.zip", 1L, generadoEn, List.of()));
+        adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                otroProyecto, 1, "paquetes/ajeno.zip", 1L, generadoEn, List.of()));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var claves = adapter.obtenerClavesAnteriores(proyecto, 3);
+        var sinAnteriores = adapter.obtenerClavesAnteriores(proyecto, 1);
+
+        // Assert
+        assertThat(claves).containsExactlyInAnyOrder("paquetes/v1.zip", "paquetes/v2.zip");
+        assertThat(sinAnteriores).isEmpty();
+    }
+
+    @Test
     void debeResponderExistencia_porEntregable() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();

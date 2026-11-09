@@ -12,7 +12,7 @@ import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoSinEntregableException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.TransicionEstadoProyectoNoPermitidaException;
-import com.arquisoft.proyectos.domain.proyectogrado.exception.UltimoEntregableNoTerminalException;
+import com.arquisoft.proyectos.domain.proyectogrado.exception.UltimoEntregableNoCerradoException;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -45,9 +45,14 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
         // Act & Assert
         assertThatCode(() -> validator.validar(cambio, proyecto, enProceso, true, entregable(EstadoEntregable.CERRADO)))
                 .doesNotThrowAnyException();
-        assertThatCode(() -> validator.validar(
+    }
+
+    @Test
+    void debeLanzarUltimoNoCerrado_cuandoElUltimoEstaCancelado() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
                 cambio, proyecto, enProceso, true, entregable(EstadoEntregable.CANCELADO)))
-                .doesNotThrowAnyException();
+                .isInstanceOf(UltimoEntregableNoCerradoException.class);
     }
 
     @Test
@@ -91,11 +96,11 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     }
 
     @Test
-    void debeLanzarUltimoNoTerminal_cuandoElUltimoEstaDisponibleEvaluacion() {
+    void debeLanzarUltimoNoCerrado_cuandoElUltimoEstaDisponibleEvaluacion() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, true,
                 entregable(EstadoEntregable.DISPONIBLE_EVALUACION)))
-                .isInstanceOf(UltimoEntregableNoTerminalException.class);
+                .isInstanceOf(UltimoEntregableNoCerradoException.class);
     }
 
     @Test

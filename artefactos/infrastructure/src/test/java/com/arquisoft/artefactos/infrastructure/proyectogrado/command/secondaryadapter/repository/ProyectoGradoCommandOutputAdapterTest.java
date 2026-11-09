@@ -156,19 +156,65 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeNoSobrescribirEntregado_cuandoYaTieneFecha() {
+    void debeActualizarEntregado_cuandoElExistenteEsAnterior() {
         // Arrange
         var original = Instant.parse("2026-11-01T10:00:00Z");
         var id = proyectoSembrado(original, null);
         entityManager.flush();
 
         // Act
-        adapter.marcarEntregado(id, Instant.parse("2026-11-05T10:00:00Z"));
+        var posterior = Instant.parse("2026-11-05T10:00:00Z");
+        adapter.marcarEntregado(id, posterior);
+
+        // Assert
+        assertThat(adapter.obtenerPorId(id).orElseThrow().entregadoEn()).isEqualTo(posterior);
+    }
+
+
+    @Test
+    void debeNoSobrescribirEntregado_cuandoElExistenteEsPosterior() {
+        // Arrange
+        var original = Instant.parse("2026-11-05T10:00:00Z");
+        var id = proyectoSembrado(original, null);
+        entityManager.flush();
+
+        // Act
+        adapter.marcarEntregado(id, Instant.parse("2026-11-01T10:00:00Z"));
 
         // Assert
         assertThat(adapter.obtenerPorId(id).orElseThrow().entregadoEn()).isEqualTo(original);
     }
 
+    @Test
+    void debeLimpiarEntregado_cuandoElExistenteNoEsPosteriorAlLimite() {
+        // Arrange
+        var hasta = Instant.parse("2026-11-05T10:00:00Z");
+        var id = proyectoSembrado(Instant.parse("2026-11-01T10:00:00Z"), Instant.parse("2026-11-03T10:00:00Z"));
+        entityManager.flush();
+
+        // Act
+        adapter.limpiarEntregado(id, hasta);
+
+        // Assert
+        var proyecto = adapter.obtenerPorId(id).orElseThrow();
+        assertThat(proyecto.entregadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(proyecto.finalizadoEn()).isEqualTo(Instant.parse("2026-11-03T10:00:00Z"));
+        verify(logger).debug(ProyectoGradoKey.LOG_ENTREGADO_LIMPIADO, id, hasta);
+    }
+
+    @Test
+    void debeNoLimpiarEntregado_cuandoElExistenteEsPosteriorAlLimite() {
+        // Arrange
+        var original = Instant.parse("2026-11-09T10:00:00Z");
+        var id = proyectoSembrado(original, null);
+        entityManager.flush();
+
+        // Act
+        adapter.limpiarEntregado(id, Instant.parse("2026-11-05T10:00:00Z"));
+
+        // Assert
+        assertThat(adapter.obtenerPorId(id).orElseThrow().entregadoEn()).isEqualTo(original);
+    }
     @Test
     void debeMarcarFinalizado_cuandoAunNoTieneFecha() {
         // Arrange

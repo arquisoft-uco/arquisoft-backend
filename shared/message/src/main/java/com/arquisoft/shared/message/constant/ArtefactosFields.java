@@ -93,6 +93,7 @@ public final class ArtefactosFields {
         public static final String NOMBRE = "nombre";
         public static final String ENTREGADO_EN = "entregadoEn";
         public static final String FINALIZADO_EN = "finalizadoEn";
+        public static final String CANCELADO_EN = "canceladoEn";
     }
 
     public static final class PaqueteEntregable {

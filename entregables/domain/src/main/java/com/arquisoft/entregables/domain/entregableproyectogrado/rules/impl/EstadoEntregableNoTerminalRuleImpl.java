@@ -10,7 +10,9 @@ public class EstadoEntregableNoTerminalRuleImpl implements EstadoEntregableNoTer
     @Override
     public void validar(TransicionEstadoEntregable transicion) {
         var actual = transicion.actual();
-        if (actual == EstadoEntregable.CERRADO || actual == EstadoEntregable.CANCELADO) {
+        var terminal = actual == EstadoEntregable.CERRADO || actual == EstadoEntregable.CANCELADO
+                || actual == EstadoEntregable.RECHAZADO;
+        if (terminal) {
             throw new EstadoEntregableTerminalException(transicion.entregableProyectoGrado(), actual);
         }
     }

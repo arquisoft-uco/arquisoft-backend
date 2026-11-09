@@ -68,7 +68,7 @@ class CongelarProyectoGradoUseCaseImplTest {
     void debeRetornarYaCongelado_sinMarcar() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        var congelacion = CongelacionProyectoGradoDomain.crear(id, Instant.parse("2026-11-02T10:00:00Z"));
+        var congelacion = CongelacionProyectoGradoDomain.crear(id, Instant.parse("2026-11-01T10:00:00Z"));
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
                 id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO));
 
@@ -78,6 +78,23 @@ class CongelarProyectoGradoUseCaseImplTest {
         // Assert
         assertThat(resultado).isEqualTo(new CongelacionProyectoGradoResult.YaCongelado(id));
         verify(proyectoGradoOutputPort, never()).marcarEntregado(any(), any());
+    }
+
+    @Test
+    void debeMarcar_cuandoElExistenteEsAnteriorAlEvento() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var entregadoEn = Instant.parse("2026-11-02T10:00:00Z");
+        var congelacion = CongelacionProyectoGradoDomain.crear(id, entregadoEn);
+        when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
+                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO));
+
+        // Act
+        var resultado = useCase.ejecutar(congelacion);
+
+        // Assert
+        verify(proyectoGradoOutputPort).marcarEntregado(id, entregadoEn);
+        assertThat(resultado).isEqualTo(new CongelacionProyectoGradoResult.Congelado(id));
     }
 
     @Test

@@ -15,7 +15,11 @@ import java.util.UUID;
 @Entity
 @Immutable
 @Subselect("""
-        SELECT e.id AS id, e.asesor_id AS asesor_id
+        SELECT e.id                                 AS id,
+               e.asesor_id                          AS asesor_id,
+               e.proyecto_grado_id                  AS proyecto_grado_id,
+               CAST(e.version_entregable AS BIGINT) AS version_entregable,
+               e.estado_entregable_id               AS estado_entregable_id
         FROM entregable_proyecto_grado e
         """)
 @Synchronize("entregable_proyecto_grado")
@@ -30,4 +34,13 @@ public class EntregableProyectoGradoAccesoJpaQueryEntity {
 
     @Column(name = "asesor_id")
     private UUID asesorId;
+
+    @Column(name = "proyecto_grado_id")
+    private UUID proyectoGradoId;
+
+    @Column(name = "version_entregable")
+    private Long versionEntregable;
+
+    @Column(name = "estado_entregable_id")
+    private String estadoEntregableId;
 }

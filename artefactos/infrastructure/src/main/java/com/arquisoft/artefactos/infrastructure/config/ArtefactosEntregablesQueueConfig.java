@@ -15,6 +15,9 @@ public class ArtefactosEntregablesQueueConfig {
     public static final String ENTREGABLE_PROYECTO_GRADO_GENERADO_QUEUE =
             ArtefactosQueues.PREFIJO + EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_GENERADO;
 
+    public static final String ENTREGABLE_PROYECTO_GRADO_CANCELADO_QUEUE =
+            ArtefactosQueues.PREFIJO + EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_CANCELADO;
+
     @Bean
     public Declarables artefactosEntregableProyectoGradoGeneradoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
@@ -22,6 +25,17 @@ public class ArtefactosEntregablesQueueConfig {
         return ColaEvento.declarar(
                 ENTREGABLE_PROYECTO_GRADO_GENERADO_QUEUE,
                 EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_GENERADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables artefactosEntregableProyectoGradoCanceladoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ENTREGABLE_PROYECTO_GRADO_CANCELADO_QUEUE,
+                EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_CANCELADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

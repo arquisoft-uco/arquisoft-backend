@@ -30,7 +30,9 @@ public class CongelarProyectoGradoUseCaseImpl implements CongelarProyectoGradoUs
         congelarProyectoGradoValidator.validar(
                 new ExistenciaProyectoGrado(congelacion.getProyectoGrado(), !proyecto.esVacio()));
 
-        if (proyecto.estaEntregado()) {
+        var yaCongelado = proyecto.estaEntregado()
+                && !proyecto.getEntregadoEn().isBefore(congelacion.getEntregadoEn());
+        if (yaCongelado) {
             return CongelacionProyectoGradoResultMapper.toResultYaCongelado(congelacion);
         }
 
