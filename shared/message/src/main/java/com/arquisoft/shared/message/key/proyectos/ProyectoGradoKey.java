@@ -14,6 +14,8 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     LOG_CONSULTA_COMPLETADA("proyectos.aplicacion.proyectogrado.log.consulta-completada", 3),
     LOG_CONSULTANDO_ESTUDIANTE("proyectos.aplicacion.proyectogrado.log.consultando-estudiante", 1),
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("proyectos.aplicacion.proyectogrado.log.consulta-estudiante-completada", 1),
+    LOG_CONSULTANDO_COORDINADORES("proyectos.aplicacion.proyectogrado.log.consultando-coordinadores", 1),
+    LOG_CONSULTA_COORDINADORES_COMPLETADA("proyectos.aplicacion.proyectogrado.log.consulta-coordinadores-completada", 1),
     LOG_CONSULTANDO_ASESOR("proyectos.aplicacion.proyectogrado.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("proyectos.aplicacion.proyectogrado.log.consulta-asesor-completada", 3),
     LOG_CONSULTANDO_DETALLE_ASESOR("proyectos.aplicacion.proyectogrado.log.consultando-detalle-asesor", 2),

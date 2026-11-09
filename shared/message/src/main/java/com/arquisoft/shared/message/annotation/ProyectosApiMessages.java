@@ -178,6 +178,18 @@ public final class ProyectosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "Sin permiso para consultar los proyectos de grado del estudiante";
 
+        public static final String CONSULTAR_COORDINADORES_SUMMARY =
+                "Consultar el coordinador de los proyectos de grado del estudiante";
+        public static final String CONSULTAR_COORDINADORES_DESCRIPTION =
+                "Permite al estudiante consultar, para cada proyecto de grado al que está vinculado, "
+                        + "el título y el coordinador asignado, para elegir el destinatario de una solicitud; "
+                        + "lista vacía si no pertenece a ninguno";
+        public static final String CONSULTAR_COORDINADORES_RESP_200 =
+                "Lista de proyectos de grado del estudiante con su coordinador";
+        public static final String CONSULTAR_COORDINADORES_RESP_400 = "Identificador del estudiante inválido";
+        public static final String CONSULTAR_COORDINADORES_RESP_403 =
+                "Sin permiso para consultar los coordinadores de los proyectos de grado del estudiante";
+
         public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar los proyectos de grado que asesora";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Permite al asesor consultar, con paginación, filtros por título y estado del proyecto y orden "
