@@ -76,6 +76,7 @@ public final class MapasRutaCodes {
         public static final String PLAN_REAL_CREADO_EN_REQUERIDO = "PLAN_REAL_CREADO_EN_REQUERIDO";
         public static final String PLAN_REAL_FINALIZADA_EN_REQUERIDA = "PLAN_REAL_FINALIZADA_EN_REQUERIDA";
         public static final String PLAN_REAL_DESCRIPCION_DEMASIADO_LARGA = "PLAN_REAL_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String PLAN_REAL_PROYECTO_GRADO_REQUERIDO = "PLAN_REAL_PROYECTO_GRADO_REQUERIDO";
     }
 
     public static final class AsignacionAsesor {

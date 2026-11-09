@@ -11,7 +11,10 @@ public enum PlanRealKey implements ClaveMensaje {
     LOG_DESCARTADO("mapas_ruta.aplicacion.planreal.log.descartado", 1),
     LOG_GUARDADO("mapas_ruta.infraestructura.planreal.log.guardado", 1),
     LOG_CONSULTANDO("mapas_ruta.aplicacion.planreal.log.consultando", 5),
-    LOG_CONSULTA_COMPLETADA("mapas_ruta.aplicacion.planreal.log.consulta-completada", 3);
+    LOG_CONSULTA_COMPLETADA("mapas_ruta.aplicacion.planreal.log.consulta-completada", 3),
+    LOG_CONSULTANDO_POR_PROYECTO_GRADO("mapas_ruta.aplicacion.planreal.log.consultando-por-proyecto-grado", 5),
+    LOG_CONSULTA_POR_PROYECTO_GRADO_COMPLETADA(
+            "mapas_ruta.aplicacion.planreal.log.consulta-por-proyecto-grado-completada", 3);
 
     private final String clave;
     private final int parametros;
