@@ -12,7 +12,7 @@ import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoSinEntregableException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.TransicionEstadoProyectoNoPermitidaException;
-import com.arquisoft.proyectos.domain.proyectogrado.exception.UltimoEntregableNoCerradoException;
+import com.arquisoft.proyectos.domain.proyectogrado.exception.UltimoEntregableNoDefinitivoException;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -48,11 +48,19 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     }
 
     @Test
-    void debeLanzarUltimoNoCerrado_cuandoElUltimoEstaCancelado() {
+    void debePasar_cuandoElUltimoEstaRechazado() {
+        // Act & Assert
+        assertThatCode(() -> validator.validar(
+                cambio, proyecto, enProceso, true, entregable(EstadoEntregable.RECHAZADO)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarUltimoNoDefinitivo_cuandoElUltimoEstaCancelado() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 cambio, proyecto, enProceso, true, entregable(EstadoEntregable.CANCELADO)))
-                .isInstanceOf(UltimoEntregableNoCerradoException.class);
+                .isInstanceOf(UltimoEntregableNoDefinitivoException.class);
     }
 
     @Test
@@ -96,11 +104,11 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     }
 
     @Test
-    void debeLanzarUltimoNoCerrado_cuandoElUltimoEstaDisponibleEvaluacion() {
+    void debeLanzarUltimoNoDefinitivo_cuandoElUltimoEstaDisponibleEvaluacion() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, true,
                 entregable(EstadoEntregable.DISPONIBLE_EVALUACION)))
-                .isInstanceOf(UltimoEntregableNoCerradoException.class);
+                .isInstanceOf(UltimoEntregableNoDefinitivoException.class);
     }
 
     @Test

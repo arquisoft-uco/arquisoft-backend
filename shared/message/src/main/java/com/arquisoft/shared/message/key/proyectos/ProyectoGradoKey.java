@@ -37,10 +37,10 @@ public enum ProyectoGradoKey implements ClaveMensaje {
             "proyectos.dominio.proyectogrado.error.transicion-estado-no-permitida-detalle", 3),
     ERROR_SIN_ENTREGABLE("proyectos.dominio.proyectogrado.error.sin-entregable", 1),
     ERROR_SIN_ENTREGABLE_DETALLE("proyectos.dominio.proyectogrado.error.sin-entregable-detalle", 1),
-    ERROR_ULTIMO_ENTREGABLE_NO_CERRADO(
-            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-cerrado", 3),
-    ERROR_ULTIMO_ENTREGABLE_NO_CERRADO_DETALLE(
-            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-cerrado-detalle", 3);
+    ERROR_ULTIMO_ENTREGABLE_NO_DEFINITIVO(
+            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-definitivo", 3),
+    ERROR_ULTIMO_ENTREGABLE_NO_DEFINITIVO_DETALLE(
+            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-definitivo-detalle", 3);
 
     private final String clave;
     private final int parametros;

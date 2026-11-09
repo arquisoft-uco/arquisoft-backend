@@ -55,6 +55,8 @@ class EntregableProyectoGradoPayloadsTest {
                 EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_CERRADO, entregable, proyectoGrado, 2);
         var cancelado = new EntregableEventoDePrueba(
                 EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_CANCELADO, entregable, proyectoGrado, 2);
+        var rechazado = new EntregableEventoDePrueba(
+                EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_RECHAZADO, entregable, proyectoGrado, 2);
 
         // Act
         var payloadGenerado = mapper.readValue(
@@ -63,6 +65,8 @@ class EntregableProyectoGradoPayloadsTest {
                 mapper.writeValueAsString(cerrado), EntregableProyectoGradoCerradoPayload.class);
         var payloadCancelado = mapper.readValue(
                 mapper.writeValueAsString(cancelado), EntregableProyectoGradoCanceladoPayload.class);
+        var payloadRechazado = mapper.readValue(
+                mapper.writeValueAsString(rechazado), EntregableProyectoGradoRechazadoPayload.class);
 
         // Assert
         assertThat(payloadGenerado.idEvento()).isEqualTo(generado.getIdEvento());
@@ -74,5 +78,10 @@ class EntregableProyectoGradoPayloadsTest {
         assertThat(payloadCerrado.version()).isEqualTo(2);
         assertThat(payloadCancelado.proyectoGrado()).isEqualTo(proyectoGrado.toString());
         assertThat(payloadCancelado.ocurridoEn()).isEqualTo(cancelado.getOcurridoEn());
+        assertThat(payloadRechazado.idEvento()).isEqualTo(rechazado.getIdEvento());
+        assertThat(payloadRechazado.entregableProyectoGrado()).isEqualTo(entregable.toString());
+        assertThat(payloadRechazado.proyectoGrado()).isEqualTo(proyectoGrado.toString());
+        assertThat(payloadRechazado.version()).isEqualTo(2);
+        assertThat(payloadRechazado.ocurridoEn()).isEqualTo(rechazado.getOcurridoEn());
     }
 }

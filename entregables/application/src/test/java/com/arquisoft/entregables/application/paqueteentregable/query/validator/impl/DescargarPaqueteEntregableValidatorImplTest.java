@@ -108,6 +108,18 @@ class DescargarPaqueteEntregableValidatorImplTest {
     }
 
     @Test
+    void debePasar_cuandoElEntregableEstaRechazado() {
+        // Arrange
+        var actor = UtilUUID.generarNuevoUUID();
+        var criteria = criteria(actor, true, false);
+        var rechazado = entregable(actor, EstadoEntregable.RECHAZADO);
+        var paquete = paquete();
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(criteria, rechazado, false, paquete)).doesNotThrowAnyException();
+    }
+
+    @Test
     void debeLanzarCancelado_cuandoElEntregableEstaCanceladoAntesDeDisponible() {
         // Arrange
         var actor = UtilUUID.generarNuevoUUID();

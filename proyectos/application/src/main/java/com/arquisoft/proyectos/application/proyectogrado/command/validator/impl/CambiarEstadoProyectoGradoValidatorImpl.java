@@ -18,11 +18,11 @@ import com.arquisoft.proyectos.domain.proyectogrado.model.TransicionEstadoProyec
 import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoConEntregableRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoExisteRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.TransicionEstadoProyectoPermitidaRule;
-import com.arquisoft.proyectos.domain.proyectogrado.rules.UltimoEntregableCerradoRule;
+import com.arquisoft.proyectos.domain.proyectogrado.rules.UltimoEntregableDefinitivoRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoConEntregableRuleImpl;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoExisteRuleImpl;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.TransicionEstadoProyectoPermitidaRuleImpl;
-import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.UltimoEntregableCerradoRuleImpl;
+import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.UltimoEntregableDefinitivoRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,7 +33,7 @@ public class CambiarEstadoProyectoGradoValidatorImpl implements CambiarEstadoPro
     private final AsesorProyectoGradoExisteRule asesorProyectoGradoExisteRule;
     private final TransicionEstadoProyectoPermitidaRule transicionEstadoProyectoPermitidaRule;
     private final ProyectoGradoConEntregableRule proyectoGradoConEntregableRule;
-    private final UltimoEntregableCerradoRule ultimoEntregableCerradoRule;
+    private final UltimoEntregableDefinitivoRule ultimoEntregableDefinitivoRule;
 
     public CambiarEstadoProyectoGradoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
@@ -41,7 +41,7 @@ public class CambiarEstadoProyectoGradoValidatorImpl implements CambiarEstadoPro
         this.asesorProyectoGradoExisteRule = new AsesorProyectoGradoExisteRuleImpl();
         this.transicionEstadoProyectoPermitidaRule = new TransicionEstadoProyectoPermitidaRuleImpl();
         this.proyectoGradoConEntregableRule = new ProyectoGradoConEntregableRuleImpl();
-        this.ultimoEntregableCerradoRule = new UltimoEntregableCerradoRuleImpl();
+        this.ultimoEntregableDefinitivoRule = new UltimoEntregableDefinitivoRuleImpl();
     }
 
     @Override
@@ -58,7 +58,7 @@ public class CambiarEstadoProyectoGradoValidatorImpl implements CambiarEstadoPro
                 estadoActual.getEstadoProyecto(), cambio.getEstadoNuevo()));
         proyectoGradoConEntregableRule.validar(new ExistenciaUltimoEntregable(
                 cambio.getProyectoGrado(), proyecto.getTituloProyecto(), !ultimoEntregable.esVacio()));
-        ultimoEntregableCerradoRule.validar(new EstadoUltimoEntregable(
+        ultimoEntregableDefinitivoRule.validar(new EstadoUltimoEntregable(
                 cambio.getProyectoGrado(), proyecto.getTituloProyecto(),
                 ultimoEntregable.getVersion(), ultimoEntregable.getEstadoEntregable()));
     }

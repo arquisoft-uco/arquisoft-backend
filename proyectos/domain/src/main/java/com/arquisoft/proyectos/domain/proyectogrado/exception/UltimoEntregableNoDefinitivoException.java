@@ -9,15 +9,15 @@ import com.arquisoft.shared.message.key.proyectos.ProyectoGradoKey;
 
 import java.util.UUID;
 
-public final class UltimoEntregableNoCerradoException extends DomainException {
+public final class UltimoEntregableNoDefinitivoException extends DomainException {
 
-    public UltimoEntregableNoCerradoException(UUID proyectoGrado, String tituloProyecto, int version,
+    public UltimoEntregableNoDefinitivoException(UUID proyectoGrado, String tituloProyecto, int version,
                                                EstadoEntregable estadoEntregable) {
         super(BaseError.conDetalle(
-                ProyectosCodes.ProyectoGrado.ULTIMO_ENTREGABLE_NO_CERRADO,
-                Mensajes.formatear(ProyectoGradoKey.ERROR_ULTIMO_ENTREGABLE_NO_CERRADO,
+                ProyectosCodes.ProyectoGrado.ULTIMO_ENTREGABLE_NO_DEFINITIVO,
+                Mensajes.formatear(ProyectoGradoKey.ERROR_ULTIMO_ENTREGABLE_NO_DEFINITIVO,
                         version, tituloProyecto, estadoEntregable.getNombre()),
-                Mensajes.formatear(ProyectoGradoKey.ERROR_ULTIMO_ENTREGABLE_NO_CERRADO_DETALLE,
+                Mensajes.formatear(ProyectoGradoKey.ERROR_ULTIMO_ENTREGABLE_NO_DEFINITIVO_DETALLE,
                         proyectoGrado, version, estadoEntregable.getId())
         ));
     }

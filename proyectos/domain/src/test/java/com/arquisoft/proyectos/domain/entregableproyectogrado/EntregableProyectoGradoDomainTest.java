@@ -34,6 +34,16 @@ class EntregableProyectoGradoDomainTest {
     }
 
     @Test
+    void debeCrearConRechazado_cuandoElEstadoEsRechazado() {
+        // Act
+        var entregable = EntregableProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), 1, "RECHAZADO", Instant.parse("2026-11-01T10:00:00Z"));
+
+        // Assert
+        assertThat(entregable.getEstadoEntregable()).isEqualTo(EstadoEntregable.RECHAZADO);
+    }
+
+    @Test
     void debeAcumularErrores_cuandoFaltanDatosYElEstadoEsInvalido() {
         // Act & Assert
         assertThatThrownBy(() -> EntregableProyectoGradoDomain.crear(null, null, 0, " ", null))

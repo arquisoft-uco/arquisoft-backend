@@ -50,6 +50,7 @@ class EntregableProyectoGradoConsumersTest {
     private EntregableProyectoGradoGeneradoConsumer generado;
     private EntregableProyectoGradoCerradoConsumer cerrado;
     private EntregableProyectoGradoCanceladoConsumer cancelado;
+    private EntregableProyectoGradoRechazadoConsumer rechazado;
 
     private final UUID entregable = UUID.randomUUID();
     private final UUID proyectoGrado = UUID.randomUUID();
@@ -61,6 +62,7 @@ class EntregableProyectoGradoConsumersTest {
         generado = new EntregableProyectoGradoGeneradoConsumer(interactor, mapper, logger, gestorTraza);
         cerrado = new EntregableProyectoGradoCerradoConsumer(interactor, mapper, logger, gestorTraza);
         cancelado = new EntregableProyectoGradoCanceladoConsumer(interactor, mapper, logger, gestorTraza);
+        rechazado = new EntregableProyectoGradoRechazadoConsumer(interactor, mapper, logger, gestorTraza);
 
         lenient().when(interactor.ejecutar(any()))
                 .thenReturn(new ActualizacionEstadoEntregableProyectoGradoResult.Actualizado(entregable, "X"));
@@ -123,6 +125,16 @@ class EntregableProyectoGradoConsumersTest {
         // Assert
         verificarCommand("CANCELADO");
         verify(channel).basicAck(3L, false);
+    }
+
+    @Test
+    void debeActualizarConRechazadoYConfirmar_cuandoLlegaRechazado() throws IOException {
+        // Act
+        rechazado.onEntregableProyectoGradoRechazado(mensaje(8L, false), channel);
+
+        // Assert
+        verificarCommand("RECHAZADO");
+        verify(channel).basicAck(8L, false);
     }
 
     @Test

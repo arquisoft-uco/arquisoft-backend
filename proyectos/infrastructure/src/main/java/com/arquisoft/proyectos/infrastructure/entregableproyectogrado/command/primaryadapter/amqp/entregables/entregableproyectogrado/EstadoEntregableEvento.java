@@ -7,7 +7,8 @@ public enum EstadoEntregableEvento {
 
     DISPONIBLE_EVALUACION("DISPONIBLE_EVALUACION"),
     CANCELADO("CANCELADO"),
-    CERRADO("CERRADO");
+    CERRADO("CERRADO"),
+    RECHAZADO("RECHAZADO");
 
     private final String codigo;
 
