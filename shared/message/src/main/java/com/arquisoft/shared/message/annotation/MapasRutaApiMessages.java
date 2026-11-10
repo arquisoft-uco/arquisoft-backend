@@ -211,6 +211,12 @@ public final class MapasRutaApiMessages {
         public static final String MODIFICAR_RESP_204 = "Plan real modificado";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "Plan real inexistente";
+        public static final String REMOVER_SUMMARY = "Remover un plan real";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve un plan real existente; la tarea queda sin plan real. El plan real se regenera "
+                        + "cuando la tarea se finaliza de nuevo";
+        public static final String REMOVER_RESP_204 = "Plan real removido";
+        public static final String REMOVER_RESP_422 = "Plan real inexistente";
     }
 
     public static final class EstadoItem {

@@ -258,6 +258,7 @@ security:
         - {method: POST, path: "/api/mapas-ruta/proyectos-grado/{proyectoGradoId}/planes-reales/asesor", role: "mapas-ruta:plan-real-proyecto-asesor:view"}
         - {method: PATCH, path: "/api/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:update"}
         - {method: PATCH, path: "/api/mapas-ruta/planes-reales/{planRealId}", role: "mapas-ruta:plan-real:update"}
+        - {method: DELETE, path: "/api/mapas-ruta/planes-reales/{planRealId}", role: "mapas-ruta:plan-real:delete"}
         - {method: DELETE, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:delete"}
         - {method: PATCH, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}/asesor", role: "mapas-ruta:plan-estimado-asesor:update"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
