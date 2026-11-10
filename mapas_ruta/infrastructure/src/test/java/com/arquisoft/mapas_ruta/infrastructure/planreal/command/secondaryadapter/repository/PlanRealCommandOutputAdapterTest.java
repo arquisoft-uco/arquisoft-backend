@@ -161,4 +161,43 @@ class PlanRealCommandOutputAdapterTest {
         assertThat(entityManager.find(PlanRealJpaEntity.class, idVacio).getDescripcionReal()).isNull();
         assertThat(entityManager.find(PlanRealJpaEntity.class, id).getDescripcionReal()).isNull();
     }
+
+    @Test
+    void debeEliminarPlan_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, UtilUUID.generarNuevoUUID(), 2, "x"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarPorId(id);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(PlanRealJpaEntity.class, id)).isNull();
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeDejarIntactosLosDemasPlanes_cuandoSeEliminaUno() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, UtilUUID.generarNuevoUUID(), 2, "x"));
+        adapter.registrar(new PlanRealEntity(otro, UtilUUID.generarNuevoUUID(), 9, "Otro"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarPorId(id);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var intacto = entityManager.find(PlanRealJpaEntity.class, otro);
+        assertThat(intacto).isNotNull();
+        assertThat(intacto.getTiempoRealDias()).isEqualTo(9);
+    }
 }

@@ -44,4 +44,10 @@ public class PlanRealCommandOutputAdapter implements PlanRealOutputPort {
         repository.actualizarPorId(planReal, tiempoRealDias, descripcionReal.isEmpty() ? null : descripcionReal);
         logger.debug(PlanRealKey.LOG_ACTUALIZADO, planReal);
     }
+
+    @Override
+    public void eliminarPorId(UUID planReal) {
+        repository.deleteById(planReal);
+        logger.debug(PlanRealKey.LOG_ELIMINADO, planReal);
+    }
 }
