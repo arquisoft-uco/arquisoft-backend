@@ -203,6 +203,14 @@ public final class MapasRutaApiMessages {
                 "Página de planes reales del proyecto de grado";
         public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_400 =
                 "Identificador de proyecto de grado inválido, o filtro u ordenamiento no permitido";
+        public static final String MODIFICAR_SUMMARY = "Modificar un plan real";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica el tiempo real en días y la descripción de un plan real existente. La descripción es "
+                        + "opcional: si no llega o llega en blanco, el plan queda sin descripción. El plan real se "
+                        + "regenera cuando la tarea se finaliza de nuevo";
+        public static final String MODIFICAR_RESP_204 = "Plan real modificado";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 = "Plan real inexistente";
     }
 
     public static final class EstadoItem {

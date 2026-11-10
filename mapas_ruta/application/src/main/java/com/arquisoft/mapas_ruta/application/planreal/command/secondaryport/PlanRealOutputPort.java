@@ -11,4 +11,8 @@ public interface PlanRealOutputPort {
     boolean existePorTarea(UUID tarea);
 
     void actualizarPorTarea(UUID tarea, int tiempoRealDias, String descripcionReal);
+
+    boolean existePorId(UUID planReal);
+
+    void actualizarPorId(UUID planReal, int tiempoRealDias, String descripcionReal);
 }

@@ -48,5 +48,6 @@ public final class MapasRutaFields {
         public static final String CREADO_EN = "creadoEn";
         public static final String FINALIZADA_EN = "finalizadaEn";
         public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String PLAN_REAL = "planReal";
     }
 }
