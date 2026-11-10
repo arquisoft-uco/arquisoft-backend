@@ -37,6 +37,7 @@ public final class EvaluacionesCodes {
         public static final String NOMBRE_DUPLICADO = "ITEM_CUALITATIVO_ASESOR_NOMBRE_DUPLICADO";
         public static final String ITEM_ID_REQUERIDO = "ITEM_CUALITATIVO_ASESOR_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO = "ITEM_CUALITATIVO_ASESOR_NO_ENCONTRADO";
+        public static final String ITEM_EN_USO = "ITEM_CUALITATIVO_ASESOR_EN_USO";
     }
 
     public static final class ItemCuantitativoAsesor {

@@ -133,6 +133,7 @@ security:
         - {method: GET, path: "/api/evaluaciones/items-cualitativos-asesor", role: "evaluaciones:item-cualitativo-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/items-cualitativos-asesor", role: "evaluaciones:item-cualitativo-asesor:create"}
         - {method: PATCH, path: "/api/evaluaciones/items-cualitativos-asesor/{itemId}", role: "evaluaciones:item-cualitativo-asesor:update"}
+        - {method: DELETE, path: "/api/evaluaciones/items-cualitativos-asesor/{itemId}", role: "evaluaciones:item-cualitativo-asesor:delete"}
         - {method: GET, path: "/api/evaluaciones/criterios-item-cualitativo-asesor", role: "evaluaciones:criterio-item-cualitativo-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/items-cuantitativos-asesor", role: "evaluaciones:item-cuantitativo-asesor:create"}
         - {method: GET, path: "/api/evaluaciones/items-cuantitativos-asesor", role: "evaluaciones:item-cuantitativo-asesor:view"}

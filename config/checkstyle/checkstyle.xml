@@ -98,9 +98,9 @@
         <property name="files" value=".*[\\/]test[\\/].*"/>
     </module>
 
-    <!-- FichasApiMessages y SolicitudesApiMessages agrupan los textos Swagger de todo su contexto -->
+    <!-- FichasApiMessages, SolicitudesApiMessages y EvaluacionesApiMessages agrupan los textos Swagger de todo su contexto -->
     <module name="SuppressionSingleFilter">
         <property name="checks" value="FileLength"/>
-        <property name="files" value="(Fichas|Solicitudes)ApiMessages\.java$"/>
+        <property name="files" value="(Fichas|Solicitudes|Evaluaciones)ApiMessages\.java$"/>
     </module>
 </module>

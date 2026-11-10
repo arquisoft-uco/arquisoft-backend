@@ -9,6 +9,13 @@ public enum ItemCualitativoAsesorKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADO("evaluaciones.dominio.itemcualitativoasesor.error.no-encontrado", 0),
     ERROR_NO_ENCONTRADO_DETALLE(
             "evaluaciones.dominio.itemcualitativoasesor.error.no-encontrado-detalle", 1),
+    ERROR_EN_USO("evaluaciones.dominio.itemcualitativoasesor.error.en-uso", 0),
+    ERROR_EN_USO_DETALLE("evaluaciones.dominio.itemcualitativoasesor.error.en-uso-detalle", 1),
+    LOG_REMOVIENDO("evaluaciones.aplicacion.itemcualitativoasesor.log.removiendo", 1),
+    LOG_VERIFICACION_REMOVER(
+            "evaluaciones.aplicacion.itemcualitativoasesor.log.verificacion-remover", 2),
+    LOG_REMOVIDO("evaluaciones.aplicacion.itemcualitativoasesor.log.removido", 1),
+    LOG_ELIMINADO("evaluaciones.infraestructura.itemcualitativoasesor.log.eliminado", 1),
     LOG_MODIFICANDO("evaluaciones.aplicacion.itemcualitativoasesor.log.modificando", 1),
     LOG_VERIFICACION_MODIFICAR(
             "evaluaciones.aplicacion.itemcualitativoasesor.log.verificacion-modificar", 1),

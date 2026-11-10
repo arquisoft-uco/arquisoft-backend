@@ -207,6 +207,7 @@
               "evaluaciones:item-cuantitativo-asesor:update",
               "evaluaciones:item-cuantitativo-asesor:view",
               "evaluaciones:item-cualitativo-asesor:create",
+              "evaluaciones:item-cualitativo-asesor:delete",
               "evaluaciones:item-cualitativo-asesor:update",
               "evaluaciones:item-cualitativo-asesor:view",
               "evaluaciones:criterio-item-cualitativo-asesor:view",
@@ -1562,6 +1563,15 @@
         {
           "id": "3336351a-2316-4b70-89b9-1b2bf2add070",
           "name": "evaluaciones:item-cualitativo-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b2671b33-6b2e-45af-b1c0-e4243561dffe",
+          "name": "evaluaciones:item-cualitativo-asesor:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

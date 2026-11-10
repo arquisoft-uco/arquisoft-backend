@@ -32,4 +32,9 @@ public class EvaluacionCualitativaAsesorCommandOutputAdapter implements Evaluaci
     public Set<UUID> consultarItemsRegistrados(UUID evaluacionAsesor, Set<UUID> items) {
         return repository.findItemsRegistrados(evaluacionAsesor, items);
     }
+
+    @Override
+    public boolean existePorItem(UUID item) {
+        return repository.existsByItem(item);
+    }
 }
