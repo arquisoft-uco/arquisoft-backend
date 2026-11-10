@@ -171,6 +171,8 @@ public final class ArtefactosCodes {
         public static final String VERSION_ANTERIOR_SIN_REVISION = "REVISION_ASESOR_VERSION_ANTERIOR_SIN_REVISION";
         public static final String VERSION_ANTERIOR_NO_EN_PROGRESO =
                 "REVISION_ASESOR_VERSION_ANTERIOR_NO_EN_PROGRESO";
+        public static final String VERSION_ANTERIOR_NO_RESUELTA =
+                "REVISION_ASESOR_VERSION_ANTERIOR_NO_RESUELTA";
         public static final String PENDIENTE = "REVISION_ASESOR_PENDIENTE";
         public static final String SIN_VERSION_POSTERIOR = "REVISION_ASESOR_SIN_VERSION_POSTERIOR";
         public static final String NO_ADMITE_OBSERVACIONES = "REVISION_ASESOR_NO_ADMITE_OBSERVACIONES";

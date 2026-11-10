@@ -32,6 +32,10 @@ public enum RevisionAsesorKey implements ClaveMensaje {
             "artefactos.dominio.revisionasesor.error.version-anterior-no-en-progreso", 2),
     ERROR_VERSION_ANTERIOR_NO_EN_PROGRESO_DETALLE(
             "artefactos.dominio.revisionasesor.error.version-anterior-no-en-progreso-detalle", 2),
+    ERROR_VERSION_ANTERIOR_NO_RESUELTA(
+            "artefactos.dominio.revisionasesor.error.version-anterior-no-resuelta", 2),
+    ERROR_VERSION_ANTERIOR_NO_RESUELTA_DETALLE(
+            "artefactos.dominio.revisionasesor.error.version-anterior-no-resuelta-detalle", 2),
     ERROR_PENDIENTE("artefactos.dominio.revisionasesor.error.pendiente", 0),
     ERROR_PENDIENTE_DETALLE("artefactos.dominio.revisionasesor.error.pendiente-detalle", 1),
     ERROR_SIN_VERSION_POSTERIOR("artefactos.dominio.revisionasesor.error.sin-version-posterior", 0),
