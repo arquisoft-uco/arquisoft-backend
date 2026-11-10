@@ -387,9 +387,7 @@ public final class EvaluacionesApiMessages {
         private ObservacionItemJurado() {}
 
         public static final String TAG_NAME = "Observaciones de ítems cuantitativos del jurado";
-        public static final String TAG_DESCRIPTION =
-                "Registro, consulta y modificación de observaciones textuales sobre evaluaciones "
-                        + "cuantitativas del jurado";
+        public static final String TAG_DESCRIPTION = "Registro, consulta, modificación y remoción de observaciones";
         public static final String REGISTRAR_SUMMARY = "Registrar observación";
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra una nueva observación textual sobre una evaluación cuantitativa del jurado";
@@ -412,14 +410,17 @@ public final class EvaluacionesApiMessages {
                         + "evaluación cuantitativa del jurado, con filtro y orden por descripción "
                         + "(por defecto, ascendente)";
         public static final String MODIFICAR_SUMMARY = "Modificar observación";
-        public static final String MODIFICAR_DESCRIPTION =
-                "Modifica la descripción de una observación registrada sobre una evaluación cuantitativa "
-                        + "del jurado";
+        public static final String MODIFICAR_DESCRIPTION = "Modifica la descripción de una observación del jurado";
         public static final String MODIFICAR_RESP_204 = "Observación modificada";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 =
                 "La observación no existe, su evaluación de jurado ya está finalizada, "
                         + "o ya existe otra observación con esa descripción";
+        public static final String REMOVER_SUMMARY = "Remover observación";
+        public static final String REMOVER_DESCRIPTION = "Remueve una observación de una evaluación del jurado";
+        public static final String REMOVER_RESP_204 = "Observación removida";
+        public static final String REMOVER_RESP_400 = "Identificador de observación inválido";
+        public static final String REMOVER_RESP_422 = "La observación no existe o su evaluación ya está finalizada";
     }
 
     public static final class ItemCuantitativoJurado {

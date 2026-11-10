@@ -4,6 +4,7 @@ import com.arquisoft.evaluaciones.application.observacionitemjurado.command.seco
 import com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.command.secondaryadapter.entity.ObservacionItemJuradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,6 +189,24 @@ class ObservacionItemJuradoCommandOutputAdapterTest {
         assertThat(actualizada.getDescripcion()).isEqualTo("Descripción actualizada");
         assertThat(actualizada.getEvaluacionCuantitativaJuradoId()).isEqualTo(evaluacionCuantitativaJurado);
         assertThat(intacta.getDescripcion()).isEqualTo("Descripción de otra observación");
+        verify(logger).debug(any(ClaveMensaje.class), eq(observacion));
+    }
+
+    @Test
+    void debeEliminarSoloLaFilaIndicada_cuandoEliminar() {
+        // Arrange
+        var evaluacionCuantitativaJurado = UtilUUID.generarNuevoUUID();
+        var observacion = sembrarObservacion(evaluacionCuantitativaJurado, "Descripción a eliminar");
+        var otraObservacion = sembrarObservacion(evaluacionCuantitativaJurado, "Descripción que permanece");
+
+        // Act
+        adapter.eliminar(observacion);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ObservacionItemJuradoJpaEntity.class, observacion)).isNull();
+        assertThat(entityManager.find(ObservacionItemJuradoJpaEntity.class, otraObservacion)).isNotNull();
         verify(logger).debug(any(ClaveMensaje.class), eq(observacion));
     }
 
