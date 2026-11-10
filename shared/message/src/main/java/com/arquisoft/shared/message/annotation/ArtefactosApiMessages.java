@@ -76,13 +76,13 @@ public final class ArtefactosApiMessages {
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra, en estado PENDIENTE, una revisión sobre la versión más reciente del artefacto. El "
                         + "asesor se toma del token y debe ser el responsable del artefacto. Si la versión tiene "
-                        + "revisiones, todas deben estar cerradas: registrar una nueva reabre el artefacto. No "
-                        + "envía correos.";
+                        + "revisiones, todas deben estar cerradas: registrar una nueva reabre el artefacto. Si existe "
+                        + "una versión anterior, su revisión más reciente debe estar RESUELTA. No envía correos.";
         public static final String REGISTRAR_RESP_201 = "Revisión registrada";
         public static final String REGISTRAR_RESP_400 = "Identificador de la versión del artefacto mal formado";
         public static final String REGISTRAR_RESP_422 =
                 "La versión o su artefacto no existen, el asesor no es el responsable del artefacto, la versión "
-                        + "no es la más reciente o ya tiene una revisión sin cerrar" + Comun.PROYECTO_ENTREGADO;
+                        + "no es la más reciente, tiene una revisión sin cerrar o la anterior no está resuelta" + Comun.PROYECTO_ENTREGADO;
         public static final String ELIMINAR_SUMMARY = "Eliminar una revisión de la versión de un artefacto";
         public static final String ELIMINAR_DESCRIPTION =
                 "Elimina por completo la revisión indicada junto con sus observaciones. El asesor se toma del "
