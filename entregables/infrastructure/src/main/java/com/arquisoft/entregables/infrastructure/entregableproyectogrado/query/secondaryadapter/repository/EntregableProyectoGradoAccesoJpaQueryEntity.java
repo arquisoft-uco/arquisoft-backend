@@ -18,8 +18,7 @@ import java.util.UUID;
         SELECT e.id                                 AS id,
                e.asesor_id                          AS asesor_id,
                e.proyecto_grado_id                  AS proyecto_grado_id,
-               CAST(e.version_entregable AS BIGINT) AS version_entregable,
-               e.estado_entregable_id               AS estado_entregable_id
+               CAST(e.version_entregable AS BIGINT) AS version_entregable
         FROM entregable_proyecto_grado e
         """)
 @Synchronize("entregable_proyecto_grado")
@@ -40,7 +39,4 @@ public class EntregableProyectoGradoAccesoJpaQueryEntity {
 
     @Column(name = "version_entregable")
     private Long versionEntregable;
-
-    @Column(name = "estado_entregable_id")
-    private String estadoEntregableId;
 }

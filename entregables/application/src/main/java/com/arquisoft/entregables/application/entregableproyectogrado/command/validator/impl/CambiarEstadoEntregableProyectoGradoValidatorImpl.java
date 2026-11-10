@@ -15,6 +15,10 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.Cierr
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EntregableProyectoGradoExisteRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EstadoDestinoEntregablePermitidoRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EstadoEntregableNoTerminalRuleImpl;
+import com.arquisoft.entregables.domain.estadoentregableproyectogrado.EstadoEntregableProyectoGradoDomain;
+import com.arquisoft.entregables.domain.estadoentregableproyectogrado.model.ExistenciaEstadoEntregableProyectoGrado;
+import com.arquisoft.entregables.domain.estadoentregableproyectogrado.rules.EstadoEntregableProyectoGradoExisteRule;
+import com.arquisoft.entregables.domain.estadoentregableproyectogrado.rules.impl.EstadoEntregableProyectoGradoExisteRuleImpl;
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.entregables.domain.proyectogrado.model.EstadoActualProyectoGrado;
 import com.arquisoft.entregables.domain.proyectogrado.model.ExistenciaProyectoGrado;
@@ -29,6 +33,7 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
         implements CambiarEstadoEntregableProyectoGradoValidator {
 
     private final EntregableProyectoGradoExisteRule entregableProyectoGradoExisteRule;
+    private final EstadoEntregableProyectoGradoExisteRule estadoEntregableProyectoGradoExisteRule;
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
     private final EstadoEntregableNoTerminalRule estadoEntregableNoTerminalRule;
@@ -38,6 +43,7 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
 
     public CambiarEstadoEntregableProyectoGradoValidatorImpl() {
         this.entregableProyectoGradoExisteRule = new EntregableProyectoGradoExisteRuleImpl();
+        this.estadoEntregableProyectoGradoExisteRule = new EstadoEntregableProyectoGradoExisteRuleImpl();
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
         this.estadoEntregableNoTerminalRule = new EstadoEntregableNoTerminalRuleImpl();
@@ -48,15 +54,17 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
 
     @Override
     public void validar(CambioEstadoEntregableProyectoGradoDomain cambio, EntregableProyectoGradoDomain entregable,
-                        ProyectoGradoDomain proyecto) {
+                        EstadoEntregableProyectoGradoDomain estadoActual, ProyectoGradoDomain proyecto) {
         entregableProyectoGradoExisteRule.validar(
                 new ExistenciaEntregableProyectoGrado(cambio.getEntregableProyectoGrado(), !entregable.esVacio()));
+        estadoEntregableProyectoGradoExisteRule.validar(new ExistenciaEstadoEntregableProyectoGrado(
+                cambio.getEntregableProyectoGrado(), !estadoActual.esVacio()));
         proyectoGradoExisteRule.validar(
                 new ExistenciaProyectoGrado(entregable.getProyectoGrado(), !proyecto.esVacio()));
         proyectoGradoNoFinalizadoRule.validar(new EstadoActualProyectoGrado(
                 entregable.getProyectoGrado(), proyecto.getNombre(), proyecto.getEstadoProyecto()));
         var transicion = new TransicionEstadoEntregable(
-                cambio.getEntregableProyectoGrado(), entregable.getEstadoEntregable(), cambio.getEstadoEntregable());
+                cambio.getEntregableProyectoGrado(), estadoActual.getEstadoEntregable(), cambio.getEstadoEntregable());
         estadoEntregableNoTerminalRule.validar(transicion);
         estadoDestinoEntregablePermitidoRule.validar(transicion);
         cierreEntregablePermitidoRule.validar(transicion);

@@ -13,7 +13,6 @@ public final class EntregableProyectoGradoJpaMapper {
                 .proyectoGrado(entity.proyectoGrado())
                 .version(entity.version())
                 .asesor(entity.asesor())
-                .estadoEntregable(entity.estadoEntregable())
                 .build();
     }
 
@@ -22,7 +21,6 @@ public final class EntregableProyectoGradoJpaMapper {
                 jpaEntity.getId(),
                 jpaEntity.getProyectoGrado(),
                 jpaEntity.getVersion(),
-                jpaEntity.getAsesor(),
-                jpaEntity.getEstadoEntregable());
+                jpaEntity.getAsesor());
     }
 }

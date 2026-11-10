@@ -25,11 +25,11 @@ class ArtefactoEntregableQueryOutputAdapterTest {
     @BeforeEach
     void prepararTablas() {
         var em = entityManager.getEntityManager();
-        em.createNativeQuery("CREATE TABLE IF NOT EXISTS artefacto (id UUID PRIMARY KEY, uri_archivo VARCHAR(2000), "
+        em.createNativeQuery("CREATE TABLE IF NOT EXISTS artefacto (id UUID PRIMARY KEY, "
                 + "id_artefacto UUID, id_repositorio_artefacto UUID, nombre_documento VARCHAR(100), "
                 + "id_repositorio UUID, nombre_repositorio VARCHAR(100), version_artefacto INTEGER)").executeUpdate();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS artefacto_entregable (id UUID PRIMARY KEY, "
-                + "artefacto_id UUID, entregable_id UUID)").executeUpdate();
+                + "artefacto_id UUID, entregable_id UUID, uri_archivo VARCHAR(2000))").executeUpdate();
         em.createNativeQuery("DELETE FROM artefacto_entregable").executeUpdate();
         em.createNativeQuery("DELETE FROM artefacto").executeUpdate();
     }
@@ -37,15 +37,17 @@ class ArtefactoEntregableQueryOutputAdapterTest {
     private UUID sembrar(UUID entregable, UUID id, String nombreDocumento) {
         var em = entityManager.getEntityManager();
         var artefacto = UtilUUID.generarNuevoUUID();
-        em.createNativeQuery("INSERT INTO artefacto (id, uri_archivo, id_artefacto, id_repositorio_artefacto, "
+        em.createNativeQuery("INSERT INTO artefacto (id, id_artefacto, id_repositorio_artefacto, "
                         + "nombre_documento, id_repositorio, nombre_repositorio, version_artefacto) "
-                        + "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)")
-                .setParameter(1, artefacto).setParameter(2, "uri/" + nombreDocumento)
-                .setParameter(3, UtilUUID.generarNuevoUUID()).setParameter(4, UtilUUID.generarNuevoUUID())
-                .setParameter(5, nombreDocumento).setParameter(6, UtilUUID.generarNuevoUUID())
-                .setParameter(7, "Repo").setParameter(8, 3).executeUpdate();
-        em.createNativeQuery("INSERT INTO artefacto_entregable (id, artefacto_id, entregable_id) VALUES (?1, ?2, ?3)")
-                .setParameter(1, id).setParameter(2, artefacto).setParameter(3, entregable).executeUpdate();
+                        + "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)")
+                .setParameter(1, artefacto)
+                .setParameter(2, UtilUUID.generarNuevoUUID()).setParameter(3, UtilUUID.generarNuevoUUID())
+                .setParameter(4, nombreDocumento).setParameter(5, UtilUUID.generarNuevoUUID())
+                .setParameter(6, "Repo").setParameter(7, 3).executeUpdate();
+        em.createNativeQuery("INSERT INTO artefacto_entregable (id, artefacto_id, entregable_id, uri_archivo) "
+                + "VALUES (?1, ?2, ?3, ?4)")
+                .setParameter(1, id).setParameter(2, artefacto).setParameter(3, entregable)
+                .setParameter(4, "uri/" + nombreDocumento).executeUpdate();
         entityManager.flush();
         entityManager.clear();
         return artefacto;

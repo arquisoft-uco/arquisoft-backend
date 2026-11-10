@@ -18,6 +18,7 @@ public record PaqueteEntregableGeneradoPayload(
 
     public record ArtefactoPaqueteGeneradoPayload(
             String artefacto,
+            String versionArtefacto,
             Integer numeroVersion,
             String versionRepositorioArtefacto,
             String nombreDocumento,

@@ -1,15 +1,18 @@
 package com.arquisoft.entregables.application.entregableproyectogrado.command.usecase.impl;
 
 import com.arquisoft.entregables.application.entregableproyectogrado.command.finder.EntregableProyectoGradoPorIdFinder;
-import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoDeEntregableFinder;
-import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
-import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.EntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.CambiarEstadoEntregableProyectoGradoValidator;
+import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.finder.EstadoActualEntregableProyectoGradoFinder;
+import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.EstadoEntregableProyectoGradoOutputPort;
+import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.entity.EstadoEntregableProyectoGradoEntity;
+import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoDeEntregableFinder;
 import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCanceladoEvent;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCerradoEvent;
 import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
+import com.arquisoft.entregables.domain.estadoentregableproyectogrado.EstadoEntregableProyectoGradoDomain;
+import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -24,10 +27,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -41,10 +46,13 @@ import static org.mockito.Mockito.when;
 class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
 
     @Mock
-    private EntregableProyectoGradoOutputPort entregableProyectoGradoOutputPort;
+    private EstadoEntregableProyectoGradoOutputPort estadoEntregableProyectoGradoOutputPort;
 
     @Mock
     private EntregableProyectoGradoPorIdFinder entregableProyectoGradoPorIdFinder;
+
+    @Mock
+    private EstadoActualEntregableProyectoGradoFinder estadoActualEntregableProyectoGradoFinder;
 
     @Mock
     private ProyectoGradoDeEntregableFinder proyectoGradoDeEntregableFinder;
@@ -61,31 +69,42 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
     @InjectMocks
     private CambiarEstadoEntregableProyectoGradoUseCaseImpl useCase;
 
+    private static EstadoEntregableProyectoGradoDomain estadoActual(UUID id, EstadoEntregable estado) {
+        return EstadoEntregableProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), id, estado, Instant.now());
+    }
+
     @Test
     void debePublicarEventoCerrado_cuandoElEstadoDestinoEsCerrado() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CERRADO");
-        var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 2,
-                UtilUUID.generarNuevoUUID(), EstadoEntregable.APROBADO);
+        var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 2, UtilUUID.generarNuevoUUID());
+        var estado = estadoActual(id, EstadoEntregable.APROBADO);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
+        when(estadoActualEntregableProyectoGradoFinder.obtener(id)).thenReturn(estado);
         when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
 
         // Act
         useCase.ejecutar(cambio);
 
         // Assert
-        var orden = inOrder(entregableProyectoGradoPorIdFinder, proyectoGradoDeEntregableFinder,
-                cambiarEstadoEntregableProyectoGradoValidator, entregableProyectoGradoOutputPort, eventPublisher,
-                logger);
+        var orden = inOrder(entregableProyectoGradoPorIdFinder, estadoActualEntregableProyectoGradoFinder,
+                proyectoGradoDeEntregableFinder, cambiarEstadoEntregableProyectoGradoValidator,
+                estadoEntregableProyectoGradoOutputPort, eventPublisher, logger);
         var captor = ArgumentCaptor.forClass(EntregableProyectoGradoCerradoEvent.class);
+        var captorEstado = ArgumentCaptor.forClass(EstadoEntregableProyectoGradoEntity.class);
         orden.verify(entregableProyectoGradoPorIdFinder, times(1)).obtener(id);
+        orden.verify(estadoActualEntregableProyectoGradoFinder, times(1)).obtener(id);
         orden.verify(proyectoGradoDeEntregableFinder, times(1)).obtener(id);
-        orden.verify(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable, ProyectoGradoDomain.VACIO);
-        orden.verify(entregableProyectoGradoOutputPort).actualizarEstado(id, "CERRADO");
+        orden.verify(cambiarEstadoEntregableProyectoGradoValidator)
+                .validar(cambio, entregable, estado, ProyectoGradoDomain.VACIO);
+        orden.verify(estadoEntregableProyectoGradoOutputPort).registrar(captorEstado.capture());
         orden.verify(eventPublisher).publish(captor.capture());
         orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "APROBADO", "CERRADO");
+        assertThat(captorEstado.getValue().entregableProyectoGrado()).isEqualTo(id);
+        assertThat(captorEstado.getValue().estadoEntregable()).isEqualTo("CERRADO");
+        assertThat(captorEstado.getValue().fechaActualizacion()).isNotNull();
         assertThat(captor.getValue().getEntregableProyectoGrado()).isEqualTo(id);
         assertThat(captor.getValue().getProyectoGrado()).isEqualTo(proyecto);
         assertThat(captor.getValue().getVersion()).isEqualTo(2);
@@ -97,21 +116,24 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CANCELADO");
-        var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 4,
-                UtilUUID.generarNuevoUUID(), EstadoEntregable.DISPONIBLE_EVALUACION);
+        var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 4, UtilUUID.generarNuevoUUID());
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
+        when(estadoActualEntregableProyectoGradoFinder.obtener(id))
+                .thenReturn(estadoActual(id, EstadoEntregable.DISPONIBLE_EVALUACION));
         when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
 
         // Act
         useCase.ejecutar(cambio);
 
         // Assert
-        var orden = inOrder(entregableProyectoGradoOutputPort, eventPublisher, logger);
+        var orden = inOrder(estadoEntregableProyectoGradoOutputPort, eventPublisher, logger);
         var captor = ArgumentCaptor.forClass(DomainEvent.class);
-        orden.verify(entregableProyectoGradoOutputPort).actualizarEstado(id, "CANCELADO");
+        var captorEstado = ArgumentCaptor.forClass(EstadoEntregableProyectoGradoEntity.class);
+        orden.verify(estadoEntregableProyectoGradoOutputPort).registrar(captorEstado.capture());
         orden.verify(eventPublisher).publish(captor.capture());
         orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "DISPONIBLE_EVALUACION", "CANCELADO");
         verify(eventPublisher, times(1)).publish(any());
+        assertThat(captorEstado.getValue().estadoEntregable()).isEqualTo("CANCELADO");
         assertThat(captor.getValue()).isInstanceOfSatisfying(EntregableProyectoGradoCanceladoEvent.class, evento -> {
             assertThat(evento.getEntregableProyectoGrado()).isEqualTo(id);
             assertThat(evento.getProyectoGrado()).isEqualTo(proyecto);
@@ -125,17 +147,20 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CERRADO");
         var entregable = EntregableProyectoGradoDomain.reconstruir(id, UtilUUID.generarNuevoUUID(), 1,
-                UtilUUID.generarNuevoUUID(), EstadoEntregable.CERRADO);
+                UtilUUID.generarNuevoUUID());
+        var estado = estadoActual(id, EstadoEntregable.CERRADO);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
+        when(estadoActualEntregableProyectoGradoFinder.obtener(id)).thenReturn(estado);
         when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
         doThrow(new DomainException("rechazado", "COD"))
-                .when(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable, ProyectoGradoDomain.VACIO);
+                .when(cambiarEstadoEntregableProyectoGradoValidator)
+                .validar(cambio, entregable, estado, ProyectoGradoDomain.VACIO);
 
         // Act
         assertThatThrownBy(() -> useCase.ejecutar(cambio)).isInstanceOf(DomainException.class);
 
         // Assert
-        verify(entregableProyectoGradoOutputPort, never()).actualizarEstado(any(), anyString());
+        verify(estadoEntregableProyectoGradoOutputPort, never()).registrar(any());
         verifyNoInteractions(eventPublisher);
         verify(logger, never()).info(any(ClaveMensaje.class), eq(id), any(), any());
     }

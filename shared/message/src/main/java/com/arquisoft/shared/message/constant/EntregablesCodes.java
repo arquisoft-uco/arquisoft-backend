@@ -37,6 +37,17 @@ public final class EntregablesCodes {
         public static final String VIGENTE_YA_EXISTE = "ENTREGABLES_ENTREGABLE_PROYECTO_GRADO_VIGENTE_YA_EXISTE";
     }
 
+    public static final class EstadoEntregableProyectoGrado {
+
+        private EstadoEntregableProyectoGrado() {}
+
+        public static final String ENTREGABLE_REQUERIDO =
+                "ENTREGABLES_ESTADO_ENTREGABLE_PROYECTO_GRADO_ENTREGABLE_REQUERIDO";
+        public static final String ESTADO_ENTREGABLE_REQUERIDO =
+                "ENTREGABLES_ESTADO_ENTREGABLE_PROYECTO_GRADO_ESTADO_ENTREGABLE_REQUERIDO";
+        public static final String NO_ENCONTRADO = "ENTREGABLES_ESTADO_ENTREGABLE_PROYECTO_GRADO_NO_ENCONTRADO";
+    }
+
     public static final class PaqueteEntregable {
 
         private PaqueteEntregable() {}
@@ -66,6 +77,7 @@ public final class EntregablesCodes {
         public static final String ARTEFACTO_INVALIDO = "ENTREGABLES_ARTEFACTO_ENTREGABLE_ARTEFACTO_INVALIDO";
         public static final String NUMERO_VERSION_INVALIDO =
                 "ENTREGABLES_ARTEFACTO_ENTREGABLE_NUMERO_VERSION_INVALIDO";
+        public static final String VERSION_ARTEFACTO_INVALIDA = "ENTREGABLES_ARTEFACTO_ENTREGABLE_VERSION_ARTEFACTO_INVALIDA";
         public static final String VERSION_REPOSITORIO_ARTEFACTO_INVALIDA =
                 "ENTREGABLES_ARTEFACTO_ENTREGABLE_VERSION_REPOSITORIO_ARTEFACTO_INVALIDA";
         public static final String NOMBRE_DOCUMENTO_INVALIDO =

@@ -23,9 +23,6 @@ public class ArtefactoJpaEntity {
     @Column(name = "id", columnDefinition = "UUID")
     private UUID id;
 
-    @Column(name = "uri_archivo", nullable = false, length = 2000)
-    private String uriArchivo;
-
     @Column(name = "id_artefacto", nullable = false, columnDefinition = "UUID")
     private UUID artefacto;
 

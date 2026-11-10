@@ -172,6 +172,7 @@ class GenerarPaqueteEntregableUseCaseImplTest {
         verify(eventPublisher).publish(evento.capture());
         assertThat(evento.getValue().getArtefactos()).singleElement().satisfies(item -> {
             assertThat(item.artefacto()).isEqualTo(incluido.artefacto());
+            assertThat(item.versionArtefacto()).isEqualTo(incluido.versionArtefacto());
             assertThat(item.numeroVersion()).isEqualTo(incluido.numeroVersion());
             assertThat(item.versionRepositorioArtefacto()).isEqualTo(incluido.versionRepositorioArtefacto());
             assertThat(item.nombreDocumento()).isEqualTo("Doc");
