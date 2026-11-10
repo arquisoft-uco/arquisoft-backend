@@ -261,6 +261,7 @@ security:
         - {method: DELETE, path: "/api/mapas-ruta/planes-reales/{planRealId}", role: "mapas-ruta:plan-real:delete"}
         - {method: DELETE, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:delete"}
         - {method: PATCH, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}/asesor", role: "mapas-ruta:plan-estimado-asesor:update"}
+        - {method: PATCH, path: "/api/mapas-ruta/planes-reales/{planRealId}/asesor", role: "mapas-ruta:plan-real-asesor:update"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
         # entregables
         - {method: GET, path: "/api/estados-entregable", role: "entregables:estado-entregable:view"}

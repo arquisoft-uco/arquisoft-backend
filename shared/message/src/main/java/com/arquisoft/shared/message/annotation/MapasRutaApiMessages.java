@@ -211,6 +211,13 @@ public final class MapasRutaApiMessages {
         public static final String MODIFICAR_RESP_204 = "Plan real modificado";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "Plan real inexistente";
+        public static final String APORTAR_SUMMARY = "Aportar a un plan real";
+        public static final String APORTAR_DESCRIPTION =
+                "El asesor aporta a un plan real existente: el aporte reemplaza la descripción del plan, es "
+                        + "obligatorio y no puede estar en blanco. El tiempo real no se modifica";
+        public static final String APORTAR_RESP_204 = "Aporte registrado en el plan real";
+        public static final String APORTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String APORTAR_RESP_422 = "Plan real inexistente";
         public static final String REMOVER_SUMMARY = "Remover un plan real";
         public static final String REMOVER_DESCRIPTION =
                 "Remueve un plan real existente; la tarea queda sin plan real. El plan real se regenera "
