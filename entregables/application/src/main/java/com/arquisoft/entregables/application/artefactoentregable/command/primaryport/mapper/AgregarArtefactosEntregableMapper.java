@@ -19,6 +19,7 @@ public final class AgregarArtefactosEntregableMapper {
                         entregableProyectoGrado,
                         artefacto.rutaEnPaquete(),
                         artefacto.artefacto(),
+                        artefacto.versionArtefacto(),
                         artefacto.numeroVersion(),
                         artefacto.nombreDocumento(),
                         new DatosRepositorioArtefacto(

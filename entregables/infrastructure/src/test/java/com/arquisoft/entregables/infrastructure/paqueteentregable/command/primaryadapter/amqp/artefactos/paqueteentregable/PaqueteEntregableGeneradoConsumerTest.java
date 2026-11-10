@@ -72,6 +72,7 @@ class PaqueteEntregableGeneradoConsumerTest {
                     "generadoEn": "2026-11-08T09:59:00Z",
                     "artefactos": [{
                         "artefacto": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                        "versionArtefacto": "cccccccc-cccc-cccc-cccc-cccccccccccc",
                         "numeroVersion": 3,
                         "versionRepositorioArtefacto": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
                         "nombreDocumento": "Informe",
@@ -108,6 +109,7 @@ class PaqueteEntregableGeneradoConsumerTest {
         assertThat(captor.getValue().generadoEn()).isEqualTo(Instant.parse("2026-11-08T09:59:00Z"));
         assertThat(captor.getValue().artefactos()).singleElement().satisfies(item -> {
             assertThat(item.artefacto()).hasToString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            assertThat(item.versionArtefacto()).hasToString("cccccccc-cccc-cccc-cccc-cccccccccccc");
             assertThat(item.numeroVersion()).isEqualTo(3);
             assertThat(item.versionRepositorioArtefacto()).hasToString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
             assertThat(item.repositorio()).hasToString("cccccccc-cccc-cccc-cccc-cccccccccccc");

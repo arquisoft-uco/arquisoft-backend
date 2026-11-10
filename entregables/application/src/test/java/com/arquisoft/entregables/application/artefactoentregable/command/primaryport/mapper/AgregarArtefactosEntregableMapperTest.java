@@ -11,11 +11,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AgregarArtefactosEntregableMapperTest {
 
     @Test
-    void debeCrearUnSnapshotConIdsPropiosPorItem_cuandoHayArtefactos() {
+    void debeCrearUnSnapshotPorItemConLaVersionDelCommand_cuandoHayArtefactos() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var artefacto = UtilUUID.generarNuevoUUID();
-        var item = new ArtefactoPaqueteCommand(artefacto, 3, UtilUUID.generarNuevoUUID(), "Informe",
+        var versionArtefacto = UtilUUID.generarNuevoUUID();
+        var item = new ArtefactoPaqueteCommand(artefacto, versionArtefacto, 3, UtilUUID.generarNuevoUUID(), "Informe",
                 UtilUUID.generarNuevoUUID(), "Repo", "01-Informe/v3-informe.pdf");
 
         // Act
@@ -28,10 +29,9 @@ class AgregarArtefactosEntregableMapperTest {
             assertThat(snapshot.getEntregableProyectoGrado()).isEqualTo(entregable);
             assertThat(snapshot.getUriArchivo()).isEqualTo("01-Informe/v3-informe.pdf");
             assertThat(snapshot.getArtefacto()).isEqualTo(artefacto);
+            assertThat(snapshot.getVersionArtefacto()).isEqualTo(versionArtefacto);
             assertThat(snapshot.getNumeroVersion()).isEqualTo(3);
             assertThat(snapshot.getVersionRepositorioArtefacto()).isEqualTo(item.versionRepositorioArtefacto());
         });
-        assertThat(agregacion.getArtefactos().get(0).getVersionArtefacto())
-                .isNotEqualTo(agregacion.getArtefactos().get(1).getVersionArtefacto());
     }
 }

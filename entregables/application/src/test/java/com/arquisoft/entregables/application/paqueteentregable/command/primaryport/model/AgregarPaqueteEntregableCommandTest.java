@@ -36,7 +36,8 @@ class AgregarPaqueteEntregableCommandTest {
     }
 
     private static DatosArtefactoPaquete item(String artefacto, String nombreDocumento, String ruta) {
-        return new DatosArtefactoPaquete(artefacto, 3, UtilUUID.generarNuevoUUID().toString(), nombreDocumento,
+        return new DatosArtefactoPaquete(artefacto, UtilUUID.generarNuevoUUID().toString(), 3,
+                UtilUUID.generarNuevoUUID().toString(), nombreDocumento,
                 UtilUUID.generarNuevoUUID().toString(), "Repo", ruta);
     }
 
@@ -54,6 +55,7 @@ class AgregarPaqueteEntregableCommandTest {
         // Assert
         assertThat(command.artefactos()).singleElement().satisfies(creado -> {
             assertThat(creado.artefacto()).isEqualTo(artefacto);
+            assertThat(creado.versionArtefacto()).hasToString(datos.versionArtefacto());
             assertThat(creado.numeroVersion()).isEqualTo(3);
             assertThat(creado.versionRepositorioArtefacto()).hasToString(datos.versionRepositorioArtefacto());
             assertThat(creado.repositorio()).hasToString(datos.repositorio());
@@ -77,7 +79,7 @@ class AgregarPaqueteEntregableCommandTest {
     @Test
     void debeAcumularErrores_cuandoUnItemEstaMalformado() {
         // Arrange
-        var malformado = new DatosArtefactoPaquete("no-uuid", 0, null, " ", "tampoco", "x".repeat(101),
+        var malformado = new DatosArtefactoPaquete("no-uuid", "tampoco-version", 0, null, " ", "tampoco", "x".repeat(101),
                 "r".repeat(2001));
 
         // Act & Assert
@@ -87,6 +89,8 @@ class AgregarPaqueteEntregableCommandTest {
                 .isInstanceOfSatisfying(ApplicationValidationException.class, ex -> {
                     var resultado = ex.getValidationResult();
                     assertThat(resultado.tieneErroresDeCampo(EntregablesFields.ArtefactoEntregable.ARTEFACTO)).isTrue();
+                    assertThat(resultado.tieneErroresDeCampo(
+                            EntregablesFields.ArtefactoEntregable.VERSION_ARTEFACTO)).isTrue();
                     assertThat(resultado.tieneErroresDeCampo(
                             EntregablesFields.ArtefactoEntregable.NUMERO_VERSION)).isTrue();
                     assertThat(resultado.tieneErroresDeCampo(
@@ -103,10 +107,10 @@ class AgregarPaqueteEntregableCommandTest {
     @Test
     void debeAcumularError_cuandoNumeroVersionEsNuloOCero() {
         // Arrange
-        var sinVersion = new DatosArtefactoPaquete(UtilUUID.generarNuevoUUID().toString(), null,
+        var sinVersion = new DatosArtefactoPaquete(UtilUUID.generarNuevoUUID().toString(), UtilUUID.generarNuevoUUID().toString(), null,
                 UtilUUID.generarNuevoUUID().toString(), "Informe", UtilUUID.generarNuevoUUID().toString(), "Repo",
                 "ruta/a.pdf");
-        var enCero = new DatosArtefactoPaquete(UtilUUID.generarNuevoUUID().toString(), 0,
+        var enCero = new DatosArtefactoPaquete(UtilUUID.generarNuevoUUID().toString(), UtilUUID.generarNuevoUUID().toString(), 0,
                 UtilUUID.generarNuevoUUID().toString(), "Informe", UtilUUID.generarNuevoUUID().toString(), "Repo",
                 "ruta/a.pdf");
 

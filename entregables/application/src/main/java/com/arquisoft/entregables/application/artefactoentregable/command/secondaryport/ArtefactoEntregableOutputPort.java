@@ -3,8 +3,13 @@ package com.arquisoft.entregables.application.artefactoentregable.command.second
 import com.arquisoft.entregables.application.artefactoentregable.command.secondaryport.entity.ArtefactoEntregableEntity;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ArtefactoEntregableOutputPort {
 
-    void guardarTodos(List<ArtefactoEntregableEntity> artefactos);
+    List<UUID> obtenerIdsExistentes(List<UUID> versionesArtefacto);
+
+    void guardarArtefactos(List<ArtefactoEntregableEntity> artefactos);
+
+    void vincular(List<ArtefactoEntregableEntity> artefactos);
 }

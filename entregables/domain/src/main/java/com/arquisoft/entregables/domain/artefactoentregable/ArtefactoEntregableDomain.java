@@ -31,12 +31,13 @@ public final class ArtefactoEntregableDomain {
     public record DatosRepositorioArtefacto(UUID versionRepositorioArtefacto, UUID repositorio, String nombreRepositorio) {}
 
     public static ArtefactoEntregableDomain crear(UUID entregableProyectoGrado, String uriArchivo, UUID artefacto,
+                                                  UUID versionArtefacto,
                                                   int numeroVersion, String nombreDocumento,
                                                   DatosRepositorioArtefacto datosRepositorio) {
         var snapshot = new ArtefactoEntregableDomain();
         var result = new ValidationResult();
         snapshot.setId();
-        snapshot.setVersionArtefacto();
+        snapshot.setVersionArtefacto(versionArtefacto, result);
         snapshot.setEntregableProyectoGrado(entregableProyectoGrado, result);
         snapshot.setUriArchivo(uriArchivo, result);
         snapshot.setArtefacto(artefacto, result);
@@ -53,8 +54,13 @@ public final class ArtefactoEntregableDomain {
         this.id = UtilUUID.generarNuevoUUID();
     }
 
-    private void setVersionArtefacto() {
-        this.versionArtefacto = UtilUUID.generarNuevoUUID();
+    private void setVersionArtefacto(UUID versionArtefacto, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(versionArtefacto,
+                EntregablesFields.ArtefactoEntregable.VERSION_ARTEFACTO,
+                EntregablesCodes.ArtefactoEntregable.VERSION_ARTEFACTO_INVALIDA, result)) {
+            return;
+        }
+        this.versionArtefacto = versionArtefacto;
     }
 
     private void setEntregableProyectoGrado(UUID entregableProyectoGrado, ValidationResult result) {

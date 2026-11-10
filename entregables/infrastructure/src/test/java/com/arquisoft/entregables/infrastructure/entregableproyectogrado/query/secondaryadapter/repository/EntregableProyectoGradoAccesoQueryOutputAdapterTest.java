@@ -36,7 +36,7 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
         entityManager.persist(AsesorJpaEntity.builder()
                 .id(asesor).identificador("ID-A").nombre("Asesor").email("a@uco.edu.co")
                 .ocurridoEn(Instant.parse("2026-01-01T00:00:00Z")).build());
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(entregable, proyecto, 1, asesor, "APROBADO"));
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(entregable, proyecto, 1, asesor));
         entityManager.flush();
         entityManager.clear();
 
@@ -66,7 +66,7 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
         entityManager.persist(AsesorJpaEntity.builder()
                 .id(asesor).identificador("ID-C").nombre("Asesor").email("c@uco.edu.co")
                 .ocurridoEn(Instant.parse("2026-01-01T00:00:00Z")).build());
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(entregable, proyecto, 3, asesor, "CANCELADO"));
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(entregable, proyecto, 3, asesor));
         entityManager.flush();
         entityManager.clear();
 
@@ -79,7 +79,6 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
             assertThat(acceso.proyectoGrado()).isEqualTo(proyecto);
             assertThat(acceso.version()).isEqualTo(3);
             assertThat(acceso.asesor()).isEqualTo(asesor);
-            assertThat(acceso.estadoEntregable()).isEqualTo("CANCELADO");
         });
     }
 
@@ -99,7 +98,7 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
         entityManager.persist(AsesorJpaEntity.builder()
                 .id(asesor).identificador("ID-B").nombre("Asesor").email("b@uco.edu.co")
                 .ocurridoEn(Instant.parse("2026-01-01T00:00:00Z")).build());
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(entregable, proyecto, 1, asesor, "APROBADO"));
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(entregable, proyecto, 1, asesor));
         return entregable;
     }
 
