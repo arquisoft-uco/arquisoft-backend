@@ -11,6 +11,7 @@ import com.arquisoft.artefactos.domain.asesorproyectogrado.exception.AsesorNoAsi
 import com.arquisoft.artefactos.domain.estudianteartefacto.exception.EstudiantesSuperanProyectoException;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.CupoEstudiantesArtefacto;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoCongeladoException;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.artefactos.domain.versionartefacto.exception.CuotaProyectoGradoExcedidaException;
 import com.arquisoft.artefactos.domain.versionartefacto.model.AlmacenamientoProyectoGrado;
@@ -61,7 +62,7 @@ class ReactivarArtefactoValidatorImplTest {
                 UtilUUID.generarNuevoUUID(), "Repo", new DatosArchivo("a.pdf", "application/pdf", 10L));
         peso = new PesoArtefactoReactivable(artefacto, versionRepositorio, 1024L);
         almacenamiento = new AlmacenamientoProyectoGrado(
-                ProyectoGradoDomain.reconstruir(proyecto, "Proyecto"), 1_073_741_824L, 0L);
+                ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", null, null), 1_073_741_824L, 0L);
     }
 
     @Test
@@ -165,5 +166,18 @@ class ReactivarArtefactoValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(
                 reactivacion, asesorVigente, List.of(vinculoVigente), cupoValido, peso, sinProyecto))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarCongelado_antesQueCuota() {
+        // Arrange
+        var congelado = new AlmacenamientoProyectoGrado(
+                ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", UtilFecha.generarInstanteActual(), null),
+                1_073_741_824L, 1_073_741_824L);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                reactivacion, asesorVigente, List.of(vinculoVigente), cupoValido, peso, congelado))
+                .isInstanceOf(ProyectoGradoCongeladoException.class);
     }
 }

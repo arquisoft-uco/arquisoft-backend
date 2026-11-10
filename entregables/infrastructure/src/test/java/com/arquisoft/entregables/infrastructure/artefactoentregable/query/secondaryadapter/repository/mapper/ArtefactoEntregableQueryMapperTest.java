@@ -13,7 +13,7 @@ class ArtefactoEntregableQueryMapperTest {
         // Arrange
         var entity = ArtefactoEntregableJpaQueryEntity.builder()
                 .id(UtilUUID.generarNuevoUUID()).entregableId(UtilUUID.generarNuevoUUID())
-                .artefactoId(UtilUUID.generarNuevoUUID()).uriArchivo("uri")
+                .artefactoId(UtilUUID.generarNuevoUUID()).numeroVersion(3).uriArchivo("uri")
                 .idArtefacto(UtilUUID.generarNuevoUUID()).idRepositorioArtefacto(UtilUUID.generarNuevoUUID())
                 .nombreDocumento("Doc").idRepositorio(UtilUUID.generarNuevoUUID())
                 .nombreRepositorio("Repo").build();

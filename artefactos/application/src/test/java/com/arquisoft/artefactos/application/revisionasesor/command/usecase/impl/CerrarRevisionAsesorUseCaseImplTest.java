@@ -5,6 +5,8 @@ import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFin
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesVersionAnteriorSinCerrarExistenFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.command.validator.CerrarRevisionAsesorValidator;
@@ -14,6 +16,7 @@ import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.CierreRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.event.RevisionAsesorCerradaEvent;
@@ -76,6 +79,10 @@ class CerrarRevisionAsesorUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
+    private ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -94,6 +101,7 @@ class CerrarRevisionAsesorUseCaseImplTest {
 
     @BeforeEach
     void prepararEscenario() {
+        when(proyectoGradoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         revisionId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         versionId = UtilUUID.generarNuevoUUID();
@@ -140,7 +148,7 @@ class CerrarRevisionAsesorUseCaseImplTest {
                 versionArtefactoPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 estudiantesVinculadosArtefactoFinder, observacionesDeRevisionExistenFinder,
                 observacionesVersionAnteriorSinCerrarExistenFinder, validator, revisionAsesorOutputPort,
-                eventPublisher, logger);
+                eventPublisher, logger, proyectoGradoNoCongeladoValidator);
         orden.verify(logger).info(CerrarRevisionAsesorKey.LOG_CERRANDO, revisionId, asesorId);
         orden.verify(revisionAsesorFinder, times(1)).obtener(revisionId);
         orden.verify(artefactoPorRevisionAsesorFinder, times(1)).obtener(revisionId);
@@ -152,6 +160,8 @@ class CerrarRevisionAsesorUseCaseImplTest {
         orden.verify(observacionesVersionAnteriorSinCerrarExistenFinder, times(1)).obtener(revisionId);
         orden.verify(validator).validar(cierre, revision, artefacto, asesor, version, versionRepositorio,
                 new ObservacionesParaCierre(false, false));
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoPorRevisionAsesorFinder, times(1)).obtener(any());
         orden.verify(revisionAsesorOutputPort).actualizarEstado(revisionId, "CERRADA");
         var captor = ArgumentCaptor.forClass(RevisionAsesorCerradaEvent.class);
         orden.verify(eventPublisher).publish(captor.capture());

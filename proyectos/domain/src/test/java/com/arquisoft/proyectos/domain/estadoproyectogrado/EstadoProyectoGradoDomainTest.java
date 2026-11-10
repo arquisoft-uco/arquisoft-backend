@@ -49,6 +49,32 @@ class EstadoProyectoGradoDomainTest {
     }
 
     @Test
+    void debeCrearConElEstadoIndicado_cuandoEsFinalizado() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var estado = EstadoProyectoGradoDomain.crearConEstado(proyectoGrado, EstadoProyecto.FINALIZADO);
+
+        // Assert
+        assertThat(estado.getProyectoGrado()).isEqualTo(proyectoGrado);
+        assertThat(estado.getEstadoProyecto()).isEqualTo(EstadoProyecto.FINALIZADO);
+        assertThat(UtilUUID.esPorDefecto(estado.getId())).isFalse();
+    }
+
+    @Test
+    void debeRechazarElEstado_cuandoEsNuloOElCentinela() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> EstadoProyectoGradoDomain.crearConEstado(proyectoGrado, null))
+                .isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> EstadoProyectoGradoDomain.crearConEstado(proyectoGrado, EstadoProyecto.VACIO))
+                .isInstanceOf(DomainValidationException.class);
+    }
+
+    @Test
     void debeReconstruirSinValidar_cuandoLlegaDePersistencia() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();

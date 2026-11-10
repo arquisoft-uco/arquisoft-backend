@@ -17,7 +17,9 @@ rutas:
       estudiante: /{proyectoGradoId}/estudiantes/{estudianteId}
       proyectos-estudiante: /estudiante
       asesores-actuales: /estudiante/asesores-actuales
+      coordinadores: /estudiante/coordinadores
       proyectos-asesor: /asesor
       proyecto-asesor: /{proyectoGradoId}/asesor
       asesor-estado: /{proyectoGradoId}/asesores/{asesorId}/estado
+      estado: /{proyectoGradoId}/estado
       estados-asesor: /estados-asesor

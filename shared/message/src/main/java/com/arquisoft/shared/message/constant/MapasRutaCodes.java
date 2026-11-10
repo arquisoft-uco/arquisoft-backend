@@ -60,6 +60,7 @@ public final class MapasRutaCodes {
         public static final String PLAN_ESTIMADO_TIEMPO_INVALIDO = "PLAN_ESTIMADO_TIEMPO_INVALIDO";
         public static final String PLAN_ESTIMADO_DESCRIPCION_DEMASIADO_LARGA =
                 "PLAN_ESTIMADO_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String PLAN_ESTIMADO_DESCRIPCION_REQUERIDA = "PLAN_ESTIMADO_DESCRIPCION_REQUERIDA";
         public static final String PLAN_ESTIMADO_DUPLICADO = "PLAN_ESTIMADO_DUPLICADO";
         public static final String PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO = "PLAN_ESTIMADO_TIEMPO_EXCEDE_PLAZO";
         public static final String PLAN_ESTIMADO_REQUERIDO = "PLAN_ESTIMADO_REQUERIDO";
@@ -76,6 +77,7 @@ public final class MapasRutaCodes {
         public static final String PLAN_REAL_CREADO_EN_REQUERIDO = "PLAN_REAL_CREADO_EN_REQUERIDO";
         public static final String PLAN_REAL_FINALIZADA_EN_REQUERIDA = "PLAN_REAL_FINALIZADA_EN_REQUERIDA";
         public static final String PLAN_REAL_DESCRIPCION_DEMASIADO_LARGA = "PLAN_REAL_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String PLAN_REAL_PROYECTO_GRADO_REQUERIDO = "PLAN_REAL_PROYECTO_GRADO_REQUERIDO";
     }
 
     public static final class AsignacionAsesor {

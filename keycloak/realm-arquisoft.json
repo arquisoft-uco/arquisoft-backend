@@ -290,6 +290,7 @@
               "artefactos:version-artefacto:delete",
               "repositorio-artefactos:version-repositorio-artefacto:download",
               "entregables:entregable-proyecto-grado-estudiante:view",
+              "entregables:paquete-entregable:download",
               "solicitudes:respuesta-cambio-asesor-recibida:view",
               "solicitudes:respuesta-ampliacion-plazo-recibida:view",
               "solicitudes:solicitud-novedad-asesor:delete",
@@ -341,6 +342,7 @@
               "evaluaciones:estado-evaluacion:view",
               "proyectos:proyecto-grado-estudiante:view",
               "proyectos:asesor-actual-proyecto-grado-estudiante:view",
+              "proyectos:coordinador-proyecto-grado-estudiante:view",
               "fichas:observacion-evaluacion-estudiante:view",
               "artefactos:revision-asesor-estudiante:view",
               "artefactos:artefacto-estudiante:view",
@@ -372,13 +374,17 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "proyectos:proyecto-grado-estado:update",
               "mapas-ruta:tarea-mapa-ruta-asesor:view",
               "mapas-ruta:plan-estimado-proyecto-asesor:view",
+              "mapas-ruta:plan-estimado-asesor:update",
+              "mapas-ruta:plan-real-proyecto-asesor:view",
               "entregables:estado-entregable:view",
               "entregables:entregable-proyecto-grado:create",
               "entregables:entregable-proyecto-grado-estado:update",
               "entregables:entregable-proyecto-grado-asesor:view",
               "entregables:artefacto-entregable:view",
+              "entregables:paquete-entregable:download",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
@@ -1282,6 +1288,15 @@
           "attributes": {}
         },
         {
+          "id": "2dce97b6-1297-43ef-9726-2435b50fafa7",
+          "name": "entregables:paquete-entregable:download",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "ff2468d4-bbf2-4e51-bc64-410ad2676e9d",
           "name": "entregables:entregable-proyecto-grado-jurado:view",
           "description": "",
@@ -1509,6 +1524,15 @@
         {
           "id": "ffaeac40-94b6-4d4a-8765-655de4fd8570",
           "name": "proyectos:asesor-proyecto-grado:update-estado",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "93728f6f-99a6-41a1-940f-b52793233d7e",
+          "name": "proyectos:proyecto-grado-estado:update",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1986,6 +2010,15 @@
         {
           "id": "d663c150-801a-4702-86ed-adebc1b95faa",
           "name": "proyectos:asesor-actual-proyecto-grado-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "966f6b2a-0668-43fe-a81f-cb554fc1e0c8",
+          "name": "proyectos:coordinador-proyecto-grado-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2929,6 +2962,15 @@
           "attributes": {}
         },
         {
+          "id": "3b8f1d46-9a2e-4c75-b0d3-6e5a7c4f2918",
+          "name": "mapas-ruta:plan-estimado-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "7e3a9d52-1c6b-4f08-a2d4-b95e0c18f6a7",
           "name": "mapas-ruta:plan-estimado:update",
           "description": "",
@@ -2958,6 +3000,15 @@
         {
           "id": "28bbe823-7e56-4541-9d1a-36ca6fe40c6d",
           "name": "mapas-ruta:plan-real-tarea-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "232c7685-59e5-4a28-8891-c75e7f65f504",
+          "name": "mapas-ruta:plan-real-proyecto-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,

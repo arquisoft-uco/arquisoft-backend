@@ -164,6 +164,13 @@ public final class MapasRutaApiMessages {
         public static final String MODIFICAR_RESP_204 = "Plan estimado modificado";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "Plan estimado inexistente";
+        public static final String APORTAR_SUMMARY = "Aportar a un plan estimado";
+        public static final String APORTAR_DESCRIPTION =
+                "El asesor aporta a un plan estimado existente: el aporte reemplaza la descripción del plan, es "
+                        + "obligatorio y no puede estar en blanco. El tiempo estimado no se modifica";
+        public static final String APORTAR_RESP_204 = "Aporte registrado en el plan estimado";
+        public static final String APORTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String APORTAR_RESP_422 = "Plan estimado inexistente";
         public static final String REMOVER_SUMMARY = "Remover un plan estimado";
         public static final String REMOVER_DESCRIPTION =
                 "Remueve un plan estimado existente; la tarea queda libre para recibir otro plan estimado";
@@ -185,6 +192,17 @@ public final class MapasRutaApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de planes reales de la tarea";
         public static final String CONSULTAR_RESP_400 =
                 "Identificador de tarea inválido, o filtro u ordenamiento no permitido";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_SUMMARY =
+                "Consultar los planes reales de un proyecto de grado";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_DESCRIPTION =
+                "Devuelve, paginados, filtrados y ordenados, los planes reales de todas las tareas de un "
+                        + "proyecto de grado, con la descripción de la tarea de cada plan. Filtros por tiempo "
+                        + "real, descripción del plan y descripción de la tarea; sin orden se ordena por "
+                        + "tiempo real ascendente. Si el proyecto no tiene planes reales la página llega vacía";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_200 =
+                "Página de planes reales del proyecto de grado";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_400 =
+                "Identificador de proyecto de grado inválido, o filtro u ordenamiento no permitido";
     }
 
     public static final class EstadoItem {

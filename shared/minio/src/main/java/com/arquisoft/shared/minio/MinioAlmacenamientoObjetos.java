@@ -17,6 +17,7 @@ import io.minio.GetObjectArgs;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PostPolicy;
+import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import io.minio.StatObjectArgs;
 import io.minio.errors.ErrorResponseException;
@@ -24,6 +25,7 @@ import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -51,6 +53,7 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
     private static final String SEPARADOR_RUTA = "/";
     private static final String SIN_TEXTO = "";
     private static final long TAMANO_MINIMO_BYTES = 1L;
+    private static final long SIN_TAMANO_DE_PARTE = -1L;
     private static final String PARAMETRO_CONTENT_DISPOSITION = "response-content-disposition";
     private static final String CARACTER_REEMPLAZO = "_";
     private static final char BARRA_INVERTIDA = '\\';
@@ -148,6 +151,20 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
             minioClient.copyObject(CopyObjectArgs.builder().bucket(bucket).object(keyDestino).source(origen).build());
         } catch (Exception e) {
             throw fallo(MinioOperationException::copiaFallida, e);
+        }
+    }
+
+    @Override
+    public void subir(String bucket, String key, InputStream contenido, long tamano, String tipoContenido) {
+        try {
+            minioClient.putObject(PutObjectArgs.builder()
+                    .bucket(bucket)
+                    .object(key)
+                    .stream(contenido, tamano, SIN_TAMANO_DE_PARTE)
+                    .contentType(tipoContenido)
+                    .build());
+        } catch (Exception e) {
+            throw fallo(MinioOperationException::subidaFallida, e);
         }
     }
 

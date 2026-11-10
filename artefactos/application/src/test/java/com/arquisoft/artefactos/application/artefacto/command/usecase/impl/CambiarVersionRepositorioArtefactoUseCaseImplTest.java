@@ -5,6 +5,8 @@ import com.arquisoft.artefactos.application.artefacto.command.secondaryport.Arte
 import com.arquisoft.artefactos.application.artefacto.command.validator.CambiarVersionRepositorioArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorArtefactoFinder;
@@ -15,6 +17,7 @@ import com.arquisoft.artefactos.domain.artefacto.event.ArtefactoVersionRepositor
 import com.arquisoft.artefactos.domain.artefacto.exception.CambioVersionRepositorioNoPermitidoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.RevisionVersionAnterior;
@@ -70,6 +73,10 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
+    private ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @Captor
@@ -95,7 +102,9 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
                 artefactoBloqueadoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorArtefactoFinder,
                 versionRepositorioArtefactoBloqueadaPorIdFinder, ultimoNumeroVersionArtefactoFinder,
                 revisionVigenteUltimaVersionFinder, estudiantesVinculadosArtefactoFinder,
-                cambiarVersionRepositorioArtefactoValidator, artefactoOutputPort, eventPublisher, logger);
+                cambiarVersionRepositorioArtefactoValidator, artefactoOutputPort, eventPublisher,
+                proyectoGradoPorArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
+        when(proyectoGradoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         artefactoId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         elegidaId = UtilUUID.generarNuevoUUID();
@@ -138,7 +147,7 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
                 versionRepositorioArtefactoPorArtefactoFinder, versionRepositorioArtefactoBloqueadaPorIdFinder,
                 ultimoNumeroVersionArtefactoFinder, revisionVigenteUltimaVersionFinder,
                 estudiantesVinculadosArtefactoFinder, cambiarVersionRepositorioArtefactoValidator,
-                artefactoOutputPort, eventPublisher, logger);
+                artefactoOutputPort, eventPublisher, logger, proyectoGradoNoCongeladoValidator);
         orden.verify(logger).info(ArtefactoKey.LOG_CAMBIANDO_VERSION_REPOSITORIO, artefactoId, asesorId);
         orden.verify(artefactoBloqueadoPorIdFinder, times(1)).obtener(artefactoId);
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesorId);
@@ -151,6 +160,8 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
                 true, true, true, true, 2, EstadoRevisionAsesor.PENDIENTE.getId(), 3);
         orden.verify(cambiarVersionRepositorioArtefactoValidator).validar(
                 eq(cambio), eq(artefacto), eq(asesor), eq(actual), eq(elegida), anteriorCaptor.capture());
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoPorArtefactoFinder, times(1)).obtener(any());
         orden.verify(artefactoOutputPort).cambiarVersionRepositorio(artefactoId, elegidaId);
         orden.verify(eventPublisher).publish(eventoCaptor.capture());
         orden.verify(logger).info(ArtefactoKey.LOG_VERSION_REPOSITORIO_CAMBIADA, artefactoId, elegidaId, 3);

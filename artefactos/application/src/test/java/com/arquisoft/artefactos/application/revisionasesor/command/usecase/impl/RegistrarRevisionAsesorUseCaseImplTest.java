@@ -1,6 +1,8 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorAbiertaPorVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.entity.RevisionAsesorEntity;
@@ -8,6 +10,7 @@ import com.arquisoft.artefactos.application.revisionasesor.command.validator.Reg
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoEsUltimaFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RegistroRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorAbiertaExistenteException;
@@ -56,6 +59,10 @@ class RegistrarRevisionAsesorUseCaseImplTest {
     @Mock
     private RevisionAsesorOutputPort revisionAsesorOutputPort;
     @Mock
+    private ProyectoGradoPorVersionArtefactoFinder proyectoGradoPorVersionArtefactoFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -69,6 +76,7 @@ class RegistrarRevisionAsesorUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
+        when(proyectoGradoPorVersionArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         asesorId = UtilUUID.generarNuevoUUID();
         versionId = UtilUUID.generarNuevoUUID();
         var artefactoId = UtilUUID.generarNuevoUUID();
@@ -90,12 +98,14 @@ class RegistrarRevisionAsesorUseCaseImplTest {
         // Assert
         var orden = inOrder(versionArtefactoBloqueadaPorIdFinder, artefactoPorVersionArtefactoFinder,
                 versionArtefactoEsUltimaFinder, revisionAsesorAbiertaPorVersionFinder, validator,
-                revisionAsesorOutputPort);
+                revisionAsesorOutputPort, proyectoGradoNoCongeladoValidator);
         orden.verify(versionArtefactoBloqueadaPorIdFinder).obtener(versionId);
         orden.verify(artefactoPorVersionArtefactoFinder).obtener(versionId);
         orden.verify(versionArtefactoEsUltimaFinder).obtener(versionId);
         orden.verify(revisionAsesorAbiertaPorVersionFinder).obtener(versionId);
         orden.verify(validator).validar(registro, version, artefacto, true, false);
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoPorVersionArtefactoFinder, times(1)).obtener(any());
         var captor = ArgumentCaptor.forClass(RevisionAsesorEntity.class);
         orden.verify(revisionAsesorOutputPort).registrar(captor.capture());
         verify(versionArtefactoBloqueadaPorIdFinder, times(1)).obtener(any());

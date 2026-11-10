@@ -17,13 +17,23 @@ public enum EntregableProyectoGradoKey implements ClaveMensaje {
     ERROR_CIERRE_NO_PERMITIDO("entregables.dominio.entregableproyectogrado.error.cierre-no-permitido", 1),
     ERROR_CIERRE_NO_PERMITIDO_DETALLE(
             "entregables.dominio.entregableproyectogrado.error.cierre-no-permitido-detalle", 2),
+    ERROR_CANCELACION_NO_PERMITIDA(
+            "entregables.dominio.entregableproyectogrado.error.cancelacion-no-permitida", 1),
+    ERROR_CANCELACION_NO_PERMITIDA_DETALLE(
+            "entregables.dominio.entregableproyectogrado.error.cancelacion-no-permitida-detalle", 2),
+    ERROR_ESTADO_TERMINAL("entregables.dominio.entregableproyectogrado.error.estado-terminal", 1),
+    ERROR_ESTADO_TERMINAL_DETALLE(
+            "entregables.dominio.entregableproyectogrado.error.estado-terminal-detalle", 2),
+    ERROR_VIGENTE_YA_EXISTE("entregables.dominio.entregableproyectogrado.error.vigente-ya-existe", 1),
+    ERROR_VIGENTE_YA_EXISTE_DETALLE(
+            "entregables.dominio.entregableproyectogrado.error.vigente-ya-existe-detalle", 1),
     LOG_CAMBIANDO_ESTADO("entregables.aplicacion.entregableproyectogrado.log.cambiando-estado", 2),
     LOG_VERIFICACION_CAMBIAR_ESTADO(
-            "entregables.aplicacion.entregableproyectogrado.log.verificacion-cambiar-estado", 2),
+            "entregables.aplicacion.entregableproyectogrado.log.verificacion-cambiar-estado", 4),
     LOG_ESTADO_CAMBIADO("entregables.aplicacion.entregableproyectogrado.log.estado-cambiado", 3),
     LOG_ESTADO_ACTUALIZADO("entregables.infraestructura.entregableproyectogrado.log.estado-actualizado", 1),
     LOG_GENERANDO("entregables.aplicacion.entregableproyectogrado.log.generando", 2),
-    LOG_VERIFICACION_GENERAR("entregables.aplicacion.entregableproyectogrado.log.verificacion-generar", 3),
+    LOG_VERIFICACION_GENERAR("entregables.aplicacion.entregableproyectogrado.log.verificacion-generar", 5),
     LOG_GENERADO("entregables.aplicacion.entregableproyectogrado.log.generado", 3),
     LOG_GUARDADO("entregables.infraestructura.entregableproyectogrado.log.guardado", 1),
     LOG_CONSULTANDO("entregables.aplicacion.entregableproyectogrado.log.consultando", 4),

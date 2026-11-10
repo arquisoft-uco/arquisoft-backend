@@ -22,6 +22,8 @@ public interface EntregableProyectoGradoCommandRepository
     @Query("SELECT e FROM EntregableProyectoGradoJpaEntity e WHERE e.id = :id")
     Optional<EntregableProyectoGradoJpaEntity> buscarBloqueadaPorId(@Param("id") UUID id);
 
+    boolean existsByProyectoGradoAndEstadoEntregableNot(UUID proyectoGrado, String estadoEntregable);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE EntregableProyectoGradoJpaEntity e SET e.estadoEntregable = :estado WHERE e.id = :id")
     void actualizarEstado(@Param("id") UUID id, @Param("estado") String estado);

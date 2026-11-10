@@ -53,7 +53,7 @@ class AgregarProyectoGradoUseCaseImplTest {
         var captor = ArgumentCaptor.forClass(ProyectoGradoEntity.class);
         verify(proyectoGradoExisteFinder, times(1)).obtener(id);
         verify(proyectoGradoOutputPort, times(1)).guardar(captor.capture());
-        assertThat(captor.getValue()).isEqualTo(new ProyectoGradoEntity(id, "Sistema de gestion"));
+        assertThat(captor.getValue()).isEqualTo(new ProyectoGradoEntity(id, "Sistema de gestion", "EN_PROCESO"));
     }
 
     @Test

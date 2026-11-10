@@ -5,6 +5,8 @@ import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFin
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.usecase.AvanzarObservacionesRevisionUseCase;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.command.validator.EnviarRevisionAsesorValidator;
@@ -15,6 +17,7 @@ import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioAr
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
 import com.arquisoft.artefactos.domain.observacion.AvanceObservacionesRevisionDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.EnvioRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.event.RevisionAsesorEnviadaEvent;
@@ -77,6 +80,10 @@ class EnviarRevisionAsesorUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
+    private ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -95,6 +102,7 @@ class EnviarRevisionAsesorUseCaseImplTest {
 
     @BeforeEach
     void prepararEscenario() {
+        when(proyectoGradoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         revisionId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         versionId = UtilUUID.generarNuevoUUID();
@@ -140,7 +148,7 @@ class EnviarRevisionAsesorUseCaseImplTest {
         var orden = inOrder(revisionAsesorFinder, artefactoPorRevisionAsesorFinder, asesorPorIdFinder,
                 versionArtefactoPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 estudiantesVinculadosArtefactoFinder, observacionesDeRevisionExistenFinder, validator, revisionAsesorOutputPort,
-                avanzarObservacionesRevisionUseCase, eventPublisher, logger);
+                avanzarObservacionesRevisionUseCase, eventPublisher, logger, proyectoGradoNoCongeladoValidator);
         orden.verify(logger).info(EnviarRevisionAsesorKey.LOG_ENVIANDO, revisionId, asesorId);
         orden.verify(revisionAsesorFinder, times(1)).obtener(revisionId);
         orden.verify(artefactoPorRevisionAsesorFinder, times(1)).obtener(revisionId);
@@ -151,6 +159,8 @@ class EnviarRevisionAsesorUseCaseImplTest {
         orden.verify(observacionesDeRevisionExistenFinder, times(1)).obtener(revisionId);
         orden.verify(validator).validar(envio, revision, artefacto, asesor, version, versionRepositorio,
                 new ObservacionesDeRevision(revisionId, true));
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoPorRevisionAsesorFinder, times(1)).obtener(any());
         orden.verify(revisionAsesorOutputPort).actualizarEstado(revisionId, "EN_PROGRESO");
         orden.verify(avanzarObservacionesRevisionUseCase).ejecutar(envio.getObservaciones());
         var captor = ArgumentCaptor.forClass(RevisionAsesorEnviadaEvent.class);

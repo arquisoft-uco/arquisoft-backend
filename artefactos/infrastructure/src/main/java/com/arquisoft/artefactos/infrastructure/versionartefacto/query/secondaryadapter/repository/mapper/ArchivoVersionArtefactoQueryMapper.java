@@ -9,6 +9,7 @@ public final class ArchivoVersionArtefactoQueryMapper {
 
     public static ArchivoVersionArtefactoEntity toEntity(ArchivoVersionArtefactoJpaQueryEntity jpa) {
         return new ArchivoVersionArtefactoEntity(
-                jpa.getAsesorId(), jpa.getUriArchivo(), jpa.getVersion(), jpa.getNombreDocumento());
+                jpa.getAsesorId(), jpa.getUriArchivo(), jpa.getVersion(), jpa.getNombreDocumento(),
+                jpa.getNombreProyecto(), jpa.isProyectoFinalizado());
     }
 }

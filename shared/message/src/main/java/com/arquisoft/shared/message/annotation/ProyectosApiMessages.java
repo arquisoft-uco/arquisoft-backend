@@ -74,6 +74,27 @@ public final class ProyectosApiMessages {
                         + "permitida";
     }
 
+    public static final class CambioEstadoProyectoGrado {
+
+        private CambioEstadoProyectoGrado() {}
+
+        public static final String TAG_NAME = "Estado del Proyecto de Grado";
+        public static final String TAG_DESCRIPTION = "Gestión del estado de un proyecto de grado";
+
+        public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_DESCRIPTION =
+                "Permite al asesor asignado al proyecto de grado finalizarlo cuando su último entregable está "
+                        + "cerrado o rechazado. El estado finalizado es terminal: bloquea nuevas entregas y los "
+                        + "estudiantes reciben un correo de notificación";
+        public static final String CAMBIAR_ESTADO_RESP_204 = "Nuevo estado del proyecto de grado registrado exitosamente";
+        public static final String CAMBIAR_ESTADO_RESP_400 = "Estado del proyecto de grado ausente";
+        public static final String CAMBIAR_ESTADO_RESP_403 =
+                "Sin permiso para cambiar el estado de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_RESP_422 =
+                "Estado fuera del catálogo, proyecto de grado no encontrado o sin vínculo con el asesor, "
+                        + "transición de estado no permitida, sin entregables o último entregable sin cerrar ni rechazar";
+    }
+
     public static final class ConsultaAsesorProyectoGrado {
 
         private ConsultaAsesorProyectoGrado() {}
@@ -177,6 +198,18 @@ public final class ProyectosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador del estudiante inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "Sin permiso para consultar los proyectos de grado del estudiante";
+
+        public static final String CONSULTAR_COORDINADORES_SUMMARY =
+                "Consultar el coordinador de los proyectos de grado del estudiante";
+        public static final String CONSULTAR_COORDINADORES_DESCRIPTION =
+                "Permite al estudiante consultar, para cada proyecto de grado al que está vinculado, "
+                        + "el título y el coordinador asignado, para elegir el destinatario de una solicitud; "
+                        + "lista vacía si no pertenece a ninguno";
+        public static final String CONSULTAR_COORDINADORES_RESP_200 =
+                "Lista de proyectos de grado del estudiante con su coordinador";
+        public static final String CONSULTAR_COORDINADORES_RESP_400 = "Identificador del estudiante inválido";
+        public static final String CONSULTAR_COORDINADORES_RESP_403 =
+                "Sin permiso para consultar los coordinadores de los proyectos de grado del estudiante";
 
         public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar los proyectos de grado que asesora";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =

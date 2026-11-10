@@ -4,6 +4,8 @@ import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPo
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorDeRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantePorIdFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesAbiertasDeRevisionExistenFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.EstudianteParticipaRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.VersionPosteriorARevisionFinder;
@@ -15,6 +17,7 @@ import com.arquisoft.artefactos.domain.revisionasesor.event.RevisionAsesorEstado
 import com.arquisoft.artefactos.domain.revisionasesor.model.PrecondicionesCambioEstadoRevisionAsesor;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.CambiarEstadoRevisionAsesorKey;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -33,6 +36,8 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
     private final ObservacionesAbiertasDeRevisionExistenFinder observacionesAbiertasDeRevisionExistenFinder;
     private final CambiarEstadoRevisionAsesorValidator cambiarEstadoRevisionAsesorValidator;
     private final EventPublisher eventPublisher;
+    private final ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -50,6 +55,7 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
         var artefacto = artefactoPorRevisionAsesorFinder.obtener(revisionAsesor);
         var existenObservacionesAbiertas = observacionesAbiertasDeRevisionExistenFinder.obtener(revisionAsesor);
 
+        var proyecto = proyectoGradoPorRevisionAsesorFinder.obtener(revisionAsesor);
         logger.debug(CambiarEstadoRevisionAsesorKey.LOG_VERIFICACION_CAMBIO_ESTADO,
                 !revision.esVacio(), !asesor.esVacio(), !estudiante.esVacio(), participa, existeVersionPosterior,
                 !artefacto.esVacio(), existenObservacionesAbiertas);
@@ -57,6 +63,9 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
         cambiarEstadoRevisionAsesorValidator.validar(cambio, new PrecondicionesCambioEstadoRevisionAsesor(
                 revision, asesor, estudiante, artefacto, participa, existeVersionPosterior,
                 existenObservacionesAbiertas));
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         if (revision.tieneEstado(estadoNuevo)) {
             logger.info(CambiarEstadoRevisionAsesorKey.LOG_ESTADO_SIN_CAMBIO, revisionAsesor, estadoNuevo.getId());

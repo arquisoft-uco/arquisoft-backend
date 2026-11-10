@@ -55,8 +55,12 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
     }
 
     private UUID sembrarArtefacto(Instant omitidoEn) {
+        return sembrarArtefacto(omitidoEn, null);
+    }
+
+    private UUID sembrarArtefacto(Instant omitidoEn, Instant finalizadoEn) {
         var proyecto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, "Alfa"));
+        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, "Alfa", null, finalizadoEn));
         var documento = UtilUUID.generarNuevoUUID();
         entityManager.persist(new VersionRepositorioArtefactoJpaEntity(
                 documento, "Anteproyecto", 1, UtilUUID.generarNuevoUUID(), "Repo Uno",
@@ -174,6 +178,40 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
             assertThat(archivo.uriArchivo()).isEqualTo("artefactos/" + version + ".pdf");
             assertThat(archivo.numeroVersion()).isEqualTo(3);
             assertThat(archivo.nombreDocumento()).isEqualTo("Anteproyecto");
+        });
+    }
+
+    @Test
+    void debeTraerNombreYFinalizado_cuandoElProyectoEstaFinalizado() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(sembrarArtefacto(null, Instant.parse("2026-11-02T10:00:00Z")), 1);
+        confirmarSiembra();
+
+        // Act
+        var resultado = accesoAdapter.obtenerArchivoPorId(version);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(archivo -> {
+            assertThat(archivo.nombreProyecto()).isEqualTo("Alfa");
+            assertThat(archivo.proyectoFinalizado()).isTrue();
+        });
+    }
+
+    @Test
+    void debeMarcarNoFinalizado_cuandoFinalizadoEnEsNulo() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(sembrarArtefacto(null), 1);
+        confirmarSiembra();
+
+        // Act
+        var resultado = accesoAdapter.obtenerArchivoPorId(version);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(archivo -> {
+            assertThat(archivo.nombreProyecto()).isEqualTo("Alfa");
+            assertThat(archivo.proyectoFinalizado()).isFalse();
         });
     }
 

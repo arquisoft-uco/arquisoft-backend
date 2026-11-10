@@ -31,7 +31,8 @@ public class DescargarArchivoVersionArtefactoUseCaseImpl implements DescargarArc
         var participa = estudianteParticipaVersionArtefactoQueryFinder.obtener(
                 new ParticipacionVersionArtefacto(entrada.versionArtefacto(), entrada.actor()));
 
-        logger.debug(VersionArtefactoKey.LOG_VERIFICACION_DESCARGA, !archivo.esVacio(), participa);
+        logger.debug(VersionArtefactoKey.LOG_VERIFICACION_DESCARGA,
+                !archivo.esVacio(), participa, archivo.isProyectoFinalizado());
 
         descargarArchivoVersionArtefactoValidator.validar(entrada, archivo, participa);
 

@@ -5,6 +5,7 @@ import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontrado
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.EstudianteNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoCongeladoException;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.ArtefactoCerradoException;
@@ -44,7 +45,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
         artefacto = ArtefactoDomain.reconstruir(solicitud.getArtefacto(), UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
         almacenamiento = new AlmacenamientoProyectoGrado(
-                ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto"), 1_073_741_824L, 0L);
+                ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null), 1_073_741_824L, 0L);
     }
 
     private RevisionAsesorDomain revisionEn(EstadoRevisionAsesor estado) {
@@ -188,5 +189,18 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(solicitud, artefacto, true, MAXIMO, 2, revision, sinEspacio))
                 .isInstanceOf(ArtefactoCerradoException.class);
+    }
+
+    @Test
+    void debeLanzarCongelado_antesQueCuota() {
+        // Arrange
+        var congelado = new AlmacenamientoProyectoGrado(
+                ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", Instant.now(), null),
+                1_073_741_824L, 1_073_741_824L);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                solicitud, artefacto, true, MAXIMO, 0, RevisionAsesorDomain.VACIO, congelado))
+                .isInstanceOf(ProyectoGradoCongeladoException.class);
     }
 }

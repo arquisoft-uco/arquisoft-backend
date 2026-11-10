@@ -91,6 +91,22 @@ public final class ArtefactosFields {
 
         public static final String ID = "id";
         public static final String NOMBRE = "nombre";
+        public static final String ENTREGADO_EN = "entregadoEn";
+        public static final String FINALIZADO_EN = "finalizadoEn";
+        public static final String CANCELADO_EN = "canceladoEn";
+    }
+
+    public static final class PaqueteEntregable {
+
+        private PaqueteEntregable() {}
+
+        public static final String ENTREGABLE_PROYECTO_GRADO = "entregableProyectoGrado";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String VERSION_ENTREGABLE = "versionEntregable";
+        public static final String GENERACION = "generacion";
+        public static final String GENERADO_EN = "generadoEn";
+        public static final String CLAVE_OBJETO = "claveObjeto";
+        public static final String TAMANO_BYTES = "tamanoBytes";
     }
 
     public static final class Asesor {

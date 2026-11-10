@@ -86,12 +86,14 @@ security:
         - {method: POST, path: "/api/proyectos-grado/coordinador", role: "proyectos:proyecto-grado-coordinador:view"}
         - {method: GET, path: "/api/proyectos-grado/estudiante", role: "proyectos:proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/proyectos-grado/estudiante/asesores-actuales", role: "proyectos:asesor-actual-proyecto-grado-estudiante:view"}
+        - {method: GET, path: "/api/proyectos-grado/estudiante/coordinadores", role: "proyectos:coordinador-proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/proyectos-grado/estados-asesor", role: "proyectos:estado-asesor:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/asesor", role: "proyectos:proyecto-grado-asesor-detalle:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/asesores", role: "proyectos:asesor-proyecto-grado-coordinador:view"}
         - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/asesores", role: "proyectos:asesor-proyecto-grado:create"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/asesores-asignados", role: "proyectos:asesor-proyecto-grado-estudiante:view"}
         - {method: PATCH, path: "/api/proyectos-grado/{proyectoGradoId}/asesores/{asesorId}/estado", role: "proyectos:asesor-proyecto-grado:update-estado"}
+        - {method: PATCH, path: "/api/proyectos-grado/{proyectoGradoId}/estado", role: "proyectos:proyecto-grado-estado:update"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/companeros", role: "proyectos:estudiante-proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/estados", role: "proyectos:estado-proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/estudiantes", role: "proyectos:estudiante-proyecto-grado-coordinador:view"}
@@ -254,8 +256,10 @@ security:
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados", role: "mapas-ruta:plan-estimado:create"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados/estudiante", role: "mapas-ruta:plan-estimado-tarea-estudiante:view"}
         - {method: POST, path: "/api/mapas-ruta/tareas/{tareaId}/planes-reales/estudiante", role: "mapas-ruta:plan-real-tarea-estudiante:view"}
+        - {method: POST, path: "/api/mapas-ruta/proyectos-grado/{proyectoGradoId}/planes-reales/asesor", role: "mapas-ruta:plan-real-proyecto-asesor:view"}
         - {method: PATCH, path: "/api/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:update"}
         - {method: DELETE, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:delete"}
+        - {method: PATCH, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}/asesor", role: "mapas-ruta:plan-estimado-asesor:update"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
         # entregables
         - {method: GET, path: "/api/estados-entregable", role: "entregables:estado-entregable:view"}
@@ -265,3 +269,4 @@ security:
         - {method: POST, path: "/api/entregables-proyecto-grado/jurado", role: "entregables:entregable-proyecto-grado-jurado:view"}
         - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/entregables/estudiante", role: "entregables:entregable-proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/entregables-proyecto-grado/{entregableProyectoGradoId}/artefactos", role: "entregables:artefacto-entregable:view"}
+        - {method: GET, path: "/api/entregables/{entregableProyectoGradoId}/paquete", role: "entregables:paquete-entregable:download"}

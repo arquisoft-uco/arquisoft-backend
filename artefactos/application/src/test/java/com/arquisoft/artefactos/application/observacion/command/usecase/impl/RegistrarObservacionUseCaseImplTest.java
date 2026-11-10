@@ -5,12 +5,15 @@ import com.arquisoft.artefactos.application.observacion.command.finder.Observaci
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.ObservacionOutputPort;
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.entity.ObservacionEntity;
 import com.arquisoft.artefactos.application.observacion.command.validator.RegistrarObservacionValidator;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.observacion.ObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.RegistroObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.exception.ObservacionDuplicadaException;
 import com.arquisoft.artefactos.domain.observacion.model.EstadoObservacion;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.shared.logger.AppLogger;
@@ -54,6 +57,10 @@ class RegistrarObservacionUseCaseImplTest {
     @Mock
     private ObservacionOutputPort observacionOutputPort;
     @Mock
+    private ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -68,6 +75,7 @@ class RegistrarObservacionUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
+        when(proyectoGradoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         revisionId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         observacion = ObservacionDomain.crear(revisionId, "Detalle");
@@ -88,11 +96,13 @@ class RegistrarObservacionUseCaseImplTest {
 
         // Assert
         var orden = inOrder(revisionAsesorFinder, artefactoPorRevisionAsesorFinder,
-                observacionDescripcionExisteFinder, validator, observacionOutputPort);
+                observacionDescripcionExisteFinder, validator, observacionOutputPort, proyectoGradoNoCongeladoValidator);
         orden.verify(revisionAsesorFinder).obtener(revisionId);
         orden.verify(artefactoPorRevisionAsesorFinder).obtener(revisionId);
         orden.verify(observacionDescripcionExisteFinder).obtener(observacion);
         orden.verify(validator).validar(registro, revision, artefacto, false);
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoPorRevisionAsesorFinder, times(1)).obtener(any());
         var captor = ArgumentCaptor.forClass(ObservacionEntity.class);
         orden.verify(observacionOutputPort).registrar(captor.capture());
         verify(revisionAsesorFinder, times(1)).obtener(any());

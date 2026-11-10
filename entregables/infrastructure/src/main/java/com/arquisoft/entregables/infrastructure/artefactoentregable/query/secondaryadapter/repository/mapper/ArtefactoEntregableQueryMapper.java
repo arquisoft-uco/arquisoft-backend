@@ -12,6 +12,7 @@ public final class ArtefactoEntregableQueryMapper {
                 entity.getId(),
                 entity.getEntregableId(),
                 entity.getArtefactoId(),
+                entity.getNumeroVersion(),
                 entity.getUriArchivo(),
                 entity.getIdArtefacto(),
                 entity.getIdRepositorioArtefacto(),

@@ -80,6 +80,28 @@ public final class ArtefactosCodes {
         public static final String NOMBRE_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_NOMBRE_REQUERIDO";
         public static final String NOMBRE_DEMASIADO_LARGO = "ARTEFACTOS_PROYECTO_GRADO_NOMBRE_DEMASIADO_LARGO";
         public static final String NO_ENCONTRADO = "ARTEFACTOS_PROYECTO_GRADO_NO_ENCONTRADO";
+        public static final String ENTREGADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_ENTREGADO_EN_REQUERIDO";
+        public static final String FINALIZADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_FINALIZADO_EN_REQUERIDO";
+        public static final String CANCELADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_CANCELADO_EN_REQUERIDO";
+        public static final String CONGELADO = "ARTEFACTOS_PROYECTO_GRADO_CONGELADO";
+        public static final String NO_FINALIZADO = "ARTEFACTOS_PROYECTO_GRADO_NO_FINALIZADO";
+    }
+
+    public static final class PaqueteEntregable {
+
+        private PaqueteEntregable() {}
+
+        public static final String ENTREGABLE_PROYECTO_GRADO_REQUERIDO =
+                "ARTEFACTOS_PAQUETE_ENTREGABLE_ENTREGABLE_PROYECTO_GRADO_REQUERIDO";
+        public static final String PROYECTO_GRADO_REQUERIDO = "ARTEFACTOS_PAQUETE_ENTREGABLE_PROYECTO_GRADO_REQUERIDO";
+        public static final String VERSION_ENTREGABLE_INVALIDA =
+                "ARTEFACTOS_PAQUETE_ENTREGABLE_VERSION_ENTREGABLE_INVALIDA";
+        public static final String GENERACION_REQUERIDA = "ARTEFACTOS_PAQUETE_ENTREGABLE_GENERACION_REQUERIDA";
+        public static final String GENERADO_EN_REQUERIDO = "ARTEFACTOS_PAQUETE_ENTREGABLE_GENERADO_EN_REQUERIDO";
+        public static final String CLAVE_OBJETO_REQUERIDA = "ARTEFACTOS_PAQUETE_ENTREGABLE_CLAVE_OBJETO_REQUERIDA";
+        public static final String CLAVE_OBJETO_DEMASIADO_LARGA =
+                "ARTEFACTOS_PAQUETE_ENTREGABLE_CLAVE_OBJETO_DEMASIADO_LARGA";
+        public static final String TAMANO_BYTES_INVALIDO = "ARTEFACTOS_PAQUETE_ENTREGABLE_TAMANO_BYTES_INVALIDO";
     }
 
     public static final class Asesor {
@@ -174,6 +196,7 @@ public final class ArtefactosCodes {
 
         private VersionArtefacto() {}
 
+        public static final String ARCHIVO_PURGADO = "VERSION_ARTEFACTO_ARCHIVO_PURGADO";
         public static final String ASESOR_REQUERIDO = "VERSION_ARTEFACTO_ASESOR_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO = "VERSION_ARTEFACTO_ESTUDIANTE_REQUERIDO";
         public static final String ARTEFACTO_REQUERIDO = "VERSION_ARTEFACTO_ARTEFACTO_REQUERIDO";

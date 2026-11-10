@@ -21,6 +21,7 @@ import java.util.UUID;
                a.id                         AS artefacto_id,
                a.uri_archivo                AS uri_archivo,
                a.id_artefacto               AS id_artefacto,
+               a.version_artefacto          AS version_artefacto,
                a.id_repositorio_artefacto   AS id_repositorio_artefacto,
                a.nombre_documento           AS nombre_documento,
                a.id_repositorio             AS id_repositorio,
@@ -50,6 +51,9 @@ public class ArtefactoEntregableJpaQueryEntity {
 
     @Column(name = "id_artefacto", columnDefinition = "uuid")
     private UUID idArtefacto;
+
+    @Column(name = "version_artefacto")
+    private int numeroVersion;
 
     @Column(name = "id_repositorio_artefacto", columnDefinition = "uuid")
     private UUID idRepositorioArtefacto;

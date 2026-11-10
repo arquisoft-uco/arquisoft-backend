@@ -27,7 +27,7 @@ class ArtefactoEntregableQueryOutputAdapterTest {
         var em = entityManager.getEntityManager();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS artefacto (id UUID PRIMARY KEY, uri_archivo VARCHAR(2000), "
                 + "id_artefacto UUID, id_repositorio_artefacto UUID, nombre_documento VARCHAR(100), "
-                + "id_repositorio UUID, nombre_repositorio VARCHAR(100))").executeUpdate();
+                + "id_repositorio UUID, nombre_repositorio VARCHAR(100), version_artefacto INTEGER)").executeUpdate();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS artefacto_entregable (id UUID PRIMARY KEY, "
                 + "artefacto_id UUID, entregable_id UUID)").executeUpdate();
         em.createNativeQuery("DELETE FROM artefacto_entregable").executeUpdate();
@@ -38,11 +38,12 @@ class ArtefactoEntregableQueryOutputAdapterTest {
         var em = entityManager.getEntityManager();
         var artefacto = UtilUUID.generarNuevoUUID();
         em.createNativeQuery("INSERT INTO artefacto (id, uri_archivo, id_artefacto, id_repositorio_artefacto, "
-                        + "nombre_documento, id_repositorio, nombre_repositorio) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)")
+                        + "nombre_documento, id_repositorio, nombre_repositorio, version_artefacto) "
+                        + "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)")
                 .setParameter(1, artefacto).setParameter(2, "uri/" + nombreDocumento)
                 .setParameter(3, UtilUUID.generarNuevoUUID()).setParameter(4, UtilUUID.generarNuevoUUID())
                 .setParameter(5, nombreDocumento).setParameter(6, UtilUUID.generarNuevoUUID())
-                .setParameter(7, "Repo").executeUpdate();
+                .setParameter(7, "Repo").setParameter(8, 3).executeUpdate();
         em.createNativeQuery("INSERT INTO artefacto_entregable (id, artefacto_id, entregable_id) VALUES (?1, ?2, ?3)")
                 .setParameter(1, id).setParameter(2, artefacto).setParameter(3, entregable).executeUpdate();
         entityManager.flush();
@@ -66,6 +67,7 @@ class ArtefactoEntregableQueryOutputAdapterTest {
         assertThat(readModel.id()).isEqualTo(vinculo);
         assertThat(readModel.entregableProyectoGrado()).isEqualTo(entregable);
         assertThat(readModel.versionArtefacto()).isEqualTo(artefacto);
+        assertThat(readModel.numeroVersion()).isEqualTo(3);
         assertThat(readModel.uriArchivo()).isEqualTo("uri/Anteproyecto");
         assertThat(readModel.nombreDocumento()).isEqualTo("Anteproyecto");
         assertThat(readModel.nombreRepositorio()).isEqualTo("Repo");

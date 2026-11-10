@@ -40,13 +40,14 @@ public final class EntregablesApiMessages {
         public static final String GENERAR_RESP_422 = "El proyecto de grado no existe o el asesor no está vigente";
         public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un entregable de proyecto de grado";
         public static final String CAMBIAR_ESTADO_DESCRIPTION =
-                "El asesor cambia el estado de un entregable a Cancelado o Cerrado. "
-                        + "Solo puede cerrarse un entregable Aprobado o Aprobado Con Observaciones";
+                "El asesor cambia el estado de un entregable a Cancelado o Cerrado. Solo puede cancelarse un entregable "
+                        + "Disponible Evaluación y solo puede cerrarse uno Aprobado o Aprobado Con Observaciones. "
+                        + "Cerrado, Cancelado y Rechazado son estados terminales";
         public static final String CAMBIAR_ESTADO_RESP_204 = "Estado del entregable cambiado";
         public static final String CAMBIAR_ESTADO_RESP_400 =
                 "El identificador del entregable no es un UUID válido o el estado viene vacío";
         public static final String CAMBIAR_ESTADO_RESP_422 =
-                "El entregable no existe, el estado no existe o la transición no está permitida";
+                "El entregable no existe, el estado no existe, la transición no está permitida o el entregable ya es terminal";
         public static final String CONSULTAR_ASESOR_SUMMARY =
                 "Filtrar los entregables generados del asesor autenticado";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
@@ -87,9 +88,28 @@ public final class EntregablesApiMessages {
         public static final String CONSULTAR_SUMMARY = "Consultar los artefactos de un entregable";
         public static final String CONSULTAR_DESCRIPTION =
                 "El asesor consulta los artefactos vinculados a un entregable de proyecto de grado suyo. "
-                        + "Cada elemento trae el documento, el repositorio y la URI del archivo";
+                        + "Cada elemento trae el documento, la versión del artefacto, el repositorio y la URI del archivo";
         public static final String CONSULTAR_RESP_200 = "Artefactos del entregable; lista vacía si no tiene ninguno";
         public static final String CONSULTAR_RESP_400 = "El identificador del entregable no es un UUID válido";
         public static final String CONSULTAR_RESP_422 = "El entregable no existe o no es del asesor autenticado";
+    }
+
+    public static final class PaqueteEntregable {
+
+        private PaqueteEntregable() {}
+
+        public static final String TAG_NAME = "Paquete de entregable";
+        public static final String TAG_DESCRIPTION = "Descarga del paquete ZIP congelado de un entregable de proyecto de grado";
+        public static final String PARAM_ENTREGABLE = "Identificador del entregable de proyecto de grado";
+        public static final String DESCARGAR_SUMMARY = "Descargar el paquete de un entregable de proyecto de grado";
+        public static final String DESCARGAR_DESCRIPTION =
+                "El asesor del entregable o un estudiante vigente del proyecto obtiene un enlace firmado y temporal "
+                        + "para descargar el paquete ZIP del entregable, que reúne la última versión cerrada de cada "
+                        + "artefacto y un manifiesto";
+        public static final String DESCARGAR_RESP_200 = "Enlace de descarga firmado y su fecha de expiración";
+        public static final String DESCARGAR_RESP_400 = "El identificador del entregable no es un UUID válido";
+        public static final String DESCARGAR_RESP_422 =
+                "El entregable no existe, el solicitante no tiene acceso, el paquete aún está en preparación o el entregable fue cancelado";
+        public static final String DESCARGAR_RESP_503 = "El servicio de almacenamiento no está disponible";
     }
 }

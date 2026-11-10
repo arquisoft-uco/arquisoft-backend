@@ -2,5 +2,5 @@ package com.arquisoft.entregables.application.proyectogrado.command.secondarypor
 
 import java.util.UUID;
 
-public record ProyectoGradoEntity(UUID id, String nombre) {
+public record ProyectoGradoEntity(UUID id, String nombre, String estadoProyecto) {
 }
