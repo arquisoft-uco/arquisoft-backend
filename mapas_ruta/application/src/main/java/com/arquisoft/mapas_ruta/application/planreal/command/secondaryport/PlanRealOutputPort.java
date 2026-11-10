@@ -16,5 +16,7 @@ public interface PlanRealOutputPort {
 
     void actualizarPorId(UUID planReal, int tiempoRealDias, String descripcionReal);
 
+    void actualizarDescripcionPorId(UUID planReal, String descripcionReal);
+
     void eliminarPorId(UUID planReal);
 }

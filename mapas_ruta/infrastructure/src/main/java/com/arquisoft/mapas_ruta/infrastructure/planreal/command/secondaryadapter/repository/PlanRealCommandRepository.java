@@ -31,4 +31,13 @@ public interface PlanRealCommandRepository extends JpaRepository<PlanRealJpaEnti
     int actualizarPorId(@Param("planReal") UUID planReal,
                         @Param("tiempoRealDias") int tiempoRealDias,
                         @Param("descripcionReal") String descripcionReal);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE PlanRealJpaEntity pr
+            SET pr.descripcionReal = :descripcionReal
+            WHERE pr.id = :planReal
+            """)
+    int actualizarDescripcionPorId(@Param("planReal") UUID planReal,
+                                   @Param("descripcionReal") String descripcionReal);
 }

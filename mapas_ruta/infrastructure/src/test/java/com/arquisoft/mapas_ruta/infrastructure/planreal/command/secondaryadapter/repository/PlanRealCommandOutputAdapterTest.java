@@ -125,6 +125,52 @@ class PlanRealCommandOutputAdapterTest {
     }
 
     @Test
+    void debeActualizarSoloDescripcion_cuandoPlanExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var tarea = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, tarea, 4, "Antes"));
+        adapter.registrar(new PlanRealEntity(otro, UtilUUID.generarNuevoUUID(), 9, "Otro"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarDescripcionPorId(id, "Aporte");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var actualizado = entityManager.find(PlanRealJpaEntity.class, id);
+        assertThat(actualizado.getDescripcionReal()).isEqualTo("Aporte");
+        assertThat(actualizado.getTiempoRealDias()).isEqualTo(4);
+        assertThat(actualizado.getTareaId()).isEqualTo(tarea);
+        var intacto = entityManager.find(PlanRealJpaEntity.class, otro);
+        assertThat(intacto.getDescripcionReal()).isEqualTo("Otro");
+        assertThat(intacto.getTiempoRealDias()).isEqualTo(9);
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeDejarDescripcionNula_cuandoAporteLlegaVacio() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, UtilUUID.generarNuevoUUID(), 2, "Antes"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarDescripcionPorId(id, UtilTexto.VACIO);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var actualizado = entityManager.find(PlanRealJpaEntity.class, id);
+        assertThat(actualizado.getDescripcionReal()).isNull();
+        assertThat(actualizado.getTiempoRealDias()).isEqualTo(2);
+    }
+
+    @Test
     void debeGuardarNull_cuandoDescripcionVaciaPorId() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();

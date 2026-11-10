@@ -380,6 +380,7 @@
               "mapas-ruta:plan-estimado-proyecto-asesor:view",
               "mapas-ruta:plan-estimado-asesor:update",
               "mapas-ruta:plan-real-proyecto-asesor:view",
+              "mapas-ruta:plan-real-asesor:update",
               "entregables:estado-entregable:view",
               "entregables:entregable-proyecto-grado:create",
               "entregables:entregable-proyecto-grado-estado:update",
@@ -3019,6 +3020,15 @@
         {
           "id": "232c7685-59e5-4a28-8891-c75e7f65f504",
           "name": "mapas-ruta:plan-real-proyecto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c4a7e2b9-5d18-4f36-8e0a-71b3d9f2a6c5",
+          "name": "mapas-ruta:plan-real-asesor:update",
           "description": "",
           "composite": false,
           "clientRole": true,
