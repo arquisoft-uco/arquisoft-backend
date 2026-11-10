@@ -4,6 +4,7 @@ plugins {
     id 'org.springframework.boot' version "${springBootVersion}"
     id 'io.spring.dependency-management' version "${springManagement}"
     id "org.springdoc.openapi-gradle-plugin" version "${openapiVersion}"
+    id 'org.sonarqube' version "${sonarqubePluginVersion}"
 }
 
 allprojects {
@@ -40,6 +41,30 @@ checkstyle {
 tasks.withType(Checkstyle).configureEach {
     reports {
         html.required = false
+    }
+}
+
+// ==================== SONARQUBE ====================
+// Análisis estático en el SonarQube de la infra (components/sonarqube de arquisoft-infra).
+// Lo ejecuta el CI con `./gradlew jacocoTestReport sonar`; la URL y el token llegan por las
+// variables de entorno SONAR_HOST_URL y SONAR_TOKEN (secretos de GitHub), nunca por este archivo.
+// La cobertura se toma del XML de JaCoCo de cada módulo, en su ruta por defecto
+// (build/reports/jacoco/test/jacocoTestReport.xml), que el plugin detecta solo.
+sonar {
+    properties {
+        property 'sonar.projectKey', 'arquisoft-backend'
+        property 'sonar.projectName', 'Arquisoft Backend'
+        property 'sonar.sourceEncoding', 'UTF-8'
+        // Mismas exclusiones que jacocoExcludes (más abajo), en forma de fuente: así el porcentaje
+        // de cobertura de Sonar coincide con el que verifica jacocoTestCoverageVerification.
+        property 'sonar.coverage.exclusions', [
+                '**/*DTO.java',
+                '**/*Command.java',
+                '**/*ReadModel.java',
+                '**/*Application.java',
+                '**/config/**',
+                '**/*Entity.java'
+        ].join(',')
     }
 }
 
