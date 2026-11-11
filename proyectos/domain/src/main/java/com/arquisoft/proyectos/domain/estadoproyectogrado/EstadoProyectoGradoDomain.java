@@ -5,10 +5,14 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.ProyectosCodes;
 import com.arquisoft.shared.message.constant.ProyectosFields;
 import com.arquisoft.shared.message.key.proyectos.EstadoProyectoKey;
+import com.arquisoft.shared.message.constant.ProyectosLimits;
 import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -19,12 +23,14 @@ public final class EstadoProyectoGradoDomain {
             UtilUUID.obtenerUUIDPorDefecto(),
             UtilUUID.obtenerUUIDPorDefecto(),
             EstadoProyecto.VACIO,
-            UtilFecha.VACIO);
+            UtilFecha.VACIO,
+            UtilTexto.VACIO);
 
     private UUID id;
     private UUID proyectoGrado;
     private EstadoProyecto estadoProyecto;
     private Instant fechaActualizacion;
+    private String motivo = UtilTexto.VACIO;
 
     private EstadoProyectoGradoDomain() {}
 
@@ -54,13 +60,28 @@ public final class EstadoProyectoGradoDomain {
         return estado;
     }
 
+    public static EstadoProyectoGradoDomain crearCancelado(UUID proyectoGrado, String motivo) {
+        var estado = new EstadoProyectoGradoDomain();
+        var result = new ValidationResult();
+
+        estado.setId();
+        estado.setProyectoGrado(proyectoGrado, result);
+        estado.setEstadoProyectoCancelado();
+        estado.setFechaActualizacion();
+        estado.setMotivo(motivo, result);
+
+        result.lanzarSiTieneErrores();
+        return estado;
+    }
+
     public static EstadoProyectoGradoDomain reconstruir(UUID id, UUID proyectoGrado, EstadoProyecto estadoProyecto,
-                                                        Instant fechaActualizacion) {
+                                                        Instant fechaActualizacion, String motivo) {
         var estado = new EstadoProyectoGradoDomain();
         estado.id = id;
         estado.proyectoGrado = proyectoGrado;
         estado.estadoProyecto = estadoProyecto;
         estado.fechaActualizacion = fechaActualizacion;
+        estado.motivo = motivo;
         return estado;
     }
 
@@ -97,6 +118,25 @@ public final class EstadoProyectoGradoDomain {
         this.estadoProyecto = EstadoProyecto.EN_PROCESO;
     }
 
+    private void setEstadoProyectoCancelado() {
+        this.estadoProyecto = EstadoProyecto.CANCELADO;
+    }
+
+    private void setMotivo(String motivo, ValidationResult result) {
+        var recortado = UtilTexto.aplicarTrim(motivo);
+        if (!ValidatorTexto.noEnBlanco(recortado,
+                ProyectosFields.EstadoProyectoGrado.MOTIVO,
+                ProyectosCodes.EstadoProyectoGrado.MOTIVO_REQUERIDO, result)) {
+            return;
+        }
+        if (!ValidatorLongitud.longitudMaxima(recortado, ProyectosLimits.ProyectoGrado.MOTIVO_MAX,
+                ProyectosFields.EstadoProyectoGrado.MOTIVO,
+                ProyectosCodes.EstadoProyectoGrado.MOTIVO_LONGITUD_MAXIMA, result)) {
+            return;
+        }
+        this.motivo = recortado;
+    }
+
     private void setFechaActualizacion() {
         this.fechaActualizacion = UtilFecha.generarInstanteActual();
     }
@@ -115,6 +155,10 @@ public final class EstadoProyectoGradoDomain {
 
     public Instant getFechaActualizacion() {
         return fechaActualizacion;
+    }
+
+    public String getMotivo() {
+        return motivo;
     }
 
     public boolean esVacio() {

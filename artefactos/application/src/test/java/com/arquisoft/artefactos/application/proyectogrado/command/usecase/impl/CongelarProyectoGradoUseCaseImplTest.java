@@ -51,7 +51,7 @@ class CongelarProyectoGradoUseCaseImplTest {
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
         var congelacion = CongelacionProyectoGradoDomain.crear(id, entregadoEn);
         when(proyectoGradoPorIdFinder.obtener(id))
-                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO));
+                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, null));
 
         // Act
         var resultado = useCase.ejecutar(congelacion);
@@ -70,7 +70,7 @@ class CongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var congelacion = CongelacionProyectoGradoDomain.crear(id, Instant.parse("2026-11-01T10:00:00Z"));
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO));
+                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO, null));
 
         // Act
         var resultado = useCase.ejecutar(congelacion);
@@ -87,7 +87,7 @@ class CongelarProyectoGradoUseCaseImplTest {
         var entregadoEn = Instant.parse("2026-11-02T10:00:00Z");
         var congelacion = CongelacionProyectoGradoDomain.crear(id, entregadoEn);
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO));
+                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO, null));
 
         // Act
         var resultado = useCase.ejecutar(congelacion);

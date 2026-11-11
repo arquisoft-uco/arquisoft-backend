@@ -76,7 +76,7 @@ public class ReactivarArtefactoValidatorImpl implements ReactivarArtefactoValida
         proyectoGradoExisteRule.validar(
                 new ExistenciaProyectoGrado(reactivacion.getProyectoGrado(), !proyecto.esVacio()));
         proyectoGradoNoCongeladoRule.validar(new EstadoProyectoGrado(
-                reactivacion.getProyectoGrado(), proyecto.getNombre(), proyecto.estaCongelado(), proyecto.estaFinalizado()));
+                reactivacion.getProyectoGrado(), proyecto.getNombre(), proyecto.estaCongelado(), proyecto.estaConcluido()));
         cuotaProyectoGradoNoExcedidaRule.validar(new CuotaProyectoGrado(
                 reactivacion.getProyectoGrado(), proyecto.getNombre(), peso.versionRepositorio().getNombreDocumento(),
                 almacenamiento.cuotaBytes(), almacenamiento.usoBytes(), peso.pesoVigenteBytes()));

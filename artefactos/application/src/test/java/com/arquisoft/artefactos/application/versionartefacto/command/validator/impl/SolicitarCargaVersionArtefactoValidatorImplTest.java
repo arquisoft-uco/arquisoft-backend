@@ -45,7 +45,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
         artefacto = ArtefactoDomain.reconstruir(solicitud.getArtefacto(), UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
         almacenamiento = new AlmacenamientoProyectoGrado(
-                ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null), 1_073_741_824L, 0L);
+                ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null, null), 1_073_741_824L, 0L);
     }
 
     private RevisionAsesorDomain revisionEn(EstadoRevisionAsesor estado) {
@@ -195,7 +195,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
     void debeLanzarCongelado_antesQueCuota() {
         // Arrange
         var congelado = new AlmacenamientoProyectoGrado(
-                ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", Instant.now(), null),
+                ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", Instant.now(), null, null),
                 1_073_741_824L, 1_073_741_824L);
 
         // Act & Assert

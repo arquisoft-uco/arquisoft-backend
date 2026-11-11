@@ -8,4 +8,6 @@ public sealed interface GeneracionPaqueteEntregableResult {
             implements GeneracionPaqueteEntregableResult {}
 
     record Duplicado(UUID entregableProyectoGrado) implements GeneracionPaqueteEntregableResult {}
+
+    record Omitido(UUID entregableProyectoGrado) implements GeneracionPaqueteEntregableResult {}
 }

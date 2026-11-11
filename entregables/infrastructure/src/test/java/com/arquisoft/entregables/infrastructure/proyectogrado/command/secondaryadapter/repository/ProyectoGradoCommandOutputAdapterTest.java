@@ -74,6 +74,22 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeLeerEstadoCancelado_cuandoSeActualiza() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion", "EN_PROCESO"));
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(id, "CANCELADO");
+        entityManager.clear();
+
+        // Assert
+        assertThat(adapter.obtenerPorId(id)).hasValue(new ProyectoGradoEntity(id, "Sistema de gestion", "CANCELADO"));
+        verify(logger).debug(ProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, id, "CANCELADO");
+    }
+
+    @Test
     void debeObtenerElProyectoConSuEstado_cuandoSeConsultaPorId() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();

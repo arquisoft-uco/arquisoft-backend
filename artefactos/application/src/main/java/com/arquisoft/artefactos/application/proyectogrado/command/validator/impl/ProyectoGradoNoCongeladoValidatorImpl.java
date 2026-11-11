@@ -19,6 +19,6 @@ public class ProyectoGradoNoCongeladoValidatorImpl implements ProyectoGradoNoCon
     @Override
     public void validar(ProyectoGradoDomain proyecto) {
         proyectoGradoNoCongeladoRule.validar(new EstadoProyectoGrado(
-                proyecto.getId(), proyecto.getNombre(), proyecto.estaCongelado(), proyecto.estaFinalizado()));
+                proyecto.getId(), proyecto.getNombre(), proyecto.estaCongelado(), proyecto.estaConcluido()));
     }
 }

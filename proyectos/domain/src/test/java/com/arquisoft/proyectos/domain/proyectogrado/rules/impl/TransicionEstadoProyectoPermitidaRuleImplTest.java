@@ -28,7 +28,9 @@ class TransicionEstadoProyectoPermitidaRuleImplTest {
                 Arguments.of(EstadoProyecto.FINALIZADO, EstadoProyecto.EN_PROCESO),
                 Arguments.of(EstadoProyecto.EN_PROCESO, EstadoProyecto.EN_PROCESO),
                 Arguments.of(EstadoProyecto.EN_PROCESO, EstadoProyecto.ATRASADO),
-                Arguments.of(EstadoProyecto.ATRASADO, EstadoProyecto.FINALIZADO));
+                Arguments.of(EstadoProyecto.ATRASADO, EstadoProyecto.FINALIZADO),
+                Arguments.of(EstadoProyecto.EN_PROCESO, EstadoProyecto.CANCELADO),
+                Arguments.of(EstadoProyecto.ATRASADO, EstadoProyecto.CANCELADO));
     }
 
     @Test

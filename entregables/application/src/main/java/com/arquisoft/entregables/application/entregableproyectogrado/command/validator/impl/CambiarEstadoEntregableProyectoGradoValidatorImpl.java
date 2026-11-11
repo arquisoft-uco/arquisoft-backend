@@ -23,8 +23,10 @@ import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.entregables.domain.proyectogrado.model.EstadoActualProyectoGrado;
 import com.arquisoft.entregables.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.entregables.domain.proyectogrado.rules.ProyectoGradoExisteRule;
+import com.arquisoft.entregables.domain.proyectogrado.rules.ProyectoGradoNoCanceladoRule;
 import com.arquisoft.entregables.domain.proyectogrado.rules.ProyectoGradoNoFinalizadoRule;
 import com.arquisoft.entregables.domain.proyectogrado.rules.impl.ProyectoGradoExisteRuleImpl;
+import com.arquisoft.entregables.domain.proyectogrado.rules.impl.ProyectoGradoNoCanceladoRuleImpl;
 import com.arquisoft.entregables.domain.proyectogrado.rules.impl.ProyectoGradoNoFinalizadoRuleImpl;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +38,7 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
     private final EstadoEntregableProyectoGradoExisteRule estadoEntregableProyectoGradoExisteRule;
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
+    private final ProyectoGradoNoCanceladoRule proyectoGradoNoCanceladoRule;
     private final EstadoEntregableNoTerminalRule estadoEntregableNoTerminalRule;
     private final EstadoDestinoEntregablePermitidoRule estadoDestinoEntregablePermitidoRule;
     private final CierreEntregablePermitidoRule cierreEntregablePermitidoRule;
@@ -46,6 +49,7 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
         this.estadoEntregableProyectoGradoExisteRule = new EstadoEntregableProyectoGradoExisteRuleImpl();
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
+        this.proyectoGradoNoCanceladoRule = new ProyectoGradoNoCanceladoRuleImpl();
         this.estadoEntregableNoTerminalRule = new EstadoEntregableNoTerminalRuleImpl();
         this.estadoDestinoEntregablePermitidoRule = new EstadoDestinoEntregablePermitidoRuleImpl();
         this.cierreEntregablePermitidoRule = new CierreEntregablePermitidoRuleImpl();
@@ -62,6 +66,8 @@ public class CambiarEstadoEntregableProyectoGradoValidatorImpl
         proyectoGradoExisteRule.validar(
                 new ExistenciaProyectoGrado(entregable.getProyectoGrado(), !proyecto.esVacio()));
         proyectoGradoNoFinalizadoRule.validar(new EstadoActualProyectoGrado(
+                entregable.getProyectoGrado(), proyecto.getNombre(), proyecto.getEstadoProyecto()));
+        proyectoGradoNoCanceladoRule.validar(new EstadoActualProyectoGrado(
                 entregable.getProyectoGrado(), proyecto.getNombre(), proyecto.getEstadoProyecto()));
         var transicion = new TransicionEstadoEntregable(
                 cambio.getEntregableProyectoGrado(), estadoActual.getEstadoEntregable(), cambio.getEstadoEntregable());

@@ -18,12 +18,14 @@ import java.util.UUID;
 public final class ProyectoGradoDomain {
 
     public static final ProyectoGradoDomain VACIO = reconstruir(
-            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilFecha.VACIO, UtilFecha.VACIO);
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilFecha.VACIO, UtilFecha.VACIO,
+            UtilFecha.VACIO);
 
     private UUID id;
     private String nombre;
     private Instant entregadoEn;
     private Instant finalizadoEn;
+    private Instant canceladoEn;
 
     private ProyectoGradoDomain() {}
 
@@ -34,16 +36,19 @@ public final class ProyectoGradoDomain {
         proyecto.setNombre(nombre, result);
         proyecto.setEntregadoEn();
         proyecto.setFinalizadoEn();
+        proyecto.setCanceladoEn();
         result.lanzarSiTieneErrores();
         return proyecto;
     }
 
-    public static ProyectoGradoDomain reconstruir(UUID id, String nombre, Instant entregadoEn, Instant finalizadoEn) {
+    public static ProyectoGradoDomain reconstruir(UUID id, String nombre, Instant entregadoEn, Instant finalizadoEn,
+                                                  Instant canceladoEn) {
         var proyecto = new ProyectoGradoDomain();
         proyecto.id = id;
         proyecto.nombre = nombre;
         proyecto.entregadoEn = UtilObjeto.aplicarPorDefecto(entregadoEn, UtilFecha.VACIO);
         proyecto.finalizadoEn = UtilObjeto.aplicarPorDefecto(finalizadoEn, UtilFecha.VACIO);
+        proyecto.canceladoEn = UtilObjeto.aplicarPorDefecto(canceladoEn, UtilFecha.VACIO);
         return proyecto;
     }
 
@@ -80,6 +85,10 @@ public final class ProyectoGradoDomain {
         this.finalizadoEn = UtilFecha.VACIO;
     }
 
+    private void setCanceladoEn() {
+        this.canceladoEn = UtilFecha.VACIO;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -96,6 +105,10 @@ public final class ProyectoGradoDomain {
         return finalizadoEn;
     }
 
+    public Instant getCanceladoEn() {
+        return canceladoEn;
+    }
+
     public boolean estaEntregado() {
         return !UtilFecha.VACIO.equals(entregadoEn);
     }
@@ -104,8 +117,16 @@ public final class ProyectoGradoDomain {
         return !UtilFecha.VACIO.equals(finalizadoEn);
     }
 
+    public boolean estaCancelado() {
+        return !UtilFecha.VACIO.equals(canceladoEn);
+    }
+
+    public boolean estaConcluido() {
+        return estaFinalizado() || estaCancelado();
+    }
+
     public boolean estaCongelado() {
-        return estaEntregado() || estaFinalizado();
+        return estaEntregado() || estaConcluido();
     }
 
     public boolean esVacio() {

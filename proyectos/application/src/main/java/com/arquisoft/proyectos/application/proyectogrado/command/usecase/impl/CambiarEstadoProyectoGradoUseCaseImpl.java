@@ -6,7 +6,7 @@ import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.Es
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.EstadoProyectoGradoOutputPort;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.mapper.EstadoProyectoGradoMapper;
 import com.arquisoft.proyectos.application.estudiante.command.finder.EstudiantesVigentesDeProyectoGradoFinder;
-import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.usecase.CambiarEstadoProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.CambiarEstadoProyectoGradoValidator;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class CambiarEstadoProyectoGradoUseCaseImpl implements CambiarEstadoProyectoGradoUseCase {
 
     private final EstadoProyectoGradoOutputPort estadoProyectoGradoOutputPort;
-    private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private final ProyectoGradoBloqueadoPorIdFinder proyectoGradoBloqueadoPorIdFinder;
     private final EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
     private final AsesorAsignadoProyectoGradoFinder asesorAsignadoProyectoGradoFinder;
     private final UltimoEntregableProyectoGradoFinder ultimoEntregableProyectoGradoFinder;
@@ -38,7 +38,7 @@ public class CambiarEstadoProyectoGradoUseCaseImpl implements CambiarEstadoProye
         logger.info(ProyectoGradoKey.LOG_CAMBIANDO_ESTADO,
                 entrada.getProyectoGrado(), entrada.getAsesor(), entrada.getEstadoNuevo().getId());
 
-        var proyecto = proyectoGradoPorIdFinder.obtener(entrada.getProyectoGrado());
+        var proyecto = proyectoGradoBloqueadoPorIdFinder.obtener(entrada.getProyectoGrado());
         var estadoActual = estadoActualProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         var asesorAsignado = asesorAsignadoProyectoGradoFinder.obtener(entrada);
         var ultimoEntregable = ultimoEntregableProyectoGradoFinder.obtener(entrada.getProyectoGrado());

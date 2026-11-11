@@ -12,8 +12,10 @@ import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.entregables.domain.proyectogrado.model.EstadoActualProyectoGrado;
 import com.arquisoft.entregables.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.entregables.domain.proyectogrado.rules.ProyectoGradoExisteRule;
+import com.arquisoft.entregables.domain.proyectogrado.rules.ProyectoGradoNoCanceladoRule;
 import com.arquisoft.entregables.domain.proyectogrado.rules.ProyectoGradoNoFinalizadoRule;
 import com.arquisoft.entregables.domain.proyectogrado.rules.impl.ProyectoGradoExisteRuleImpl;
+import com.arquisoft.entregables.domain.proyectogrado.rules.impl.ProyectoGradoNoCanceladoRuleImpl;
 import com.arquisoft.entregables.domain.proyectogrado.rules.impl.ProyectoGradoNoFinalizadoRuleImpl;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +25,14 @@ public class GenerarEntregableProyectoGradoValidatorImpl implements GenerarEntre
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
     private final AsesorVigenteRule asesorVigenteRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
+    private final ProyectoGradoNoCanceladoRule proyectoGradoNoCanceladoRule;
     private final EntregableVigenteUnicoRule entregableVigenteUnicoRule;
 
     public GenerarEntregableProyectoGradoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.asesorVigenteRule = new AsesorVigenteRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
+        this.proyectoGradoNoCanceladoRule = new ProyectoGradoNoCanceladoRuleImpl();
         this.entregableVigenteUnicoRule = new EntregableVigenteUnicoRuleImpl();
     }
 
@@ -38,6 +42,8 @@ public class GenerarEntregableProyectoGradoValidatorImpl implements GenerarEntre
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(entrada.getProyectoGrado(), !proyecto.esVacio()));
         asesorVigenteRule.validar(new VigenciaAsesor(entrada.getAsesor(), asesorVigente));
         proyectoGradoNoFinalizadoRule.validar(new EstadoActualProyectoGrado(
+                entrada.getProyectoGrado(), proyecto.getNombre(), proyecto.getEstadoProyecto()));
+        proyectoGradoNoCanceladoRule.validar(new EstadoActualProyectoGrado(
                 entrada.getProyectoGrado(), proyecto.getNombre(), proyecto.getEstadoProyecto()));
         entregableVigenteUnicoRule.validar(new ExistenciaEntregableVigente(
                 entrada.getProyectoGrado(), proyecto.getNombre(), existeVigente));

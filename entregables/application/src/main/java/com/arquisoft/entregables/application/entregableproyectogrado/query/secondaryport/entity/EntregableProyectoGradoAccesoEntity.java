@@ -6,6 +6,7 @@ public record EntregableProyectoGradoAccesoEntity(
         UUID id,
         UUID proyectoGrado,
         int version,
-        UUID asesor
+        UUID asesor,
+        boolean proyectoCancelado
 ) {
 }

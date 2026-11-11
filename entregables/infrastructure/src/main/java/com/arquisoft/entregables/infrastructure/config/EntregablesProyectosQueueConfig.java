@@ -20,6 +20,8 @@ public class EntregablesProyectosQueueConfig {
             EntregablesQueues.PREFIJO + EventTopics.Proyectos.ESTUDIANTE_PROYECTO_GRADO_DESTITUIDO;
     public static final String PROYECTO_GRADO_FINALIZADO_QUEUE =
             EntregablesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_FINALIZADO;
+    public static final String PROYECTO_GRADO_CANCELADO_QUEUE =
+            EntregablesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO;
 
     @Bean
     public Declarables entregablesProyectoGradoRegistradoDeclarables(
@@ -61,6 +63,17 @@ public class EntregablesProyectosQueueConfig {
         return ColaEvento.declarar(
                 PROYECTO_GRADO_FINALIZADO_QUEUE,
                 EventTopics.Proyectos.PROYECTO_GRADO_FINALIZADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables entregablesProyectoGradoCanceladoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                PROYECTO_GRADO_CANCELADO_QUEUE,
+                EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

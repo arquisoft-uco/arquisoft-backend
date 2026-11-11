@@ -163,7 +163,7 @@ class GenerarVersionArtefactoUseCaseImplTest {
         prepararFindersDeCarga(ultimoNumero);
         when(analisisCargaFinder.obtener(generacion.getCarga())).thenReturn(analisis);
         when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(generacion.getArtefacto()))
-                .thenReturn(ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null));
+                .thenReturn(ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null, null));
         when(cuotaProyectoGradoFinder.obtener()).thenReturn(1_073_741_824L);
         when(tamanoVigenteProyectoGradoFinder.obtener(generacion.getArtefacto())).thenReturn(0L);
     }

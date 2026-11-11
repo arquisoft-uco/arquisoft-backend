@@ -12,6 +12,7 @@ import com.arquisoft.entregables.domain.estadoentregableproyectogrado.EstadoEntr
 import com.arquisoft.entregables.domain.estadoentregableproyectogrado.exception.EstadoEntregableProyectoGradoNoEncontradoException;
 import com.arquisoft.entregables.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoCanceladoException;
 import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoFinalizadoException;
 import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.shared.util.UtilUUID;
@@ -180,6 +181,20 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, finalizado))
                 .isInstanceOf(ProyectoGradoFinalizadoException.class);
+    }
+
+    @Test
+    void debeLanzar_cuandoProyectoCancelado() {
+        // Arrange
+        var cambio = cambio("CANCELADO");
+        var entregable = entregable();
+        var estado = estado(EstadoEntregable.APROBADO);
+        var cancelado = ProyectoGradoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), "Sistema de gestion", EstadoProyecto.CANCELADO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, cancelado))
+                .isInstanceOf(ProyectoGradoCanceladoException.class);
     }
 
     @Test

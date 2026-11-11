@@ -12,6 +12,7 @@ public final class EntregableProyectoGradoAccesoMapper {
                 entity.id(),
                 entity.proyectoGrado(),
                 entity.version(),
-                entity.asesor());
+                entity.asesor(),
+                entity.proyectoCancelado());
     }
 }

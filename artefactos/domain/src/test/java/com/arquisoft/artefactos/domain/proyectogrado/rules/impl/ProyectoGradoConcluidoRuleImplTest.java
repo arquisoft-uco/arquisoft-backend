@@ -1,6 +1,6 @@
 package com.arquisoft.artefactos.domain.proyectogrado.rules.impl;
 
-import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoFinalizadoException;
+import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoConcluidoException;
 import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyectoGrado;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.util.UtilUUID;
@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class ProyectoGradoFinalizadoRuleImplTest {
+class ProyectoGradoConcluidoRuleImplTest {
 
-    private final ProyectoGradoFinalizadoRuleImpl regla = new ProyectoGradoFinalizadoRuleImpl();
+    private final ProyectoGradoConcluidoRuleImpl regla = new ProyectoGradoConcluidoRuleImpl();
 
     @Test
-    void debePasar_cuandoFinalizado() {
+    void debePasar_cuandoFinalizadoOCancelado() {
         // Arrange
         var estado = new EstadoProyectoGrado(UtilUUID.generarNuevoUUID(), "Proyecto", true, true);
 
@@ -23,14 +23,14 @@ class ProyectoGradoFinalizadoRuleImplTest {
     }
 
     @Test
-    void debeLanzar_cuandoNoFinalizado() {
+    void debeLanzar_cuandoNoConcluido() {
         // Arrange
         var estado = new EstadoProyectoGrado(UtilUUID.generarNuevoUUID(), "Proyecto", true, false);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(estado))
-                .isInstanceOf(ProyectoGradoNoFinalizadoException.class)
+                .isInstanceOf(ProyectoGradoNoConcluidoException.class)
                 .extracting("codigoError")
-                .isEqualTo(ArtefactosCodes.ProyectoGrado.NO_FINALIZADO);
+                .isEqualTo(ArtefactosCodes.ProyectoGrado.NO_CONCLUIDO);
     }
 }

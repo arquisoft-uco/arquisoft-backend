@@ -62,7 +62,7 @@ class ReactivarArtefactoValidatorImplTest {
                 UtilUUID.generarNuevoUUID(), "Repo", new DatosArchivo("a.pdf", "application/pdf", 10L));
         peso = new PesoArtefactoReactivable(artefacto, versionRepositorio, 1024L);
         almacenamiento = new AlmacenamientoProyectoGrado(
-                ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", null, null), 1_073_741_824L, 0L);
+                ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", null, null, null), 1_073_741_824L, 0L);
     }
 
     @Test
@@ -172,7 +172,7 @@ class ReactivarArtefactoValidatorImplTest {
     void debeLanzarCongelado_antesQueCuota() {
         // Arrange
         var congelado = new AlmacenamientoProyectoGrado(
-                ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", UtilFecha.generarInstanteActual(), null),
+                ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", UtilFecha.generarInstanteActual(), null, null),
                 1_073_741_824L, 1_073_741_824L);
 
         // Act & Assert
