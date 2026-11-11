@@ -5,6 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum EvaluacionKey implements ClaveMensaje {
 
     ERROR_FINALIZADA("evaluaciones.dominio.evaluacion.error.finalizada", 0),
+    ERROR_ASIGNACION_FINALIZADA("evaluaciones.dominio.evaluacion.error.asignacion-finalizada", 0),
     ERROR_ESTADO_NO_ENCONTRADO("evaluaciones.dominio.evaluacion.error.estado-no-encontrado", 0),
     ERROR_ESTADO_NO_ENCONTRADO_DETALLE("evaluaciones.dominio.evaluacion.error.estado-no-encontrado-detalle", 1),
     ERROR_NO_ENCONTRADA("evaluaciones.dominio.evaluacion.error.no-encontrada", 0),

@@ -349,7 +349,7 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones de jurado";
         public static final String TAG_DESCRIPTION =
-                "Asignación y consulta de las evaluaciones de jurado de una evaluación";
+                "Asignación, remoción y consulta de las evaluaciones de jurado de una evaluación";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones de jurado";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta de forma paginada las evaluaciones de jurado de una evaluación, con filtro "
@@ -380,6 +380,16 @@ public final class EvaluacionesApiMessages {
         public static final String ASIGNAR_RESP_422 =
                 "La evaluación no existe o está finalizada, algún jurado no existe o ya está asignado, "
                         + "o hay jurados repetidos";
+        public static final String REMOVER_SUMMARY = "Remover jurados de una evaluación";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve, en una sola operación, un conjunto de jurados asignados a una evaluación que no esté "
+                        + "finalizada, siempre que ninguno haya registrado evaluaciones cualitativas o cuantitativas";
+        public static final String REMOVER_REQUEST_BODY = "Identificadores de los jurados a remover";
+        public static final String REMOVER_RESP_204 = "Jurados removidos";
+        public static final String REMOVER_RESP_400 = "Datos de entrada inválidos";
+        public static final String REMOVER_RESP_422 =
+                "La evaluación no existe o está finalizada, algún jurado no está asignado o ya registró "
+                        + "evaluaciones, o hay jurados repetidos";
     }
 
     public static final class ObservacionItemJurado {

@@ -218,6 +218,7 @@ public final class EvaluacionesCodes {
         public static final String EVALUACION_REQUERIDO = "EVALUACION_EVALUACION_REQUERIDO";
         public static final String ESTADO_REQUERIDO = "EVALUACION_ESTADO_REQUERIDO";
         public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
+        public static final String ASIGNACION_FINALIZADA = "EVALUACION_ASIGNACION_FINALIZADA";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
         public static final String NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
         public static final String ASESOR_REQUERIDO = "EVALUACION_ASESOR_REQUERIDO";
@@ -235,6 +236,8 @@ public final class EvaluacionesCodes {
         public static final String JURADO_INVALIDO = "EVALUACION_JURADO_JURADO_INVALIDO";
         public static final String JURADOS_NO_ENCONTRADOS = "EVALUACION_JURADO_JURADOS_NO_ENCONTRADOS";
         public static final String JURADOS_YA_ASIGNADOS = "EVALUACION_JURADO_JURADOS_YA_ASIGNADOS";
+        public static final String JURADOS_NO_ASIGNADOS = "EVALUACION_JURADO_JURADOS_NO_ASIGNADOS";
+        public static final String JURADOS_CON_EVALUACIONES = "EVALUACION_JURADO_JURADOS_CON_EVALUACIONES";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_JURADO_ESTADO_NO_ENCONTRADO";
     }
 
