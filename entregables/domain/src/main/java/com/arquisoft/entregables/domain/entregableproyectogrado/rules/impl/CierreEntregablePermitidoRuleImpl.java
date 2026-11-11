@@ -11,7 +11,8 @@ public class CierreEntregablePermitidoRuleImpl implements CierreEntregablePermit
     public void validar(TransicionEstadoEntregable transicion) {
         var actual = transicion.actual();
         var cierra = transicion.nuevo() == EstadoEntregable.CERRADO;
-        var cerrable = actual == EstadoEntregable.APROBADO || actual == EstadoEntregable.APROBADO_CON_OBSERVACIONES;
+        var cerrable = actual == EstadoEntregable.APROBADO || actual == EstadoEntregable.APROBADO_CON_OBSERVACIONES
+                || actual == EstadoEntregable.RECHAZADO;
         if (cierra && !cerrable) {
             throw new CierreEntregableNoPermitidoException(transicion.entregableProyectoGrado(), actual);
         }

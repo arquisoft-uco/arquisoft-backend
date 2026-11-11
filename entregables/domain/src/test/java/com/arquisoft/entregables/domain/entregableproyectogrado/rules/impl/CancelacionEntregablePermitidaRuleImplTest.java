@@ -5,7 +5,6 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.model.Transicion
 import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.util.UtilUUID;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -17,11 +16,12 @@ class CancelacionEntregablePermitidaRuleImplTest {
 
     private final CancelacionEntregablePermitidaRuleImpl rule = new CancelacionEntregablePermitidaRuleImpl();
 
-    @Test
-    void debePermitir_cuandoCancelaDesdeDisponibleEvaluacion() {
+    @ParameterizedTest
+    @EnumSource(value = EstadoEntregable.class, names = {"DISPONIBLE_EVALUACION", "RECHAZADO"})
+    void debePermitir_cuandoCancelaDesdeDisponibleEvaluacionORechazado(EstadoEntregable actual) {
         // Arrange
         var transicion = new TransicionEstadoEntregable(
-                UtilUUID.generarNuevoUUID(), EstadoEntregable.DISPONIBLE_EVALUACION, EstadoEntregable.CANCELADO);
+                UtilUUID.generarNuevoUUID(), actual, EstadoEntregable.CANCELADO);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(transicion)).doesNotThrowAnyException();
