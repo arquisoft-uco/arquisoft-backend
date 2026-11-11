@@ -30,6 +30,8 @@ class ArtefactoSinAvanceJpaSpecification extends QueryJpaSpecification<Artefacto
                 case NOMBRE_REPOSITORIO            -> CampoSpec.texto(root -> root.get("nombreRepositorio"));
                 case ESTADO_ULTIMA_REVISION        -> CampoSpec.texto(root -> root.get("estadoUltimaRevision"));
                 case FECHA_ULTIMA_VERSION          -> null;
+                case PROYECTO_FINALIZADO -> CampoSpec.booleano(root -> root.get("proyectoFinalizado"));
+                case PROYECTO_CANCELADO  -> CampoSpec.booleano(root -> root.get("proyectoCancelado"));
             };
             if (UtilObjeto.noEsNulo(spec)) {
                 m.put(campo.getClave(), spec);

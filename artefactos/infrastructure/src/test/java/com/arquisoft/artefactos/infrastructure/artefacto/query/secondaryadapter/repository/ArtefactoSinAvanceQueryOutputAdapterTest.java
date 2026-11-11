@@ -11,6 +11,7 @@ import com.arquisoft.artefactos.infrastructure.revisionasesor.support.RevisionAs
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
 import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.entity.VersionRepositorioArtefactoJpaEntity;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
+import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
@@ -246,5 +247,63 @@ class ArtefactoSinAvanceQueryOutputAdapterTest {
         assertThat(ids(ordenado.getContent()))
                 .containsExactly(artefactoAlfa2, artefactoBeta1, artefactoAlfa1);
         assertThat(ids(filtrado.getContent())).containsExactlyInAnyOrder(artefactoAlfa1, artefactoAlfa2);
+    }
+
+    private UUID sembrarArtefactoDeProyecto(String nombre, Instant finalizadoEn, Instant canceladoEn) {
+        var proyecto = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, nombre, null, finalizadoEn, canceladoEn));
+        var version = sembrarVersionRepositorio("Documento " + nombre, 1, "Repo " + nombre);
+        return sembrarArtefacto(proyecto, version, asesorA);
+    }
+
+    @Test
+    void debeMarcarIndicadoresDeCierre_cuandoElProyectoEstaCerrado() {
+        // Arrange
+        var activo = sembrarArtefactoDeProyecto("Activo", null, null);
+        var finalizado = sembrarArtefactoDeProyecto("Finalizado", Instant.now(), null);
+        var cancelado = sembrarArtefactoDeProyecto("Cancelado", null, Instant.now());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarSinAvance(criteria(asesorA));
+
+        // Assert
+        assertThat(ids(resultado.getContent())).containsExactlyInAnyOrder(activo, finalizado, cancelado);
+        assertThat(resultado.getContent()).filteredOn(a -> a.id().equals(activo)).singleElement()
+                .satisfies(a -> {
+                    assertThat(a.proyectoFinalizado()).isFalse();
+                    assertThat(a.proyectoCancelado()).isFalse();
+                });
+        assertThat(resultado.getContent()).filteredOn(a -> a.id().equals(finalizado)).singleElement()
+                .satisfies(a -> {
+                    assertThat(a.proyectoFinalizado()).isTrue();
+                    assertThat(a.proyectoCancelado()).isFalse();
+                });
+        assertThat(resultado.getContent()).filteredOn(a -> a.id().equals(cancelado)).singleElement()
+                .satisfies(a -> {
+                    assertThat(a.proyectoFinalizado()).isFalse();
+                    assertThat(a.proyectoCancelado()).isTrue();
+                });
+    }
+
+    @Test
+    void debeOcultarProyectosCerrados_cuandoFiltraAmbosEnFalse() {
+        // Arrange
+        var activo = sembrarArtefactoDeProyecto("Activo", null, null);
+        sembrarArtefactoDeProyecto("Finalizado", Instant.now(), null);
+        sembrarArtefactoDeProyecto("Cancelado", null, Instant.now());
+        entityManager.flush();
+        entityManager.clear();
+        var raiz = NodoFiltro.grupo(FiltroConector.AND, List.of(
+                NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "false"),
+                NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false")));
+
+        // Act
+        var resultado = adapter.consultarSinAvance(criteria(asesorA, raiz, List.of()));
+
+        // Assert
+        assertThat(ids(resultado.getContent())).containsExactly(activo);
+        assertThat(resultado.getTotalElements()).isEqualTo(1L);
     }
 }

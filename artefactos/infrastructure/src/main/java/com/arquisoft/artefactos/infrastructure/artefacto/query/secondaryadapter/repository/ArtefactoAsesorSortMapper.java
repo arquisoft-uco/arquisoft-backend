@@ -15,7 +15,7 @@ final class ArtefactoAsesorSortMapper {
         Map<String, String> m = new LinkedHashMap<>();
         for (var campo : ArtefactoAsesorCriteria.Campo.values()) {
             var ruta = switch (campo) {
-                case PROYECTO_GRADO, VERSION_REPOSITORIO_ARTEFACTO, ASESOR_ID -> null;
+                case PROYECTO_GRADO, VERSION_REPOSITORIO_ARTEFACTO, ASESOR_ID, PROYECTO_FINALIZADO, PROYECTO_CANCELADO -> null;
                 case NOMBRE_PROYECTO    -> "nombreProyecto";
                 case NOMBRE_DOCUMENTO   -> "nombreDocumento";
                 case VERSION_DOCUMENTO  -> "versionDocumento";

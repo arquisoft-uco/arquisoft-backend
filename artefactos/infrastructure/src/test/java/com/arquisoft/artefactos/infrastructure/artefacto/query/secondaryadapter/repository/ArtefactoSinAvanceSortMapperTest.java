@@ -25,6 +25,8 @@ class ArtefactoSinAvanceSortMapperTest {
         // Act & Assert
         assertThat(ArtefactoSinAvanceSortMapper.traducir("proyectoGrado")).isNull();
         assertThat(ArtefactoSinAvanceSortMapper.traducir("versionRepositorioArtefacto")).isNull();
+        assertThat(ArtefactoSinAvanceSortMapper.traducir("proyectoFinalizado")).isNull();
+        assertThat(ArtefactoSinAvanceSortMapper.traducir("proyectoCancelado")).isNull();
         assertThat(ArtefactoSinAvanceSortMapper.traducir("campoInexistente")).isNull();
     }
 

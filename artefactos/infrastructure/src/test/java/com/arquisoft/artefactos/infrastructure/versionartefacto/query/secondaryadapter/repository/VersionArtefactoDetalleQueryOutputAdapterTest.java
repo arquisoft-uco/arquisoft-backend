@@ -278,4 +278,23 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
         assertThat(noVinculado).isFalse();
         assertThat(versionAjena).isFalse();
     }
+
+    @Test
+    void debeRetornarIndicadoresDeCierre_cuandoElProyectoEstaCancelado() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var cancelada = sembrarVersion(sembrarArtefacto(null, null, Instant.parse("2026-11-03T10:00:00Z")), 1);
+        var activa = sembrarVersion(sembrarArtefacto(null), 1);
+        confirmarSiembra();
+
+        // Act
+        var deCancelado = detalleAdapter.consultarPorId(cancelada);
+        var deActivo = detalleAdapter.consultarPorId(activa);
+
+        // Assert
+        assertThat(deCancelado.proyectoCancelado()).isTrue();
+        assertThat(deCancelado.proyectoFinalizado()).isFalse();
+        assertThat(deActivo.proyectoCancelado()).isFalse();
+        assertThat(deActivo.proyectoFinalizado()).isFalse();
+    }
 }
