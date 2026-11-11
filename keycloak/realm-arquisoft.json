@@ -56,6 +56,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "proyectos:proyecto-grado-cancelacion:update",
               "solicitudes:respuesta-cambio-asesor:delete",
               "solicitudes:respuesta-ampliacion-plazo:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
@@ -1536,6 +1537,15 @@
         {
           "id": "93728f6f-99a6-41a1-940f-b52793233d7e",
           "name": "proyectos:proyecto-grado-estado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a2cbdae4-900e-4328-9f85-52a2fe85a20e",
+          "name": "proyectos:proyecto-grado-cancelacion:update",
           "description": "",
           "composite": false,
           "clientRole": true,

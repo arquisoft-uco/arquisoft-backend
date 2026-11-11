@@ -70,6 +70,23 @@ class EntregableProyectoGradoDomainTest {
     }
 
     @Test
+    void debeReconstruirConLaMarcaDeProyectoCancelado_cuandoSeLeeConCincoArgumentos() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var cancelado = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 3, asesor, true);
+        var sinMarca = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 3, asesor);
+
+        // Assert
+        assertThat(cancelado.isProyectoCancelado()).isTrue();
+        assertThat(sinMarca.isProyectoCancelado()).isFalse();
+        assertThat(EntregableProyectoGradoDomain.VACIO.isProyectoCancelado()).isFalse();
+    }
+
+    @Test
     void debeSerVacio_cuandoEsElCentinela() {
         // Act & Assert
         assertThat(EntregableProyectoGradoDomain.VACIO.esVacio()).isTrue();

@@ -52,6 +52,10 @@ public class GenerarPaqueteEntregableUseCaseImpl implements GenerarPaqueteEntreg
         generarPaqueteEntregableValidator.validar(
                 new ExistenciaProyectoGrado(generacion.getProyectoGrado(), !proyecto.esVacio()));
 
+        if (proyecto.estaCancelado()) {
+            return GeneracionPaqueteEntregableResultMapper.toResultOmitido(generacion);
+        }
+
         var archivo = almacenamientoPaqueteOutputPort.armar(
                 PaqueteEntregableMapper.toContenido(generacion, proyecto, artefactos));
 

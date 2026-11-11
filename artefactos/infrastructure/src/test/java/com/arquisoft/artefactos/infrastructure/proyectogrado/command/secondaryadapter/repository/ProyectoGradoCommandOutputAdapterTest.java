@@ -47,7 +47,7 @@ class ProyectoGradoCommandOutputAdapterTest {
         var id = UtilUUID.generarNuevoUUID();
 
         // Act
-        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion", UtilFecha.VACIO, UtilFecha.VACIO));
+        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion", UtilFecha.VACIO, UtilFecha.VACIO, null));
         entityManager.flush();
         entityManager.clear();
 
@@ -244,6 +244,26 @@ class ProyectoGradoCommandOutputAdapterTest {
 
         // Assert
         assertThat(adapter.obtenerPorId(id).orElseThrow().finalizadoEn()).isEqualTo(original);
+    }
+
+    @Test
+    void debeMarcarCanceladoUnaVez_cuandoSeRepite() {
+        // Arrange
+        var id = proyectoSembrado(null, null);
+        var original = Instant.parse("2026-11-03T10:00:00Z");
+        entityManager.flush();
+
+        // Act
+        adapter.marcarCancelado(id, original);
+        entityManager.clear();
+        adapter.marcarCancelado(id, Instant.parse("2026-11-09T10:00:00Z"));
+        entityManager.clear();
+
+        // Assert
+        var proyecto = adapter.obtenerPorId(id).orElseThrow();
+        assertThat(proyecto.canceladoEn()).isEqualTo(original);
+        assertThat(proyecto.finalizadoEn()).isEqualTo(UtilFecha.VACIO);
+        verify(logger).debug(ProyectoGradoKey.LOG_CANCELADO_MARCADO, id, original);
     }
 
     @Test

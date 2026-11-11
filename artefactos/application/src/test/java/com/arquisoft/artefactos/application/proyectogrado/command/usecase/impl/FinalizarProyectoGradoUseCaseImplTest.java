@@ -51,7 +51,7 @@ class FinalizarProyectoGradoUseCaseImplTest {
         var finalizadoEn = Instant.parse("2026-11-01T10:00:00Z");
         var finalizacion = FinalizacionProyectoGradoDomain.crear(id, finalizadoEn);
         when(proyectoGradoPorIdFinder.obtener(id))
-                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO));
+                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, null));
 
         // Act
         var resultado = useCase.ejecutar(finalizacion);
@@ -70,7 +70,7 @@ class FinalizarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var finalizacion = FinalizacionProyectoGradoDomain.crear(id, Instant.parse("2026-11-02T10:00:00Z"));
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", UtilFecha.VACIO, Instant.parse("2026-11-01T10:00:00Z")));
+                id, "Proyecto", UtilFecha.VACIO, Instant.parse("2026-11-01T10:00:00Z"), null));
 
         // Act
         var resultado = useCase.ejecutar(finalizacion);

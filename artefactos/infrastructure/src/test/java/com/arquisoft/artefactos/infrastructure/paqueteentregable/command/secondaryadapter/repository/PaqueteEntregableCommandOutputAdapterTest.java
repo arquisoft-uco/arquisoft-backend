@@ -215,6 +215,30 @@ class PaqueteEntregableCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerTodasLasClavesDelProyecto_sinFiltrarPorVersion() {
+        // Arrange
+        var proyecto = sembrarProyecto();
+        var otroProyecto = sembrarProyecto();
+        var generadoEn = Instant.parse("2026-11-08T10:00:00Z");
+        adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                proyecto, 1, "paquetes/v1.zip", 1L, generadoEn));
+        adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                proyecto, 2, "paquetes/v2.zip", 1L, generadoEn));
+        adapter.registrar(new PaqueteEntregableEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                otroProyecto, 1, "paquetes/ajeno.zip", 1L, generadoEn));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var claves = adapter.obtenerClavesPorProyectoGrado(proyecto);
+        var sinPaquetes = adapter.obtenerClavesPorProyectoGrado(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(claves).containsExactlyInAnyOrder("paquetes/v1.zip", "paquetes/v2.zip");
+        assertThat(sinPaquetes).isEmpty();
+    }
+
+    @Test
     void debeResponderExistencia_porEntregable() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();

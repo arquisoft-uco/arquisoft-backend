@@ -15,24 +15,32 @@ public final class EntregableProyectoGradoDomain {
 
     public static final EntregableProyectoGradoDomain VACIO = new EntregableProyectoGradoDomain(
             UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilNumero.CERO,
-            UtilUUID.obtenerUUIDPorDefecto());
+            UtilUUID.obtenerUUIDPorDefecto(), false);
 
     private UUID id;
     private UUID proyectoGrado;
     private int version;
     private UUID asesor;
+    private boolean proyectoCancelado;
 
     private EntregableProyectoGradoDomain() {}
 
-    private EntregableProyectoGradoDomain(UUID id, UUID proyectoGrado, int version, UUID asesor) {
+    private EntregableProyectoGradoDomain(UUID id, UUID proyectoGrado, int version, UUID asesor,
+                                          boolean proyectoCancelado) {
         this.id = id;
         this.proyectoGrado = proyectoGrado;
         this.version = version;
         this.asesor = asesor;
+        this.proyectoCancelado = proyectoCancelado;
     }
 
     public static EntregableProyectoGradoDomain reconstruir(UUID id, UUID proyectoGrado, int version, UUID asesor) {
-        return new EntregableProyectoGradoDomain(id, proyectoGrado, version, asesor);
+        return new EntregableProyectoGradoDomain(id, proyectoGrado, version, asesor, false);
+    }
+
+    public static EntregableProyectoGradoDomain reconstruir(UUID id, UUID proyectoGrado, int version, UUID asesor,
+                                                            boolean proyectoCancelado) {
+        return new EntregableProyectoGradoDomain(id, proyectoGrado, version, asesor, proyectoCancelado);
     }
 
     public boolean esVacio() {
@@ -98,5 +106,9 @@ public final class EntregableProyectoGradoDomain {
 
     public UUID getAsesor() {
         return asesor;
+    }
+
+    public boolean isProyectoCancelado() {
+        return proyectoCancelado;
     }
 }

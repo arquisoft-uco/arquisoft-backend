@@ -52,6 +52,7 @@ public final class ProyectosFields {
         public static final String ASESOR = "asesor";
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String ESTADO_PROYECTO = "estadoProyecto";
+        public static final String MOTIVO = "motivo";
     }
 
     public static final class EntregableProyectoGrado {
@@ -84,6 +85,7 @@ public final class ProyectosFields {
         public static final String ESTADO_INICIAL = "estadoInicial";
         public static final String ESTADO_PROYECTO = "estadoProyecto";
         public static final String ESTUDIANTE = "estudiante";
+        public static final String MOTIVO = "motivo";
     }
 
     public static final class AsesorProyectoGrado {

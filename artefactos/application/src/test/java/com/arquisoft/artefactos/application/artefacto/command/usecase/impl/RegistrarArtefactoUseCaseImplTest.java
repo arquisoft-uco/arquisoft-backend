@@ -97,7 +97,7 @@ class RegistrarArtefactoUseCaseImplTest {
         var version = UtilUUID.generarNuevoUUID();
         var registro = registro(proyecto, asesor, version);
         when(proyectoGradoPorIdFinder.obtener(proyecto))
-                .thenReturn(ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", null, null));
+                .thenReturn(ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", null, null, null));
         when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
         when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
         when(versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(version))

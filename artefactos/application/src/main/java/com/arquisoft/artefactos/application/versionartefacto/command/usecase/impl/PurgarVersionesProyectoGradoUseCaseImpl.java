@@ -31,13 +31,13 @@ public class PurgarVersionesProyectoGradoUseCaseImpl implements PurgarVersionesP
         var uris = urisArchivoVersionesProyectoGradoFinder.obtener(purga.getProyectoGrado());
 
         logger.debug(VersionArtefactoKey.LOG_VERIFICACION_PURGAR,
-                !proyecto.esVacio(), proyecto.estaFinalizado(), uris.size());
+                !proyecto.esVacio(), proyecto.estaConcluido(), uris.size());
 
         purgarVersionesProyectoGradoValidator.validar(
                 new ExistenciaProyectoGrado(purga.getProyectoGrado(), !proyecto.esVacio()),
                 new EstadoProyectoGrado(
                         purga.getProyectoGrado(), proyecto.getNombre(),
-                        proyecto.estaCongelado(), proyecto.estaFinalizado()));
+                        proyecto.estaCongelado(), proyecto.estaConcluido()));
 
         for (var uri : uris) {
             almacenamientoVersionOutputPort.eliminarArchivo(uri);

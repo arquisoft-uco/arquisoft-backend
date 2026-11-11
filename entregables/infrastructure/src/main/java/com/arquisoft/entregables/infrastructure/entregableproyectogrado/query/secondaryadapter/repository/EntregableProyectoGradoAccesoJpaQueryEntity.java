@@ -18,10 +18,12 @@ import java.util.UUID;
         SELECT e.id                                 AS id,
                e.asesor_id                          AS asesor_id,
                e.proyecto_grado_id                  AS proyecto_grado_id,
-               CAST(e.version_entregable AS BIGINT) AS version_entregable
+               CAST(e.version_entregable AS BIGINT) AS version_entregable,
+               (pg.estado_proyecto_id = 'CANCELADO') AS proyecto_cancelado
         FROM entregable_proyecto_grado e
+        JOIN proyecto_grado pg ON pg.id = e.proyecto_grado_id
         """)
-@Synchronize("entregable_proyecto_grado")
+@Synchronize({"entregable_proyecto_grado", "proyecto_grado"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,4 +41,7 @@ public class EntregableProyectoGradoAccesoJpaQueryEntity {
 
     @Column(name = "version_entregable")
     private Long versionEntregable;
+
+    @Column(name = "proyecto_cancelado")
+    private boolean proyectoCancelado;
 }

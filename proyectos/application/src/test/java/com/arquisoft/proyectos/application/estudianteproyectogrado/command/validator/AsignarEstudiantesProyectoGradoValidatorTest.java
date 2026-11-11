@@ -12,6 +12,7 @@ import com.arquisoft.proyectos.domain.estudianteproyectogrado.exception.Estudian
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.exception.EstudianteYaVinculadoException;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.exception.EstudiantesNoVigentesException;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoCanceladoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoFinalizadoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoPerteneceCoordinadorException;
@@ -24,6 +25,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -39,7 +41,10 @@ class AsignarEstudiantesProyectoGradoValidatorTest {
 
     private final EstadoProyectoGradoDomain estadoFinalizado = EstadoProyectoGradoDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), proyecto.getId(), EstadoProyecto.FINALIZADO,
-            UtilFecha.generarInstanteActual());
+            UtilFecha.generarInstanteActual(), null);
+
+    private final EstadoProyectoGradoDomain estadoCancelado = EstadoProyectoGradoDomain.crearCancelado(
+            proyecto.getId(), "Abandono del estudiante");
 
     private static EstudianteDomain estudiante(UUID id) {
         return EstudianteDomain.reconstruir(id, "2020", "Ana Gomez", "ana.gomez@soyuco.edu.co",
@@ -204,5 +209,18 @@ class AsignarEstudiantesProyectoGradoValidatorTest {
         assertThatThrownBy(() -> validator.validar(entrada(List.of(UtilUUID.generarNuevoUUID())),
                 ProyectoGradoDomain.VACIO, EstadoProyectoGradoDomain.VACIO, List.of(), List.of(), 0))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzar_cuandoProyectoCancelado() {
+        // Arrange
+        var a = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(entrada(List.of(a)), proyecto, estadoCancelado,
+                List.of(estudiante(a)), List.of(), 0))
+                .isInstanceOfSatisfying(ProyectoGradoCanceladoException.class,
+                        exception -> assertThat(exception.getCodigoError())
+                                .isEqualTo(ProyectosCodes.ProyectoGrado.CANCELADO));
     }
 }

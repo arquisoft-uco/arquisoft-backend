@@ -10,6 +10,7 @@ import com.arquisoft.entregables.domain.paqueteentregable.PaqueteEntregableDomai
 import com.arquisoft.entregables.domain.paqueteentregable.exception.ActorSinAccesoPaqueteEntregableException;
 import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableCanceladoException;
 import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableEnPreparacionException;
+import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableProyectoCanceladoException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
@@ -138,6 +139,20 @@ class DescargarPaqueteEntregableValidatorImplTest {
         assertThatThrownBy(() -> validator.validar(criteria, entregable,
                 EstadoEntregableProyectoGradoDomain.VACIO, false, paquete))
                 .isInstanceOf(EstadoEntregableProyectoGradoNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarProyectoCancelado_antesQueLaDisponibilidadDelPaquete() {
+        // Arrange
+        var actor = UtilUUID.generarNuevoUUID();
+        var criteria = criteria(actor, true, false);
+        var deProyectoCancelado = EntregableProyectoGradoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2, actor, true);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(criteria, deProyectoCancelado,
+                estado(EstadoEntregable.DISPONIBLE_EVALUACION), false, PaqueteEntregableDomain.VACIO))
+                .isInstanceOf(PaqueteEntregableProyectoCanceladoException.class);
     }
 
     @Test

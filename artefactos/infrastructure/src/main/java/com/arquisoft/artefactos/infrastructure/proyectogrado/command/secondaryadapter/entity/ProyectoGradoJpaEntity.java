@@ -32,4 +32,7 @@ public class ProyectoGradoJpaEntity {
 
     @Column(name = "finalizado_en")
     private Instant finalizadoEn;
+
+    @Column(name = "cancelado_en")
+    private Instant canceladoEn;
 }

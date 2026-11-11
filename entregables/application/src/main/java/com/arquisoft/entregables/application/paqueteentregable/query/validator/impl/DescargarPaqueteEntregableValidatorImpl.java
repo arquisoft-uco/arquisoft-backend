@@ -14,12 +14,15 @@ import com.arquisoft.entregables.domain.paqueteentregable.PaqueteEntregableDomai
 import com.arquisoft.entregables.domain.paqueteentregable.model.AccesoPaqueteEntregable;
 import com.arquisoft.entregables.domain.paqueteentregable.model.DisponibilidadPaqueteEntregable;
 import com.arquisoft.entregables.domain.paqueteentregable.model.EstadoEntregableDelPaquete;
+import com.arquisoft.entregables.domain.paqueteentregable.model.ProyectoDelPaquete;
 import com.arquisoft.entregables.domain.paqueteentregable.rules.ActorAccedePaqueteEntregableRule;
 import com.arquisoft.entregables.domain.paqueteentregable.rules.PaqueteEntregableDisponibleRule;
 import com.arquisoft.entregables.domain.paqueteentregable.rules.PaqueteEntregableNoCanceladoRule;
+import com.arquisoft.entregables.domain.paqueteentregable.rules.PaqueteEntregableProyectoNoCanceladoRule;
 import com.arquisoft.entregables.domain.paqueteentregable.rules.impl.ActorAccedePaqueteEntregableRuleImpl;
 import com.arquisoft.entregables.domain.paqueteentregable.rules.impl.PaqueteEntregableDisponibleRuleImpl;
 import com.arquisoft.entregables.domain.paqueteentregable.rules.impl.PaqueteEntregableNoCanceladoRuleImpl;
+import com.arquisoft.entregables.domain.paqueteentregable.rules.impl.PaqueteEntregableProyectoNoCanceladoRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,6 +32,7 @@ public class DescargarPaqueteEntregableValidatorImpl implements DescargarPaquete
     private final EstadoEntregableProyectoGradoExisteRule estadoEntregableProyectoGradoExisteRule;
     private final ActorAccedePaqueteEntregableRule actorAccedePaqueteEntregableRule;
     private final PaqueteEntregableNoCanceladoRule paqueteEntregableNoCanceladoRule;
+    private final PaqueteEntregableProyectoNoCanceladoRule paqueteEntregableProyectoNoCanceladoRule;
     private final PaqueteEntregableDisponibleRule paqueteEntregableDisponibleRule;
 
     public DescargarPaqueteEntregableValidatorImpl() {
@@ -36,6 +40,7 @@ public class DescargarPaqueteEntregableValidatorImpl implements DescargarPaquete
         this.estadoEntregableProyectoGradoExisteRule = new EstadoEntregableProyectoGradoExisteRuleImpl();
         this.actorAccedePaqueteEntregableRule = new ActorAccedePaqueteEntregableRuleImpl();
         this.paqueteEntregableNoCanceladoRule = new PaqueteEntregableNoCanceladoRuleImpl();
+        this.paqueteEntregableProyectoNoCanceladoRule = new PaqueteEntregableProyectoNoCanceladoRuleImpl();
         this.paqueteEntregableDisponibleRule = new PaqueteEntregableDisponibleRuleImpl();
     }
 
@@ -52,6 +57,8 @@ public class DescargarPaqueteEntregableValidatorImpl implements DescargarPaquete
                 criteria.entregableProyectoGrado(), !estadoActual.esVacio()));
         paqueteEntregableNoCanceladoRule.validar(new EstadoEntregableDelPaquete(
                 criteria.entregableProyectoGrado(), entregable.getVersion(), estadoActual.getEstadoEntregable()));
+        paqueteEntregableProyectoNoCanceladoRule.validar(new ProyectoDelPaquete(
+                criteria.entregableProyectoGrado(), entregable.isProyectoCancelado()));
         paqueteEntregableDisponibleRule.validar(new DisponibilidadPaqueteEntregable(
                 criteria.entregableProyectoGrado(), !paquete.esVacio()));
     }

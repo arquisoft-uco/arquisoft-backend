@@ -17,4 +17,9 @@ public final class GeneracionPaqueteEntregableResultMapper {
             GeneracionPaqueteEntregableDomain generacion) {
         return new GeneracionPaqueteEntregableResult.Duplicado(generacion.getEntregableProyectoGrado());
     }
+
+    public static GeneracionPaqueteEntregableResult.Omitido toResultOmitido(
+            GeneracionPaqueteEntregableDomain generacion) {
+        return new GeneracionPaqueteEntregableResult.Omitido(generacion.getEntregableProyectoGrado());
+    }
 }

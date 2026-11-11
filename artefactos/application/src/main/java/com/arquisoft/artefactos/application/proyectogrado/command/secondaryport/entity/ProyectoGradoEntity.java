@@ -3,5 +3,6 @@ package com.arquisoft.artefactos.application.proyectogrado.command.secondaryport
 import java.time.Instant;
 import java.util.UUID;
 
-public record ProyectoGradoEntity(UUID id, String nombre, Instant entregadoEn, Instant finalizadoEn) {
+public record ProyectoGradoEntity(UUID id, String nombre, Instant entregadoEn, Instant finalizadoEn,
+                                 Instant canceladoEn) {
 }

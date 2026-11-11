@@ -79,7 +79,29 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
             assertThat(acceso.proyectoGrado()).isEqualTo(proyecto);
             assertThat(acceso.version()).isEqualTo(3);
             assertThat(acceso.asesor()).isEqualTo(asesor);
+            assertThat(acceso.proyectoCancelado()).isFalse();
         });
+    }
+
+    @Test
+    void debeMarcarProyectoCancelado_cuandoElProyectoEstaCancelado() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Proyecto").estadoProyectoId("CANCELADO").build());
+        entityManager.persist(AsesorJpaEntity.builder()
+                .id(asesor).identificador("ID-D").nombre("Asesor").email("d@uco.edu.co")
+                .ocurridoEn(Instant.parse("2026-01-01T00:00:00Z")).build());
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(entregable, proyecto, 2, asesor));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerAccesoPorId(entregable);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(acceso -> assertThat(acceso.proyectoCancelado()).isTrue());
     }
 
     @Test

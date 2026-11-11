@@ -65,6 +65,7 @@ public final class EntregablesCodes {
         public static final String ACCESO_DENEGADO = "ENTREGABLES_PAQUETE_ENTREGABLE_ACCESO_DENEGADO";
         public static final String EN_PREPARACION = "ENTREGABLES_PAQUETE_ENTREGABLE_EN_PREPARACION";
         public static final String CANCELADO = "ENTREGABLES_PAQUETE_ENTREGABLE_CANCELADO";
+        public static final String PROYECTO_CANCELADO = "ENTREGABLES_PAQUETE_ENTREGABLE_PROYECTO_CANCELADO";
     }
 
     public static final class ArtefactoEntregable {
@@ -98,6 +99,7 @@ public final class EntregablesCodes {
         public static final String NO_ENCONTRADO = "ENTREGABLES_PROYECTO_GRADO_NO_ENCONTRADO";
         public static final String ESTUDIANTE_NO_PERTENECE = "ENTREGABLES_PROYECTO_GRADO_ESTUDIANTE_NO_PERTENECE";
         public static final String FINALIZADO = "ENTREGABLES_PROYECTO_GRADO_FINALIZADO";
+        public static final String CANCELADO = "ENTREGABLES_PROYECTO_GRADO_CANCELADO";
         public static final String ESTADO_PROYECTO_NO_ENCONTRADO = "ENTREGABLES_ESTADO_PROYECTO_NO_ENCONTRADO";
     }
 

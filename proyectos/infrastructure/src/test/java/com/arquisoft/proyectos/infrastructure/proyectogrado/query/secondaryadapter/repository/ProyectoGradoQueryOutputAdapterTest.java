@@ -31,6 +31,7 @@ class ProyectoGradoQueryOutputAdapterTest {
 
     private static final String EN_PROCESO = "EN_PROCESO";
     private static final String FINALIZADO = "FINALIZADO";
+    private static final String CANCELADO = "CANCELADO";
 
     @Autowired
     private ProyectoGradoQueryRepository repository;
@@ -53,19 +54,20 @@ class ProyectoGradoQueryOutputAdapterTest {
                 asesorRepository, new ProyectoGradoAsesorJpaSpecification());
         entityManager.persist(new EstadoProyectoFixtureJpaEntity(EN_PROCESO, "En proceso", "En desarrollo"));
         entityManager.persist(new EstadoProyectoFixtureJpaEntity(FINALIZADO, "Finalizado", "Concluido"));
+        entityManager.persist(new EstadoProyectoFixtureJpaEntity(CANCELADO, "Cancelado", "Cancelado por coordinación"));
     }
 
     private UUID proyecto(UUID coordinador, String estado, String titulo) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(new ProyectoGradoJpaEntity(id, coordinador, UtilUUID.generarNuevoUUID(), titulo));
         entityManager.persist(new EstadoProyectoGradoJpaEntity(
-                UtilUUID.generarNuevoUUID(), id, estado, Instant.parse("2026-10-01T10:00:00Z")));
+                UtilUUID.generarNuevoUUID(), id, estado, Instant.parse("2026-10-01T10:00:00Z"), null));
         return id;
     }
 
     private void cambiarEstado(UUID proyectoGrado, String estado, String fecha) {
         entityManager.persist(new EstadoProyectoGradoJpaEntity(
-                UtilUUID.generarNuevoUUID(), proyectoGrado, estado, Instant.parse(fecha)));
+                UtilUUID.generarNuevoUUID(), proyectoGrado, estado, Instant.parse(fecha), null));
     }
 
     private ProyectoGradoCriteria criteria(UUID coordinador, NodoFiltro filtroCliente, int pagina, int tamanio,
@@ -135,6 +137,26 @@ class ProyectoGradoQueryOutputAdapterTest {
         assertThat(proyectoLeido.id()).isEqualTo(id);
         assertThat(proyectoLeido.estado().id()).isEqualTo(FINALIZADO);
         assertThat(proyectoLeido.estado().nombre()).isEqualTo("Finalizado");
+    }
+
+    @Test
+    void debeListarEstadoCancelado_cuandoElProyectoFueCancelado() {
+        // Arrange
+        var coordinador = UtilUUID.generarNuevoUUID();
+        var id = proyecto(coordinador, EN_PROCESO, "Uno");
+        cambiarEstado(id, CANCELADO, "2026-10-05T10:00:00Z");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(coordinador, null, 0, 10, List.of()));
+
+        // Assert
+        assertThat(resultado.getContent()).singleElement().satisfies(leido -> {
+            assertThat(leido.id()).isEqualTo(id);
+            assertThat(leido.estado().id()).isEqualTo(CANCELADO);
+            assertThat(leido.estado().nombre()).isEqualTo("Cancelado");
+        });
     }
 
     @Test

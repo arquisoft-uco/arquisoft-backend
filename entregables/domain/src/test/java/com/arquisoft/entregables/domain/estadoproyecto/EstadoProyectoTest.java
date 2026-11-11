@@ -23,6 +23,17 @@ class EstadoProyectoTest {
     }
 
     @Test
+    void debeReconocerCancelado_cuandoSeConsultaDesdeYEsValido() {
+        // Act
+        var estado = EstadoProyecto.desde("CANCELADO");
+
+        // Assert
+        assertThat(estado).isEqualTo(EstadoProyecto.CANCELADO);
+        assertThat(estado.getNombre()).isEqualTo("Cancelado");
+        assertThat(EstadoProyecto.esValido("CANCELADO")).isTrue();
+    }
+
+    @Test
     void debeRechazarElId_cuandoEsNuloDesconocidoOElCentinela() {
         // Act & Assert
         assertThatThrownBy(() -> EstadoProyecto.desde("VACIO"))

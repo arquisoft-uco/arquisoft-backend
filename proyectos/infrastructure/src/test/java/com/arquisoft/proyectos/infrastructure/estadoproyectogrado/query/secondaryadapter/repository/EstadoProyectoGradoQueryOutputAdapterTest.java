@@ -36,7 +36,7 @@ class EstadoProyectoGradoQueryOutputAdapterTest {
     }
 
     private UUID registrar(UUID id, UUID proyectoGrado, String estado, String fecha) {
-        entityManager.persist(new EstadoProyectoGradoJpaEntity(id, proyectoGrado, estado, Instant.parse(fecha)));
+        entityManager.persist(new EstadoProyectoGradoJpaEntity(id, proyectoGrado, estado, Instant.parse(fecha), null));
         return id;
     }
 
