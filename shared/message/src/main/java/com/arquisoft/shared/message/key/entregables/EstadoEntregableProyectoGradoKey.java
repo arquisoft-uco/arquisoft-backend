@@ -7,7 +7,9 @@ public enum EstadoEntregableProyectoGradoKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADO("entregables.dominio.estadoentregableproyectogrado.error.no-encontrado", 0),
     ERROR_NO_ENCONTRADO_DETALLE(
             "entregables.dominio.estadoentregableproyectogrado.error.no-encontrado-detalle", 1),
-    LOG_GUARDADO("entregables.infraestructura.estadoentregableproyectogrado.log.guardado", 3);
+    LOG_GUARDADO("entregables.infraestructura.estadoentregableproyectogrado.log.guardado", 3),
+    LOG_CONSULTANDO_HISTORIAL("entregables.aplicacion.estadoentregableproyectogrado.log.consultando-historial", 1),
+    LOG_HISTORIAL_CONSULTADO("entregables.aplicacion.estadoentregableproyectogrado.log.historial-consultado", 2);
 
     private final String clave;
     private final int parametros;

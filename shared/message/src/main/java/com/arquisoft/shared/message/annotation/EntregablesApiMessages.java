@@ -94,6 +94,23 @@ public final class EntregablesApiMessages {
         public static final String CONSULTAR_RESP_422 = "El entregable no existe o no es del asesor autenticado";
     }
 
+    public static final class EstadoEntregableProyectoGrado {
+
+        private EstadoEntregableProyectoGrado() {}
+
+        public static final String TAG_NAME = "Estados de un entregable de proyecto de grado";
+        public static final String TAG_DESCRIPTION =
+                "Historial de estados por los que ha pasado un entregable de proyecto de grado";
+        public static final String CONSULTAR_SUMMARY = "Consultar los estados de un entregable de proyecto de grado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "El asesor del entregable consulta por cuáles estados ha pasado y cuándo cambió a cada uno, "
+                        + "del más antiguo al más reciente; el último es el estado vigente";
+        public static final String CONSULTAR_RESP_200 =
+                "Historial de estados del entregable, del más antiguo al más reciente";
+        public static final String CONSULTAR_RESP_400 = "El identificador del entregable no es un UUID válido";
+        public static final String CONSULTAR_RESP_422 = "El entregable no existe o no es del asesor autenticado";
+    }
+
     public static final class PaqueteEntregable {
 
         private PaqueteEntregable() {}
