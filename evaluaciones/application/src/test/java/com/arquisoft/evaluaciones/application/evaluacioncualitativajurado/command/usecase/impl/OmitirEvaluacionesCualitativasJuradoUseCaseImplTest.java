@@ -70,7 +70,7 @@ class OmitirEvaluacionesCualitativasJuradoUseCaseImplTest {
         var ids = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
         var omision = OmisionEvaluacionesCualitativasJuradoDomain.crear(evaluacionJurado, ids);
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO, UUID.randomUUID(), UUID.randomUUID());
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(evaluacionesFinder.obtener(omision)).thenReturn(Set.copyOf(ids));
 
@@ -132,7 +132,7 @@ class OmitirEvaluacionesCualitativasJuradoUseCaseImplTest {
         var ajena = UUID.randomUUID();
         var omision = OmisionEvaluacionesCualitativasJuradoDomain.crear(evaluacionJurado, List.of(propia, ajena));
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID(), UUID.randomUUID());
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(evaluacionesFinder.obtener(omision)).thenReturn(Set.of(propia));
         doThrow(new EvaluacionesCualitativasJuradoNoEncontradasException(Set.of(ajena), evaluacionJurado))
@@ -152,7 +152,7 @@ class OmitirEvaluacionesCualitativasJuradoUseCaseImplTest {
         var evaluacion = UUID.randomUUID();
         var omision = OmisionEvaluacionesCualitativasJuradoDomain.crear(evaluacionJurado, List.of(evaluacion));
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.FINALIZADA, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.FINALIZADA, UUID.randomUUID(), UUID.randomUUID());
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(evaluacionesFinder.obtener(omision)).thenReturn(Set.of(evaluacion));
         doThrow(new EvaluacionJuradoFinalizadaException(evaluacionJurado)).when(validator).validar(any(), any(), any());

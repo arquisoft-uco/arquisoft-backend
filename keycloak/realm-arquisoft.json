@@ -134,6 +134,7 @@
               "evaluaciones:evaluacion-cuantitativa-jurado:delete",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:evaluacion-cuantitativa-jurado:update",
+              "evaluaciones:evaluacion-cuantitativa-jurado:create",
               "usuarios:jurado-vigente:view",
               "evaluaciones:observacion-item-jurado:update",
               "evaluaciones:observacion-item-jurado:delete",
@@ -1942,6 +1943,15 @@
         {
           "id": "1163f8ab-cce0-4c13-8deb-bdfc29138bfc",
           "name": "evaluaciones:evaluacion-cuantitativa-jurado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "87595b62-09eb-42af-bf53-78a9a6e5fe75",
+          "name": "evaluaciones:evaluacion-cuantitativa-jurado:create",
           "description": "",
           "composite": false,
           "clientRole": true,

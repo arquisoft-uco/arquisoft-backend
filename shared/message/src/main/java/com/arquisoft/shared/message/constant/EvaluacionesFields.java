@@ -112,6 +112,13 @@ public final class EvaluacionesFields {
         public static final String PUNTAJE = "puntaje";
     }
 
+    public static final class RegistroEvaluacionesCuantitativasJurado {
+
+        private RegistroEvaluacionesCuantitativasJurado() {}
+
+        public static final String EVALUACIONES = "evaluaciones";
+    }
+
     public static final class RegistroEvaluacionesCualitativasJurado {
 
         private RegistroEvaluacionesCualitativasJurado() {}
