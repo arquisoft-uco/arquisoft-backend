@@ -41,7 +41,8 @@ public interface EvaluacionJuradoCommandRepository extends JpaRepository<Evaluac
     // adquirir el mismo bloqueo dentro de su propia transaccion.
     @NativeQuery("""
             SELECT ej.id AS id, e.id AS evaluacion,
-                   e.estado_evaluacion_id AS estado, e.entregable_id AS entregable
+                   e.estado_evaluacion_id AS estado, e.entregable_id AS entregable,
+                   ej.jurado_id AS jurado
             FROM evaluacion_jurado ej
             JOIN evaluacion e ON e.id = ej.evaluacion_id
             WHERE ej.id = :evaluacionJurado

@@ -41,7 +41,7 @@ class ConsultarVersionesArtefactoEstudianteUseCaseImplTest {
         var version = new VersionArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2, Instant.now(),
                 "uri/v2.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno",
-                UtilUUID.generarNuevoUUID(), "PENDIENTE", "Pendiente", Instant.now());
+                UtilUUID.generarNuevoUUID(), "PENDIENTE", "Pendiente", Instant.now(), false, false);
         var resultadoEsperado = PaginatedResult.of(List.of(version), 0, 10, 1L);
         when(versionArtefactoQueryOutputPort.consultarTodasEstudiante(criteria)).thenReturn(resultadoEsperado);
 

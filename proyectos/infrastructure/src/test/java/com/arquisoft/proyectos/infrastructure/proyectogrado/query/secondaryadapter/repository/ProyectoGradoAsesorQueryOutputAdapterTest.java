@@ -66,13 +66,13 @@ class ProyectoGradoAsesorQueryOutputAdapterTest {
         entityManager.persist(new ProyectoGradoJpaEntity(
                 id, UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), titulo));
         entityManager.persist(new EstadoProyectoGradoJpaEntity(
-                UtilUUID.generarNuevoUUID(), id, estado, Instant.parse("2026-10-01T10:00:00Z")));
+                UtilUUID.generarNuevoUUID(), id, estado, Instant.parse("2026-10-01T10:00:00Z"), null));
         return id;
     }
 
     private void cambiarEstadoProyecto(UUID proyectoGrado, String estado, String fecha) {
         entityManager.persist(new EstadoProyectoGradoJpaEntity(
-                UtilUUID.generarNuevoUUID(), proyectoGrado, estado, Instant.parse(fecha)));
+                UtilUUID.generarNuevoUUID(), proyectoGrado, estado, Instant.parse(fecha), null));
     }
 
     private void asignar(UUID asesor, UUID proyectoGrado, EstadoAsesor estado, String fecha) {

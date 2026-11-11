@@ -3,6 +3,7 @@ package com.arquisoft.proyectos.application.asesor.command.secondaryport;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.entity.AsesorEntity;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,4 +18,6 @@ public interface AsesorOutputPort {
     Optional<AsesorEntity> obtenerPorId(UUID id);
 
     void actualizar(AsesorEntity asesor);
+
+    List<AsesorEntity> obtenerAsignadosPorProyectoGrado(UUID proyectoGrado, String estadoAsesor);
 }

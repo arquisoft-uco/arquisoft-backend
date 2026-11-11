@@ -6,7 +6,9 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.fin
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.EntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.entity.EntregableProyectoGradoEntity;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.GenerarEntregableProyectoGradoValidator;
-import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.EstadoEntregableProyectoGradoOutputPort;
+import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.entity.EstadoEntregableProyectoGradoEntity;
+import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
 import com.arquisoft.entregables.domain.entregableproyectogrado.GeneracionEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoGeneradoEvent;
 import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
@@ -42,7 +44,10 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
     private EntregableProyectoGradoOutputPort entregableProyectoGradoOutputPort;
 
     @Mock
-    private ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private EstadoEntregableProyectoGradoOutputPort estadoEntregableProyectoGradoOutputPort;
+
+    @Mock
+    private ProyectoGradoBloqueadoPorIdFinder proyectoGradoBloqueadoPorIdFinder;
 
     @Mock
     private EntregableVigenteExisteFinder entregableVigenteExisteFinder;
@@ -72,7 +77,7 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         var asesor = UtilUUID.generarNuevoUUID();
         var entrada = GeneracionEntregableProyectoGradoDomain.crear(proyecto, asesor);
         var proyectoDomain = ProyectoGradoDomain.crear(proyecto, "Sistema de gestion");
-        when(proyectoGradoPorIdFinder.obtener(proyecto)).thenReturn(proyectoDomain);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto)).thenReturn(proyectoDomain);
         when(entregableVigenteExisteFinder.obtener(proyecto)).thenReturn(false);
         when(asesorVigenteFinder.obtener(asesor)).thenReturn(true);
         when(ultimaVersionEntregableProyectoGradoFinder.obtener(proyecto)).thenReturn(2);
@@ -82,22 +87,25 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
 
         // Assert
         var captor = ArgumentCaptor.forClass(EntregableProyectoGradoEntity.class);
-        var orden = inOrder(proyectoGradoPorIdFinder, asesorVigenteFinder,
+        var orden = inOrder(proyectoGradoBloqueadoPorIdFinder, asesorVigenteFinder,
                 entregableVigenteExisteFinder,
                 ultimaVersionEntregableProyectoGradoFinder, generarEntregableProyectoGradoValidator,
-                entregableProyectoGradoOutputPort);
-        orden.verify(proyectoGradoPorIdFinder, times(1)).obtener(proyecto);
+                entregableProyectoGradoOutputPort, estadoEntregableProyectoGradoOutputPort);
+        orden.verify(proyectoGradoBloqueadoPorIdFinder, times(1)).obtener(proyecto);
         orden.verify(asesorVigenteFinder, times(1)).obtener(asesor);
         orden.verify(entregableVigenteExisteFinder, times(1)).obtener(proyecto);
         orden.verify(ultimaVersionEntregableProyectoGradoFinder, times(1)).obtener(proyecto);
         orden.verify(generarEntregableProyectoGradoValidator)
                 .validar(entrada, proyectoDomain, true, false);
         orden.verify(entregableProyectoGradoOutputPort).registrar(captor.capture());
+        var captorEstado = ArgumentCaptor.forClass(EstadoEntregableProyectoGradoEntity.class);
+        orden.verify(estadoEntregableProyectoGradoOutputPort).registrar(captorEstado.capture());
+        assertThat(captorEstado.getValue().entregableProyectoGrado()).isEqualTo(id);
+        assertThat(captorEstado.getValue().estadoEntregable()).isEqualTo(EstadoEntregable.DISPONIBLE_EVALUACION.getId());
         assertThat(captor.getValue().id()).isEqualTo(id);
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyecto);
         assertThat(captor.getValue().asesor()).isEqualTo(asesor);
         assertThat(captor.getValue().version()).isEqualTo(3);
-        assertThat(captor.getValue().estadoEntregable()).isEqualTo(EstadoEntregable.DISPONIBLE_EVALUACION.getId());
         verify(logger).info(any(ClaveMensaje.class), eq(id), eq(proyecto), eq(3));
     }
 
@@ -108,7 +116,7 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         var asesor = UtilUUID.generarNuevoUUID();
         var entrada = GeneracionEntregableProyectoGradoDomain.crear(proyecto, asesor);
         var proyectoDomain = ProyectoGradoDomain.crear(proyecto, "Sistema de gestion");
-        when(proyectoGradoPorIdFinder.obtener(proyecto)).thenReturn(proyectoDomain);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto)).thenReturn(proyectoDomain);
         when(entregableVigenteExisteFinder.obtener(proyecto)).thenReturn(false);
         when(asesorVigenteFinder.obtener(asesor)).thenReturn(true);
         when(ultimaVersionEntregableProyectoGradoFinder.obtener(proyecto)).thenReturn(0);
@@ -133,7 +141,7 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
         var entrada = GeneracionEntregableProyectoGradoDomain.crear(proyecto, asesor);
-        when(proyectoGradoPorIdFinder.obtener(proyecto)).thenReturn(ProyectoGradoDomain.VACIO);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto)).thenReturn(ProyectoGradoDomain.VACIO);
         when(entregableVigenteExisteFinder.obtener(proyecto)).thenReturn(false);
         when(asesorVigenteFinder.obtener(asesor)).thenReturn(true);
         when(ultimaVersionEntregableProyectoGradoFinder.obtener(proyecto)).thenReturn(0);
@@ -143,6 +151,7 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada)).isInstanceOf(IllegalStateException.class);
         verify(entregableProyectoGradoOutputPort, never()).registrar(any());
+        verify(estadoEntregableProyectoGradoOutputPort, never()).registrar(any());
         verify(eventPublisher, never()).publish(any());
         verify(logger, never()).info(any(ClaveMensaje.class), any(), eq(proyecto), anyInt());
     }

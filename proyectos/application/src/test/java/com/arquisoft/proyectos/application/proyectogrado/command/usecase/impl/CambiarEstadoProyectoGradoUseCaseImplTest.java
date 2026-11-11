@@ -6,7 +6,7 @@ import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.Es
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.EstadoProyectoGradoOutputPort;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.entity.EstadoProyectoGradoEntity;
 import com.arquisoft.proyectos.application.estudiante.command.finder.EstudiantesVigentesDeProyectoGradoFinder;
-import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.CambiarEstadoProyectoGradoValidator;
 import com.arquisoft.proyectos.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoentregable.EstadoEntregable;
@@ -51,7 +51,7 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
     private EstadoProyectoGradoOutputPort estadoProyectoGradoOutputPort;
 
     @Mock
-    private ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private ProyectoGradoBloqueadoPorIdFinder proyectoGradoBloqueadoPorIdFinder;
 
     @Mock
     private EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
@@ -92,7 +92,7 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
     }
 
     private void stubFinders(List<EstudianteDomain> estudiantes) {
-        when(proyectoGradoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
         when(estadoActualProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estadoActual);
         when(asesorAsignadoProyectoGradoFinder.obtener(entrada)).thenReturn(true);
         when(ultimoEntregableProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(ultimoEntregable);
@@ -126,13 +126,13 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
                     new ContactoEstudiante(eva.getId(), "Eva Mora", "eva.mora@soyuco.edu.co"));
         });
 
-        var orden = inOrder(proyectoGradoPorIdFinder, estadoActualProyectoGradoFinder,
+        var orden = inOrder(proyectoGradoBloqueadoPorIdFinder, estadoActualProyectoGradoFinder,
                 asesorAsignadoProyectoGradoFinder, ultimoEntregableProyectoGradoFinder,
                 estudiantesVigentesDeProyectoGradoFinder, validator, estadoProyectoGradoOutputPort,
                 eventPublisher, logger);
         orden.verify(logger).info(eq(ProyectoGradoKey.LOG_CAMBIANDO_ESTADO),
                 eq(proyecto.getId()), eq(entrada.getAsesor()), eq("FINALIZADO"));
-        orden.verify(proyectoGradoPorIdFinder, times(1)).obtener(proyecto.getId());
+        orden.verify(proyectoGradoBloqueadoPorIdFinder, times(1)).obtener(proyecto.getId());
         orden.verify(estadoActualProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(asesorAsignadoProyectoGradoFinder, times(1)).obtener(entrada);
         orden.verify(ultimoEntregableProyectoGradoFinder, times(1)).obtener(proyecto.getId());

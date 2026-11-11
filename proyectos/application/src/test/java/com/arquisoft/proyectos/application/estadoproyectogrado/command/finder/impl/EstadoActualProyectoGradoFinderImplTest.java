@@ -33,7 +33,7 @@ class EstadoActualProyectoGradoFinderImplTest {
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var fecha = Instant.parse("2026-10-01T10:00:00Z");
         when(estadoProyectoGradoOutputPort.obtenerEstadoActual(proyectoGrado)).thenReturn(Optional.of(
-                new EstadoProyectoGradoEntity(id, proyectoGrado, EstadoProyecto.FINALIZADO.getId(), fecha)));
+                new EstadoProyectoGradoEntity(id, proyectoGrado, EstadoProyecto.FINALIZADO.getId(), fecha, null)));
 
         // Act
         var estado = finder.obtener(proyectoGrado);

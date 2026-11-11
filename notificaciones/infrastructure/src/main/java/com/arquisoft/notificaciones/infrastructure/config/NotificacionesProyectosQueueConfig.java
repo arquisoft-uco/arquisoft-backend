@@ -81,4 +81,18 @@ public class NotificacionesProyectosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String PROYECTO_GRADO_CANCELADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO;
+
+    @Bean
+    public Declarables notificacionesProyectoGradoCanceladoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                PROYECTO_GRADO_CANCELADO_QUEUE,
+                EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

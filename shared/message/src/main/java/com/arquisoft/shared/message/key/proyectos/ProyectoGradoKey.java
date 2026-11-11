@@ -42,7 +42,14 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     ERROR_ULTIMO_ENTREGABLE_NO_DEFINITIVO(
             "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-definitivo", 3),
     ERROR_ULTIMO_ENTREGABLE_NO_DEFINITIVO_DETALLE(
-            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-definitivo-detalle", 3);
+            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-definitivo-detalle", 3),
+    LOG_CANCELANDO("proyectos.aplicacion.proyectogrado.log.cancelando", 2),
+    LOG_VERIFICACION_CANCELACION("proyectos.aplicacion.proyectogrado.log.verificacion-cancelacion", 4),
+    LOG_CANCELADO("proyectos.aplicacion.proyectogrado.log.cancelado", 2),
+    ERROR_NO_CANCELABLE("proyectos.dominio.proyectogrado.error.no-cancelable", 2),
+    ERROR_NO_CANCELABLE_DETALLE("proyectos.dominio.proyectogrado.error.no-cancelable-detalle", 2),
+    ERROR_CANCELADO("proyectos.dominio.proyectogrado.error.cancelado", 1),
+    ERROR_CANCELADO_DETALLE("proyectos.dominio.proyectogrado.error.cancelado-detalle", 1);
 
     private final String clave;
     private final int parametros;

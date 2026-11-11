@@ -40,6 +40,20 @@ public class ArtefactosProyectosQueueConfig {
                 arquisoftDeadLetterExchange);
     }
 
+    public static final String PROYECTO_GRADO_CANCELADO_QUEUE =
+            ArtefactosQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO;
+
+    @Bean
+    public Declarables artefactosProyectoGradoCanceladoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                PROYECTO_GRADO_CANCELADO_QUEUE,
+                EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     public static final String ASESOR_PROYECTO_GRADO_ASIGNADO_QUEUE =
             ArtefactosQueues.PREFIJO + EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_ASIGNADO;
 

@@ -5,6 +5,7 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.GeneracionEntreg
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.EntregableVigenteYaExisteException;
 import com.arquisoft.entregables.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoCanceladoException;
 import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoFinalizadoException;
 import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.shared.util.UtilUUID;
@@ -66,6 +67,17 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(entrada, proyecto, true, false))
                 .isInstanceOf(ProyectoGradoFinalizadoException.class);
+    }
+
+    @Test
+    void debeLanzar_cuandoProyectoCancelado() {
+        // Arrange
+        var entrada = entrada();
+        var proyecto = proyecto(EstadoProyecto.CANCELADO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(entrada, proyecto, true, false))
+                .isInstanceOf(ProyectoGradoCanceladoException.class);
     }
 
     @Test

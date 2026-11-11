@@ -7,6 +7,6 @@ public record EntregableProyectoGradoAccesoEntity(
         UUID proyectoGrado,
         int version,
         UUID asesor,
-        String estadoEntregable
+        boolean proyectoCancelado
 ) {
 }

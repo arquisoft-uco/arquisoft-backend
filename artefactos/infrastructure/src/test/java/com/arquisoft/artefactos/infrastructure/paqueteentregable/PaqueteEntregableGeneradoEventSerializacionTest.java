@@ -19,7 +19,8 @@ class PaqueteEntregableGeneradoEventSerializacionTest {
     @Test
     void debeConservarArchivoYArtefactos_cuandoElEventoHaceIdaYVuelta() {
         // Arrange
-        var artefacto = new ArtefactoPaqueteGenerado(UtilUUID.generarNuevoUUID(), 3, UtilUUID.generarNuevoUUID(),
+        var artefacto = new ArtefactoPaqueteGenerado(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 3,
+                UtilUUID.generarNuevoUUID(),
                 "Informe", UtilUUID.generarNuevoUUID(), "Repositorio", "01-Informe/v3-informe.pdf");
         var evento = PaqueteEntregableGeneradoEvent.de(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                 new ArchivoPaquete("bucket", "paquetes/x.zip", "p.zip", 9L), Instant.parse("2026-11-08T10:00:00Z"),
@@ -38,5 +39,6 @@ class PaqueteEntregableGeneradoEventSerializacionTest {
         assertThat(leido.getTamanoBytes()).isEqualTo(9L);
         assertThat(leido.getGeneradoEn()).isEqualTo(evento.getGeneradoEn());
         assertThat(leido.getArtefactos()).containsExactly(artefacto);
+        assertThat(leido.getArtefactos().getFirst().versionArtefacto()).isEqualTo(artefacto.versionArtefacto());
     }
 }

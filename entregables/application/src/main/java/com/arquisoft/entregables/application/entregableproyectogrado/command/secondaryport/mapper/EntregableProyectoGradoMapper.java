@@ -2,7 +2,6 @@ package com.arquisoft.entregables.application.entregableproyectogrado.command.se
 
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.entity.EntregableProyectoGradoEntity;
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
-import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 
 public final class EntregableProyectoGradoMapper {
 
@@ -13,8 +12,7 @@ public final class EntregableProyectoGradoMapper {
                 entregable.getId(),
                 entregable.getProyectoGrado(),
                 entregable.getVersion(),
-                entregable.getAsesor(),
-                entregable.getEstadoEntregable().getId());
+                entregable.getAsesor());
     }
 
     public static EntregableProyectoGradoDomain toDomain(EntregableProyectoGradoEntity entity) {
@@ -22,7 +20,6 @@ public final class EntregableProyectoGradoMapper {
                 entity.id(),
                 entity.proyectoGrado(),
                 entity.version(),
-                entity.asesor(),
-                EstadoEntregable.desde(entity.estadoEntregable()));
+                entity.asesor());
     }
 }

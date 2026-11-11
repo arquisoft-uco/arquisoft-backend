@@ -19,6 +19,9 @@ public interface PaqueteEntregableCommandRepository extends JpaRepository<Paquet
     List<String> obtenerClavesAnteriores(
             @Param("proyectoGrado") UUID proyectoGrado, @Param("versionEntregable") int versionEntregable);
 
+    @Query("SELECT p.claveObjeto FROM PaqueteEntregableJpaEntity p WHERE p.proyectoGrado = :proyectoGrado")
+    List<String> obtenerClavesPorProyectoGrado(@Param("proyectoGrado") UUID proyectoGrado);
+
     @NativeQuery("""
             SELECT a.id AS artefacto,
                    vra.nombre_documento AS "nombreDocumento",

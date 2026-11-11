@@ -2,7 +2,9 @@ package com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.se
 
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.entity.ItemCuantitativoJuradoEntity;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface ItemCuantitativoJuradoOutputPort {
@@ -19,4 +21,6 @@ public interface ItemCuantitativoJuradoOutputPort {
     void actualizarDescripcion(UUID id, String descripcion);
 
     void eliminar(UUID id);
+
+    Map<UUID, Integer> consultarValoresMaximosPorIds(Set<UUID> ids);
 }

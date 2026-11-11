@@ -20,6 +20,7 @@ public final class EntregableProyectoGradoQueryMapper {
                         entity.getAsesorEmail()),
                 new EntregableProyectoGradoReadModel.EstadoEntregableResumen(
                         entity.getEstadoId(),
-                        entity.getEstadoNombre()));
+                        entity.getEstadoNombre(),
+                        entity.getEstadoFechaActualizacion()));
     }
 }

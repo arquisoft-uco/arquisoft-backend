@@ -6,7 +6,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.result.Purg
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.AlmacenamientoVersionOutputPort;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.PurgarVersionesProyectoGradoValidator;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
-import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoFinalizadoException;
+import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoConcluidoException;
 import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyectoGrado;
 import com.arquisoft.artefactos.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.artefactos.domain.versionartefacto.PurgaVersionesProyectoGradoDomain;
@@ -63,7 +63,7 @@ class PurgarVersionesProyectoGradoUseCaseImplTest {
         id = UtilUUID.generarNuevoUUID();
         purga = PurgaVersionesProyectoGradoDomain.crear(id);
         proyectoFinalizado = ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", UtilFecha.VACIO, Instant.parse("2026-11-01T10:00:00Z"));
+                id, "Proyecto", UtilFecha.VACIO, Instant.parse("2026-11-01T10:00:00Z"), null);
     }
 
     @Test
@@ -90,16 +90,34 @@ class PurgarVersionesProyectoGradoUseCaseImplTest {
     }
 
     @Test
+    void debePurgar_cuandoProyectoCancelado() {
+        // Arrange
+        var cancelado = ProyectoGradoDomain.reconstruir(
+                id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, Instant.parse("2026-11-02T10:00:00Z"));
+        when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(cancelado);
+        when(urisArchivoVersionesProyectoGradoFinder.obtener(id)).thenReturn(List.of("versiones/a"));
+
+        // Act
+        var resultado = useCase.ejecutar(purga);
+
+        // Assert
+        verify(purgarVersionesProyectoGradoValidator).validar(
+                new ExistenciaProyectoGrado(id, true), new EstadoProyectoGrado(id, "Proyecto", true, true));
+        verify(almacenamientoVersionOutputPort).eliminarArchivo("versiones/a");
+        assertThat(resultado).isEqualTo(new PurgaVersionesProyectoGradoResult(id, 1));
+    }
+
+    @Test
     void debeNoBorrarNada_cuandoValidatorLanza() {
         // Arrange
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(
-                ProyectoGradoDomain.reconstruir(id, "Proyecto", Instant.now(), UtilFecha.VACIO));
+                ProyectoGradoDomain.reconstruir(id, "Proyecto", Instant.now(), UtilFecha.VACIO, null));
         when(urisArchivoVersionesProyectoGradoFinder.obtener(id)).thenReturn(List.of("versiones/a"));
-        doThrow(new ProyectoGradoNoFinalizadoException(new EstadoProyectoGrado(id, "Proyecto", true, false)))
+        doThrow(new ProyectoGradoNoConcluidoException(new EstadoProyectoGrado(id, "Proyecto", true, false)))
                 .when(purgarVersionesProyectoGradoValidator).validar(any(), any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(purga)).isInstanceOf(ProyectoGradoNoFinalizadoException.class);
+        assertThatThrownBy(() -> useCase.ejecutar(purga)).isInstanceOf(ProyectoGradoNoConcluidoException.class);
         verify(almacenamientoVersionOutputPort, never()).eliminarArchivo(anyString());
     }
 

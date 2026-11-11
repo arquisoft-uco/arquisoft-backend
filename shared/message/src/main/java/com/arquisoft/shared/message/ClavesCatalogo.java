@@ -286,6 +286,7 @@ public final class ClavesCatalogo {
             EstadoItemKey.class,
             EstadoEntregableKey.class,
             EntregableProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.entregables.EstadoEntregableProyectoGradoKey.class,
             com.arquisoft.shared.message.key.entregables.ArtefactoEntregableKey.class,
             com.arquisoft.shared.message.key.entregables.ProyectoGradoKey.class,
             com.arquisoft.shared.message.key.entregables.EstadoProyectoKey.class,

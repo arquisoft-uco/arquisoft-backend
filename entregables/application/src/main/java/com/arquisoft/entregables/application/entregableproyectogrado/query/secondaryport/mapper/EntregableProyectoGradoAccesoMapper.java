@@ -2,7 +2,6 @@ package com.arquisoft.entregables.application.entregableproyectogrado.query.seco
 
 import com.arquisoft.entregables.application.entregableproyectogrado.query.secondaryport.entity.EntregableProyectoGradoAccesoEntity;
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
-import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 
 public final class EntregableProyectoGradoAccesoMapper {
 
@@ -14,6 +13,6 @@ public final class EntregableProyectoGradoAccesoMapper {
                 entity.proyectoGrado(),
                 entity.version(),
                 entity.asesor(),
-                EstadoEntregable.desde(entity.estadoEntregable()));
+                entity.proyectoCancelado());
     }
 }

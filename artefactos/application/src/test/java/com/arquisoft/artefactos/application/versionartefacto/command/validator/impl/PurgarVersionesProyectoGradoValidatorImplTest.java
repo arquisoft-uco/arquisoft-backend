@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.application.versionartefacto.command.validator.impl;
 
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
-import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoFinalizadoException;
+import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoConcluidoException;
 import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyectoGrado;
 import com.arquisoft.artefactos.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.shared.util.UtilUUID;
@@ -35,7 +35,7 @@ class PurgarVersionesProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(existencia, estado))
-                .isInstanceOf(ProyectoGradoNoFinalizadoException.class);
+                .isInstanceOf(ProyectoGradoNoConcluidoException.class);
     }
 
     @Test

@@ -31,7 +31,7 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     private final EstadoProyectoGradoDomain enProceso = EstadoProyectoGradoDomain.crear(proyecto.getId());
     private final EstadoProyectoGradoDomain finalizado = EstadoProyectoGradoDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), proyecto.getId(), EstadoProyecto.FINALIZADO,
-            UtilFecha.generarInstanteActual());
+            UtilFecha.generarInstanteActual(), null);
     private final CambioEstadoProyectoGradoDomain cambio = CambioEstadoProyectoGradoDomain.crear(
             proyecto.getId(), UtilUUID.generarNuevoUUID(), "FINALIZADO");
 

@@ -56,6 +56,8 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "proyectos:proyecto-grado-cancelacion:update",
+              "proyectos:historial-estado-proyecto-grado:view",
               "solicitudes:respuesta-cambio-asesor:delete",
               "solicitudes:respuesta-ampliacion-plazo:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
@@ -134,6 +136,7 @@
               "evaluaciones:evaluacion-cuantitativa-jurado:delete",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:evaluacion-cuantitativa-jurado:update",
+              "evaluaciones:evaluacion-cuantitativa-jurado:create",
               "usuarios:jurado-vigente:view",
               "evaluaciones:observacion-item-jurado:update",
               "evaluaciones:observacion-item-jurado:delete",
@@ -378,6 +381,7 @@
           "client": {
             "arquisoft-api": [
               "proyectos:proyecto-grado-estado:update",
+              "proyectos:historial-estado-proyecto-grado:view",
               "mapas-ruta:tarea-mapa-ruta-asesor:view",
               "mapas-ruta:plan-estimado-proyecto-asesor:view",
               "mapas-ruta:plan-estimado-asesor:update",
@@ -389,6 +393,7 @@
               "entregables:entregable-proyecto-grado-asesor:view",
               "entregables:artefacto-entregable:view",
               "entregables:paquete-entregable:download",
+              "entregables:estado-entregable-proyecto-grado:view",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
@@ -1301,6 +1306,15 @@
           "attributes": {}
         },
         {
+          "id": "7c1e5a42-93d8-4b6f-a0e7-2f4d8b6c1a95",
+          "name": "entregables:estado-entregable-proyecto-grado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "ff2468d4-bbf2-4e51-bc64-410ad2676e9d",
           "name": "entregables:entregable-proyecto-grado-jurado:view",
           "description": "",
@@ -1537,6 +1551,15 @@
         {
           "id": "93728f6f-99a6-41a1-940f-b52793233d7e",
           "name": "proyectos:proyecto-grado-estado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a2cbdae4-900e-4328-9f85-52a2fe85a20e",
+          "name": "proyectos:proyecto-grado-cancelacion:update",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1942,6 +1965,15 @@
         {
           "id": "1163f8ab-cce0-4c13-8deb-bdfc29138bfc",
           "name": "evaluaciones:evaluacion-cuantitativa-jurado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "87595b62-09eb-42af-bf53-78a9a6e5fe75",
+          "name": "evaluaciones:evaluacion-cuantitativa-jurado:create",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2374,6 +2406,15 @@
         {
           "id": "3556052a-10a9-4e3d-bc6a-9a21649a92ea",
           "name": "fichas:estado-ficha-perfil-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7862bd52-44f0-493a-be04-70753494ef4c",
+          "name": "proyectos:historial-estado-proyecto-grado:view",
           "description": "",
           "composite": false,
           "clientRole": true,

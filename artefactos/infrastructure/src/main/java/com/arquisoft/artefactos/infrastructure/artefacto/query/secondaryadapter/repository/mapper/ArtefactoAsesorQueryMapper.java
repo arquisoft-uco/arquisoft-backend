@@ -16,6 +16,8 @@ public final class ArtefactoAsesorQueryMapper {
                 entity.getNombreDocumento(),
                 entity.getVersionDocumento(),
                 entity.getNombreRepositorio(),
-                entity.isOmitido());
+                entity.isOmitido(),
+                entity.isProyectoFinalizado(),
+                entity.isProyectoCancelado());
     }
 }

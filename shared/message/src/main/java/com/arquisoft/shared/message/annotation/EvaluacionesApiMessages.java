@@ -298,6 +298,17 @@ public final class EvaluacionesApiMessages {
         public static final String CAMBIAR_PUNTAJE_RESP_422 =
                 "La evaluación no existe, no pertenece al jurado autenticado, su evaluación de jurado "
                         + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
+        public static final String REGISTRAR_SUMMARY = "Registrar evaluaciones cuantitativas del jurado";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra en un solo lote el puntaje que el jurado autenticado asigna a cada ítem cuantitativo "
+                        + "sobre una evaluación de jurado suya; si con ello su evaluación queda completa, "
+                        + "pasa a evaluada";
+        public static final String REGISTRAR_RESP_201 = "Lote registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación de jurado no existe, no pertenece al jurado, la evaluación está finalizada, "
+                        + "algún ítem no existe, está repetido o ya fue evaluado, o algún puntaje excede "
+                        + "el valor máximo del ítem";
         public static final String OMITIR_SUMMARY = "Omitir evaluaciones cuantitativas del jurado";
         public static final String OMITIR_DESCRIPTION =
                 "Omite (elimina) una o varias evaluaciones cuantitativas ya registradas en una evaluación de jurado, "

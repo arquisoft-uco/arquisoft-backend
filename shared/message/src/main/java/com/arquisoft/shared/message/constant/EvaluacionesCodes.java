@@ -294,6 +294,22 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_JURADO_OMISION_EVALUACION_JURADO_FINALIZADA";
         public static final String EVALUACIONES_CON_OBSERVACIONES =
                 "EVALUACION_CUANTITATIVA_JURADO_EVALUACIONES_CON_OBSERVACIONES";
+        public static final String ITEM_INVALIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_ITEM_INVALIDO";
+        public static final String ITEMS_NO_ENCONTRADOS =
+                "EVALUACION_CUANTITATIVA_JURADO_ITEMS_NO_ENCONTRADOS";
+        public static final String PUNTAJES_EXCEDEN_VALOR_ITEM =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJES_EXCEDEN_VALOR_ITEM";
+        public static final String ITEMS_YA_REGISTRADOS =
+                "EVALUACION_CUANTITATIVA_JURADO_ITEMS_YA_REGISTRADOS";
+    }
+
+    public static final class RegistroEvaluacionesCuantitativasJurado {
+
+        private RegistroEvaluacionesCuantitativasJurado() {}
+
+        public static final String LOTE_VACIO = "REGISTRO_EVALUACIONES_CUANTITATIVAS_JURADO_LOTE_VACIO";
+        public static final String ITEMS_REPETIDOS = "REGISTRO_EVALUACIONES_CUANTITATIVAS_JURADO_ITEMS_REPETIDOS";
     }
 
     public static final class OmisionEvaluacionesCuantitativasJurado {

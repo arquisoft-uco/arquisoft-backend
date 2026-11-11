@@ -7,10 +7,13 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.sec
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.mapper.EntregableProyectoGradoMapper;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.usecase.GenerarEntregableProyectoGradoUseCase;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.GenerarEntregableProyectoGradoValidator;
-import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.EstadoEntregableProyectoGradoOutputPort;
+import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.mapper.EstadoEntregableProyectoGradoMapper;
+import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.GeneracionEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoGeneradoEvent;
+import com.arquisoft.entregables.domain.estadoentregableproyectogrado.EstadoEntregableProyectoGradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
@@ -24,7 +27,8 @@ import java.util.UUID;
 public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntregableProyectoGradoUseCase {
 
     private final EntregableProyectoGradoOutputPort entregableProyectoGradoOutputPort;
-    private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private final EstadoEntregableProyectoGradoOutputPort estadoEntregableProyectoGradoOutputPort;
+    private final ProyectoGradoBloqueadoPorIdFinder proyectoGradoBloqueadoPorIdFinder;
     private final AsesorVigenteFinder asesorVigenteFinder;
     private final EntregableVigenteExisteFinder entregableVigenteExisteFinder;
     private final UltimaVersionEntregableProyectoGradoFinder ultimaVersionEntregableProyectoGradoFinder;
@@ -36,7 +40,7 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
     public UUID ejecutar(GeneracionEntregableProyectoGradoDomain entrada) {
         logger.info(EntregableProyectoGradoKey.LOG_GENERANDO, entrada.getProyectoGrado(), entrada.getAsesor());
 
-        var proyecto = proyectoGradoPorIdFinder.obtener(entrada.getProyectoGrado());
+        var proyecto = proyectoGradoBloqueadoPorIdFinder.obtener(entrada.getProyectoGrado());
         var asesorVigente = asesorVigenteFinder.obtener(entrada.getAsesor());
         var existeVigente = entregableVigenteExisteFinder.obtener(entrada.getProyectoGrado());
         var ultimaVersion = ultimaVersionEntregableProyectoGradoFinder.obtener(entrada.getProyectoGrado());
@@ -50,6 +54,8 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
         var entregable = EntregableProyectoGradoDomain.crear(
                 entrada.getProyectoGrado(), ultimaVersion, entrada.getAsesor());
         entregableProyectoGradoOutputPort.registrar(EntregableProyectoGradoMapper.toEntity(entregable));
+        var estadoInicial = EstadoEntregableProyectoGradoDomain.crear(entregable.getId());
+        estadoEntregableProyectoGradoOutputPort.registrar(EstadoEntregableProyectoGradoMapper.toEntity(estadoInicial));
 
         eventPublisher.publish(new EntregableProyectoGradoGeneradoEvent(
                 entregable.getId(), entregable.getProyectoGrado(), entregable.getVersion()));

@@ -2,6 +2,7 @@ package com.arquisoft.entregables.application.paqueteentregable.command.primaryp
 
 public record DatosArtefactoPaquete(
         String artefacto,
+        String versionArtefacto,
         Integer numeroVersion,
         String versionRepositorioArtefacto,
         String nombreDocumento,

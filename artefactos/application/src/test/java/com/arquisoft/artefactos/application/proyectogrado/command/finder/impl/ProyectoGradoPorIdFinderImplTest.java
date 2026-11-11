@@ -27,7 +27,7 @@ class ProyectoGradoPorIdFinderImplTest {
     void debeMapearAlDomain_cuandoExiste() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        when(proyectoGradoOutputPort.obtenerPorId(id)).thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", null, null)));
+        when(proyectoGradoOutputPort.obtenerPorId(id)).thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", null, null, null)));
 
         // Act
         var proyecto = finder.obtener(id);

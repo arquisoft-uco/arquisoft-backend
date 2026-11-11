@@ -17,7 +17,9 @@ public final class ArtefactoEstudianteCriteria extends QueryCriteria {
         NOMBRE_REPOSITORIO            ("nombreRepositorio",           true, true),
         ASESOR                        ("asesor",                      true, false),
         NOMBRE_ASESOR                 ("nombreAsesor",                true, true),
-        ESTUDIANTE_ID                 ("estudianteId",                true, false);
+        ESTUDIANTE_ID                 ("estudianteId",                true, false),
+        PROYECTO_FINALIZADO("proyectoFinalizado", true, false),
+        PROYECTO_CANCELADO("proyectoCancelado", true, false);
 
         private final String  clave;
         private final boolean filtrable;

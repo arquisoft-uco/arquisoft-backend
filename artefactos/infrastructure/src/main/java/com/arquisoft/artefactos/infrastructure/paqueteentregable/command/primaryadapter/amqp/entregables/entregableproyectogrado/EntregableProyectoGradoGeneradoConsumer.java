@@ -75,6 +75,9 @@ public class EntregableProyectoGradoGeneradoConsumer extends AbstractEventConsum
                                 generado.paquete(), generado.entregableProyectoGrado(), generado.tamanoBytes());
                 case GeneracionPaqueteEntregableResult.Duplicado duplicado ->
                         logger.info(PaqueteEntregableKey.LOG_DUPLICADO, duplicado.entregableProyectoGrado());
+                case GeneracionPaqueteEntregableResult.Omitido omitido ->
+                        logger.info(PaqueteEntregableKey.LOG_OMITIDO_PROYECTO_CANCELADO,
+                                omitido.entregableProyectoGrado());
             }
 
             var purga = purgarPaquetesAnterioresInteractor.ejecutar(

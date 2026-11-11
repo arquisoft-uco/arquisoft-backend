@@ -42,7 +42,8 @@ class PaqueteEntregableGeneradoEventTest {
     @Test
     void debeExponerArtefactosInmutables_cuandoSeConstruyeConLista() {
         // Arrange
-        var item = new ArtefactoPaqueteGenerado(UtilUUID.generarNuevoUUID(), 3, UtilUUID.generarNuevoUUID(),
+        var item = new ArtefactoPaqueteGenerado(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 3,
+                UtilUUID.generarNuevoUUID(),
                 "Informe", UtilUUID.generarNuevoUUID(), "Repo", "01-Informe/v3-informe.pdf");
         var archivo = new ArchivoPaquete("bucket", "paquetes/x.zip", "p.zip", 9L);
 

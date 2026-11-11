@@ -17,7 +17,7 @@ class PaqueteEntregableGeneradoPayloadTest {
     private final tools.jackson.databind.json.JsonMapper mapper =
             new RabbitMQConfig().rabbitObjectMapper();
 
-    private record ArtefactoDePrueba(UUID artefacto, int numeroVersion, UUID versionRepositorioArtefacto,
+    private record ArtefactoDePrueba(UUID artefacto, UUID versionArtefacto, int numeroVersion, UUID versionRepositorioArtefacto,
                                      String nombreDocumento, UUID repositorio, String nombreRepositorio,
                                      String rutaEnPaquete) {}
 
@@ -82,7 +82,8 @@ class PaqueteEntregableGeneradoPayloadTest {
     @Test
     void debeDeserializarEventoReal_conArtefactos() {
         // Arrange
-        var item = new ArtefactoDePrueba(UtilUUID.generarNuevoUUID(), 3, UtilUUID.generarNuevoUUID(), "Informe",
+        var item = new ArtefactoDePrueba(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 3,
+                UtilUUID.generarNuevoUUID(), "Informe",
                 UtilUUID.generarNuevoUUID(), "Repo", "01-Informe/v3-informe.pdf");
         var evento = new PaqueteEntregableGeneradoEventoDePrueba(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), 1234L, Instant.now(), List.of(item));
@@ -102,6 +103,7 @@ class PaqueteEntregableGeneradoPayloadTest {
         assertThat(payload.generadoEn()).isEqualTo(evento.getGeneradoEn());
         assertThat(payload.artefactos()).singleElement().satisfies(artefacto -> {
             assertThat(artefacto.artefacto()).isEqualTo(item.artefacto().toString());
+            assertThat(artefacto.versionArtefacto()).isEqualTo(item.versionArtefacto().toString());
             assertThat(artefacto.numeroVersion()).isEqualTo(3);
             assertThat(artefacto.versionRepositorioArtefacto()).isEqualTo(item.versionRepositorioArtefacto().toString());
             assertThat(artefacto.nombreDocumento()).isEqualTo("Informe");

@@ -53,6 +53,10 @@ public final class ProyectosCodes {
         public static final String COORDINADOR_NO_VIGENTE = "PROYECTO_GRADO_COORDINADOR_NO_VIGENTE";
         public static final String NO_ENCONTRADO = "PROYECTO_GRADO_NO_ENCONTRADO";
         public static final String FINALIZADO = "PROYECTO_GRADO_FINALIZADO";
+        public static final String CANCELADO = "PROYECTO_GRADO_CANCELADO";
+        public static final String NO_CANCELABLE = "PROYECTO_GRADO_NO_CANCELABLE";
+        public static final String MOTIVO_REQUERIDO = "PROYECTO_GRADO_MOTIVO_REQUERIDO";
+        public static final String MOTIVO_LONGITUD_MAXIMA = "PROYECTO_GRADO_MOTIVO_LONGITUD_MAXIMA";
         public static final String NO_PERTENECE_COORDINADOR = "PROYECTO_GRADO_NO_PERTENECE_COORDINADOR";
         public static final String ESTUDIANTE_ID_REQUERIDO = "PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
         public static final String ASESOR_ID_REQUERIDO = "PROYECTO_GRADO_ASESOR_ID_REQUERIDO";
@@ -91,6 +95,10 @@ public final class ProyectosCodes {
         public static final String ESTUDIANTE_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
         public static final String ESTADO_INICIAL_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTADO_INICIAL_REQUERIDO";
         public static final String ESTADO_PROYECTO_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTADO_PROYECTO_REQUERIDO";
+        public static final String MOTIVO_REQUERIDO = "ESTADO_PROYECTO_GRADO_MOTIVO_REQUERIDO";
+        public static final String MOTIVO_LONGITUD_MAXIMA = "ESTADO_PROYECTO_GRADO_MOTIVO_LONGITUD_MAXIMA";
+        public static final String USUARIO_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_USUARIO_ID_REQUERIDO";
+        public static final String USUARIO_SIN_ACCESO = "ESTADO_PROYECTO_GRADO_USUARIO_SIN_ACCESO";
     }
 
     public static final class EstadoProyecto {

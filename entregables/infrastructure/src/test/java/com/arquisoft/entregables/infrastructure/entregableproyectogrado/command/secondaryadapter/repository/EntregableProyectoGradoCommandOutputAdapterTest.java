@@ -2,6 +2,7 @@ package com.arquisoft.entregables.infrastructure.entregableproyectogrado.command
 
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.entity.EntregableProyectoGradoEntity;
 import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
+import com.arquisoft.entregables.infrastructure.estadoentregableproyectogrado.command.secondaryadapter.entity.EstadoEntregableProyectoGradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +22,7 @@ import static org.mockito.Mockito.verify;
 @DataJpaTest
 class EntregableProyectoGradoCommandOutputAdapterTest {
 
-    private static final String ESTADO = "DISPONIBLE_EVALUACION";
+    private static final Instant BASE = Instant.parse("2026-11-10T10:00:00Z");
 
     @Autowired
     private EntregableProyectoGradoCommandRepository entregableProyectoGradoCommandRepository;
@@ -37,9 +39,15 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         adapter = new EntregableProyectoGradoCommandOutputAdapter(entregableProyectoGradoCommandRepository, logger);
     }
 
-    private void sembrar(UUID proyecto, int version) {
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(
-                UtilUUID.generarNuevoUUID(), proyecto, version, UtilUUID.generarNuevoUUID(), ESTADO));
+    private UUID sembrar(UUID proyecto, int version) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(id, proyecto, version, UtilUUID.generarNuevoUUID()));
+        return id;
+    }
+
+    private void sembrarEstado(UUID entregable, String estado, Instant fecha) {
+        entityManager.persist(new EstadoEntregableProyectoGradoJpaEntity(
+                UtilUUID.generarNuevoUUID(), entregable, estado, fecha));
     }
 
     @Test
@@ -50,7 +58,7 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         var asesor = UtilUUID.generarNuevoUUID();
 
         // Act
-        adapter.registrar(new EntregableProyectoGradoEntity(id, proyecto, 2, asesor, ESTADO));
+        adapter.registrar(new EntregableProyectoGradoEntity(id, proyecto, 2, asesor));
         entityManager.flush();
         entityManager.clear();
 
@@ -59,7 +67,6 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         assertThat(guardado.getProyectoGrado()).isEqualTo(proyecto);
         assertThat(guardado.getVersion()).isEqualTo(2);
         assertThat(guardado.getAsesor()).isEqualTo(asesor);
-        assertThat(guardado.getEstadoEntregable()).isEqualTo(ESTADO);
         verify(logger).debug(EntregableProyectoGradoKey.LOG_GUARDADO, id);
     }
 
@@ -69,13 +76,9 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var conVigente = UtilUUID.generarNuevoUUID();
         var conRechazado = UtilUUID.generarNuevoUUID();
-        var asesor = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(
-                UtilUUID.generarNuevoUUID(), proyecto, 1, asesor, "CANCELADO"));
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(
-                UtilUUID.generarNuevoUUID(), conVigente, 1, asesor, "CERRADO"));
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(
-                UtilUUID.generarNuevoUUID(), conRechazado, 1, asesor, "RECHAZADO"));
+        sembrarEstado(sembrar(proyecto, 1), "CANCELADO", BASE);
+        sembrarEstado(sembrar(conVigente, 1), "CERRADO", BASE);
+        sembrarEstado(sembrar(conRechazado, 1), "RECHAZADO", BASE);
         entityManager.flush();
 
         // Act
@@ -89,6 +92,28 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         assertThat(conCerrado).isTrue();
         assertThat(conRechazadoVigente).isTrue();
         assertThat(sinEntregables).isFalse();
+    }
+
+    @Test
+    void debeMirarSoloElUltimoEstado_cuandoElEntregableTieneHistorial() {
+        // Arrange
+        var cancelado = UtilUUID.generarNuevoUUID();
+        var vigente = UtilUUID.generarNuevoUUID();
+        var entregableCancelado = sembrar(cancelado, 1);
+        sembrarEstado(entregableCancelado, "DISPONIBLE_EVALUACION", BASE);
+        sembrarEstado(entregableCancelado, "CANCELADO", BASE.plusSeconds(60));
+        var entregableVigente = sembrar(vigente, 1);
+        sembrarEstado(entregableVigente, "CANCELADO", BASE);
+        sembrarEstado(entregableVigente, "DISPONIBLE_EVALUACION", BASE.plusSeconds(60));
+        entityManager.flush();
+
+        // Act
+        var conUltimoCancelado = adapter.existeVigentePorProyectoGrado(cancelado, "CANCELADO");
+        var conUltimoVigente = adapter.existeVigentePorProyectoGrado(vigente, "CANCELADO");
+
+        // Assert
+        assertThat(conUltimoCancelado).isFalse();
+        assertThat(conUltimoVigente).isTrue();
     }
 
     @Test
@@ -126,7 +151,7 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(id, proyecto, 2, asesor, "APROBADO"));
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(id, proyecto, 2, asesor));
         entityManager.flush();
         entityManager.clear();
 
@@ -138,7 +163,6 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         assertThat(entity.get().proyectoGrado()).isEqualTo(proyecto);
         assertThat(entity.get().version()).isEqualTo(2);
         assertThat(entity.get().asesor()).isEqualTo(asesor);
-        assertThat(entity.get().estadoEntregable()).isEqualTo("APROBADO");
     }
 
     @Test
@@ -152,32 +176,5 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
 
         // Assert
         assertThat(entity).isEmpty();
-    }
-
-    @Test
-    void debeActualizarSoloElEstadoDelEntregable_sinAfectarOtros() {
-        // Arrange
-        var id = UtilUUID.generarNuevoUUID();
-        var otro = UtilUUID.generarNuevoUUID();
-        var proyecto = UtilUUID.generarNuevoUUID();
-        var asesor = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(id, proyecto, 3, asesor, "APROBADO"));
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(otro, proyecto, 4, asesor, "APROBADO"));
-        entityManager.flush();
-
-        // Act
-        adapter.actualizarEstado(id, "CERRADO");
-        entityManager.flush();
-        entityManager.clear();
-
-        // Assert
-        var actualizado = entityManager.find(EntregableProyectoGradoJpaEntity.class, id);
-        assertThat(actualizado.getEstadoEntregable()).isEqualTo("CERRADO");
-        assertThat(actualizado.getVersion()).isEqualTo(3);
-        assertThat(actualizado.getProyectoGrado()).isEqualTo(proyecto);
-        assertThat(actualizado.getAsesor()).isEqualTo(asesor);
-        assertThat(entityManager.find(EntregableProyectoGradoJpaEntity.class, otro).getEstadoEntregable())
-                .isEqualTo("APROBADO");
-        verify(logger).debug(EntregableProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, id);
     }
 }

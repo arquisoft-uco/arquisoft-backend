@@ -59,8 +59,12 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
     }
 
     private UUID sembrarArtefacto(Instant omitidoEn, Instant finalizadoEn) {
+        return sembrarArtefacto(omitidoEn, finalizadoEn, null);
+    }
+
+    private UUID sembrarArtefacto(Instant omitidoEn, Instant finalizadoEn, Instant canceladoEn) {
         var proyecto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, "Alfa", null, finalizadoEn));
+        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, "Alfa", null, finalizadoEn, canceladoEn));
         var documento = UtilUUID.generarNuevoUUID();
         entityManager.persist(new VersionRepositorioArtefactoJpaEntity(
                 documento, "Anteproyecto", 1, UtilUUID.generarNuevoUUID(), "Repo Uno",
@@ -199,6 +203,23 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
     }
 
     @Test
+    void debeMarcarProyectoFinalizado_cuandoElProyectoEstaCancelado() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(sembrarArtefacto(null, null, Instant.parse("2026-11-03T10:00:00Z")), 1);
+        confirmarSiembra();
+
+        // Act
+        var resultado = accesoAdapter.obtenerArchivoPorId(version);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(archivo -> {
+            assertThat(archivo.nombreProyecto()).isEqualTo("Alfa");
+            assertThat(archivo.proyectoFinalizado()).isTrue();
+        });
+    }
+
+    @Test
     void debeMarcarNoFinalizado_cuandoFinalizadoEnEsNulo() {
         // Arrange
         sembrarAsesorYEstados();
@@ -256,5 +277,24 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
         assertThat(vinculado).isTrue();
         assertThat(noVinculado).isFalse();
         assertThat(versionAjena).isFalse();
+    }
+
+    @Test
+    void debeRetornarIndicadoresDeCierre_cuandoElProyectoEstaCancelado() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var cancelada = sembrarVersion(sembrarArtefacto(null, null, Instant.parse("2026-11-03T10:00:00Z")), 1);
+        var activa = sembrarVersion(sembrarArtefacto(null), 1);
+        confirmarSiembra();
+
+        // Act
+        var deCancelado = detalleAdapter.consultarPorId(cancelada);
+        var deActivo = detalleAdapter.consultarPorId(activa);
+
+        // Assert
+        assertThat(deCancelado.proyectoCancelado()).isTrue();
+        assertThat(deCancelado.proyectoFinalizado()).isFalse();
+        assertThat(deActivo.proyectoCancelado()).isFalse();
+        assertThat(deActivo.proyectoFinalizado()).isFalse();
     }
 }

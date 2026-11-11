@@ -20,7 +20,13 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADO_DETALLE("entregables.dominio.proyectogrado.error.no-encontrado-detalle", 1),
     ERROR_ESTUDIANTE_NO_PERTENECE("entregables.dominio.proyectogrado.error.estudiante-no-pertenece", 0),
     ERROR_ESTUDIANTE_NO_PERTENECE_DETALLE(
-            "entregables.dominio.proyectogrado.error.estudiante-no-pertenece-detalle", 2);
+            "entregables.dominio.proyectogrado.error.estudiante-no-pertenece-detalle", 2),
+    ERROR_CANCELADO("entregables.dominio.proyectogrado.error.cancelado", 1),
+    ERROR_CANCELADO_DETALLE("entregables.dominio.proyectogrado.error.cancelado-detalle", 1),
+    LOG_CANCELACION_RECIBIDA("entregables.infraestructura.proyectogrado.log.cancelacion-recibida", 2),
+    LOG_VERIFICACION_CANCELAR("entregables.aplicacion.proyectogrado.log.verificacion-cancelar", 2),
+    LOG_CANCELADO("entregables.aplicacion.proyectogrado.log.cancelado", 1),
+    LOG_YA_CANCELADO("entregables.aplicacion.proyectogrado.log.ya-cancelado", 1);
 
     private final String clave;
     private final int parametros;
