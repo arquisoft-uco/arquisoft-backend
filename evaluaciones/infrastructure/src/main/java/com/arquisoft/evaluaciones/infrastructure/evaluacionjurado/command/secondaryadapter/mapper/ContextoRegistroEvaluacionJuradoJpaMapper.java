@@ -10,6 +10,7 @@ public final class ContextoRegistroEvaluacionJuradoJpaMapper {
     public static ContextoRegistroEvaluacionJuradoEntity toEntity(
             ContextoRegistroEvaluacionJuradoProjection proyeccion) {
         return new ContextoRegistroEvaluacionJuradoEntity(
-                proyeccion.getId(), proyeccion.getEvaluacion(), proyeccion.getEstado(), proyeccion.getEntregable());
+                proyeccion.getId(), proyeccion.getEvaluacion(), proyeccion.getEstado(), proyeccion.getEntregable(),
+                proyeccion.getJurado());
     }
 }
