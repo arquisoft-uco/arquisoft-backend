@@ -392,6 +392,7 @@
               "entregables:entregable-proyecto-grado-asesor:view",
               "entregables:artefacto-entregable:view",
               "entregables:paquete-entregable:download",
+              "entregables:estado-entregable-proyecto-grado:view",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
@@ -1297,6 +1298,15 @@
         {
           "id": "2dce97b6-1297-43ef-9726-2435b50fafa7",
           "name": "entregables:paquete-entregable:download",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7c1e5a42-93d8-4b6f-a0e7-2f4d8b6c1a95",
+          "name": "entregables:estado-entregable-proyecto-grado:view",
           "description": "",
           "composite": false,
           "clientRole": true,
