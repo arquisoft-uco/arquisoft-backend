@@ -57,6 +57,7 @@
           "client": {
             "arquisoft-api": [
               "proyectos:proyecto-grado-cancelacion:update",
+              "proyectos:historial-estado-proyecto-grado:view",
               "solicitudes:respuesta-cambio-asesor:delete",
               "solicitudes:respuesta-ampliacion-plazo:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
@@ -379,6 +380,7 @@
           "client": {
             "arquisoft-api": [
               "proyectos:proyecto-grado-estado:update",
+              "proyectos:historial-estado-proyecto-grado:view",
               "mapas-ruta:tarea-mapa-ruta-asesor:view",
               "mapas-ruta:plan-estimado-proyecto-asesor:view",
               "mapas-ruta:plan-estimado-asesor:update",
@@ -2384,6 +2386,15 @@
         {
           "id": "3556052a-10a9-4e3d-bc6a-9a21649a92ea",
           "name": "fichas:estado-ficha-perfil-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7862bd52-44f0-493a-be04-70753494ef4c",
+          "name": "proyectos:historial-estado-proyecto-grado:view",
           "description": "",
           "composite": false,
           "clientRole": true,
