@@ -170,7 +170,8 @@ public final class ProyectosApiMessages {
         public static final String CONSULTAR_SUMMARY = "Consultar los estados del proyecto de grado";
         public static final String CONSULTAR_DESCRIPTION =
                 "Permite al estudiante vinculado a un proyecto de grado consultar el historial de estados por los "
-                        + "que ha pasado, ordenado por fecha de actualización de la más reciente a la más antigua";
+                        + "que ha pasado, ordenado por fecha de actualización de la más reciente a la más antigua. "
+                        + "El estado de cancelación incluye el motivo con que se canceló el proyecto";
         public static final String CONSULTAR_RESP_200 = "Historial de estados del proyecto de grado";
         public static final String CONSULTAR_RESP_400 = "Identificador de proyecto de grado inválido";
         public static final String CONSULTAR_RESP_403 =
