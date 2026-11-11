@@ -97,6 +97,8 @@ public final class ProyectosCodes {
         public static final String ESTADO_PROYECTO_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTADO_PROYECTO_REQUERIDO";
         public static final String MOTIVO_REQUERIDO = "ESTADO_PROYECTO_GRADO_MOTIVO_REQUERIDO";
         public static final String MOTIVO_LONGITUD_MAXIMA = "ESTADO_PROYECTO_GRADO_MOTIVO_LONGITUD_MAXIMA";
+        public static final String USUARIO_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_USUARIO_ID_REQUERIDO";
+        public static final String USUARIO_SIN_ACCESO = "ESTADO_PROYECTO_GRADO_USUARIO_SIN_ACCESO";
     }
 
     public static final class EstadoProyecto {

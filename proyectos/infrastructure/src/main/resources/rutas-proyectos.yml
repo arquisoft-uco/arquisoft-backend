@@ -14,6 +14,7 @@ rutas:
       asesores: /{proyectoGradoId}/asesores
       asesores-asignados: /{proyectoGradoId}/asesores-asignados
       estados: /{proyectoGradoId}/estados
+      historial-estados: /{proyectoGradoId}/historial-estados
       estudiante: /{proyectoGradoId}/estudiantes/{estudianteId}
       proyectos-estudiante: /estudiante
       asesores-actuales: /estudiante/asesores-actuales

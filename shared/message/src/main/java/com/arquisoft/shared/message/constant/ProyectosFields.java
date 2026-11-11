@@ -86,6 +86,7 @@ public final class ProyectosFields {
         public static final String ESTADO_PROYECTO = "estadoProyecto";
         public static final String ESTUDIANTE = "estudiante";
         public static final String MOTIVO = "motivo";
+        public static final String USUARIO = "usuario";
     }
 
     public static final class AsesorProyectoGrado {

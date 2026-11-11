@@ -97,6 +97,7 @@ security:
         - {method: PATCH, path: "/api/proyectos-grado/{proyectoGradoId}/cancelacion", role: "proyectos:proyecto-grado-cancelacion:update"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/companeros", role: "proyectos:estudiante-proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/estados", role: "proyectos:estado-proyecto-grado-estudiante:view"}
+        - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/historial-estados", role: "proyectos:historial-estado-proyecto-grado:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/estudiantes", role: "proyectos:estudiante-proyecto-grado-coordinador:view"}
         - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/estudiantes", role: "proyectos:estudiante-proyecto-grado:create"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/estudiantes-asesorados", role: "proyectos:estudiante-proyecto-grado-asesor:view"}

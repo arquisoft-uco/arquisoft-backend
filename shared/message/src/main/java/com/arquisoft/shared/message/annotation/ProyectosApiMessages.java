@@ -178,6 +178,18 @@ public final class ProyectosApiMessages {
                 "Sin permiso para consultar los estados de un proyecto de grado";
         public static final String CONSULTAR_RESP_422 =
                 "Proyecto de grado no encontrado o estudiante no vinculado a él";
+
+        public static final String HISTORIAL_SUMMARY = "Consultar los estados de un proyecto de grado";
+        public static final String HISTORIAL_DESCRIPTION =
+                "Permite al coordinador del proyecto de grado o a su asesor asignado consultar el historial de "
+                        + "estados por los que ha pasado, ordenado por fecha de actualización de la más reciente a la "
+                        + "más antigua. El estado de cancelación incluye el motivo con que se canceló el proyecto";
+        public static final String HISTORIAL_RESP_200 = "Historial de estados del proyecto de grado";
+        public static final String HISTORIAL_RESP_400 = "Identificador de proyecto de grado inválido";
+        public static final String HISTORIAL_RESP_403 =
+                "Sin permiso para consultar los estados de un proyecto de grado";
+        public static final String HISTORIAL_RESP_422 =
+                "Proyecto de grado no encontrado o usuario que no es su coordinador ni su asesor asignado";
     }
 
     public static final class ConsultaEstadoAsesor {
