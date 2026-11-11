@@ -49,7 +49,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = EstadoEntregable.class, mode = EnumSource.Mode.INCLUDE, names = {"DISPONIBLE_EVALUACION"})
+    @EnumSource(value = EstadoEntregable.class, mode = EnumSource.Mode.INCLUDE, names = {"DISPONIBLE_EVALUACION", "RECHAZADO"})
     void debePasar_cuandoCancelaDesdeDisponibleEvaluacion(EstadoEntregable origen) {
         // Arrange
         var cambio = cambio("CANCELADO");
@@ -62,7 +62,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
 
     @ParameterizedTest
     @CsvSource({
-            "CERRADO,CANCELADO", "CERRADO,CERRADO", "CERRADO,RECHAZADO", "RECHAZADO,CANCELADO", "RECHAZADO,CERRADO",
+            "CERRADO,CANCELADO", "CERRADO,CERRADO", "CERRADO,RECHAZADO",
             "CANCELADO,CANCELADO", "CANCELADO,CERRADO", "CANCELADO,RECHAZADO"})
     void debeLanzarTerminal_cuandoElEntregableEsTerminal(EstadoEntregable origen, String destino) {
         // Arrange
@@ -87,12 +87,13 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
                 .isInstanceOf(EstadoEntregableTerminalException.class);
     }
 
-    @Test
-    void debePasar_cuandoCierraDesdeAprobado() {
+    @ParameterizedTest
+    @EnumSource(value = EstadoEntregable.class, names = {"APROBADO", "RECHAZADO"})
+    void debePasar_cuandoCierraDesdeAprobadoORechazado(EstadoEntregable origen) {
         // Arrange
         var cambio = cambio("CERRADO");
         var entregable = entregable();
-        var estado = estado(EstadoEntregable.APROBADO);
+        var estado = estado(origen);
 
         // Act & Assert
         assertThatCode(() -> validator.validar(cambio, entregable, estado, PROYECTO)).doesNotThrowAnyException();
@@ -209,7 +210,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
     }
 
     @Test
-    void debePriorizarTerminal_cuandoElEntregableEstaRechazadoYElDestinoEsInvalido() {
+    void debeLanzarDestinoNoPermitido_cuandoElEntregableEstaRechazadoYElDestinoEsOtro() {
         // Arrange
         var cambio = cambio("EN_EVALUACION");
         var entregable = entregable();
@@ -217,7 +218,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO))
-                .isInstanceOf(EstadoEntregableTerminalException.class);
+                .isInstanceOf(EstadoDestinoEntregableNoPermitidoException.class);
     }
 
     @ParameterizedTest

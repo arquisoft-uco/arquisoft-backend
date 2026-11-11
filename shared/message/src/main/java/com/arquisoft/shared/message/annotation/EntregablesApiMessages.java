@@ -41,8 +41,8 @@ public final class EntregablesApiMessages {
         public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un entregable de proyecto de grado";
         public static final String CAMBIAR_ESTADO_DESCRIPTION =
                 "El asesor cambia el estado de un entregable a Cancelado o Cerrado. Solo puede cancelarse un entregable "
-                        + "Disponible Evaluación y solo puede cerrarse uno Aprobado o Aprobado Con Observaciones. "
-                        + "Cerrado, Cancelado y Rechazado son estados terminales";
+                        + "Disponible Evaluación o Rechazado y solo puede cerrarse uno Aprobado, Aprobado Con Observaciones "
+                        + "o Rechazado. Cerrado y Cancelado son los únicos estados terminales";
         public static final String CAMBIAR_ESTADO_RESP_204 = "Estado del entregable cambiado";
         public static final String CAMBIAR_ESTADO_RESP_400 =
                 "El identificador del entregable no es un UUID válido o el estado viene vacío";

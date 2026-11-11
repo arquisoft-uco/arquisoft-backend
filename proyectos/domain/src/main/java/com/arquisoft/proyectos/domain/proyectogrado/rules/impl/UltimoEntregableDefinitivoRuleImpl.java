@@ -9,9 +9,7 @@ public class UltimoEntregableDefinitivoRuleImpl implements UltimoEntregableDefin
 
     @Override
     public void validar(EstadoUltimoEntregable ultimo) {
-        var definitivo = ultimo.estadoEntregable() == EstadoEntregable.CERRADO
-                || ultimo.estadoEntregable() == EstadoEntregable.RECHAZADO;
-        if (!definitivo) {
+        if (ultimo.estadoEntregable() != EstadoEntregable.CERRADO) {
             throw new UltimoEntregableNoDefinitivoException(ultimo.proyectoGrado(), ultimo.tituloProyecto(),
                     ultimo.version(), ultimo.estadoEntregable());
         }
