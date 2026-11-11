@@ -76,7 +76,7 @@ class ConsultarArtefactosEstudianteControllerTest {
         // Arrange
         var artefacto = new ArtefactoEstudianteReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto Alfa",
-                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", UtilUUID.generarNuevoUUID(), "Ana", false);
+                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", UtilUUID.generarNuevoUUID(), "Ana", false, true, false);
         when(consultarArtefactosEstudianteInteractor.ejecutar(any(ConsultarArtefactosEstudianteQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(artefacto), 0, 10, 1L));
         var body = """
@@ -100,6 +100,8 @@ class ConsultarArtefactosEstudianteControllerTest {
                 .andExpect(jsonPath("$.content[0].nombreDocumento").value("Documento"))
                 .andExpect(jsonPath("$.content[0].versionDocumento").value(2))
                 .andExpect(jsonPath("$.content[0].nombreRepositorio").value("Repositorio"))
+                .andExpect(jsonPath("$.content[0].proyectoFinalizado").value(true))
+                .andExpect(jsonPath("$.content[0].proyectoCancelado").value(false))
                 .andExpect(jsonPath("$.content[0].asesor").value(artefacto.asesor().toString()))
                 .andExpect(jsonPath("$.content[0].nombreAsesor").value("Ana"))
                 .andExpect(jsonPath("$.totalElements").value(1));

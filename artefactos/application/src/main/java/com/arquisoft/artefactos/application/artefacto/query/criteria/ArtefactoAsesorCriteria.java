@@ -15,7 +15,9 @@ public final class ArtefactoAsesorCriteria extends QueryCriteria {
         NOMBRE_DOCUMENTO              ("nombreDocumento",             true, true),
         VERSION_DOCUMENTO             ("versionDocumento",            true, true),
         NOMBRE_REPOSITORIO            ("nombreRepositorio",           true, true),
-        ASESOR_ID                     ("asesorId",                    true, false);
+        ASESOR_ID                     ("asesorId",                    true, false),
+        PROYECTO_FINALIZADO("proyectoFinalizado", true, false),
+        PROYECTO_CANCELADO("proyectoCancelado", true, false);
 
         private final String  clave;
         private final boolean filtrable;
