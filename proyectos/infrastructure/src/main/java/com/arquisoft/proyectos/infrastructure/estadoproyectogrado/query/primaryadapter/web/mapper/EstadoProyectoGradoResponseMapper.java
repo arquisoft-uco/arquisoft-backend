@@ -12,6 +12,7 @@ public final class EstadoProyectoGradoResponseMapper {
                 readModel.id(),
                 readModel.estadoProyecto(),
                 readModel.estadoProyectoNombre(),
-                readModel.fechaActualizacion());
+                readModel.fechaActualizacion(),
+                readModel.motivo());
     }
 }

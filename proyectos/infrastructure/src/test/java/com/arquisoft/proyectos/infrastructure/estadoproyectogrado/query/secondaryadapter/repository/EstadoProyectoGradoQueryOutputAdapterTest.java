@@ -19,6 +19,7 @@ class EstadoProyectoGradoQueryOutputAdapterTest {
 
     private static final String EN_PROCESO = "EN_PROCESO";
     private static final String ATRASADO = "ATRASADO";
+    private static final String CANCELADO = "CANCELADO";
 
     @Autowired
     private EstadoProyectoGradoQueryRepository repository;
@@ -33,11 +34,16 @@ class EstadoProyectoGradoQueryOutputAdapterTest {
         adapter = new EstadoProyectoGradoQueryOutputAdapter(repository);
         entityManager.persist(new EstadoProyectoFixtureJpaEntity(EN_PROCESO, "En proceso", "En desarrollo"));
         entityManager.persist(new EstadoProyectoFixtureJpaEntity(ATRASADO, "Atrasado", "Con retraso"));
+        entityManager.persist(new EstadoProyectoFixtureJpaEntity(CANCELADO, "Cancelado", "Proyecto cancelado"));
+    }
+
+    private UUID registrar(UUID id, UUID proyectoGrado, String estado, String fecha, String motivo) {
+        entityManager.persist(new EstadoProyectoGradoJpaEntity(id, proyectoGrado, estado, Instant.parse(fecha), motivo));
+        return id;
     }
 
     private UUID registrar(UUID id, UUID proyectoGrado, String estado, String fecha) {
-        entityManager.persist(new EstadoProyectoGradoJpaEntity(id, proyectoGrado, estado, Instant.parse(fecha), null));
-        return id;
+        return registrar(id, proyectoGrado, estado, fecha, null);
     }
 
     private UUID registrar(UUID proyectoGrado, String estado, String fecha) {
@@ -102,6 +108,36 @@ class EstadoProyectoGradoQueryOutputAdapterTest {
 
         // Assert
         assertThat(resultado).extracting(r -> r.id()).containsExactly(propio);
+    }
+
+    @Test
+    void debeProyectarMotivo_cuandoLaFilaEsCancelada() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        registrar(UtilUUID.generarNuevoUUID(), proyectoGrado, CANCELADO, "2026-10-06T10:00:00Z", "Falta de avance");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorProyecto(proyectoGrado);
+
+        // Assert
+        assertThat(resultado.getFirst().motivo()).isEqualTo("Falta de avance");
+    }
+
+    @Test
+    void debeProyectarMotivoNulo_cuandoElEstadoNoEsCancelado() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        registrar(proyectoGrado, EN_PROCESO, "2026-10-05T10:00:00Z");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorProyecto(proyectoGrado);
+
+        // Assert
+        assertThat(resultado.getFirst().motivo()).isNull();
     }
 
     @Test
