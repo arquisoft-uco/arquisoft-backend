@@ -9,7 +9,9 @@ public class TransicionEstadoProyectoPermitidaRuleImpl implements TransicionEsta
 
     @Override
     public void validar(TransicionEstadoProyecto transicion) {
-        if (transicion.actual() != EstadoProyecto.EN_PROCESO || transicion.nuevo() != EstadoProyecto.FINALIZADO) {
+        var origenPermitido = transicion.actual() == EstadoProyecto.EN_PROCESO
+                || transicion.actual() == EstadoProyecto.ATRASADO;
+        if (!origenPermitido || transicion.nuevo() != EstadoProyecto.FINALIZADO) {
             throw new TransicionEstadoProyectoNoPermitidaException(transicion.proyectoGrado(),
                     transicion.tituloProyecto(), transicion.actual(), transicion.nuevo());
         }

@@ -32,6 +32,9 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     private final EstadoProyectoGradoDomain finalizado = EstadoProyectoGradoDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), proyecto.getId(), EstadoProyecto.FINALIZADO,
             UtilFecha.generarInstanteActual(), null);
+    private final EstadoProyectoGradoDomain atrasado = EstadoProyectoGradoDomain.reconstruir(
+            UtilUUID.generarNuevoUUID(), proyecto.getId(), EstadoProyecto.ATRASADO,
+            UtilFecha.generarInstanteActual(), null);
     private final CambioEstadoProyectoGradoDomain cambio = CambioEstadoProyectoGradoDomain.crear(
             proyecto.getId(), UtilUUID.generarNuevoUUID(), "FINALIZADO");
 
@@ -48,11 +51,19 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     }
 
     @Test
-    void debePasar_cuandoElUltimoEstaRechazado() {
+    void debePasar_cuandoElProyectoEstaAtrasado() {
         // Act & Assert
-        assertThatCode(() -> validator.validar(
-                cambio, proyecto, enProceso, true, entregable(EstadoEntregable.RECHAZADO)))
+        assertThatCode(() -> validator.validar(cambio, proyecto, atrasado, true,
+                entregable(EstadoEntregable.CERRADO)))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarUltimoNoDefinitivo_cuandoElUltimoEstaRechazado() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cambio, proyecto, enProceso, true, entregable(EstadoEntregable.RECHAZADO)))
+                .isInstanceOf(UltimoEntregableNoDefinitivoException.class);
     }
 
     @Test
