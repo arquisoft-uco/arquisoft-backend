@@ -50,10 +50,16 @@ public final class EntregablesApiMessages {
                 "El entregable no existe, el estado no existe, la transición no está permitida o el entregable ya es terminal";
         public static final String CONSULTAR_ASESOR_SUMMARY =
                 "Filtrar los entregables generados del asesor autenticado";
+        private static final String INDICADORES_CIERRE =
+                ". Cada elemento indica con proyectoFinalizado y proyectoCancelado si su proyecto de grado terminó. "
+                        + "Por defecto solo salen los entregables de proyectos activos; el filtro proyectoFinalizado "
+                        + "(operador ES, valor true o false, dentro de filtros) con true devuelve solo los de proyectos "
+                        + "finalizados. Los de proyectos cancelados nunca salen";
+
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "El asesor lista, de forma paginada, solo los entregables generados que son suyos y los filtra por "
                         + "proyecto de grado y estado, entre otros campos. Cada elemento trae la versión, el proyecto, "
-                        + "el asesor y el estado";
+                        + "el asesor y el estado" + INDICADORES_CIERRE;
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de entregables de proyecto de grado";
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Un campo de filtro u orden no es válido, un operador no aplica al campo, un identificador no es un UUID "
@@ -62,7 +68,7 @@ public final class EntregablesApiMessages {
         public static final String CONSULTAR_JURADO_DESCRIPTION =
                 "El jurado lista, de forma paginada, los entregables disponibles para evaluación o en evaluación y los "
                         + "filtra por proyecto de grado, asesor y estado, entre otros campos. Cada elemento trae la versión, "
-                        + "el proyecto, el asesor y el estado";
+                        + "el proyecto, el asesor y el estado" + INDICADORES_CIERRE;
         public static final String CONSULTAR_JURADO_RESP_200 = "Página de entregables de proyecto de grado por evaluar";
         public static final String CONSULTAR_JURADO_RESP_400 =
                 "Un campo de filtro u orden no es válido, un operador no aplica al campo, un identificador no es un UUID "
@@ -71,7 +77,7 @@ public final class EntregablesApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "El estudiante lista, de forma paginada, los entregables de un proyecto de grado al que pertenece y los "
                         + "filtra por asesor y estado, entre otros campos. Cada elemento trae la versión, el proyecto, "
-                        + "el asesor y el estado";
+                        + "el asesor y el estado" + INDICADORES_CIERRE;
         public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Página de entregables del proyecto de grado";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
                 "Un campo de filtro u orden no es válido, un operador no aplica al campo, un identificador no es un UUID "
@@ -122,11 +128,12 @@ public final class EntregablesApiMessages {
         public static final String DESCARGAR_DESCRIPTION =
                 "El asesor del entregable o un estudiante vigente del proyecto obtiene un enlace firmado y temporal "
                         + "para descargar el paquete ZIP del entregable, que reúne la última versión cerrada de cada "
-                        + "artefacto y un manifiesto";
+                        + "artefacto y un manifiesto. Con el proyecto finalizado se descarga el paquete del entregable cerrado";
         public static final String DESCARGAR_RESP_200 = "Enlace de descarga firmado y su fecha de expiración";
         public static final String DESCARGAR_RESP_400 = "El identificador del entregable no es un UUID válido";
         public static final String DESCARGAR_RESP_422 =
-                "El entregable no existe, el solicitante no tiene acceso, el paquete aún está en preparación o el entregable fue cancelado";
+                "El entregable no existe, el solicitante no tiene acceso, el paquete aún está en preparación, "
+                        + "el entregable fue cancelado o el proyecto de grado fue cancelado";
         public static final String DESCARGAR_RESP_503 = "El servicio de almacenamiento no está disponible";
     }
 }

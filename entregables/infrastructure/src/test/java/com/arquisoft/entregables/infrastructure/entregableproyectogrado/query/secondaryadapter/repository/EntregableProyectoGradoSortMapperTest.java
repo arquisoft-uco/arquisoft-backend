@@ -22,6 +22,8 @@ class EntregableProyectoGradoSortMapperTest {
         assertThat(EntregableProyectoGradoSortMapper.traducir("proyectoGradoId")).isNull();
         assertThat(EntregableProyectoGradoSortMapper.traducir("asesorId")).isNull();
         assertThat(EntregableProyectoGradoSortMapper.traducir("estadoEntregable")).isNull();
+        assertThat(EntregableProyectoGradoSortMapper.traducir("proyectoFinalizado")).isNull();
+        assertThat(EntregableProyectoGradoSortMapper.traducir("proyectoCancelado")).isNull();
         assertThat(EntregableProyectoGradoSortMapper.traducir("inexistente")).isNull();
     }
 

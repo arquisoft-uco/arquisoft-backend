@@ -45,9 +45,9 @@ class ConsultarEntregablesProyectoGradoJuradoInteractorImplTest {
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getPagina()).isEqualTo(1);
         assertThat(captor.getValue().getTamanio()).isEqualTo(20);
-        assertThat(captor.getValue().getRaiz()).isInstanceOf(NodoFiltro.PredicadoMultivalor.class);
-        assertThat(((NodoFiltro.PredicadoMultivalor) captor.getValue().getRaiz()).operador())
-                .isEqualTo(FiltroOperador.IN);
+        assertThat(captor.getValue().getRaiz()).isInstanceOfSatisfying(NodoFiltro.Grupo.class, grupo ->
+                assertThat(grupo.nodos().get(0)).isInstanceOfSatisfying(NodoFiltro.PredicadoMultivalor.class,
+                        multivalor -> assertThat(multivalor.operador()).isEqualTo(FiltroOperador.IN)));
         assertThat(resultado).isSameAs(esperado);
     }
 }

@@ -21,6 +21,8 @@ public final class EntregableProyectoGradoResponseMapper {
                 new EntregableProyectoGradoResponseDTO.EstadoEntregableResponseDTO(
                         readModel.estadoEntregable().id(),
                         readModel.estadoEntregable().nombre(),
-                        readModel.estadoEntregable().fechaActualizacion()));
+                        readModel.estadoEntregable().fechaActualizacion()),
+                readModel.proyectoFinalizado(),
+                readModel.proyectoCancelado());
     }
 }

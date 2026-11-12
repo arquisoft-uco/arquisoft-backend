@@ -77,7 +77,7 @@ class ConsultarEntregablesProyectoGradoJuradoControllerTest {
                 new EntregableProyectoGradoReadModel.ProyectoGradoResumen(UtilUUID.generarNuevoUUID(), "Proyecto"),
                 new EntregableProyectoGradoReadModel.AsesorResumen(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co"),
                 new EntregableProyectoGradoReadModel.EstadoEntregableResumen("EN_EVALUACION", "En evaluacion",
-                        Instant.parse("2026-11-10T10:00:00Z")));
+                        Instant.parse("2026-11-10T10:00:00Z")), true, false);
         when(interactor.ejecutar(any(ConsultaCriteriaQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(readModel), 0, 10, 1L));
 
@@ -90,7 +90,9 @@ class ConsultarEntregablesProyectoGradoJuradoControllerTest {
                 .andExpect(jsonPath("$.content[0].proyectoGrado.nombre").value("Proyecto"))
                 .andExpect(jsonPath("$.content[0].asesor.email").value("ana@uco.edu.co"))
                 .andExpect(jsonPath("$.content[0].estadoEntregable.fechaActualizacion").value("2026-11-10T10:00:00Z"))
-                .andExpect(jsonPath("$.content[0].estadoEntregable.id").value("EN_EVALUACION"));
+                .andExpect(jsonPath("$.content[0].estadoEntregable.id").value("EN_EVALUACION"))
+                .andExpect(jsonPath("$.content[0].proyectoFinalizado").value(true))
+                .andExpect(jsonPath("$.content[0].proyectoCancelado").value(false));
     }
 
     @Test

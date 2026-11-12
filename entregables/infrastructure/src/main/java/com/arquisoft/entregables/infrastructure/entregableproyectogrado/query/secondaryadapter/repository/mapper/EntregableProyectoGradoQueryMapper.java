@@ -21,6 +21,8 @@ public final class EntregableProyectoGradoQueryMapper {
                 new EntregableProyectoGradoReadModel.EstadoEntregableResumen(
                         entity.getEstadoId(),
                         entity.getEstadoNombre(),
-                        entity.getEstadoFechaActualizacion()));
+                        entity.getEstadoFechaActualizacion()),
+                entity.isProyectoFinalizado(),
+                entity.isProyectoCancelado());
     }
 }

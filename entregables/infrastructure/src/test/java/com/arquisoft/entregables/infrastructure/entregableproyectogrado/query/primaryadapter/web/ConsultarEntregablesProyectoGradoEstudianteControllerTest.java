@@ -86,7 +86,7 @@ class ConsultarEntregablesProyectoGradoEstudianteControllerTest {
                 new EntregableProyectoGradoReadModel.ProyectoGradoResumen(proyecto, "Proyecto"),
                 new EntregableProyectoGradoReadModel.AsesorResumen(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co"),
                 new EntregableProyectoGradoReadModel.EstadoEntregableResumen("APROBADO", "Aprobado",
-                        Instant.parse("2026-11-10T10:00:00Z")));
+                        Instant.parse("2026-11-10T10:00:00Z")), true, false);
         when(interactor.ejecutar(any(ConsultarEntregablesProyectoGradoEstudianteQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(readModel), 0, 10, 1L));
 
@@ -99,7 +99,9 @@ class ConsultarEntregablesProyectoGradoEstudianteControllerTest {
                 .andExpect(jsonPath("$.content[0].proyectoGrado.nombre").value("Proyecto"))
                 .andExpect(jsonPath("$.content[0].asesor.email").value("ana@uco.edu.co"))
                 .andExpect(jsonPath("$.content[0].estadoEntregable.fechaActualizacion").value("2026-11-10T10:00:00Z"))
-                .andExpect(jsonPath("$.content[0].estadoEntregable.id").value("APROBADO"));
+                .andExpect(jsonPath("$.content[0].estadoEntregable.id").value("APROBADO"))
+                .andExpect(jsonPath("$.content[0].proyectoFinalizado").value(true))
+                .andExpect(jsonPath("$.content[0].proyectoCancelado").value(false));
         var captor = ArgumentCaptor.forClass(ConsultarEntregablesProyectoGradoEstudianteQuery.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().estudiante()).isEqualTo(estudiante);
