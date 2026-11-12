@@ -8,7 +8,9 @@ public record EntregableProyectoGradoResponseDTO(
         int versionEntregable,
         ProyectoGradoResponseDTO proyectoGrado,
         AsesorResponseDTO asesor,
-        EstadoEntregableResponseDTO estadoEntregable
+        EstadoEntregableResponseDTO estadoEntregable,
+        boolean proyectoFinalizado,
+        boolean proyectoCancelado
 ) {
 
     public record ProyectoGradoResponseDTO(UUID id, String nombre) {

@@ -19,6 +19,7 @@ class EntregableProyectoGradoQueryMapperTest {
                 .proyectoGradoId(proyecto).proyectoGradoNombre("Proyecto")
                 .asesorId(asesor).asesorNombre("Ana").asesorEmail("ana@uco.edu.co")
                 .estadoId("APROBADO").estadoNombre("Aprobado")
+                .proyectoFinalizado(true).proyectoCancelado(false)
                 .build();
 
         // Act
@@ -34,5 +35,7 @@ class EntregableProyectoGradoQueryMapperTest {
         assertThat(readModel.asesor().email()).isEqualTo("ana@uco.edu.co");
         assertThat(readModel.estadoEntregable().id()).isEqualTo("APROBADO");
         assertThat(readModel.estadoEntregable().nombre()).isEqualTo("Aprobado");
+        assertThat(readModel.proyectoFinalizado()).isTrue();
+        assertThat(readModel.proyectoCancelado()).isFalse();
     }
 }

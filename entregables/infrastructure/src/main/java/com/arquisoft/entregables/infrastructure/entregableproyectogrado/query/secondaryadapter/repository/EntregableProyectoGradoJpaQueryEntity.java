@@ -26,7 +26,9 @@ import java.util.UUID;
                a.email                              AS asesor_email,
                s.id                                 AS estado_id,
                s.nombre                             AS estado_nombre,
-               eepg.fecha_actualizacion             AS estado_fecha_actualizacion
+               eepg.fecha_actualizacion             AS estado_fecha_actualizacion,
+               (p.estado_proyecto_id = 'FINALIZADO') AS proyecto_finalizado,
+               (p.estado_proyecto_id = 'CANCELADO')  AS proyecto_cancelado
         FROM entregable_proyecto_grado e
                  JOIN proyecto_grado p ON p.id = e.proyecto_grado_id
                  JOIN asesor a ON a.id = e.asesor_id
@@ -74,4 +76,10 @@ public class EntregableProyectoGradoJpaQueryEntity {
 
     @Column(name = "estado_fecha_actualizacion")
     private Instant estadoFechaActualizacion;
+
+    @Column(name = "proyecto_finalizado")
+    private boolean proyectoFinalizado;
+
+    @Column(name = "proyecto_cancelado")
+    private boolean proyectoCancelado;
 }

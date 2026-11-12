@@ -20,7 +20,7 @@ class EntregableProyectoGradoResponseMapperTest {
                 new EntregableProyectoGradoReadModel.ProyectoGradoResumen(proyecto, "Proyecto"),
                 new EntregableProyectoGradoReadModel.AsesorResumen(asesor, "Ana", "ana@uco.edu.co"),
                 new EntregableProyectoGradoReadModel.EstadoEntregableResumen("APROBADO", "Aprobado",
-                        Instant.parse("2026-11-10T10:00:00Z")));
+                        Instant.parse("2026-11-10T10:00:00Z")), true, false);
 
         // Act
         var dto = EntregableProyectoGradoResponseMapper.toResponse(readModel);
@@ -36,5 +36,7 @@ class EntregableProyectoGradoResponseMapperTest {
         assertThat(dto.estadoEntregable().id()).isEqualTo("APROBADO");
         assertThat(dto.estadoEntregable().nombre()).isEqualTo("Aprobado");
         assertThat(dto.estadoEntregable().fechaActualizacion()).isEqualTo(Instant.parse("2026-11-10T10:00:00Z"));
+        assertThat(dto.proyectoFinalizado()).isTrue();
+        assertThat(dto.proyectoCancelado()).isFalse();
     }
 }

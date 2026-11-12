@@ -105,6 +105,27 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
     }
 
     @Test
+    void debeNoMarcarProyectoCancelado_cuandoElProyectoEstaFinalizado() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Proyecto").estadoProyectoId("FINALIZADO").build());
+        entityManager.persist(AsesorJpaEntity.builder()
+                .id(asesor).identificador("ID-F").nombre("Asesor").email("f@uco.edu.co")
+                .ocurridoEn(Instant.parse("2026-01-01T00:00:00Z")).build());
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(entregable, proyecto, 2, asesor));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerAccesoPorId(entregable);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(acceso -> assertThat(acceso.proyectoCancelado()).isFalse());
+    }
+
+    @Test
     void debeRetornarVacioElAcceso_cuandoElEntregableNoExiste() {
         // Act
         var resultado = adapter.obtenerAccesoPorId(UtilUUID.generarNuevoUUID());

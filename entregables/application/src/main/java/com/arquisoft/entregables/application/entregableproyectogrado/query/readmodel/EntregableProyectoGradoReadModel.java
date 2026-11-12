@@ -8,7 +8,9 @@ public record EntregableProyectoGradoReadModel(
         int versionEntregable,
         ProyectoGradoResumen proyectoGrado,
         AsesorResumen asesor,
-        EstadoEntregableResumen estadoEntregable
+        EstadoEntregableResumen estadoEntregable,
+        boolean proyectoFinalizado,
+        boolean proyectoCancelado
 ) {
 
     public record ProyectoGradoResumen(UUID id, String nombre) {
