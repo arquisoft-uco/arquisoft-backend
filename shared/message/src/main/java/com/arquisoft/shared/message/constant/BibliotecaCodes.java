@@ -17,4 +17,11 @@ public final class BibliotecaCodes {
         public static final String EMAIL_REQUERIDO = "BIBLIOTECARIO_EMAIL_REQUERIDO";
         public static final String OCURRIDO_EN_REQUERIDO = "BIBLIOTECARIO_OCURRIDO_EN_REQUERIDO";
     }
+
+    public static final class EstadoDocumentacion {
+
+        private EstadoDocumentacion() {}
+
+        public static final String NO_ENCONTRADO = "ESTADO_DOCUMENTACION_NO_ENCONTRADO";
+    }
 }

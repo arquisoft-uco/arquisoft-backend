@@ -279,3 +279,5 @@ security:
         - {method: GET, path: "/api/entregables-proyecto-grado/{entregableProyectoGradoId}/artefactos", role: "entregables:artefacto-entregable:view"}
         - {method: GET, path: "/api/entregables/{entregableProyectoGradoId}/paquete", role: "entregables:paquete-entregable:download"}
         - {method: GET, path: "/api/entregables/{entregableProyectoGradoId}/estados", role: "entregables:estado-entregable-proyecto-grado:view"}
+        # biblioteca
+        - {method: GET, path: "/api/biblioteca/estados-documentacion", role: "biblioteca:estado-documentacion:view"}

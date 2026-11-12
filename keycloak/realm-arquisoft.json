@@ -277,7 +277,14 @@
         "id": "659943f9-e8a7-4578-8dcd-c1bcbcd1c993",
         "name": "bibliotecario",
         "description": "",
-        "composite": false,
+        "composite": true,
+        "composites": {
+          "client": {
+            "arquisoft-api": [
+              "biblioteca:estado-documentacion:view"
+            ]
+          }
+        },
         "clientRole": false,
         "containerId": "053aee0b-1eeb-4991-926a-dca686ac045b",
         "attributes": {}
@@ -1246,6 +1253,15 @@
         {
           "id": "62de902b-7e68-462d-bf78-285f621dc432",
           "name": "evaluaciones:item-cualitativo-jurado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "93c892ea-1fe2-463e-8498-6ef7f33c2ba1",
+          "name": "biblioteca:estado-documentacion:view",
           "description": "",
           "composite": false,
           "clientRole": true,
