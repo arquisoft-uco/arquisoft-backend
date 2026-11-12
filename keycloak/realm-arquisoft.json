@@ -383,6 +383,7 @@
               "proyectos:proyecto-grado-estado:update",
               "proyectos:historial-estado-proyecto-grado:view",
               "mapas-ruta:tarea-mapa-ruta-asesor:view",
+              "mapas-ruta:mapa-ruta-asesor:view",
               "mapas-ruta:plan-estimado-proyecto-asesor:view",
               "mapas-ruta:plan-estimado-asesor:update",
               "mapas-ruta:plan-real-proyecto-asesor:view",
@@ -1362,6 +1363,15 @@
         {
           "id": "220f4abb-0288-41d3-8446-9c9df46b1cbc",
           "name": "mapas-ruta:tarea-mapa-ruta-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5e8c1b7a-3d92-4f06-a4b8-7c1d2e9f0a63",
+          "name": "mapas-ruta:mapa-ruta-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
