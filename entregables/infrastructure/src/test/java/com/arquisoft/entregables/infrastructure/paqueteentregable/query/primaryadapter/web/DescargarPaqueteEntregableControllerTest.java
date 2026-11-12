@@ -4,7 +4,7 @@ import com.arquisoft.entregables.application.paqueteentregable.query.primaryport
 import com.arquisoft.entregables.application.paqueteentregable.query.primaryport.model.DescargarPaqueteEntregableQuery;
 import com.arquisoft.entregables.application.paqueteentregable.query.primaryport.model.RolConsultaPaqueteEntregable;
 import com.arquisoft.entregables.application.paqueteentregable.query.readmodel.EnlaceDescargaPaqueteEntregableReadModel;
-import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableEnPreparacionException;
+import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableNoDisponibleException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.message.constant.UsuariosRoles;
@@ -130,11 +130,11 @@ class DescargarPaqueteEntregableControllerTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(any(DescargarPaqueteEntregableQuery.class)))
-                .thenThrow(new PaqueteEntregableEnPreparacionException(entregable));
+                .thenThrow(new PaqueteEntregableNoDisponibleException(entregable));
 
         // Act & Assert
         mockMvc.perform(get(ruta(entregable.toString())).with(jwt(UtilUUID.generarNuevoUUID(), UsuariosRoles.ASESOR)))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.errorCode").value(EntregablesCodes.PaqueteEntregable.EN_PREPARACION));
+                .andExpect(jsonPath("$.errorCode").value(EntregablesCodes.PaqueteEntregable.NO_DISPONIBLE));
     }
 }

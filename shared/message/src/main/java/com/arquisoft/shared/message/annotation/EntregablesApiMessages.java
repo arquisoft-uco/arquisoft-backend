@@ -34,10 +34,14 @@ public final class EntregablesApiMessages {
         public static final String GENERAR_SUMMARY = "Generar un entregable de un proyecto de grado";
         public static final String GENERAR_DESCRIPTION =
                 "El asesor genera un nuevo entregable del proyecto de grado, que queda disponible para evaluación. "
-                        + "La versión es la siguiente a la del último entregable del proyecto y el asesor se toma del token";
+                        + "La versión es la siguiente a la del último entregable del proyecto y el asesor se toma del token. "
+                        + "El paquete ZIP con la última versión cerrada de cada artefacto vigente y su manifiesto queda armado al responder";
         public static final String GENERAR_RESP_201 = "Entregable generado; devuelve su identificador";
         public static final String GENERAR_RESP_400 = "El identificador del proyecto de grado no es un UUID válido";
-        public static final String GENERAR_RESP_422 = "El proyecto de grado no existe o el asesor no está vigente";
+        public static final String GENERAR_RESP_422 =
+                "El proyecto de grado no existe, el asesor no está vigente o el proyecto no tiene artefactos "
+                        + "con una revisión cerrada";
+        public static final String GENERAR_RESP_503 = "Falta el archivo de un artefacto en el almacenamiento";
         public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un entregable de proyecto de grado";
         public static final String CAMBIAR_ESTADO_DESCRIPTION =
                 "El asesor cambia el estado de un entregable a Cancelado o Cerrado. Solo puede cancelarse un entregable "
@@ -132,8 +136,23 @@ public final class EntregablesApiMessages {
         public static final String DESCARGAR_RESP_200 = "Enlace de descarga firmado y su fecha de expiración";
         public static final String DESCARGAR_RESP_400 = "El identificador del entregable no es un UUID válido";
         public static final String DESCARGAR_RESP_422 =
-                "El entregable no existe, el solicitante no tiene acceso, el paquete aún está en preparación, "
+                "El entregable no existe, el solicitante no tiene acceso, el paquete no está disponible, "
                         + "el entregable fue cancelado o el proyecto de grado fue cancelado";
         public static final String DESCARGAR_RESP_503 = "El servicio de almacenamiento no está disponible";
+    }
+
+    public static final class VistaPreviaPaquete {
+
+        private VistaPreviaPaquete() {}
+
+        public static final String TAG_NAME = "Vista previa del paquete";
+        public static final String TAG_DESCRIPTION = "Contenido que tendría el paquete del siguiente entregable de un proyecto de grado";
+        public static final String PARAM_PROYECTO_GRADO = "Identificador del proyecto de grado";
+        public static final String CONSULTAR_SUMMARY = "Ver la vista previa del paquete de un proyecto de grado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "El asesor consulta los artefactos vigentes del proyecto de grado, con la versión cerrada de cada uno, "
+                        + "que se empaquetarían al generar el siguiente entregable. Un proyecto sin artefactos devuelve cantidad cero";
+        public static final String CONSULTAR_RESP_200 = "Cantidad y lista de artefactos vigentes con su documento y versión";
+        public static final String CONSULTAR_RESP_400 = "El identificador del proyecto de grado no es un UUID válido";
     }
 }

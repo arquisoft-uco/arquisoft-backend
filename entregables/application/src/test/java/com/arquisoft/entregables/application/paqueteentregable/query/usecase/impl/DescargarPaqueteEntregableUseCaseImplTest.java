@@ -71,7 +71,7 @@ class DescargarPaqueteEntregableUseCaseImplTest {
         var estadoDomain = EstadoEntregableProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), entregable,
                 EstadoEntregable.DISPONIBLE_EVALUACION, Instant.now());
         var criteria = new DescargaPaqueteEntregableCriteria(entregable, actor, false, true);
-        var paquete = PaqueteEntregableDomain.crear(UtilUUID.generarNuevoUUID(), entregable, "bucket",
+        var paquete = PaqueteEntregableDomain.crear(entregable, "bucket",
                 "paquetes/x.zip", "p.zip", 10L, Instant.now());
         var enlace = new EnlaceDescargaPaqueteEntregableReadModel("https://url", Instant.now());
         when(entregableProyectoGradoAccesoQueryFinder.obtener(entregable)).thenReturn(entregableDomain);

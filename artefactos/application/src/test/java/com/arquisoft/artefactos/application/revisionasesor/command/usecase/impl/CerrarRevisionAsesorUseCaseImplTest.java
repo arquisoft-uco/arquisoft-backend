@@ -169,6 +169,14 @@ class CerrarRevisionAsesorUseCaseImplTest {
         var evento = captor.getValue();
         assertThat(evento.getDocumento()).isEqualTo("Anteproyecto");
         assertThat(evento.getNumeroVersion()).isEqualTo(3);
+        assertThat(evento.getProyectoGrado()).isEqualTo(artefacto.getProyectoGrado());
+        assertThat(evento.getArtefacto()).isEqualTo(artefacto.getId());
+        assertThat(evento.getVersionArtefacto()).isEqualTo(versionId);
+        assertThat(evento.getUriArchivo()).isEqualTo("uri");
+        assertThat(evento.getFechaVersion()).isEqualTo(version.getFechaCreacion());
+        assertThat(evento.getVersionRepositorioArtefacto()).isEqualTo(versionRepositorioId);
+        assertThat(evento.getRepositorio()).isEqualTo(versionRepositorio.getRepositorioArtefacto());
+        assertThat(evento.getNombreRepositorio()).isEqualTo(versionRepositorio.getNombreRepositorio());
         assertThat(evento.getAsesor().nombre()).isEqualTo("Ana Perez");
         assertThat(evento.getAsesor().email()).isEqualTo("ana@uco.edu.co");
         assertThat(evento.getEstudiantes()).hasSize(3);

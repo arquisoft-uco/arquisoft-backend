@@ -54,6 +54,9 @@ public class GenerarEntregableProyectoGradoController {
                     content = @Content),
             @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
                     description = EntregablesApiMessages.EntregableProyectoGrado.GENERAR_RESP_422,
+                    content = @Content),
+            @ApiResponse(responseCode = ApiCodes.SERVICE_UNAVAILABLE,
+                    description = EntregablesApiMessages.EntregableProyectoGrado.GENERAR_RESP_503,
                     content = @Content)
     })
     public ResponseEntity<GenerarEntregableProyectoGradoResponseDTO> generarEntregable(

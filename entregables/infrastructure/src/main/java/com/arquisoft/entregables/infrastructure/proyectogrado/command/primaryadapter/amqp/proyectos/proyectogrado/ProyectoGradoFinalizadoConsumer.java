@@ -1,11 +1,14 @@
 package com.arquisoft.entregables.infrastructure.proyectogrado.command.primaryadapter.amqp.proyectos.proyectogrado;
 
+import com.arquisoft.entregables.application.artefacto.command.primaryport.interactor.PurgarArtefactosProyectoGradoInteractor;
+import com.arquisoft.entregables.application.artefacto.command.primaryport.model.PurgarArtefactosProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.interactor.FinalizarProyectoGradoInteractor;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.model.FinalizarProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.result.FinalizacionProyectoGradoResult;
 import com.arquisoft.entregables.infrastructure.config.EntregablesProyectosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.entregables.ArtefactoKey;
 import com.arquisoft.shared.message.key.entregables.ProyectoGradoKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.rabbitmq.client.Channel;
@@ -21,15 +24,18 @@ import java.io.IOException;
 public class ProyectoGradoFinalizadoConsumer extends AbstractEventConsumer {
 
     private final FinalizarProyectoGradoInteractor finalizarProyectoGradoInteractor;
+    private final PurgarArtefactosProyectoGradoInteractor purgarArtefactosProyectoGradoInteractor;
     private final AppLogger logger;
 
     public ProyectoGradoFinalizadoConsumer(
             FinalizarProyectoGradoInteractor finalizarProyectoGradoInteractor,
+            PurgarArtefactosProyectoGradoInteractor purgarArtefactosProyectoGradoInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza, logger);
         this.finalizarProyectoGradoInteractor = finalizarProyectoGradoInteractor;
+        this.purgarArtefactosProyectoGradoInteractor = purgarArtefactosProyectoGradoInteractor;
         this.logger = logger;
     }
 
@@ -48,6 +54,10 @@ public class ProyectoGradoFinalizadoConsumer extends AbstractEventConsumer {
                 case FinalizacionProyectoGradoResult.Duplicado duplicado ->
                         logger.info(ProyectoGradoKey.LOG_YA_FINALIZADO, duplicado.proyectoGrado());
             }
+
+            var purgaArtefactos = purgarArtefactosProyectoGradoInteractor.ejecutar(
+                    PurgarArtefactosProyectoGradoCommand.crear(payload.proyectoGradoId()));
+            logger.info(ArtefactoKey.LOG_PURGADOS, purgaArtefactos.proyectoGrado(), purgaArtefactos.eliminadas());
         });
     }
 }

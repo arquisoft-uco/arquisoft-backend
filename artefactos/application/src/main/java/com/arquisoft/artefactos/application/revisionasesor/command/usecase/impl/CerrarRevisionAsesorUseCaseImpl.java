@@ -19,6 +19,7 @@ import com.arquisoft.artefactos.domain.revisionasesor.model.ContactoAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ContactoEstudiante;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ObservacionesParaCierre;
+import com.arquisoft.artefactos.domain.revisionasesor.model.VersionCerradaEvento;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.CerrarRevisionAsesorKey;
 import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
@@ -77,6 +78,10 @@ public class CerrarRevisionAsesorUseCaseImpl implements CerrarRevisionAsesorUseC
         eventPublisher.publish(new RevisionAsesorCerradaEvent(
                 versionRepositorio.getNombreDocumento(),
                 version.getNumeroVersion(),
+                new VersionCerradaEvento(
+                        artefacto.getProyectoGrado(), artefacto.getId(), version.getId(), version.getUriArchivo(),
+                        version.getFechaCreacion(), versionRepositorio.getId(),
+                        versionRepositorio.getRepositorioArtefacto(), versionRepositorio.getNombreRepositorio()),
                 new ContactoAsesor(asesor.getNombre(), asesor.getEmail()),
                 estudiantes.stream()
                         .map(estudiante -> new ContactoEstudiante(estudiante.getNombre(), estudiante.getEmail()))

@@ -3,7 +3,7 @@
 `configurar.sh` deja listos dos buckets, privados y creados si no existen: `repositorio-artefactos` (HU-275,
 `ciclo-vida-repositorio-artefactos.json`) y `artefactos` (HU-043, `ciclo-vida-artefactos.json`). Cada ciclo de
 vida expira a 1 día todo lo que quede bajo `pendientes/` (cargas que nunca se confirmaron o que se rechazaron).
-`versiones/` y `paquetes/` (HU-147-AJ1: ZIP congelado de cada entregable de proyecto de grado) no expiran: el ciclo de
+`versiones/` y, desde HT-023, los prefijos `entregables/artefactos/` (copia local de cada artefacto cerrado) y `entregables/paquetes/` (ZIP congelado de cada entregable de proyecto de grado, que arma el contexto `entregables` en este mismo bucket) no expiran: el ciclo de
 vida solo expira `pendientes/`, y `ciclo-vida-artefactos.json` no cambia. Los nombres salen de `BUCKET_REPOSITORIO_ARTEFACTOS` y `BUCKET_ARTEFACTOS`.
 
 Es idempotente y los buckets los crea este script, nunca el backend.

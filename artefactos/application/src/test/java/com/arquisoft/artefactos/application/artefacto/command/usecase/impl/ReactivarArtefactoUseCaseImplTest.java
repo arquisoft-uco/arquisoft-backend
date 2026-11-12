@@ -16,6 +16,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.finder.Tama
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.ReactivacionArtefactoDomain;
+import com.arquisoft.artefactos.domain.artefacto.event.ArtefactoReactivadoEvent;
 import com.arquisoft.artefactos.domain.artefacto.model.PesoArtefactoReactivable;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
@@ -26,6 +27,7 @@ import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.model.AlmacenamientoProyectoGrado;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,6 +87,9 @@ class ReactivarArtefactoUseCaseImplTest {
     @Mock
     private AsignarEstudiantesArtefactoUseCase asignarEstudiantesArtefactoUseCase;
     @Mock
+    private EventPublisher eventPublisher;
+
+    @Mock
     private AppLogger logger;
 
     @Captor
@@ -105,7 +110,7 @@ class ReactivarArtefactoUseCaseImplTest {
                 estudiantesVigentesVinculadosArtefactoFinder, versionRepositorioArtefactoPorIdFinder,
                 tamanoVigenteArtefactoFinder, proyectoGradoBloqueadoPorArtefactoFinder, cuotaProyectoGradoFinder,
                 tamanoVigenteProyectoGradoFinder, reactivarArtefactoValidator, artefactoOutputPort,
-                depurarEstudiantesArtefactoUseCase, asignarEstudiantesArtefactoUseCase, logger);
+                depurarEstudiantesArtefactoUseCase, asignarEstudiantesArtefactoUseCase, eventPublisher, logger);
         artefacto = UtilUUID.generarNuevoUUID();
         proyecto = UtilUUID.generarNuevoUUID();
         asesor = UtilUUID.generarNuevoUUID();
@@ -193,8 +198,33 @@ class ReactivarArtefactoUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(reactivacion))
                 .isInstanceOf(EstudiantesSuperanProyectoException.class);
         verify(artefactoOutputPort, never()).reactivar(any(), any());
+        verify(eventPublisher, never()).publish(any());
         verify(depurarEstudiantesArtefactoUseCase, never()).ejecutar(any());
         verify(asignarEstudiantesArtefactoUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debePublicarEventoConDatos_despuesDeReactivar() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var proyectoDelArtefacto = UtilUUID.generarNuevoUUID();
+        when(artefactoBloqueadoPorIdFinder.obtener(artefacto)).thenReturn(ArtefactoDomain.reconstruir(
+                artefacto, proyectoDelArtefacto, ArtefactoDomain.VACIO.getVersionRepositorioArtefacto(), asesor, null));
+        var reactivacion = ReactivacionArtefactoDomain.crear(artefacto, proyecto, asesor, List.of(estudiante));
+        when(estudiantesVigentesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of(estudiante));
+        when(estudiantesVigentesVinculadosArtefactoFinder.obtener(artefacto)).thenReturn(List.of(estudiante));
+
+        // Act
+        useCase.ejecutar(reactivacion);
+
+        // Assert
+        var orden = inOrder(artefactoOutputPort, eventPublisher, depurarEstudiantesArtefactoUseCase);
+        var captor = ArgumentCaptor.forClass(ArtefactoReactivadoEvent.class);
+        orden.verify(artefactoOutputPort).reactivar(artefacto, asesor);
+        orden.verify(eventPublisher).publish(captor.capture());
+        orden.verify(depurarEstudiantesArtefactoUseCase).ejecutar(any());
+        assertThat(captor.getValue().getArtefacto()).isEqualTo(artefacto);
+        assertThat(captor.getValue().getProyectoGrado()).isEqualTo(proyectoDelArtefacto).isNotEqualTo(proyecto);
     }
 
     @Test

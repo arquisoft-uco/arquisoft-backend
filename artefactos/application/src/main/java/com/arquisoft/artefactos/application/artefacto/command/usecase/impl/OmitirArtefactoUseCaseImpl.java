@@ -61,7 +61,9 @@ public class OmitirArtefactoUseCaseImpl implements OmitirArtefactoUseCase {
                 estudiantes.stream()
                         .map(estudiante -> new ContactoEstudiante(estudiante.getNombre(), estudiante.getEmail()))
                         .toList(),
-                new ContactoAsesor(asesor.getNombre(), asesor.getEmail())));
+                new ContactoAsesor(asesor.getNombre(), asesor.getEmail()),
+                omision.getArtefacto(),
+                artefacto.getProyectoGrado()));
 
         logger.info(ArtefactoKey.LOG_OMITIDO, omision.getArtefacto(), omision.getAsesor());
     }

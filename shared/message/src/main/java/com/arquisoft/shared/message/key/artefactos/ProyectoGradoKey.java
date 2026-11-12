@@ -15,6 +15,7 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     LOG_VERIFICACION_CONGELAR("artefactos.aplicacion.proyectogrado.log.verificacion-congelar", 2),
     LOG_CONGELADO("artefactos.aplicacion.proyectogrado.log.congelado", 1),
     LOG_YA_CONGELADO("artefactos.aplicacion.proyectogrado.log.ya-congelado", 1),
+    LOG_ENTREGABLE_GENERADO_RECIBIDO("artefactos.infraestructura.proyectogrado.log.entregable-generado-recibido", 4),
     LOG_FINALIZACION_RECIBIDA("artefactos.infraestructura.proyectogrado.log.finalizacion-recibida", 3),
     LOG_VERIFICACION_FINALIZAR("artefactos.aplicacion.proyectogrado.log.verificacion-finalizar", 2),
     LOG_FINALIZADO("artefactos.aplicacion.proyectogrado.log.finalizado", 1),

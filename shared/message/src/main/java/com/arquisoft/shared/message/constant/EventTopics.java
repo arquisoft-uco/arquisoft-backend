@@ -190,6 +190,8 @@ public final class EventTopics {
                 "artefactos.revision_asesor.estado_cambiado";
         public static final String ARTEFACTO_OMITIDO =
                 "artefactos.artefacto.omitido";
+        public static final String ARTEFACTO_REACTIVADO =
+                "artefactos.artefacto.reactivado";
         public static final String ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA =
                 "artefactos.artefacto.version_repositorio_cambiada";
         public static final String REVISION_ASESOR_ENVIADA =
@@ -202,8 +204,6 @@ public final class EventTopics {
                 "artefactos.estudiante_artefacto.removido";
         public static final String VERSION_REPOSITORIO_ARTEFACTO_ELIMINACION_AUTORIZADA =
                 "artefactos.version_repositorio_artefacto.eliminacion_autorizada";
-        public static final String PAQUETE_ENTREGABLE_GENERADO =
-                "artefactos.paquete_entregable.generado";
     }
 
     public static final class MapasRuta {

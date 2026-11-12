@@ -1,5 +1,9 @@
 package com.arquisoft.entregables.infrastructure.proyectogrado.command.primaryadapter.amqp.proyectos.proyectogrado;
 
+import com.arquisoft.entregables.application.artefacto.command.primaryport.interactor.PurgarArtefactosProyectoGradoInteractor;
+import com.arquisoft.entregables.application.artefacto.command.result.PurgaArtefactosProyectoGradoResult;
+import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.interactor.PurgarPaquetesProyectoGradoInteractor;
+import com.arquisoft.entregables.application.paqueteentregable.command.result.PurgaPaquetesProyectoGradoResult;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.interactor.CancelarProyectoGradoInteractor;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.model.CancelarProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.result.CancelacionProyectoGradoResult;
@@ -24,6 +28,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +37,12 @@ class ProyectoGradoCanceladoConsumerTest {
 
     @Mock
     private CancelarProyectoGradoInteractor interactor;
+
+    @Mock
+    private PurgarPaquetesProyectoGradoInteractor purgarPaquetesInteractor;
+
+    @Mock
+    private PurgarArtefactosProyectoGradoInteractor purgarArtefactosInteractor;
 
     @Mock
     private Channel channel;
@@ -47,9 +58,15 @@ class ProyectoGradoCanceladoConsumerTest {
     void setUp() {
         consumer = new ProyectoGradoCanceladoConsumer(
                 interactor,
+                purgarPaquetesInteractor,
+                purgarArtefactosInteractor,
                 new ObjectMapper(),
                 logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
+        lenient().when(purgarPaquetesInteractor.ejecutar(any()))
+                .thenReturn(new PurgaPaquetesProyectoGradoResult(proyectoGrado, 1));
+        lenient().when(purgarArtefactosInteractor.ejecutar(any()))
+                .thenReturn(new PurgaArtefactosProyectoGradoResult(proyectoGrado, 2));
     }
 
     private Message mensaje(long deliveryTag) {

@@ -9,7 +9,7 @@ import com.arquisoft.entregables.domain.estadoentregableproyectogrado.exception.
 import com.arquisoft.entregables.domain.paqueteentregable.PaqueteEntregableDomain;
 import com.arquisoft.entregables.domain.paqueteentregable.exception.ActorSinAccesoPaqueteEntregableException;
 import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableCanceladoException;
-import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableEnPreparacionException;
+import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableNoDisponibleException;
 import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableProyectoCanceladoException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class DescargarPaqueteEntregableValidatorImplTest {
     private final DescargarPaqueteEntregableValidatorImpl validator = new DescargarPaqueteEntregableValidatorImpl();
 
     private static PaqueteEntregableDomain paquete() {
-        return PaqueteEntregableDomain.crear(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "bucket",
+        return PaqueteEntregableDomain.crear(UtilUUID.generarNuevoUUID(), "bucket",
                 "paquetes/x.zip", "p.zip", 10L, Instant.now());
     }
 
@@ -68,7 +68,7 @@ class DescargarPaqueteEntregableValidatorImplTest {
     }
 
     @Test
-    void debeLanzarEnPreparacion_cuandoSinPaquete() {
+    void debeLanzarNoDisponible_cuandoSinPaquete() {
         // Arrange
         var actor = UtilUUID.generarNuevoUUID();
         var criteria = criteria(actor, true, false);
@@ -76,7 +76,7 @@ class DescargarPaqueteEntregableValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(criteria, entregable(actor), estado(EstadoEntregable.DISPONIBLE_EVALUACION), false,
                 PaqueteEntregableDomain.VACIO))
-                .isInstanceOf(PaqueteEntregableEnPreparacionException.class);
+                .isInstanceOf(PaqueteEntregableNoDisponibleException.class);
     }
 
     @Test

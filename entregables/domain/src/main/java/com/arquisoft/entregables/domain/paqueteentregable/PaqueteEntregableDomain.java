@@ -32,12 +32,11 @@ public final class PaqueteEntregableDomain {
 
     private PaqueteEntregableDomain() {}
 
-    public static PaqueteEntregableDomain crear(UUID id, UUID entregableProyectoGrado, String bucket,
-                                                String claveObjeto, String nombreArchivo, Long tamanoBytes,
-                                                Instant generadoEn) {
+    public static PaqueteEntregableDomain crear(UUID entregableProyectoGrado, String bucket, String claveObjeto,
+                                                String nombreArchivo, Long tamanoBytes, Instant generadoEn) {
         var paquete = new PaqueteEntregableDomain();
         var result = new ValidationResult();
-        paquete.setId(id, result);
+        paquete.setId();
         paquete.setEntregableProyectoGrado(entregableProyectoGrado, result);
         paquete.setBucket(bucket, result);
         paquete.setClaveObjeto(claveObjeto, result);
@@ -62,13 +61,8 @@ public final class PaqueteEntregableDomain {
         return paquete;
     }
 
-    private void setId(UUID id, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(id,
-                EntregablesFields.PaqueteEntregable.ID,
-                EntregablesCodes.PaqueteEntregable.ID_REQUERIDO, result)) {
-            return;
-        }
-        this.id = id;
+    private void setId() {
+        this.id = UtilUUID.generarNuevoUUID();
     }
 
     private void setEntregableProyectoGrado(UUID entregableProyectoGrado, ValidationResult result) {

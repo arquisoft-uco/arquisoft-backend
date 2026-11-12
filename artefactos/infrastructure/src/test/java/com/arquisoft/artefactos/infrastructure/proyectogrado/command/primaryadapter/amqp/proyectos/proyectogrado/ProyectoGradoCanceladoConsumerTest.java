@@ -1,8 +1,5 @@
 package com.arquisoft.artefactos.infrastructure.proyectogrado.command.primaryadapter.amqp.proyectos.proyectogrado;
 
-import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.interactor.PurgarPaquetesProyectoGradoInteractor;
-import com.arquisoft.artefactos.application.paqueteentregable.command.primaryport.model.PurgarPaquetesProyectoGradoCommand;
-import com.arquisoft.artefactos.application.paqueteentregable.command.result.PurgaPaquetesProyectoGradoResult;
 import com.arquisoft.artefactos.application.proyectogrado.command.primaryport.interactor.CancelarProyectoGradoInteractor;
 import com.arquisoft.artefactos.application.proyectogrado.command.primaryport.model.CancelarProyectoGradoCommand;
 import com.arquisoft.artefactos.application.proyectogrado.command.result.CancelacionProyectoGradoResult;
@@ -10,7 +7,6 @@ import com.arquisoft.artefactos.application.versionartefacto.command.primaryport
 import com.arquisoft.artefactos.application.versionartefacto.command.primaryport.model.PurgarVersionesProyectoGradoCommand;
 import com.arquisoft.artefactos.application.versionartefacto.command.result.PurgaVersionesProyectoGradoResult;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.key.artefactos.PaqueteEntregableKey;
 import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
@@ -45,8 +41,6 @@ class ProyectoGradoCanceladoConsumerTest {
     @Mock
     private PurgarVersionesProyectoGradoInteractor purgarVersionesProyectoGradoInteractor;
     @Mock
-    private PurgarPaquetesProyectoGradoInteractor purgarPaquetesProyectoGradoInteractor;
-    @Mock
     private Channel channel;
     @Mock
     private AppLogger logger;
@@ -60,7 +54,6 @@ class ProyectoGradoCanceladoConsumerTest {
         consumer = new ProyectoGradoCanceladoConsumer(
                 cancelarProyectoGradoInteractor,
                 purgarVersionesProyectoGradoInteractor,
-                purgarPaquetesProyectoGradoInteractor,
                 new ObjectMapper(),
                 logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
@@ -84,31 +77,26 @@ class ProyectoGradoCanceladoConsumerTest {
     }
 
     @Test
-    void debeMarcarYPurgar_cuandoLlegaElEvento() throws Exception {
+    void debeCancelarYPurgarVersiones_sinPurgarPaquetes() throws Exception {
         // Arrange
         when(cancelarProyectoGradoInteractor.ejecutar(any()))
                 .thenReturn(new CancelacionProyectoGradoResult.Cancelado(proyecto));
         when(purgarVersionesProyectoGradoInteractor.ejecutar(any()))
                 .thenReturn(new PurgaVersionesProyectoGradoResult(proyecto, 4));
-        when(purgarPaquetesProyectoGradoInteractor.ejecutar(any()))
-                .thenReturn(new PurgaPaquetesProyectoGradoResult(proyecto, 3));
 
         // Act
         consumer.onProyectoGradoCancelado(mensaje(1L), channel);
 
         // Assert
         var orden = inOrder(cancelarProyectoGradoInteractor, purgarVersionesProyectoGradoInteractor,
-                purgarPaquetesProyectoGradoInteractor, channel);
+                channel);
         orden.verify(cancelarProyectoGradoInteractor)
                 .ejecutar(new CancelarProyectoGradoCommand(proyecto, OCURRIDO_EN));
         orden.verify(purgarVersionesProyectoGradoInteractor)
                 .ejecutar(new PurgarVersionesProyectoGradoCommand(proyecto));
-        orden.verify(purgarPaquetesProyectoGradoInteractor)
-                .ejecutar(new PurgarPaquetesProyectoGradoCommand(proyecto));
         orden.verify(channel).basicAck(1L, false);
         verify(logger).info(ProyectoGradoKey.LOG_CANCELADO, proyecto);
         verify(logger).info(VersionArtefactoKey.LOG_PURGADAS, proyecto, 4);
-        verify(logger).info(PaqueteEntregableKey.LOG_PROYECTO_PURGADOS, proyecto, 3);
     }
 
     @Test
@@ -118,8 +106,6 @@ class ProyectoGradoCanceladoConsumerTest {
                 .thenReturn(new CancelacionProyectoGradoResult.YaCancelado(proyecto));
         when(purgarVersionesProyectoGradoInteractor.ejecutar(any()))
                 .thenReturn(new PurgaVersionesProyectoGradoResult(proyecto, 0));
-        when(purgarPaquetesProyectoGradoInteractor.ejecutar(any()))
-                .thenReturn(new PurgaPaquetesProyectoGradoResult(proyecto, 0));
 
         // Act
         consumer.onProyectoGradoCancelado(mensaje(2L), channel);
@@ -127,7 +113,6 @@ class ProyectoGradoCanceladoConsumerTest {
         // Assert
         verify(logger).info(ProyectoGradoKey.LOG_YA_CANCELADO, proyecto);
         verify(purgarVersionesProyectoGradoInteractor).ejecutar(new PurgarVersionesProyectoGradoCommand(proyecto));
-        verify(purgarPaquetesProyectoGradoInteractor).ejecutar(new PurgarPaquetesProyectoGradoCommand(proyecto));
         verify(channel).basicAck(2L, false);
     }
 }

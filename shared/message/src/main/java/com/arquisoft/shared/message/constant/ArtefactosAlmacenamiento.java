@@ -6,5 +6,4 @@ public final class ArtefactosAlmacenamiento {
 
     public static final String PREFIJO_PENDIENTES = "pendientes/";
     public static final String PREFIJO_VERSIONES = "versiones/";
-    public static final String PREFIJO_PAQUETES = "paquetes/";
 }

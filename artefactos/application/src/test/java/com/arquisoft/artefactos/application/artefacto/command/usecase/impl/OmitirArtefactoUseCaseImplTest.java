@@ -138,6 +138,8 @@ class OmitirArtefactoUseCaseImplTest {
         assertThat(instanteCaptor.getValue()).isEqualTo(artefacto.getOmitidoEn()).isNotEqualTo(UtilFecha.VACIO);
         var evento = eventoCaptor.getValue();
         assertThat(evento.getDocumento()).isEqualTo("Formato A");
+        assertThat(evento.getArtefacto()).isEqualTo(artefactoId);
+        assertThat(evento.getProyectoGrado()).isEqualTo(artefacto.getProyectoGrado());
         assertThat(evento.getAsesor().nombre()).isEqualTo("Ana Perez");
         assertThat(evento.getAsesor().email()).isEqualTo("ana@uco.edu.co");
         assertThat(evento.getEstudiantes()).extracting(contacto -> contacto.nombre())

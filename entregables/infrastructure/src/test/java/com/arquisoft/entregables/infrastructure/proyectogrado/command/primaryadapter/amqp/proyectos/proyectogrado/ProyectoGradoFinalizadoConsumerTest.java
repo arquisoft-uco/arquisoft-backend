@@ -1,5 +1,7 @@
 package com.arquisoft.entregables.infrastructure.proyectogrado.command.primaryadapter.amqp.proyectos.proyectogrado;
 
+import com.arquisoft.entregables.application.artefacto.command.primaryport.interactor.PurgarArtefactosProyectoGradoInteractor;
+import com.arquisoft.entregables.application.artefacto.command.result.PurgaArtefactosProyectoGradoResult;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.interactor.FinalizarProyectoGradoInteractor;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.model.FinalizarProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.result.FinalizacionProyectoGradoResult;
@@ -27,6 +29,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +39,9 @@ class ProyectoGradoFinalizadoConsumerTest {
 
     @Mock
     private FinalizarProyectoGradoInteractor interactor;
+
+    @Mock
+    private PurgarArtefactosProyectoGradoInteractor purgarArtefactosInteractor;
 
     @Mock
     private Channel channel;
@@ -51,9 +57,12 @@ class ProyectoGradoFinalizadoConsumerTest {
     void setUp() {
         consumer = new ProyectoGradoFinalizadoConsumer(
                 interactor,
+                purgarArtefactosInteractor,
                 new ObjectMapper(),
                 logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
+        lenient().when(purgarArtefactosInteractor.ejecutar(any()))
+                .thenReturn(new PurgaArtefactosProyectoGradoResult(proyectoGrado, 2));
     }
 
     private Message mensaje(String proyecto, long deliveryTag, boolean reentregado) {

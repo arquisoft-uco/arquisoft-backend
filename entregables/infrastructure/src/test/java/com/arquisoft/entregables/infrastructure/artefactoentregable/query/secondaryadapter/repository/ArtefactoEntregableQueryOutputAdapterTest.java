@@ -1,7 +1,7 @@
 package com.arquisoft.entregables.infrastructure.artefactoentregable.query.secondaryadapter.repository;
 
+import com.arquisoft.entregables.infrastructure.artefactoentregable.command.secondaryadapter.entity.ArtefactoEntregableJpaEntity;
 import com.arquisoft.shared.util.UtilUUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -22,35 +22,16 @@ class ArtefactoEntregableQueryOutputAdapterTest {
     @Autowired
     private TestEntityManager entityManager;
 
-    @BeforeEach
-    void prepararTablas() {
-        var em = entityManager.getEntityManager();
-        em.createNativeQuery("CREATE TABLE IF NOT EXISTS artefacto (id UUID PRIMARY KEY, "
-                + "id_artefacto UUID, id_repositorio_artefacto UUID, nombre_documento VARCHAR(100), "
-                + "id_repositorio UUID, nombre_repositorio VARCHAR(100), version_artefacto INTEGER)").executeUpdate();
-        em.createNativeQuery("CREATE TABLE IF NOT EXISTS artefacto_entregable (id UUID PRIMARY KEY, "
-                + "artefacto_id UUID, entregable_id UUID, uri_archivo VARCHAR(2000))").executeUpdate();
-        em.createNativeQuery("DELETE FROM artefacto_entregable").executeUpdate();
-        em.createNativeQuery("DELETE FROM artefacto").executeUpdate();
-    }
-
     private UUID sembrar(UUID entregable, UUID id, String nombreDocumento) {
-        var em = entityManager.getEntityManager();
-        var artefacto = UtilUUID.generarNuevoUUID();
-        em.createNativeQuery("INSERT INTO artefacto (id, id_artefacto, id_repositorio_artefacto, "
-                        + "nombre_documento, id_repositorio, nombre_repositorio, version_artefacto) "
-                        + "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)")
-                .setParameter(1, artefacto)
-                .setParameter(2, UtilUUID.generarNuevoUUID()).setParameter(3, UtilUUID.generarNuevoUUID())
-                .setParameter(4, nombreDocumento).setParameter(5, UtilUUID.generarNuevoUUID())
-                .setParameter(6, "Repo").setParameter(7, 3).executeUpdate();
-        em.createNativeQuery("INSERT INTO artefacto_entregable (id, artefacto_id, entregable_id, uri_archivo) "
-                + "VALUES (?1, ?2, ?3, ?4)")
-                .setParameter(1, id).setParameter(2, artefacto).setParameter(3, entregable)
-                .setParameter(4, "uri/" + nombreDocumento).executeUpdate();
+        var version = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ArtefactoEntregableJpaEntity.builder()
+                .id(id).artefacto(UtilUUID.generarNuevoUUID()).entregableId(entregable)
+                .uriArchivo("uri/" + nombreDocumento).versionArtefacto(version).numeroVersion(3)
+                .nombreDocumento(nombreDocumento).versionRepositorioArtefacto(UtilUUID.generarNuevoUUID())
+                .repositorio(UtilUUID.generarNuevoUUID()).nombreRepositorio("Repo").build());
         entityManager.flush();
         entityManager.clear();
-        return artefacto;
+        return version;
     }
 
     @Test

@@ -32,7 +32,7 @@ public enum EntregableProyectoGradoKey implements ClaveMensaje {
             "entregables.aplicacion.entregableproyectogrado.log.verificacion-cambiar-estado", 4),
     LOG_ESTADO_CAMBIADO("entregables.aplicacion.entregableproyectogrado.log.estado-cambiado", 3),
     LOG_GENERANDO("entregables.aplicacion.entregableproyectogrado.log.generando", 2),
-    LOG_VERIFICACION_GENERAR("entregables.aplicacion.entregableproyectogrado.log.verificacion-generar", 5),
+    LOG_VERIFICACION_GENERAR("entregables.aplicacion.entregableproyectogrado.log.verificacion-generar", 7),
     LOG_GENERADO("entregables.aplicacion.entregableproyectogrado.log.generado", 3),
     LOG_GUARDADO("entregables.infraestructura.entregableproyectogrado.log.guardado", 1),
     LOG_CONSULTANDO("entregables.aplicacion.entregableproyectogrado.log.consultando", 4),
