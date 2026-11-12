@@ -151,6 +151,7 @@ security:
         - {method: PATCH, path: "/api/evaluaciones/observaciones-item-jurado/{observacionId}", role: "evaluaciones:observacion-item-jurado:update"}
         - {method: POST, path: "/api/evaluaciones/{evaluacionId}/evaluaciones-jurado", role: "evaluaciones:evaluacion-jurado-estudiante:view"}
         - {method: POST, path: "/api/evaluaciones/{evaluacionId}/jurados", role: "evaluaciones:evaluacion-jurado:create"}
+        - {method: DELETE, path: "/api/evaluaciones/{evaluacionId}/jurados", role: "evaluaciones:evaluacion-jurado:delete"}
         # solicitudes
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo", role: "solicitudes:solicitud-ampliacion-plazo:create"}
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/enviadas", role: "solicitudes:solicitud-ampliacion-plazo-enviada:view"}

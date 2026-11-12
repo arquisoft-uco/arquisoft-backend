@@ -73,6 +73,7 @@
               "fichas:estudiante-ficha-perfil-coordinador:view",
               "usuarios:representante-comite-vigente:view",
               "evaluaciones:evaluacion-jurado:create",
+              "evaluaciones:evaluacion-jurado:delete",
               "proyectos:proyecto-grado-coordinador:view",
               "usuarios:asesor-ficha-vigente:view",
               "evaluaciones:evaluacion-coordinador:view",
@@ -1883,6 +1884,15 @@
         {
           "id": "d75aa27d-cc9c-4574-a28e-c84237966aff",
           "name": "evaluaciones:evaluacion-jurado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b3c8f1a2-6d4e-4f7a-9c1b-2e5d8a7f4c60",
+          "name": "evaluaciones:evaluacion-jurado:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

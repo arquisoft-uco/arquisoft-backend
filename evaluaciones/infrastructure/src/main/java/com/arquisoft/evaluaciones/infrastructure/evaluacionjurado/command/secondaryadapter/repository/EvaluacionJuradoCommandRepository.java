@@ -55,6 +55,16 @@ public interface EvaluacionJuradoCommandRepository extends JpaRepository<Evaluac
             + "where ej.evaluacion = :evaluacion and ej.jurado in :jurados")
     Set<UUID> findJuradosAsignados(@Param("evaluacion") UUID evaluacion, @Param("jurados") Set<UUID> jurados);
 
+    @Query("select ej.jurado from EvaluacionJuradoJpaEntity ej "
+            + "where ej.evaluacion = :evaluacion and ej.jurado in :jurados "
+            + "and (exists (select 1 from EvaluacionCualitativaJuradoJpaEntity c where c.evaluacionJurado = ej.id) "
+            + "or exists (select 1 from EvaluacionCuantitativaJuradoJpaEntity q where q.evaluacionJuradoId = ej.id))")
+    Set<UUID> findJuradosConEvaluaciones(@Param("evaluacion") UUID evaluacion, @Param("jurados") Set<UUID> jurados);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from EvaluacionJuradoJpaEntity ej where ej.evaluacion = :evaluacion and ej.jurado in :jurados")
+    int eliminarPorEvaluacionYJurados(@Param("evaluacion") UUID evaluacion, @Param("jurados") Set<UUID> jurados);
+
     // Mismo bloqueo que buscarContextoBloqueado: el estado leido es precondicion del cambio de
     // puntaje y no puede pasar a finalizada antes del commit de esa escritura.
     @NativeQuery("""
