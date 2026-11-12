@@ -248,7 +248,6 @@ security:
         - {method: POST, path: "/api/mapas-ruta", role: "mapas-ruta:mapa-ruta:create"}
         - {method: POST, path: "/api/mapas-ruta/coordinador", role: "mapas-ruta:mapa-ruta-coordinador:view"}
         - {method: GET, path: "/api/mapas-ruta/estudiante", role: "mapas-ruta:mapa-ruta-estudiante:view"}
-        - {method: GET, path: "/api/mapas-ruta/proyectos-grado/{proyectoGradoId}/asesor", role: "mapas-ruta:mapa-ruta-asesor:view"}
         - {method: PATCH, path: "/api/mapas-ruta/{id}/fecha-fin", role: "mapas-ruta:mapa-ruta:update-fecha-fin"}
         - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas", role: "mapas-ruta:tarea:create"}
         - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas/estudiante", role: "mapas-ruta:tarea-mapa-ruta-estudiante:view"}
