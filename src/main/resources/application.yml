@@ -27,6 +27,7 @@ spring:
       - "classpath:rutas-repositorio-artefactos.yml"
       - "classpath:rutas-mapas-ruta.yml"
       - "classpath:rutas-entregables.yml"
+      - "classpath:rutas-biblioteca.yml"
       # Tabla de equivalencias del adaptador role-table (emisor legado); se borra junto con el.
       - "classpath:autorizacion-equivalencias.yml"
   banner:
