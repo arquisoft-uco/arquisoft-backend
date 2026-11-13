@@ -284,7 +284,8 @@
           "client": {
             "arquisoft-api": [
               "biblioteca:estado-documentacion:view",
-              "biblioteca:documentacion:view"
+              "biblioteca:documentacion:view",
+              "biblioteca:autor-documentacion:view"
             ]
           }
         },
@@ -1276,6 +1277,15 @@
         {
           "id": "2334c846-6d3b-4541-86c5-8dd0259b26e1",
           "name": "biblioteca:documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "4eefc44a-6618-4727-8926-6113f72bf714",
+          "name": "biblioteca:autor-documentacion:view",
           "description": "",
           "composite": false,
           "clientRole": true,

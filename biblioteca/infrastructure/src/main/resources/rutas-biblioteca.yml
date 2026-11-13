@@ -10,3 +10,4 @@ rutas:
       estados-documentacion: /estados-documentacion
       documentaciones: /documentaciones
       consultar: /consultar
+      autores: /{documentacionId}/autores

@@ -18,10 +18,10 @@ INSERT INTO entregable_proyecto_grado (id, proyecto_grado_id, version_entregable
      'c0c0c0c0-0000-4000-8000-000000000002', 'Aprobado')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO autor (id, identificador, nombre, email, eliminado_en) VALUES
-    ('d1d1d1d1-0000-4000-8000-000000000001', 'AUT-SEMILLA-01', 'Autor Semilla Uno', 'autor.uno@uco.edu.co', NULL),
-    ('d1d1d1d1-0000-4000-8000-000000000002', 'AUT-SEMILLA-02', 'Autor Semilla Dos', 'autor.dos@uco.edu.co', NULL),
-    ('d1d1d1d1-0000-4000-8000-000000000003', 'AUT-SEMILLA-03', 'Autor Semilla Tres', 'autor.tres@uco.edu.co', NULL)
+INSERT INTO autor (id, identificador, nombre, email, ocurrido_en, eliminado_en) VALUES
+    ('d1d1d1d1-0000-4000-8000-000000000001', 'AUT-SEMILLA-01', 'Autor Semilla Uno', 'autor.uno@uco.edu.co', '2026-01-01T00:00:00Z', NULL),
+    ('d1d1d1d1-0000-4000-8000-000000000002', 'AUT-SEMILLA-02', 'Autor Semilla Dos', 'autor.dos@uco.edu.co', '2026-01-01T00:00:00Z', NULL),
+    ('d1d1d1d1-0000-4000-8000-000000000003', 'AUT-SEMILLA-03', 'Autor Semilla Tres', 'autor.tres@uco.edu.co', '2026-01-01T00:00:00Z', NULL)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO documentacion (id, url, fecha_publicacion, entregable_proyecto_grado_id, bibliotecario_id, estado_documentacion_id) VALUES
