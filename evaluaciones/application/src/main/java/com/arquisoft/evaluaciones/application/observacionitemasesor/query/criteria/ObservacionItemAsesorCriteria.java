@@ -47,11 +47,13 @@ public final class ObservacionItemAsesorCriteria extends QueryCriteria {
 
     private final UUID evaluacionCuantitativaAsesor;
     private final UUID asesor;
+    private final UUID estudiante;
 
     private ObservacionItemAsesorCriteria(Builder b) {
         super(b);
         this.evaluacionCuantitativaAsesor = b.evaluacionCuantitativaAsesor;
         this.asesor = b.asesor;
+        this.estudiante = b.estudiante;
     }
 
     public UUID getEvaluacionCuantitativaAsesor() {
@@ -62,6 +64,10 @@ public final class ObservacionItemAsesorCriteria extends QueryCriteria {
         return asesor;
     }
 
+    public UUID getEstudiante() {
+        return estudiante;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -70,6 +76,7 @@ public final class ObservacionItemAsesorCriteria extends QueryCriteria {
 
         private UUID evaluacionCuantitativaAsesor;
         private UUID asesor;
+        private UUID estudiante;
 
         public Builder evaluacionCuantitativaAsesor(UUID evaluacionCuantitativaAsesor) {
             this.evaluacionCuantitativaAsesor = evaluacionCuantitativaAsesor;
@@ -78,6 +85,11 @@ public final class ObservacionItemAsesorCriteria extends QueryCriteria {
 
         public Builder asesor(UUID asesor) {
             this.asesor = asesor;
+            return this;
+        }
+
+        public Builder estudiante(UUID estudiante) {
+            this.estudiante = estudiante;
             return this;
         }
 

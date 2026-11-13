@@ -231,6 +231,7 @@ public final class EvaluacionesFields {
         public static final String ID = "id";
         public static final String EVALUACION_CUANTITATIVA_ASESOR = "evaluacionCuantitativaAsesor";
         public static final String ASESOR = "asesor";
+        public static final String ESTUDIANTE = "estudiante";
         public static final String OBSERVACION = "observacion";
         public static final String DESCRIPCION = "descripcion";
     }
