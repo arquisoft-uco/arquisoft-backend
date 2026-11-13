@@ -1,6 +1,8 @@
 package com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.repository;
 
 import com.arquisoft.biblioteca.application.documentacion.query.criteria.DocumentacionCriteria;
+import com.arquisoft.biblioteca.infrastructure.documentacion.exception.DocumentacionNoDisponibleException;
+import com.arquisoft.shared.message.constant.BibliotecaCodes;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
@@ -258,5 +260,39 @@ class DocumentacionQueryOutputAdapterTest {
 
         // Act & Assert
         assertThatThrownBy(() -> adapter.consultar(criteria)).isInstanceOf(FiltroInvalidoException.class);
+    }
+
+    @Test
+    void debeRetornarElReadModelCompleto_cuandoConsultaPorIdUnaDocumentacionExistente() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var bibliotecario = sembrarBibliotecario("Ana", null);
+        var entregable = sembrarEntregable(proyecto, 3, "Aprobado");
+        var id = sembrarDocumentacion(entregable, bibliotecario, "PUBLICADO", BASE);
+        sembrarDocumentacion(sembrarEntregable(proyecto, 4, "Aprobado"), bibliotecario, "PUBLICADO", BASE);
+        confirmar();
+
+        // Act
+        var leido = adapter.consultarPorId(id);
+
+        // Assert
+        assertThat(leido.id()).isEqualTo(id);
+        assertThat(leido.entregableProyectoGrado().id()).isEqualTo(entregable);
+        assertThat(leido.entregableProyectoGrado().versionEntregable()).isEqualTo(3);
+        assertThat(leido.bibliotecario().id()).isEqualTo(bibliotecario);
+        assertThat(leido.bibliotecario().nombre()).isEqualTo("Ana");
+        assertThat(leido.estadoDocumentacion().id()).isEqualTo("PUBLICADO");
+    }
+
+    @Test
+    void debeLanzarNoDisponible_cuandoConsultaPorIdUnaDocumentacionInexistente() {
+        // Arrange
+        var inexistente = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> adapter.consultarPorId(inexistente))
+                .isInstanceOf(DocumentacionNoDisponibleException.class)
+                .extracting("codigoError")
+                .isEqualTo(BibliotecaCodes.Documentacion.NO_DISPONIBLE);
     }
 }

@@ -158,6 +158,12 @@ datasource:
       minimum-idle: 2
       connection-timeout: 30000
 
+# ==================== BIBLIOTECA (PROD) ====================
+# Sin default: si falta la URL del frontend el arranque falla, igual que con CORS_ALLOWED_ORIGINS.
+biblioteca:
+  enlaces:
+    url-base: ${BIBLIOTECA_ENLACES_URL_BASE}
+
 # ==================== CORS Y RATE LIMITING (PROD) ====================
 # Leídas por CorsConfig y RateLimitConfig via @Value("${security.cors.*}") y @Value("${security.rate-limit.*}")
 security:

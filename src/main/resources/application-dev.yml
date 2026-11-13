@@ -19,6 +19,11 @@ server:
 notificacion:
   proveedor: ${NOTIFICACION_PROVEEDOR:log}
 
+# ==================== BIBLIOTECA (DEV) ====================
+biblioteca:
+  enlaces:
+    url-base: ${BIBLIOTECA_ENLACES_URL_BASE:http://localhost:3000}
+
 # ==================== CORS (DEV) ====================
 security:
   # Defaults del laboratorio de Security Baseline (Keycloak 19090, PDP 18080, PEP 18081).

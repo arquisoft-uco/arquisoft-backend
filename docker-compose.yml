@@ -352,6 +352,8 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
+      BIBLIOTECA_ENLACES_URL_BASE: ${BIBLIOTECA_ENLACES_URL_BASE:-http://localhost:3000}
+      BIBLIOTECA_ENLACES_RUTA_DOCUMENTACION: /doc/{documentacionId}
     ports:
       - "8080:8080"
     depends_on:

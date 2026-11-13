@@ -284,3 +284,4 @@ security:
         - {method: GET, path: "/api/biblioteca/estados-documentacion", role: "biblioteca:estado-documentacion:view"}
         - {method: POST, path: "/api/biblioteca/documentaciones/consultar", role: "biblioteca:documentacion:view"}
         - {method: GET, path: "/api/biblioteca/documentaciones/{documentacionId}/autores", role: "biblioteca:autor-documentacion:view"}
+        - {method: GET, path: "/api/biblioteca/documentaciones/{documentacionId}/enlace", role: "biblioteca:enlace-documentacion:view"}

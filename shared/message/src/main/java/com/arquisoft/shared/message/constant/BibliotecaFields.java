@@ -23,6 +23,7 @@ public final class BibliotecaFields {
         private Documentacion() {}
 
         public static final String ROLES = "roles";
+        public static final String DOCUMENTACION = "documentacion";
     }
 
     public static final class Autor {
