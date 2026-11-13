@@ -32,6 +32,12 @@ public class EvaluacionCuantitativaAsesorCommandOutputAdapter implements Evaluac
     }
 
     @Override
+    public void eliminarPorItems(UUID evaluacionAsesor, Set<UUID> items) {
+        repository.eliminarPorItems(evaluacionAsesor, items);
+        logger.debug(EvaluacionCuantitativaAsesorKey.LOG_LOTE_ELIMINADO, items.size());
+    }
+
+    @Override
     public Set<UUID> consultarItemsRegistrados(UUID evaluacionAsesor, Set<UUID> items) {
         return repository.findItemsRegistrados(evaluacionAsesor, items);
     }
