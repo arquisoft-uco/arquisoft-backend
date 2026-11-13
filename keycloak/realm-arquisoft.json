@@ -56,6 +56,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "biblioteca:documentacion:view",
               "proyectos:proyecto-grado-cancelacion:update",
               "proyectos:historial-estado-proyecto-grado:view",
               "solicitudes:respuesta-cambio-asesor:delete",
@@ -212,6 +213,7 @@
               "evaluaciones:item-cuantitativo-asesor:update",
               "evaluaciones:item-cuantitativo-asesor:view",
               "evaluaciones:item-cualitativo-asesor:create",
+              "evaluaciones:item-cualitativo-asesor:delete",
               "evaluaciones:item-cualitativo-asesor:update",
               "evaluaciones:item-cualitativo-asesor:view",
               "evaluaciones:criterio-item-cualitativo-asesor:view",
@@ -277,7 +279,16 @@
         "id": "659943f9-e8a7-4578-8dcd-c1bcbcd1c993",
         "name": "bibliotecario",
         "description": "",
-        "composite": false,
+        "composite": true,
+        "composites": {
+          "client": {
+            "arquisoft-api": [
+              "biblioteca:estado-documentacion:view",
+              "biblioteca:documentacion:view",
+              "biblioteca:autor-documentacion:view"
+            ]
+          }
+        },
         "clientRole": false,
         "containerId": "053aee0b-1eeb-4991-926a-dca686ac045b",
         "attributes": {}
@@ -290,6 +301,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "biblioteca:documentacion:view",
               "artefactos:version-artefacto:upload",
               "artefactos:version-artefacto:delete",
               "repositorio-artefactos:version-repositorio-artefacto:download",
@@ -380,6 +392,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "biblioteca:documentacion:view",
               "proyectos:proyecto-grado-estado:update",
               "proyectos:historial-estado-proyecto-grado:view",
               "mapas-ruta:tarea-mapa-ruta-asesor:view",
@@ -1254,6 +1267,33 @@
           "attributes": {}
         },
         {
+          "id": "93c892ea-1fe2-463e-8498-6ef7f33c2ba1",
+          "name": "biblioteca:estado-documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "2334c846-6d3b-4541-86c5-8dd0259b26e1",
+          "name": "biblioteca:documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "4eefc44a-6618-4727-8926-6113f72bf714",
+          "name": "biblioteca:autor-documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "c2365dde-bb30-4cf4-8406-de657a630afb",
           "name": "entregables:estado-entregable:view",
           "description": "",
@@ -1634,6 +1674,15 @@
         {
           "id": "3336351a-2316-4b70-89b9-1b2bf2add070",
           "name": "evaluaciones:item-cualitativo-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b2671b33-6b2e-45af-b1c0-e4243561dffe",
+          "name": "evaluaciones:item-cualitativo-asesor:delete",
           "description": "",
           "composite": false,
           "clientRole": true,

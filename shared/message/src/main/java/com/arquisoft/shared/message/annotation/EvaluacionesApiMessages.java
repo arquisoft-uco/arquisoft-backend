@@ -113,6 +113,14 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_204 = "Descripción actualizada";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "El ítem cualitativo del asesor no existe";
+        public static final String REMOVER_SUMMARY = "Remover ítem cualitativo del asesor";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve un ítem cualitativo del asesor registrado por equivocación, "
+                        + "siempre que no se haya usado en ninguna evaluación de asesor";
+        public static final String REMOVER_RESP_204 = "Ítem cualitativo del asesor removido";
+        public static final String REMOVER_RESP_400 = "Identificador inválido";
+        public static final String REMOVER_RESP_422 =
+                "El ítem cualitativo del asesor no existe o ya fue usado en evaluaciones de asesor";
     }
 
     public static final class ItemCuantitativoAsesor {

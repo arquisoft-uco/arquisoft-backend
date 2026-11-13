@@ -15,4 +15,6 @@ public interface EvaluacionCualitativaAsesorCommandRepository
             + "where e.evaluacionAsesor = :evaluacionAsesor and e.item in :items")
     Set<UUID> findItemsRegistrados(
             @Param("evaluacionAsesor") UUID evaluacionAsesor, @Param("items") Set<UUID> items);
+
+    boolean existsByItem(UUID item);
 }

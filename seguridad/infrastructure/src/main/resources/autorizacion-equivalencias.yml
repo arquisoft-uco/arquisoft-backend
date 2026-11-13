@@ -138,6 +138,7 @@ security:
         - {method: GET, path: "/api/evaluaciones/items-cualitativos-asesor", role: "evaluaciones:item-cualitativo-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/items-cualitativos-asesor", role: "evaluaciones:item-cualitativo-asesor:create"}
         - {method: PATCH, path: "/api/evaluaciones/items-cualitativos-asesor/{itemId}", role: "evaluaciones:item-cualitativo-asesor:update"}
+        - {method: DELETE, path: "/api/evaluaciones/items-cualitativos-asesor/{itemId}", role: "evaluaciones:item-cualitativo-asesor:delete"}
         - {method: GET, path: "/api/evaluaciones/criterios-item-cualitativo-asesor", role: "evaluaciones:criterio-item-cualitativo-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/items-cuantitativos-asesor", role: "evaluaciones:item-cuantitativo-asesor:create"}
         - {method: GET, path: "/api/evaluaciones/items-cuantitativos-asesor", role: "evaluaciones:item-cuantitativo-asesor:view"}
@@ -280,3 +281,7 @@ security:
         - {method: GET, path: "/api/entregables/{entregableProyectoGradoId}/paquete", role: "entregables:paquete-entregable:download"}
         - {method: GET, path: "/api/entregables/{entregableProyectoGradoId}/estados", role: "entregables:estado-entregable-proyecto-grado:view"}
         - {method: GET, path: "/api/entregables/proyectos-grado/{proyectoGradoId}/vista-previa-paquete", role: "entregables:vista-previa-paquete-entregable:view"}
+        # biblioteca
+        - {method: GET, path: "/api/biblioteca/estados-documentacion", role: "biblioteca:estado-documentacion:view"}
+        - {method: POST, path: "/api/biblioteca/documentaciones/consultar", role: "biblioteca:documentacion:view"}
+        - {method: GET, path: "/api/biblioteca/documentaciones/{documentacionId}/autores", role: "biblioteca:autor-documentacion:view"}

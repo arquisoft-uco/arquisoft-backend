@@ -11,4 +11,6 @@ public interface EvaluacionCualitativaAsesorOutputPort {
     void registrarTodas(List<EvaluacionCualitativaAsesorEntity> entidades);
 
     Set<UUID> consultarItemsRegistrados(UUID evaluacionAsesor, Set<UUID> items);
+
+    boolean existePorItem(UUID item);
 }
