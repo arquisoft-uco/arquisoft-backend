@@ -11,7 +11,7 @@ public class CancelacionEntregablePermitidaRuleImpl implements CancelacionEntreg
     public void validar(TransicionEstadoEntregable transicion) {
         var actual = transicion.actual();
         var cancela = transicion.nuevo() == EstadoEntregable.CANCELADO;
-        var cancelable = actual == EstadoEntregable.DISPONIBLE_EVALUACION || actual == EstadoEntregable.RECHAZADO;
+        var cancelable = actual == EstadoEntregable.NUEVO || actual == EstadoEntregable.RECHAZADO;
         if (cancela && !cancelable) {
             throw new CancelacionEntregableNoPermitidaException(transicion.entregableProyectoGrado(), actual);
         }

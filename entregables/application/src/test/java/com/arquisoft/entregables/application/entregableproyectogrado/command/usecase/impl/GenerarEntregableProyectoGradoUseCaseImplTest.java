@@ -150,7 +150,7 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         orden.verify(armadoPaqueteOutputPort).eliminar("bucket", "entregables/paquetes/a.zip");
         orden.verify(eventPublisher).publish(any(EntregableProyectoGradoGeneradoEvent.class));
         assertThat(captorEstado.getValue().entregableProyectoGrado()).isEqualTo(id);
-        assertThat(captorEstado.getValue().estadoEntregable()).isEqualTo(EstadoEntregable.DISPONIBLE_EVALUACION.getId());
+        assertThat(captorEstado.getValue().estadoEntregable()).isEqualTo(EstadoEntregable.NUEVO.getId());
         assertThat(captor.getValue().id()).isEqualTo(id);
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyecto);
         assertThat(captor.getValue().asesor()).isEqualTo(asesor);

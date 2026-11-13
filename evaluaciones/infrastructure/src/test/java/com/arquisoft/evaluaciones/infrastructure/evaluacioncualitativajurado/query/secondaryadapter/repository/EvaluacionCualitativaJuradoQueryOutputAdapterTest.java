@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativajurado.qu
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.criteria.EvaluacionCualitativaJuradoCriteria;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.readmodel.EvaluacionCualitativaJuradoReadModel;
 import jakarta.persistence.EntityManager;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,8 +91,8 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
     private UUID sembrarEntregable() {
         UUID entregable = UUID.randomUUID();
         entityManager.createNativeQuery(
-                "INSERT INTO entregable (id, proyecto, version_entregable) VALUES (?, 'Proyecto', 1)")
-                .setParameter(1, entregable).executeUpdate();
+                "INSERT INTO entregable (id, proyecto, version_entregable, proyecto_grado_id) VALUES (?, 'Proyecto', 1, ?)")
+                .setParameter(1, entregable).setParameter(2, UtilUUID.generarNuevoUUID()).executeUpdate();
         return entregable;
     }
 

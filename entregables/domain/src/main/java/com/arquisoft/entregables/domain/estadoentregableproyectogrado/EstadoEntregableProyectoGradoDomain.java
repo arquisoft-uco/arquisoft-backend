@@ -96,7 +96,7 @@ public final class EstadoEntregableProyectoGradoDomain {
     }
 
     private void setEstadoEntregableInicial() {
-        this.estadoEntregable = EstadoEntregable.DISPONIBLE_EVALUACION;
+        this.estadoEntregable = EstadoEntregable.NUEVO;
     }
 
     private void setFechaActualizacion() {

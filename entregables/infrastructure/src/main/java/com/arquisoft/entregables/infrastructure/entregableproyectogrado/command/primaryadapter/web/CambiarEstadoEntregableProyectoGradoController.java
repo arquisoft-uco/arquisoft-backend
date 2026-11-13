@@ -6,6 +6,7 @@ import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EntregablesApiMessages;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -50,10 +51,11 @@ public class CambiarEstadoEntregableProyectoGradoController {
     })
     public ResponseEntity<Void> cambiarEstado(
             @PathVariable UUID entregableProyectoGradoId,
-            @RequestBody CambiarEstadoEntregableProyectoGradoRequestDTO request) {
+            @RequestBody CambiarEstadoEntregableProyectoGradoRequestDTO request,
+            IdentidadActual identidad) {
 
         cambiarEstadoEntregableProyectoGradoInteractor.ejecutar(
-                CambiarEstadoEntregableProyectoGradoRequestMapper.toCommand(entregableProyectoGradoId, request));
+                CambiarEstadoEntregableProyectoGradoRequestMapper.toCommand(entregableProyectoGradoId, request, identidad));
         return ResponseEntity.noContent().build();
     }
 }

@@ -159,6 +159,7 @@ public final class ClavesCatalogo {
             EstadoEvaluacionFichaKey.class,
             EstadoEvaluacionKey.class,
             com.arquisoft.shared.message.key.evaluaciones.EstadoEvaluacionKey.class,
+            com.arquisoft.shared.message.key.evaluaciones.EntregableKey.class,
             EstadoFichaKey.class,
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,

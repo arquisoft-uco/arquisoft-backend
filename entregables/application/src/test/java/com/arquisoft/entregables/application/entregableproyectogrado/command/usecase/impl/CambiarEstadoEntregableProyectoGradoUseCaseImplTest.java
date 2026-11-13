@@ -10,8 +10,10 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntr
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCanceladoEvent;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCerradoEvent;
+import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoDisponibleEvaluacionEvent;
 import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.entregables.domain.estadoentregableproyectogrado.EstadoEntregableProyectoGradoDomain;
+import com.arquisoft.entregables.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.exception.DomainException;
@@ -78,7 +80,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
-        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CERRADO");
+        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CERRADO", UtilUUID.generarNuevoUUID());
         var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 2, UtilUUID.generarNuevoUUID());
         var estado = estadoActual(id, EstadoEntregable.APROBADO);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
@@ -115,11 +117,11 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
-        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CANCELADO");
+        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CANCELADO", UtilUUID.generarNuevoUUID());
         var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyecto, 4, UtilUUID.generarNuevoUUID());
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
         when(estadoActualEntregableProyectoGradoFinder.obtener(id))
-                .thenReturn(estadoActual(id, EstadoEntregable.DISPONIBLE_EVALUACION));
+                .thenReturn(estadoActual(id, EstadoEntregable.NUEVO));
         when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
 
         // Act
@@ -131,7 +133,8 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         var captorEstado = ArgumentCaptor.forClass(EstadoEntregableProyectoGradoEntity.class);
         orden.verify(estadoEntregableProyectoGradoOutputPort).registrar(captorEstado.capture());
         orden.verify(eventPublisher).publish(captor.capture());
-        orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "DISPONIBLE_EVALUACION", "CANCELADO");
+        orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "NUEVO", "CANCELADO");
+        verify(eventPublisher, never()).publish(any(EntregableProyectoGradoDisponibleEvaluacionEvent.class));
         verify(eventPublisher, times(1)).publish(any());
         assertThat(captorEstado.getValue().estadoEntregable()).isEqualTo("CANCELADO");
         assertThat(captor.getValue()).isInstanceOfSatisfying(EntregableProyectoGradoCanceladoEvent.class, evento -> {
@@ -142,10 +145,46 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
     }
 
     @Test
+    void debePublicarEventoDisponibleEvaluacionConNombreProyecto_cuandoPasaADisponibleEvaluacion() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var proyectoId = UtilUUID.generarNuevoUUID();
+        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(
+                id, "DISPONIBLE_EVALUACION", UtilUUID.generarNuevoUUID());
+        var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyectoId, 3, UtilUUID.generarNuevoUUID());
+        var estado = estadoActual(id, EstadoEntregable.NUEVO);
+        var proyecto = ProyectoGradoDomain.reconstruir(proyectoId, "Sistema de riego", EstadoProyecto.EN_PROCESO);
+        when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
+        when(estadoActualEntregableProyectoGradoFinder.obtener(id)).thenReturn(estado);
+        when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(proyecto);
+
+        // Act
+        useCase.ejecutar(cambio);
+
+        // Assert
+        var orden = inOrder(cambiarEstadoEntregableProyectoGradoValidator, estadoEntregableProyectoGradoOutputPort,
+                eventPublisher, logger);
+        var captor = ArgumentCaptor.forClass(DomainEvent.class);
+        var captorEstado = ArgumentCaptor.forClass(EstadoEntregableProyectoGradoEntity.class);
+        orden.verify(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable, estado, proyecto);
+        orden.verify(estadoEntregableProyectoGradoOutputPort).registrar(captorEstado.capture());
+        orden.verify(eventPublisher).publish(captor.capture());
+        orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "NUEVO", "DISPONIBLE_EVALUACION");
+        verify(eventPublisher, times(1)).publish(any());
+        assertThat(captorEstado.getValue().estadoEntregable()).isEqualTo("DISPONIBLE_EVALUACION");
+        assertThat(captor.getValue()).isInstanceOfSatisfying(EntregableProyectoGradoDisponibleEvaluacionEvent.class, evento -> {
+            assertThat(evento.getEntregableProyectoGrado()).isEqualTo(id);
+            assertThat(evento.getProyectoGrado()).isEqualTo(proyectoId);
+            assertThat(evento.getNombreProyecto()).isEqualTo("Sistema de riego");
+            assertThat(evento.getVersion()).isEqualTo(3);
+        });
+    }
+
+    @Test
     void noDebePublicarEvento_cuandoElValidatorRechaza() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CERRADO");
+        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CERRADO", UtilUUID.generarNuevoUUID());
         var entregable = EntregableProyectoGradoDomain.reconstruir(id, UtilUUID.generarNuevoUUID(), 1,
                 UtilUUID.generarNuevoUUID());
         var estado = estadoActual(id, EstadoEntregable.CERRADO);

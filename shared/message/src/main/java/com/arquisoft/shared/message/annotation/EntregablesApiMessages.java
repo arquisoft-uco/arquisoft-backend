@@ -33,7 +33,7 @@ public final class EntregablesApiMessages {
         public static final String TAG_DESCRIPTION = "Generación, consulta y cambio de estado de los entregables de un proyecto de grado";
         public static final String GENERAR_SUMMARY = "Generar un entregable de un proyecto de grado";
         public static final String GENERAR_DESCRIPTION =
-                "El asesor genera un nuevo entregable del proyecto de grado, que queda disponible para evaluación. "
+                "El asesor genera un nuevo entregable del proyecto de grado, que queda en estado Nuevo y aún no está disponible para evaluación. "
                         + "La versión es la siguiente a la del último entregable del proyecto y el asesor se toma del token. "
                         + "El paquete ZIP con la última versión cerrada de cada artefacto vigente y su manifiesto queda armado al responder";
         public static final String GENERAR_RESP_201 = "Entregable generado; devuelve su identificador";
@@ -44,14 +44,16 @@ public final class EntregablesApiMessages {
         public static final String GENERAR_RESP_503 = "Falta el archivo de un artefacto en el almacenamiento";
         public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un entregable de proyecto de grado";
         public static final String CAMBIAR_ESTADO_DESCRIPTION =
-                "El asesor cambia el estado de un entregable a Cancelado o Cerrado. Solo puede cancelarse un entregable "
-                        + "Disponible Evaluación o Rechazado y solo puede cerrarse uno Aprobado, Aprobado Con Observaciones "
-                        + "o Rechazado. Cerrado y Cancelado son los únicos estados terminales";
+                "El asesor dueño del entregable (se toma del token) lo cambia a Disponible Evaluación, Cancelado o "
+                        + "Cerrado. Solo puede pasar a Disponible Evaluación un entregable Nuevo, solo puede cancelarse "
+                        + "uno Nuevo o Rechazado y solo puede cerrarse uno Aprobado, Aprobado Con Observaciones o "
+                        + "Rechazado. Cerrado y Cancelado son los únicos estados terminales";
         public static final String CAMBIAR_ESTADO_RESP_204 = "Estado del entregable cambiado";
         public static final String CAMBIAR_ESTADO_RESP_400 =
                 "El identificador del entregable no es un UUID válido o el estado viene vacío";
         public static final String CAMBIAR_ESTADO_RESP_422 =
-                "El entregable no existe, el estado no existe, la transición no está permitida o el entregable ya es terminal";
+                "El entregable no existe, el asesor no es su dueño, el estado no existe, la transición no está permitida "
+                        + "o el entregable ya es terminal";
         public static final String CONSULTAR_ASESOR_SUMMARY =
                 "Filtrar los entregables generados del asesor autenticado";
         private static final String INDICADORES_CIERRE =

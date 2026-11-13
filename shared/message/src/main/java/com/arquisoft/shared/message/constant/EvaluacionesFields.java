@@ -216,4 +216,14 @@ public final class EvaluacionesFields {
         public static final String EVALUACION_CUANTITATIVA_JURADO = "evaluacionCuantitativaJurado";
         public static final String DESCRIPCION = "descripcion";
     }
+
+    public static final class Entregable {
+
+        private Entregable() {}
+
+        public static final String ID = "entregable";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String PROYECTO = "proyecto";
+        public static final String VERSION = "version";
+    }
 }

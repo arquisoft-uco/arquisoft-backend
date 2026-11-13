@@ -231,5 +231,7 @@ public final class EventTopics {
                 "entregables.entregable_proyecto_grado.cancelado";
         public static final String ENTREGABLE_PROYECTO_GRADO_RECHAZADO =
                 "entregables.entregable_proyecto_grado.rechazado";
+        public static final String ENTREGABLE_PROYECTO_GRADO_DISPONIBLE_EVALUACION =
+                "entregables.entregable_proyecto_grado.disponible_evaluacion";
     }
 }

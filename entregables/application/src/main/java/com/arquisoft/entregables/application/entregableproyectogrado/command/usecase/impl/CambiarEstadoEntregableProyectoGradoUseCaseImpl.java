@@ -10,6 +10,7 @@ import com.arquisoft.entregables.application.proyectogrado.command.finder.Proyec
 import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCanceladoEvent;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCerradoEvent;
+import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoDisponibleEvaluacionEvent;
 import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.entregables.domain.estadoentregableproyectogrado.EstadoEntregableProyectoGradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
@@ -52,6 +53,11 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
         if (cambio.getEstadoEntregable() == EstadoEntregable.CERRADO) {
             eventPublisher.publish(new EntregableProyectoGradoCerradoEvent(
                     cambio.getEntregableProyectoGrado(), entregable.getProyectoGrado(), entregable.getVersion()));
+        }
+        if (cambio.getEstadoEntregable() == EstadoEntregable.DISPONIBLE_EVALUACION) {
+            eventPublisher.publish(new EntregableProyectoGradoDisponibleEvaluacionEvent(
+                    cambio.getEntregableProyectoGrado(), entregable.getProyectoGrado(), proyecto.getNombre(),
+                    entregable.getVersion()));
         }
         if (cambio.getEstadoEntregable() == EstadoEntregable.CANCELADO) {
             eventPublisher.publish(new EntregableProyectoGradoCanceladoEvent(
