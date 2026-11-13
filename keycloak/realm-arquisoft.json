@@ -56,6 +56,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "biblioteca:documentacion:view",
               "proyectos:proyecto-grado-cancelacion:update",
               "proyectos:historial-estado-proyecto-grado:view",
               "solicitudes:respuesta-cambio-asesor:delete",
@@ -282,7 +283,8 @@
         "composites": {
           "client": {
             "arquisoft-api": [
-              "biblioteca:estado-documentacion:view"
+              "biblioteca:estado-documentacion:view",
+              "biblioteca:documentacion:view"
             ]
           }
         },
@@ -298,6 +300,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "biblioteca:documentacion:view",
               "artefactos:version-artefacto:upload",
               "artefactos:version-artefacto:delete",
               "repositorio-artefactos:version-repositorio-artefacto:download",
@@ -388,6 +391,7 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "biblioteca:documentacion:view",
               "proyectos:proyecto-grado-estado:update",
               "proyectos:historial-estado-proyecto-grado:view",
               "mapas-ruta:tarea-mapa-ruta-asesor:view",
@@ -1263,6 +1267,15 @@
         {
           "id": "93c892ea-1fe2-463e-8498-6ef7f33c2ba1",
           "name": "biblioteca:estado-documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "2334c846-6d3b-4541-86c5-8dd0259b26e1",
+          "name": "biblioteca:documentacion:view",
           "description": "",
           "composite": false,
           "clientRole": true,

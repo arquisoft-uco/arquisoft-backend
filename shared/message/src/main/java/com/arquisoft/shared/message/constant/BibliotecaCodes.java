@@ -24,4 +24,11 @@ public final class BibliotecaCodes {
 
         public static final String NO_ENCONTRADO = "ESTADO_DOCUMENTACION_NO_ENCONTRADO";
     }
+
+    public static final class Documentacion {
+
+        private Documentacion() {}
+
+        public static final String ROLES_REQUERIDOS = "DOCUMENTACION_ROLES_REQUERIDOS";
+    }
 }
