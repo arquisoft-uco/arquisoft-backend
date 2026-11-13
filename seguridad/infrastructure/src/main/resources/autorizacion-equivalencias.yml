@@ -120,6 +120,7 @@ security:
         - {method: GET, path: "/api/evaluaciones/criterios-item-cualitativo-jurado", role: "evaluaciones:criterio-item-cualitativo-jurado:view"}
         - {method: GET, path: "/api/evaluaciones/estados-evaluacion", role: "evaluaciones:estado-evaluacion:view"}
         - {method: POST, path: "/api/evaluaciones/estudiante", role: "evaluaciones:evaluacion-estudiante:view"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-asesor/{evaluacionCuantitativaAsesorId}/observaciones", role: "evaluaciones:observacion-item-asesor:create"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones", role: "evaluaciones:observacion-item-jurado:create"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/jurado", role: "evaluaciones:observacion-item-jurado-jurado:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/estudiante", role: "evaluaciones:observacion-item-jurado-estudiante:view"}
