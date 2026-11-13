@@ -107,8 +107,10 @@ security:
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}", role: "evaluaciones:evaluacion-asesor-detalle:view"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor:create"}
+        - {method: DELETE, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor:delete"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor:create"}
+        - {method: DELETE, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor:delete"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas/estudiante", role: "evaluaciones:evaluacion-cuantitativa-asesor-estudiante:view"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas/estudiante", role: "evaluaciones:evaluacion-cualitativa-asesor-estudiante:view"}
         - {method: POST, path: "/api/evaluaciones-jurado/{evaluacionJuradoId}/evaluaciones-cualitativas", role: "evaluaciones:evaluacion-cualitativa-jurado:create"}
@@ -122,6 +124,7 @@ security:
         - {method: POST, path: "/api/evaluaciones/estudiante", role: "evaluaciones:evaluacion-estudiante:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-asesor/{evaluacionCuantitativaAsesorId}/observaciones", role: "evaluaciones:observacion-item-asesor:create"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-asesor/{evaluacionCuantitativaAsesorId}/observaciones/asesor", role: "evaluaciones:observacion-item-asesor-asesor:view"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-asesor/{evaluacionCuantitativaAsesorId}/observaciones/estudiante", role: "evaluaciones:observacion-item-asesor-estudiante:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones", role: "evaluaciones:observacion-item-jurado:create"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/jurado", role: "evaluaciones:observacion-item-jurado-jurado:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/estudiante", role: "evaluaciones:observacion-item-jurado-estudiante:view"}

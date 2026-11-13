@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativaasesor.c
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativaasesor.command.secondaryadapter.entity.EvaluacionCuantitativaAsesorJpaEntity;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativaasesor.command.secondaryadapter.projection.ContextoEvaluacionCuantitativaAsesorProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,6 +20,12 @@ public interface EvaluacionCuantitativaAsesorCommandRepository
     @Query("select e.item from EvaluacionCuantitativaAsesorJpaEntity e "
             + "where e.evaluacionAsesor = :evaluacionAsesor and e.item in :items")
     Set<UUID> findItemsRegistrados(
+            @Param("evaluacionAsesor") UUID evaluacionAsesor, @Param("items") Set<UUID> items);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from EvaluacionCuantitativaAsesorJpaEntity e "
+            + "where e.evaluacionAsesor = :evaluacionAsesor and e.item in :items")
+    void eliminarPorItems(
             @Param("evaluacionAsesor") UUID evaluacionAsesor, @Param("items") Set<UUID> items);
 
     @NativeQuery("""

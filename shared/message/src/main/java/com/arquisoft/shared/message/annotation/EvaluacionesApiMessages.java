@@ -226,7 +226,7 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones cualitativas del asesor";
         public static final String TAG_DESCRIPTION =
-                "Registro y consulta de las evaluaciones cualitativas asociadas a una evaluación de asesor";
+                "Registro, omisión y consulta de las evaluaciones cualitativas asociadas a una evaluación de asesor";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cualitativas del asesor";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta las evaluaciones cualitativas realizadas por el asesor autenticado en una evaluación suya";
@@ -250,6 +250,17 @@ public final class EvaluacionesApiMessages {
         public static final String REGISTRAR_RESP_422 =
                 "La evaluación no existe, no pertenece al asesor, está finalizada, "
                         + "o algún ítem/criterio no existe o ya fue registrado";
+        public static final String OMITIR_SUMMARY = "Omitir evaluaciones cualitativas del asesor";
+        public static final String OMITIR_DESCRIPTION =
+                "Retira en un solo lote las evaluaciones cualitativas que el asesor autenticado registró en una "
+                        + "evaluación suya, indicando los ítems a omitir";
+        public static final String OMITIR_PARAM_ITEM =
+                "Identificador del ítem cualitativo a omitir; se repite el parámetro por cada ítem del lote";
+        public static final String OMITIR_RESP_204 = "Lote omitido";
+        public static final String OMITIR_RESP_400 = "Datos de entrada inválidos";
+        public static final String OMITIR_RESP_422 =
+                "La evaluación no existe, no pertenece al asesor, está finalizada, hay ítems repetidos "
+                        + "o algún ítem no tiene evaluación registrada";
     }
 
     public static final class EvaluacionCuantitativaAsesor {
@@ -258,7 +269,7 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones cuantitativas del asesor";
         public static final String TAG_DESCRIPTION =
-                "Registro y consulta de las evaluaciones cuantitativas asociadas a una evaluación de asesor";
+                "Registro, omisión y consulta de las evaluaciones cuantitativas asociadas a una evaluación de asesor";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cuantitativas del asesor";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta las evaluaciones cuantitativas realizadas por el asesor autenticado en una evaluación suya";
@@ -282,6 +293,17 @@ public final class EvaluacionesApiMessages {
         public static final String REGISTRAR_RESP_422 =
                 "La evaluación no existe, no pertenece al asesor, está finalizada, algún ítem no existe "
                         + "o ya fue registrado, o algún puntaje excede el valor máximo del ítem";
+        public static final String OMITIR_SUMMARY = "Omitir evaluaciones cuantitativas del asesor";
+        public static final String OMITIR_DESCRIPTION =
+                "Retira en un solo lote las evaluaciones cuantitativas que el asesor autenticado registró en una "
+                        + "evaluación suya, indicando los ítems a omitir; las observaciones de esos ítems se eliminan con ellas";
+        public static final String OMITIR_PARAM_ITEM =
+                "Identificador del ítem cuantitativo a omitir; se repite el parámetro por cada ítem del lote";
+        public static final String OMITIR_RESP_204 = "Lote omitido";
+        public static final String OMITIR_RESP_400 = "Datos de entrada inválidos";
+        public static final String OMITIR_RESP_422 =
+                "La evaluación no existe, no pertenece al asesor, está finalizada, hay ítems repetidos "
+                        + "o algún ítem no tiene evaluación registrada";
     }
 
     public static final class EvaluacionCuantitativaJurado {
@@ -546,6 +568,13 @@ public final class EvaluacionesApiMessages {
                 "El identificador no es válido o el filtro/orden solicitado no es aceptado";
         public static final String CONSULTAR_RESP_422 =
                 "La evaluación cuantitativa del asesor no existe o pertenece a otro asesor";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar observaciones como estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Consulta de forma paginada las observaciones que el asesor registró sobre una evaluación "
+                        + "cuantitativa de un proyecto del que el estudiante hace parte, con filtro y orden por "
+                        + "descripción (por defecto, ascendente)";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_422 =
+                "La evaluación cuantitativa del asesor no existe o el estudiante no está vinculado a su proyecto";
     }
 
     public static final class EstadoEvaluacion {

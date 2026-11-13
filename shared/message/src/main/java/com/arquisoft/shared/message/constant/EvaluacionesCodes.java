@@ -150,6 +150,20 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_ASESOR_CRITERIOS_NO_ENCONTRADOS";
         public static final String ITEMS_YA_REGISTRADOS =
                 "EVALUACION_CUALITATIVA_ASESOR_ITEMS_YA_REGISTRADOS";
+        public static final String OMISION_EVALUACION_ASESOR_FINALIZADA =
+                "EVALUACION_CUALITATIVA_ASESOR_OMISION_EVALUACION_ASESOR_FINALIZADA";
+        public static final String EVALUACIONES_NO_REGISTRADAS =
+                "EVALUACION_CUALITATIVA_ASESOR_EVALUACIONES_NO_REGISTRADAS";
+    }
+
+    public static final class OmisionEvaluacionesCualitativasAsesor {
+
+        private OmisionEvaluacionesCualitativasAsesor() {}
+
+        public static final String LOTE_VACIO = "OMISION_EVALUACIONES_CUALITATIVAS_ASESOR_LOTE_VACIO";
+        public static final String ITEMS_REPETIDOS = "OMISION_EVALUACIONES_CUALITATIVAS_ASESOR_ITEMS_REPETIDOS";
+        public static final String ITEM_REQUERIDO = "OMISION_EVALUACIONES_CUALITATIVAS_ASESOR_ITEM_REQUERIDO";
+        public static final String ITEM_INVALIDO = "OMISION_EVALUACIONES_CUALITATIVAS_ASESOR_ITEM_INVALIDO";
     }
 
     public static final class RegistroEvaluacionesCualitativasAsesor {
@@ -184,6 +198,20 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_ASESOR_PUNTAJES_EXCEDEN_VALOR_ITEM";
         public static final String ITEMS_YA_REGISTRADOS =
                 "EVALUACION_CUANTITATIVA_ASESOR_ITEMS_YA_REGISTRADOS";
+        public static final String OMISION_EVALUACION_ASESOR_FINALIZADA =
+                "EVALUACION_CUANTITATIVA_ASESOR_OMISION_EVALUACION_ASESOR_FINALIZADA";
+        public static final String EVALUACIONES_NO_REGISTRADAS =
+                "EVALUACION_CUANTITATIVA_ASESOR_EVALUACIONES_NO_REGISTRADAS";
+    }
+
+    public static final class OmisionEvaluacionesCuantitativasAsesor {
+
+        private OmisionEvaluacionesCuantitativasAsesor() {}
+
+        public static final String LOTE_VACIO = "OMISION_EVALUACIONES_CUANTITATIVAS_ASESOR_LOTE_VACIO";
+        public static final String ITEMS_REPETIDOS = "OMISION_EVALUACIONES_CUANTITATIVAS_ASESOR_ITEMS_REPETIDOS";
+        public static final String ITEM_REQUERIDO = "OMISION_EVALUACIONES_CUANTITATIVAS_ASESOR_ITEM_REQUERIDO";
+        public static final String ITEM_INVALIDO = "OMISION_EVALUACIONES_CUANTITATIVAS_ASESOR_ITEM_INVALIDO";
     }
 
     public static final class RegistroEvaluacionesCuantitativasAsesor {
@@ -415,6 +443,7 @@ public final class EvaluacionesCodes {
         public static final String EVALUACION_CUANTITATIVA_ASESOR_REQUERIDA =
                 "OBSERVACION_ITEM_ASESOR_EVALUACION_CUANTITATIVA_ASESOR_REQUERIDA";
         public static final String ASESOR_REQUERIDO = "OBSERVACION_ITEM_ASESOR_ASESOR_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_ITEM_ASESOR_ESTUDIANTE_REQUERIDO";
         public static final String OBSERVACION_REQUERIDA = "OBSERVACION_ITEM_ASESOR_OBSERVACION_REQUERIDA";
         public static final String DESCRIPCION_REQUERIDA = "OBSERVACION_ITEM_ASESOR_DESCRIPCION_REQUERIDA";
         public static final String DESCRIPCION_DEMASIADO_LARGA =

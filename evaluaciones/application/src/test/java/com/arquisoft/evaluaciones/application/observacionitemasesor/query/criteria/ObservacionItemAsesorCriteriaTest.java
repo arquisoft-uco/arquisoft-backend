@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.observacionitemasesor.query.criteria;
 
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,5 +18,17 @@ class ObservacionItemAsesorCriteriaTest {
 
         assertThat(ObservacionItemAsesorCriteria.Campo.esValidoParaFiltrar("campoInexistente")).isFalse();
         assertThat(ObservacionItemAsesorCriteria.Campo.esValidoParaOrdenar("campoInexistente")).isFalse();
+    }
+
+    @Test
+    void debeConservarEstudiante_cuandoSeConstruye() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var criteria = ObservacionItemAsesorCriteria.builder().estudiante(estudiante).build();
+
+        // Assert
+        assertThat(criteria.getEstudiante()).isEqualTo(estudiante);
     }
 }

@@ -37,4 +37,10 @@ public class EvaluacionCualitativaAsesorCommandOutputAdapter implements Evaluaci
     public boolean existePorItem(UUID item) {
         return repository.existsByItem(item);
     }
+
+    @Override
+    public void eliminarPorItems(UUID evaluacionAsesor, Set<UUID> items) {
+        repository.eliminarPorItems(evaluacionAsesor, items);
+        logger.debug(EvaluacionCualitativaAsesorKey.LOG_LOTE_ELIMINADO, items.size());
+    }
 }
