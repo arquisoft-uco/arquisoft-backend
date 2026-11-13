@@ -56,6 +56,7 @@ rutas:
     evaluaciones-cuantitativas-asesor:
       base: /evaluaciones/evaluaciones-cuantitativas-asesor
       observaciones: /{evaluacionCuantitativaAsesorId}/observaciones
+      observaciones-asesor: /{evaluacionCuantitativaAsesorId}/observaciones/asesor
     observaciones-item-jurado:
       base: /evaluaciones/observaciones-item-jurado
       por-id: /{observacionId}

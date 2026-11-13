@@ -8,6 +8,8 @@ public enum ObservacionItemAsesorKey implements ClaveMensaje {
     LOG_VERIFICACION_REGISTRAR("evaluaciones.aplicacion.observacionitemasesor.log.verificacion-registrar", 2),
     LOG_REGISTRADO("evaluaciones.aplicacion.observacionitemasesor.log.registrado", 1),
     LOG_GUARDADA("evaluaciones.infraestructura.observacionitemasesor.log.guardada", 1),
+    LOG_CONSULTANDO("evaluaciones.aplicacion.observacionitemasesor.log.consultando", 5),
+    LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.observacionitemasesor.log.consulta-completada", 3),
     ERROR_EVALUACION_NO_ENCONTRADA(
             "evaluaciones.dominio.observacionitemasesor.error.evaluacion-no-encontrada", 0),
     ERROR_EVALUACION_NO_ENCONTRADA_DETALLE(
