@@ -101,6 +101,13 @@ public final class EvaluacionesFields {
         public static final String EVALUACIONES = "evaluaciones";
     }
 
+    public static final class OmisionEvaluacionesCualitativasAsesor {
+
+        private OmisionEvaluacionesCualitativasAsesor() {}
+
+        public static final String ITEMS = "item";
+    }
+
     public static final class OmisionEvaluacionesCuantitativasAsesor {
 
         private OmisionEvaluacionesCuantitativasAsesor() {}

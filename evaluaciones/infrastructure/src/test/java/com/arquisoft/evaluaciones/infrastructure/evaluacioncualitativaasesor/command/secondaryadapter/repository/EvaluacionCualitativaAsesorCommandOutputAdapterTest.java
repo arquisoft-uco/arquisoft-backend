@@ -100,4 +100,48 @@ class EvaluacionCualitativaAsesorCommandOutputAdapterTest {
         assertThat(usado).isTrue();
         assertThat(sinUso).isFalse();
     }
+
+    @Test
+    void debeEliminarSoloItemsDelLote_cuandoHayOtrosItems() {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var itemOmitido1 = UtilUUID.generarNuevoUUID();
+        var itemOmitido2 = UtilUUID.generarNuevoUUID();
+        var itemConservado = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        itemOmitido1, UtilUUID.generarNuevoUUID()),
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        itemOmitido2, UtilUUID.generarNuevoUUID()),
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        itemConservado, UtilUUID.generarNuevoUUID())));
+        repository.flush();
+
+        // Act
+        adapter.eliminarPorItems(evaluacionAsesor, Set.of(itemOmitido1, itemOmitido2));
+
+        // Assert
+        assertThat(repository.findAll()).extracting(e -> e.getItem()).containsExactly(itemConservado);
+        verify(logger).debug(any(ClaveMensaje.class), eq(2));
+    }
+
+    @Test
+    void noDebeTocarOtraEvaluacionAsesor_cuandoMismoItem() {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var otraEvaluacion = UtilUUID.generarNuevoUUID();
+        var item = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        item, UtilUUID.generarNuevoUUID()),
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), otraEvaluacion,
+                        item, UtilUUID.generarNuevoUUID())));
+        repository.flush();
+
+        // Act
+        adapter.eliminarPorItems(evaluacionAsesor, Set.of(item));
+
+        // Assert
+        assertThat(repository.findAll()).extracting(e -> e.getEvaluacionAsesor()).containsExactly(otraEvaluacion);
+    }
 }
