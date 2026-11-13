@@ -108,8 +108,6 @@ public final class EntregablesCodes {
         public static final String REPOSITORIO_INVALIDO = "ENTREGABLES_ARTEFACTO_ENTREGABLE_REPOSITORIO_INVALIDO";
         public static final String NOMBRE_REPOSITORIO_INVALIDO =
                 "ENTREGABLES_ARTEFACTO_ENTREGABLE_NOMBRE_REPOSITORIO_INVALIDO";
-        public static final String PAQUETE_REQUERIDO = "ENTREGABLES_ARTEFACTO_ENTREGABLE_PAQUETE_REQUERIDO";
-        public static final String ARTEFACTOS_REQUERIDOS = "ENTREGABLES_ARTEFACTO_ENTREGABLE_ARTEFACTOS_REQUERIDOS";
     }
 
     public static final class ProyectoGrado {

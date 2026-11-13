@@ -69,8 +69,6 @@ public final class EntregablesFields {
         public static final String NOMBRE_DOCUMENTO = "nombreDocumento";
         public static final String REPOSITORIO = "repositorio";
         public static final String NOMBRE_REPOSITORIO = "nombreRepositorio";
-        public static final String PAQUETE = "paquete";
-        public static final String ARTEFACTOS = "artefactos";
     }
 
     public static final class ProyectoGrado {
