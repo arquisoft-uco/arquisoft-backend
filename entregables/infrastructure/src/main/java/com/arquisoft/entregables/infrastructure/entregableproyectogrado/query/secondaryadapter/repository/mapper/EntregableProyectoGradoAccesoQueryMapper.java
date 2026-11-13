@@ -13,6 +13,6 @@ public final class EntregableProyectoGradoAccesoQueryMapper {
                 entity.getProyectoGradoId(),
                 entity.getVersionEntregable().intValue(),
                 entity.getAsesorId(),
-                entity.getEstadoEntregableId());
+                entity.isProyectoCancelado());
     }
 }

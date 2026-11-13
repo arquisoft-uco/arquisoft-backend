@@ -75,6 +75,9 @@ public record AgregarPaqueteEntregableCommand(
     }
 
     private static void validarArtefacto(DatosArtefactoPaquete item, ValidationResult result) {
+        ValidatorUUID.uuidValido(item.versionArtefacto(),
+                EntregablesFields.ArtefactoEntregable.VERSION_ARTEFACTO,
+                EntregablesCodes.ArtefactoEntregable.VERSION_ARTEFACTO_INVALIDA, result);
         ValidatorUUID.uuidValido(item.artefacto(),
                 EntregablesFields.ArtefactoEntregable.ARTEFACTO,
                 EntregablesCodes.ArtefactoEntregable.ARTEFACTO_INVALIDO, result);
@@ -111,6 +114,7 @@ public record AgregarPaqueteEntregableCommand(
     private static ArtefactoPaqueteCommand toArtefacto(DatosArtefactoPaquete item) {
         return new ArtefactoPaqueteCommand(
                 UtilUUID.generarUUIDDesdeTexto(item.artefacto()),
+                UtilUUID.generarUUIDDesdeTexto(item.versionArtefacto()),
                 item.numeroVersion(),
                 UtilUUID.generarUUIDDesdeTexto(item.versionRepositorioArtefacto()),
                 item.nombreDocumento(),

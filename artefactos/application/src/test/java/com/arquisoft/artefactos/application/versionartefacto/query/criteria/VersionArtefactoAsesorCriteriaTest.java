@@ -87,4 +87,26 @@ class VersionArtefactoAsesorCriteriaTest {
         assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaFiltrar("fechaCreacionRevision")).isTrue();
         assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaOrdenar("fechaCreacionRevision")).isTrue();
     }
+
+    @Test
+    void debeDeclararFiltrableYNoOrdenable_indicadoresDeCierreDelProyecto() {
+        // Arrange
+        var claves = List.of("proyectoFinalizado", "proyectoCancelado");
+
+        // Act & Assert
+        assertThat(claves).allSatisfy(clave -> {
+            assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaFiltrar(clave)).isTrue();
+            assertThat(VersionArtefactoAsesorCriteria.Campo.esValidoParaOrdenar(clave)).isFalse();
+        });
+    }
+
+    @Test
+    void debeLanzarFiltroException_cuandoOrdenaPorProyectoCancelado() {
+        // Arrange
+        var ordenamiento = List.of(SortOrder.of("proyectoCancelado", SortDirection.ASC));
+        var builder = VersionArtefactoAsesorCriteria.builder().pagina(0).tamanio(10);
+
+        // Act & Assert
+        assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
+    }
 }

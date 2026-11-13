@@ -6,7 +6,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum RegistrarRevisionAsesorKey implements ClaveMensaje {
 
     LOG_REGISTRANDO("artefactos.aplicacion.registrarrevisionasesor.log.registrando", 2),
-    LOG_VERIFICACION_REGISTRO("artefactos.aplicacion.registrarrevisionasesor.log.verificacion-registro", 4),
+    LOG_VERIFICACION_REGISTRO("artefactos.aplicacion.registrarrevisionasesor.log.verificacion-registro", 5),
     LOG_REGISTRADA("artefactos.aplicacion.registrarrevisionasesor.log.registrada", 2);
 
     private final String clave;

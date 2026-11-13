@@ -27,8 +27,28 @@ class ConsultarEntregablesProyectoGradoEstudianteMapperTest {
         var criteria = ConsultarEntregablesProyectoGradoEstudianteMapper.toCriteria(query);
 
         // Assert
-        assertThat(criteria.consulta().getRaiz()).isEqualTo(
-                NodoFiltro.predicado("proyectoGradoId", FiltroOperador.ES, proyecto.toString()));
+        assertThat(criteria.consulta().getRaiz()).isEqualTo(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                NodoFiltro.predicado("proyectoGradoId", FiltroOperador.ES, proyecto.toString()),
+                NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false"),
+                NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "false"))));
+    }
+
+    @Test
+    void debeRespetarProyectoFinalizadoDelCliente_cuandoLoNombra() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var raizCliente = NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "true");
+        var query = ConsultarEntregablesProyectoGradoEstudianteQuery.crear(
+                UtilUUID.generarNuevoUUID(), proyecto, ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente));
+
+        // Act
+        var criteria = ConsultarEntregablesProyectoGradoEstudianteMapper.toCriteria(query);
+
+        // Assert
+        assertThat(criteria.consulta().getRaiz()).isEqualTo(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                NodoFiltro.predicado("proyectoGradoId", FiltroOperador.ES, proyecto.toString()),
+                NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false"),
+                raizCliente)));
     }
 
     @Test
@@ -49,6 +69,8 @@ class ConsultarEntregablesProyectoGradoEstudianteMapperTest {
             assertThat(grupo.conector()).isEqualTo(FiltroConector.AND);
             assertThat(grupo.nodos()).containsExactly(
                     NodoFiltro.predicado("proyectoGradoId", FiltroOperador.ES, proyecto.toString()),
+                    NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false"),
+                    NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "false"),
                     raizCliente);
         });
     }

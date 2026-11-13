@@ -19,7 +19,7 @@ import java.util.UUID;
         SELECT ae.id                        AS id,
                ae.entregable_id             AS entregable_id,
                a.id                         AS artefacto_id,
-               a.uri_archivo                AS uri_archivo,
+               ae.uri_archivo               AS uri_archivo,
                a.id_artefacto               AS id_artefacto,
                a.version_artefacto          AS version_artefacto,
                a.id_repositorio_artefacto   AS id_repositorio_artefacto,

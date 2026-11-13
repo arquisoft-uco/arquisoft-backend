@@ -41,7 +41,7 @@ class ConsultarArtefactosSinAvanceUseCaseImplTest {
                 .asesor(UtilUUID.generarNuevoUUID()).fechaLimite(Instant.now()).build();
         var artefacto = new ArtefactoSinAvanceReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto",
-                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", null, null, null);
+                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", null, null, null, false, false);
         var resultadoEsperado = PaginatedResult.of(List.of(artefacto), 0, 10, 1L);
         when(artefactoQueryOutputPort.consultarSinAvance(criteria)).thenReturn(resultadoEsperado);
 

@@ -219,6 +219,7 @@ public final class EvaluacionesCodes {
         public static final String EVALUACION_REQUERIDO = "EVALUACION_EVALUACION_REQUERIDO";
         public static final String ESTADO_REQUERIDO = "EVALUACION_ESTADO_REQUERIDO";
         public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
+        public static final String ASIGNACION_FINALIZADA = "EVALUACION_ASIGNACION_FINALIZADA";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
         public static final String NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
         public static final String ASESOR_REQUERIDO = "EVALUACION_ASESOR_REQUERIDO";
@@ -236,6 +237,8 @@ public final class EvaluacionesCodes {
         public static final String JURADO_INVALIDO = "EVALUACION_JURADO_JURADO_INVALIDO";
         public static final String JURADOS_NO_ENCONTRADOS = "EVALUACION_JURADO_JURADOS_NO_ENCONTRADOS";
         public static final String JURADOS_YA_ASIGNADOS = "EVALUACION_JURADO_JURADOS_YA_ASIGNADOS";
+        public static final String JURADOS_NO_ASIGNADOS = "EVALUACION_JURADO_JURADOS_NO_ASIGNADOS";
+        public static final String JURADOS_CON_EVALUACIONES = "EVALUACION_JURADO_JURADOS_CON_EVALUACIONES";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_JURADO_ESTADO_NO_ENCONTRADO";
     }
 
@@ -292,6 +295,22 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_JURADO_OMISION_EVALUACION_JURADO_FINALIZADA";
         public static final String EVALUACIONES_CON_OBSERVACIONES =
                 "EVALUACION_CUANTITATIVA_JURADO_EVALUACIONES_CON_OBSERVACIONES";
+        public static final String ITEM_INVALIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_ITEM_INVALIDO";
+        public static final String ITEMS_NO_ENCONTRADOS =
+                "EVALUACION_CUANTITATIVA_JURADO_ITEMS_NO_ENCONTRADOS";
+        public static final String PUNTAJES_EXCEDEN_VALOR_ITEM =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJES_EXCEDEN_VALOR_ITEM";
+        public static final String ITEMS_YA_REGISTRADOS =
+                "EVALUACION_CUANTITATIVA_JURADO_ITEMS_YA_REGISTRADOS";
+    }
+
+    public static final class RegistroEvaluacionesCuantitativasJurado {
+
+        private RegistroEvaluacionesCuantitativasJurado() {}
+
+        public static final String LOTE_VACIO = "REGISTRO_EVALUACIONES_CUANTITATIVAS_JURADO_LOTE_VACIO";
+        public static final String ITEMS_REPETIDOS = "REGISTRO_EVALUACIONES_CUANTITATIVAS_JURADO_ITEMS_REPETIDOS";
     }
 
     public static final class OmisionEvaluacionesCuantitativasJurado {

@@ -28,7 +28,8 @@ class TransicionEstadoProyectoPermitidaRuleImplTest {
                 Arguments.of(EstadoProyecto.FINALIZADO, EstadoProyecto.EN_PROCESO),
                 Arguments.of(EstadoProyecto.EN_PROCESO, EstadoProyecto.EN_PROCESO),
                 Arguments.of(EstadoProyecto.EN_PROCESO, EstadoProyecto.ATRASADO),
-                Arguments.of(EstadoProyecto.ATRASADO, EstadoProyecto.FINALIZADO));
+                Arguments.of(EstadoProyecto.EN_PROCESO, EstadoProyecto.CANCELADO),
+                Arguments.of(EstadoProyecto.ATRASADO, EstadoProyecto.CANCELADO));
     }
 
     @Test
@@ -36,6 +37,16 @@ class TransicionEstadoProyectoPermitidaRuleImplTest {
         // Arrange
         var transicion = new TransicionEstadoProyecto(UtilUUID.generarNuevoUUID(), TITULO_PROYECTO,
                 EstadoProyecto.EN_PROCESO, EstadoProyecto.FINALIZADO);
+
+        // Act & Assert
+        assertThatCode(() -> regla.validar(transicion)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debePasar_cuandoAtrasadoAFinalizado() {
+        // Arrange
+        var transicion = new TransicionEstadoProyecto(UtilUUID.generarNuevoUUID(), TITULO_PROYECTO,
+                EstadoProyecto.ATRASADO, EstadoProyecto.FINALIZADO);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(transicion)).doesNotThrowAnyException();

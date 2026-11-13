@@ -47,6 +47,16 @@ public final class MapasRutaApiMessages {
                 "El identificador del estudiante del token no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_404 =
                 "El estudiante no tiene proyecto de grado asignado o su proyecto no tiene mapa de ruta";
+        public static final String CONSULTAR_PROYECTO_ASESOR_SUMMARY =
+                "Consultar el mapa de ruta de un proyecto de grado que asesora";
+        public static final String CONSULTAR_PROYECTO_ASESOR_DESCRIPTION =
+                "Devuelve el identificador del mapa de ruta, el título del proyecto de grado y las fechas "
+                        + "de inicio y fin del mapa de ruta del proyecto indicado";
+        public static final String CONSULTAR_PROYECTO_ASESOR_RESP_200 = "Mapa de ruta encontrado";
+        public static final String CONSULTAR_PROYECTO_ASESOR_RESP_400 =
+                "El identificador del proyecto de grado no es un UUID válido";
+        public static final String CONSULTAR_PROYECTO_ASESOR_RESP_404 =
+                "El proyecto de grado no tiene mapa de ruta";
         public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar mapas de ruta según fechas";
         public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
                 "Lista paginada de los mapas de ruta de los proyectos de grado asignados al coordinador autenticado, "
@@ -203,6 +213,27 @@ public final class MapasRutaApiMessages {
                 "Página de planes reales del proyecto de grado";
         public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_400 =
                 "Identificador de proyecto de grado inválido, o filtro u ordenamiento no permitido";
+        public static final String MODIFICAR_SUMMARY = "Modificar un plan real";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica el tiempo real en días y la descripción de un plan real existente. La descripción es "
+                        + "opcional: si no llega o llega en blanco, el plan queda sin descripción. El plan real se "
+                        + "regenera cuando la tarea se finaliza de nuevo";
+        public static final String MODIFICAR_RESP_204 = "Plan real modificado";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 = "Plan real inexistente";
+        public static final String APORTAR_SUMMARY = "Aportar a un plan real";
+        public static final String APORTAR_DESCRIPTION =
+                "El asesor aporta a un plan real existente: el aporte reemplaza la descripción del plan, es "
+                        + "obligatorio y no puede estar en blanco. El tiempo real no se modifica";
+        public static final String APORTAR_RESP_204 = "Aporte registrado en el plan real";
+        public static final String APORTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String APORTAR_RESP_422 = "Plan real inexistente";
+        public static final String REMOVER_SUMMARY = "Remover un plan real";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve un plan real existente; la tarea queda sin plan real. El plan real se regenera "
+                        + "cuando la tarea se finaliza de nuevo";
+        public static final String REMOVER_RESP_204 = "Plan real removido";
+        public static final String REMOVER_RESP_422 = "Plan real inexistente";
     }
 
     public static final class EstadoItem {

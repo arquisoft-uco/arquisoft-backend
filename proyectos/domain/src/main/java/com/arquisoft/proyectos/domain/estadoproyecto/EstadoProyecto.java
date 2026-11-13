@@ -10,6 +10,7 @@ public enum EstadoProyecto {
     EN_PROCESO("En proceso"),
     ATRASADO("Atrasado"),
     FINALIZADO("Finalizado"),
+    CANCELADO("Cancelado"),
 
     VACIO("");
 

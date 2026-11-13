@@ -28,4 +28,7 @@ public class ArtefactoEntregableJpaEntity {
 
     @Column(name = "entregable_id", nullable = false, columnDefinition = "UUID")
     private UUID entregableId;
+
+    @Column(name = "uri_archivo", nullable = false, length = 2000)
+    private String uriArchivo;
 }

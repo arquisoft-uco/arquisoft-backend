@@ -17,7 +17,7 @@ class EstadoEntregableNoTerminalRuleImplTest {
     private final EstadoEntregableNoTerminalRuleImpl rule = new EstadoEntregableNoTerminalRuleImpl();
 
     @ParameterizedTest
-    @EnumSource(value = EstadoEntregable.class, names = {"CERRADO", "CANCELADO", "RECHAZADO"})
+    @EnumSource(value = EstadoEntregable.class, names = {"CERRADO", "CANCELADO"})
     void debeLanzar_cuandoElEstadoActualEsTerminal(EstadoEntregable actual) {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
@@ -34,7 +34,7 @@ class EstadoEntregableNoTerminalRuleImplTest {
 
     @ParameterizedTest
     @EnumSource(value = EstadoEntregable.class, mode = EnumSource.Mode.EXCLUDE,
-            names = {"CERRADO", "CANCELADO", "RECHAZADO", "VACIO"})
+            names = {"CERRADO", "CANCELADO", "VACIO"})
     void debePasar_cuandoElEstadoActualNoEsTerminal(EstadoEntregable actual) {
         // Arrange
         var transicion = new TransicionEstadoEntregable(

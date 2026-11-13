@@ -18,15 +18,17 @@ class ProyectoGradoMapperTest {
         var id = UtilUUID.generarNuevoUUID();
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
         var finalizadoEn = Instant.parse("2026-11-02T10:00:00Z");
-        var domain = ProyectoGradoDomain.reconstruir(id, "Proyecto", entregadoEn, finalizadoEn);
+        var canceladoEn = Instant.parse("2026-11-03T10:00:00Z");
+        var domain = ProyectoGradoDomain.reconstruir(id, "Proyecto", entregadoEn, finalizadoEn, canceladoEn);
 
         // Act
         var entity = ProyectoGradoMapper.toEntity(domain);
-        var reconstruido = ProyectoGradoMapper.toDomain(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, finalizadoEn));
+        var reconstruido = ProyectoGradoMapper.toDomain(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, finalizadoEn, canceladoEn));
 
         // Assert
-        assertThat(entity).isEqualTo(new ProyectoGradoEntity(id, "Proyecto", entregadoEn, finalizadoEn));
+        assertThat(entity).isEqualTo(new ProyectoGradoEntity(id, "Proyecto", entregadoEn, finalizadoEn, canceladoEn));
         assertThat(reconstruido.estaEntregado()).isFalse();
         assertThat(reconstruido.getFinalizadoEn()).isEqualTo(finalizadoEn);
+        assertThat(reconstruido.getCanceladoEn()).isEqualTo(canceladoEn);
     }
 }

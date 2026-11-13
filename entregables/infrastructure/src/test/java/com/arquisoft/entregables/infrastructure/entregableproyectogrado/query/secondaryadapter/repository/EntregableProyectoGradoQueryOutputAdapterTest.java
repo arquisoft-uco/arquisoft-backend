@@ -6,6 +6,7 @@ import com.arquisoft.entregables.application.entregableproyectogrado.query.prima
 import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.model.ConsultarEntregablesProyectoGradoEstudianteQuery;
 import com.arquisoft.entregables.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
 import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
+import com.arquisoft.entregables.infrastructure.estadoentregableproyectogrado.command.secondaryadapter.entity.EstadoEntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.FiltroConector;
@@ -28,6 +29,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 class EntregableProyectoGradoQueryOutputAdapterTest {
+
+    private static final Instant FECHA_BASE = Instant.parse("2026-11-10T10:00:00Z");
 
     @Autowired
     private EntregableProyectoGradoQueryRepository repository;
@@ -71,9 +74,15 @@ class EntregableProyectoGradoQueryOutputAdapterTest {
         return id;
     }
 
+    private void sembrarHistorial(UUID entregable, String estado, Instant fecha) {
+        entityManager.persist(new EstadoEntregableProyectoGradoJpaEntity(
+                UtilUUID.generarNuevoUUID(), entregable, estado, fecha));
+    }
+
     private UUID sembrarEntregable(UUID proyecto, int version, UUID asesor, String estado) {
         var id = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new EntregableProyectoGradoJpaEntity(id, proyecto, version, asesor, estado));
+        entityManager.persist(new EntregableProyectoGradoJpaEntity(id, proyecto, version, asesor));
+        sembrarHistorial(id, estado, FECHA_BASE);
         return id;
     }
 
@@ -109,6 +118,7 @@ class EntregableProyectoGradoQueryOutputAdapterTest {
         assertThat(leido.asesor().email()).isEqualTo("Ana@uco.edu.co");
         assertThat(leido.estadoEntregable().id()).isEqualTo("APROBADO");
         assertThat(leido.estadoEntregable().nombre()).isEqualTo("Aprobado");
+        assertThat(leido.estadoEntregable().fechaActualizacion()).isEqualTo(FECHA_BASE);
     }
 
     @Test
@@ -412,5 +422,31 @@ class EntregableProyectoGradoQueryOutputAdapterTest {
     private static EntregableProyectoGradoCriteria ordenado(String campo, SortDirection direccion) {
         return EntregableProyectoGradoCriteria.builder().pagina(0).tamanio(10)
                 .ordenamiento(List.of(SortOrder.of(campo, direccion))).build();
+    }
+
+    @Test
+    void debeRetornarElUltimoEstadoYFiltrarSoloPorEl_cuandoHayHistorial() {
+        // Arrange
+        var proyecto = sembrarProyecto("Proyecto Historial");
+        var asesor = sembrarAsesor("Ana", null);
+        var id = sembrarEntregable(proyecto, 1, asesor, "DISPONIBLE_EVALUACION");
+        sembrarHistorial(id, "EN_EVALUACION", FECHA_BASE.plusSeconds(60));
+        sembrarHistorial(id, "APROBADO", FECHA_BASE.plusSeconds(120));
+        confirmar();
+
+        // Act
+        var todos = adapter.consultar(criteria(null));
+        var porVigente = adapter.consultar(criteria(
+                NodoFiltro.predicado("estadoEntregable", FiltroOperador.ES, "APROBADO")));
+        var porPrevio = adapter.consultar(criteria(
+                NodoFiltro.predicado("estadoEntregable", FiltroOperador.ES, "EN_EVALUACION")));
+
+        // Assert
+        assertThat(todos.getTotalElements()).isEqualTo(1L);
+        assertThat(todos.getContent().getFirst().estadoEntregable().id()).isEqualTo("APROBADO");
+        assertThat(todos.getContent().getFirst().estadoEntregable().fechaActualizacion())
+                .isEqualTo(FECHA_BASE.plusSeconds(120));
+        assertThat(porVigente.getContent()).extracting("id").containsExactly(id);
+        assertThat(porPrevio.getContent()).isEmpty();
     }
 }

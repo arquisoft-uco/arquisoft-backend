@@ -86,6 +86,108 @@ class PlanRealCommandOutputAdapterTest {
     }
 
     @Test
+    void debeIndicarExistencia_porId() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, UtilUUID.generarNuevoUUID(), 2, "x"));
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.existePorId(id)).isTrue();
+        assertThat(adapter.existePorId(UtilUUID.generarNuevoUUID())).isFalse();
+    }
+
+    @Test
+    void debeActualizarSoloElPlanIndicado_cuandoActualizaPorId() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var tarea = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, tarea, 2, "Antes"));
+        adapter.registrar(new PlanRealEntity(otro, UtilUUID.generarNuevoUUID(), 9, "Otro"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarPorId(id, 7, "Despues");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var actualizado = entityManager.find(PlanRealJpaEntity.class, id);
+        assertThat(actualizado.getTiempoRealDias()).isEqualTo(7);
+        assertThat(actualizado.getDescripcionReal()).isEqualTo("Despues");
+        assertThat(actualizado.getTareaId()).isEqualTo(tarea);
+        var intacto = entityManager.find(PlanRealJpaEntity.class, otro);
+        assertThat(intacto.getTiempoRealDias()).isEqualTo(9);
+        assertThat(intacto.getDescripcionReal()).isEqualTo("Otro");
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeActualizarSoloDescripcion_cuandoPlanExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var tarea = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, tarea, 4, "Antes"));
+        adapter.registrar(new PlanRealEntity(otro, UtilUUID.generarNuevoUUID(), 9, "Otro"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarDescripcionPorId(id, "Aporte");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var actualizado = entityManager.find(PlanRealJpaEntity.class, id);
+        assertThat(actualizado.getDescripcionReal()).isEqualTo("Aporte");
+        assertThat(actualizado.getTiempoRealDias()).isEqualTo(4);
+        assertThat(actualizado.getTareaId()).isEqualTo(tarea);
+        var intacto = entityManager.find(PlanRealJpaEntity.class, otro);
+        assertThat(intacto.getDescripcionReal()).isEqualTo("Otro");
+        assertThat(intacto.getTiempoRealDias()).isEqualTo(9);
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeDejarDescripcionNula_cuandoAporteLlegaVacio() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, UtilUUID.generarNuevoUUID(), 2, "Antes"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarDescripcionPorId(id, UtilTexto.VACIO);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var actualizado = entityManager.find(PlanRealJpaEntity.class, id);
+        assertThat(actualizado.getDescripcionReal()).isNull();
+        assertThat(actualizado.getTiempoRealDias()).isEqualTo(2);
+    }
+
+    @Test
+    void debeGuardarNull_cuandoDescripcionVaciaPorId() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, UtilUUID.generarNuevoUUID(), 2, "Antes"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarPorId(id, 2, UtilTexto.VACIO);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(PlanRealJpaEntity.class, id).getDescripcionReal()).isNull();
+    }
+
+    @Test
     void debeGuardarNull_cuandoDescripcionVacia() {
         // Arrange
         var tarea = UtilUUID.generarNuevoUUID();
@@ -104,5 +206,44 @@ class PlanRealCommandOutputAdapterTest {
         // Assert
         assertThat(entityManager.find(PlanRealJpaEntity.class, idVacio).getDescripcionReal()).isNull();
         assertThat(entityManager.find(PlanRealJpaEntity.class, id).getDescripcionReal()).isNull();
+    }
+
+    @Test
+    void debeEliminarPlan_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, UtilUUID.generarNuevoUUID(), 2, "x"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarPorId(id);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(PlanRealJpaEntity.class, id)).isNull();
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeDejarIntactosLosDemasPlanes_cuandoSeEliminaUno() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        adapter.registrar(new PlanRealEntity(id, UtilUUID.generarNuevoUUID(), 2, "x"));
+        adapter.registrar(new PlanRealEntity(otro, UtilUUID.generarNuevoUUID(), 9, "Otro"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarPorId(id);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var intacto = entityManager.find(PlanRealJpaEntity.class, otro);
+        assertThat(intacto).isNotNull();
+        assertThat(intacto.getTiempoRealDias()).isEqualTo(9);
     }
 }

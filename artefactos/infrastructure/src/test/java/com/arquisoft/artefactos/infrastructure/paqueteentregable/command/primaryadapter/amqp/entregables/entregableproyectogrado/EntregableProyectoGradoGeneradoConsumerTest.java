@@ -154,6 +154,21 @@ class EntregableProyectoGradoGeneradoConsumerTest {
     }
 
     @Test
+    void debeRegistrarOmitido_cuandoElPaqueteSeOmite() throws Exception {
+        // Arrange
+        var entregable = UtilUUID.generarNuevoUUID();
+        when(generarPaqueteEntregableInteractor.ejecutar(any()))
+                .thenReturn(new GeneracionPaqueteEntregableResult.Omitido(entregable));
+
+        // Act
+        consumer.onEntregableProyectoGradoGenerado(mensajeValido(12L, false), channel);
+
+        // Assert
+        verify(logger).info(PaqueteEntregableKey.LOG_OMITIDO_PROYECTO_CANCELADO, entregable);
+        verify(channel).basicAck(12L, false);
+    }
+
+    @Test
     void debeApartarADlq_cuandoPayloadInvalido() throws Exception {
         // Act
         consumer.onEntregableProyectoGradoGenerado(mensajeCon("no-uuid", "tampoco", 0, 3L, false), channel);

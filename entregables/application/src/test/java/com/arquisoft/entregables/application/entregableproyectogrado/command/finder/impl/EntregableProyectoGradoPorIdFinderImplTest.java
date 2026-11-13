@@ -2,7 +2,6 @@ package com.arquisoft.entregables.application.entregableproyectogrado.command.fi
 
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.EntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.entity.EntregableProyectoGradoEntity;
-import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +28,7 @@ class EntregableProyectoGradoPorIdFinderImplTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var entity = new EntregableProyectoGradoEntity(id, UtilUUID.generarNuevoUUID(), 2,
-                UtilUUID.generarNuevoUUID(), "APROBADO");
+                UtilUUID.generarNuevoUUID());
         when(entregableProyectoGradoOutputPort.obtenerPorId(id)).thenReturn(Optional.of(entity));
 
         // Act
@@ -38,7 +37,6 @@ class EntregableProyectoGradoPorIdFinderImplTest {
         // Assert
         assertThat(entregable.esVacio()).isFalse();
         assertThat(entregable.getId()).isEqualTo(id);
-        assertThat(entregable.getEstadoEntregable()).isEqualTo(EstadoEntregable.APROBADO);
     }
 
     @Test

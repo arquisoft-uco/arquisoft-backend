@@ -26,7 +26,9 @@ import java.util.UUID;
                a.asesor_id                        AS asesor_id,
                s.nombre                           AS nombre_asesor,
                epg.estudiante_id                  AS estudiante_id,
-               (a.omitido_en IS NOT NULL)         AS omitido
+               (a.omitido_en IS NOT NULL)         AS omitido,
+               (pg.finalizado_en IS NOT NULL)     AS proyecto_finalizado,
+               (pg.cancelado_en IS NOT NULL)      AS proyecto_cancelado
         FROM artefacto a
                  JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
                  JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
@@ -74,4 +76,10 @@ public class ArtefactoEstudianteJpaQueryEntity {
 
     @Column(name = "omitido")
     private boolean omitido;
+
+    @Column(name = "proyecto_finalizado")
+    private boolean proyectoFinalizado;
+
+    @Column(name = "proyecto_cancelado")
+    private boolean proyectoCancelado;
 }

@@ -14,7 +14,11 @@ public enum PaqueteEntregableKey implements ClaveMensaje {
     LOG_VERIFICACION_PURGAR_ANTERIORES(
             "artefactos.aplicacion.paqueteentregable.log.verificacion-purgar-anteriores", 2),
     LOG_ANTERIORES_PURGADOS("artefactos.aplicacion.paqueteentregable.log.anteriores-purgados", 2),
-    LOG_PAQUETE_ELIMINADO("artefactos.infraestructura.paqueteentregable.log.paquete-eliminado", 2);
+    LOG_VERIFICACION_PURGAR_PROYECTO(
+            "artefactos.aplicacion.paqueteentregable.log.verificacion-purgar-proyecto", 2),
+    LOG_PROYECTO_PURGADOS("artefactos.aplicacion.paqueteentregable.log.proyecto-purgados", 2),
+    LOG_PAQUETE_ELIMINADO("artefactos.infraestructura.paqueteentregable.log.paquete-eliminado", 2),
+    LOG_OMITIDO_PROYECTO_CANCELADO("artefactos.aplicacion.paqueteentregable.log.omitido-proyecto-cancelado", 1);
 
     private final String clave;
     private final int parametros;

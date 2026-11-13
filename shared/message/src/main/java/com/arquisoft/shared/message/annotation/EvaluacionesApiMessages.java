@@ -306,6 +306,17 @@ public final class EvaluacionesApiMessages {
         public static final String CAMBIAR_PUNTAJE_RESP_422 =
                 "La evaluación no existe, no pertenece al jurado autenticado, su evaluación de jurado "
                         + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
+        public static final String REGISTRAR_SUMMARY = "Registrar evaluaciones cuantitativas del jurado";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra en un solo lote el puntaje que el jurado autenticado asigna a cada ítem cuantitativo "
+                        + "sobre una evaluación de jurado suya; si con ello su evaluación queda completa, "
+                        + "pasa a evaluada";
+        public static final String REGISTRAR_RESP_201 = "Lote registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación de jurado no existe, no pertenece al jurado, la evaluación está finalizada, "
+                        + "algún ítem no existe, está repetido o ya fue evaluado, o algún puntaje excede "
+                        + "el valor máximo del ítem";
         public static final String OMITIR_SUMMARY = "Omitir evaluaciones cuantitativas del jurado";
         public static final String OMITIR_DESCRIPTION =
                 "Omite (elimina) una o varias evaluaciones cuantitativas ya registradas en una evaluación de jurado, "
@@ -357,7 +368,7 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones de jurado";
         public static final String TAG_DESCRIPTION =
-                "Asignación y consulta de las evaluaciones de jurado de una evaluación";
+                "Asignación, remoción y consulta de las evaluaciones de jurado de una evaluación";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones de jurado";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta de forma paginada las evaluaciones de jurado de una evaluación, con filtro "
@@ -388,6 +399,16 @@ public final class EvaluacionesApiMessages {
         public static final String ASIGNAR_RESP_422 =
                 "La evaluación no existe o está finalizada, algún jurado no existe o ya está asignado, "
                         + "o hay jurados repetidos";
+        public static final String REMOVER_SUMMARY = "Remover jurados de una evaluación";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve, en una sola operación, un conjunto de jurados asignados a una evaluación que no esté "
+                        + "finalizada, siempre que ninguno haya registrado evaluaciones cualitativas o cuantitativas";
+        public static final String REMOVER_REQUEST_BODY = "Identificadores de los jurados a remover";
+        public static final String REMOVER_RESP_204 = "Jurados removidos";
+        public static final String REMOVER_RESP_400 = "Datos de entrada inválidos";
+        public static final String REMOVER_RESP_422 =
+                "La evaluación no existe o está finalizada, algún jurado no está asignado o ya registró "
+                        + "evaluaciones, o hay jurados repetidos";
     }
 
     public static final class ObservacionItemJurado {
@@ -395,9 +416,7 @@ public final class EvaluacionesApiMessages {
         private ObservacionItemJurado() {}
 
         public static final String TAG_NAME = "Observaciones de ítems cuantitativos del jurado";
-        public static final String TAG_DESCRIPTION =
-                "Registro, consulta y modificación de observaciones textuales sobre evaluaciones "
-                        + "cuantitativas del jurado";
+        public static final String TAG_DESCRIPTION = "Registro, consulta, modificación y remoción de observaciones";
         public static final String REGISTRAR_SUMMARY = "Registrar observación";
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra una nueva observación textual sobre una evaluación cuantitativa del jurado";
@@ -420,14 +439,17 @@ public final class EvaluacionesApiMessages {
                         + "evaluación cuantitativa del jurado, con filtro y orden por descripción "
                         + "(por defecto, ascendente)";
         public static final String MODIFICAR_SUMMARY = "Modificar observación";
-        public static final String MODIFICAR_DESCRIPTION =
-                "Modifica la descripción de una observación registrada sobre una evaluación cuantitativa "
-                        + "del jurado";
+        public static final String MODIFICAR_DESCRIPTION = "Modifica la descripción de una observación del jurado";
         public static final String MODIFICAR_RESP_204 = "Observación modificada";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 =
                 "La observación no existe, su evaluación de jurado ya está finalizada, "
                         + "o ya existe otra observación con esa descripción";
+        public static final String REMOVER_SUMMARY = "Remover observación";
+        public static final String REMOVER_DESCRIPTION = "Remueve una observación de una evaluación del jurado";
+        public static final String REMOVER_RESP_204 = "Observación removida";
+        public static final String REMOVER_RESP_400 = "Identificador de observación inválido";
+        public static final String REMOVER_RESP_422 = "La observación no existe o su evaluación ya está finalizada";
     }
 
     public static final class ItemCuantitativoJurado {

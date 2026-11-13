@@ -27,9 +27,27 @@ class ConsultarEntregablesProyectoGradoJuradoMapperTest {
         var criteria = ConsultarEntregablesProyectoGradoJuradoMapper.toCriteria(query);
 
         // Assert
-        assertThat(criteria.getRaiz()).isEqualTo(
-                NodoFiltro.predicadoMultivalor("estadoEntregable", FiltroOperador.IN, ESTADOS_A_EVALUAR));
+        assertThat(criteria.getRaiz()).isEqualTo(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                NodoFiltro.predicadoMultivalor("estadoEntregable", FiltroOperador.IN, ESTADOS_A_EVALUAR),
+                NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false"),
+                NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "false"))));
         assertThat(criteria.tieneFiltros()).isTrue();
+    }
+
+    @Test
+    void debeRespetarProyectoFinalizadoDelCliente_cuandoLoNombra() {
+        // Arrange
+        var raizCliente = NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "true");
+        var query = ConsultaCriteriaQuery.crear(0, 10, List.of(), raizCliente);
+
+        // Act
+        var criteria = ConsultarEntregablesProyectoGradoJuradoMapper.toCriteria(query);
+
+        // Assert
+        assertThat(criteria.getRaiz()).isEqualTo(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                NodoFiltro.predicadoMultivalor("estadoEntregable", FiltroOperador.IN, ESTADOS_A_EVALUAR),
+                NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false"),
+                raizCliente)));
     }
 
     @Test
@@ -48,6 +66,8 @@ class ConsultarEntregablesProyectoGradoJuradoMapperTest {
             assertThat(grupo.conector()).isEqualTo(FiltroConector.AND);
             assertThat(grupo.nodos()).containsExactly(
                     NodoFiltro.predicadoMultivalor("estadoEntregable", FiltroOperador.IN, ESTADOS_A_EVALUAR),
+                    NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false"),
+                    NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "false"),
                     raizCliente);
         });
     }

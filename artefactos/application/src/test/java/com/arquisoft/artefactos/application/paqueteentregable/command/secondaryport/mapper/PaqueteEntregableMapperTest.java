@@ -35,6 +35,8 @@ class PaqueteEntregableMapperTest {
         // Assert
         assertThat(resultado).hasSize(2);
         assertThat(resultado.get(0).artefacto()).isEqualTo(primero);
+        assertThat(resultado.get(0).versionArtefacto()).isEqualTo(incluidos.get(0).versionArtefacto());
+        assertThat(resultado.get(1).versionArtefacto()).isEqualTo(incluidos.get(1).versionArtefacto());
         assertThat(resultado.get(0).numeroVersion()).isEqualTo(3);
         assertThat(resultado.get(0).nombreDocumento()).isEqualTo("Informe");
         assertThat(resultado.get(0).nombreRepositorio()).isEqualTo("Repo Informe");

@@ -43,7 +43,7 @@ class EntregableProyectoGradoCriteriaTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"proyectoGradoId", "asesorId", "estadoEntregable"})
+    @ValueSource(strings = {"proyectoGradoId", "asesorId", "estadoEntregable", "proyectoFinalizado", "proyectoCancelado"})
     void debeRechazar_cuandoElCampoDeOrdenNoEsOrdenable(String campo) {
         // Arrange
         var orden = List.of(SortOrder.of(campo, SortDirection.ASC));

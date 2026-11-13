@@ -74,6 +74,22 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeLeerEstadoCancelado_cuandoSeActualiza() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion", "EN_PROCESO"));
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(id, "CANCELADO");
+        entityManager.clear();
+
+        // Assert
+        assertThat(adapter.obtenerPorId(id)).hasValue(new ProyectoGradoEntity(id, "Sistema de gestion", "CANCELADO"));
+        verify(logger).debug(ProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, id, "CANCELADO");
+    }
+
+    @Test
     void debeObtenerElProyectoConSuEstado_cuandoSeConsultaPorId() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
@@ -90,6 +106,23 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerProyectoBloqueado_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion", "EN_PROCESO"));
+        adapter.guardar(new ProyectoGradoEntity(UtilUUID.generarNuevoUUID(), "Otro proyecto", "EN_PROCESO"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerBloqueadoPorId(id);
+
+        // Assert
+        assertThat(resultado).hasValue(new ProyectoGradoEntity(id, "Sistema de gestion", "EN_PROCESO"));
+        assertThat(adapter.obtenerBloqueadoPorId(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
     void debeObtenerElProyectoDelEntregable_cuandoElEntregableExiste() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
@@ -98,7 +131,7 @@ class ProyectoGradoCommandOutputAdapterTest {
         adapter.guardar(new ProyectoGradoEntity(proyectoGrado, "Sistema de gestion", "EN_PROCESO"));
         adapter.guardar(new ProyectoGradoEntity(otroProyecto, "Otro proyecto", "EN_PROCESO"));
         entityManager.persist(new EntregableProyectoGradoJpaEntity(
-                entregable, proyectoGrado, 1, UtilUUID.generarNuevoUUID(), "APROBADO"));
+                entregable, proyectoGrado, 1, UtilUUID.generarNuevoUUID()));
         entityManager.flush();
         entityManager.clear();
 

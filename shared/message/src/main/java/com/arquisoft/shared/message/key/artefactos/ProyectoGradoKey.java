@@ -29,8 +29,13 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     LOG_ENTREGADO_LIMPIADO("artefactos.infraestructura.proyectogrado.log.entregado-limpiado", 2),
     ERROR_CONGELADO("artefactos.dominio.proyectogrado.error.congelado", 1),
     ERROR_CONGELADO_DETALLE("artefactos.dominio.proyectogrado.error.congelado-detalle", 1),
-    ERROR_NO_FINALIZADO("artefactos.dominio.proyectogrado.error.no-finalizado", 1),
-    ERROR_NO_FINALIZADO_DETALLE("artefactos.dominio.proyectogrado.error.no-finalizado-detalle", 1);
+    ERROR_NO_CONCLUIDO("artefactos.dominio.proyectogrado.error.no-concluido", 1),
+    ERROR_NO_CONCLUIDO_DETALLE("artefactos.dominio.proyectogrado.error.no-concluido-detalle", 1),
+    LOG_CANCELACION_PROYECTO_RECIBIDA("artefactos.infraestructura.proyectogrado.log.cancelacion-proyecto-recibida", 3),
+    LOG_VERIFICACION_CANCELAR("artefactos.aplicacion.proyectogrado.log.verificacion-cancelar", 2),
+    LOG_CANCELADO("artefactos.aplicacion.proyectogrado.log.cancelado", 1),
+    LOG_YA_CANCELADO("artefactos.aplicacion.proyectogrado.log.ya-cancelado", 1),
+    LOG_CANCELADO_MARCADO("artefactos.infraestructura.proyectogrado.log.cancelado-marcado", 2);
 
     private final String clave;
     private final int parametros;

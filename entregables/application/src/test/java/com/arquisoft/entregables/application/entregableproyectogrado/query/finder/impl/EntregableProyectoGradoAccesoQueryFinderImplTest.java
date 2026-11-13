@@ -2,7 +2,6 @@ package com.arquisoft.entregables.application.entregableproyectogrado.query.find
 
 import com.arquisoft.entregables.application.entregableproyectogrado.query.secondaryport.EntregableProyectoGradoAccesoQueryOutputPort;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.secondaryport.entity.EntregableProyectoGradoAccesoEntity;
-import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +29,7 @@ class EntregableProyectoGradoAccesoQueryFinderImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
-        var entity = new EntregableProyectoGradoAccesoEntity(id, proyecto, 3, asesor, "CANCELADO");
+        var entity = new EntregableProyectoGradoAccesoEntity(id, proyecto, 3, asesor, true);
         when(entregableProyectoGradoAccesoQueryOutputPort.obtenerAccesoPorId(id)).thenReturn(Optional.of(entity));
 
         // Act
@@ -42,7 +41,7 @@ class EntregableProyectoGradoAccesoQueryFinderImplTest {
         assertThat(entregable.getProyectoGrado()).isEqualTo(proyecto);
         assertThat(entregable.getVersion()).isEqualTo(3);
         assertThat(entregable.getAsesor()).isEqualTo(asesor);
-        assertThat(entregable.getEstadoEntregable()).isEqualTo(EstadoEntregable.CANCELADO);
+        assertThat(entregable.isProyectoCancelado()).isTrue();
     }
 
     @Test

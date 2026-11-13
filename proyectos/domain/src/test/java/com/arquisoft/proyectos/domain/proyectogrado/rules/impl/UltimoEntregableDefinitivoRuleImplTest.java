@@ -29,19 +29,9 @@ class UltimoEntregableDefinitivoRuleImplTest {
         assertThatCode(() -> regla.validar(ultimo)).doesNotThrowAnyException();
     }
 
-    @Test
-    void debePasar_cuandoElUltimoEstaRechazado() {
-        // Arrange
-        var ultimo = new EstadoUltimoEntregable(
-                UtilUUID.generarNuevoUUID(), TITULO_PROYECTO, 2, EstadoEntregable.RECHAZADO);
-
-        // Act & Assert
-        assertThatCode(() -> regla.validar(ultimo)).doesNotThrowAnyException();
-    }
-
     @ParameterizedTest
-    @EnumSource(value = EstadoEntregable.class, names = {"CANCELADO", "DISPONIBLE_EVALUACION"})
-    void debeLanzar_cuandoElUltimoNoEstaCerradoNiRechazado(EstadoEntregable estado) {
+    @EnumSource(value = EstadoEntregable.class, names = {"CANCELADO", "DISPONIBLE_EVALUACION", "RECHAZADO"})
+    void debeLanzar_cuandoElUltimoNoEstaCerrado(EstadoEntregable estado) {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var ultimo = new EstadoUltimoEntregable(proyectoGrado, TITULO_PROYECTO, 3, estado);

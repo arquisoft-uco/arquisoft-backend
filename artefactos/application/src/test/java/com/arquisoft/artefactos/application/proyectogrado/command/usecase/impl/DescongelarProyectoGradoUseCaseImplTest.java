@@ -52,7 +52,7 @@ class DescongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var descongelacion = DescongelacionProyectoGradoDomain.crear(id, CANCELADO_EN);
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO));
+                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO, null));
 
         // Act
         var resultado = useCase.ejecutar(descongelacion);
@@ -71,7 +71,7 @@ class DescongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var descongelacion = DescongelacionProyectoGradoDomain.crear(id, CANCELADO_EN);
         when(proyectoGradoPorIdFinder.obtener(id))
-                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", CANCELADO_EN, UtilFecha.VACIO));
+                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", CANCELADO_EN, UtilFecha.VACIO, null));
 
         // Act
         var resultado = useCase.ejecutar(descongelacion);
@@ -87,7 +87,7 @@ class DescongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var descongelacion = DescongelacionProyectoGradoDomain.crear(id, CANCELADO_EN);
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", Instant.parse("2026-11-03T10:00:00Z"), UtilFecha.VACIO));
+                id, "Proyecto", Instant.parse("2026-11-03T10:00:00Z"), UtilFecha.VACIO, null));
 
         // Act
         var resultado = useCase.ejecutar(descongelacion);
@@ -103,7 +103,7 @@ class DescongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var descongelacion = DescongelacionProyectoGradoDomain.crear(id, CANCELADO_EN);
         when(proyectoGradoPorIdFinder.obtener(id))
-                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO));
+                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, null));
 
         // Act
         var resultado = useCase.ejecutar(descongelacion);

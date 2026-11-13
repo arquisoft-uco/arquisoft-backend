@@ -49,6 +49,7 @@ public final class PaqueteEntregableMapper {
         return incluidos.stream()
                 .map(incluido -> new ArtefactoPaqueteGenerado(
                         incluido.artefacto(),
+                        incluido.versionArtefacto(),
                         incluido.numeroVersion(),
                         incluido.versionRepositorioArtefacto(),
                         incluido.nombreDocumento(),

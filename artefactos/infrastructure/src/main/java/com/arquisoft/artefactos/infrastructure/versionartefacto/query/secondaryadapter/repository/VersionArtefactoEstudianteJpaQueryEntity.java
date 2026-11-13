@@ -33,7 +33,9 @@ import java.util.UUID;
                ra.estado_revision_asesor_id AS estado_revision_id,
                er.nombre              AS nombre_estado_revision,
                er.orden               AS orden_estado_revision,
-               ra.fecha_creacion        AS fecha_creacion_revision
+               ra.fecha_creacion        AS fecha_creacion_revision,
+               (pg.finalizado_en IS NOT NULL)     AS proyecto_finalizado,
+               (pg.cancelado_en IS NOT NULL)      AS proyecto_cancelado
         FROM version_artefacto va
                  JOIN artefacto a ON a.id = va.artefacto_id
                  JOIN estudiante_artefacto ea ON ea.artefacto_id = a.id
@@ -108,4 +110,10 @@ public class VersionArtefactoEstudianteJpaQueryEntity {
 
     @Column(name = "fecha_creacion_revision")
     private Instant fechaCreacionRevision;
+
+    @Column(name = "proyecto_finalizado")
+    private boolean proyectoFinalizado;
+
+    @Column(name = "proyecto_cancelado")
+    private boolean proyectoCancelado;
 }

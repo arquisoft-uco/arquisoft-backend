@@ -33,7 +33,7 @@ public class GenerarVersionArtefactoCuotaValidatorImpl implements GenerarVersion
         var proyecto = almacenamiento.proyectoGrado();
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(artefacto.getProyectoGrado(), !proyecto.esVacio()));
         proyectoGradoNoCongeladoRule.validar(new EstadoProyectoGrado(
-                artefacto.getProyectoGrado(), proyecto.getNombre(), proyecto.estaCongelado(), proyecto.estaFinalizado()));
+                artefacto.getProyectoGrado(), proyecto.getNombre(), proyecto.estaCongelado(), proyecto.estaConcluido()));
         cuotaProyectoGradoNoExcedidaRule.validar(new CuotaProyectoGrado(
                 artefacto.getProyectoGrado(), proyecto.getNombre(), carga.getNombreArchivo(),
                 almacenamiento.cuotaBytes(), almacenamiento.usoBytes(), carga.getTamanoBytes()));

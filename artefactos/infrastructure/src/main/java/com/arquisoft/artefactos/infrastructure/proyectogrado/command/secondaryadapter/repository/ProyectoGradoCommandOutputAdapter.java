@@ -80,4 +80,10 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
         proyectoGradoCommandRepository.marcarFinalizado(id, finalizadoEn);
         logger.debug(ProyectoGradoKey.LOG_FINALIZADO_MARCADO, id, finalizadoEn);
     }
+
+    @Override
+    public void marcarCancelado(UUID id, Instant canceladoEn) {
+        proyectoGradoCommandRepository.marcarCancelado(id, canceladoEn);
+        logger.debug(ProyectoGradoKey.LOG_CANCELADO_MARCADO, id, canceladoEn);
+    }
 }

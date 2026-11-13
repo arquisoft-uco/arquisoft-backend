@@ -11,7 +11,6 @@ public final class ArtefactoEntregableJpaMapper {
     public static ArtefactoJpaEntity toArtefactoJpaEntity(ArtefactoEntregableEntity entity) {
         return ArtefactoJpaEntity.builder()
                 .id(entity.versionArtefacto())
-                .uriArchivo(entity.uriArchivo())
                 .artefacto(entity.artefacto())
                 .numeroVersion(entity.numeroVersion())
                 .versionRepositorioArtefacto(entity.versionRepositorioArtefacto())
@@ -26,6 +25,7 @@ public final class ArtefactoEntregableJpaMapper {
                 .id(entity.id())
                 .artefactoId(entity.versionArtefacto())
                 .entregableId(entity.entregableProyectoGrado())
+                .uriArchivo(entity.uriArchivo())
                 .build();
     }
 }

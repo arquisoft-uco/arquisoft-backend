@@ -24,9 +24,11 @@ import com.arquisoft.proyectos.domain.proyectogrado.model.ExistenciaProyectoGrad
 import com.arquisoft.proyectos.domain.proyectogrado.model.PropiedadCoordinadorProyectoGrado;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.CoordinadorProyectoGradoPropietarioRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoExisteRule;
+import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoNoCanceladoRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoNoFinalizadoRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.CoordinadorProyectoGradoPropietarioRuleImpl;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoExisteRuleImpl;
+import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoNoCanceladoRuleImpl;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoNoFinalizadoRuleImpl;
 import org.springframework.stereotype.Component;
 
@@ -45,6 +47,7 @@ public class AsignarEstudiantesProyectoGradoValidatorImpl implements AsignarEstu
     private final EstudiantesVigentesProyectoGradoRule estudiantesVigentesRule;
     private final EstudiantesNoVinculadosRule estudiantesNoVinculadosRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
+    private final ProyectoGradoNoCanceladoRule proyectoGradoNoCanceladoRule;
     private final EstudianteProyectoGradoCupoDisponibleRule cupoDisponibleRule;
 
     public AsignarEstudiantesProyectoGradoValidatorImpl() {
@@ -55,6 +58,7 @@ public class AsignarEstudiantesProyectoGradoValidatorImpl implements AsignarEstu
         this.estudiantesVigentesRule = new EstudiantesVigentesProyectoGradoRuleImpl();
         this.estudiantesNoVinculadosRule = new EstudiantesNoVinculadosRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
+        this.proyectoGradoNoCanceladoRule = new ProyectoGradoNoCanceladoRuleImpl();
         this.cupoDisponibleRule = new EstudianteProyectoGradoCupoDisponibleRuleImpl();
     }
 
@@ -79,6 +83,9 @@ public class AsignarEstudiantesProyectoGradoValidatorImpl implements AsignarEstu
                         .map(EstudianteDomain::getNombre)
                         .toList()));
         proyectoGradoNoFinalizadoRule.validar(
+                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getTituloProyecto(),
+                        estadoActual.getEstadoProyecto()));
+        proyectoGradoNoCanceladoRule.validar(
                 new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getTituloProyecto(),
                         estadoActual.getEstadoProyecto()));
         cupoDisponibleRule.validar(new CupoEstudiantesProyectoGrado(vinculadosActuales, entrada.getCantidad()));

@@ -82,9 +82,10 @@ class ConsultarEstadosProyectoGradoEstudianteControllerTest {
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var primero = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(any())).thenReturn(List.of(
-                new EstadoProyectoGradoReadModel(primero, "ATRASADO", "Atrasado", Instant.now()),
+                new EstadoProyectoGradoReadModel(primero, "ATRASADO", "Atrasado", Instant.now(),
+                        "Cancelado por inactividad"),
                 new EstadoProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), "EN_PROCESO", "En proceso",
-                        Instant.now())));
+                        Instant.now(), null)));
 
         // Act & Assert
         consultar(proyectoGrado.toString())
@@ -94,7 +95,9 @@ class ConsultarEstadosProyectoGradoEstudianteControllerTest {
                 .andExpect(jsonPath("$[0].estadoProyecto").value("ATRASADO"))
                 .andExpect(jsonPath("$[0].estadoProyectoNombre").value("Atrasado"))
                 .andExpect(jsonPath("$[0].fechaActualizacion").exists())
-                .andExpect(jsonPath("$[1].estadoProyecto").value("EN_PROCESO"));
+                .andExpect(jsonPath("$[0].motivo").value("Cancelado por inactividad"))
+                .andExpect(jsonPath("$[1].estadoProyecto").value("EN_PROCESO"))
+                .andExpect(jsonPath("$[1].motivo").doesNotExist());
         var captor = ArgumentCaptor.forClass(ConsultarEstadosProyectoGradoEstudianteQuery.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyectoGrado);

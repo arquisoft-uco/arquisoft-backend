@@ -14,5 +14,7 @@ public interface PaqueteEntregableOutputPort {
 
     List<String> obtenerClavesAnteriores(UUID proyectoGrado, int versionEntregable);
 
+    List<String> obtenerClavesPorProyectoGrado(UUID proyectoGrado);
+
     List<ArtefactoParaPaqueteEntity> obtenerArtefactosParaPaquete(UUID proyectoGrado, String estadoCerrada);
 }

@@ -3,10 +3,8 @@ package com.arquisoft.entregables.application.entregableproyectogrado.query.prim
 import com.arquisoft.entregables.application.entregableproyectogrado.query.criteria.EntregableProyectoGradoCriteria;
 import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
-import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
-import com.arquisoft.shared.util.UtilObjeto;
 
 import java.util.List;
 
@@ -19,9 +17,7 @@ public final class ConsultarEntregablesProyectoGradoJuradoMapper {
                 EntregableProyectoGradoCriteria.Campo.ESTADO_ENTREGABLE.getClave(), FiltroOperador.IN,
                 List.of(EstadoEntregable.DISPONIBLE_EVALUACION.getId(), EstadoEntregable.EN_EVALUACION.getId()));
 
-        var raizFinal = UtilObjeto.noEsNulo(query.raiz())
-                ? NodoFiltro.grupo(FiltroConector.AND, List.of(forzado, query.raiz()))
-                : forzado;
+        var raizFinal = FiltroCierreProyectoEntregable.combinar(List.of(forzado), query.raiz());
 
         return EntregableProyectoGradoCriteria.builder()
                 .pagina(query.pagina())

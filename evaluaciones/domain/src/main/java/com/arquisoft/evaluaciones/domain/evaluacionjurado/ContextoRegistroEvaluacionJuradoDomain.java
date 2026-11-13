@@ -11,22 +11,25 @@ public final class ContextoRegistroEvaluacionJuradoDomain {
             UtilUUID.obtenerUUIDPorDefecto(),
             UtilUUID.obtenerUUIDPorDefecto(),
             EstadoEvaluacion.VACIO,
+            UtilUUID.obtenerUUIDPorDefecto(),
             UtilUUID.obtenerUUIDPorDefecto());
 
     private UUID id;
     private UUID evaluacion;
     private EstadoEvaluacion estado;
     private UUID entregable;
+    private UUID jurado;
 
     private ContextoRegistroEvaluacionJuradoDomain() {}
 
     public static ContextoRegistroEvaluacionJuradoDomain reconstruir(
-            UUID id, UUID evaluacion, EstadoEvaluacion estado, UUID entregable) {
+            UUID id, UUID evaluacion, EstadoEvaluacion estado, UUID entregable, UUID jurado) {
         var contexto = new ContextoRegistroEvaluacionJuradoDomain();
         contexto.id = id;
         contexto.evaluacion = evaluacion;
         contexto.estado = estado;
         contexto.entregable = entregable;
+        contexto.jurado = jurado;
         return contexto;
     }
 
@@ -48,5 +51,9 @@ public final class ContextoRegistroEvaluacionJuradoDomain {
 
     public UUID getEntregable() {
         return entregable;
+    }
+
+    public UUID getJurado() {
+        return jurado;
     }
 }

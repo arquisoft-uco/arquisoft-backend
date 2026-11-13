@@ -32,7 +32,7 @@ class GenerarVersionArtefactoCuotaValidatorImplTest {
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
         carga = CargaPendienteDomain.reconstruir(UtilUUID.generarNuevoUUID(), artefacto.getId(),
                 UtilUUID.generarNuevoUUID(), "informe.pdf", "application/pdf", 1000L, "etag");
-        proyecto = ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null);
+        proyecto = ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null, null);
     }
 
     @Test
@@ -67,7 +67,7 @@ class GenerarVersionArtefactoCuotaValidatorImplTest {
     @Test
     void debeLanzarCongelado_antesQueCuota() {
         // Arrange
-        var congelado = ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, Instant.now());
+        var congelado = ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, Instant.now(), null);
         var almacenamiento = new AlmacenamientoProyectoGrado(congelado, CUOTA, CUOTA);
 
         // Act & Assert

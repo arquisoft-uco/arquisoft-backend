@@ -4,6 +4,8 @@ import com.arquisoft.entregables.application.entregableproyectogrado.query.readm
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EntregableProyectoGradoResponseMapperTest {
@@ -17,7 +19,8 @@ class EntregableProyectoGradoResponseMapperTest {
         var readModel = new EntregableProyectoGradoReadModel(id, 2,
                 new EntregableProyectoGradoReadModel.ProyectoGradoResumen(proyecto, "Proyecto"),
                 new EntregableProyectoGradoReadModel.AsesorResumen(asesor, "Ana", "ana@uco.edu.co"),
-                new EntregableProyectoGradoReadModel.EstadoEntregableResumen("APROBADO", "Aprobado"));
+                new EntregableProyectoGradoReadModel.EstadoEntregableResumen("APROBADO", "Aprobado",
+                        Instant.parse("2026-11-10T10:00:00Z")), true, false);
 
         // Act
         var dto = EntregableProyectoGradoResponseMapper.toResponse(readModel);
@@ -32,5 +35,8 @@ class EntregableProyectoGradoResponseMapperTest {
         assertThat(dto.asesor().email()).isEqualTo("ana@uco.edu.co");
         assertThat(dto.estadoEntregable().id()).isEqualTo("APROBADO");
         assertThat(dto.estadoEntregable().nombre()).isEqualTo("Aprobado");
+        assertThat(dto.estadoEntregable().fechaActualizacion()).isEqualTo(Instant.parse("2026-11-10T10:00:00Z"));
+        assertThat(dto.proyectoFinalizado()).isTrue();
+        assertThat(dto.proyectoCancelado()).isFalse();
     }
 }

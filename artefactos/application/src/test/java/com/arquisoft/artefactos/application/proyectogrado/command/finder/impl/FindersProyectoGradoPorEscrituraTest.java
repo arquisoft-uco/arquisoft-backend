@@ -28,7 +28,7 @@ class FindersProyectoGradoPorEscrituraTest {
         var revision = UtilUUID.generarNuevoUUID();
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
         when(proyectoGradoOutputPort.obtenerPorRevisionAsesor(revision))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", entregadoEn, UtilFecha.VACIO)));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", entregadoEn, UtilFecha.VACIO, null)));
 
         // Act
         var proyecto = new ProyectoGradoPorRevisionAsesorFinderImpl(proyectoGradoOutputPort).obtener(revision);
@@ -58,7 +58,7 @@ class FindersProyectoGradoPorEscrituraTest {
         var id = UtilUUID.generarNuevoUUID();
         var observacion = UtilUUID.generarNuevoUUID();
         when(proyectoGradoOutputPort.obtenerPorObservacion(observacion))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO)));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, null)));
 
         // Act
         var proyecto = new ProyectoGradoPorObservacionFinderImpl(proyectoGradoOutputPort).obtener(observacion);
@@ -88,7 +88,7 @@ class FindersProyectoGradoPorEscrituraTest {
         var version = UtilUUID.generarNuevoUUID();
         var finalizadoEn = Instant.parse("2026-11-02T10:00:00Z");
         when(proyectoGradoOutputPort.obtenerPorVersionArtefacto(version))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, finalizadoEn)));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, finalizadoEn, null)));
 
         // Act
         var proyecto = new ProyectoGradoPorVersionArtefactoFinderImpl(proyectoGradoOutputPort).obtener(version);

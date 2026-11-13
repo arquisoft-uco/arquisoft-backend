@@ -56,6 +56,8 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "proyectos:proyecto-grado-cancelacion:update",
+              "proyectos:historial-estado-proyecto-grado:view",
               "solicitudes:respuesta-cambio-asesor:delete",
               "solicitudes:respuesta-ampliacion-plazo:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
@@ -71,6 +73,7 @@
               "fichas:estudiante-ficha-perfil-coordinador:view",
               "usuarios:representante-comite-vigente:view",
               "evaluaciones:evaluacion-jurado:create",
+              "evaluaciones:evaluacion-jurado:delete",
               "proyectos:proyecto-grado-coordinador:view",
               "usuarios:asesor-ficha-vigente:view",
               "evaluaciones:evaluacion-coordinador:view",
@@ -133,8 +136,10 @@
               "evaluaciones:evaluacion-cuantitativa-jurado:delete",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:evaluacion-cuantitativa-jurado:update",
+              "evaluaciones:evaluacion-cuantitativa-jurado:create",
               "usuarios:jurado-vigente:view",
               "evaluaciones:observacion-item-jurado:update",
+              "evaluaciones:observacion-item-jurado:delete",
               "evaluaciones:item-cualitativo-jurado:view",
               "evaluaciones:item-cuantitativo-jurado:view",
               "evaluaciones:estado-evaluacion:view",
@@ -273,7 +278,14 @@
         "id": "659943f9-e8a7-4578-8dcd-c1bcbcd1c993",
         "name": "bibliotecario",
         "description": "",
-        "composite": false,
+        "composite": true,
+        "composites": {
+          "client": {
+            "arquisoft-api": [
+              "biblioteca:estado-documentacion:view"
+            ]
+          }
+        },
         "clientRole": false,
         "containerId": "053aee0b-1eeb-4991-926a-dca686ac045b",
         "attributes": {}
@@ -312,6 +324,8 @@
               "mapas-ruta:plan-estimado:delete",
               "mapas-ruta:plan-estimado-tarea-estudiante:view",
               "mapas-ruta:plan-real-tarea-estudiante:view",
+              "mapas-ruta:plan-real:update",
+              "mapas-ruta:plan-real:delete",
               "mapas-ruta:tarea-mapa-ruta-estudiante:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
               "solicitudes:solicitud-novedad-asesor:create",
@@ -375,16 +389,20 @@
           "client": {
             "arquisoft-api": [
               "proyectos:proyecto-grado-estado:update",
+              "proyectos:historial-estado-proyecto-grado:view",
               "mapas-ruta:tarea-mapa-ruta-asesor:view",
+              "mapas-ruta:mapa-ruta-asesor:view",
               "mapas-ruta:plan-estimado-proyecto-asesor:view",
               "mapas-ruta:plan-estimado-asesor:update",
               "mapas-ruta:plan-real-proyecto-asesor:view",
+              "mapas-ruta:plan-real-asesor:update",
               "entregables:estado-entregable:view",
               "entregables:entregable-proyecto-grado:create",
               "entregables:entregable-proyecto-grado-estado:update",
               "entregables:entregable-proyecto-grado-asesor:view",
               "entregables:artefacto-entregable:view",
               "entregables:paquete-entregable:download",
+              "entregables:estado-entregable-proyecto-grado:view",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
@@ -1243,6 +1261,15 @@
           "attributes": {}
         },
         {
+          "id": "93c892ea-1fe2-463e-8498-6ef7f33c2ba1",
+          "name": "biblioteca:estado-documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "c2365dde-bb30-4cf4-8406-de657a630afb",
           "name": "entregables:estado-entregable:view",
           "description": "",
@@ -1297,6 +1324,15 @@
           "attributes": {}
         },
         {
+          "id": "7c1e5a42-93d8-4b6f-a0e7-2f4d8b6c1a95",
+          "name": "entregables:estado-entregable-proyecto-grado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "ff2468d4-bbf2-4e51-bc64-410ad2676e9d",
           "name": "entregables:entregable-proyecto-grado-jurado:view",
           "description": "",
@@ -1344,6 +1380,15 @@
         {
           "id": "220f4abb-0288-41d3-8446-9c9df46b1cbc",
           "name": "mapas-ruta:tarea-mapa-ruta-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5e8c1b7a-3d92-4f06-a4b8-7c1d2e9f0a63",
+          "name": "mapas-ruta:mapa-ruta-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1533,6 +1578,15 @@
         {
           "id": "93728f6f-99a6-41a1-940f-b52793233d7e",
           "name": "proyectos:proyecto-grado-estado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a2cbdae4-900e-4328-9f85-52a2fe85a20e",
+          "name": "proyectos:proyecto-grado-cancelacion:update",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1873,6 +1927,15 @@
           "attributes": {}
         },
         {
+          "id": "b3c8f1a2-6d4e-4f7a-9c1b-2e5d8a7f4c60",
+          "name": "evaluaciones:evaluacion-jurado:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "262b4b01-adda-4feb-944a-a1e6124b8f1f",
           "name": "proyectos:proyecto-grado-coordinador:view",
           "description": "",
@@ -1938,6 +2001,15 @@
         {
           "id": "1163f8ab-cce0-4c13-8deb-bdfc29138bfc",
           "name": "evaluaciones:evaluacion-cuantitativa-jurado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "87595b62-09eb-42af-bf53-78a9a6e5fe75",
+          "name": "evaluaciones:evaluacion-cuantitativa-jurado:create",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2242,6 +2314,15 @@
           "attributes": {}
         },
         {
+          "id": "3c6f1e52-9a47-4d0b-8e1d-5b7a2f9c4e68",
+          "name": "evaluaciones:observacion-item-jurado:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "a238f57f-f3b6-488b-aa94-adc968dc64dc",
           "name": "usuarios:representante-comite-curriculum:create",
           "description": "",
@@ -2361,6 +2442,15 @@
         {
           "id": "3556052a-10a9-4e3d-bc6a-9a21649a92ea",
           "name": "fichas:estado-ficha-perfil-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7862bd52-44f0-493a-be04-70753494ef4c",
+          "name": "proyectos:historial-estado-proyecto-grado:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -3007,8 +3097,35 @@
           "attributes": {}
         },
         {
+          "id": "98d08967-b177-41fd-8a73-3e3d9f2603d8",
+          "name": "mapas-ruta:plan-real:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "6e3a9d21-4b78-4c05-a1f6-2d8c7e5b9034",
+          "name": "mapas-ruta:plan-real:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "232c7685-59e5-4a28-8891-c75e7f65f504",
           "name": "mapas-ruta:plan-real-proyecto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c4a7e2b9-5d18-4f36-8e0a-71b3d9f2a6c5",
+          "name": "mapas-ruta:plan-real-asesor:update",
           "description": "",
           "composite": false,
           "clientRole": true,

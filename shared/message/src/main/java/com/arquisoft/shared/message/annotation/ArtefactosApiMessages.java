@@ -12,6 +12,8 @@ public final class ArtefactosApiMessages {
         public static final String RESP_403 = "Sin permisos para realizar la operación";
         public static final String PROYECTO_ENTREGADO = "; o el proyecto de grado ya fue entregado";
         public static final String PROYECTO_FINALIZADO = "; o el proyecto está finalizado";
+        public static final String INDICADORES_CIERRE =
+                " Cada elemento indica si su proyecto está finalizado (proyectoFinalizado) o cancelado (proyectoCancelado); ambos filtrables.";
     }
 
     public static final class VersionRepositorioArtefacto {
@@ -76,13 +78,13 @@ public final class ArtefactosApiMessages {
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra, en estado PENDIENTE, una revisión sobre la versión más reciente del artefacto. El "
                         + "asesor se toma del token y debe ser el responsable del artefacto. Si la versión tiene "
-                        + "revisiones, todas deben estar cerradas: registrar una nueva reabre el artefacto. No "
-                        + "envía correos.";
+                        + "revisiones, todas deben estar cerradas: registrar una nueva reabre el artefacto. Si existe "
+                        + "una versión anterior, su revisión más reciente debe estar RESUELTA. No envía correos.";
         public static final String REGISTRAR_RESP_201 = "Revisión registrada";
         public static final String REGISTRAR_RESP_400 = "Identificador de la versión del artefacto mal formado";
         public static final String REGISTRAR_RESP_422 =
                 "La versión o su artefacto no existen, el asesor no es el responsable del artefacto, la versión "
-                        + "no es la más reciente o ya tiene una revisión sin cerrar" + Comun.PROYECTO_ENTREGADO;
+                        + "no es la más reciente, tiene una revisión sin cerrar o la anterior no está resuelta" + Comun.PROYECTO_ENTREGADO;
         public static final String ELIMINAR_SUMMARY = "Eliminar una revisión de la versión de un artefacto";
         public static final String ELIMINAR_DESCRIPTION =
                 "Elimina por completo la revisión indicada junto con sus observaciones. El asesor se toma del "
@@ -150,12 +152,11 @@ public final class ArtefactosApiMessages {
                         + "documento (nombreDocumento), la versión (version), la fecha de creación (fechaCreacion) "
                         + "y el estado y la fecha de la revisión (estadoRevision, fechaCreacionRevision; ES_NULO para las versiones sin revisión), "
                         + "y ordenar por version, fechaCreacion y estadoRevision (en orden de flujo) y fechaCreacionRevision; por defecto, la más "
-                        + "reciente primero. El asesor se toma del token, nunca del cuerpo.";
+                        + "reciente primero. El asesor se toma del token, nunca del cuerpo." + Comun.INDICADORES_CIERRE;
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de versiones de los artefactos del asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
-        public static final String CONSULTAR_ASESOR_RESP_403 =
-                "Sin permiso para consultar las versiones de los artefactos";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar las versiones de los artefactos";
         public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
                 "Consultar las versiones de los artefactos en los que participa el estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
@@ -167,9 +168,8 @@ public final class ArtefactosApiMessages {
                         + "estado y la fecha de la revisión (estadoRevision, fechaCreacionRevision; ES_NULO para las versiones "
                         + "sin revisión), y ordenar por "
                         + "version, fechaCreacion, estadoRevision (en orden de flujo) y fechaCreacionRevision; por defecto, la más reciente "
-                        + "primero. El estudiante se toma del token, nunca del cuerpo.";
-        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
-                "Página de versiones de los artefactos del estudiante";
+                        + "primero. El estudiante se toma del token, nunca del cuerpo." + Comun.INDICADORES_CIERRE;
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Página de versiones de los artefactos del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de estudiante inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
@@ -445,7 +445,7 @@ public final class ArtefactosApiMessages {
                         + "nombreProyecto, versionRepositorioArtefacto, nombreDocumento, versionDocumento y "
                         + "nombreRepositorio, y ordenar por nombreProyecto, nombreDocumento, versionDocumento y "
                         + "nombreRepositorio; por defecto, nombreProyecto y nombreDocumento ascendentes. "
-                        + "El asesor se toma del token, nunca del cuerpo.";
+                        + "El asesor se toma del token, nunca del cuerpo." + Comun.INDICADORES_CIERRE;
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de artefactos asignados al asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
@@ -458,7 +458,7 @@ public final class ArtefactosApiMessages {
                         + "versionRepositorioArtefacto, nombreDocumento, versionDocumento, nombreRepositorio y "
                         + "estadoUltimaRevision, y ordenar por nombreProyecto, nombreDocumento, versionDocumento, "
                         + "nombreRepositorio, estadoUltimaRevision y fechaUltimaVersion; por defecto, nombreProyecto y "
-                        + "nombreDocumento ascendentes. El asesor se toma del token, nunca del cuerpo.";
+                        + "nombreDocumento ascendentes. El asesor se toma del token, nunca del cuerpo." + Comun.INDICADORES_CIERRE;
         public static final String SIN_AVANCE_RESP_200 = "Página de artefactos del asesor sin avance";
         public static final String SIN_AVANCE_RESP_400 =
                 "Días sin avance ausentes o fuera de rango, o filtro, operador, valor u ordenamiento inválido";
@@ -471,7 +471,7 @@ public final class ArtefactosApiMessages {
                         + "versionRepositorioArtefacto, nombreDocumento, versionDocumento, nombreRepositorio, "
                         + "asesor y nombreAsesor, y ordenar por nombreProyecto, nombreDocumento, versionDocumento, "
                         + "nombreRepositorio y nombreAsesor; por defecto, nombreProyecto y nombreDocumento "
-                        + "ascendentes. El estudiante se toma del token, nunca del cuerpo.";
+                        + "ascendentes. El estudiante se toma del token, nunca del cuerpo." + Comun.INDICADORES_CIERRE;
         public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Página de artefactos de los proyectos del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de estudiante inválido";
