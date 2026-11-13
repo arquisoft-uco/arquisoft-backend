@@ -546,6 +546,13 @@ public final class EvaluacionesApiMessages {
                 "El identificador no es válido o el filtro/orden solicitado no es aceptado";
         public static final String CONSULTAR_RESP_422 =
                 "La evaluación cuantitativa del asesor no existe o pertenece a otro asesor";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar observaciones como estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Consulta de forma paginada las observaciones que el asesor registró sobre una evaluación "
+                        + "cuantitativa de un proyecto del que el estudiante hace parte, con filtro y orden por "
+                        + "descripción (por defecto, ascendente)";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_422 =
+                "La evaluación cuantitativa del asesor no existe o el estudiante no está vinculado a su proyecto";
     }
 
     public static final class EstadoEvaluacion {
