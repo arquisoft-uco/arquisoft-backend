@@ -24,10 +24,22 @@ public enum EvaluacionCualitativaAsesorKey implements ClaveMensaje {
             "evaluaciones.dominio.evaluacioncualitativaasesor.error.items-ya-registrados", 0),
     ERROR_ITEMS_YA_REGISTRADOS_DETALLE(
             "evaluaciones.dominio.evaluacioncualitativaasesor.error.items-ya-registrados-detalle", 1),
+    ERROR_OMISION_FINALIZADA(
+            "evaluaciones.dominio.evaluacioncualitativaasesor.error.omision-finalizada", 0),
+    ERROR_OMISION_FINALIZADA_DETALLE(
+            "evaluaciones.dominio.evaluacioncualitativaasesor.error.omision-finalizada-detalle", 1),
+    ERROR_EVALUACIONES_NO_REGISTRADAS(
+            "evaluaciones.dominio.evaluacioncualitativaasesor.error.no-registradas", 0),
+    ERROR_EVALUACIONES_NO_REGISTRADAS_DETALLE(
+            "evaluaciones.dominio.evaluacioncualitativaasesor.error.no-registradas-detalle", 2),
     LOG_REGISTRANDO_LOTE("evaluaciones.aplicacion.evaluacioncualitativaasesor.log.registrando-lote", 2),
     LOG_VERIFICACION_LOTE("evaluaciones.aplicacion.evaluacioncualitativaasesor.log.verificacion-lote", 5),
     LOG_LOTE_REGISTRADO("evaluaciones.aplicacion.evaluacioncualitativaasesor.log.lote-registrado", 3),
     LOG_LOTE_GUARDADO("evaluaciones.infraestructura.evaluacioncualitativaasesor.log.lote-guardado", 1),
+    LOG_OMITIENDO_LOTE("evaluaciones.aplicacion.evaluacioncualitativaasesor.log.omitiendo-lote", 2),
+    LOG_VERIFICACION_OMISION("evaluaciones.aplicacion.evaluacioncualitativaasesor.log.verificacion-omision", 4),
+    LOG_LOTE_OMITIDO("evaluaciones.aplicacion.evaluacioncualitativaasesor.log.lote-omitido", 2),
+    LOG_LOTE_ELIMINADO("evaluaciones.infraestructura.evaluacioncualitativaasesor.log.lote-eliminado", 1),
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncualitativaasesor.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncualitativaasesor.log.consulta-completada", 1);
 
