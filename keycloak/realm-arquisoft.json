@@ -153,7 +153,8 @@
               "evaluaciones:criterio-item-cualitativo-jurado:view",
               "evaluaciones:evaluacion-jurado-jurado:view",
               "evaluaciones:evaluacion-jurado:view",
-              "evaluaciones:evaluacion-cualitativa-jurado-jurado:view"
+              "evaluaciones:evaluacion-cualitativa-jurado-jurado:view",
+              "evaluaciones:evaluacion-cuantitativa-jurado-jurado:view"
             ]
           }
         },
@@ -811,6 +812,15 @@
         {
           "id": "379131d7-1772-4351-b0f2-aca5b7292143",
           "name": "evaluaciones:evaluacion-cualitativa-jurado-jurado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "2ddb263d-4824-4a4b-84b8-60fbe25fe02c",
+          "name": "evaluaciones:evaluacion-cuantitativa-jurado-jurado:view",
           "description": "",
           "composite": false,
           "clientRole": true,
