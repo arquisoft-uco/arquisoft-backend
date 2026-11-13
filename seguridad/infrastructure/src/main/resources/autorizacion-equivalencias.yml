@@ -120,6 +120,8 @@ security:
         - {method: GET, path: "/api/evaluaciones/criterios-item-cualitativo-jurado", role: "evaluaciones:criterio-item-cualitativo-jurado:view"}
         - {method: GET, path: "/api/evaluaciones/estados-evaluacion", role: "evaluaciones:estado-evaluacion:view"}
         - {method: POST, path: "/api/evaluaciones/estudiante", role: "evaluaciones:evaluacion-estudiante:view"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-asesor/{evaluacionCuantitativaAsesorId}/observaciones", role: "evaluaciones:observacion-item-asesor:create"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-asesor/{evaluacionCuantitativaAsesorId}/observaciones/asesor", role: "evaluaciones:observacion-item-asesor-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones", role: "evaluaciones:observacion-item-jurado:create"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/jurado", role: "evaluaciones:observacion-item-jurado-jurado:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/estudiante", role: "evaluaciones:observacion-item-jurado-estudiante:view"}
@@ -131,6 +133,7 @@ security:
         - {method: POST, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-jurado:create"}
         - {method: DELETE, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-jurado:delete"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view"}
+        - {method: GET, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cuantitativas/jurado", role: "evaluaciones:evaluacion-cuantitativa-jurado-jurado:view"}
         - {method: GET, path: "/api/evaluaciones/items-cualitativos-jurado", role: "evaluaciones:item-cualitativo-jurado:view"}
         - {method: POST, path: "/api/evaluaciones/items-cualitativos-jurado", role: "evaluaciones:item-cualitativo-jurado:create"}
         - {method: DELETE, path: "/api/evaluaciones/items-cualitativos-jurado/{itemId}", role: "evaluaciones:item-cualitativo-jurado:delete"}

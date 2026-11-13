@@ -1,7 +1,9 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativaasesor.command.secondaryadapter.repository;
 
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.secondaryport.EvaluacionCuantitativaAsesorOutputPort;
+import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.secondaryport.entity.ContextoEvaluacionCuantitativaAsesorEntity;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.secondaryport.entity.EvaluacionCuantitativaAsesorEntity;
+import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativaasesor.command.secondaryadapter.mapper.ContextoEvaluacionCuantitativaAsesorJpaMapper;
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativaasesor.command.secondaryadapter.mapper.EvaluacionCuantitativaAsesorJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaAsesorKey;
@@ -9,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,5 +39,11 @@ public class EvaluacionCuantitativaAsesorCommandOutputAdapter implements Evaluac
     @Override
     public boolean existePorItem(UUID item) {
         return repository.existsByItem(item);
+    }
+
+    @Override
+    public Optional<ContextoEvaluacionCuantitativaAsesorEntity> obtenerContexto(UUID evaluacionCuantitativaAsesor) {
+        return repository.buscarContexto(evaluacionCuantitativaAsesor)
+                .map(ContextoEvaluacionCuantitativaAsesorJpaMapper::toEntity);
     }
 }

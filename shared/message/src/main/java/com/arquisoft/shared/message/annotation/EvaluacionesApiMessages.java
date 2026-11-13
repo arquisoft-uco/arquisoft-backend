@@ -297,6 +297,15 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cuantitativas del jurado";
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
         public static final String CONSULTAR_RESP_422 = "La evaluación de jurado no existe";
+        public static final String CONSULTAR_REALIZADAS_SUMMARY =
+                "Consultar evaluaciones cuantitativas realizadas por el jurado";
+        public static final String CONSULTAR_REALIZADAS_DESCRIPTION =
+                "Consulta las evaluaciones cuantitativas de una evaluación de jurado que pertenece al jurado autenticado";
+        public static final String CONSULTAR_REALIZADAS_RESP_200 =
+                "Listado de evaluaciones cuantitativas realizadas por el jurado";
+        public static final String CONSULTAR_REALIZADAS_RESP_400 = "Datos de entrada inválidos";
+        public static final String CONSULTAR_REALIZADAS_RESP_422 =
+                "La evaluación de jurado no existe o pertenece a otro jurado";
         public static final String CAMBIAR_PUNTAJE_SUMMARY = "Cambiar puntaje de evaluación cuantitativa";
         public static final String CAMBIAR_PUNTAJE_DESCRIPTION =
                 "Permite a un jurado corregir el puntaje que asignó a una de sus evaluaciones "
@@ -511,6 +520,32 @@ public final class EvaluacionesApiMessages {
                 "El identificador de la evaluación del asesor no es válido";
         public static final String CONSULTAR_REALIZADA_RESP_422 =
                 "La evaluación del asesor no existe o pertenece a otro asesor";
+    }
+
+    public static final class ObservacionItemAsesor {
+
+        private ObservacionItemAsesor() {}
+
+        public static final String TAG_NAME = "Observaciones de ítems cuantitativos del asesor";
+        public static final String TAG_DESCRIPTION = "Registro y consulta de observaciones sobre evaluaciones cuantitativas del asesor";
+        public static final String REGISTRAR_SUMMARY = "Registrar observación";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra una nueva observación textual sobre una evaluación cuantitativa del asesor";
+        public static final String REGISTRAR_RESP_201 = "Observación registrada";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación cuantitativa no existe, pertenece a otro asesor, su evaluación ya está "
+                        + "finalizada, o ya existe una observación con esa descripción";
+        public static final String CONSULTAR_SUMMARY = "Consultar observaciones";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta de forma paginada las observaciones registradas por el asesor asignado sobre una "
+                        + "evaluación cuantitativa del asesor, con filtro y orden por descripción "
+                        + "(por defecto, ascendente)";
+        public static final String CONSULTAR_RESP_200 = "Página de observaciones de la evaluación cuantitativa";
+        public static final String CONSULTAR_RESP_400 =
+                "El identificador no es válido o el filtro/orden solicitado no es aceptado";
+        public static final String CONSULTAR_RESP_422 =
+                "La evaluación cuantitativa del asesor no existe o pertenece a otro asesor";
     }
 
     public static final class EstadoEvaluacion {

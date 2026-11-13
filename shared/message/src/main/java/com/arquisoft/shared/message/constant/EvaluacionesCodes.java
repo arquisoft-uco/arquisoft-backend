@@ -407,4 +407,20 @@ public final class EvaluacionesCodes {
         public static final String PROYECTO_REQUERIDO = "ENTREGABLE_PROYECTO_REQUERIDO";
         public static final String VERSION_REQUERIDA = "ENTREGABLE_VERSION_REQUERIDA";
     }
+
+    public static final class ObservacionItemAsesor {
+
+        private ObservacionItemAsesor() {}
+
+        public static final String EVALUACION_CUANTITATIVA_ASESOR_REQUERIDA =
+                "OBSERVACION_ITEM_ASESOR_EVALUACION_CUANTITATIVA_ASESOR_REQUERIDA";
+        public static final String ASESOR_REQUERIDO = "OBSERVACION_ITEM_ASESOR_ASESOR_REQUERIDO";
+        public static final String OBSERVACION_REQUERIDA = "OBSERVACION_ITEM_ASESOR_OBSERVACION_REQUERIDA";
+        public static final String DESCRIPCION_REQUERIDA = "OBSERVACION_ITEM_ASESOR_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_DEMASIADO_LARGA =
+                "OBSERVACION_ITEM_ASESOR_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String EVALUACION_NO_ENCONTRADA =
+                "OBSERVACION_ITEM_ASESOR_EVALUACION_NO_ENCONTRADA";
+        public static final String DESCRIPCION_DUPLICADA = "OBSERVACION_ITEM_ASESOR_DESCRIPCION_DUPLICADA";
+    }
 }

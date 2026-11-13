@@ -153,7 +153,8 @@
               "evaluaciones:criterio-item-cualitativo-jurado:view",
               "evaluaciones:evaluacion-jurado-jurado:view",
               "evaluaciones:evaluacion-jurado:view",
-              "evaluaciones:evaluacion-cualitativa-jurado-jurado:view"
+              "evaluaciones:evaluacion-cualitativa-jurado-jurado:view",
+              "evaluaciones:evaluacion-cuantitativa-jurado-jurado:view"
             ]
           }
         },
@@ -436,6 +437,8 @@
               "evaluaciones:evaluacion-asesor-detalle:view",
               "evaluaciones:evaluacion-cualitativa-asesor:create",
               "evaluaciones:evaluacion-cuantitativa-asesor:create",
+              "evaluaciones:observacion-item-asesor:create",
+              "evaluaciones:observacion-item-asesor-asesor:view",
               "artefactos:estudiante-artefacto:view",
               "artefactos:observacion-revision:view",
               "artefactos:revision-asesor-asesor:view",
@@ -810,6 +813,15 @@
         {
           "id": "379131d7-1772-4351-b0f2-aca5b7292143",
           "name": "evaluaciones:evaluacion-cualitativa-jurado-jurado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "2ddb263d-4824-4a4b-84b8-60fbe25fe02c",
+          "name": "evaluaciones:evaluacion-cuantitativa-jurado-jurado:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2790,6 +2802,24 @@
         {
           "id": "6f1c2d4e-8a3b-4c57-9e10-b2a7d5c3f814",
           "name": "evaluaciones:evaluacion-cuantitativa-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a1b21996-e1f5-4723-9979-cd985ff73120",
+          "name": "evaluaciones:observacion-item-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "0a695c41-b344-430b-b9c2-ff62e2ef5264",
+          "name": "evaluaciones:observacion-item-asesor-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
