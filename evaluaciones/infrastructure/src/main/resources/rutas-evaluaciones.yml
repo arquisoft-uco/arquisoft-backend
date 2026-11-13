@@ -53,6 +53,9 @@ rutas:
       observaciones: /{id}/observaciones
       observaciones-jurado: /{id}/observaciones/jurado
       observaciones-estudiante: /{id}/observaciones/estudiante
+    evaluaciones-cuantitativas-asesor:
+      base: /evaluaciones/evaluaciones-cuantitativas-asesor
+      observaciones: /{evaluacionCuantitativaAsesorId}/observaciones
     observaciones-item-jurado:
       base: /evaluaciones/observaciones-item-jurado
       por-id: /{observacionId}

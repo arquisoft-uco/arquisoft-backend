@@ -76,4 +76,11 @@ public final class EvaluacionesLimits {
 
         public static final int DESCRIPCION_MAX = 500;
     }
+
+    public static final class ObservacionItemAsesor {
+
+        private ObservacionItemAsesor() {}
+
+        public static final int DESCRIPCION_MAX = 500;
+    }
 }

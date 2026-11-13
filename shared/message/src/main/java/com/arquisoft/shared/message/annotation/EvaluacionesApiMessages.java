@@ -513,6 +513,22 @@ public final class EvaluacionesApiMessages {
                 "La evaluación del asesor no existe o pertenece a otro asesor";
     }
 
+    public static final class ObservacionItemAsesor {
+
+        private ObservacionItemAsesor() {}
+
+        public static final String TAG_NAME = "Observaciones de ítems cuantitativos del asesor";
+        public static final String TAG_DESCRIPTION = "Registro de observaciones sobre evaluaciones cuantitativas del asesor";
+        public static final String REGISTRAR_SUMMARY = "Registrar observación";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra una nueva observación textual sobre una evaluación cuantitativa del asesor";
+        public static final String REGISTRAR_RESP_201 = "Observación registrada";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación cuantitativa no existe, pertenece a otro asesor, su evaluación ya está "
+                        + "finalizada, o ya existe una observación con esa descripción";
+    }
+
     public static final class EstadoEvaluacion {
 
         private EstadoEvaluacion() {}
