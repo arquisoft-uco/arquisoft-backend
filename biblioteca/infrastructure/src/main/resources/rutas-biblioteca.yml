@@ -8,3 +8,5 @@ rutas:
     biblioteca:
       base: /biblioteca
       estados-documentacion: /estados-documentacion
+      documentaciones: /documentaciones
+      consultar: /consultar

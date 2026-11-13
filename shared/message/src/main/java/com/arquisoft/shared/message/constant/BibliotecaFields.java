@@ -17,4 +17,11 @@ public final class BibliotecaFields {
         public static final String EMAIL = "email";
         public static final String OCURRIDO_EN = "ocurridoEn";
     }
+
+    public static final class Documentacion {
+
+        private Documentacion() {}
+
+        public static final String ROLES = "roles";
+    }
 }
