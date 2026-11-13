@@ -81,4 +81,23 @@ class EvaluacionCualitativaAsesorCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).containsExactly(itemRegistrado);
     }
+
+    @Test
+    void debeDetectarSoloElItemUsado_cuandoConsultaExistenciaPorItem() {
+        // Arrange
+        var itemUsado = UtilUUID.generarNuevoUUID();
+        var itemSinUso = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                        itemUsado, UtilUUID.generarNuevoUUID())));
+        repository.flush();
+
+        // Act
+        var usado = adapter.existePorItem(itemUsado);
+        var sinUso = adapter.existePorItem(itemSinUso);
+
+        // Assert
+        assertThat(usado).isTrue();
+        assertThat(sinUso).isFalse();
+    }
 }

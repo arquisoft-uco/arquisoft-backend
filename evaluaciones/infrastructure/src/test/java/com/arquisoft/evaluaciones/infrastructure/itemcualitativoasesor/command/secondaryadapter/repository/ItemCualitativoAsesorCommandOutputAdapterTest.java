@@ -141,4 +141,26 @@ class ItemCualitativoAsesorCommandOutputAdapterTest {
         assertThat(persistido.getNombre()).isEqualTo("Claridad");
         verify(logger).debug(any(ClaveMensaje.class), eq(id));
     }
+
+    @Test
+    void debeEliminarElItemYSoloEse_cuandoEliminaPorId() {
+        // Arrange
+        var aEliminar = UtilUUID.generarNuevoUUID();
+        var aConservar = UtilUUID.generarNuevoUUID();
+        repository.saveAndFlush(ItemCualitativoAsesorJpaEntity.builder()
+                .id(aEliminar).nombre("Claridad").descripcion("Evalua la claridad").build());
+        repository.saveAndFlush(ItemCualitativoAsesorJpaEntity.builder()
+                .id(aConservar).nombre("Coherencia").descripcion("Evalua la coherencia").build());
+        entityManager.clear();
+
+        // Act
+        adapter.eliminar(aEliminar);
+        repository.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(repository.findById(aEliminar)).isEmpty();
+        assertThat(repository.findById(aConservar)).isPresent();
+        verify(logger).debug(any(ClaveMensaje.class), eq(aEliminar));
+    }
 }

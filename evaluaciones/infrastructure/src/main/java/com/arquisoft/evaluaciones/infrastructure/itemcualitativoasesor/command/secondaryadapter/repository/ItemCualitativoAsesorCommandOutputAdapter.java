@@ -44,4 +44,10 @@ public class ItemCualitativoAsesorCommandOutputAdapter implements ItemCualitativ
         repository.actualizarDescripcion(id, descripcion);
         logger.debug(ItemCualitativoAsesorKey.LOG_DESCRIPCION_ACTUALIZADA, id);
     }
+
+    @Override
+    public void eliminar(UUID id) {
+        repository.deleteById(id);
+        logger.debug(ItemCualitativoAsesorKey.LOG_ELIMINADO, id);
+    }
 }
