@@ -3,12 +3,15 @@ package com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryada
 import com.arquisoft.biblioteca.application.documentacion.query.criteria.DocumentacionCriteria;
 import com.arquisoft.biblioteca.application.documentacion.query.readmodel.DocumentacionReadModel;
 import com.arquisoft.biblioteca.application.documentacion.query.secondaryport.DocumentacionQueryOutputPort;
+import com.arquisoft.biblioteca.infrastructure.documentacion.exception.DocumentacionNoDisponibleException;
 import com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.repository.mapper.DocumentacionQueryMapper;
 import com.arquisoft.shared.jpa.util.PageableMapper;
 import com.arquisoft.shared.jpa.util.PaginationMapper;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -27,5 +30,12 @@ public class DocumentacionQueryOutputAdapter implements DocumentacionQueryOutput
         return PaginationMapper.toResult(
                 documentacionQueryRepository.findAll(spec, pageable)
                         .map(DocumentacionQueryMapper::toReadModel));
+    }
+
+    @Override
+    public DocumentacionReadModel consultarPorId(UUID documentacion) {
+        return documentacionQueryRepository.findById(documentacion)
+                .map(DocumentacionQueryMapper::toReadModel)
+                .orElseThrow(() -> new DocumentacionNoDisponibleException(documentacion));
     }
 }

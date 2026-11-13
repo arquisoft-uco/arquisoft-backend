@@ -30,6 +30,9 @@ public final class BibliotecaCodes {
         private Documentacion() {}
 
         public static final String ROLES_REQUERIDOS = "DOCUMENTACION_ROLES_REQUERIDOS";
+        public static final String DOCUMENTACION_ID_REQUERIDO = "DOCUMENTACION_DOCUMENTACION_ID_REQUERIDO";
+        public static final String NO_COMPARTIBLE = "DOCUMENTACION_NO_COMPARTIBLE";
+        public static final String NO_DISPONIBLE = "DOCUMENTACION_NO_DISPONIBLE";
     }
 
     public static final class Autor {

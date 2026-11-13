@@ -4,7 +4,11 @@ import com.arquisoft.biblioteca.application.documentacion.query.criteria.Documen
 import com.arquisoft.biblioteca.application.documentacion.query.readmodel.DocumentacionReadModel;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 
+import java.util.UUID;
+
 public interface DocumentacionQueryOutputPort {
 
     PaginatedResult<DocumentacionReadModel> consultar(DocumentacionCriteria criteria);
+
+    DocumentacionReadModel consultarPorId(UUID documentacion);
 }

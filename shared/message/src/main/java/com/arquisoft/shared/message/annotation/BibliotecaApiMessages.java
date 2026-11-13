@@ -39,6 +39,14 @@ public final class BibliotecaApiMessages {
                         + "el resto de roles solo las documentaciones publicadas";
         public static final String CONSULTAR_RESP_200 = "Página de documentaciones";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
+        public static final String ENLACE_SUMMARY = "Compartir la información de una documentación";
+        public static final String ENLACE_DESCRIPTION =
+                "Devuelve el enlace permanente a la ficha de la documentación en el frontend junto con su "
+                        + "estado, entregable y bibliotecario. Solo se puede compartir una documentación "
+                        + "publicada; una inexistente o no publicada responde el mismo error";
+        public static final String ENLACE_RESP_200 = "Enlace y datos de la documentación";
+        public static final String ENLACE_RESP_400 = "Identificador de documentación inválido";
+        public static final String ENLACE_RESP_422 = "La documentación no está disponible para compartir";
     }
 
     public static final class AutorDocumentacion {

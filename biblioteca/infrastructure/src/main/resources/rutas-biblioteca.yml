@@ -11,3 +11,4 @@ rutas:
       documentaciones: /documentaciones
       consultar: /consultar
       autores: /{documentacionId}/autores
+      enlace: /{documentacionId}/enlace

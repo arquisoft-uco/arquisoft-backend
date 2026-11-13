@@ -202,6 +202,13 @@ artefactos:
     tamano-maximo-bytes: ${ARTEFACTOS_TAMANO_MAXIMO_BYTES:52428800}
     cuota-proyecto-grado-bytes: ${ARTEFACTOS_CUOTA_PROYECTO_GRADO_BYTES:1073741824}
 
+# ==================== BIBLIOTECA (enlaces para compartir) ====================
+# Enlace permanente a la ficha de una documentacion en el frontend: url-base + ruta-documentacion.
+biblioteca:
+  enlaces:
+    url-base: ${BIBLIOTECA_ENLACES_URL_BASE:http://localhost:3000}
+    ruta-documentacion: ${BIBLIOTECA_ENLACES_RUTA_DOCUMENTACION:/doc/{documentacionId}}
+
 # ==================== DATASOURCES POR BOUNDED CONTEXT ====================
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
 # usando @ConfigurationProperties("datasource.{contexto}").
