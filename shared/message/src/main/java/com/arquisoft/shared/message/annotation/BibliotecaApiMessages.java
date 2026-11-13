@@ -40,4 +40,19 @@ public final class BibliotecaApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de documentaciones";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
+
+    public static final class AutorDocumentacion {
+
+        private AutorDocumentacion() {}
+
+        public static final String TAG_NAME = "Autores de documentación";
+        public static final String TAG_DESCRIPTION = "Consulta de los autores de una documentación de la biblioteca";
+        public static final String CONSULTAR_SUMMARY = "Consultar los autores de una documentación";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve la lista de autores vinculados a la documentación con su identificador, "
+                        + "nombre y correo, ordenada por nombre. Incluye a los autores dados de baja. "
+                        + "Responde una lista vacía si la documentación no tiene autores o no existe";
+        public static final String CONSULTAR_RESP_200 = "Lista de autores de la documentación";
+        public static final String CONSULTAR_RESP_400 = "Identificador de documentación inválido";
+    }
 }

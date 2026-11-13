@@ -24,4 +24,22 @@ public final class BibliotecaFields {
 
         public static final String ROLES = "roles";
     }
+
+    public static final class Autor {
+
+        private Autor() {}
+
+        public static final String ID = "id";
+        public static final String IDENTIFICADOR = "identificador";
+        public static final String NOMBRE = "nombre";
+        public static final String EMAIL = "email";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
+    public static final class AutorDocumentacion {
+
+        private AutorDocumentacion() {}
+
+        public static final String DOCUMENTACION = "documentacion";
+    }
 }

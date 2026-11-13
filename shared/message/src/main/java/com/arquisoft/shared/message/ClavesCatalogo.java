@@ -24,6 +24,8 @@ import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArte
 import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.EliminarVersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.EliminarVersionRepositorioArtefactoKey;
+import com.arquisoft.shared.message.key.biblioteca.AutorDocumentacionKey;
+import com.arquisoft.shared.message.key.biblioteca.AutorKey;
 import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
 import com.arquisoft.shared.message.key.biblioteca.DocumentacionKey;
 import com.arquisoft.shared.message.key.biblioteca.EstadoDocumentacionKey;
@@ -230,6 +232,8 @@ public final class ClavesCatalogo {
             BibliotecarioKey.class,
             EstadoDocumentacionKey.class,
             DocumentacionKey.class,
+            AutorKey.class,
+            AutorDocumentacionKey.class,
             EstadoRevisionAsesorKey.class,
             RevisionAsesorKey.class,
             CambiarEstadoRevisionAsesorKey.class,
