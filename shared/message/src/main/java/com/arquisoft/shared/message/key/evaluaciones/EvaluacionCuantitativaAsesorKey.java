@@ -16,6 +16,18 @@ public enum EvaluacionCuantitativaAsesorKey implements ClaveMensaje {
             "evaluaciones.dominio.evaluacioncuantitativaasesor.error.items-ya-registrados", 0),
     ERROR_ITEMS_YA_REGISTRADOS_DETALLE(
             "evaluaciones.dominio.evaluacioncuantitativaasesor.error.items-ya-registrados-detalle", 1),
+    ERROR_OMISION_EVALUACION_ASESOR_FINALIZADA(
+            "evaluaciones.dominio.evaluacioncuantitativaasesor.error.omision-finalizada", 0),
+    ERROR_OMISION_EVALUACION_ASESOR_FINALIZADA_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativaasesor.error.omision-finalizada-detalle", 1),
+    ERROR_EVALUACIONES_NO_REGISTRADAS(
+            "evaluaciones.dominio.evaluacioncuantitativaasesor.error.no-registradas", 0),
+    ERROR_EVALUACIONES_NO_REGISTRADAS_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativaasesor.error.no-registradas-detalle", 2),
+    LOG_OMITIENDO_LOTE("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.omitiendo-lote", 2),
+    LOG_VERIFICACION_OMISION("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.verificacion-omision", 4),
+    LOG_LOTE_OMITIDO("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.lote-omitido", 2),
+    LOG_LOTE_ELIMINADO("evaluaciones.infraestructura.evaluacioncuantitativaasesor.log.lote-eliminado", 1),
     LOG_REGISTRANDO_LOTE("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.registrando-lote", 2),
     LOG_VERIFICACION_LOTE("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.verificacion-lote", 4),
     LOG_LOTE_REGISTRADO("evaluaciones.aplicacion.evaluacioncuantitativaasesor.log.lote-registrado", 3),
