@@ -7,7 +7,7 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.val
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.finder.EstadoActualEntregableProyectoGradoFinder;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.EstadoEntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.mapper.EstadoEntregableProyectoGradoMapper;
-import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoDeEntregableFinder;
+import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoBloqueadoDeEntregableFinder;
 import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCanceladoEvent;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoCerradoEvent;
@@ -29,7 +29,7 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
     private final EstadoEntregableProyectoGradoOutputPort estadoEntregableProyectoGradoOutputPort;
     private final EntregableProyectoGradoPorIdFinder entregableProyectoGradoPorIdFinder;
     private final EstadoActualEntregableProyectoGradoFinder estadoActualEntregableProyectoGradoFinder;
-    private final ProyectoGradoDeEntregableFinder proyectoGradoDeEntregableFinder;
+    private final ProyectoGradoBloqueadoDeEntregableFinder proyectoGradoBloqueadoDeEntregableFinder;
     private final AsesorVigenteDeEntregableFinder asesorVigenteDeEntregableFinder;
     private final CambiarEstadoEntregableProyectoGradoValidator cambiarEstadoEntregableProyectoGradoValidator;
     private final EventPublisher eventPublisher;
@@ -40,9 +40,9 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
         logger.info(EntregableProyectoGradoKey.LOG_CAMBIANDO_ESTADO,
                 cambio.getEntregableProyectoGrado(), cambio.getEstadoEntregable().getId());
 
+        var proyecto = proyectoGradoBloqueadoDeEntregableFinder.obtener(cambio.getEntregableProyectoGrado());
         var entregable = entregableProyectoGradoPorIdFinder.obtener(cambio.getEntregableProyectoGrado());
         var estadoActual = estadoActualEntregableProyectoGradoFinder.obtener(cambio.getEntregableProyectoGrado());
-        var proyecto = proyectoGradoDeEntregableFinder.obtener(cambio.getEntregableProyectoGrado());
         var asesorVigente = asesorVigenteDeEntregableFinder.obtener(cambio.getEntregableProyectoGrado());
         logger.debug(EntregableProyectoGradoKey.LOG_VERIFICACION_CAMBIAR_ESTADO,
                 !entregable.esVacio(), estadoActual.getEstadoEntregable().getId(),

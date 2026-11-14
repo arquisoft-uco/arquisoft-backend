@@ -112,6 +112,23 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerBloqueadoPorIdYRetornarVacio_cuandoNoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(id).nombre("Sistema de gestion").build());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerBloqueadoPorId(id);
+        var ausente = adapter.obtenerBloqueadoPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrado).hasValueSatisfying(entity -> assertThat(entity.id()).isEqualTo(id));
+        assertThat(ausente).isEmpty();
+    }
+
+    @Test
     void debeObtenerPorId_cuandoExiste() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
@@ -267,7 +284,7 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeObtenerPorRevisionObservacionYVersion_conLaFechaDelProyecto() {
+    void debeObtenerBloqueadoPorRevisionObservacionYVersion_cuandoExistenEnElProyecto() {
         // Arrange
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
         var proyecto = proyectoSembrado(entregadoEn, null);
@@ -293,9 +310,9 @@ class ProyectoGradoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var porRevision = adapter.obtenerPorRevisionAsesor(revision);
-        var porObservacion = adapter.obtenerPorObservacion(observacion);
-        var porVersion = adapter.obtenerPorVersionArtefacto(version);
+        var porRevision = adapter.obtenerBloqueadoPorRevisionAsesor(revision);
+        var porObservacion = adapter.obtenerBloqueadoPorObservacion(observacion);
+        var porVersion = adapter.obtenerBloqueadoPorVersionArtefacto(version);
 
         // Assert
         assertThat(porRevision).hasValueSatisfying(entity -> {
@@ -309,8 +326,8 @@ class ProyectoGradoCommandOutputAdapterTest {
     @Test
     void debeRetornarVacio_cuandoLosIdentificadoresNoExisten() {
         // Act & Assert
-        assertThat(adapter.obtenerPorRevisionAsesor(UtilUUID.generarNuevoUUID())).isEmpty();
-        assertThat(adapter.obtenerPorObservacion(UtilUUID.generarNuevoUUID())).isEmpty();
-        assertThat(adapter.obtenerPorVersionArtefacto(UtilUUID.generarNuevoUUID())).isEmpty();
+        assertThat(adapter.obtenerBloqueadoPorRevisionAsesor(UtilUUID.generarNuevoUUID())).isEmpty();
+        assertThat(adapter.obtenerBloqueadoPorObservacion(UtilUUID.generarNuevoUUID())).isEmpty();
+        assertThat(adapter.obtenerBloqueadoPorVersionArtefacto(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 }

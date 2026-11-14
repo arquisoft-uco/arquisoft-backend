@@ -17,20 +17,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProyectoGradoDeEntregableFinderImplTest {
+class ProyectoGradoBloqueadoDeEntregableFinderImplTest {
 
     @Mock
     private ProyectoGradoOutputPort proyectoGradoOutputPort;
 
     @InjectMocks
-    private ProyectoGradoDeEntregableFinderImpl finder;
+    private ProyectoGradoBloqueadoDeEntregableFinderImpl finder;
 
     @Test
     void debeMapearAlDominio_cuandoElEntregableTieneProyecto() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        when(proyectoGradoOutputPort.obtenerPorEntregable(entregable))
+        when(proyectoGradoOutputPort.obtenerBloqueadoPorEntregable(entregable))
                 .thenReturn(Optional.of(new ProyectoGradoEntity(proyectoGrado, "Sistema de gestion", "EN_PROCESO")));
 
         // Act
@@ -45,7 +45,7 @@ class ProyectoGradoDeEntregableFinderImplTest {
     void debeRetornarVacio_cuandoElEntregableNoTieneProyecto() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
-        when(proyectoGradoOutputPort.obtenerPorEntregable(entregable)).thenReturn(Optional.empty());
+        when(proyectoGradoOutputPort.obtenerBloqueadoPorEntregable(entregable)).thenReturn(Optional.empty());
 
         // Act
         var resultado = finder.obtener(entregable);

@@ -14,15 +14,17 @@ public interface ProyectoGradoOutputPort {
 
     Optional<ProyectoGradoEntity> obtenerPorId(UUID id);
 
+    Optional<ProyectoGradoEntity> obtenerBloqueadoPorId(UUID id);
+
     Optional<ProyectoGradoEntity> obtenerPorArtefacto(UUID artefacto);
 
     Optional<ProyectoGradoEntity> obtenerBloqueadoPorArtefacto(UUID artefacto);
 
-    Optional<ProyectoGradoEntity> obtenerPorRevisionAsesor(UUID revisionAsesor);
+    Optional<ProyectoGradoEntity> obtenerBloqueadoPorRevisionAsesor(UUID revisionAsesor);
 
-    Optional<ProyectoGradoEntity> obtenerPorObservacion(UUID observacion);
+    Optional<ProyectoGradoEntity> obtenerBloqueadoPorObservacion(UUID observacion);
 
-    Optional<ProyectoGradoEntity> obtenerPorVersionArtefacto(UUID versionArtefacto);
+    Optional<ProyectoGradoEntity> obtenerBloqueadoPorVersionArtefacto(UUID versionArtefacto);
 
     void marcarEntregado(UUID id, Instant entregadoEn);
 

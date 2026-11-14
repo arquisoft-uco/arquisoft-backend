@@ -5,7 +5,7 @@ import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFin
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.usecase.AvanzarObservacionesRevisionUseCase;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
@@ -41,7 +41,7 @@ public class EnviarRevisionAsesorUseCaseImpl implements EnviarRevisionAsesorUseC
     private final RevisionAsesorOutputPort revisionAsesorOutputPort;
     private final AvanzarObservacionesRevisionUseCase avanzarObservacionesRevisionUseCase;
     private final EventPublisher eventPublisher;
-    private final ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private final ProyectoGradoBloqueadoPorRevisionAsesorFinder proyectoGradoBloqueadoPorRevisionAsesorFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -60,7 +60,7 @@ public class EnviarRevisionAsesorUseCaseImpl implements EnviarRevisionAsesorUseC
         var estudiantes = estudiantesVinculadosArtefactoFinder.obtener(artefacto.getId());
         var observacionesExisten = observacionesDeRevisionExistenFinder.obtener(revisionAsesor);
 
-        var proyecto = proyectoGradoPorRevisionAsesorFinder.obtener(revisionAsesor);
+        var proyecto = proyectoGradoBloqueadoPorRevisionAsesorFinder.obtener(revisionAsesor);
         logger.debug(EnviarRevisionAsesorKey.LOG_VERIFICACION_ENVIO,
                 !revision.esVacio(), !artefacto.esVacio(), !asesor.esVacio(), !version.esVacio(),
                 !versionRepositorio.esVacio(), estudiantes.size(), observacionesExisten);

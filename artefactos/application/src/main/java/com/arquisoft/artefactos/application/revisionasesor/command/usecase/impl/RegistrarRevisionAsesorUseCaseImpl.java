@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorVersionArtefactoFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAnteriorBloqueadaDeVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorAbiertaPorVersionFinder;
@@ -31,7 +31,7 @@ public class RegistrarRevisionAsesorUseCaseImpl implements RegistrarRevisionAses
     private final RevisionAsesorAbiertaPorVersionFinder revisionAsesorAbiertaPorVersionFinder;
     private final RegistrarRevisionAsesorValidator registrarRevisionAsesorValidator;
     private final RevisionAsesorOutputPort revisionAsesorOutputPort;
-    private final ProyectoGradoPorVersionArtefactoFinder proyectoGradoPorVersionArtefactoFinder;
+    private final ProyectoGradoBloqueadoPorVersionArtefactoFinder proyectoGradoBloqueadoPorVersionArtefactoFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -47,7 +47,7 @@ public class RegistrarRevisionAsesorUseCaseImpl implements RegistrarRevisionAses
         var artefacto = artefactoPorVersionArtefactoFinder.obtener(versionArtefacto);
         var esUltima = versionArtefactoEsUltimaFinder.obtener(versionArtefacto);
         var existeAbierta = revisionAsesorAbiertaPorVersionFinder.obtener(versionArtefacto);
-        var proyecto = proyectoGradoPorVersionArtefactoFinder.obtener(versionArtefacto);
+        var proyecto = proyectoGradoBloqueadoPorVersionArtefactoFinder.obtener(versionArtefacto);
         logger.debug(RegistrarRevisionAsesorKey.LOG_VERIFICACION_REGISTRO,
                 !version.esVacio(), !artefacto.esVacio(), esUltima, existeAbierta,
                 revisionAnterior.getEstado().getId());

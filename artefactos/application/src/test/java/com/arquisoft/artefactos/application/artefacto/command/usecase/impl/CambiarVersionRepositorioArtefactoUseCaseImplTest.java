@@ -5,7 +5,7 @@ import com.arquisoft.artefactos.application.artefacto.command.secondaryport.Arte
 import com.arquisoft.artefactos.application.artefacto.command.validator.CambiarVersionRepositorioArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
@@ -73,7 +73,7 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
-    private ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     @Mock
     private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     @Mock
@@ -103,8 +103,8 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
                 versionRepositorioArtefactoBloqueadaPorIdFinder, ultimoNumeroVersionArtefactoFinder,
                 revisionVigenteUltimaVersionFinder, estudiantesVinculadosArtefactoFinder,
                 cambiarVersionRepositorioArtefactoValidator, artefactoOutputPort, eventPublisher,
-                proyectoGradoPorArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
-        when(proyectoGradoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+                proyectoGradoBloqueadoPorArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         artefactoId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         elegidaId = UtilUUID.generarNuevoUUID();
@@ -161,7 +161,7 @@ class CambiarVersionRepositorioArtefactoUseCaseImplTest {
         orden.verify(cambiarVersionRepositorioArtefactoValidator).validar(
                 eq(cambio), eq(artefacto), eq(asesor), eq(actual), eq(elegida), anteriorCaptor.capture());
         orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
-        verify(proyectoGradoPorArtefactoFinder, times(1)).obtener(any());
+        verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(any());
         orden.verify(artefactoOutputPort).cambiarVersionRepositorio(artefactoId, elegidaId);
         orden.verify(eventPublisher).publish(eventoCaptor.capture());
         orden.verify(logger).info(ArtefactoKey.LOG_VERSION_REPOSITORIO_CAMBIADA, artefactoId, elegidaId, 3);

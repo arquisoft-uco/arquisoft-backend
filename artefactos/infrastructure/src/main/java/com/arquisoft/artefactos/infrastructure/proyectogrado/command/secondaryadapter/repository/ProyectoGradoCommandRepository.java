@@ -33,12 +33,21 @@ public interface ProyectoGradoCommandRepository extends JpaRepository<ProyectoGr
     @NativeQuery("""
             SELECT p.*
             FROM proyecto_grado p
+            WHERE p.id = :id
+            FOR UPDATE OF p
+            """)
+    Optional<ProyectoGradoJpaEntity> bloquearPorId(@Param("id") UUID id);
+
+    @NativeQuery("""
+            SELECT p.*
+            FROM proyecto_grado p
             JOIN artefacto a ON a.proyecto_grado_id = p.id
             JOIN version_artefacto v ON v.artefacto_id = a.id
             JOIN revision_asesor r ON r.version_artefacto_id = v.id
             WHERE r.id = :revisionAsesor
+            FOR UPDATE OF p
             """)
-    Optional<ProyectoGradoJpaEntity> obtenerPorRevisionAsesor(@Param("revisionAsesor") UUID revisionAsesor);
+    Optional<ProyectoGradoJpaEntity> bloquearPorRevisionAsesor(@Param("revisionAsesor") UUID revisionAsesor);
 
     @NativeQuery("""
             SELECT p.*
@@ -48,8 +57,9 @@ public interface ProyectoGradoCommandRepository extends JpaRepository<ProyectoGr
             JOIN revision_asesor r ON r.version_artefacto_id = v.id
             JOIN observacion o ON o.revision_asesor_id = r.id
             WHERE o.id = :observacion
+            FOR UPDATE OF p
             """)
-    Optional<ProyectoGradoJpaEntity> obtenerPorObservacion(@Param("observacion") UUID observacion);
+    Optional<ProyectoGradoJpaEntity> bloquearPorObservacion(@Param("observacion") UUID observacion);
 
     @NativeQuery("""
             SELECT p.*
@@ -57,8 +67,9 @@ public interface ProyectoGradoCommandRepository extends JpaRepository<ProyectoGr
             JOIN artefacto a ON a.proyecto_grado_id = p.id
             JOIN version_artefacto v ON v.artefacto_id = a.id
             WHERE v.id = :versionArtefacto
+            FOR UPDATE OF p
             """)
-    Optional<ProyectoGradoJpaEntity> obtenerPorVersionArtefacto(@Param("versionArtefacto") UUID versionArtefacto);
+    Optional<ProyectoGradoJpaEntity> bloquearPorVersionArtefacto(@Param("versionArtefacto") UUID versionArtefacto);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE ProyectoGradoJpaEntity p SET p.entregadoEn = :entregadoEn "

@@ -5,5 +5,5 @@ import com.arquisoft.shared.finder.Finder;
 
 import java.util.UUID;
 
-public interface ProyectoGradoPorVersionArtefactoFinder extends Finder<UUID, ProyectoGradoDomain> {
+public interface ProyectoGradoBloqueadoPorIdFinder extends Finder<UUID, ProyectoGradoDomain> {
 }

@@ -40,8 +40,8 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     }
 
     @Override
-    public Optional<ProyectoGradoEntity> obtenerPorEntregable(UUID entregable) {
-        return proyectoGradoCommandRepository.buscarPorEntregable(entregable).map(ProyectoGradoJpaMapper::toEntity);
+    public Optional<ProyectoGradoEntity> obtenerBloqueadoPorEntregable(UUID entregable) {
+        return proyectoGradoCommandRepository.buscarBloqueadoPorEntregable(entregable).map(ProyectoGradoJpaMapper::toEntity);
     }
 
     @Override
