@@ -9,10 +9,8 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoEstadoFinder;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.CambioCriterioEvaluacionCualitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.EvaluacionCualitativaJuradoDomain;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.event.CriterioEvaluacionCualitativaJuradoCambiadoEvent;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
-import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +26,6 @@ public class CambiarCriterioEvaluacionCualitativaJuradoUseCaseImpl
     private final CriteriosCualitativosJuradoExistentesFinder criteriosCualitativosJuradoExistentesFinder;
     private final CambiarCriterioEvaluacionCualitativaJuradoValidator validator;
     private final EvaluacionCualitativaJuradoOutputPort evaluacionCualitativaJuradoOutputPort;
-    private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
@@ -50,16 +47,7 @@ public class CambiarCriterioEvaluacionCualitativaJuradoUseCaseImpl
         evaluacionCualitativaJuradoOutputPort.actualizar(
                 EvaluacionCualitativaJuradoMapper.toEntity(evaluacionActualizada));
 
-        var evento = new CriterioEvaluacionCualitativaJuradoCambiadoEvent(
-                evaluacion.getId(),
-                evaluacion.getEvaluacionJurado(),
-                evaluacion.getItem(),
-                evaluacion.getCriterio(),
-                cambio.getCriterio(),
-                cambio.getJurado());
-        eventPublisher.publish(evento);
-
         logger.info(EvaluacionCualitativaJuradoKey.LOG_CRITERIO_CAMBIADO,
-                cambio.getEvaluacionCualitativaJurado(), evento.getIdEvento());
+                cambio.getEvaluacionCualitativaJurado());
     }
 }

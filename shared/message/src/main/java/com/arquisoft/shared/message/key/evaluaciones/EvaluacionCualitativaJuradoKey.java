@@ -37,9 +37,9 @@ public enum EvaluacionCualitativaJuradoKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADA_DETALLE(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.no-encontrada-detalle", 1),
     ERROR_CAMBIO_CRITERIO_EVALUACION_JURADO_FINALIZADA(
-            "evaluaciones.dominio.evaluacioncualitativajurado.error.cambio-criterio-evaluacion-jurado-finalizada", 0),
+            "evaluaciones.dominio.evaluacioncualitativajurado.error.cambio-criterio-finalizada", 0),
     ERROR_CAMBIO_CRITERIO_EVALUACION_JURADO_FINALIZADA_DETALLE(
-            "evaluaciones.dominio.evaluacioncualitativajurado.error.cambio-criterio-evaluacion-jurado-finalizada-detalle",
+            "evaluaciones.dominio.evaluacioncualitativajurado.error.cambio-criterio-finalizada-detalle",
             1),
     ERROR_CRITERIO_SIN_CAMBIO(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.criterio-sin-cambio", 0),
@@ -48,7 +48,7 @@ public enum EvaluacionCualitativaJuradoKey implements ClaveMensaje {
     LOG_CAMBIANDO_CRITERIO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.cambiando-criterio", 2),
     LOG_VERIFICACION_CAMBIAR_CRITERIO(
             "evaluaciones.aplicacion.evaluacioncualitativajurado.log.verificacion-cambiar-criterio", 4),
-    LOG_CRITERIO_CAMBIADO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.criterio-cambiado", 2),
+    LOG_CRITERIO_CAMBIADO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.criterio-cambiado", 1),
     LOG_GUARDADO("evaluaciones.infraestructura.evaluacioncualitativajurado.log.guardado", 1),
     LOG_CONSULTANDO_REALIZADAS("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando-realizadas", 2),
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando", 1),

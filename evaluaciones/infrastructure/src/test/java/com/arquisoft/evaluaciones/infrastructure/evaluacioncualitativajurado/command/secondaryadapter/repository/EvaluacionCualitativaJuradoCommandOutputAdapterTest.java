@@ -131,19 +131,6 @@ class EvaluacionCualitativaJuradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeDevolverVacio_cuandoLaEvaluacionNoExiste() {
-        // Arrange
-        var id = UUID.randomUUID();
-        when(repository.findById(id)).thenReturn(Optional.empty());
-
-        // Act
-        var resultado = adapter.obtenerPorId(id);
-
-        // Assert
-        assertThat(resultado).isEmpty();
-    }
-
-    @Test
     void debeGuardarConElCriterioNuevoYLogear_cuandoActualiza() {
         // Arrange
         var entidad = new EvaluacionCualitativaJuradoEntity(

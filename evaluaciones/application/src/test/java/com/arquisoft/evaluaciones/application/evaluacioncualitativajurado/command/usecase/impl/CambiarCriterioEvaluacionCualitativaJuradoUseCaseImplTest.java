@@ -9,12 +9,10 @@ import com.arquisoft.evaluaciones.application.criterioitemcualitativojurado.comm
 import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.CambioCriterioEvaluacionCualitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.EvaluacionCualitativaJuradoDomain;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.event.CriterioEvaluacionCualitativaJuradoCambiadoEvent;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.CriterioEvaluacionCualitativaJuradoSinCambioException;
+import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.CambioCriterioEvaluacionJuradoFinalizadaException;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.EstadoEvaluacionJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
-import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,16 +53,13 @@ class CambiarCriterioEvaluacionCualitativaJuradoUseCaseImplTest {
     private EvaluacionCualitativaJuradoOutputPort evaluacionCualitativaJuradoOutputPort;
 
     @Mock
-    private EventPublisher eventPublisher;
-
-    @Mock
     private AppLogger logger;
 
     @InjectMocks
     private CambiarCriterioEvaluacionCualitativaJuradoUseCaseImpl useCase;
 
     @Test
-    void debeActualizarYPublicarEvento_cuandoValidacionPasa() {
+    void debeActualizar_cuandoValidacionPasa() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var evaluacionJurado = UtilUUID.generarNuevoUUID();
@@ -86,13 +81,12 @@ class CambiarCriterioEvaluacionCualitativaJuradoUseCaseImplTest {
         // Assert
         var orden = inOrder(evaluacionCualitativaJuradoPorIdFinder, evaluacionJuradoEstadoFinder,
                 criteriosCualitativosJuradoExistentesFinder, validator,
-                evaluacionCualitativaJuradoOutputPort, eventPublisher);
+                evaluacionCualitativaJuradoOutputPort);
         orden.verify(evaluacionCualitativaJuradoPorIdFinder).obtener(id);
         orden.verify(evaluacionJuradoEstadoFinder).obtener(evaluacionJurado);
         orden.verify(criteriosCualitativosJuradoExistentesFinder).obtener(Set.of(criterioNuevo));
         orden.verify(validator).validar(cambio, evaluacion, estado, existentes);
         orden.verify(evaluacionCualitativaJuradoOutputPort).actualizar(any(EvaluacionCualitativaJuradoEntity.class));
-        orden.verify(eventPublisher).publish(any());
 
         verify(evaluacionCualitativaJuradoPorIdFinder, times(1)).obtener(any());
         verify(evaluacionJuradoEstadoFinder, times(1)).obtener(any());
@@ -103,22 +97,13 @@ class CambiarCriterioEvaluacionCualitativaJuradoUseCaseImplTest {
         assertThat(entidad.getValue())
                 .isEqualTo(new EvaluacionCualitativaJuradoEntity(id, evaluacionJurado, item, criterioNuevo));
 
-        var evento = ArgumentCaptor.forClass(CriterioEvaluacionCualitativaJuradoCambiadoEvent.class);
-        verify(eventPublisher, times(1)).publish(evento.capture());
-        assertThat(evento.getValue().getEvaluacionCualitativaJurado()).isEqualTo(id);
-        assertThat(evento.getValue().getEvaluacionJurado()).isEqualTo(evaluacionJurado);
-        assertThat(evento.getValue().getItem()).isEqualTo(item);
-        assertThat(evento.getValue().getCriterioAnterior()).isEqualTo(criterioAnterior);
-        assertThat(evento.getValue().getCriterio()).isEqualTo(criterioNuevo);
-        assertThat(evento.getValue().getJurado()).isEqualTo(jurado);
-
         verify(logger).info(any(ClaveMensaje.class), eq(id), eq(criterioNuevo));
         verify(logger).debug(any(ClaveMensaje.class), eq(true), eq(jurado), eq("EN_PROGRESO"), eq(1));
-        verify(logger).info(any(ClaveMensaje.class), eq(id), eq(evento.getValue().getIdEvento()));
+        verify(logger).info(any(ClaveMensaje.class), eq(id));
     }
 
     @Test
-    void debeNoPersistirNiPublicar_cuandoElValidatorRechaza() {
+    void debeNoPersistir_cuandoElValidatorLanza() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var evaluacionJurado = UtilUUID.generarNuevoUUID();
@@ -131,14 +116,12 @@ class CambiarCriterioEvaluacionCualitativaJuradoUseCaseImplTest {
         when(evaluacionCualitativaJuradoPorIdFinder.obtener(id)).thenReturn(evaluacion);
         when(evaluacionJuradoEstadoFinder.obtener(evaluacionJurado)).thenReturn(estado);
         when(criteriosCualitativosJuradoExistentesFinder.obtener(Set.of(criterio))).thenReturn(Set.of(criterio));
-        doThrow(new CriterioEvaluacionCualitativaJuradoSinCambioException(id, criterio))
+        doThrow(new CambioCriterioEvaluacionJuradoFinalizadaException(evaluacionJurado))
                 .when(validator).validar(any(), any(), any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(cambio))
-                .isInstanceOf(CriterioEvaluacionCualitativaJuradoSinCambioException.class);
+                .isInstanceOf(CambioCriterioEvaluacionJuradoFinalizadaException.class);
         verify(evaluacionCualitativaJuradoOutputPort, never()).actualizar(any());
-        verify(eventPublisher, never()).publish(any());
-        verify(logger, never()).info(any(ClaveMensaje.class), eq(id), any(String.class));
     }
 }
