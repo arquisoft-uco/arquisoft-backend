@@ -56,6 +56,10 @@ class RevisionAsesorCerradaConsumerTest {
     }
 
     private Message mensaje(String numeroVersion, long deliveryTag) {
+        return mensaje(numeroVersion, deliveryTag, false);
+    }
+
+    private Message mensaje(String numeroVersion, long deliveryTag, boolean reentregado) {
         var json = """
                 {
                     "idEvento": "evt-1",
@@ -77,6 +81,7 @@ class RevisionAsesorCerradaConsumerTest {
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
         var props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
+        props.setRedelivered(reentregado);
         return MessageBuilder.withBody(json.getBytes()).andProperties(props).build();
     }
 
@@ -124,5 +129,36 @@ class RevisionAsesorCerradaConsumerTest {
         // Assert
         verify(interactor, never()).ejecutar(any());
         verify(channel).basicNack(3L, false, false);
+    }
+
+    @Test
+    void debeReencolarUnaVezYLuegoEnviarALaDlq_cuandoElArchivoOrigenNoEsta() throws Exception {
+        // Arrange
+        when(interactor.ejecutar(any())).thenReturn(new RegistroVersionCerradaArtefactoResult.OrigenNoDisponible(
+                artefacto, "Anteproyecto", "pendientes/a.pdf"));
+
+        // Act
+        consumer.onRevisionAsesorCerrada(mensaje("2", 4L, false), channel);
+        consumer.onRevisionAsesorCerrada(mensaje("2", 5L, true), channel);
+
+        // Assert
+        verify(channel).basicNack(4L, false, true);
+        verify(channel).basicNack(5L, false, false);
+        verify(channel, never()).basicAck(4L, false);
+        verify(channel, never()).basicAck(5L, false);
+    }
+
+    @Test
+    void debeConfirmar_cuandoLaReentregaEncuentraElProyectoYaCerrado() throws Exception {
+        // Arrange
+        when(interactor.ejecutar(any()))
+                .thenReturn(new RegistroVersionCerradaArtefactoResult.ProyectoCerrado(artefacto));
+
+        // Act
+        consumer.onRevisionAsesorCerrada(mensaje("2", 6L, true), channel);
+
+        // Assert
+        verify(logger).info(ArtefactoKey.LOG_PROYECTO_CERRADO, artefacto);
+        verify(channel).basicAck(6L, false);
     }
 }

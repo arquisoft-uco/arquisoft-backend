@@ -5,5 +5,5 @@ import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 
 public interface RegistrarVersionCerradaArtefactoValidator {
 
-    void validar(RegistroVersionCerradaArtefactoDomain registro, ProyectoGradoDomain proyecto, String etagOrigen);
+    void validar(RegistroVersionCerradaArtefactoDomain registro, ProyectoGradoDomain proyecto);
 }

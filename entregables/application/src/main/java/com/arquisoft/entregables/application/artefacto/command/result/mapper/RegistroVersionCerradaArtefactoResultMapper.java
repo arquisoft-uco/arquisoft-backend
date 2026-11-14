@@ -21,4 +21,11 @@ public final class RegistroVersionCerradaArtefactoResultMapper {
             RegistroVersionCerradaArtefactoDomain registro) {
         return new RegistroVersionCerradaArtefactoResult.ProyectoCerrado(registro.getArtefacto().getId());
     }
+
+    public static RegistroVersionCerradaArtefactoResult.OrigenNoDisponible toResultOrigenNoDisponible(
+            RegistroVersionCerradaArtefactoDomain registro) {
+        var artefacto = registro.getArtefacto();
+        return new RegistroVersionCerradaArtefactoResult.OrigenNoDisponible(
+                artefacto.getId(), artefacto.getNombreDocumento(), registro.getClaveOrigen());
+    }
 }

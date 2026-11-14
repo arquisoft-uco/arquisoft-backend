@@ -5,7 +5,7 @@ import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFin
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesVersionAnteriorSinCerrarExistenFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
@@ -79,7 +79,7 @@ class CerrarRevisionAsesorUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
-    private ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     @Mock
     private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     @Mock
@@ -101,7 +101,7 @@ class CerrarRevisionAsesorUseCaseImplTest {
 
     @BeforeEach
     void prepararEscenario() {
-        when(proyectoGradoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         revisionId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         versionId = UtilUUID.generarNuevoUUID();
@@ -161,7 +161,11 @@ class CerrarRevisionAsesorUseCaseImplTest {
         orden.verify(validator).validar(cierre, revision, artefacto, asesor, version, versionRepositorio,
                 new ObservacionesParaCierre(false, false));
         orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
-        verify(proyectoGradoPorRevisionAsesorFinder, times(1)).obtener(any());
+        verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(artefacto.getId());
+        var bloqueo = inOrder(proyectoGradoBloqueadoPorArtefactoFinder, revisionAsesorOutputPort, eventPublisher);
+        bloqueo.verify(proyectoGradoBloqueadoPorArtefactoFinder).obtener(artefacto.getId());
+        bloqueo.verify(revisionAsesorOutputPort).actualizarEstado(revisionId, "CERRADA");
+        bloqueo.verify(eventPublisher).publish(any());
         orden.verify(revisionAsesorOutputPort).actualizarEstado(revisionId, "CERRADA");
         var captor = ArgumentCaptor.forClass(RevisionAsesorCerradaEvent.class);
         orden.verify(eventPublisher).publish(captor.capture());

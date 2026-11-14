@@ -2,7 +2,6 @@ package com.arquisoft.entregables.application.artefacto.command.validator.impl;
 
 import com.arquisoft.entregables.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.entregables.domain.artefacto.RegistroVersionCerradaArtefactoDomain;
-import com.arquisoft.entregables.domain.artefacto.exception.ArchivoOrigenArtefactoNoDisponibleException;
 import com.arquisoft.entregables.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
@@ -32,33 +31,22 @@ class RegistrarVersionCerradaArtefactoValidatorImplTest {
     }
 
     @Test
-    void debePasar_cuandoElProyectoExisteYElArchivoOrigenTambien() {
+    void debePasar_cuandoElProyectoExiste() {
         // Arrange
         var registro = registro();
         var proyecto = proyecto();
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(registro, proyecto, "etag")).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validar(registro, proyecto)).doesNotThrowAnyException();
     }
 
     @Test
-    void debeLanzarArchivoOrigenNoDisponible_cuandoNoHayEtag() {
-        // Arrange
-        var registro = registro();
-        var proyecto = proyecto();
-
-        // Act & Assert
-        assertThatThrownBy(() -> validator.validar(registro, proyecto, ""))
-                .isInstanceOf(ArchivoOrigenArtefactoNoDisponibleException.class);
-    }
-
-    @Test
-    void debeLanzarProyectoNoEncontradoPrimero_cuandoFaltanElProyectoYElArchivo() {
+    void debeLanzarProyectoNoEncontrado_cuandoElProyectoNoEstaReplicado() {
         // Arrange
         var registro = registro();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(registro, ProyectoGradoDomain.VACIO, ""))
+        assertThatThrownBy(() -> validator.validar(registro, ProyectoGradoDomain.VACIO))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
 }

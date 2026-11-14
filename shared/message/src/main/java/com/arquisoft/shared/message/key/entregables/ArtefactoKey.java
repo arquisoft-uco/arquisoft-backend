@@ -24,9 +24,9 @@ public enum ArtefactoKey implements ClaveMensaje {
     LOG_PURGADOS("entregables.infraestructura.artefacto.log.purgados", 2),
     LOG_CONSULTANDO_VISTA_PREVIA("entregables.aplicacion.artefacto.log.consultando-vista-previa", 1),
     LOG_VISTA_PREVIA_CONSULTADA("entregables.aplicacion.artefacto.log.vista-previa-consultada", 2),
-    ERROR_ARCHIVO_ORIGEN_NO_DISPONIBLE("entregables.dominio.artefacto.error.archivo-origen-no-disponible", 1),
+    ERROR_ARCHIVO_ORIGEN_NO_DISPONIBLE("entregables.infraestructura.artefacto.error.archivo-origen-no-disponible", 1),
     ERROR_ARCHIVO_ORIGEN_NO_DISPONIBLE_DETALLE(
-            "entregables.dominio.artefacto.error.archivo-origen-no-disponible-detalle", 2),
+            "entregables.infraestructura.artefacto.error.archivo-origen-no-disponible-detalle", 2),
     ERROR_SIN_ARTEFACTOS_PARA_PAQUETE("entregables.dominio.artefacto.error.sin-artefactos-para-paquete", 1),
     ERROR_SIN_ARTEFACTOS_PARA_PAQUETE_DETALLE(
             "entregables.dominio.artefacto.error.sin-artefactos-para-paquete-detalle", 1);

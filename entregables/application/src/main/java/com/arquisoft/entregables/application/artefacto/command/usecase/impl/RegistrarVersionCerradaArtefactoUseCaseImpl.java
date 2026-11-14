@@ -48,7 +48,11 @@ public class RegistrarVersionCerradaArtefactoUseCaseImpl implements RegistrarVer
         var etagOrigen = archivoOrigenArtefactoFinder.obtener(registro.getClaveOrigen());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_ORIGEN, !UtilTexto.esVacioONulo(etagOrigen));
 
-        registrarVersionCerradaArtefactoValidator.validar(registro, proyecto, etagOrigen);
+        registrarVersionCerradaArtefactoValidator.validar(registro, proyecto);
+
+        if (UtilTexto.esVacioONulo(etagOrigen)) {
+            return RegistroVersionCerradaArtefactoResultMapper.toResultOrigenNoDisponible(registro);
+        }
 
         almacenamientoArtefactoOutputPort.copiar(registro.getClaveOrigen(), artefacto.getClaveObjeto(), etagOrigen);
 

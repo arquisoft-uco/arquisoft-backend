@@ -5,7 +5,7 @@ import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFin
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesVersionAnteriorSinCerrarExistenFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
@@ -42,7 +42,7 @@ public class CerrarRevisionAsesorUseCaseImpl implements CerrarRevisionAsesorUseC
     private final CerrarRevisionAsesorValidator cerrarRevisionAsesorValidator;
     private final RevisionAsesorOutputPort revisionAsesorOutputPort;
     private final EventPublisher eventPublisher;
-    private final ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private final ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -62,7 +62,7 @@ public class CerrarRevisionAsesorUseCaseImpl implements CerrarRevisionAsesorUseC
         var existenPropias = observacionesDeRevisionExistenFinder.obtener(revisionAsesor);
         var existenSinCerrarVersionAnterior = observacionesVersionAnteriorSinCerrarExistenFinder.obtener(revisionAsesor);
 
-        var proyecto = proyectoGradoPorRevisionAsesorFinder.obtener(revisionAsesor);
+        var proyecto = proyectoGradoBloqueadoPorArtefactoFinder.obtener(artefacto.getId());
         logger.debug(CerrarRevisionAsesorKey.LOG_VERIFICACION_CIERRE,
                 !revision.esVacio(), !artefacto.esVacio(), !asesor.esVacio(), !version.esVacio(),
                 !versionRepositorio.esVacio(), estudiantes.size(), existenPropias, existenSinCerrarVersionAnterior);

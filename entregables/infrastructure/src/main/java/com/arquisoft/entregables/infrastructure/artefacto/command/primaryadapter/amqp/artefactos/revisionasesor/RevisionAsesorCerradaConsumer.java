@@ -5,6 +5,7 @@ import com.arquisoft.entregables.application.artefacto.command.primaryport.model
 import com.arquisoft.entregables.application.artefacto.command.primaryport.model.RegistrarVersionCerradaArtefactoCommand.DatosRepositorio;
 import com.arquisoft.entregables.application.artefacto.command.primaryport.model.RegistrarVersionCerradaArtefactoCommand.DatosVersion;
 import com.arquisoft.entregables.application.artefacto.command.result.RegistroVersionCerradaArtefactoResult;
+import com.arquisoft.entregables.infrastructure.artefacto.exception.ArchivoOrigenArtefactoNoDisponibleException;
 import com.arquisoft.entregables.infrastructure.config.EntregablesArtefactosQueueConfig;
 import com.arquisoft.shared.amqp.RabbitListenerConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
@@ -59,6 +60,9 @@ public class RevisionAsesorCerradaConsumer extends AbstractEventConsumer {
                         logger.info(ArtefactoKey.LOG_OBSOLETA, obsoleta.artefacto());
                 case RegistroVersionCerradaArtefactoResult.ProyectoCerrado cerrado ->
                         logger.info(ArtefactoKey.LOG_PROYECTO_CERRADO, cerrado.artefacto());
+                case RegistroVersionCerradaArtefactoResult.OrigenNoDisponible origen ->
+                        throw new ArchivoOrigenArtefactoNoDisponibleException(
+                                origen.artefacto(), origen.nombreDocumento(), origen.claveOrigen());
             }
         });
     }

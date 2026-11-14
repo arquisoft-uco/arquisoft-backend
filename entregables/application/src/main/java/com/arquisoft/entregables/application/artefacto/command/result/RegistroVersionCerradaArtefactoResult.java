@@ -9,4 +9,7 @@ public sealed interface RegistroVersionCerradaArtefactoResult {
     record Obsoleta(UUID artefacto) implements RegistroVersionCerradaArtefactoResult {}
 
     record ProyectoCerrado(UUID artefacto) implements RegistroVersionCerradaArtefactoResult {}
+
+    record OrigenNoDisponible(UUID artefacto, String nombreDocumento, String claveOrigen)
+            implements RegistroVersionCerradaArtefactoResult {}
 }

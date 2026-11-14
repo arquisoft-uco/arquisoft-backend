@@ -10,9 +10,9 @@ import com.arquisoft.entregables.application.artefacto.command.validator.Registr
 import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
 import com.arquisoft.entregables.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.entregables.domain.artefacto.RegistroVersionCerradaArtefactoDomain;
-import com.arquisoft.entregables.domain.artefacto.exception.ArchivoOrigenArtefactoNoDisponibleException;
 import com.arquisoft.entregables.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -110,7 +110,7 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
         orden.verify(proyectoGradoBloqueadoPorIdFinder).obtener(proyectoId);
         orden.verify(artefactoPorIdFinder).obtener(artefacto);
         orden.verify(archivoOrigenArtefactoFinder).obtener(CLAVE_ORIGEN);
-        orden.verify(registrarVersionCerradaArtefactoValidator).validar(registro, proyecto, ETAG);
+        orden.verify(registrarVersionCerradaArtefactoValidator).validar(registro, proyecto);
         orden.verify(almacenamientoArtefactoOutputPort)
                 .copiar(CLAVE_ORIGEN, registro.getArtefacto().getClaveObjeto(), ETAG);
         orden.verify(artefactoOutputPort).avanzarVersion(captor.capture());
@@ -230,7 +230,7 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
 
         // Assert
         verify(archivoOrigenArtefactoFinder, never()).obtener(anyString());
-        verify(registrarVersionCerradaArtefactoValidator, never()).validar(any(), any(), anyString());
+        verify(registrarVersionCerradaArtefactoValidator, never()).validar(any(), any());
         verify(almacenamientoArtefactoOutputPort, never()).copiar(anyString(), anyString(), anyString());
         verify(artefactoOutputPort, never()).insertar(any());
         verify(artefactoOutputPort, never()).avanzarVersion(any());
@@ -252,7 +252,7 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
 
         // Assert
         verify(archivoOrigenArtefactoFinder, never()).obtener(anyString());
-        verify(registrarVersionCerradaArtefactoValidator, never()).validar(any(), any(), anyString());
+        verify(registrarVersionCerradaArtefactoValidator, never()).validar(any(), any());
         verify(almacenamientoArtefactoOutputPort, never()).copiar(anyString(), anyString(), anyString());
         verify(artefactoOutputPort, never()).insertar(any());
         verify(artefactoOutputPort, never()).avanzarVersion(any());
@@ -265,19 +265,41 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
         var artefacto = UtilUUID.generarNuevoUUID();
         var proyectoId = UtilUUID.generarNuevoUUID();
         var registro = registro(artefacto, proyectoId, 1);
-        var proyecto = proyecto(proyectoId, EstadoProyecto.EN_PROCESO);
-        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyectoId)).thenReturn(proyecto);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyectoId)).thenReturn(ProyectoGradoDomain.VACIO);
         when(artefactoPorIdFinder.obtener(artefacto)).thenReturn(ArtefactoDomain.VACIO);
-        when(archivoOrigenArtefactoFinder.obtener(CLAVE_ORIGEN)).thenReturn("");
-        doThrow(new ArchivoOrigenArtefactoNoDisponibleException(artefacto, "Documento", CLAVE_ORIGEN))
-                .when(registrarVersionCerradaArtefactoValidator).validar(registro, proyecto, "");
+        when(archivoOrigenArtefactoFinder.obtener(CLAVE_ORIGEN)).thenReturn(ETAG);
+        var noEncontrado = new ProyectoGradoNoEncontradoException(proyectoId);
+        doThrow(noEncontrado).when(registrarVersionCerradaArtefactoValidator)
+                .validar(registro, ProyectoGradoDomain.VACIO);
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(registro))
-                .isInstanceOf(ArchivoOrigenArtefactoNoDisponibleException.class);
+        assertThatThrownBy(() -> useCase.ejecutar(registro)).isSameAs(noEncontrado);
         verify(almacenamientoArtefactoOutputPort, never()).copiar(anyString(), anyString(), anyString());
         verify(artefactoOutputPort, never()).insertar(any());
         verify(artefactoOutputPort, never()).avanzarVersion(any());
         verify(almacenamientoArtefactoOutputPort, never()).eliminarTrasConfirmar(anyString());
+    }
+
+    @Test
+    void debeDevolverOrigenNoDisponibleSinCopiarNiEscribir_cuandoElArchivoOrigenNoEsta() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var proyectoId = UtilUUID.generarNuevoUUID();
+        var registro = registro(artefacto, proyectoId, 1);
+        var proyecto = proyecto(proyectoId, EstadoProyecto.EN_PROCESO);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyectoId)).thenReturn(proyecto);
+        when(artefactoPorIdFinder.obtener(artefacto)).thenReturn(ArtefactoDomain.VACIO);
+        when(archivoOrigenArtefactoFinder.obtener(CLAVE_ORIGEN)).thenReturn("");
+
+        // Act
+        var resultado = useCase.ejecutar(registro);
+
+        // Assert
+        verify(registrarVersionCerradaArtefactoValidator).validar(registro, proyecto);
+        verify(almacenamientoArtefactoOutputPort, never()).copiar(anyString(), anyString(), anyString());
+        verify(artefactoOutputPort, never()).insertar(any());
+        verify(artefactoOutputPort, never()).avanzarVersion(any());
+        assertThat(resultado).isEqualTo(new RegistroVersionCerradaArtefactoResult.OrigenNoDisponible(
+                artefacto, "Documento", CLAVE_ORIGEN));
     }
 }
