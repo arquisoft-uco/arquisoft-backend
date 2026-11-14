@@ -80,7 +80,7 @@ class CambiarEstadoEntregableProyectoGradoControllerTest {
     }
 
     @Test
-    void debeResponder204YPasarIdYEstadoAlInteractor_cuandoEsValido() throws Exception {
+    void debeResponder204YPasarIdEstadoYAsesorDelTokenAlInteractor_cuandoEsValido() throws Exception {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
 
@@ -92,6 +92,7 @@ class CambiarEstadoEntregableProyectoGradoControllerTest {
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().entregableProyectoGrado()).isEqualTo(entregable);
         assertThat(captor.getValue().estadoEntregable()).isEqualTo("CERRADO");
+        assertThat(captor.getValue().asesor()).isEqualTo(ASESOR_ID);
     }
 
     @Test

@@ -21,6 +21,7 @@ class EntregableProyectoGradoJpaSpecification extends QueryJpaSpecification<Entr
                 case PROYECTO_GRADO_ID -> CampoSpec.uuid(root -> root.get("proyectoGradoId"));
                 case PROYECTO_GRADO_NOMBRE -> CampoSpec.texto(root -> root.get("proyectoGradoNombre"));
                 case ASESOR_ID -> CampoSpec.uuid(root -> root.get("asesorId"));
+                case ASESOR_VIGENTE_ID -> CampoSpec.uuid(root -> root.get("asesorVigenteId"));
                 case ASESOR_NOMBRE -> CampoSpec.texto(root -> root.get("asesorNombre"));
                 case ESTADO_ENTREGABLE -> CampoSpec.texto(root -> root.get("estadoId"));
                 case VERSION_ENTREGABLE -> CampoSpec.entero(root -> root.get("versionEntregable"));

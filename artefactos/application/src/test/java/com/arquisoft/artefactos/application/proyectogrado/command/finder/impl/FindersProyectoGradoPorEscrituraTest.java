@@ -27,11 +27,11 @@ class FindersProyectoGradoPorEscrituraTest {
         var id = UtilUUID.generarNuevoUUID();
         var revision = UtilUUID.generarNuevoUUID();
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
-        when(proyectoGradoOutputPort.obtenerPorRevisionAsesor(revision))
+        when(proyectoGradoOutputPort.obtenerBloqueadoPorRevisionAsesor(revision))
                 .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", entregadoEn, UtilFecha.VACIO, null)));
 
         // Act
-        var proyecto = new ProyectoGradoPorRevisionAsesorFinderImpl(proyectoGradoOutputPort).obtener(revision);
+        var proyecto = new ProyectoGradoBloqueadoPorRevisionAsesorFinderImpl(proyectoGradoOutputPort).obtener(revision);
 
         // Assert
         assertThat(proyecto.getId()).isEqualTo(id);
@@ -43,10 +43,10 @@ class FindersProyectoGradoPorEscrituraTest {
     void debeDevolverVacio_cuandoNoExistePorRevisionAsesor() {
         // Arrange
         var revision = UtilUUID.generarNuevoUUID();
-        when(proyectoGradoOutputPort.obtenerPorRevisionAsesor(revision)).thenReturn(Optional.empty());
+        when(proyectoGradoOutputPort.obtenerBloqueadoPorRevisionAsesor(revision)).thenReturn(Optional.empty());
 
         // Act
-        var proyecto = new ProyectoGradoPorRevisionAsesorFinderImpl(proyectoGradoOutputPort).obtener(revision);
+        var proyecto = new ProyectoGradoBloqueadoPorRevisionAsesorFinderImpl(proyectoGradoOutputPort).obtener(revision);
 
         // Assert
         assertThat(proyecto.esVacio()).isTrue();
@@ -57,11 +57,11 @@ class FindersProyectoGradoPorEscrituraTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var observacion = UtilUUID.generarNuevoUUID();
-        when(proyectoGradoOutputPort.obtenerPorObservacion(observacion))
+        when(proyectoGradoOutputPort.obtenerBloqueadoPorObservacion(observacion))
                 .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, null)));
 
         // Act
-        var proyecto = new ProyectoGradoPorObservacionFinderImpl(proyectoGradoOutputPort).obtener(observacion);
+        var proyecto = new ProyectoGradoBloqueadoPorObservacionFinderImpl(proyectoGradoOutputPort).obtener(observacion);
 
         // Assert
         assertThat(proyecto.getId()).isEqualTo(id);
@@ -72,10 +72,10 @@ class FindersProyectoGradoPorEscrituraTest {
     void debeDevolverVacio_cuandoNoExistePorObservacion() {
         // Arrange
         var observacion = UtilUUID.generarNuevoUUID();
-        when(proyectoGradoOutputPort.obtenerPorObservacion(observacion)).thenReturn(Optional.empty());
+        when(proyectoGradoOutputPort.obtenerBloqueadoPorObservacion(observacion)).thenReturn(Optional.empty());
 
         // Act
-        var proyecto = new ProyectoGradoPorObservacionFinderImpl(proyectoGradoOutputPort).obtener(observacion);
+        var proyecto = new ProyectoGradoBloqueadoPorObservacionFinderImpl(proyectoGradoOutputPort).obtener(observacion);
 
         // Assert
         assertThat(proyecto.esVacio()).isTrue();
@@ -87,11 +87,11 @@ class FindersProyectoGradoPorEscrituraTest {
         var id = UtilUUID.generarNuevoUUID();
         var version = UtilUUID.generarNuevoUUID();
         var finalizadoEn = Instant.parse("2026-11-02T10:00:00Z");
-        when(proyectoGradoOutputPort.obtenerPorVersionArtefacto(version))
+        when(proyectoGradoOutputPort.obtenerBloqueadoPorVersionArtefacto(version))
                 .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, finalizadoEn, null)));
 
         // Act
-        var proyecto = new ProyectoGradoPorVersionArtefactoFinderImpl(proyectoGradoOutputPort).obtener(version);
+        var proyecto = new ProyectoGradoBloqueadoPorVersionArtefactoFinderImpl(proyectoGradoOutputPort).obtener(version);
 
         // Assert
         assertThat(proyecto.getFinalizadoEn()).isEqualTo(finalizadoEn);
@@ -102,10 +102,10 @@ class FindersProyectoGradoPorEscrituraTest {
     void debeDevolverVacio_cuandoNoExistePorVersionArtefacto() {
         // Arrange
         var version = UtilUUID.generarNuevoUUID();
-        when(proyectoGradoOutputPort.obtenerPorVersionArtefacto(version)).thenReturn(Optional.empty());
+        when(proyectoGradoOutputPort.obtenerBloqueadoPorVersionArtefacto(version)).thenReturn(Optional.empty());
 
         // Act
-        var proyecto = new ProyectoGradoPorVersionArtefactoFinderImpl(proyectoGradoOutputPort).obtener(version);
+        var proyecto = new ProyectoGradoBloqueadoPorVersionArtefactoFinderImpl(proyectoGradoOutputPort).obtener(version);
 
         // Assert
         assertThat(proyecto.esVacio()).isTrue();

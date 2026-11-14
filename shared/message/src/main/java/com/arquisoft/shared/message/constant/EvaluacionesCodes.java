@@ -432,6 +432,16 @@ public final class EvaluacionesCodes {
                 "OBSERVACION_ITEM_JURADO_NO_ENCONTRADA";
     }
 
+    public static final class Entregable {
+
+        private Entregable() {}
+
+        public static final String ENTREGABLE_REQUERIDO = "ENTREGABLE_ID_REQUERIDO";
+        public static final String PROYECTO_GRADO_REQUERIDO = "ENTREGABLE_PROYECTO_GRADO_REQUERIDO";
+        public static final String PROYECTO_REQUERIDO = "ENTREGABLE_PROYECTO_REQUERIDO";
+        public static final String VERSION_REQUERIDA = "ENTREGABLE_VERSION_REQUERIDA";
+    }
+
     public static final class ObservacionItemAsesor {
 
         private ObservacionItemAsesor() {}

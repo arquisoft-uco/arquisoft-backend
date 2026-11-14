@@ -74,6 +74,10 @@ public final class ProyectoGradoDomain {
         return estadoProyecto;
     }
 
+    public boolean estaCerrado() {
+        return estadoProyecto == EstadoProyecto.FINALIZADO || estadoProyecto == EstadoProyecto.CANCELADO;
+    }
+
     public boolean esVacio() {
         return this == VACIO;
     }

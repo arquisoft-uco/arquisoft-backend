@@ -14,6 +14,8 @@ class EstadoEntregableTest {
     @Test
     void debeResolverCadaConstante_conSuIdYNombre() {
         // Act & Assert
+        assertThat(EstadoEntregable.desde("NUEVO")).isEqualTo(EstadoEntregable.NUEVO);
+        assertThat(EstadoEntregable.NUEVO.getNombre()).isEqualTo("Nuevo");
         assertThat(EstadoEntregable.desde("DISPONIBLE_EVALUACION")).isEqualTo(EstadoEntregable.DISPONIBLE_EVALUACION);
         assertThat(EstadoEntregable.desde("APROBADO_CON_OBSERVACIONES").getNombre())
                 .isEqualTo("Aprobado Con Observaciones");
@@ -50,7 +52,7 @@ class EstadoEntregableTest {
         var ids = Arrays.stream(EstadoEntregable.values()).map(EstadoEntregable::getId).toList();
 
         // Assert
-        assertThat(ids).containsExactly("DISPONIBLE_EVALUACION", "EN_EVALUACION", "APROBADO_CON_OBSERVACIONES",
+        assertThat(ids).containsExactly("NUEVO", "DISPONIBLE_EVALUACION", "EN_EVALUACION", "APROBADO_CON_OBSERVACIONES",
                 "APROBADO", "RECHAZADO", "CANCELADO", "CERRADO", "VACIO");
     }
 }

@@ -6,7 +6,7 @@ import com.arquisoft.artefactos.application.artefacto.command.usecase.OmitirArte
 import com.arquisoft.artefactos.application.artefacto.command.validator.OmitirArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorArtefactoFinder;
 import com.arquisoft.artefactos.domain.artefacto.OmisionArtefactoDomain;
@@ -32,7 +32,7 @@ public class OmitirArtefactoUseCaseImpl implements OmitirArtefactoUseCase {
     private final OmitirArtefactoValidator omitirArtefactoValidator;
     private final ArtefactoOutputPort artefactoOutputPort;
     private final EventPublisher eventPublisher;
-    private final ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    private final ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -44,7 +44,7 @@ public class OmitirArtefactoUseCaseImpl implements OmitirArtefactoUseCase {
         var asesor = asesorPorIdFinder.obtener(omision.getAsesor());
         var versionRepositorio = versionRepositorioArtefactoPorArtefactoFinder.obtener(omision.getArtefacto());
         var estudiantes = estudiantesVinculadosArtefactoFinder.obtener(omision.getArtefacto());
-        var proyecto = proyectoGradoPorArtefactoFinder.obtener(omision.getArtefacto());
+        var proyecto = proyectoGradoBloqueadoPorArtefactoFinder.obtener(omision.getArtefacto());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_OMITIR,
                 !artefacto.esVacio(), !asesor.esVacio(), !versionRepositorio.esVacio(), estudiantes.size());
 
@@ -61,7 +61,9 @@ public class OmitirArtefactoUseCaseImpl implements OmitirArtefactoUseCase {
                 estudiantes.stream()
                         .map(estudiante -> new ContactoEstudiante(estudiante.getNombre(), estudiante.getEmail()))
                         .toList(),
-                new ContactoAsesor(asesor.getNombre(), asesor.getEmail())));
+                new ContactoAsesor(asesor.getNombre(), asesor.getEmail()),
+                omision.getArtefacto(),
+                artefacto.getProyectoGrado()));
 
         logger.info(ArtefactoKey.LOG_OMITIDO, omision.getArtefacto(), omision.getAsesor());
     }

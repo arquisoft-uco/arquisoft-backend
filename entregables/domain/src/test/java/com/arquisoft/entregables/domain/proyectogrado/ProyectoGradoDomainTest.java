@@ -27,6 +27,18 @@ class ProyectoGradoDomainTest {
     }
 
     @Test
+    void debeEstarCerrado_cuandoElEstadoEsFinalizadoOCancelado() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThat(ProyectoGradoDomain.reconstruir(id, "P", EstadoProyecto.FINALIZADO).estaCerrado()).isTrue();
+        assertThat(ProyectoGradoDomain.reconstruir(id, "P", EstadoProyecto.CANCELADO).estaCerrado()).isTrue();
+        assertThat(ProyectoGradoDomain.reconstruir(id, "P", EstadoProyecto.EN_PROCESO).estaCerrado()).isFalse();
+        assertThat(ProyectoGradoDomain.reconstruir(id, "P", EstadoProyecto.ATRASADO).estaCerrado()).isFalse();
+    }
+
+    @Test
     void debeReconstruirSinValidarYExponerElVacio_cuandoLlegaDePersistencia() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();

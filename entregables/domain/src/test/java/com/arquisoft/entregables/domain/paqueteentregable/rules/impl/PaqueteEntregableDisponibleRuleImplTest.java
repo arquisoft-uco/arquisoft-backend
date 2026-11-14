@@ -1,6 +1,6 @@
 package com.arquisoft.entregables.domain.paqueteentregable.rules.impl;
 
-import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableEnPreparacionException;
+import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteEntregableNoDisponibleException;
 import com.arquisoft.entregables.domain.paqueteentregable.model.DisponibilidadPaqueteEntregable;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.util.UtilUUID;
@@ -28,8 +28,8 @@ class PaqueteEntregableDisponibleRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(new DisponibilidadPaqueteEntregable(entregable, false)))
-                .isInstanceOfSatisfying(PaqueteEntregableEnPreparacionException.class, ex -> {
-                    assertThat(ex.getCodigoError()).isEqualTo(EntregablesCodes.PaqueteEntregable.EN_PREPARACION);
+                .isInstanceOfSatisfying(PaqueteEntregableNoDisponibleException.class, ex -> {
+                    assertThat(ex.getCodigoError()).isEqualTo(EntregablesCodes.PaqueteEntregable.NO_DISPONIBLE);
                     assertThat(ex.getError().getMessage()).doesNotContain(entregable.toString());
                 });
     }

@@ -84,10 +84,11 @@ class EvaluacionAsesorRealizadaQueryOutputAdapterTest {
                 .setParameter(4, "ana@uco.edu.co")
                 .executeUpdate();
         entityManager.createNativeQuery(
-                        "INSERT INTO entregable (id, proyecto, version_entregable) VALUES (?, ?, ?)")
+                        "INSERT INTO entregable (id, proyecto, version_entregable, proyecto_grado_id) VALUES (?, ?, ?, ?)")
                 .setParameter(1, entregable)
                 .setParameter(2, "Robot seguidor")
                 .setParameter(3, 2)
+                .setParameter(4, UtilUUID.generarNuevoUUID())
                 .executeUpdate();
         entityManager.createNativeQuery(
                         "INSERT INTO evaluacion (id, entregable_id, estado_evaluacion_id) VALUES (?, ?, ?)")

@@ -15,7 +15,7 @@ public interface ProyectoGradoOutputPort {
 
     Optional<ProyectoGradoEntity> obtenerBloqueadoPorId(UUID id);
 
-    Optional<ProyectoGradoEntity> obtenerPorEntregable(UUID entregable);
+    Optional<ProyectoGradoEntity> obtenerBloqueadoPorEntregable(UUID entregable);
 
     void actualizarEstado(UUID proyectoGrado, String estadoProyecto);
 }

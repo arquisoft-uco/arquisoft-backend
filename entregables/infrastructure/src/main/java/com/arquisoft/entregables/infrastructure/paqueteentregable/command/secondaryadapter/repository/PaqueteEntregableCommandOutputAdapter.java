@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -24,7 +25,9 @@ public class PaqueteEntregableCommandOutputAdapter implements PaqueteEntregableO
     }
 
     @Override
-    public boolean existePorEntregable(UUID entregableProyectoGrado) {
-        return paqueteEntregableCommandRepository.existsByEntregableProyectoGradoId(entregableProyectoGrado);
+    public List<PaqueteEntregableEntity> obtenerPorProyectoGrado(UUID proyectoGrado) {
+        return paqueteEntregableCommandRepository.buscarPorProyectoGrado(proyectoGrado).stream()
+                .map(PaqueteEntregableJpaMapper::toEntity)
+                .toList();
     }
 }

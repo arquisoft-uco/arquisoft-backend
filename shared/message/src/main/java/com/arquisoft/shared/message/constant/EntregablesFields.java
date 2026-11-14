@@ -39,6 +39,23 @@ public final class EntregablesFields {
         public static final String ROLES = "roles";
     }
 
+    public static final class Artefacto {
+
+        private Artefacto() {}
+
+        public static final String ID = "artefacto";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String VERSION_ARTEFACTO = "versionArtefacto";
+        public static final String NUMERO_VERSION = "numeroVersion";
+        public static final String FECHA_VERSION = "fechaVersion";
+        public static final String CLAVE_ORIGEN = "uriArchivo";
+        public static final String VERSION_REPOSITORIO_ARTEFACTO = "versionRepositorioArtefacto";
+        public static final String NOMBRE_DOCUMENTO = "documento";
+        public static final String REPOSITORIO = "repositorio";
+        public static final String NOMBRE_REPOSITORIO = "nombreRepositorio";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
     public static final class ArtefactoEntregable {
 
         private ArtefactoEntregable() {}
@@ -52,8 +69,6 @@ public final class EntregablesFields {
         public static final String NOMBRE_DOCUMENTO = "nombreDocumento";
         public static final String REPOSITORIO = "repositorio";
         public static final String NOMBRE_REPOSITORIO = "nombreRepositorio";
-        public static final String PAQUETE = "paquete";
-        public static final String ARTEFACTOS = "artefactos";
     }
 
     public static final class ProyectoGrado {
@@ -72,6 +87,15 @@ public final class EntregablesFields {
         public static final String IDENTIFICADOR = "identificador";
         public static final String NOMBRE = "nombre";
         public static final String EMAIL = "email";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
+    public static final class AsesorProyectoGrado {
+
+        private AsesorProyectoGrado() {}
+
+        public static final String ASESOR = "asesor";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String OCURRIDO_EN = "ocurridoEn";
     }
 

@@ -7,7 +7,7 @@ import com.arquisoft.artefactos.application.artefacto.command.validator.Registra
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoBloqueadaPorIdFinder;
@@ -48,7 +48,7 @@ import static org.mockito.Mockito.when;
 class RegistrarArtefactoUseCaseImplTest {
 
     @Mock
-    private ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private ProyectoGradoBloqueadoPorIdFinder proyectoGradoBloqueadoPorIdFinder;
     @Mock
     private AsesorPorIdFinder asesorPorIdFinder;
     @Mock
@@ -76,7 +76,7 @@ class RegistrarArtefactoUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new RegistrarArtefactoUseCaseImpl(
-                proyectoGradoPorIdFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
+                proyectoGradoBloqueadoPorIdFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
                 versionRepositorioArtefactoBloqueadaPorIdFinder, versionesAsignadasProyectoFinder,
                 registrarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase,
                 proyectoGradoNoCongeladoValidator, logger);
@@ -96,7 +96,7 @@ class RegistrarArtefactoUseCaseImplTest {
         var asesor = UtilUUID.generarNuevoUUID();
         var version = UtilUUID.generarNuevoUUID();
         var registro = registro(proyecto, asesor, version);
-        when(proyectoGradoPorIdFinder.obtener(proyecto))
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto))
                 .thenReturn(ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", null, null, null));
         when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
         when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
@@ -109,14 +109,14 @@ class RegistrarArtefactoUseCaseImplTest {
 
         // Assert
         assertThat(id).isEqualTo(registro.getArtefacto().getId());
-        var orden = inOrder(proyectoGradoPorIdFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
+        var orden = inOrder(proyectoGradoBloqueadoPorIdFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
                 versionRepositorioArtefactoBloqueadaPorIdFinder, versionesAsignadasProyectoFinder, logger,
                 registrarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase, proyectoGradoNoCongeladoValidator);
-        orden.verify(proyectoGradoPorIdFinder, times(1)).obtener(proyecto);
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesor);
         orden.verify(vinculosMasRecientesProyectoGradoFinder, times(1)).obtener(proyecto);
         orden.verify(versionRepositorioArtefactoBloqueadaPorIdFinder, times(1)).obtener(version);
         orden.verify(versionesAsignadasProyectoFinder, times(1)).obtener(proyecto);
+        orden.verify(proyectoGradoBloqueadoPorIdFinder, times(1)).obtener(proyecto);
         orden.verify(logger).debug(ArtefactoKey.LOG_VERIFICACION_REGISTRAR, true, false, 0, false, 0);
         orden.verify(registrarArtefactoValidator).validar(
                 registro, true, AsesorDomain.VACIO, List.of(), VersionRepositorioArtefactoDomain.VACIO, List.of());
@@ -132,7 +132,7 @@ class RegistrarArtefactoUseCaseImplTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
         var registro = registro(proyecto, asesor, UtilUUID.generarNuevoUUID());
-        when(proyectoGradoPorIdFinder.obtener(proyecto)).thenReturn(ProyectoGradoDomain.VACIO);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto)).thenReturn(ProyectoGradoDomain.VACIO);
         when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
         when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
         when(versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(any()))

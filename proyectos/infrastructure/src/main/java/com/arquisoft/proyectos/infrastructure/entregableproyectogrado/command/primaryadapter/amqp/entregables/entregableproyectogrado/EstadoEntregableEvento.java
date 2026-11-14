@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum EstadoEntregableEvento {
 
+    NUEVO("NUEVO"),
     DISPONIBLE_EVALUACION("DISPONIBLE_EVALUACION"),
     CANCELADO("CANCELADO"),
     CERRADO("CERRADO"),

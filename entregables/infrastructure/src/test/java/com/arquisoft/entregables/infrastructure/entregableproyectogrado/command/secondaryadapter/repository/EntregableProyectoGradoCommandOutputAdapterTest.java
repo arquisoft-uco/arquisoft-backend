@@ -71,26 +71,30 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeIgnorarLosCanceladosYContarRechazados_cuandoConsultaSiHayEntregableVigente() {
+    void debeIgnorarLosCanceladosYContarNuevosYRechazados_cuandoConsultaSiHayEntregableVigente() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var conVigente = UtilUUID.generarNuevoUUID();
         var conRechazado = UtilUUID.generarNuevoUUID();
+        var conNuevo = UtilUUID.generarNuevoUUID();
         sembrarEstado(sembrar(proyecto, 1), "CANCELADO", BASE);
         sembrarEstado(sembrar(conVigente, 1), "CERRADO", BASE);
         sembrarEstado(sembrar(conRechazado, 1), "RECHAZADO", BASE);
+        sembrarEstado(sembrar(conNuevo, 1), "NUEVO", BASE);
         entityManager.flush();
 
         // Act
         var soloCancelados = adapter.existeVigentePorProyectoGrado(proyecto, "CANCELADO");
         var conCerrado = adapter.existeVigentePorProyectoGrado(conVigente, "CANCELADO");
         var conRechazadoVigente = adapter.existeVigentePorProyectoGrado(conRechazado, "CANCELADO");
+        var conNuevoVigente = adapter.existeVigentePorProyectoGrado(conNuevo, "CANCELADO");
         var sinEntregables = adapter.existeVigentePorProyectoGrado(UtilUUID.generarNuevoUUID(), "CANCELADO");
 
         // Assert
         assertThat(soloCancelados).isFalse();
         assertThat(conCerrado).isTrue();
         assertThat(conRechazadoVigente).isTrue();
+        assertThat(conNuevoVigente).isTrue();
         assertThat(sinEntregables).isFalse();
     }
 

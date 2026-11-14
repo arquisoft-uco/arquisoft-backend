@@ -8,7 +8,7 @@ public class ActorAccedePaqueteEntregableRuleImpl implements ActorAccedePaqueteE
 
     @Override
     public void validar(AccesoPaqueteEntregable entrada) {
-        var accedeComoAsesor = entrada.comoAsesor() && entrada.actor().equals(entrada.asesor());
+        var accedeComoAsesor = entrada.comoAsesor() && entrada.actor().equals(entrada.asesorVigente());
         var accedeComoEstudiante = entrada.comoEstudiante() && entrada.participa();
 
         if (!accedeComoAsesor && !accedeComoEstudiante) {

@@ -1,0 +1,260 @@
+package com.arquisoft.entregables.infrastructure.paqueteentregable.command.secondaryadapter.minio;
+
+import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.ArmadoPaqueteOutputPort;
+import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.entity.ArtefactoIncluidoEntity;
+import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.entity.ContenidoPaqueteEntity;
+import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.model.ArchivoPaqueteArmado;
+import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
+import com.arquisoft.entregables.infrastructure.config.EntregablesAlmacenamientoProperties;
+import com.arquisoft.entregables.infrastructure.transaccion.SincronizacionTransaccional;
+import com.arquisoft.entregables.infrastructure.paqueteentregable.exception.ArchivoArtefactoNoDisponibleException;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.constant.EntregablesAlmacenamiento;
+import com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey;
+import com.arquisoft.shared.minio.AlmacenamientoObjetos;
+import com.arquisoft.shared.minio.exception.MinioOperationException;
+import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilTexto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+@Component
+@RequiredArgsConstructor
+public class ArmadoPaqueteMinioOutputAdapter implements ArmadoPaqueteOutputPort {
+
+    private static final String METADATO_NOMBRE_ARCHIVO = "nombre-archivo";
+    private static final String EXTENSION_ZIP = ".zip";
+    private static final String TIPO_CONTENIDO_ZIP = "application/zip";
+    private static final String PREFIJO_TEMPORAL = "paquete-entregable-";
+    private static final String NOMBRE_MANIFIESTO = "manifiesto.json";
+    private static final String SIN_NOMBRE = "sin-nombre";
+    private static final String REEMPLAZO = "_";
+    private static final int NOMBRE_PROYECTO_MAX = 100;
+    private static final String PREFIJO_OOXML = "application/vnd.openxmlformats-officedocument.";
+    private static final int TAMANO_BUFFER = 8192;
+    private static final Map<String, String> EXTENSIONES = Map.of(
+            "application/pdf", ".pdf",
+            "image/png", ".png",
+            "image/jpeg", ".jpg",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ".docx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation", ".pptx");
+    private static final Pattern FINAL_NO_PERMITIDO = Pattern.compile("[. ]+$");
+    private static final Set<String> TIPOS_YA_COMPRIMIDOS = Set.of("application/pdf", "image/png", "image/jpeg");
+    private static final Pattern CARACTERES_PROHIBIDOS = Pattern.compile("[\\\\/:*?\"<>|\\p{Cntrl}\\p{Cf}]");
+    private static final JsonMapper MAPPER = JsonMapper.builder().build();
+
+    private final AlmacenamientoObjetos almacenamientoObjetos;
+    private final EntregablesAlmacenamientoProperties propiedades;
+    private final SincronizacionTransaccional sincronizacionTransaccional;
+    private final AppLogger logger;
+
+    @Override
+    public ArchivoPaqueteArmado armar(ContenidoPaqueteEntity contenido) {
+        var bucket = propiedades.getBucket();
+        var clave = EntregablesAlmacenamiento.PREFIJO_PAQUETES + contenido.entregableProyectoGrado() + EXTENSION_ZIP;
+        var entradas = prepararEntradas(bucket, contenido);
+        var temporal = crearTemporal();
+        try {
+            escribirZip(bucket, temporal, contenido, entradas);
+            var tamano = tamanoDe(temporal);
+            subir(bucket, clave, temporal, tamano);
+            logger.debug(PaqueteEntregableKey.LOG_PAQUETE_ARMADO, bucket, clave, tamano);
+            return new ArchivoPaqueteArmado(
+                    bucket, clave, nombreArchivo(contenido), tamano,
+                    entradas.stream().map(ArmadoPaqueteMinioOutputAdapter::toEntradaArmada).toList());
+        } finally {
+            borrar(temporal);
+        }
+    }
+
+    @Override
+    public void eliminar(String bucket, String claveObjeto) {
+        almacenamientoObjetos.eliminar(bucket, claveObjeto);
+        logger.debug(PaqueteEntregableKey.LOG_PAQUETE_ELIMINADO, bucket, claveObjeto);
+    }
+
+    @Override
+    public void eliminarTrasConfirmar(String bucket, String claveObjeto) {
+        sincronizacionTransaccional.trasConfirmar(() -> eliminar(bucket, claveObjeto), bucket, claveObjeto);
+    }
+
+    @Override
+    public void eliminarSiRevierte(String bucket, String claveObjeto) {
+        sincronizacionTransaccional.trasReversion(() -> eliminar(bucket, claveObjeto), bucket, claveObjeto);
+    }
+
+    private List<EntradaPaquete> prepararEntradas(String bucket, ContenidoPaqueteEntity contenido) {
+        var entradas = new ArrayList<EntradaPaquete>();
+        for (var incluido : contenido.incluidos()) {
+            var metadatos = almacenamientoObjetos.consultarMetadatos(bucket, incluido.claveObjeto());
+            if (metadatos.esVacio()) {
+                throw new ArchivoArtefactoNoDisponibleException(
+                        incluido.artefacto(), incluido.nombreDocumento(), incluido.claveObjeto());
+            }
+            var nombreSubido = metadatos.metadatos().get(METADATO_NOMBRE_ARCHIVO);
+            var nombreArchivo = UtilTexto.esVacioONulo(nombreSubido)
+                    ? incluido.nombreDocumento() + extensionDe(metadatos.tipoContenido()) : nombreSubido;
+            var ruta = String.format(Locale.ROOT, "%03d-%s/v%d-%s", entradas.size() + 1,
+                    sanear(incluido.nombreDocumento()), incluido.numeroVersion(), sanear(nombreArchivo));
+            entradas.add(new EntradaPaquete(incluido, ruta, esYaComprimido(metadatos.tipoContenido())));
+        }
+        return entradas;
+    }
+
+    private void escribirZip(String bucket, Path destino, ContenidoPaqueteEntity contenido,
+                             List<EntradaPaquete> entradas) {
+        try (var salida = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(destino)))) {
+            for (var entrada : entradas) {
+                escribirArchivo(bucket, salida, entrada);
+            }
+            escribirManifiesto(salida, contenido, entradas);
+        } catch (IOException e) {
+            throw MinioOperationException.subidaFallida(e);
+        }
+    }
+
+    private void escribirArchivo(String bucket, ZipOutputStream salida, EntradaPaquete entrada) throws IOException {
+        var incluido = entrada.incluido();
+        var lectura = almacenamientoObjetos.abrirLectura(bucket, incluido.claveObjeto());
+        if (lectura.isEmpty()) {
+            throw new ArchivoArtefactoNoDisponibleException(
+                    incluido.artefacto(), incluido.nombreDocumento(), incluido.claveObjeto());
+        }
+        try (var objeto = lectura.get()) {
+            salida.setLevel(entrada.yaComprimido() ? Deflater.NO_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
+            salida.putNextEntry(new ZipEntry(entrada.ruta()));
+            transferir(objeto.contenido(), salida);
+            salida.closeEntry();
+        }
+    }
+
+    private static void transferir(InputStream origen, OutputStream destino) throws IOException {
+        var buffer = new byte[TAMANO_BUFFER];
+        var leidos = leer(origen, buffer);
+        while (leidos >= 0) {
+            destino.write(buffer, 0, leidos);
+            leidos = leer(origen, buffer);
+        }
+    }
+
+    private static int leer(InputStream origen, byte[] buffer) {
+        try {
+            return origen.read(buffer);
+        } catch (IOException e) {
+            throw MinioOperationException.lecturaFallida(e);
+        }
+    }
+
+    private void escribirManifiesto(ZipOutputStream salida, ContenidoPaqueteEntity contenido,
+                                    List<EntradaPaquete> entradas) throws IOException {
+        var manifiesto = new Manifiesto(
+                new EntregableManifiesto(contenido.versionEntregable()),
+                new ProyectoGradoManifiesto(contenido.nombreProyecto()),
+                contenido.generadoEn().toString(),
+                entradas.stream().map(ArmadoPaqueteMinioOutputAdapter::toIncluidoManifiesto).toList());
+        salida.setLevel(Deflater.DEFAULT_COMPRESSION);
+        salida.putNextEntry(new ZipEntry(NOMBRE_MANIFIESTO));
+        salida.write(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsBytes(manifiesto));
+        salida.closeEntry();
+    }
+
+    private void subir(String bucket, String clave, Path archivo, long tamano) {
+        try (var contenido = new BufferedInputStream(Files.newInputStream(archivo))) {
+            almacenamientoObjetos.subir(bucket, clave, contenido, tamano, TIPO_CONTENIDO_ZIP);
+        } catch (IOException e) {
+            throw MinioOperationException.subidaFallida(e);
+        }
+    }
+
+    private static Path crearTemporal() {
+        try {
+            return Files.createTempFile(PREFIJO_TEMPORAL, EXTENSION_ZIP);
+        } catch (IOException e) {
+            throw MinioOperationException.subidaFallida(e);
+        }
+    }
+
+    private static long tamanoDe(Path archivo) {
+        try {
+            return Files.size(archivo);
+        } catch (IOException e) {
+            throw MinioOperationException.subidaFallida(e);
+        }
+    }
+
+    private static void borrar(Path archivo) {
+        try {
+            Files.deleteIfExists(archivo);
+        } catch (IOException e) {
+            archivo.toFile().deleteOnExit();
+        }
+    }
+
+    private static boolean esYaComprimido(String tipoContenido) {
+        var tipo = UtilObjeto.esNulo(tipoContenido) ? UtilTexto.VACIO : tipoContenido.toLowerCase(Locale.ROOT);
+        return TIPOS_YA_COMPRIMIDOS.contains(tipo) || tipo.startsWith(PREFIJO_OOXML);
+    }
+
+    private static String nombreArchivo(ContenidoPaqueteEntity contenido) {
+        var proyecto = sanear(contenido.nombreProyecto());
+        var recortado = proyecto.length() > NOMBRE_PROYECTO_MAX ? proyecto.substring(0, NOMBRE_PROYECTO_MAX) : proyecto;
+        return recortado + "-entregable-v" + contenido.versionEntregable() + EXTENSION_ZIP;
+    }
+
+    private static String sanear(String nombre) {
+        var reemplazado = CARACTERES_PROHIBIDOS.matcher(
+                UtilObjeto.esNulo(nombre) ? UtilTexto.VACIO : nombre).replaceAll(REEMPLAZO);
+        var saneado = FINAL_NO_PERMITIDO.matcher(UtilTexto.aplicarTrim(reemplazado)).replaceAll(UtilTexto.VACIO);
+        return UtilTexto.esVacioONulo(saneado) ? SIN_NOMBRE : saneado;
+    }
+
+    private static String extensionDe(String tipoContenido) {
+        var tipo = UtilObjeto.esNulo(tipoContenido) ? UtilTexto.VACIO : tipoContenido.toLowerCase(Locale.ROOT);
+        return EXTENSIONES.getOrDefault(tipo, UtilTexto.VACIO);
+    }
+
+    private static EntradaPaqueteArmada toEntradaArmada(EntradaPaquete entrada) {
+        return new EntradaPaqueteArmada(entrada.incluido().artefacto(), entrada.ruta());
+    }
+
+    private static IncluidoManifiesto toIncluidoManifiesto(EntradaPaquete entrada) {
+        var incluido = entrada.incluido();
+        return new IncluidoManifiesto(
+                incluido.artefacto(), incluido.nombreDocumento(), incluido.numeroVersion(),
+                incluido.fechaVersion().toString(), entrada.ruta());
+    }
+
+    record EntradaPaquete(ArtefactoIncluidoEntity incluido, String ruta, boolean yaComprimido) {}
+
+    record Manifiesto(
+            EntregableManifiesto entregable,
+            ProyectoGradoManifiesto proyectoGrado,
+            String generadoEn,
+            List<IncluidoManifiesto> incluidos) {}
+
+    record EntregableManifiesto(int version) {}
+
+    record ProyectoGradoManifiesto(String nombre) {}
+
+    record IncluidoManifiesto(UUID artefacto, String documento, int version, String fechaVersion, String archivo) {}
+}

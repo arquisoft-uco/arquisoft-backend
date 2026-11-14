@@ -50,6 +50,34 @@ class FindersProyectoGradoPorArtefactoTest {
     }
 
     @Test
+    void debeRetornarProyectoBloqueado_cuandoSeBuscaPorIdYExiste() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        when(outputPort.obtenerBloqueadoPorId(proyecto))
+                .thenReturn(Optional.of(new ProyectoGradoEntity(proyecto, "Proyecto", null, null, null)));
+
+        // Act
+        var resultado = new ProyectoGradoBloqueadoPorIdFinderImpl(outputPort).obtener(proyecto);
+
+        // Assert
+        assertThat(resultado.getId()).isEqualTo(proyecto);
+        assertThat(resultado.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoNoHayProyectoParaBloquearPorId() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        when(outputPort.obtenerBloqueadoPorId(proyecto)).thenReturn(Optional.empty());
+
+        // Act
+        var resultado = new ProyectoGradoBloqueadoPorIdFinderImpl(outputPort).obtener(proyecto);
+
+        // Assert
+        assertThat(resultado.esVacio()).isTrue();
+    }
+
+    @Test
     void debeRetornarProyectoBloqueado_cuandoElArtefactoLoTiene() {
         // Arrange
         var artefacto = UtilUUID.generarNuevoUUID();

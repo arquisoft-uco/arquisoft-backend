@@ -71,6 +71,31 @@ class RevisionAsesorCerradaPayloadTest {
     }
 
     @Test
+    void debeIgnorarCamposNuevos_cuandoElEventoLosTrae() {
+        // Arrange
+        var json = """
+                {"idEvento":"evt-1","documento":"Anteproyecto","numeroVersion":3,
+                 "proyectoGrado":"22222222-2222-2222-2222-222222222222",
+                 "artefacto":"11111111-1111-1111-1111-111111111111",
+                 "versionArtefacto":"33333333-3333-3333-3333-333333333333",
+                 "uriArchivo":"pendientes/a.pdf","fechaVersion":"2026-11-09T08:00:00Z",
+                 "versionRepositorioArtefacto":"44444444-4444-4444-4444-444444444444",
+                 "repositorio":"55555555-5555-5555-5555-555555555555","nombreRepositorio":"Repo",
+                 "asesor":{"nombre":"Ana","email":"ana@uco.edu.co"},
+                 "estudiantes":[{"nombre":"Luis","email":"luis@uco.edu.co"}]}
+                """;
+
+        // Act
+        var payload = mapper.readValue(json, RevisionAsesorCerradaPayload.class);
+
+        // Assert
+        assertThat(payload.documento()).isEqualTo("Anteproyecto");
+        assertThat(payload.numeroVersion()).isEqualTo(3);
+        assertThat(payload.asesor().nombre()).isEqualTo("Ana");
+        assertThat(payload.estudiantes()).hasSize(1);
+    }
+
+    @Test
     void debeDejarNumeroVersionNuloYIgnorarCamposDesconocidos_cuandoElProductorEvoluciona() {
         // Arrange
         var json = """

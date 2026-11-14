@@ -21,8 +21,9 @@ public class AsesorProyectoGradoCommandOutputAdapter implements AsesorProyectoGr
     private final AppLogger logger;
 
     @Override
-    public Optional<AsesorProyectoGradoEntity> obtenerPorAsesorYProyectoGrado(UUID asesor, UUID proyectoGrado) {
-        return asesorProyectoGradoCommandRepository.findByAsesorIdAndProyectoGradoId(asesor, proyectoGrado)
+    public Optional<AsesorProyectoGradoEntity> obtenerBloqueadoPorAsesorYProyectoGrado(
+            UUID asesor, UUID proyectoGrado) {
+        return asesorProyectoGradoCommandRepository.buscarBloqueadoPorAsesorYProyectoGrado(asesor, proyectoGrado)
                 .map(AsesorProyectoGradoJpaMapper::toEntity);
     }
 

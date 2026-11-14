@@ -38,7 +38,7 @@ public class EntregableProyectoGradoGeneradoConsumer extends AbstractEventConsum
     public void onEntregableProyectoGradoGenerado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
             var payload = deserialize(message, EntregableProyectoGradoGeneradoPayload.class);
-            var estado = EstadoEntregableEvento.DISPONIBLE_EVALUACION.getCodigo();
+            var estado = EstadoEntregableEvento.NUEVO.getCodigo();
 
             logger.info(EntregableProyectoGradoKey.LOG_EVENTO_RECIBIDO,
                     payload.idEvento(), payload.entregableProyectoGrado(), estado);

@@ -1,5 +1,6 @@
 package com.arquisoft.entregables.application.paqueteentregable.query.usecase.impl;
 
+import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.AsesorVigenteDeEntregableProyectoGradoQueryFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.EntregableProyectoGradoAccesoQueryFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.EstudianteParticipaEntregableQueryFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.model.EstudianteEntregable;
@@ -12,6 +13,7 @@ import com.arquisoft.entregables.application.paqueteentregable.query.usecase.Des
 import com.arquisoft.entregables.application.paqueteentregable.query.validator.DescargarPaqueteEntregableValidator;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey;
+import com.arquisoft.shared.util.UtilUUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Component;
 public class DescargarPaqueteEntregableUseCaseImpl implements DescargarPaqueteEntregableUseCase {
 
     private final EntregableProyectoGradoAccesoQueryFinder entregableProyectoGradoAccesoQueryFinder;
+    private final AsesorVigenteDeEntregableProyectoGradoQueryFinder asesorVigenteDeEntregableProyectoGradoQueryFinder;
     private final EstadoActualEntregableProyectoGradoQueryFinder estadoActualEntregableProyectoGradoQueryFinder;
     private final EstudianteParticipaEntregableQueryFinder estudianteParticipaEntregableQueryFinder;
     private final PaqueteEntregableQueryFinder paqueteEntregableQueryFinder;
@@ -36,11 +39,14 @@ public class DescargarPaqueteEntregableUseCaseImpl implements DescargarPaqueteEn
         var participa = estudianteParticipaEntregableQueryFinder.obtener(
                 new EstudianteEntregable(entrada.actor(), entrada.entregableProyectoGrado()));
         var paquete = paqueteEntregableQueryFinder.obtener(entrada.entregableProyectoGrado());
+        var asesorVigente = asesorVigenteDeEntregableProyectoGradoQueryFinder.obtener(entrada.entregableProyectoGrado());
 
         logger.debug(PaqueteEntregableKey.LOG_VERIFICACION_DESCARGA,
-                !entregable.esVacio(), !estadoActual.esVacio(), participa, !paquete.esVacio());
+                !entregable.esVacio(), !estadoActual.esVacio(), participa, !paquete.esVacio(),
+                !UtilUUID.esPorDefecto(asesorVigente));
 
-        descargarPaqueteEntregableValidator.validar(entrada, entregable, estadoActual, participa, paquete);
+        descargarPaqueteEntregableValidator.validar(
+                entrada, entregable, estadoActual, participa, paquete, asesorVigente);
 
         var enlace = enlaceDescargaPaqueteQueryOutputPort.generar(
                 paquete.getBucket(), paquete.getClaveObjeto(), paquete.getNombreArchivo());

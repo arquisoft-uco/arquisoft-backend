@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.application.versionartefacto.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBloqueadoPorVersionArtefactoFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAnteriorBloqueadaDeVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionDeVersionExisteFinder;
@@ -33,7 +33,7 @@ public class EliminarVersionArtefactoUseCaseImpl implements EliminarVersionArtef
     private final EliminarVersionArtefactoValidator eliminarVersionArtefactoValidator;
     private final AlmacenamientoVersionOutputPort almacenamientoVersionOutputPort;
     private final VersionArtefactoOutputPort versionArtefactoOutputPort;
-    private final ProyectoGradoPorVersionArtefactoFinder proyectoGradoPorVersionArtefactoFinder;
+    private final ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -50,7 +50,7 @@ public class EliminarVersionArtefactoUseCaseImpl implements EliminarVersionArtef
         var esUltima = versionArtefactoEsUltimaFinder.obtener(versionArtefacto);
         var tieneRevision = revisionDeVersionExisteFinder.obtener(versionArtefacto);
 
-        var proyecto = proyectoGradoPorVersionArtefactoFinder.obtener(versionArtefacto);
+        var proyecto = proyectoGradoBloqueadoPorArtefactoFinder.obtener(artefacto.getId());
         logger.debug(EliminarVersionArtefactoKey.LOG_VERIFICACION_ELIMINAR,
                 !version.esVacio(), participa, esUltima, tieneRevision, revisionAnterior.getEstado().getId());
 

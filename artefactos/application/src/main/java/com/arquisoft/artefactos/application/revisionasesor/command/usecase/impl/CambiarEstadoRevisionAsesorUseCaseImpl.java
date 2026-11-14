@@ -4,7 +4,7 @@ import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPo
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorDeRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantePorIdFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesAbiertasDeRevisionExistenFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.EstudianteParticipaRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
@@ -36,7 +36,7 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
     private final ObservacionesAbiertasDeRevisionExistenFinder observacionesAbiertasDeRevisionExistenFinder;
     private final CambiarEstadoRevisionAsesorValidator cambiarEstadoRevisionAsesorValidator;
     private final EventPublisher eventPublisher;
-    private final ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private final ProyectoGradoBloqueadoPorRevisionAsesorFinder proyectoGradoBloqueadoPorRevisionAsesorFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -55,7 +55,7 @@ public class CambiarEstadoRevisionAsesorUseCaseImpl implements CambiarEstadoRevi
         var artefacto = artefactoPorRevisionAsesorFinder.obtener(revisionAsesor);
         var existenObservacionesAbiertas = observacionesAbiertasDeRevisionExistenFinder.obtener(revisionAsesor);
 
-        var proyecto = proyectoGradoPorRevisionAsesorFinder.obtener(revisionAsesor);
+        var proyecto = proyectoGradoBloqueadoPorRevisionAsesorFinder.obtener(revisionAsesor);
         logger.debug(CambiarEstadoRevisionAsesorKey.LOG_VERIFICACION_CAMBIO_ESTADO,
                 !revision.esVacio(), !asesor.esVacio(), !estudiante.esVacio(), participa, existeVersionPosterior,
                 !artefacto.esVacio(), existenObservacionesAbiertas);

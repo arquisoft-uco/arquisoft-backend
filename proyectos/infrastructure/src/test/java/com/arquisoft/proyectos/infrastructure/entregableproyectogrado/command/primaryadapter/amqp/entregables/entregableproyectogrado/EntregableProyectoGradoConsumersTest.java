@@ -48,6 +48,7 @@ class EntregableProyectoGradoConsumersTest {
     private AppLogger logger;
 
     private EntregableProyectoGradoGeneradoConsumer generado;
+    private EntregableProyectoGradoDisponibleEvaluacionConsumer disponibleEvaluacion;
     private EntregableProyectoGradoCerradoConsumer cerrado;
     private EntregableProyectoGradoCanceladoConsumer cancelado;
     private EntregableProyectoGradoRechazadoConsumer rechazado;
@@ -60,6 +61,8 @@ class EntregableProyectoGradoConsumersTest {
         var mapper = new ObjectMapper();
         var gestorTraza = new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false);
         generado = new EntregableProyectoGradoGeneradoConsumer(interactor, mapper, logger, gestorTraza);
+        disponibleEvaluacion = new EntregableProyectoGradoDisponibleEvaluacionConsumer(
+                interactor, mapper, logger, gestorTraza);
         cerrado = new EntregableProyectoGradoCerradoConsumer(interactor, mapper, logger, gestorTraza);
         cancelado = new EntregableProyectoGradoCanceladoConsumer(interactor, mapper, logger, gestorTraza);
         rechazado = new EntregableProyectoGradoRechazadoConsumer(interactor, mapper, logger, gestorTraza);
@@ -98,13 +101,23 @@ class EntregableProyectoGradoConsumersTest {
     }
 
     @Test
-    void debeActualizarConDisponibleEvaluacionYConfirmar_cuandoLlegaGenerado() throws IOException {
+    void debeActualizarConNuevoYConfirmar_cuandoLlegaGenerado() throws IOException {
         // Act
         generado.onEntregableProyectoGradoGenerado(mensaje(1L, false), channel);
 
         // Assert
-        verificarCommand("DISPONIBLE_EVALUACION");
+        verificarCommand("NUEVO");
         verify(channel).basicAck(1L, false);
+    }
+
+    @Test
+    void debeActualizarConDisponibleEvaluacionYConfirmar_cuandoLlegaDisponibleEvaluacion() throws IOException {
+        // Act
+        disponibleEvaluacion.onEntregableProyectoGradoDisponibleEvaluacion(mensaje(9L, false), channel);
+
+        // Assert
+        verificarCommand("DISPONIBLE_EVALUACION");
+        verify(channel).basicAck(9L, false);
     }
 
     @Test

@@ -12,7 +12,7 @@ class FinalizacionProyectoGradoResultMapperTest {
             UtilUUID.generarNuevoUUID());
 
     @Test
-    void debeMapearFinalizado_conElProyectoGrado() {
+    void debeMapearFinalizado_cuandoSeFinalizaElProyectoGrado() {
         // Act
         var resultado = FinalizacionProyectoGradoResultMapper.toResultFinalizado(finalizacion);
 
@@ -21,7 +21,7 @@ class FinalizacionProyectoGradoResultMapperTest {
     }
 
     @Test
-    void debeMapearDuplicado_conElProyectoGrado() {
+    void debeMapearDuplicado_cuandoElProyectoGradoYaEstabaFinalizado() {
         // Act
         var resultado = FinalizacionProyectoGradoResultMapper.toResultDuplicado(finalizacion);
 

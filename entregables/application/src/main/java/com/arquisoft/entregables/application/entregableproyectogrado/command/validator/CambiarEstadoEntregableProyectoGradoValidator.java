@@ -5,8 +5,10 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyec
 import com.arquisoft.entregables.domain.estadoentregableproyectogrado.EstadoEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 
+import java.util.UUID;
+
 public interface CambiarEstadoEntregableProyectoGradoValidator {
 
     void validar(CambioEstadoEntregableProyectoGradoDomain cambio, EntregableProyectoGradoDomain entregable,
-                 EstadoEntregableProyectoGradoDomain estadoActual, ProyectoGradoDomain proyecto);
+                 EstadoEntregableProyectoGradoDomain estadoActual, ProyectoGradoDomain proyecto, UUID asesorVigente);
 }

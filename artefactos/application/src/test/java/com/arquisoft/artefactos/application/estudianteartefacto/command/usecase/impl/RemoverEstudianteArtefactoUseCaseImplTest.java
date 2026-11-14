@@ -7,7 +7,7 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.E
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.model.ParticipacionEstudianteArtefacto;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.EstudianteArtefactoOutputPort;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.validator.RemoverEstudianteArtefactoValidator;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
@@ -67,7 +67,7 @@ class RemoverEstudianteArtefactoUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
-    private ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     @Mock
     private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     @Mock
@@ -83,8 +83,8 @@ class RemoverEstudianteArtefactoUseCaseImplTest {
         useCase = new RemoverEstudianteArtefactoUseCaseImpl(
                 artefactoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 estudiantePorIdFinder, estudianteArtefactoExisteFinder, removerEstudianteArtefactoValidator,
-                estudianteArtefactoOutputPort, eventPublisher, proyectoGradoPorArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
-        when(proyectoGradoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+                estudianteArtefactoOutputPort, eventPublisher, proyectoGradoBloqueadoPorArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
     }
 
     @Test
@@ -126,7 +126,7 @@ class RemoverEstudianteArtefactoUseCaseImplTest {
         orden.verify(removerEstudianteArtefactoValidator)
                 .validar(entrada, artefacto, asesor, version, estudiante, true);
         orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
-        verify(proyectoGradoPorArtefactoFinder, times(1)).obtener(any());
+        verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(any());
         orden.verify(estudianteArtefactoOutputPort).eliminarPorArtefactoYEstudiante(artefactoId, estudianteId);
         orden.verify(eventPublisher).publish(eventoCaptor.capture());
         orden.verify(logger).info(EstudianteArtefactoKey.LOG_REMOVIDO, artefactoId, estudianteId);

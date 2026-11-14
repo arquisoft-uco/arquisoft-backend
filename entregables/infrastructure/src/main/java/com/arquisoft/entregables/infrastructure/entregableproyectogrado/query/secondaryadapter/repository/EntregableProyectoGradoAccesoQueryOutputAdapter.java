@@ -17,9 +17,9 @@ public class EntregableProyectoGradoAccesoQueryOutputAdapter implements Entregab
     private final EstudianteEntregableAccesoQueryRepository estudianteEntregableAccesoQueryRepository;
 
     @Override
-    public Optional<UUID> obtenerAsesorPorId(UUID entregableProyectoGrado) {
+    public Optional<UUID> obtenerAsesorVigentePorId(UUID entregableProyectoGrado) {
         return repository.findById(entregableProyectoGrado)
-                .map(EntregableProyectoGradoAccesoJpaQueryEntity::getAsesorId);
+                .map(EntregableProyectoGradoAccesoJpaQueryEntity::getAsesorVigenteId);
     }
 
     @Override

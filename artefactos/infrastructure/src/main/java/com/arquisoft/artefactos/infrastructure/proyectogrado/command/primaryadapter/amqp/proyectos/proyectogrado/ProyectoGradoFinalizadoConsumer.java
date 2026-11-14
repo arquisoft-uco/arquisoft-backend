@@ -6,6 +6,7 @@ import com.arquisoft.artefactos.application.proyectogrado.command.result.Finaliz
 import com.arquisoft.artefactos.application.versionartefacto.command.primaryport.interactor.PurgarVersionesProyectoGradoInteractor;
 import com.arquisoft.artefactos.application.versionartefacto.command.primaryport.model.PurgarVersionesProyectoGradoCommand;
 import com.arquisoft.artefactos.infrastructure.config.ArtefactosProyectosQueueConfig;
+import com.arquisoft.shared.amqp.RabbitListenerConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
@@ -22,8 +23,6 @@ import java.io.IOException;
 
 @Component
 public class ProyectoGradoFinalizadoConsumer extends AbstractEventConsumer {
-
-    private static final String UN_SOLO_CONSUMIDOR = "1";
 
     private final FinalizarProyectoGradoInteractor finalizarProyectoGradoInteractor;
     private final PurgarVersionesProyectoGradoInteractor purgarVersionesProyectoGradoInteractor;
@@ -42,7 +41,7 @@ public class ProyectoGradoFinalizadoConsumer extends AbstractEventConsumer {
     }
 
     @RabbitListener(queues = ArtefactosProyectosQueueConfig.PROYECTO_GRADO_FINALIZADO_QUEUE,
-            concurrency = UN_SOLO_CONSUMIDOR)
+            concurrency = RabbitListenerConfig.UN_SOLO_CONSUMIDOR)
     public void onProyectoGradoFinalizado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
             var payload = deserialize(message, ProyectoGradoFinalizadoPayload.class);

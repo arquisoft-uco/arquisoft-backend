@@ -17,11 +17,12 @@ public interface ProyectoGradoCommandRepository extends JpaRepository<ProyectoGr
     @Query("SELECT p FROM ProyectoGradoJpaEntity p WHERE p.id = :id")
     Optional<ProyectoGradoJpaEntity> buscarBloqueadoPorId(@Param("id") UUID id);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             SELECT p FROM ProyectoGradoJpaEntity p
             WHERE p.id = (SELECT e.proyectoGrado FROM EntregableProyectoGradoJpaEntity e WHERE e.id = :entregable)
             """)
-    Optional<ProyectoGradoJpaEntity> buscarPorEntregable(@Param("entregable") UUID entregable);
+    Optional<ProyectoGradoJpaEntity> buscarBloqueadoPorEntregable(@Param("entregable") UUID entregable);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProyectoGradoJpaEntity p SET p.estadoProyectoId = :estado WHERE p.id = :id")

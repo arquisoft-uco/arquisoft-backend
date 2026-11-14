@@ -11,6 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.data.jpa.repository.Lock;
+
+import jakarta.persistence.LockModeType;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -123,7 +127,7 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeObtenerElProyectoDelEntregable_cuandoElEntregableExiste() {
+    void debeObtenerBloqueadoElProyectoDelEntregable_cuandoElEntregableExiste() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var otroProyecto = UtilUUID.generarNuevoUUID();
@@ -136,10 +140,22 @@ class ProyectoGradoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var resultado = adapter.obtenerPorEntregable(entregable);
+        var resultado = adapter.obtenerBloqueadoPorEntregable(entregable);
 
         // Assert
         assertThat(resultado).map(ProyectoGradoEntity::id).contains(proyectoGrado);
-        assertThat(adapter.obtenerPorEntregable(UtilUUID.generarNuevoUUID())).isEmpty();
+        assertThat(adapter.obtenerBloqueadoPorEntregable(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeBloquearElProyecto_cuandoSeLeePorEntregableParaCambiarSuEstado() throws Exception {
+        // Arrange
+        var metodo = ProyectoGradoCommandRepository.class.getMethod("buscarBloqueadoPorEntregable", UUID.class);
+
+        // Act
+        var lock = metodo.getAnnotation(Lock.class);
+
+        // Assert
+        assertThat(lock.value()).isEqualTo(LockModeType.PESSIMISTIC_WRITE);
     }
 }

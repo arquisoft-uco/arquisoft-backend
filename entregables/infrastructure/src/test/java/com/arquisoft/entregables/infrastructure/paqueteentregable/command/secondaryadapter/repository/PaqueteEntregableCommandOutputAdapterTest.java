@@ -1,6 +1,7 @@
 package com.arquisoft.entregables.infrastructure.paqueteentregable.command.secondaryadapter.repository;
 
 import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.entity.PaqueteEntregableEntity;
+import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.paqueteentregable.command.secondaryadapter.entity.PaqueteEntregableJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey;
@@ -59,17 +60,36 @@ class PaqueteEntregableCommandOutputAdapterTest {
     }
 
     @Test
-    void debeResponderExistencia_porEntregable() {
+    void debeObtenerLosPaquetesDelProyecto_cuandoElEntregablePerteneceAlProyecto() {
         // Arrange
-        var entregable = UtilUUID.generarNuevoUUID();
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var delProyecto = UtilUUID.generarNuevoUUID();
+        var deOtroProyecto = UtilUUID.generarNuevoUUID();
+        entityManager.persist(EntregableProyectoGradoJpaEntity.builder()
+                .id(delProyecto).proyectoGrado(proyecto).version(1).asesor(UtilUUID.generarNuevoUUID()).build());
+        entityManager.persist(EntregableProyectoGradoJpaEntity.builder()
+                .id(deOtroProyecto).proyectoGrado(UtilUUID.generarNuevoUUID()).version(1)
+                .asesor(UtilUUID.generarNuevoUUID()).build());
+        persistirPaquete(delProyecto);
+        persistirPaquete(deOtroProyecto);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var paquetes = adapter.obtenerPorProyectoGrado(proyecto);
+
+        // Assert
+        assertThat(paquetes).singleElement().satisfies(paquete -> {
+            assertThat(paquete.entregableProyectoGrado()).isEqualTo(delProyecto);
+            assertThat(paquete.bucket()).isEqualTo("bucket");
+            assertThat(paquete.claveObjeto()).isEqualTo("paquetes/x.zip");
+        });
+    }
+
+    private void persistirPaquete(java.util.UUID entregable) {
         entityManager.persist(PaqueteEntregableJpaEntity.builder()
                 .id(UtilUUID.generarNuevoUUID()).entregableProyectoGradoId(entregable).bucket("bucket")
                 .claveObjeto("paquetes/x.zip").nombreArchivo("p.zip").tamanoBytes(1L)
                 .generadoEn(Instant.now()).build());
-        entityManager.flush();
-
-        // Act & Assert
-        assertThat(adapter.existePorEntregable(entregable)).isTrue();
-        assertThat(adapter.existePorEntregable(UtilUUID.generarNuevoUUID())).isFalse();
     }
 }
