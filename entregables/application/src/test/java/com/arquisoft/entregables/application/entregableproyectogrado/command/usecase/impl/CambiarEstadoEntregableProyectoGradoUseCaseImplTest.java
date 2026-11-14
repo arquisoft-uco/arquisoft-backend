@@ -161,7 +161,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
                 id, "DISPONIBLE_EVALUACION", UtilUUID.generarNuevoUUID());
         var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyectoId, 3, UtilUUID.generarNuevoUUID());
         var estado = estadoActual(id, EstadoEntregable.NUEVO);
-        var proyecto = ProyectoGradoDomain.reconstruir(proyectoId, "Sistema de riego", EstadoProyecto.EN_PROCESO);
+        var proyecto = ProyectoGradoDomain.reconstruir(proyectoId, "Sistema de riego", EstadoProyecto.EN_PROCESO, null);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
         when(estadoActualEntregableProyectoGradoFinder.obtener(id)).thenReturn(estado);
         when(proyectoGradoBloqueadoDeEntregableFinder.obtener(id)).thenReturn(proyecto);

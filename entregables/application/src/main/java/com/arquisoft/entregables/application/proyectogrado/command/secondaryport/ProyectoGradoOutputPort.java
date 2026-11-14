@@ -2,6 +2,7 @@ package com.arquisoft.entregables.application.proyectogrado.command.secondarypor
 
 import com.arquisoft.entregables.application.proyectogrado.command.secondaryport.entity.ProyectoGradoEntity;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,5 +18,5 @@ public interface ProyectoGradoOutputPort {
 
     Optional<ProyectoGradoEntity> obtenerBloqueadoPorEntregable(UUID entregable);
 
-    void actualizarEstado(UUID proyectoGrado, String estadoProyecto);
+    void actualizarEstado(UUID proyectoGrado, String estadoProyecto, Instant ocurridoEn);
 }

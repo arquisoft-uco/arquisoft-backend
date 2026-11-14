@@ -28,7 +28,7 @@ class FindersProyectoGradoPorEscrituraTest {
         var revision = UtilUUID.generarNuevoUUID();
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
         when(proyectoGradoOutputPort.obtenerBloqueadoPorRevisionAsesor(revision))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", entregadoEn, UtilFecha.VACIO, null)));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", entregadoEn, "EN_PROCESO", null)));
 
         // Act
         var proyecto = new ProyectoGradoBloqueadoPorRevisionAsesorFinderImpl(proyectoGradoOutputPort).obtener(revision);
@@ -58,7 +58,7 @@ class FindersProyectoGradoPorEscrituraTest {
         var id = UtilUUID.generarNuevoUUID();
         var observacion = UtilUUID.generarNuevoUUID();
         when(proyectoGradoOutputPort.obtenerBloqueadoPorObservacion(observacion))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, null)));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, "EN_PROCESO", null)));
 
         // Act
         var proyecto = new ProyectoGradoBloqueadoPorObservacionFinderImpl(proyectoGradoOutputPort).obtener(observacion);
@@ -88,13 +88,13 @@ class FindersProyectoGradoPorEscrituraTest {
         var version = UtilUUID.generarNuevoUUID();
         var finalizadoEn = Instant.parse("2026-11-02T10:00:00Z");
         when(proyectoGradoOutputPort.obtenerBloqueadoPorVersionArtefacto(version))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, finalizadoEn, null)));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Proyecto", UtilFecha.VACIO, "FINALIZADO", finalizadoEn)));
 
         // Act
         var proyecto = new ProyectoGradoBloqueadoPorVersionArtefactoFinderImpl(proyectoGradoOutputPort).obtener(version);
 
         // Assert
-        assertThat(proyecto.getFinalizadoEn()).isEqualTo(finalizadoEn);
+        assertThat(proyecto.getOcurridoEn()).isEqualTo(finalizadoEn);
         assertThat(proyecto.estaCongelado()).isTrue();
     }
 

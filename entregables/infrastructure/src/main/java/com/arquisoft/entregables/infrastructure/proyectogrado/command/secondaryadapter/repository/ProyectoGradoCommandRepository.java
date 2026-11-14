@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import jakarta.persistence.LockModeType;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,6 +26,8 @@ public interface ProyectoGradoCommandRepository extends JpaRepository<ProyectoGr
     Optional<ProyectoGradoJpaEntity> buscarBloqueadoPorEntregable(@Param("entregable") UUID entregable);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE ProyectoGradoJpaEntity p SET p.estadoProyectoId = :estado WHERE p.id = :id")
-    int actualizarEstado(@Param("id") UUID id, @Param("estado") String estado);
+    @Query("UPDATE ProyectoGradoJpaEntity p SET p.estadoProyectoId = :estado, p.ocurridoEn = :ocurridoEn "
+            + "WHERE p.id = :id AND (p.ocurridoEn IS NULL OR p.ocurridoEn < :ocurridoEn)")
+    int actualizarEstado(@Param("id") UUID id, @Param("estado") String estado,
+                         @Param("ocurridoEn") Instant ocurridoEn);
 }

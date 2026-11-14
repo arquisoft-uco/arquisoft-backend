@@ -25,7 +25,7 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
             new GenerarEntregableProyectoGradoValidatorImpl();
 
     private static ProyectoGradoDomain proyecto(EstadoProyecto estado) {
-        return ProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), "Sistema de gestion", estado);
+        return ProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), "Sistema de gestion", estado, null);
     }
 
     private static List<ArtefactoDomain> artefactos() {

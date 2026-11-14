@@ -31,7 +31,7 @@ class ProyectoGradoBloqueadoDeEntregableFinderImplTest {
         var entregable = UtilUUID.generarNuevoUUID();
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         when(proyectoGradoOutputPort.obtenerBloqueadoPorEntregable(entregable))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(proyectoGrado, "Sistema de gestion", "EN_PROCESO")));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(proyectoGrado, "Sistema de gestion", "EN_PROCESO", null)));
 
         // Act
         var resultado = finder.obtener(entregable);

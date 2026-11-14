@@ -35,8 +35,8 @@ import java.util.UUID;
                  WHERE v.artefacto_id = a.id
                  ORDER BY ra.fecha_creacion DESC
                  FETCH FIRST 1 ROW ONLY)          AS estado_ultima_revision,
-               (pg.finalizado_en IS NOT NULL)     AS proyecto_finalizado,
-               (pg.cancelado_en IS NOT NULL)      AS proyecto_cancelado
+               (pg.estado_proyecto_id = 'FINALIZADO') AS proyecto_finalizado,
+               (pg.estado_proyecto_id = 'CANCELADO') AS proyecto_cancelado
         FROM artefacto a
                  JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
                  JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id

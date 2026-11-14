@@ -29,6 +29,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.estadoDe;
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.ocurridoEnDe;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -107,11 +109,40 @@ class ArtefactoCierreProyectoQueryOutputAdapterTest {
     private UUID artefactoCancelado;
 
     private UUID sembrarArtefactoDeProyecto(String nombre, Instant finalizadoEn, Instant canceladoEn) {
+        return sembrarArtefactoDeProyectoConEstado(
+                nombre, estadoDe(finalizadoEn, canceladoEn), ocurridoEnDe(finalizadoEn, canceladoEn));
+    }
+
+    private UUID sembrarArtefactoDeProyectoConEstado(String nombre, String estado, Instant ocurridoEn) {
         var proyecto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, nombre, null, finalizadoEn, canceladoEn));
+        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, nombre, null, estado, ocurridoEn));
         var version = sembrarVersion("Documento " + nombre, 1, "Repo " + nombre);
         sembrarVinculo(estudianteX, proyecto, null);
         return sembrarArtefacto(proyecto, version, asesorA);
+    }
+
+    @Test
+    void debeNoMarcarCierre_cuandoElProyectoEstaAtrasado() {
+        // Arrange
+        sembrarAsesor(asesorA, "Ana", null);
+        var atrasado = sembrarArtefactoDeProyectoConEstado("Atrasado", "ATRASADO", Instant.now());
+        entityManager.flush();
+
+        // Act
+        var deAsesor = adapter.consultarTodosAsesor(criteria(asesorA, null));
+        var deEstudiante = adapter.consultarTodosEstudiante(criteriaEstudiante(estudianteX, null));
+
+        // Assert
+        assertThat(deAsesor.getContent()).filteredOn(a -> a.id().equals(atrasado)).singleElement()
+                .satisfies(a -> {
+                    assertThat(a.proyectoFinalizado()).isFalse();
+                    assertThat(a.proyectoCancelado()).isFalse();
+                });
+        assertThat(deEstudiante.getContent()).filteredOn(a -> a.id().equals(atrasado)).singleElement()
+                .satisfies(a -> {
+                    assertThat(a.proyectoFinalizado()).isFalse();
+                    assertThat(a.proyectoCancelado()).isFalse();
+                });
     }
 
     private void sembrarEscenarioCierre() {

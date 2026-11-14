@@ -182,7 +182,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var entregable = entregable();
         var estado = estado(EstadoEntregable.CERRADO);
         var finalizado = ProyectoGradoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), "Sistema de gestion", EstadoProyecto.FINALIZADO);
+                UtilUUID.generarNuevoUUID(), "Sistema de gestion", EstadoProyecto.FINALIZADO, null);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, finalizado, ASESOR))
@@ -196,7 +196,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var entregable = entregable();
         var estado = estado(EstadoEntregable.APROBADO);
         var cancelado = ProyectoGradoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), "Sistema de gestion", EstadoProyecto.CANCELADO);
+                UtilUUID.generarNuevoUUID(), "Sistema de gestion", EstadoProyecto.CANCELADO, null);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, cancelado, ASESOR))

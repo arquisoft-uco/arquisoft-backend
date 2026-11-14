@@ -17,7 +17,7 @@ class ConfirmarGeneracionEntregableProyectoGradoValidatorImplTest {
             new ConfirmarGeneracionEntregableProyectoGradoValidatorImpl();
 
     private final ProyectoGradoDomain proyecto = ProyectoGradoDomain.reconstruir(
-            UtilUUID.generarNuevoUUID(), "Proyecto", EstadoProyecto.EN_PROCESO);
+            UtilUUID.generarNuevoUUID(), "Proyecto", EstadoProyecto.EN_PROCESO, null);
 
     @Test
     void debePasar_cuandoLaVersionYElConjuntoNoCambiaron() {

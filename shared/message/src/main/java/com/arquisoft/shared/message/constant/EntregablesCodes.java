@@ -122,6 +122,8 @@ public final class EntregablesCodes {
         public static final String FINALIZADO = "ENTREGABLES_PROYECTO_GRADO_FINALIZADO";
         public static final String CANCELADO = "ENTREGABLES_PROYECTO_GRADO_CANCELADO";
         public static final String ESTADO_PROYECTO_NO_ENCONTRADO = "ENTREGABLES_ESTADO_PROYECTO_NO_ENCONTRADO";
+        public static final String ESTADO_PROYECTO_REQUERIDO = "ENTREGABLES_PROYECTO_GRADO_ESTADO_PROYECTO_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ENTREGABLES_PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class Asesor {

@@ -34,8 +34,8 @@ import java.util.UUID;
                er.nombre              AS nombre_estado_revision,
                er.orden               AS orden_estado_revision,
                ra.fecha_creacion        AS fecha_creacion_revision,
-               (pg.finalizado_en IS NOT NULL)     AS proyecto_finalizado,
-               (pg.cancelado_en IS NOT NULL)      AS proyecto_cancelado
+               (pg.estado_proyecto_id = 'FINALIZADO') AS proyecto_finalizado,
+               (pg.estado_proyecto_id = 'CANCELADO') AS proyecto_cancelado
         FROM version_artefacto va
                  JOIN artefacto a ON a.id = va.artefacto_id
                  JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id

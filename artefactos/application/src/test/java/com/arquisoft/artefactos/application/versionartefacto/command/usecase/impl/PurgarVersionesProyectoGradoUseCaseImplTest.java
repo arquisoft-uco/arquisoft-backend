@@ -6,6 +6,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.result.Purg
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.AlmacenamientoVersionOutputPort;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.PurgarVersionesProyectoGradoValidator;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyecto;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoConcluidoException;
 import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyectoGrado;
 import com.arquisoft.artefactos.domain.proyectogrado.model.ExistenciaProyectoGrado;
@@ -63,7 +64,7 @@ class PurgarVersionesProyectoGradoUseCaseImplTest {
         id = UtilUUID.generarNuevoUUID();
         purga = PurgaVersionesProyectoGradoDomain.crear(id);
         proyectoFinalizado = ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", UtilFecha.VACIO, Instant.parse("2026-11-01T10:00:00Z"), null);
+                id, "Proyecto", UtilFecha.VACIO, EstadoProyecto.FINALIZADO, Instant.parse("2026-11-01T10:00:00Z"));
     }
 
     @Test
@@ -93,7 +94,7 @@ class PurgarVersionesProyectoGradoUseCaseImplTest {
     void debePurgar_cuandoProyectoCancelado() {
         // Arrange
         var cancelado = ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, Instant.parse("2026-11-02T10:00:00Z"));
+                id, "Proyecto", UtilFecha.VACIO, EstadoProyecto.CANCELADO, Instant.parse("2026-11-02T10:00:00Z"));
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(cancelado);
         when(urisArchivoVersionesProyectoGradoFinder.obtener(id)).thenReturn(List.of("versiones/a"));
 
@@ -111,7 +112,7 @@ class PurgarVersionesProyectoGradoUseCaseImplTest {
     void debeNoBorrarNada_cuandoValidatorLanza() {
         // Arrange
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(
-                ProyectoGradoDomain.reconstruir(id, "Proyecto", Instant.now(), UtilFecha.VACIO, null));
+                ProyectoGradoDomain.reconstruir(id, "Proyecto", Instant.now(), EstadoProyecto.EN_PROCESO, null));
         when(urisArchivoVersionesProyectoGradoFinder.obtener(id)).thenReturn(List.of("versiones/a"));
         doThrow(new ProyectoGradoNoConcluidoException(new EstadoProyectoGrado(id, "Proyecto", true, false)))
                 .when(purgarVersionesProyectoGradoValidator).validar(any(), any());

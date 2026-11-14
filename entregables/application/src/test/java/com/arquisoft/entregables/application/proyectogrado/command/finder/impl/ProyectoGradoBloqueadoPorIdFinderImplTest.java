@@ -30,7 +30,7 @@ class ProyectoGradoBloqueadoPorIdFinderImplTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         when(proyectoGradoOutputPort.obtenerBloqueadoPorId(id))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Sistema de gestion", "EN_PROCESO")));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Sistema de gestion", "EN_PROCESO", null)));
 
         // Act
         var resultado = finder.obtener(id);
