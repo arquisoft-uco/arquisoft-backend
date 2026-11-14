@@ -30,7 +30,5 @@ public interface ProyectoGradoOutputPort {
 
     void limpiarEntregado(UUID id, Instant hasta);
 
-    void marcarFinalizado(UUID id, Instant finalizadoEn);
-
-    void marcarCancelado(UUID id, Instant canceladoEn);
+    void actualizarEstado(UUID id, String estadoProyecto, Instant ocurridoEn);
 }

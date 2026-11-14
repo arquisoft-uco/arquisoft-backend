@@ -49,11 +49,8 @@ public final class EventTopics {
         public static final String ASESOR_PROYECTO_GRADO_FINALIZADO =
                 "proyectos.asesor_proyecto_grado.finalizado";
 
-        public static final String PROYECTO_GRADO_FINALIZADO =
-                "proyectos.proyecto_grado.finalizado";
-
-        public static final String PROYECTO_GRADO_CANCELADO =
-                "proyectos.proyecto_grado.cancelado";
+        public static final String PROYECTO_GRADO_ESTADO_CAMBIADO =
+                "proyectos.proyecto_grado.estado_cambiado";
     }
 
     public static final class Usuarios {

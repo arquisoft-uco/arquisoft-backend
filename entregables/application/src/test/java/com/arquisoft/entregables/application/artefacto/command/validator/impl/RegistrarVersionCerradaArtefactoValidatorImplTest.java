@@ -27,7 +27,7 @@ class RegistrarVersionCerradaArtefactoValidatorImplTest {
     }
 
     private static ProyectoGradoDomain proyecto() {
-        return ProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), "Proyecto", EstadoProyecto.EN_PROCESO);
+        return ProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), "Proyecto", EstadoProyecto.EN_PROCESO, null);
     }
 
     @Test

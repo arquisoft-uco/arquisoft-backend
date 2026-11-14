@@ -18,10 +18,8 @@ public class EntregablesProyectosQueueConfig {
             EntregablesQueues.PREFIJO + EventTopics.Proyectos.ESTUDIANTES_PROYECTO_GRADO_ASIGNADOS;
     public static final String ESTUDIANTE_DESTITUIDO_QUEUE =
             EntregablesQueues.PREFIJO + EventTopics.Proyectos.ESTUDIANTE_PROYECTO_GRADO_DESTITUIDO;
-    public static final String PROYECTO_GRADO_FINALIZADO_QUEUE =
-            EntregablesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_FINALIZADO;
-    public static final String PROYECTO_GRADO_CANCELADO_QUEUE =
-            EntregablesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO;
+    public static final String PROYECTO_GRADO_ESTADO_CAMBIADO_QUEUE =
+            EntregablesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_ESTADO_CAMBIADO;
     public static final String ASESOR_PROYECTO_GRADO_ASIGNADO_QUEUE =
             EntregablesQueues.PREFIJO + EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_ASIGNADO;
     public static final String ASESOR_PROYECTO_GRADO_FINALIZADO_QUEUE =
@@ -61,23 +59,12 @@ public class EntregablesProyectosQueueConfig {
     }
 
     @Bean
-    public Declarables entregablesProyectoGradoFinalizadoDeclarables(
+    public Declarables entregablesProyectoGradoEstadoCambiadoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
             @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
         return ColaEvento.declarar(
-                PROYECTO_GRADO_FINALIZADO_QUEUE,
-                EventTopics.Proyectos.PROYECTO_GRADO_FINALIZADO,
-                arquisoftEventsExchange,
-                arquisoftDeadLetterExchange);
-    }
-
-    @Bean
-    public Declarables entregablesProyectoGradoCanceladoDeclarables(
-            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
-            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
-        return ColaEvento.declarar(
-                PROYECTO_GRADO_CANCELADO_QUEUE,
-                EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO,
+                PROYECTO_GRADO_ESTADO_CAMBIADO_QUEUE,
+                EventTopics.Proyectos.PROYECTO_GRADO_ESTADO_CAMBIADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

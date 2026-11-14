@@ -14,8 +14,8 @@ public final class ProyectoGradoJpaMapper {
                 .id(entity.id())
                 .nombre(entity.nombre())
                 .entregadoEn(UtilFecha.VACIO.equals(entity.entregadoEn()) ? null : entity.entregadoEn())
-                .finalizadoEn(UtilFecha.VACIO.equals(entity.finalizadoEn()) ? null : entity.finalizadoEn())
-                .canceladoEn(UtilFecha.VACIO.equals(entity.canceladoEn()) ? null : entity.canceladoEn())
+                .estadoProyectoId(entity.estadoProyecto())
+                .ocurridoEn(UtilFecha.VACIO.equals(entity.ocurridoEn()) ? null : entity.ocurridoEn())
                 .build();
     }
 
@@ -23,7 +23,7 @@ public final class ProyectoGradoJpaMapper {
         return new ProyectoGradoEntity(
                 jpaEntity.getId(), jpaEntity.getNombre(),
                 UtilObjeto.aplicarPorDefecto(jpaEntity.getEntregadoEn(), UtilFecha.VACIO),
-                UtilObjeto.aplicarPorDefecto(jpaEntity.getFinalizadoEn(), UtilFecha.VACIO),
-                UtilObjeto.aplicarPorDefecto(jpaEntity.getCanceladoEn(), UtilFecha.VACIO));
+                jpaEntity.getEstadoProyectoId(),
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getOcurridoEn(), UtilFecha.VACIO));
     }
 }

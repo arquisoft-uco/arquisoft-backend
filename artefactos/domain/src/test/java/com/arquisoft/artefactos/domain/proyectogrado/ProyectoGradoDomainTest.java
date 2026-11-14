@@ -1,5 +1,6 @@
 package com.arquisoft.artefactos.domain.proyectogrado;
 
+import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyecto;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.message.constant.ArtefactosLimits;
@@ -60,59 +61,66 @@ class ProyectoGradoDomainTest {
         assertThat(ProyectoGradoDomain.VACIO.esVacio()).isTrue();
         assertThat(UtilUUID.esPorDefecto(ProyectoGradoDomain.VACIO.getId())).isTrue();
         assertThat(ProyectoGradoDomain.VACIO.getNombre()).isEmpty();
+        assertThat(ProyectoGradoDomain.VACIO.getEntregadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(ProyectoGradoDomain.VACIO.getOcurridoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(ProyectoGradoDomain.VACIO.getEstadoProyecto()).isEqualTo(EstadoProyecto.VACIO);
+        assertThat(ProyectoGradoDomain.VACIO.estaCongelado()).isFalse();
     }
 
     @Test
-    void debeCrearSinFechas_cuandoDatosValidos() {
+    void debeCrearEnProcesoSinFechas_cuandoDatosValidos() {
         // Act
         var proyecto = ProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), "Proyecto");
 
         // Assert
         assertThat(proyecto.getEntregadoEn()).isEqualTo(UtilFecha.VACIO);
-        assertThat(proyecto.getFinalizadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(proyecto.getOcurridoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(proyecto.getEstadoProyecto()).isEqualTo(EstadoProyecto.EN_PROCESO);
         assertThat(proyecto.estaEntregado()).isFalse();
         assertThat(proyecto.estaFinalizado()).isFalse();
+        assertThat(proyecto.estaCancelado()).isFalse();
         assertThat(proyecto.estaCongelado()).isFalse();
     }
 
     @Test
-    void debeReconstruirConFechasYEstarCongelado_cuandoEntregado() {
+    void debeEstarCongelado_cuandoEntregado() {
         // Arrange
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
 
         // Act
-        var proyecto = ProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), "P", entregadoEn, UtilFecha.VACIO, null);
+        var proyecto = ProyectoGradoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), "P", entregadoEn, EstadoProyecto.EN_PROCESO, null);
 
         // Assert
         assertThat(proyecto.getEntregadoEn()).isEqualTo(entregadoEn);
         assertThat(proyecto.estaEntregado()).isTrue();
-        assertThat(proyecto.estaFinalizado()).isFalse();
+        assertThat(proyecto.estaConcluido()).isFalse();
         assertThat(proyecto.estaCongelado()).isTrue();
     }
 
     @Test
-    void debeEstarCongelado_cuandoSoloFinalizado() {
+    void debeEstarFinalizadoYCongelado_cuandoElEstadoEsFinalizado() {
         // Arrange
-        var finalizadoEn = Instant.parse("2026-11-02T10:00:00Z");
-
-        // Act
-        var proyecto = ProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), "P", UtilFecha.VACIO, finalizadoEn, null);
-
-        // Assert
-        assertThat(proyecto.getFinalizadoEn()).isEqualTo(finalizadoEn);
-        assertThat(proyecto.estaEntregado()).isFalse();
-        assertThat(proyecto.estaFinalizado()).isTrue();
-        assertThat(proyecto.estaCongelado()).isTrue();
-    }
-
-    @Test
-    void debeEstarCongeladoYConcluido_cuandoCancelado() {
-        // Arrange
-        var canceladoEn = Instant.parse("2026-11-03T10:00:00Z");
+        var ocurridoEn = Instant.parse("2026-11-02T10:00:00Z");
 
         // Act
         var proyecto = ProyectoGradoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), "P", UtilFecha.VACIO, UtilFecha.VACIO, canceladoEn);
+                UtilUUID.generarNuevoUUID(), "P", UtilFecha.VACIO, EstadoProyecto.FINALIZADO, ocurridoEn);
+
+        // Assert
+        assertThat(proyecto.getOcurridoEn()).isEqualTo(ocurridoEn);
+        assertThat(proyecto.estaFinalizado()).isTrue();
+        assertThat(proyecto.estaCancelado()).isFalse();
+        assertThat(proyecto.estaConcluido()).isTrue();
+        assertThat(proyecto.estaCongelado()).isTrue();
+    }
+
+    @Test
+    void debeEstarCanceladoYCongelado_cuandoElEstadoEsCancelado() {
+        // Act
+        var proyecto = ProyectoGradoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), "P", UtilFecha.VACIO, EstadoProyecto.CANCELADO,
+                Instant.parse("2026-11-03T10:00:00Z"));
 
         // Assert
         assertThat(proyecto.estaCancelado()).isTrue();
@@ -122,43 +130,32 @@ class ProyectoGradoDomainTest {
     }
 
     @Test
-    void debeReconstruirConCanceladoEn_cuandoSeReconstruye() {
-        // Arrange
-        var canceladoEn = Instant.parse("2026-11-03T10:00:00Z");
-
+    void debeNoCongelarNiConcluir_cuandoElEstadoEsAtrasado() {
         // Act
-        var cancelado = ProyectoGradoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), "P", UtilFecha.VACIO, UtilFecha.VACIO, canceladoEn);
-        var sinCancelar = ProyectoGradoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), "P", UtilFecha.VACIO, UtilFecha.VACIO, null);
+        var proyecto = ProyectoGradoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), "P", UtilFecha.VACIO, EstadoProyecto.ATRASADO,
+                Instant.parse("2026-11-03T10:00:00Z"));
 
         // Assert
-        assertThat(cancelado.getCanceladoEn()).isEqualTo(canceladoEn);
-        assertThat(sinCancelar.getCanceladoEn()).isEqualTo(UtilFecha.VACIO);
-        assertThat(sinCancelar.estaCancelado()).isFalse();
-        assertThat(sinCancelar.estaConcluido()).isFalse();
-        assertThat(ProyectoGradoDomain.VACIO.estaCancelado()).isFalse();
+        assertThat(proyecto.estaFinalizado()).isFalse();
+        assertThat(proyecto.estaCancelado()).isFalse();
+        assertThat(proyecto.estaConcluido()).isFalse();
+        assertThat(proyecto.estaCongelado()).isFalse();
     }
 
     @Test
-    void debeSerVacioSinFechas_cuandoEsElCentinela() {
-        // Act & Assert
-        assertThat(ProyectoGradoDomain.VACIO.getEntregadoEn()).isEqualTo(UtilFecha.VACIO);
-        assertThat(ProyectoGradoDomain.VACIO.getFinalizadoEn()).isEqualTo(UtilFecha.VACIO);
-        assertThat(ProyectoGradoDomain.VACIO.estaCongelado()).isFalse();
-    }
-
-    @Test
-    void debeReconstruirSinValidar_cuandoDatosInvalidos() {
+    void debeReconstruirSinValidarYConFechasPorDefecto_cuandoDatosInvalidos() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
 
         // Act
-        var proyecto = ProyectoGradoDomain.reconstruir(id, " ", null, null, null);
+        var proyecto = ProyectoGradoDomain.reconstruir(id, " ", null, EstadoProyecto.EN_PROCESO, null);
 
         // Assert
         assertThat(proyecto.getId()).isEqualTo(id);
         assertThat(proyecto.getNombre()).isEqualTo(" ");
+        assertThat(proyecto.getEntregadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(proyecto.getOcurridoEn()).isEqualTo(UtilFecha.VACIO);
         assertThat(proyecto.esVacio()).isFalse();
     }
 }

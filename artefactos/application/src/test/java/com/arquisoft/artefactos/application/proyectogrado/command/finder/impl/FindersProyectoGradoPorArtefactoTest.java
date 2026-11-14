@@ -25,7 +25,7 @@ class FindersProyectoGradoPorArtefactoTest {
         var artefacto = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         when(outputPort.obtenerPorArtefacto(artefacto))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(proyecto, "Proyecto", null, null, null)));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(proyecto, "Proyecto", null, "EN_PROCESO", null)));
 
         // Act
         var resultado = new ProyectoGradoPorArtefactoFinderImpl(outputPort).obtener(artefacto);
@@ -54,7 +54,7 @@ class FindersProyectoGradoPorArtefactoTest {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         when(outputPort.obtenerBloqueadoPorId(proyecto))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(proyecto, "Proyecto", null, null, null)));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(proyecto, "Proyecto", null, "EN_PROCESO", null)));
 
         // Act
         var resultado = new ProyectoGradoBloqueadoPorIdFinderImpl(outputPort).obtener(proyecto);
@@ -83,7 +83,7 @@ class FindersProyectoGradoPorArtefactoTest {
         var artefacto = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         when(outputPort.obtenerBloqueadoPorArtefacto(artefacto))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(proyecto, "Proyecto", null, null, null)));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(proyecto, "Proyecto", null, "EN_PROCESO", null)));
 
         // Act
         var resultado = new ProyectoGradoBloqueadoPorArtefactoFinderImpl(outputPort).obtener(artefacto);

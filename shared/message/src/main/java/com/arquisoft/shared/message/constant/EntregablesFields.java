@@ -77,6 +77,8 @@ public final class EntregablesFields {
 
         public static final String ID = "id";
         public static final String NOMBRE = "nombre";
+        public static final String ESTADO_PROYECTO = "estadoProyecto";
+        public static final String OCURRIDO_EN = "ocurridoEn";
     }
 
     public static final class Asesor {

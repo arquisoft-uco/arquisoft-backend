@@ -31,7 +31,7 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     ERROR_NO_PERTENECE_COORDINADOR("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador", 0),
     ERROR_NO_PERTENECE_COORDINADOR_DETALLE("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador-detalle", 2),
     LOG_CAMBIANDO_ESTADO("proyectos.aplicacion.proyectogrado.log.cambiando-estado", 3),
-    LOG_VERIFICACION_CAMBIO_ESTADO("proyectos.aplicacion.proyectogrado.log.verificacion-cambio-estado", 5),
+    LOG_VERIFICACION_CAMBIO_ESTADO("proyectos.aplicacion.proyectogrado.log.verificacion-cambio-estado", 6),
     LOG_ESTADO_CAMBIADO("proyectos.aplicacion.proyectogrado.log.estado-cambiado", 3),
     ERROR_TRANSICION_ESTADO_NO_PERMITIDA(
             "proyectos.dominio.proyectogrado.error.transicion-estado-no-permitida", 3),

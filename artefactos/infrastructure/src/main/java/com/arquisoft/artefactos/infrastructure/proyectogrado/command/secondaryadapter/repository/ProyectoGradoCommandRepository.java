@@ -82,12 +82,8 @@ public interface ProyectoGradoCommandRepository extends JpaRepository<ProyectoGr
     int limpiarEntregado(@Param("id") UUID id, @Param("hasta") Instant hasta);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE ProyectoGradoJpaEntity p SET p.finalizadoEn = :finalizadoEn "
-            + "WHERE p.id = :id AND p.finalizadoEn IS NULL")
-    int marcarFinalizado(@Param("id") UUID id, @Param("finalizadoEn") Instant finalizadoEn);
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE ProyectoGradoJpaEntity p SET p.canceladoEn = :canceladoEn "
-            + "WHERE p.id = :id AND p.canceladoEn IS NULL")
-    int marcarCancelado(@Param("id") UUID id, @Param("canceladoEn") Instant canceladoEn);
+    @Query("UPDATE ProyectoGradoJpaEntity p SET p.estadoProyectoId = :estado, p.ocurridoEn = :ocurridoEn "
+            + "WHERE p.id = :id AND (p.ocurridoEn IS NULL OR p.ocurridoEn < :ocurridoEn)")
+    int actualizarEstado(@Param("id") UUID id, @Param("estado") String estado,
+                         @Param("ocurridoEn") Instant ocurridoEn);
 }

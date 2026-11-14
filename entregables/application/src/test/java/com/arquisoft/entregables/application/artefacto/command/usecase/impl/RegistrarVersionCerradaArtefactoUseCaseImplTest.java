@@ -84,7 +84,7 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
     }
 
     private static ProyectoGradoDomain proyecto(UUID id, EstadoProyecto estado) {
-        return ProyectoGradoDomain.reconstruir(id, "Proyecto", estado);
+        return ProyectoGradoDomain.reconstruir(id, "Proyecto", estado, null);
     }
 
     @Test

@@ -47,12 +47,16 @@ class ProyectoGradoCommandOutputAdapterTest {
         var id = UtilUUID.generarNuevoUUID();
 
         // Act
-        adapter.guardar(new ProyectoGradoEntity(id, "Sistema de gestion", UtilFecha.VACIO, UtilFecha.VACIO, null));
+        adapter.guardar(new ProyectoGradoEntity(
+                id, "Sistema de gestion", UtilFecha.VACIO, "EN_PROCESO", UtilFecha.VACIO));
         entityManager.flush();
         entityManager.clear();
 
         // Assert
-        assertThat(entityManager.find(ProyectoGradoJpaEntity.class, id).getNombre()).isEqualTo("Sistema de gestion");
+        var guardado = entityManager.find(ProyectoGradoJpaEntity.class, id);
+        assertThat(guardado.getNombre()).isEqualTo("Sistema de gestion");
+        assertThat(guardado.getEstadoProyectoId()).isEqualTo("EN_PROCESO");
+        assertThat(guardado.getOcurridoEn()).isNull();
         assertThat(adapter.existePorId(id)).isTrue();
         assertThat(adapter.existePorId(UtilUUID.generarNuevoUUID())).isFalse();
         verify(logger).debug(ProyectoGradoKey.LOG_GUARDADO, id);
@@ -63,8 +67,8 @@ class ProyectoGradoCommandOutputAdapterTest {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var otroProyecto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Sistema de gestion").build());
-        entityManager.persist(ProyectoGradoJpaEntity.builder().id(otroProyecto).nombre("Otro").build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).estadoProyectoId("EN_PROCESO").nombre("Sistema de gestion").build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(otroProyecto).estadoProyectoId("EN_PROCESO").nombre("Otro").build());
         var artefacto = UtilUUID.generarNuevoUUID();
         entityManager.persist(ArtefactoJpaEntity.builder()
                 .id(artefacto)
@@ -91,7 +95,7 @@ class ProyectoGradoCommandOutputAdapterTest {
     void debeObtenerBloqueadoPorArtefacto() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).nombre("Sistema de gestion").build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(proyecto).estadoProyectoId("EN_PROCESO").nombre("Sistema de gestion").build());
         var artefacto = UtilUUID.generarNuevoUUID();
         entityManager.persist(ArtefactoJpaEntity.builder()
                 .id(artefacto)
@@ -115,7 +119,7 @@ class ProyectoGradoCommandOutputAdapterTest {
     void debeObtenerBloqueadoPorIdYRetornarVacio_cuandoNoExiste() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        entityManager.persist(ProyectoGradoJpaEntity.builder().id(id).nombre("Sistema de gestion").build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(id).estadoProyectoId("EN_PROCESO").nombre("Sistema de gestion").build());
         entityManager.flush();
         entityManager.clear();
 
@@ -132,7 +136,7 @@ class ProyectoGradoCommandOutputAdapterTest {
     void debeObtenerPorId_cuandoExiste() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        entityManager.persist(ProyectoGradoJpaEntity.builder().id(id).nombre("Sistema de gestion").build());
+        entityManager.persist(ProyectoGradoJpaEntity.builder().id(id).estadoProyectoId("EN_PROCESO").nombre("Sistema de gestion").build());
         entityManager.flush();
         entityManager.clear();
 
@@ -148,17 +152,18 @@ class ProyectoGradoCommandOutputAdapterTest {
         assertThat(ausente).isEmpty();
     }
 
-    private UUID proyectoSembrado(Instant entregadoEn, Instant finalizadoEn) {
+    private UUID proyectoSembrado(Instant entregadoEn, String estado, Instant ocurridoEn) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(ProyectoGradoJpaEntity.builder()
-                .id(id).nombre("Sistema de gestion").entregadoEn(entregadoEn).finalizadoEn(finalizadoEn).build());
+                .id(id).nombre("Sistema de gestion").entregadoEn(entregadoEn)
+                .estadoProyectoId(estado).ocurridoEn(ocurridoEn).build());
         return id;
     }
 
     @Test
     void debeMarcarEntregado_cuandoAunNoTieneFecha() {
         // Arrange
-        var id = proyectoSembrado(null, null);
+        var id = proyectoSembrado(null, "EN_PROCESO", null);
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
         entityManager.flush();
 
@@ -168,7 +173,7 @@ class ProyectoGradoCommandOutputAdapterTest {
         // Assert
         var proyecto = adapter.obtenerPorId(id).orElseThrow();
         assertThat(proyecto.entregadoEn()).isEqualTo(entregadoEn);
-        assertThat(proyecto.finalizadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(proyecto.estadoProyecto()).isEqualTo("EN_PROCESO");
         verify(logger).debug(ProyectoGradoKey.LOG_ENTREGADO_MARCADO, id, entregadoEn);
     }
 
@@ -176,7 +181,7 @@ class ProyectoGradoCommandOutputAdapterTest {
     void debeActualizarEntregado_cuandoElExistenteEsAnterior() {
         // Arrange
         var original = Instant.parse("2026-11-01T10:00:00Z");
-        var id = proyectoSembrado(original, null);
+        var id = proyectoSembrado(original, "EN_PROCESO", null);
         entityManager.flush();
 
         // Act
@@ -187,12 +192,11 @@ class ProyectoGradoCommandOutputAdapterTest {
         assertThat(adapter.obtenerPorId(id).orElseThrow().entregadoEn()).isEqualTo(posterior);
     }
 
-
     @Test
     void debeNoSobrescribirEntregado_cuandoElExistenteEsPosterior() {
         // Arrange
         var original = Instant.parse("2026-11-05T10:00:00Z");
-        var id = proyectoSembrado(original, null);
+        var id = proyectoSembrado(original, "EN_PROCESO", null);
         entityManager.flush();
 
         // Act
@@ -203,10 +207,11 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeLimpiarEntregado_cuandoElExistenteNoEsPosteriorAlLimite() {
+    void debeLimpiarEntregadoSinTocarElEstado_cuandoElExistenteNoEsPosteriorAlLimite() {
         // Arrange
         var hasta = Instant.parse("2026-11-05T10:00:00Z");
-        var id = proyectoSembrado(Instant.parse("2026-11-01T10:00:00Z"), Instant.parse("2026-11-03T10:00:00Z"));
+        var ocurridoEn = Instant.parse("2026-11-03T10:00:00Z");
+        var id = proyectoSembrado(Instant.parse("2026-11-01T10:00:00Z"), "FINALIZADO", ocurridoEn);
         entityManager.flush();
 
         // Act
@@ -215,7 +220,8 @@ class ProyectoGradoCommandOutputAdapterTest {
         // Assert
         var proyecto = adapter.obtenerPorId(id).orElseThrow();
         assertThat(proyecto.entregadoEn()).isEqualTo(UtilFecha.VACIO);
-        assertThat(proyecto.finalizadoEn()).isEqualTo(Instant.parse("2026-11-03T10:00:00Z"));
+        assertThat(proyecto.estadoProyecto()).isEqualTo("FINALIZADO");
+        assertThat(proyecto.ocurridoEn()).isEqualTo(ocurridoEn);
         verify(logger).debug(ProyectoGradoKey.LOG_ENTREGADO_LIMPIADO, id, hasta);
     }
 
@@ -223,7 +229,7 @@ class ProyectoGradoCommandOutputAdapterTest {
     void debeNoLimpiarEntregado_cuandoElExistenteEsPosteriorAlLimite() {
         // Arrange
         var original = Instant.parse("2026-11-09T10:00:00Z");
-        var id = proyectoSembrado(original, null);
+        var id = proyectoSembrado(original, "EN_PROCESO", null);
         entityManager.flush();
 
         // Act
@@ -232,63 +238,80 @@ class ProyectoGradoCommandOutputAdapterTest {
         // Assert
         assertThat(adapter.obtenerPorId(id).orElseThrow().entregadoEn()).isEqualTo(original);
     }
+
     @Test
-    void debeMarcarFinalizado_cuandoAunNoTieneFecha() {
+    void debeActualizarEstado_cuandoElEventoEsMasNuevo() {
         // Arrange
-        var id = proyectoSembrado(null, null);
-        var finalizadoEn = Instant.parse("2026-11-02T10:00:00Z");
+        var guardado = Instant.parse("2026-11-02T10:00:00Z");
+        var id = proyectoSembrado(null, "ATRASADO", guardado);
+        var nuevo = Instant.parse("2026-11-06T10:00:00Z");
         entityManager.flush();
 
         // Act
-        adapter.marcarFinalizado(id, finalizadoEn);
+        adapter.actualizarEstado(id, "FINALIZADO", nuevo);
 
         // Assert
         var proyecto = adapter.obtenerPorId(id).orElseThrow();
-        assertThat(proyecto.finalizadoEn()).isEqualTo(finalizadoEn);
+        assertThat(proyecto.estadoProyecto()).isEqualTo("FINALIZADO");
+        assertThat(proyecto.ocurridoEn()).isEqualTo(nuevo);
         assertThat(proyecto.entregadoEn()).isEqualTo(UtilFecha.VACIO);
-        verify(logger).debug(ProyectoGradoKey.LOG_FINALIZADO_MARCADO, id, finalizadoEn);
+        verify(logger).debug(ProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, id, "FINALIZADO", nuevo);
     }
 
     @Test
-    void debeNoSobrescribirFinalizado_cuandoYaTieneFecha() {
+    void debeActualizarEstado_cuandoNoHayOcurridoEnGuardado() {
         // Arrange
-        var original = Instant.parse("2026-11-02T10:00:00Z");
-        var id = proyectoSembrado(null, original);
+        var id = proyectoSembrado(null, "EN_PROCESO", null);
+        var ocurridoEn = Instant.parse("2026-11-06T10:00:00Z");
         entityManager.flush();
 
         // Act
-        adapter.marcarFinalizado(id, Instant.parse("2026-11-06T10:00:00Z"));
-
-        // Assert
-        assertThat(adapter.obtenerPorId(id).orElseThrow().finalizadoEn()).isEqualTo(original);
-    }
-
-    @Test
-    void debeMarcarCanceladoUnaVez_cuandoSeRepite() {
-        // Arrange
-        var id = proyectoSembrado(null, null);
-        var original = Instant.parse("2026-11-03T10:00:00Z");
-        entityManager.flush();
-
-        // Act
-        adapter.marcarCancelado(id, original);
-        entityManager.clear();
-        adapter.marcarCancelado(id, Instant.parse("2026-11-09T10:00:00Z"));
-        entityManager.clear();
+        adapter.actualizarEstado(id, "CANCELADO", ocurridoEn);
 
         // Assert
         var proyecto = adapter.obtenerPorId(id).orElseThrow();
-        assertThat(proyecto.canceladoEn()).isEqualTo(original);
-        assertThat(proyecto.finalizadoEn()).isEqualTo(UtilFecha.VACIO);
-        verify(logger).debug(ProyectoGradoKey.LOG_CANCELADO_MARCADO, id, original);
+        assertThat(proyecto.estadoProyecto()).isEqualTo("CANCELADO");
+        assertThat(proyecto.ocurridoEn()).isEqualTo(ocurridoEn);
+    }
+
+    @Test
+    void debeNoActualizarEstado_cuandoElEventoEsIgualAlGuardado() {
+        // Arrange
+        var guardado = Instant.parse("2026-11-02T10:00:00Z");
+        var id = proyectoSembrado(null, "FINALIZADO", guardado);
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(id, "CANCELADO", guardado);
+
+        // Assert
+        var proyecto = adapter.obtenerPorId(id).orElseThrow();
+        assertThat(proyecto.estadoProyecto()).isEqualTo("FINALIZADO");
+        assertThat(proyecto.ocurridoEn()).isEqualTo(guardado);
+    }
+
+    @Test
+    void debeNoActualizarEstado_cuandoElEventoEsMasViejoQueElGuardado() {
+        // Arrange
+        var guardado = Instant.parse("2026-11-02T10:00:00Z");
+        var id = proyectoSembrado(null, "FINALIZADO", guardado);
+        entityManager.flush();
+
+        // Act
+        adapter.actualizarEstado(id, "ATRASADO", guardado.minusSeconds(3600));
+
+        // Assert
+        var proyecto = adapter.obtenerPorId(id).orElseThrow();
+        assertThat(proyecto.estadoProyecto()).isEqualTo("FINALIZADO");
+        assertThat(proyecto.ocurridoEn()).isEqualTo(guardado);
     }
 
     @Test
     void debeObtenerBloqueadoPorRevisionObservacionYVersion_cuandoExistenEnElProyecto() {
         // Arrange
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
-        var proyecto = proyectoSembrado(entregadoEn, null);
-        proyectoSembrado(null, null);
+        var proyecto = proyectoSembrado(entregadoEn, "EN_PROCESO", null);
+        proyectoSembrado(null, "EN_PROCESO", null);
         var artefacto = UtilUUID.generarNuevoUUID();
         entityManager.persist(ArtefactoJpaEntity.builder()
                 .id(artefacto)
