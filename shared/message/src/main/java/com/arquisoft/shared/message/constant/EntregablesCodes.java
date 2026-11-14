@@ -68,7 +68,7 @@ public final class EntregablesCodes {
                 "ENTREGABLES_PAQUETE_ENTREGABLE_ARCHIVO_ARTEFACTO_NO_DISPONIBLE";
         public static final String CANCELADO = "ENTREGABLES_PAQUETE_ENTREGABLE_CANCELADO";
         public static final String PROYECTO_CANCELADO = "ENTREGABLES_PAQUETE_ENTREGABLE_PROYECTO_CANCELADO";
-        public static final String DESACTUALIZADO = "PAQUETE_DESACTUALIZADO";
+        public static final String DESACTUALIZADO = "ENTREGABLES_PAQUETE_ENTREGABLE_DESACTUALIZADO";
     }
 
     public static final class Artefacto {
@@ -144,7 +144,7 @@ public final class EntregablesCodes {
         public static final String PROYECTO_GRADO_REQUERIDO =
                 "ENTREGABLES_ASESOR_PROYECTO_GRADO_PROYECTO_GRADO_REQUERIDO";
         public static final String OCURRIDO_EN_REQUERIDO = "ENTREGABLES_ASESOR_PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
-        public static final String NO_ASIGNADO = "ASESOR_NO_ASIGNADO_PROYECTO_GRADO";
+        public static final String NO_ASIGNADO = "ENTREGABLES_ASESOR_PROYECTO_GRADO_NO_ASIGNADO";
     }
 
     public static final class EstudianteProyectoGrado {
