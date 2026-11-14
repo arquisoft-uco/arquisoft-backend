@@ -1,19 +1,15 @@
 package com.arquisoft.entregables.application.artefacto.command.primaryport.interactor.impl;
 
 import com.arquisoft.entregables.application.artefacto.command.primaryport.model.OmitirArtefactoCommand;
-import com.arquisoft.entregables.application.artefacto.command.primaryport.model.PurgarArtefactosProyectoGradoCommand;
 import com.arquisoft.entregables.application.artefacto.command.primaryport.model.ReactivarArtefactoCommand;
 import com.arquisoft.entregables.application.artefacto.command.primaryport.model.RegistrarVersionCerradaArtefactoCommand;
 import com.arquisoft.entregables.application.artefacto.command.result.OmisionArtefactoResult;
-import com.arquisoft.entregables.application.artefacto.command.result.PurgaArtefactosProyectoGradoResult;
 import com.arquisoft.entregables.application.artefacto.command.result.ReactivacionArtefactoResult;
 import com.arquisoft.entregables.application.artefacto.command.result.RegistroVersionCerradaArtefactoResult;
 import com.arquisoft.entregables.application.artefacto.command.usecase.OmitirArtefactoUseCase;
-import com.arquisoft.entregables.application.artefacto.command.usecase.PurgarArtefactosProyectoGradoUseCase;
 import com.arquisoft.entregables.application.artefacto.command.usecase.ReactivarArtefactoUseCase;
 import com.arquisoft.entregables.application.artefacto.command.usecase.RegistrarVersionCerradaArtefactoUseCase;
 import com.arquisoft.entregables.domain.artefacto.OmisionArtefactoDomain;
-import com.arquisoft.entregables.domain.artefacto.PurgaArtefactosProyectoGradoDomain;
 import com.arquisoft.entregables.domain.artefacto.ReactivacionArtefactoDomain;
 import com.arquisoft.entregables.domain.artefacto.RegistroVersionCerradaArtefactoDomain;
 import com.arquisoft.shared.util.UtilUUID;
@@ -40,9 +36,6 @@ class InteractoresArtefactoImplTest {
 
     @Mock
     private ReactivarArtefactoUseCase reactivarArtefactoUseCase;
-
-    @Mock
-    private PurgarArtefactosProyectoGradoUseCase purgarArtefactosProyectoGradoUseCase;
 
     @Test
     void debeDelegarEnElUseCaseYDevolverSuResultado_cuandoSeRegistraUnaVersionCerrada() {
@@ -71,7 +64,8 @@ class InteractoresArtefactoImplTest {
     void debeDelegarEnElUseCaseYDevolverSuResultado_cuandoSeOmiteUnArtefacto() {
         // Arrange
         var artefacto = UtilUUID.generarNuevoUUID();
-        var command = OmitirArtefactoCommand.crear(artefacto.toString(), Instant.now());
+        var command = OmitirArtefactoCommand.crear(
+                artefacto.toString(), UtilUUID.generarNuevoUUID().toString(), Instant.now());
         var esperado = new OmisionArtefactoResult.Omitida(artefacto);
         when(omitirArtefactoUseCase.ejecutar(any(OmisionArtefactoDomain.class))).thenReturn(esperado);
         var interactor = new OmitirArtefactoInteractorImpl(omitirArtefactoUseCase);
@@ -88,7 +82,8 @@ class InteractoresArtefactoImplTest {
     void debeDelegarEnElUseCaseYDevolverSuResultado_cuandoSeReactivaUnArtefacto() {
         // Arrange
         var artefacto = UtilUUID.generarNuevoUUID();
-        var command = ReactivarArtefactoCommand.crear(artefacto.toString(), Instant.now());
+        var command = ReactivarArtefactoCommand.crear(
+                artefacto.toString(), UtilUUID.generarNuevoUUID().toString(), Instant.now());
         var esperado = new ReactivacionArtefactoResult.Reactivada(artefacto);
         when(reactivarArtefactoUseCase.ejecutar(any(ReactivacionArtefactoDomain.class))).thenReturn(esperado);
         var interactor = new ReactivarArtefactoInteractorImpl(reactivarArtefactoUseCase);
@@ -98,24 +93,6 @@ class InteractoresArtefactoImplTest {
 
         // Assert
         verify(reactivarArtefactoUseCase).ejecutar(any(ReactivacionArtefactoDomain.class));
-        assertThat(resultado).isSameAs(esperado);
-    }
-
-    @Test
-    void debeDelegarEnElUseCaseYDevolverSuResultado_cuandoSePurgaUnProyecto() {
-        // Arrange
-        var proyecto = UtilUUID.generarNuevoUUID();
-        var command = PurgarArtefactosProyectoGradoCommand.crear(proyecto.toString());
-        var esperado = new PurgaArtefactosProyectoGradoResult(proyecto, 2);
-        when(purgarArtefactosProyectoGradoUseCase.ejecutar(any(PurgaArtefactosProyectoGradoDomain.class)))
-                .thenReturn(esperado);
-        var interactor = new PurgarArtefactosProyectoGradoInteractorImpl(purgarArtefactosProyectoGradoUseCase);
-
-        // Act
-        var resultado = interactor.ejecutar(command);
-
-        // Assert
-        verify(purgarArtefactosProyectoGradoUseCase).ejecutar(any(PurgaArtefactosProyectoGradoDomain.class));
         assertThat(resultado).isSameAs(esperado);
     }
 }

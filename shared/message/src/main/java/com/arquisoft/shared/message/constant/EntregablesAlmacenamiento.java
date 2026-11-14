@@ -4,6 +4,7 @@ public final class EntregablesAlmacenamiento {
 
     private EntregablesAlmacenamiento() {}
 
-    public static final String PREFIJO_ARTEFACTOS = "entregables/artefactos/";
-    public static final String PREFIJO_PAQUETES = "entregables/paquetes/";
+    public static final String PREFIJO_ARTEFACTOS = "artefactos/";
+    public static final String PREFIJO_PAQUETES = "paquetes/";
+    public static final String SEPARADOR_VERSION = "/v";
 }

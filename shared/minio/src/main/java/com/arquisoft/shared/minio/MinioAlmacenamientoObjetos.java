@@ -141,14 +141,16 @@ public class MinioAlmacenamientoObjetos implements AlmacenamientoObjetos {
     }
 
     @Override
-    public void copiar(String bucket, String keyOrigen, String keyDestino, String etagEsperado) {
+    public void copiar(
+            String bucketOrigen, String keyOrigen, String bucketDestino, String keyDestino, String etagEsperado) {
         try {
             var origen = CopySource.builder()
-                    .bucket(bucket)
+                    .bucket(bucketOrigen)
                     .object(keyOrigen)
                     .matchETag(normalizarEtag(etagEsperado))
                     .build();
-            minioClient.copyObject(CopyObjectArgs.builder().bucket(bucket).object(keyDestino).source(origen).build());
+            minioClient.copyObject(
+                    CopyObjectArgs.builder().bucket(bucketDestino).object(keyDestino).source(origen).build());
         } catch (Exception e) {
             throw fallo(MinioOperationException::copiaFallida, e);
         }

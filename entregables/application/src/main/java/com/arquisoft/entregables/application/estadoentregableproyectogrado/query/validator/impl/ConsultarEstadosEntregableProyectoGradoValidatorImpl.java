@@ -1,12 +1,13 @@
 package com.arquisoft.entregables.application.estadoentregableproyectogrado.query.validator.impl;
 
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.query.validator.ConsultarEstadosEntregableProyectoGradoValidator;
+import com.arquisoft.entregables.domain.asesorproyectogrado.model.VigenciaAsesorProyectoGrado;
+import com.arquisoft.entregables.domain.asesorproyectogrado.rules.AsesorAsignadoProyectoGradoRule;
+import com.arquisoft.entregables.domain.asesorproyectogrado.rules.impl.AsesorAsignadoProyectoGradoRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.model.ExistenciaEntregableProyectoGrado;
-import com.arquisoft.entregables.domain.entregableproyectogrado.model.PropiedadEntregableProyectoGrado;
-import com.arquisoft.entregables.domain.entregableproyectogrado.rules.AsesorPropietarioEntregableProyectoGradoRule;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.EntregableProyectoGradoExisteRule;
-import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.AsesorPropietarioEntregableProyectoGradoRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EntregableProyectoGradoExisteRuleImpl;
+import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.shared.util.UtilUUID;
 import org.springframework.stereotype.Component;
 
@@ -17,18 +18,19 @@ public class ConsultarEstadosEntregableProyectoGradoValidatorImpl
         implements ConsultarEstadosEntregableProyectoGradoValidator {
 
     private final EntregableProyectoGradoExisteRule entregableProyectoGradoExisteRule;
-    private final AsesorPropietarioEntregableProyectoGradoRule asesorPropietarioEntregableProyectoGradoRule;
+    private final AsesorAsignadoProyectoGradoRule asesorAsignadoProyectoGradoRule;
 
     public ConsultarEstadosEntregableProyectoGradoValidatorImpl() {
         this.entregableProyectoGradoExisteRule = new EntregableProyectoGradoExisteRuleImpl();
-        this.asesorPropietarioEntregableProyectoGradoRule = new AsesorPropietarioEntregableProyectoGradoRuleImpl();
+        this.asesorAsignadoProyectoGradoRule = new AsesorAsignadoProyectoGradoRuleImpl();
     }
 
     @Override
-    public void validar(UUID entregableProyectoGrado, UUID asesorAsignado, UUID asesorSolicitante) {
+    public void validar(UUID entregableProyectoGrado, EntregableProyectoGradoDomain entregable,
+                        UUID asesorVigente, UUID asesorSolicitante) {
         entregableProyectoGradoExisteRule.validar(new ExistenciaEntregableProyectoGrado(
-                entregableProyectoGrado, !UtilUUID.esPorDefecto(asesorAsignado)));
-        asesorPropietarioEntregableProyectoGradoRule.validar(new PropiedadEntregableProyectoGrado(
-                entregableProyectoGrado, asesorAsignado, asesorSolicitante));
+                entregableProyectoGrado, !entregable.esVacio()));
+        asesorAsignadoProyectoGradoRule.validar(new VigenciaAsesorProyectoGrado(
+                UtilUUID.obtenerUUIDPorDefecto(), asesorSolicitante, asesorVigente));
     }
 }

@@ -90,6 +90,15 @@ public final class EntregablesFields {
         public static final String OCURRIDO_EN = "ocurridoEn";
     }
 
+    public static final class AsesorProyectoGrado {
+
+        private AsesorProyectoGrado() {}
+
+        public static final String ASESOR = "asesor";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
     public static final class EstudianteProyectoGrado {
 
         private EstudianteProyectoGrado() {}

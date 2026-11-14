@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,17 +61,5 @@ class AgregarArtefactosEntregableUseCaseImplTest {
                 assertThat(entity.entregableProyectoGrado()).isEqualTo(entregable));
         assertThat(captorVinculos.getValue().getFirst().id()).isEqualTo(primero.getId());
         verify(logger).debug(ArtefactoEntregableKey.LOG_VINCULADOS, entregable, 2);
-    }
-
-    @Test
-    void debeNoLlamarAlPuerto_cuandoListaVacia() {
-        // Arrange
-        var agregacion = AgregacionArtefactosEntregableDomain.crear(UtilUUID.generarNuevoUUID(), List.of());
-
-        // Act
-        useCase.ejecutar(agregacion);
-
-        // Assert
-        verify(artefactoEntregableOutputPort, never()).vincular(any());
     }
 }

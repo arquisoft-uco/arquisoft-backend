@@ -11,9 +11,9 @@ public final class ReactivacionArtefactoResultMapper {
         return new ReactivacionArtefactoResult.Reactivada(reactivacion.getArtefacto());
     }
 
-    public static ReactivacionArtefactoResult.SinVersionCerrada toResultSinVersionCerrada(
+    public static ReactivacionArtefactoResult.Anticipada toResultAnticipada(
             ReactivacionArtefactoDomain reactivacion) {
-        return new ReactivacionArtefactoResult.SinVersionCerrada(reactivacion.getArtefacto());
+        return new ReactivacionArtefactoResult.Anticipada(reactivacion.getArtefacto());
     }
 
     public static ReactivacionArtefactoResult.Descartada toResultDescartada(ReactivacionArtefactoDomain reactivacion) {

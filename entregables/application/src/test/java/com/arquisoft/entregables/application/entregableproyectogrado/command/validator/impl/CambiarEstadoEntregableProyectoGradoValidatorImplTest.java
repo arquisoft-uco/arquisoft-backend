@@ -4,7 +4,7 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.CambioEstadoEntr
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.CancelacionEntregableNoPermitidaException;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.CierreEntregableNoPermitidoException;
-import com.arquisoft.entregables.domain.entregableproyectogrado.exception.AsesorNoPropietarioEntregableProyectoGradoException;
+import com.arquisoft.entregables.domain.asesorproyectogrado.exception.AsesorNoAsignadoProyectoGradoException;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.DisponibilidadEvaluacionEntregableNoPermitidaException;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.EntregableProyectoGradoNoEncontradoException;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.EstadoDestinoEntregableNoPermitidoException;
@@ -62,7 +62,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(origen);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(cambio, entregable, estado, PROYECTO)).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR)).doesNotThrowAnyException();
     }
 
     @ParameterizedTest
@@ -76,7 +76,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(origen);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR))
                 .isInstanceOf(EstadoEntregableTerminalException.class);
     }
 
@@ -88,7 +88,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(EstadoEntregable.CERRADO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR))
                 .isInstanceOf(EstadoEntregableTerminalException.class);
     }
 
@@ -101,7 +101,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(origen);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(cambio, entregable, estado, PROYECTO)).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR)).doesNotThrowAnyException();
     }
 
     @Test
@@ -111,7 +111,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, EntregableProyectoGradoDomain.VACIO,
-                estado(EstadoEntregable.APROBADO), PROYECTO))
+                estado(EstadoEntregable.APROBADO), PROYECTO, ASESOR))
                 .isInstanceOf(EntregableProyectoGradoNoEncontradoException.class);
     }
 
@@ -123,7 +123,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, entregable,
-                EstadoEntregableProyectoGradoDomain.VACIO, PROYECTO))
+                EstadoEntregableProyectoGradoDomain.VACIO, PROYECTO, ASESOR))
                 .isInstanceOf(EstadoEntregableProyectoGradoNoEncontradoException.class);
     }
 
@@ -135,7 +135,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, entregable,
-                EstadoEntregableProyectoGradoDomain.VACIO, ProyectoGradoDomain.VACIO))
+                EstadoEntregableProyectoGradoDomain.VACIO, ProyectoGradoDomain.VACIO, ASESOR))
                 .isInstanceOf(EstadoEntregableProyectoGradoNoEncontradoException.class);
     }
 
@@ -147,7 +147,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(EstadoEntregable.APROBADO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR))
                 .isInstanceOf(EstadoDestinoEntregableNoPermitidoException.class);
     }
 
@@ -159,7 +159,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(EstadoEntregable.EN_EVALUACION);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR))
                 .isInstanceOf(CierreEntregableNoPermitidoException.class);
     }
 
@@ -171,7 +171,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(EstadoEntregable.APROBADO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, ProyectoGradoDomain.VACIO))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, ProyectoGradoDomain.VACIO, ASESOR))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
 
@@ -185,7 +185,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
                 UtilUUID.generarNuevoUUID(), "Sistema de gestion", EstadoProyecto.FINALIZADO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, finalizado))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, finalizado, ASESOR))
                 .isInstanceOf(ProyectoGradoFinalizadoException.class);
     }
 
@@ -199,7 +199,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
                 UtilUUID.generarNuevoUUID(), "Sistema de gestion", EstadoProyecto.CANCELADO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, cancelado))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, cancelado, ASESOR))
                 .isInstanceOf(ProyectoGradoCanceladoException.class);
     }
 
@@ -210,7 +210,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, EntregableProyectoGradoDomain.VACIO,
-                estado(EstadoEntregable.APROBADO), PROYECTO))
+                estado(EstadoEntregable.APROBADO), PROYECTO, ASESOR))
                 .isInstanceOf(EntregableProyectoGradoNoEncontradoException.class);
     }
 
@@ -222,7 +222,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(EstadoEntregable.RECHAZADO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR))
                 .isInstanceOf(EstadoDestinoEntregableNoPermitidoException.class);
     }
 
@@ -236,7 +236,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(origen);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR))
                 .isInstanceOf(CancelacionEntregableNoPermitidaException.class);
     }
 
@@ -248,7 +248,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(EstadoEntregable.NUEVO);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(cambio, entregable, estado, PROYECTO)).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR)).doesNotThrowAnyException();
     }
 
     @ParameterizedTest
@@ -261,12 +261,12 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(origen);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO))
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR))
                 .isInstanceOf(DisponibilidadEvaluacionEntregableNoPermitidaException.class);
     }
 
     @Test
-    void debeLanzarAsesorNoPropietario_cuandoElAsesorNoEsElDueno() {
+    void debeLanzarAsesorNoAsignado_cuandoElAsesorNoEsElVigenteDelProyecto() {
         // Arrange
         var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(
                 UtilUUID.generarNuevoUUID(), "DISPONIBLE_EVALUACION", UtilUUID.generarNuevoUUID());
@@ -274,12 +274,12 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
         var estado = estado(EstadoEntregable.NUEVO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO))
-                .isInstanceOf(AsesorNoPropietarioEntregableProyectoGradoException.class);
+        assertThatThrownBy(() -> validator.validar(cambio, entregable, estado, PROYECTO, ASESOR))
+                .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
     }
 
     @Test
-    void debePriorizarPropiedad_cuandoElHistorialEstaVacioYElAsesorNoEsElDueno() {
+    void debeLanzarEstadoNoEncontrado_cuandoElHistorialEstaVacioAunqueElAsesorNoSeaElVigente() {
         // Arrange
         var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(
                 UtilUUID.generarNuevoUUID(), "CANCELADO", UtilUUID.generarNuevoUUID());
@@ -287,7 +287,7 @@ class CambiarEstadoEntregableProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, entregable,
-                EstadoEntregableProyectoGradoDomain.VACIO, PROYECTO))
-                .isInstanceOf(AsesorNoPropietarioEntregableProyectoGradoException.class);
+                EstadoEntregableProyectoGradoDomain.VACIO, PROYECTO, ASESOR))
+                .isInstanceOf(EstadoEntregableProyectoGradoNoEncontradoException.class);
     }
 }

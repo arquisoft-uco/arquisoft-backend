@@ -8,6 +8,7 @@ public final class ReactivarArtefactoMapper {
     private ReactivarArtefactoMapper() {}
 
     public static ReactivacionArtefactoDomain toDomain(ReactivarArtefactoCommand command) {
-        return ReactivacionArtefactoDomain.crear(command.artefacto(), command.ocurridoEn());
+        return ReactivacionArtefactoDomain.crear(
+                command.artefacto(), command.proyectoGrado(), command.ocurridoEn());
     }
 }

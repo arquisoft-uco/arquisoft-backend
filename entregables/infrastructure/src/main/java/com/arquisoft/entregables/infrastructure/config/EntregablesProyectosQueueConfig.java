@@ -22,6 +22,10 @@ public class EntregablesProyectosQueueConfig {
             EntregablesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_FINALIZADO;
     public static final String PROYECTO_GRADO_CANCELADO_QUEUE =
             EntregablesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO;
+    public static final String ASESOR_PROYECTO_GRADO_ASIGNADO_QUEUE =
+            EntregablesQueues.PREFIJO + EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_ASIGNADO;
+    public static final String ASESOR_PROYECTO_GRADO_FINALIZADO_QUEUE =
+            EntregablesQueues.PREFIJO + EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_FINALIZADO;
 
     @Bean
     public Declarables entregablesProyectoGradoRegistradoDeclarables(
@@ -74,6 +78,28 @@ public class EntregablesProyectosQueueConfig {
         return ColaEvento.declarar(
                 PROYECTO_GRADO_CANCELADO_QUEUE,
                 EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables entregablesAsesorProyectoGradoAsignadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_PROYECTO_GRADO_ASIGNADO_QUEUE,
+                EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_ASIGNADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables entregablesAsesorProyectoGradoFinalizadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_PROYECTO_GRADO_FINALIZADO_QUEUE,
+                EventTopics.Proyectos.ASESOR_PROYECTO_GRADO_FINALIZADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

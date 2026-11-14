@@ -1,13 +1,11 @@
 package com.arquisoft.entregables.infrastructure.proyectogrado.command.primaryadapter.amqp.proyectos.proyectogrado;
 
-import com.arquisoft.entregables.application.artefacto.command.primaryport.interactor.PurgarArtefactosProyectoGradoInteractor;
-import com.arquisoft.entregables.application.artefacto.command.result.PurgaArtefactosProyectoGradoResult;
-import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.interactor.PurgarPaquetesProyectoGradoInteractor;
-import com.arquisoft.entregables.application.paqueteentregable.command.result.PurgaPaquetesProyectoGradoResult;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.interactor.CancelarProyectoGradoInteractor;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.model.CancelarProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.result.CancelacionProyectoGradoResult;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.entregables.ArtefactoKey;
+import com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey;
 import com.arquisoft.shared.message.key.entregables.ProyectoGradoKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
@@ -28,7 +26,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,12 +34,6 @@ class ProyectoGradoCanceladoConsumerTest {
 
     @Mock
     private CancelarProyectoGradoInteractor interactor;
-
-    @Mock
-    private PurgarPaquetesProyectoGradoInteractor purgarPaquetesInteractor;
-
-    @Mock
-    private PurgarArtefactosProyectoGradoInteractor purgarArtefactosInteractor;
 
     @Mock
     private Channel channel;
@@ -58,15 +49,9 @@ class ProyectoGradoCanceladoConsumerTest {
     void setUp() {
         consumer = new ProyectoGradoCanceladoConsumer(
                 interactor,
-                purgarPaquetesInteractor,
-                purgarArtefactosInteractor,
                 new ObjectMapper(),
                 logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
-        lenient().when(purgarPaquetesInteractor.ejecutar(any()))
-                .thenReturn(new PurgaPaquetesProyectoGradoResult(proyectoGrado, 1));
-        lenient().when(purgarArtefactosInteractor.ejecutar(any()))
-                .thenReturn(new PurgaArtefactosProyectoGradoResult(proyectoGrado, 2));
     }
 
     private Message mensaje(long deliveryTag) {
@@ -89,7 +74,7 @@ class ProyectoGradoCanceladoConsumerTest {
     @Test
     void debeInvocarInteractor_cuandoLlegaElEvento() throws Exception {
         // Arrange
-        when(interactor.ejecutar(any())).thenReturn(new CancelacionProyectoGradoResult.Cancelado(proyectoGrado));
+        when(interactor.ejecutar(any())).thenReturn(new CancelacionProyectoGradoResult.Cancelado(proyectoGrado, 1, 2));
 
         // Act
         consumer.onProyectoGradoCancelado(mensaje(1L), channel);
@@ -99,19 +84,23 @@ class ProyectoGradoCanceladoConsumerTest {
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyectoGrado);
         verify(logger).info(ProyectoGradoKey.LOG_CANCELADO, proyectoGrado);
+        verify(logger).info(PaqueteEntregableKey.LOG_PURGADOS, proyectoGrado, 1);
+        verify(logger).info(ArtefactoKey.LOG_PURGADOS, proyectoGrado, 2);
         verify(channel).basicAck(1L, false);
     }
 
     @Test
-    void debeConfirmarSinMasEfectos_cuandoElResultadoEsDuplicado() throws Exception {
+    void debeConfirmarYLoguearConteos_cuandoElResultadoEsDuplicado() throws Exception {
         // Arrange
-        when(interactor.ejecutar(any())).thenReturn(new CancelacionProyectoGradoResult.Duplicado(proyectoGrado));
+        when(interactor.ejecutar(any())).thenReturn(new CancelacionProyectoGradoResult.Duplicado(proyectoGrado, 0, 3));
 
         // Act
         consumer.onProyectoGradoCancelado(mensaje(2L), channel);
 
         // Assert
         verify(logger).info(ProyectoGradoKey.LOG_YA_CANCELADO, proyectoGrado);
+        verify(logger).info(PaqueteEntregableKey.LOG_PURGADOS, proyectoGrado, 0);
+        verify(logger).info(ArtefactoKey.LOG_PURGADOS, proyectoGrado, 3);
         verify(channel).basicAck(2L, false);
     }
 }

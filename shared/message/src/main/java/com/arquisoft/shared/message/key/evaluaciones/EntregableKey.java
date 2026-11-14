@@ -6,8 +6,8 @@ public enum EntregableKey implements ClaveMensaje {
 
     LOG_DISPONIBLE_RECIBIDO("evaluaciones.infraestructura.entregable.log.disponible-recibido", 3),
     LOG_VERIFICACION_AGREGAR("evaluaciones.aplicacion.entregable.log.verificacion-agregar", 2),
-    LOG_AGREGADO("evaluaciones.aplicacion.entregable.log.agregado", 1),
-    LOG_DUPLICADO("evaluaciones.aplicacion.entregable.log.duplicado", 1),
+    LOG_AGREGADO("evaluaciones.infraestructura.entregable.log.agregado", 1),
+    LOG_DUPLICADO("evaluaciones.infraestructura.entregable.log.duplicado", 1),
     LOG_GUARDADO("evaluaciones.infraestructura.entregable.log.guardado", 1);
 
     private final String clave;

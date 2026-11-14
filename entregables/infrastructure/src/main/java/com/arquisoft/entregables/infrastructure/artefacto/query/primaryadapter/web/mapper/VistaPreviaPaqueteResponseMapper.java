@@ -13,7 +13,7 @@ public final class VistaPreviaPaqueteResponseMapper {
     public static VistaPreviaPaqueteResponseDTO toResponse(List<ArtefactoVistaPreviaReadModel> readModels) {
         var artefactos = readModels.stream()
                 .map(readModel -> new ArtefactoVistaPreviaResponseDTO(
-                        readModel.artefacto(), readModel.documento(), readModel.version()))
+                        readModel.artefacto(), readModel.documento(), readModel.numeroVersion()))
                 .toList();
         return new VistaPreviaPaqueteResponseDTO(artefactos.size(), artefactos);
     }

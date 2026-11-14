@@ -15,7 +15,7 @@ class ActorAccedePaqueteEntregableRuleImplTest {
     private final ActorAccedePaqueteEntregableRuleImpl rule = new ActorAccedePaqueteEntregableRuleImpl();
 
     @Test
-    void debePermitir_cuandoAsesorPropietario() {
+    void debePermitir_cuandoAsesorEsElVigente() {
         // Arrange
         var actor = UtilUUID.generarNuevoUUID();
         var entrada = new AccesoPaqueteEntregable(UtilUUID.generarNuevoUUID(), actor, true, false, actor, false);
@@ -35,7 +35,7 @@ class ActorAccedePaqueteEntregableRuleImplTest {
     }
 
     @Test
-    void debeLanzar_cuandoAsesorNoEsPropietario() {
+    void debeLanzar_cuandoAsesorNoEsElVigente() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var actor = UtilUUID.generarNuevoUUID();

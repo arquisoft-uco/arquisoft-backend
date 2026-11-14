@@ -1,5 +1,7 @@
 package com.arquisoft.entregables.application.proyectogrado.command.usecase.impl;
 
+import com.arquisoft.entregables.application.artefacto.command.usecase.PurgarArtefactosProyectoGradoUseCase;
+import com.arquisoft.entregables.application.paqueteentregable.command.usecase.PurgarPaquetesProyectoGradoUseCase;
 import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.entregables.application.proyectogrado.command.result.CancelacionProyectoGradoResult;
 import com.arquisoft.entregables.application.proyectogrado.command.result.mapper.CancelacionProyectoGradoResultMapper;
@@ -21,6 +23,8 @@ public class CancelarProyectoGradoUseCaseImpl implements CancelarProyectoGradoUs
     private final ProyectoGradoOutputPort proyectoGradoOutputPort;
     private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
     private final CancelarProyectoGradoValidator cancelarProyectoGradoValidator;
+    private final PurgarPaquetesProyectoGradoUseCase purgarPaquetesProyectoGradoUseCase;
+    private final PurgarArtefactosProyectoGradoUseCase purgarArtefactosProyectoGradoUseCase;
     private final AppLogger logger;
 
     @Override
@@ -31,11 +35,17 @@ public class CancelarProyectoGradoUseCaseImpl implements CancelarProyectoGradoUs
         cancelarProyectoGradoValidator.validar(
                 new ExistenciaProyectoGrado(entrada.getProyectoGrado(), !proyecto.esVacio()));
 
-        if (proyecto.getEstadoProyecto() == EstadoProyecto.CANCELADO) {
-            return CancelacionProyectoGradoResultMapper.toResultDuplicado(entrada);
+        var yaCancelado = proyecto.getEstadoProyecto() == EstadoProyecto.CANCELADO;
+        if (!yaCancelado) {
+            proyectoGradoOutputPort.actualizarEstado(entrada.getProyectoGrado(), entrada.getEstadoNuevo().getId());
         }
 
-        proyectoGradoOutputPort.actualizarEstado(entrada.getProyectoGrado(), entrada.getEstadoNuevo().getId());
-        return CancelacionProyectoGradoResultMapper.toResultCancelado(entrada);
+        var purgaPaquetes = purgarPaquetesProyectoGradoUseCase.ejecutar(entrada.getPurgaPaquetes());
+        var purgaArtefactos = purgarArtefactosProyectoGradoUseCase.ejecutar(entrada.getPurgaArtefactos());
+
+        if (yaCancelado) {
+            return CancelacionProyectoGradoResultMapper.toResultDuplicado(entrada, purgaPaquetes, purgaArtefactos);
+        }
+        return CancelacionProyectoGradoResultMapper.toResultCancelado(entrada, purgaPaquetes, purgaArtefactos);
     }
 }

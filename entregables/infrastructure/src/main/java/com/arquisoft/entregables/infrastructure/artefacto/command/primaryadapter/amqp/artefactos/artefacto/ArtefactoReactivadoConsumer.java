@@ -4,6 +4,7 @@ import com.arquisoft.entregables.application.artefacto.command.primaryport.inter
 import com.arquisoft.entregables.application.artefacto.command.primaryport.model.ReactivarArtefactoCommand;
 import com.arquisoft.entregables.application.artefacto.command.result.ReactivacionArtefactoResult;
 import com.arquisoft.entregables.infrastructure.config.EntregablesArtefactosQueueConfig;
+import com.arquisoft.shared.amqp.RabbitListenerConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ArtefactoKey;
@@ -20,8 +21,6 @@ import java.io.IOException;
 @Component
 public class ArtefactoReactivadoConsumer extends AbstractEventConsumer {
 
-    private static final String UN_SOLO_CONSUMIDOR = "1";
-
     private final ReactivarArtefactoInteractor reactivarArtefactoInteractor;
     private final AppLogger logger;
 
@@ -36,7 +35,7 @@ public class ArtefactoReactivadoConsumer extends AbstractEventConsumer {
     }
 
     @RabbitListener(queues = EntregablesArtefactosQueueConfig.ARTEFACTO_REACTIVADO_QUEUE,
-            concurrency = UN_SOLO_CONSUMIDOR)
+            concurrency = RabbitListenerConfig.UN_SOLO_CONSUMIDOR)
     public void onArtefactoReactivado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
             var payload = deserialize(message, ArtefactoReactivadoPayload.class);
@@ -44,13 +43,14 @@ public class ArtefactoReactivadoConsumer extends AbstractEventConsumer {
                     payload.idEvento(), payload.artefacto(), payload.proyectoGrado());
 
             var resultado = reactivarArtefactoInteractor.ejecutar(
-                    ReactivarArtefactoCommand.crear(payload.artefacto(), payload.ocurridoEn()));
+                    ReactivarArtefactoCommand.crear(
+                            payload.artefacto(), payload.proyectoGrado(), payload.ocurridoEn()));
 
             switch (resultado) {
                 case ReactivacionArtefactoResult.Reactivada reactivada ->
                         logger.info(ArtefactoKey.LOG_REACTIVADO, reactivada.artefacto());
-                case ReactivacionArtefactoResult.SinVersionCerrada sinVersion ->
-                        logger.info(ArtefactoKey.LOG_SIN_VERSION_CERRADA, sinVersion.artefacto());
+                case ReactivacionArtefactoResult.Anticipada anticipada ->
+                        logger.info(ArtefactoKey.LOG_LAPIDA_REGISTRADA, anticipada.artefacto());
                 case ReactivacionArtefactoResult.Descartada descartada ->
                         logger.info(ArtefactoKey.LOG_DESCARTADA, descartada.artefacto());
             }

@@ -6,9 +6,6 @@ public enum EntregableProyectoGradoKey implements ClaveMensaje {
 
     ERROR_NO_ENCONTRADO("entregables.dominio.entregableproyectogrado.error.no-encontrado", 0),
     ERROR_NO_ENCONTRADO_DETALLE("entregables.dominio.entregableproyectogrado.error.no-encontrado-detalle", 1),
-    ERROR_ASESOR_NO_PROPIETARIO("entregables.dominio.entregableproyectogrado.error.asesor-no-propietario", 0),
-    ERROR_ASESOR_NO_PROPIETARIO_DETALLE(
-            "entregables.dominio.entregableproyectogrado.error.asesor-no-propietario-detalle", 2),
     ERROR_ESTADO_INVALIDO("entregables.dominio.entregableproyectogrado.error.estado-invalido", 0),
     ERROR_ESTADO_DESTINO_NO_PERMITIDO(
             "entregables.dominio.entregableproyectogrado.error.estado-destino-no-permitido", 1),
@@ -33,7 +30,7 @@ public enum EntregableProyectoGradoKey implements ClaveMensaje {
             "entregables.dominio.entregableproyectogrado.error.vigente-ya-existe-detalle", 1),
     LOG_CAMBIANDO_ESTADO("entregables.aplicacion.entregableproyectogrado.log.cambiando-estado", 2),
     LOG_VERIFICACION_CAMBIAR_ESTADO(
-            "entregables.aplicacion.entregableproyectogrado.log.verificacion-cambiar-estado", 4),
+            "entregables.aplicacion.entregableproyectogrado.log.verificacion-cambiar-estado", 5),
     LOG_ESTADO_CAMBIADO("entregables.aplicacion.entregableproyectogrado.log.estado-cambiado", 3),
     LOG_GENERANDO("entregables.aplicacion.entregableproyectogrado.log.generando", 2),
     LOG_VERIFICACION_GENERAR("entregables.aplicacion.entregableproyectogrado.log.verificacion-generar", 7),

@@ -37,23 +37,27 @@ class AccionesArtefactoDomainTest {
     void debeCrearOmisionYReactivacion_cuandoDatosValidosYRechazarSiFaltan() {
         // Arrange
         var artefacto = UtilUUID.generarNuevoUUID();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
         var ocurridoEn = Instant.now();
 
         // Act
-        var omision = OmisionArtefactoDomain.crear(artefacto, ocurridoEn);
-        var reactivacion = ReactivacionArtefactoDomain.crear(artefacto, ocurridoEn);
+        var omision = OmisionArtefactoDomain.crear(artefacto, proyectoGrado, ocurridoEn);
+        var reactivacion = ReactivacionArtefactoDomain.crear(artefacto, proyectoGrado, ocurridoEn);
 
         // Assert
         assertThat(omision.getArtefacto()).isEqualTo(artefacto);
+        assertThat(omision.getProyectoGrado()).isEqualTo(proyectoGrado);
+        assertThat(reactivacion.getProyectoGrado()).isEqualTo(proyectoGrado);
         assertThat(omision.getOcurridoEn()).isEqualTo(ocurridoEn);
         assertThat(reactivacion.getArtefacto()).isEqualTo(artefacto);
         assertThat(reactivacion.getOcurridoEn()).isEqualTo(ocurridoEn);
-        assertThatThrownBy(() -> OmisionArtefactoDomain.crear(null, null))
+        assertThatThrownBy(() -> OmisionArtefactoDomain.crear(null, null, null))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                         .extracting(error -> error.campo())
-                        .contains(EntregablesFields.Artefacto.ID, EntregablesFields.Artefacto.OCURRIDO_EN));
-        assertThatThrownBy(() -> ReactivacionArtefactoDomain.crear(null, null))
+                        .contains(EntregablesFields.Artefacto.ID, EntregablesFields.Artefacto.PROYECTO_GRADO,
+                                EntregablesFields.Artefacto.OCURRIDO_EN));
+        assertThatThrownBy(() -> ReactivacionArtefactoDomain.crear(null, null, null))
                 .isInstanceOf(DomainValidationException.class);
     }
 

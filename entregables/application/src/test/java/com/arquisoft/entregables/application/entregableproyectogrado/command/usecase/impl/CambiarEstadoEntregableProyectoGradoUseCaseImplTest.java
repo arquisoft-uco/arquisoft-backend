@@ -1,5 +1,6 @@
 package com.arquisoft.entregables.application.entregableproyectogrado.command.usecase.impl;
 
+import com.arquisoft.entregables.application.asesorproyectogrado.command.finder.AsesorVigenteDeEntregableFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.finder.EntregableProyectoGradoPorIdFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.CambiarEstadoEntregableProyectoGradoValidator;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.finder.EstadoActualEntregableProyectoGradoFinder;
@@ -47,6 +48,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
 
+    private static final UUID ASESOR_VIGENTE = UtilUUID.generarNuevoUUID();
+
     @Mock
     private EstadoEntregableProyectoGradoOutputPort estadoEntregableProyectoGradoOutputPort;
 
@@ -58,6 +61,9 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
 
     @Mock
     private ProyectoGradoDeEntregableFinder proyectoGradoDeEntregableFinder;
+
+    @Mock
+    private AsesorVigenteDeEntregableFinder asesorVigenteDeEntregableFinder;
 
     @Mock
     private CambiarEstadoEntregableProyectoGradoValidator cambiarEstadoEntregableProyectoGradoValidator;
@@ -86,6 +92,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
         when(estadoActualEntregableProyectoGradoFinder.obtener(id)).thenReturn(estado);
         when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
+        when(asesorVigenteDeEntregableFinder.obtener(id)).thenReturn(ASESOR_VIGENTE);
 
         // Act
         useCase.ejecutar(cambio);
@@ -100,7 +107,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         orden.verify(estadoActualEntregableProyectoGradoFinder, times(1)).obtener(id);
         orden.verify(proyectoGradoDeEntregableFinder, times(1)).obtener(id);
         orden.verify(cambiarEstadoEntregableProyectoGradoValidator)
-                .validar(cambio, entregable, estado, ProyectoGradoDomain.VACIO);
+                .validar(cambio, entregable, estado, ProyectoGradoDomain.VACIO, ASESOR_VIGENTE);
         orden.verify(estadoEntregableProyectoGradoOutputPort).registrar(captorEstado.capture());
         orden.verify(eventPublisher).publish(captor.capture());
         orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "APROBADO", "CERRADO");
@@ -123,6 +130,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         when(estadoActualEntregableProyectoGradoFinder.obtener(id))
                 .thenReturn(estadoActual(id, EstadoEntregable.NUEVO));
         when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
+        when(asesorVigenteDeEntregableFinder.obtener(id)).thenReturn(ASESOR_VIGENTE);
 
         // Act
         useCase.ejecutar(cambio);
@@ -157,6 +165,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
         when(estadoActualEntregableProyectoGradoFinder.obtener(id)).thenReturn(estado);
         when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(proyecto);
+        when(asesorVigenteDeEntregableFinder.obtener(id)).thenReturn(ASESOR_VIGENTE);
 
         // Act
         useCase.ejecutar(cambio);
@@ -166,7 +175,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
                 eventPublisher, logger);
         var captor = ArgumentCaptor.forClass(DomainEvent.class);
         var captorEstado = ArgumentCaptor.forClass(EstadoEntregableProyectoGradoEntity.class);
-        orden.verify(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable, estado, proyecto);
+        orden.verify(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable, estado, proyecto, ASESOR_VIGENTE);
         orden.verify(estadoEntregableProyectoGradoOutputPort).registrar(captorEstado.capture());
         orden.verify(eventPublisher).publish(captor.capture());
         orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "NUEVO", "DISPONIBLE_EVALUACION");
@@ -191,9 +200,10 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
         when(estadoActualEntregableProyectoGradoFinder.obtener(id)).thenReturn(estado);
         when(proyectoGradoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
+        when(asesorVigenteDeEntregableFinder.obtener(id)).thenReturn(ASESOR_VIGENTE);
         doThrow(new DomainException("rechazado", "COD"))
                 .when(cambiarEstadoEntregableProyectoGradoValidator)
-                .validar(cambio, entregable, estado, ProyectoGradoDomain.VACIO);
+                .validar(cambio, entregable, estado, ProyectoGradoDomain.VACIO, ASESOR_VIGENTE);
 
         // Act
         assertThatThrownBy(() -> useCase.ejecutar(cambio)).isInstanceOf(DomainException.class);

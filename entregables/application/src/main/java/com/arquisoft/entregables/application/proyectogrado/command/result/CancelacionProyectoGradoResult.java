@@ -4,7 +4,9 @@ import java.util.UUID;
 
 public sealed interface CancelacionProyectoGradoResult {
 
-    record Cancelado(UUID proyectoGrado) implements CancelacionProyectoGradoResult {}
+    record Cancelado(UUID proyectoGrado, int paquetesEliminados, int artefactosEliminados)
+            implements CancelacionProyectoGradoResult {}
 
-    record Duplicado(UUID proyectoGrado) implements CancelacionProyectoGradoResult {}
+    record Duplicado(UUID proyectoGrado, int paquetesEliminados, int artefactosEliminados)
+            implements CancelacionProyectoGradoResult {}
 }

@@ -2,11 +2,9 @@ package com.arquisoft.entregables.application.artefacto.command.primaryport.mode
 
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.message.constant.EntregablesFields;
-import com.arquisoft.shared.message.constant.EntregablesLimits;
 import com.arquisoft.shared.util.UtilNumero;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
-import com.arquisoft.shared.validation.ValidatorNumero;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 import com.arquisoft.shared.validation.ValidatorUUID;
@@ -48,13 +46,9 @@ public record RegistrarVersionCerradaArtefactoCommand(
         ValidatorUUID.uuidValido(version.versionArtefacto(),
                 EntregablesFields.Artefacto.VERSION_ARTEFACTO,
                 EntregablesCodes.Artefacto.VERSION_ARTEFACTO_INVALIDA, result);
-        if (ValidatorObjeto.noNulo(version.numeroVersion(),
+        ValidatorObjeto.noNulo(version.numeroVersion(),
                 EntregablesFields.Artefacto.NUMERO_VERSION,
-                EntregablesCodes.Artefacto.NUMERO_VERSION_INVALIDO, result)) {
-            ValidatorNumero.valorMinimo(version.numeroVersion(), EntregablesLimits.Artefacto.NUMERO_VERSION_MIN,
-                    EntregablesFields.Artefacto.NUMERO_VERSION,
-                    EntregablesCodes.Artefacto.NUMERO_VERSION_INVALIDO, result);
-        }
+                EntregablesCodes.Artefacto.NUMERO_VERSION_INVALIDO, result);
         ValidatorTexto.noEnBlanco(version.uriArchivo(),
                 EntregablesFields.Artefacto.CLAVE_ORIGEN,
                 EntregablesCodes.Artefacto.CLAVE_ORIGEN_REQUERIDA, result);

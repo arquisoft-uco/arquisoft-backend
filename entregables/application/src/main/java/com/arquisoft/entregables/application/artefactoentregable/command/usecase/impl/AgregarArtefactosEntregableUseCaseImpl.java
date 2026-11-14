@@ -6,7 +6,6 @@ import com.arquisoft.entregables.application.artefactoentregable.command.usecase
 import com.arquisoft.entregables.domain.artefactoentregable.AgregacionArtefactosEntregableDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ArtefactoEntregableKey;
-import com.arquisoft.shared.util.UtilColeccion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +18,6 @@ public class AgregarArtefactosEntregableUseCaseImpl implements AgregarArtefactos
 
     @Override
     public void ejecutar(AgregacionArtefactosEntregableDomain agregacion) {
-        if (UtilColeccion.esVaciaONula(agregacion.getArtefactos())) {
-            return;
-        }
-
         logger.debug(ArtefactoEntregableKey.LOG_VINCULADOS,
                 agregacion.getEntregableProyectoGrado(), agregacion.getArtefactos().size());
 

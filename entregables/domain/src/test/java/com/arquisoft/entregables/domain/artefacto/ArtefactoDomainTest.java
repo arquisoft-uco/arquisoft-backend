@@ -108,4 +108,26 @@ class ArtefactoDomainTest {
         assertThat(ArtefactoDomain.VACIO.esVacio()).isTrue();
         assertThat(ArtefactoDomain.VACIO.estaOmitido()).isFalse();
     }
+
+    @Test
+    void debeCompararVersion_cuandoHayVersionYNoCuandoEsLapida() {
+        // Arrange
+        var version = new ArtefactoDomain.VersionCerrada(UtilUUID.generarNuevoUUID(), 3, Instant.now());
+        var repositorio = new ArtefactoDomain.DatosRepositorio(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Repo");
+        var conVersion = ArtefactoDomain.reconstruir(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Doc",
+                "clave", version, repositorio, new ArtefactoDomain.Omision(null, null));
+        var versionLapida = new ArtefactoDomain.VersionCerrada(UtilUUID.obtenerUUIDPorDefecto(), 0, Instant.now());
+        var lapida = ArtefactoDomain.reconstruir(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "",
+                "", versionLapida, repositorio, new ArtefactoDomain.Omision(Instant.now(), Instant.now()));
+
+        // Act & Assert
+        assertThat(conVersion.tieneVersion()).isTrue();
+        assertThat(conVersion.tieneVersionIgualOPosteriorA(3)).isTrue();
+        assertThat(conVersion.tieneVersionIgualOPosteriorA(2)).isTrue();
+        assertThat(conVersion.tieneVersionIgualOPosteriorA(4)).isFalse();
+        assertThat(lapida.tieneVersion()).isFalse();
+        assertThat(lapida.tieneVersionIgualOPosteriorA(0)).isFalse();
+        assertThat(lapida.tieneVersionIgualOPosteriorA(1)).isFalse();
+    }
 }

@@ -8,6 +8,7 @@ public final class OmitirArtefactoMapper {
     private OmitirArtefactoMapper() {}
 
     public static OmisionArtefactoDomain toDomain(OmitirArtefactoCommand command) {
-        return OmisionArtefactoDomain.crear(command.artefacto(), command.ocurridoEn());
+        return OmisionArtefactoDomain.crear(
+                command.artefacto(), command.proyectoGrado(), command.ocurridoEn());
     }
 }

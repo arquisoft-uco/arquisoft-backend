@@ -1,12 +1,11 @@
 package com.arquisoft.entregables.infrastructure.proyectogrado.command.primaryadapter.amqp.proyectos.proyectogrado;
 
-import com.arquisoft.entregables.application.artefacto.command.primaryport.interactor.PurgarArtefactosProyectoGradoInteractor;
-import com.arquisoft.entregables.application.artefacto.command.result.PurgaArtefactosProyectoGradoResult;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.interactor.FinalizarProyectoGradoInteractor;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.model.FinalizarProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.result.FinalizacionProyectoGradoResult;
 import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.entregables.ArtefactoKey;
 import com.arquisoft.shared.message.key.entregables.ProyectoGradoKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
@@ -29,7 +28,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,9 +37,6 @@ class ProyectoGradoFinalizadoConsumerTest {
 
     @Mock
     private FinalizarProyectoGradoInteractor interactor;
-
-    @Mock
-    private PurgarArtefactosProyectoGradoInteractor purgarArtefactosInteractor;
 
     @Mock
     private Channel channel;
@@ -57,12 +52,9 @@ class ProyectoGradoFinalizadoConsumerTest {
     void setUp() {
         consumer = new ProyectoGradoFinalizadoConsumer(
                 interactor,
-                purgarArtefactosInteractor,
                 new ObjectMapper(),
                 logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
-        lenient().when(purgarArtefactosInteractor.ejecutar(any()))
-                .thenReturn(new PurgaArtefactosProyectoGradoResult(proyectoGrado, 2));
     }
 
     private Message mensaje(String proyecto, long deliveryTag, boolean reentregado) {
@@ -84,7 +76,7 @@ class ProyectoGradoFinalizadoConsumerTest {
     @Test
     void debeFinalizarYConfirmar_cuandoLlegaElEvento() throws Exception {
         // Arrange
-        when(interactor.ejecutar(any())).thenReturn(new FinalizacionProyectoGradoResult.Finalizado(proyectoGrado));
+        when(interactor.ejecutar(any())).thenReturn(new FinalizacionProyectoGradoResult.Finalizado(proyectoGrado, 2));
 
         // Act
         consumer.onProyectoGradoFinalizado(mensaje(proyectoGrado.toString(), 1L, false), channel);
@@ -94,19 +86,21 @@ class ProyectoGradoFinalizadoConsumerTest {
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyectoGrado);
         verify(logger).info(ProyectoGradoKey.LOG_FINALIZADO, proyectoGrado);
+        verify(logger).info(ArtefactoKey.LOG_PURGADOS, proyectoGrado, 2);
         verify(channel).basicAck(1L, false);
     }
 
     @Test
-    void debeConfirmarSinMasEfectos_cuandoElResultadoEsDuplicado() throws Exception {
+    void debeConfirmarYLoguearConteos_cuandoElResultadoEsDuplicado() throws Exception {
         // Arrange
-        when(interactor.ejecutar(any())).thenReturn(new FinalizacionProyectoGradoResult.Duplicado(proyectoGrado));
+        when(interactor.ejecutar(any())).thenReturn(new FinalizacionProyectoGradoResult.Duplicado(proyectoGrado, 3));
 
         // Act
         consumer.onProyectoGradoFinalizado(mensaje(proyectoGrado.toString(), 2L, false), channel);
 
         // Assert
         verify(logger).info(ProyectoGradoKey.LOG_YA_FINALIZADO, proyectoGrado);
+        verify(logger).info(ArtefactoKey.LOG_PURGADOS, proyectoGrado, 3);
         verify(channel).basicAck(2L, false);
     }
 

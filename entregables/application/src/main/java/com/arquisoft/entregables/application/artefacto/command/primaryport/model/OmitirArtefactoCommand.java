@@ -10,19 +10,23 @@ import com.arquisoft.shared.validation.ValidatorUUID;
 import java.time.Instant;
 import java.util.UUID;
 
-public record OmitirArtefactoCommand(UUID artefacto, Instant ocurridoEn) {
+public record OmitirArtefactoCommand(UUID artefacto, UUID proyectoGrado, Instant ocurridoEn) {
 
-    public static OmitirArtefactoCommand crear(String artefacto, Instant ocurridoEn) {
+    public static OmitirArtefactoCommand crear(String artefacto, String proyectoGrado, Instant ocurridoEn) {
         var result = new ValidationResult();
 
         ValidatorUUID.uuidValido(artefacto,
                 EntregablesFields.Artefacto.ID,
                 EntregablesCodes.Artefacto.ID_REQUERIDO, result);
+        ValidatorUUID.uuidValido(proyectoGrado,
+                EntregablesFields.Artefacto.PROYECTO_GRADO,
+                EntregablesCodes.Artefacto.PROYECTO_GRADO_REQUERIDO, result);
         ValidatorObjeto.noNulo(ocurridoEn,
                 EntregablesFields.Artefacto.OCURRIDO_EN,
                 EntregablesCodes.Artefacto.OCURRIDO_EN_REQUERIDO, result);
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new OmitirArtefactoCommand(UtilUUID.generarUUIDDesdeTexto(artefacto), ocurridoEn);
+        return new OmitirArtefactoCommand(
+                UtilUUID.generarUUIDDesdeTexto(artefacto), UtilUUID.generarUUIDDesdeTexto(proyectoGrado), ocurridoEn);
     }
 }

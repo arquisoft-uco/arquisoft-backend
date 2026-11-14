@@ -1,6 +1,6 @@
 package com.arquisoft.entregables.infrastructure.config;
 
-import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilTexto;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.InitializingBean;
@@ -15,13 +15,18 @@ public class EntregablesAlmacenamientoProperties implements InitializingBean {
 
     static final String PREFIJO = "entregables.almacenamiento";
     private static final String MENSAJE_BUCKET_OBLIGATORIO = PREFIJO + ".bucket es obligatorio";
+    private static final String MENSAJE_BUCKET_ARTEFACTOS_OBLIGATORIO = PREFIJO + ".bucket-artefactos es obligatorio";
 
     private String bucket;
+    private String bucketArtefactos;
 
     @Override
     public void afterPropertiesSet() {
-        if (UtilObjeto.esNulo(bucket) || bucket.isBlank()) {
+        if (UtilTexto.esVacioONulo(bucket)) {
             throw new IllegalStateException(MENSAJE_BUCKET_OBLIGATORIO);
+        }
+        if (UtilTexto.esVacioONulo(bucketArtefactos)) {
+            throw new IllegalStateException(MENSAJE_BUCKET_ARTEFACTOS_OBLIGATORIO);
         }
     }
 }

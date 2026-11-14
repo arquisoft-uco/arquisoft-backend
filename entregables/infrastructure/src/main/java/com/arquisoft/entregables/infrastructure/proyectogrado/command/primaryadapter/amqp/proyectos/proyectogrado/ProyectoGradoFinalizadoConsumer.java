@@ -1,7 +1,5 @@
 package com.arquisoft.entregables.infrastructure.proyectogrado.command.primaryadapter.amqp.proyectos.proyectogrado;
 
-import com.arquisoft.entregables.application.artefacto.command.primaryport.interactor.PurgarArtefactosProyectoGradoInteractor;
-import com.arquisoft.entregables.application.artefacto.command.primaryport.model.PurgarArtefactosProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.interactor.FinalizarProyectoGradoInteractor;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.model.FinalizarProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.result.FinalizacionProyectoGradoResult;
@@ -24,18 +22,15 @@ import java.io.IOException;
 public class ProyectoGradoFinalizadoConsumer extends AbstractEventConsumer {
 
     private final FinalizarProyectoGradoInteractor finalizarProyectoGradoInteractor;
-    private final PurgarArtefactosProyectoGradoInteractor purgarArtefactosProyectoGradoInteractor;
     private final AppLogger logger;
 
     public ProyectoGradoFinalizadoConsumer(
             FinalizarProyectoGradoInteractor finalizarProyectoGradoInteractor,
-            PurgarArtefactosProyectoGradoInteractor purgarArtefactosProyectoGradoInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza, logger);
         this.finalizarProyectoGradoInteractor = finalizarProyectoGradoInteractor;
-        this.purgarArtefactosProyectoGradoInteractor = purgarArtefactosProyectoGradoInteractor;
         this.logger = logger;
     }
 
@@ -49,15 +44,15 @@ public class ProyectoGradoFinalizadoConsumer extends AbstractEventConsumer {
                     FinalizarProyectoGradoCommand.crear(payload.proyectoGradoId()));
 
             switch (resultado) {
-                case FinalizacionProyectoGradoResult.Finalizado finalizado ->
-                        logger.info(ProyectoGradoKey.LOG_FINALIZADO, finalizado.proyectoGrado());
-                case FinalizacionProyectoGradoResult.Duplicado duplicado ->
-                        logger.info(ProyectoGradoKey.LOG_YA_FINALIZADO, duplicado.proyectoGrado());
+                case FinalizacionProyectoGradoResult.Finalizado finalizado -> {
+                    logger.info(ProyectoGradoKey.LOG_FINALIZADO, finalizado.proyectoGrado());
+                    logger.info(ArtefactoKey.LOG_PURGADOS, finalizado.proyectoGrado(), finalizado.artefactosEliminados());
+                }
+                case FinalizacionProyectoGradoResult.Duplicado duplicado -> {
+                    logger.info(ProyectoGradoKey.LOG_YA_FINALIZADO, duplicado.proyectoGrado());
+                    logger.info(ArtefactoKey.LOG_PURGADOS, duplicado.proyectoGrado(), duplicado.artefactosEliminados());
+                }
             }
-
-            var purgaArtefactos = purgarArtefactosProyectoGradoInteractor.ejecutar(
-                    PurgarArtefactosProyectoGradoCommand.crear(payload.proyectoGradoId()));
-            logger.info(ArtefactoKey.LOG_PURGADOS, purgaArtefactos.proyectoGrado(), purgaArtefactos.eliminadas());
         });
     }
 }

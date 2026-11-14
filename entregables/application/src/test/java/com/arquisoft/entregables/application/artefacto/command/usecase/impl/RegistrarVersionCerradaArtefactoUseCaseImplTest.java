@@ -98,6 +98,7 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
         when(proyectoGradoBloqueadoPorIdFinder.obtener(proyectoId)).thenReturn(proyecto);
         when(artefactoPorIdFinder.obtener(artefacto)).thenReturn(anterior);
         when(archivoOrigenArtefactoFinder.obtener(CLAVE_ORIGEN)).thenReturn(ETAG);
+        when(artefactoOutputPort.avanzarVersion(any())).thenReturn(1);
 
         // Act
         var resultado = useCase.ejecutar(registro);
@@ -112,8 +113,8 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
         orden.verify(registrarVersionCerradaArtefactoValidator).validar(registro, proyecto, ETAG);
         orden.verify(almacenamientoArtefactoOutputPort)
                 .copiar(CLAVE_ORIGEN, registro.getArtefacto().getClaveObjeto(), ETAG);
-        orden.verify(artefactoOutputPort).registrarVersionCerrada(captor.capture());
-        orden.verify(almacenamientoArtefactoOutputPort).eliminar(anterior.getClaveObjeto());
+        orden.verify(artefactoOutputPort).avanzarVersion(captor.capture());
+        orden.verify(almacenamientoArtefactoOutputPort).eliminarTrasConfirmar(anterior.getClaveObjeto());
         verify(proyectoGradoBloqueadoPorIdFinder, times(1)).obtener(any());
         verify(artefactoPorIdFinder, times(1)).obtener(any());
         verify(archivoOrigenArtefactoFinder, times(1)).obtener(any());
@@ -139,8 +140,78 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
 
         // Assert
         verify(almacenamientoArtefactoOutputPort).copiar(CLAVE_ORIGEN, registro.getArtefacto().getClaveObjeto(), ETAG);
-        verify(artefactoOutputPort).registrarVersionCerrada(any());
-        verify(almacenamientoArtefactoOutputPort, never()).eliminar(anyString());
+        verify(artefactoOutputPort).insertar(any());
+        verify(almacenamientoArtefactoOutputPort, never()).eliminarTrasConfirmar(anyString());
+        assertThat(resultado).isEqualTo(new RegistroVersionCerradaArtefactoResult.Registrada(artefacto));
+    }
+
+    @Test
+    void debeCopiarYLuegoInsertar_cuandoNoHabiaFila() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var proyectoId = UtilUUID.generarNuevoUUID();
+        var registro = registro(artefacto, proyectoId, 1);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyectoId))
+                .thenReturn(proyecto(proyectoId, EstadoProyecto.EN_PROCESO));
+        when(artefactoPorIdFinder.obtener(artefacto)).thenReturn(ArtefactoDomain.VACIO);
+        when(archivoOrigenArtefactoFinder.obtener(CLAVE_ORIGEN)).thenReturn(ETAG);
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        var orden = inOrder(almacenamientoArtefactoOutputPort, artefactoOutputPort);
+        orden.verify(almacenamientoArtefactoOutputPort)
+                .copiar(CLAVE_ORIGEN, registro.getArtefacto().getClaveObjeto(), ETAG);
+        orden.verify(artefactoOutputPort).insertar(any());
+        verify(artefactoOutputPort, never()).avanzarVersion(any());
+    }
+
+    @Test
+    void noDebeBorrarNiRegistrar_cuandoAvanzarVersionAfectaCeroFilas() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var proyectoId = UtilUUID.generarNuevoUUID();
+        var registro = registro(artefacto, proyectoId, 3);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyectoId))
+                .thenReturn(proyecto(proyectoId, EstadoProyecto.EN_PROCESO));
+        when(artefactoPorIdFinder.obtener(artefacto)).thenReturn(guardado(artefacto, proyectoId, 2));
+        when(archivoOrigenArtefactoFinder.obtener(CLAVE_ORIGEN)).thenReturn(ETAG);
+        when(artefactoOutputPort.avanzarVersion(any())).thenReturn(0);
+
+        // Act
+        var resultado = useCase.ejecutar(registro);
+
+        // Assert
+        verify(artefactoOutputPort).avanzarVersion(any());
+        verify(almacenamientoArtefactoOutputPort, never()).eliminarTrasConfirmar(anyString());
+        assertThat(resultado).isEqualTo(new RegistroVersionCerradaArtefactoResult.Obsoleta(artefacto));
+    }
+
+    @Test
+    void debeAvanzarSinBorrar_cuandoLaFilaGuardadaEsUnaLapida() {
+        // Arrange
+        var artefacto = UtilUUID.generarNuevoUUID();
+        var proyectoId = UtilUUID.generarNuevoUUID();
+        var registro = registro(artefacto, proyectoId, 1);
+        var lapida = ArtefactoDomain.reconstruir(artefacto, proyectoId, "", "",
+                new ArtefactoDomain.VersionCerrada(UtilUUID.obtenerUUIDPorDefecto(), 0, Instant.EPOCH),
+                new ArtefactoDomain.DatosRepositorio(
+                        UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), ""),
+                new ArtefactoDomain.Omision(Instant.now(), Instant.now()));
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyectoId))
+                .thenReturn(proyecto(proyectoId, EstadoProyecto.EN_PROCESO));
+        when(artefactoPorIdFinder.obtener(artefacto)).thenReturn(lapida);
+        when(archivoOrigenArtefactoFinder.obtener(CLAVE_ORIGEN)).thenReturn(ETAG);
+        when(artefactoOutputPort.avanzarVersion(any())).thenReturn(1);
+
+        // Act
+        var resultado = useCase.ejecutar(registro);
+
+        // Assert
+        verify(artefactoOutputPort).avanzarVersion(any());
+        verify(artefactoOutputPort, never()).insertar(any());
+        verify(almacenamientoArtefactoOutputPort, never()).eliminarTrasConfirmar(anyString());
         assertThat(resultado).isEqualTo(new RegistroVersionCerradaArtefactoResult.Registrada(artefacto));
     }
 
@@ -161,7 +232,8 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
         verify(archivoOrigenArtefactoFinder, never()).obtener(anyString());
         verify(registrarVersionCerradaArtefactoValidator, never()).validar(any(), any(), anyString());
         verify(almacenamientoArtefactoOutputPort, never()).copiar(anyString(), anyString(), anyString());
-        verify(artefactoOutputPort, never()).registrarVersionCerrada(any());
+        verify(artefactoOutputPort, never()).insertar(any());
+        verify(artefactoOutputPort, never()).avanzarVersion(any());
         assertThat(resultado).isEqualTo(new RegistroVersionCerradaArtefactoResult.Obsoleta(artefacto));
     }
 
@@ -182,7 +254,8 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
         verify(archivoOrigenArtefactoFinder, never()).obtener(anyString());
         verify(registrarVersionCerradaArtefactoValidator, never()).validar(any(), any(), anyString());
         verify(almacenamientoArtefactoOutputPort, never()).copiar(anyString(), anyString(), anyString());
-        verify(artefactoOutputPort, never()).registrarVersionCerrada(any());
+        verify(artefactoOutputPort, never()).insertar(any());
+        verify(artefactoOutputPort, never()).avanzarVersion(any());
         assertThat(resultado).isEqualTo(new RegistroVersionCerradaArtefactoResult.ProyectoCerrado(artefacto));
     }
 
@@ -203,7 +276,8 @@ class RegistrarVersionCerradaArtefactoUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(registro))
                 .isInstanceOf(ArchivoOrigenArtefactoNoDisponibleException.class);
         verify(almacenamientoArtefactoOutputPort, never()).copiar(anyString(), anyString(), anyString());
-        verify(artefactoOutputPort, never()).registrarVersionCerrada(any());
-        verify(almacenamientoArtefactoOutputPort, never()).eliminar(anyString());
+        verify(artefactoOutputPort, never()).insertar(any());
+        verify(artefactoOutputPort, never()).avanzarVersion(any());
+        verify(almacenamientoArtefactoOutputPort, never()).eliminarTrasConfirmar(anyString());
     }
 }

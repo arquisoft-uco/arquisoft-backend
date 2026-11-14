@@ -11,8 +11,8 @@ public final class OmisionArtefactoResultMapper {
         return new OmisionArtefactoResult.Omitida(omision.getArtefacto());
     }
 
-    public static OmisionArtefactoResult.SinVersionCerrada toResultSinVersionCerrada(OmisionArtefactoDomain omision) {
-        return new OmisionArtefactoResult.SinVersionCerrada(omision.getArtefacto());
+    public static OmisionArtefactoResult.Anticipada toResultAnticipada(OmisionArtefactoDomain omision) {
+        return new OmisionArtefactoResult.Anticipada(omision.getArtefacto());
     }
 
     public static OmisionArtefactoResult.Descartada toResultDescartada(OmisionArtefactoDomain omision) {

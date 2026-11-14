@@ -21,9 +21,12 @@ import java.util.UUID;
                a.nombre_documento  AS nombre_documento,
                a.version_artefacto AS version_artefacto
         FROM artefacto a
+                 JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
         WHERE a.omitido_en IS NULL
+          AND a.version_artefacto IS NOT NULL
+          AND pg.estado_proyecto_id NOT IN ('FINALIZADO', 'CANCELADO')
         """)
-@Synchronize("artefacto")
+@Synchronize({"artefacto", "proyecto_grado"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

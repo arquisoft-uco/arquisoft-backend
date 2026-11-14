@@ -27,7 +27,9 @@ public class OmitirArtefactoUseCaseImpl implements OmitirArtefactoUseCase {
                 omision.getOcurridoEn());
 
         if (artefacto.esVacio()) {
-            return OmisionArtefactoResultMapper.toResultSinVersionCerrada(omision);
+            artefactoOutputPort.registrarLapida(omision.getArtefacto(), omision.getProyectoGrado(),
+                    UtilFecha.generarInstanteActual(), omision.getOcurridoEn());
+            return OmisionArtefactoResultMapper.toResultAnticipada(omision);
         }
         if (artefacto.tieneOmisionIgualOPosteriorA(omision.getOcurridoEn())) {
             return OmisionArtefactoResultMapper.toResultDescartada(omision);

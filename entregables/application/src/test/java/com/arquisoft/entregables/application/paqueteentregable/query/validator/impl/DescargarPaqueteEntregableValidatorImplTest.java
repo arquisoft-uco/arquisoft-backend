@@ -51,7 +51,8 @@ class DescargarPaqueteEntregableValidatorImplTest {
         var paquete = paquete();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(criteria, inexistente, estado(EstadoEntregable.DISPONIBLE_EVALUACION), false, paquete))
+        assertThatThrownBy(() -> validator.validar(criteria, inexistente,
+                estado(EstadoEntregable.DISPONIBLE_EVALUACION), false, paquete, UtilUUID.generarNuevoUUID()))
                 .isInstanceOf(EntregableProyectoGradoNoEncontradoException.class);
     }
 
@@ -63,7 +64,8 @@ class DescargarPaqueteEntregableValidatorImplTest {
         var paquete = paquete();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(criteria, otroAsesor, estado(EstadoEntregable.DISPONIBLE_EVALUACION), false, paquete))
+        assertThatThrownBy(() -> validator.validar(criteria, otroAsesor,
+                estado(EstadoEntregable.DISPONIBLE_EVALUACION), false, paquete, UtilUUID.generarNuevoUUID()))
                 .isInstanceOf(ActorSinAccesoPaqueteEntregableException.class);
     }
 
@@ -75,7 +77,7 @@ class DescargarPaqueteEntregableValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(criteria, entregable(actor), estado(EstadoEntregable.DISPONIBLE_EVALUACION), false,
-                PaqueteEntregableDomain.VACIO))
+                PaqueteEntregableDomain.VACIO, actor))
                 .isInstanceOf(PaqueteEntregableNoDisponibleException.class);
     }
 
@@ -86,7 +88,8 @@ class DescargarPaqueteEntregableValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                criteria, EntregableProyectoGradoDomain.VACIO, estado(EstadoEntregable.DISPONIBLE_EVALUACION), false, PaqueteEntregableDomain.VACIO))
+                criteria, EntregableProyectoGradoDomain.VACIO, estado(EstadoEntregable.DISPONIBLE_EVALUACION), false,
+                PaqueteEntregableDomain.VACIO, UtilUUID.generarNuevoUUID()))
                 .isInstanceOf(EntregableProyectoGradoNoEncontradoException.class);
     }
 
@@ -98,7 +101,7 @@ class DescargarPaqueteEntregableValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 criteria, entregable(UtilUUID.generarNuevoUUID()), estado(EstadoEntregable.DISPONIBLE_EVALUACION), false,
-                PaqueteEntregableDomain.VACIO))
+                PaqueteEntregableDomain.VACIO, UtilUUID.generarNuevoUUID()))
                 .isInstanceOf(ActorSinAccesoPaqueteEntregableException.class);
     }
 
@@ -111,7 +114,7 @@ class DescargarPaqueteEntregableValidatorImplTest {
 
         // Act & Assert
         assertThatCode(() -> validator.validar(criteria,
-                entregable(UtilUUID.generarNuevoUUID()), estado(EstadoEntregable.DISPONIBLE_EVALUACION), true, paquete))
+                entregable(UtilUUID.generarNuevoUUID()), estado(EstadoEntregable.DISPONIBLE_EVALUACION), true, paquete, UtilUUID.generarNuevoUUID()))
                 .doesNotThrowAnyException();
     }
 
@@ -124,7 +127,9 @@ class DescargarPaqueteEntregableValidatorImplTest {
         var paquete = paquete();
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(criteria, rechazado, estado(EstadoEntregable.RECHAZADO), false, paquete)).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validar(
+                criteria, rechazado, estado(EstadoEntregable.RECHAZADO), false, paquete, actor))
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -137,7 +142,7 @@ class DescargarPaqueteEntregableValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(criteria, entregable,
-                EstadoEntregableProyectoGradoDomain.VACIO, false, paquete))
+                EstadoEntregableProyectoGradoDomain.VACIO, false, paquete, actor))
                 .isInstanceOf(EstadoEntregableProyectoGradoNoEncontradoException.class);
     }
 
@@ -151,7 +156,7 @@ class DescargarPaqueteEntregableValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(criteria, deProyectoCancelado,
-                estado(EstadoEntregable.DISPONIBLE_EVALUACION), false, PaqueteEntregableDomain.VACIO))
+                estado(EstadoEntregable.DISPONIBLE_EVALUACION), false, PaqueteEntregableDomain.VACIO, actor))
                 .isInstanceOf(PaqueteEntregableProyectoCanceladoException.class);
     }
 
@@ -164,7 +169,7 @@ class DescargarPaqueteEntregableValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(criteria, cancelado, estado(EstadoEntregable.CANCELADO), false,
-                PaqueteEntregableDomain.VACIO))
+                PaqueteEntregableDomain.VACIO, actor))
                 .isInstanceOf(PaqueteEntregableCanceladoException.class);
     }
 }

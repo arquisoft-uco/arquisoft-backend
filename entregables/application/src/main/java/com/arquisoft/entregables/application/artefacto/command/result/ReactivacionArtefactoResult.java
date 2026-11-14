@@ -6,7 +6,7 @@ public sealed interface ReactivacionArtefactoResult {
 
     record Reactivada(UUID artefacto) implements ReactivacionArtefactoResult {}
 
-    record SinVersionCerrada(UUID artefacto) implements ReactivacionArtefactoResult {}
+    record Anticipada(UUID artefacto) implements ReactivacionArtefactoResult {}
 
     record Descartada(UUID artefacto) implements ReactivacionArtefactoResult {}
 }

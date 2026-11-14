@@ -7,7 +7,6 @@ public record EntregableProyectoGradoDisponibleEvaluacionPayload(
         Instant ocurridoEn,
         String entregableProyectoGrado,
         String proyectoGrado,
-        String nombreProyecto,
         Integer version
 ) {
 }

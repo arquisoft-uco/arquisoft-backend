@@ -4,6 +4,7 @@ import com.arquisoft.entregables.application.artefacto.command.primaryport.inter
 import com.arquisoft.entregables.application.artefacto.command.primaryport.model.OmitirArtefactoCommand;
 import com.arquisoft.entregables.application.artefacto.command.result.OmisionArtefactoResult;
 import com.arquisoft.entregables.infrastructure.config.EntregablesArtefactosQueueConfig;
+import com.arquisoft.shared.amqp.RabbitListenerConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ArtefactoKey;
@@ -20,8 +21,6 @@ import java.io.IOException;
 @Component
 public class ArtefactoOmitidoConsumer extends AbstractEventConsumer {
 
-    private static final String UN_SOLO_CONSUMIDOR = "1";
-
     private final OmitirArtefactoInteractor omitirArtefactoInteractor;
     private final AppLogger logger;
 
@@ -36,7 +35,7 @@ public class ArtefactoOmitidoConsumer extends AbstractEventConsumer {
     }
 
     @RabbitListener(queues = EntregablesArtefactosQueueConfig.ARTEFACTO_OMITIDO_QUEUE,
-            concurrency = UN_SOLO_CONSUMIDOR)
+            concurrency = RabbitListenerConfig.UN_SOLO_CONSUMIDOR)
     public void onArtefactoOmitido(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
             var payload = deserialize(message, ArtefactoOmitidoPayload.class);
@@ -44,13 +43,14 @@ public class ArtefactoOmitidoConsumer extends AbstractEventConsumer {
                     payload.idEvento(), payload.artefacto(), payload.proyectoGrado());
 
             var resultado = omitirArtefactoInteractor.ejecutar(
-                    OmitirArtefactoCommand.crear(payload.artefacto(), payload.ocurridoEn()));
+                    OmitirArtefactoCommand.crear(
+                            payload.artefacto(), payload.proyectoGrado(), payload.ocurridoEn()));
 
             switch (resultado) {
                 case OmisionArtefactoResult.Omitida omitida ->
                         logger.info(ArtefactoKey.LOG_OMITIDO, omitida.artefacto());
-                case OmisionArtefactoResult.SinVersionCerrada sinVersion ->
-                        logger.info(ArtefactoKey.LOG_SIN_VERSION_CERRADA, sinVersion.artefacto());
+                case OmisionArtefactoResult.Anticipada anticipada ->
+                        logger.info(ArtefactoKey.LOG_LAPIDA_REGISTRADA, anticipada.artefacto());
                 case OmisionArtefactoResult.Descartada descartada ->
                         logger.info(ArtefactoKey.LOG_DESCARTADA, descartada.artefacto());
             }

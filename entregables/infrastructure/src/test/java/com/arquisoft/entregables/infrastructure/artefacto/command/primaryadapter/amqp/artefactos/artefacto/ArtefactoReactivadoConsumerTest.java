@@ -98,15 +98,15 @@ class ArtefactoReactivadoConsumerTest {
     }
 
     @Test
-    void debeConfirmar_cuandoElArtefactoNoTieneVersionCerrada() throws Exception {
+    void debeConfirmar_cuandoSeGuardoLaLapidaAnticipada() throws Exception {
         // Arrange
-        when(interactor.ejecutar(any())).thenReturn(new ReactivacionArtefactoResult.SinVersionCerrada(artefacto));
+        when(interactor.ejecutar(any())).thenReturn(new ReactivacionArtefactoResult.Anticipada(artefacto));
 
         // Act
         consumer.onArtefactoReactivado(mensaje(3L), channel);
 
         // Assert
-        verify(logger).info(ArtefactoKey.LOG_SIN_VERSION_CERRADA, artefacto);
+        verify(logger).info(ArtefactoKey.LOG_LAPIDA_REGISTRADA, artefacto);
         verify(channel).basicAck(3L, false);
     }
 }

@@ -27,28 +27,28 @@ public class ArtefactoJpaEntity {
     @Column(name = "proyecto_grado_id", nullable = false, columnDefinition = "UUID")
     private UUID proyectoGrado;
 
-    @Column(name = "id_version_artefacto", nullable = false, columnDefinition = "UUID")
+    @Column(name = "id_version_artefacto", columnDefinition = "UUID")
     private UUID versionArtefacto;
 
-    @Column(name = "version_artefacto", nullable = false)
-    private int numeroVersion;
+    @Column(name = "version_artefacto")
+    private Integer numeroVersion;
 
-    @Column(name = "fecha_version", nullable = false)
+    @Column(name = "fecha_version")
     private Instant fechaVersion;
 
-    @Column(name = "clave_objeto", nullable = false, length = 2000)
+    @Column(name = "clave_objeto", length = 2000)
     private String claveObjeto;
 
-    @Column(name = "id_repositorio_artefacto", nullable = false, columnDefinition = "UUID")
+    @Column(name = "id_repositorio_artefacto", columnDefinition = "UUID")
     private UUID versionRepositorioArtefacto;
 
-    @Column(name = "nombre_documento", nullable = false, length = 100)
+    @Column(name = "nombre_documento", length = 100)
     private String nombreDocumento;
 
-    @Column(name = "id_repositorio", nullable = false, columnDefinition = "UUID")
+    @Column(name = "id_repositorio", columnDefinition = "UUID")
     private UUID repositorio;
 
-    @Column(name = "nombre_repositorio", nullable = false, length = 100)
+    @Column(name = "nombre_repositorio", length = 100)
     private String nombreRepositorio;
 
     @Column(name = "omitido_en")

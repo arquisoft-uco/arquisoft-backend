@@ -11,7 +11,6 @@ import com.arquisoft.entregables.application.artefacto.command.usecase.Registrar
 import com.arquisoft.entregables.application.artefacto.command.validator.RegistrarVersionCerradaArtefactoValidator;
 import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
 import com.arquisoft.entregables.domain.artefacto.RegistroVersionCerradaArtefactoDomain;
-import com.arquisoft.entregables.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ArtefactoKey;
 import com.arquisoft.shared.util.UtilTexto;
@@ -36,15 +35,13 @@ public class RegistrarVersionCerradaArtefactoUseCaseImpl implements RegistrarVer
 
         var proyecto = proyectoGradoBloqueadoPorIdFinder.obtener(artefacto.getProyectoGrado());
         var guardado = artefactoPorIdFinder.obtener(artefacto.getId());
-        var proyectoCerrado = proyecto.getEstadoProyecto() == EstadoProyecto.FINALIZADO
-                || proyecto.getEstadoProyecto() == EstadoProyecto.CANCELADO;
-        logger.debug(ArtefactoKey.LOG_VERIFICACION_REGISTRAR, !proyecto.esVacio(), proyectoCerrado,
+        logger.debug(ArtefactoKey.LOG_VERIFICACION_REGISTRAR, !proyecto.esVacio(), proyecto.estaCerrado(),
                 guardado.getNumeroVersion());
 
-        if (proyectoCerrado) {
+        if (proyecto.estaCerrado()) {
             return RegistroVersionCerradaArtefactoResultMapper.toResultProyectoCerrado(registro);
         }
-        if (!guardado.esVacio() && guardado.getNumeroVersion() >= artefacto.getNumeroVersion()) {
+        if (guardado.tieneVersionIgualOPosteriorA(artefacto.getNumeroVersion())) {
             return RegistroVersionCerradaArtefactoResultMapper.toResultObsoleta(registro);
         }
 
@@ -54,10 +51,18 @@ public class RegistrarVersionCerradaArtefactoUseCaseImpl implements RegistrarVer
         registrarVersionCerradaArtefactoValidator.validar(registro, proyecto, etagOrigen);
 
         almacenamientoArtefactoOutputPort.copiar(registro.getClaveOrigen(), artefacto.getClaveObjeto(), etagOrigen);
-        artefactoOutputPort.registrarVersionCerrada(ArtefactoMapper.toEntity(artefacto));
 
-        if (!guardado.esVacio() && !guardado.getClaveObjeto().equals(artefacto.getClaveObjeto())) {
-            almacenamientoArtefactoOutputPort.eliminar(guardado.getClaveObjeto());
+        if (guardado.esVacio()) {
+            artefactoOutputPort.insertar(ArtefactoMapper.toEntity(artefacto));
+            return RegistroVersionCerradaArtefactoResultMapper.toResultRegistrada(registro);
+        }
+
+        var filas = artefactoOutputPort.avanzarVersion(ArtefactoMapper.toEntity(artefacto));
+        if (filas == 0) {
+            return RegistroVersionCerradaArtefactoResultMapper.toResultObsoleta(registro);
+        }
+        if (guardado.tieneVersion() && !guardado.getClaveObjeto().equals(artefacto.getClaveObjeto())) {
+            almacenamientoArtefactoOutputPort.eliminarTrasConfirmar(guardado.getClaveObjeto());
         }
         return RegistroVersionCerradaArtefactoResultMapper.toResultRegistrada(registro);
     }

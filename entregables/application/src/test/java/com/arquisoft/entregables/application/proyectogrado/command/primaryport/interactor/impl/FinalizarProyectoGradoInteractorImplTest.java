@@ -31,7 +31,7 @@ class FinalizarProyectoGradoInteractorImplTest {
     void debeDelegarEnElUseCase_conElDomainMapeadoDelCommand() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var esperado = new FinalizacionProyectoGradoResult.Finalizado(proyectoGrado);
+        var esperado = new FinalizacionProyectoGradoResult.Finalizado(proyectoGrado, 2);
         when(finalizarProyectoGradoUseCase.ejecutar(any())).thenReturn(esperado);
 
         // Act
@@ -42,6 +42,7 @@ class FinalizarProyectoGradoInteractorImplTest {
         verify(finalizarProyectoGradoUseCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getProyectoGrado()).isEqualTo(proyectoGrado);
         assertThat(captor.getValue().getEstadoNuevo()).isEqualTo(EstadoProyecto.FINALIZADO);
+        assertThat(captor.getValue().getPurgaArtefactos().getProyectoGrado()).isEqualTo(proyectoGrado);
         assertThat(resultado).isSameAs(esperado);
     }
 }

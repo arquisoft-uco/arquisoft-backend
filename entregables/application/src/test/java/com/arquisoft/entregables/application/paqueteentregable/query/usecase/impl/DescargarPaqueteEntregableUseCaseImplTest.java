@@ -1,5 +1,6 @@
 package com.arquisoft.entregables.application.paqueteentregable.query.usecase.impl;
 
+import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.AsesorVigenteDeEntregableProyectoGradoQueryFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.EntregableProyectoGradoAccesoQueryFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.EstudianteParticipaEntregableQueryFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.model.EstudianteEntregable;
@@ -41,6 +42,9 @@ class DescargarPaqueteEntregableUseCaseImplTest {
     private EntregableProyectoGradoAccesoQueryFinder entregableProyectoGradoAccesoQueryFinder;
 
     @Mock
+    private AsesorVigenteDeEntregableProyectoGradoQueryFinder asesorVigenteDeEntregableProyectoGradoQueryFinder;
+
+    @Mock
     private EstudianteParticipaEntregableQueryFinder estudianteParticipaEntregableQueryFinder;
 
     @Mock
@@ -74,7 +78,9 @@ class DescargarPaqueteEntregableUseCaseImplTest {
         var paquete = PaqueteEntregableDomain.crear(entregable, "bucket",
                 "paquetes/x.zip", "p.zip", 10L, Instant.now());
         var enlace = new EnlaceDescargaPaqueteEntregableReadModel("https://url", Instant.now());
+        var asesorVigente = UtilUUID.generarNuevoUUID();
         when(entregableProyectoGradoAccesoQueryFinder.obtener(entregable)).thenReturn(entregableDomain);
+        when(asesorVigenteDeEntregableProyectoGradoQueryFinder.obtener(entregable)).thenReturn(asesorVigente);
         when(estadoActualEntregableProyectoGradoQueryFinder.obtener(entregable)).thenReturn(estadoDomain);
         when(estudianteParticipaEntregableQueryFinder.obtener(new EstudianteEntregable(actor, entregable)))
                 .thenReturn(true);
@@ -92,7 +98,8 @@ class DescargarPaqueteEntregableUseCaseImplTest {
         orden.verify(estudianteParticipaEntregableQueryFinder, times(1))
                 .obtener(new EstudianteEntregable(actor, entregable));
         orden.verify(paqueteEntregableQueryFinder, times(1)).obtener(entregable);
-        orden.verify(descargarPaqueteEntregableValidator).validar(criteria, entregableDomain, estadoDomain, true, paquete);
+        orden.verify(descargarPaqueteEntregableValidator)
+                .validar(criteria, entregableDomain, estadoDomain, true, paquete, asesorVigente);
         orden.verify(enlaceDescargaPaqueteQueryOutputPort).generar("bucket", "paquetes/x.zip", "p.zip");
         assertThat(resultado).isSameAs(enlace);
     }
@@ -110,7 +117,7 @@ class DescargarPaqueteEntregableUseCaseImplTest {
                 .thenReturn(EstadoEntregableProyectoGradoDomain.VACIO);
         when(paqueteEntregableQueryFinder.obtener(entregable)).thenReturn(PaqueteEntregableDomain.VACIO);
         doThrow(new IllegalStateException("rechazado")).when(descargarPaqueteEntregableValidator)
-                .validar(any(), any(), any(), anyBoolean(), any());
+                .validar(any(), any(), any(), anyBoolean(), any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(criteria)).isInstanceOf(IllegalStateException.class);

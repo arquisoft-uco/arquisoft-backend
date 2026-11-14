@@ -15,22 +15,27 @@ class ConsultarVistaPreviaPaqueteQueryTest {
     void debeCrearYMapearAlCriteria_cuandoHayProyecto() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
 
         // Act
-        var query = ConsultarVistaPreviaPaqueteQuery.crear(proyecto);
+        var query = ConsultarVistaPreviaPaqueteQuery.crear(proyecto, asesor);
         var criteria = ConsultarVistaPreviaPaqueteMapper.toCriteria(query);
 
         // Assert
         assertThat(query.proyectoGrado()).isEqualTo(proyecto);
         assertThat(criteria.proyectoGrado()).isEqualTo(proyecto);
+        assertThat(criteria.asesor()).isEqualTo(asesor);
     }
 
     @Test
     void debeRechazarConErrorDeEntrada_cuandoFaltaElProyecto() {
         // Act & Assert
-        assertThatThrownBy(() -> ConsultarVistaPreviaPaqueteQuery.crear(null))
-                .isInstanceOfSatisfying(ApplicationValidationException.class, ex ->
-                        assertThat(ex.getValidationResult()
-                                .tieneErroresDeCampo(EntregablesFields.ProyectoGrado.ID)).isTrue());
+        assertThatThrownBy(() -> ConsultarVistaPreviaPaqueteQuery.crear(null, null))
+                .isInstanceOfSatisfying(ApplicationValidationException.class, ex -> {
+                    assertThat(ex.getValidationResult()
+                            .tieneErroresDeCampo(EntregablesFields.ProyectoGrado.ID)).isTrue();
+                    assertThat(ex.getValidationResult()
+                            .tieneErroresDeCampo(EntregablesFields.AsesorProyectoGrado.ASESOR)).isTrue();
+                });
     }
 }

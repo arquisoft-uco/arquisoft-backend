@@ -11,14 +11,16 @@ import java.util.UUID;
 public final class ReactivacionArtefactoDomain {
 
     private UUID artefacto;
+    private UUID proyectoGrado;
     private Instant ocurridoEn;
 
     private ReactivacionArtefactoDomain() {}
 
-    public static ReactivacionArtefactoDomain crear(UUID artefacto, Instant ocurridoEn) {
+    public static ReactivacionArtefactoDomain crear(UUID artefacto, UUID proyectoGrado, Instant ocurridoEn) {
         var reactivacion = new ReactivacionArtefactoDomain();
         var result = new ValidationResult();
         reactivacion.setArtefacto(artefacto, result);
+        reactivacion.setProyectoGrado(proyectoGrado, result);
         reactivacion.setOcurridoEn(ocurridoEn, result);
         result.lanzarSiTieneErrores();
         return reactivacion;
@@ -33,6 +35,15 @@ public final class ReactivacionArtefactoDomain {
         this.artefacto = artefacto;
     }
 
+    private void setProyectoGrado(UUID proyectoGrado, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(proyectoGrado,
+                EntregablesFields.Artefacto.PROYECTO_GRADO,
+                EntregablesCodes.Artefacto.PROYECTO_GRADO_REQUERIDO, result)) {
+            return;
+        }
+        this.proyectoGrado = proyectoGrado;
+    }
+
     private void setOcurridoEn(Instant ocurridoEn, ValidationResult result) {
         if (!ValidatorObjeto.noNulo(ocurridoEn,
                 EntregablesFields.Artefacto.OCURRIDO_EN,
@@ -44,6 +55,10 @@ public final class ReactivacionArtefactoDomain {
 
     public UUID getArtefacto() {
         return artefacto;
+    }
+
+    public UUID getProyectoGrado() {
+        return proyectoGrado;
     }
 
     public Instant getOcurridoEn() {

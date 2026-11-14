@@ -154,7 +154,8 @@ public final class ArtefactoDomain {
     }
 
     private void setClaveObjeto() {
-        this.claveObjeto = EntregablesAlmacenamiento.PREFIJO_ARTEFACTOS + id + "/v" + numeroVersion;
+        this.claveObjeto = EntregablesAlmacenamiento.PREFIJO_ARTEFACTOS + id
+                + EntregablesAlmacenamiento.SEPARADOR_VERSION + numeroVersion;
     }
 
     public UUID getId() {
@@ -203,6 +204,14 @@ public final class ArtefactoDomain {
 
     public Instant getOmisionOcurridaEn() {
         return omisionOcurridaEn;
+    }
+
+    public boolean tieneVersion() {
+        return !UtilUUID.esPorDefecto(versionArtefacto);
+    }
+
+    public boolean tieneVersionIgualOPosteriorA(int numeroVersion) {
+        return tieneVersion() && this.numeroVersion >= numeroVersion;
     }
 
     public boolean estaOmitido() {

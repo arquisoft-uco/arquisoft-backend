@@ -11,4 +11,6 @@ public interface AlmacenamientoArtefactoOutputPort {
     void copiar(String claveOrigen, String claveDestino, String etag);
 
     void eliminar(String clave);
+
+    void eliminarTrasConfirmar(String clave);
 }

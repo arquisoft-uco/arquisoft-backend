@@ -6,6 +6,7 @@ import com.arquisoft.entregables.application.artefacto.command.secondaryport.Art
 import com.arquisoft.entregables.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.entregables.domain.artefacto.ReactivacionArtefactoDomain;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,7 +55,7 @@ class ReactivarArtefactoUseCaseImplTest {
         when(artefactoPorIdFinder.obtener(id)).thenReturn(guardado(id, ocurridoEn.minusSeconds(60)));
 
         // Act
-        var resultado = useCase.ejecutar(ReactivacionArtefactoDomain.crear(id, ocurridoEn));
+        var resultado = useCase.ejecutar(ReactivacionArtefactoDomain.crear(id, UtilUUID.generarNuevoUUID(), ocurridoEn));
 
         // Assert
         verify(artefactoPorIdFinder, times(1)).obtener(id);
@@ -63,17 +64,41 @@ class ReactivarArtefactoUseCaseImplTest {
     }
 
     @Test
-    void debeDevolverSinVersionCerrada_cuandoElArtefactoNoTieneFila() {
+    void debeRegistrarLapida_cuandoElArtefactoNoTieneFila() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var ocurridoEn = Instant.parse("2026-11-10T10:00:00Z");
         when(artefactoPorIdFinder.obtener(id)).thenReturn(ArtefactoDomain.VACIO);
 
         // Act
-        var resultado = useCase.ejecutar(ReactivacionArtefactoDomain.crear(id, Instant.now()));
+        var resultado = useCase.ejecutar(ReactivacionArtefactoDomain.crear(id, proyecto, ocurridoEn));
 
         // Assert
+        verify(artefactoOutputPort).registrarLapida(id, proyecto, null, ocurridoEn);
         verify(artefactoOutputPort, never()).limpiarOmision(any(), any());
-        assertThat(resultado).isEqualTo(new ReactivacionArtefactoResult.SinVersionCerrada(id));
+        assertThat(resultado).isEqualTo(new ReactivacionArtefactoResult.Anticipada(id));
+    }
+
+    @Test
+    void debeLimpiarOmisionSobreLapida_cuandoLaLapidaDeOmisionEsMasVieja() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var ocurridoEn = Instant.parse("2026-11-10T10:00:00Z");
+        var lapida = ArtefactoDomain.reconstruir(id, UtilUUID.generarNuevoUUID(), "", "",
+                new ArtefactoDomain.VersionCerrada(UtilUUID.obtenerUUIDPorDefecto(), 0, UtilFecha.VACIO),
+                new ArtefactoDomain.DatosRepositorio(
+                        UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), ""),
+                new ArtefactoDomain.Omision(ocurridoEn.minusSeconds(60), ocurridoEn.minusSeconds(60)));
+        when(artefactoPorIdFinder.obtener(id)).thenReturn(lapida);
+
+        // Act
+        var resultado = useCase.ejecutar(ReactivacionArtefactoDomain.crear(id, UtilUUID.generarNuevoUUID(), ocurridoEn));
+
+        // Assert
+        verify(artefactoOutputPort).limpiarOmision(id, ocurridoEn);
+        verify(artefactoOutputPort, never()).registrarLapida(any(), any(), any(), any());
+        assertThat(resultado).isEqualTo(new ReactivacionArtefactoResult.Reactivada(id));
     }
 
     @Test
@@ -84,7 +109,7 @@ class ReactivarArtefactoUseCaseImplTest {
         when(artefactoPorIdFinder.obtener(id)).thenReturn(guardado(id, ocurridoEn.plusSeconds(5)));
 
         // Act
-        var resultado = useCase.ejecutar(ReactivacionArtefactoDomain.crear(id, ocurridoEn));
+        var resultado = useCase.ejecutar(ReactivacionArtefactoDomain.crear(id, UtilUUID.generarNuevoUUID(), ocurridoEn));
 
         // Assert
         verify(artefactoOutputPort, never()).limpiarOmision(any(), any());

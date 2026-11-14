@@ -30,15 +30,16 @@ class ConsultarVistaPreviaPaqueteInteractorImplTest {
     void debeConvertirAlCriteriaYDelegar_cuandoSeConsultaLaVistaPrevia() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var esperado = List.of(new ArtefactoVistaPreviaReadModel(UtilUUID.generarNuevoUUID(), "Doc", 1));
-        when(consultarVistaPreviaPaqueteUseCase.ejecutar(new VistaPreviaPaqueteCriteria(proyecto)))
+        when(consultarVistaPreviaPaqueteUseCase.ejecutar(new VistaPreviaPaqueteCriteria(proyecto, asesor)))
                 .thenReturn(esperado);
 
         // Act
-        var resultado = interactor.ejecutar(ConsultarVistaPreviaPaqueteQuery.crear(proyecto));
+        var resultado = interactor.ejecutar(ConsultarVistaPreviaPaqueteQuery.crear(proyecto, asesor));
 
         // Assert
-        verify(consultarVistaPreviaPaqueteUseCase).ejecutar(new VistaPreviaPaqueteCriteria(proyecto));
+        verify(consultarVistaPreviaPaqueteUseCase).ejecutar(new VistaPreviaPaqueteCriteria(proyecto, asesor));
         assertThat(resultado).isSameAs(esperado);
     }
 }

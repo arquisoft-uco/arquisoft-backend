@@ -46,7 +46,7 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
         var proyecto = proyecto(EstadoProyecto.EN_PROCESO);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(entrada, proyecto, true, false, artefactos())).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validar(entrada, proyecto, true, entrada.getAsesor(), false, artefactos())).doesNotThrowAnyException();
     }
 
     @Test
@@ -55,7 +55,7 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
         var entrada = entrada();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, ProyectoGradoDomain.VACIO, true, false, artefactos()))
+        assertThatThrownBy(() -> validator.validar(entrada, ProyectoGradoDomain.VACIO, true, entrada.getAsesor(), false, artefactos()))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
 
@@ -66,7 +66,7 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
         var proyecto = proyecto(EstadoProyecto.EN_PROCESO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, proyecto, false, false, artefactos()))
+        assertThatThrownBy(() -> validator.validar(entrada, proyecto, false, entrada.getAsesor(), false, artefactos()))
                 .isInstanceOf(AsesorNoVigenteException.class);
     }
 
@@ -77,7 +77,7 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
         var proyecto = proyecto(EstadoProyecto.FINALIZADO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, proyecto, true, false, artefactos()))
+        assertThatThrownBy(() -> validator.validar(entrada, proyecto, true, entrada.getAsesor(), false, artefactos()))
                 .isInstanceOf(ProyectoGradoFinalizadoException.class);
     }
 
@@ -88,7 +88,7 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
         var proyecto = proyecto(EstadoProyecto.CANCELADO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, proyecto, true, false, artefactos()))
+        assertThatThrownBy(() -> validator.validar(entrada, proyecto, true, entrada.getAsesor(), false, artefactos()))
                 .isInstanceOf(ProyectoGradoCanceladoException.class);
     }
 
@@ -99,7 +99,7 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
         var proyecto = proyecto(EstadoProyecto.EN_PROCESO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, proyecto, true, true, artefactos()))
+        assertThatThrownBy(() -> validator.validar(entrada, proyecto, true, entrada.getAsesor(), true, artefactos()))
                 .isInstanceOf(EntregableVigenteYaExisteException.class);
     }
 
@@ -109,7 +109,7 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
         var entrada = entrada();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, ProyectoGradoDomain.VACIO, false, true, artefactos()))
+        assertThatThrownBy(() -> validator.validar(entrada, ProyectoGradoDomain.VACIO, false, entrada.getAsesor(), true, artefactos()))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
 
@@ -120,7 +120,8 @@ class GenerarEntregableProyectoGradoValidatorImplTest {
         var proyecto = proyecto(EstadoProyecto.EN_PROCESO);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, proyecto, true, false, List.of()))
+        assertThatThrownBy(() -> validator.validar(
+                entrada, proyecto, true, entrada.getAsesor(), false, List.of()))
                 .isInstanceOf(ProyectoSinArtefactosParaPaqueteException.class);
     }
 }

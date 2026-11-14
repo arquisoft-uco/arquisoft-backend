@@ -88,6 +88,22 @@ class ArtefactoOmitidoConsumerTest {
     }
 
     @Test
+    void debeConfirmar_cuandoSeGuardoLaLapidaAnticipada() throws Exception {
+        // Arrange
+        when(interactor.ejecutar(any())).thenReturn(new OmisionArtefactoResult.Anticipada(artefacto));
+
+        // Act
+        consumer.onArtefactoOmitido(mensaje(5L, false), channel);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(OmitirArtefactoCommand.class);
+        verify(interactor).ejecutar(captor.capture());
+        assertThat(captor.getValue().proyectoGrado()).isNotNull();
+        verify(logger).info(ArtefactoKey.LOG_LAPIDA_REGISTRADA, artefacto);
+        verify(channel).basicAck(5L, false);
+    }
+
+    @Test
     void debeConfirmar_cuandoElResultadoEsDescartada() throws Exception {
         // Arrange
         when(interactor.ejecutar(any())).thenReturn(new OmisionArtefactoResult.Descartada(artefacto));

@@ -2,6 +2,11 @@ package com.arquisoft.entregables.infrastructure.artefacto.command.secondaryadap
 
 import com.arquisoft.entregables.application.artefacto.command.secondaryport.entity.ArtefactoEntity;
 import com.arquisoft.entregables.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilNumero;
+import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilTexto;
+import com.arquisoft.shared.util.UtilUUID;
 
 public final class ArtefactoJpaMapper {
 
@@ -28,14 +33,14 @@ public final class ArtefactoJpaMapper {
         return new ArtefactoEntity(
                 jpa.getId(),
                 jpa.getProyectoGrado(),
-                jpa.getVersionArtefacto(),
-                jpa.getNumeroVersion(),
-                jpa.getFechaVersion(),
-                jpa.getClaveObjeto(),
-                jpa.getVersionRepositorioArtefacto(),
-                jpa.getNombreDocumento(),
-                jpa.getRepositorio(),
-                jpa.getNombreRepositorio(),
+                UtilObjeto.aplicarPorDefecto(jpa.getVersionArtefacto(), UtilUUID.obtenerUUIDPorDefecto()),
+                UtilNumero.obtenerPorDefecto(jpa.getNumeroVersion()),
+                UtilObjeto.aplicarPorDefecto(jpa.getFechaVersion(), UtilFecha.VACIO),
+                UtilObjeto.aplicarPorDefecto(jpa.getClaveObjeto(), UtilTexto.VACIO),
+                UtilObjeto.aplicarPorDefecto(jpa.getVersionRepositorioArtefacto(), UtilUUID.obtenerUUIDPorDefecto()),
+                UtilObjeto.aplicarPorDefecto(jpa.getNombreDocumento(), UtilTexto.VACIO),
+                UtilObjeto.aplicarPorDefecto(jpa.getRepositorio(), UtilUUID.obtenerUUIDPorDefecto()),
+                UtilObjeto.aplicarPorDefecto(jpa.getNombreRepositorio(), UtilTexto.VACIO),
                 jpa.getOmitidoEn(),
                 jpa.getOmisionOcurridaEn());
     }

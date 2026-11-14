@@ -1,6 +1,7 @@
 package com.arquisoft.entregables.application.estadoentregableproyectogrado.query.validator.impl;
 
-import com.arquisoft.entregables.domain.entregableproyectogrado.exception.AsesorNoPropietarioEntregableProyectoGradoException;
+import com.arquisoft.entregables.domain.asesorproyectogrado.exception.AsesorNoAsignadoProyectoGradoException;
+import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.EntregableProyectoGradoNoEncontradoException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -13,29 +14,45 @@ class ConsultarEstadosEntregableProyectoGradoValidatorImplTest {
     private final ConsultarEstadosEntregableProyectoGradoValidatorImpl validator =
             new ConsultarEstadosEntregableProyectoGradoValidatorImpl();
 
+    private static EntregableProyectoGradoDomain existente() {
+        return EntregableProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 1,
+                UtilUUID.generarNuevoUUID());
+    }
+
     @Test
-    void debePasar_cuandoAsesorEsElDelEntregable() {
+    void debePasar_cuandoElAsesorEsElVigenteDelProyecto() {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(UtilUUID.generarNuevoUUID(), asesor, asesor))
+        assertThatCode(() -> validator.validar(UtilUUID.generarNuevoUUID(), existente(), asesor, asesor))
                 .doesNotThrowAnyException();
     }
 
     @Test
-    void debeLanzarNoEncontrado_cuandoEntregableNoExisteAunqueElSolicitanteDifiera() {
+    void debeLanzarNoEncontrado_cuandoElEntregableNoExiste() {
+        // Arrange
+        var asesor = UtilUUID.generarNuevoUUID();
+
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(UtilUUID.generarNuevoUUID(),
-                UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.generarNuevoUUID()))
+        assertThatThrownBy(() -> validator.validar(
+                UtilUUID.generarNuevoUUID(), EntregableProyectoGradoDomain.VACIO, asesor, asesor))
                 .isInstanceOf(EntregableProyectoGradoNoEncontradoException.class);
     }
 
     @Test
-    void debeLanzarNoPropietario_cuandoAsesorNoEsElDelEntregable() {
+    void debeLanzarAsesorNoAsignado_cuandoElEntregableExistePeroElProyectoNoTieneAsesorVigente() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID()))
-                .isInstanceOf(AsesorNoPropietarioEntregableProyectoGradoException.class);
+        assertThatThrownBy(() -> validator.validar(UtilUUID.generarNuevoUUID(), existente(),
+                UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.generarNuevoUUID()))
+                .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
+    }
+
+    @Test
+    void debeLanzarAsesorNoAsignado_cuandoElAsesorNoEsElVigenteDelProyecto() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(UtilUUID.generarNuevoUUID(), existente(),
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID()))
+                .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
     }
 }

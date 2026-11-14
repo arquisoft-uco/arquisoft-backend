@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public sealed interface FinalizacionProyectoGradoResult {
 
-    record Finalizado(UUID proyectoGrado) implements FinalizacionProyectoGradoResult {}
+    record Finalizado(UUID proyectoGrado, int artefactosEliminados) implements FinalizacionProyectoGradoResult {}
 
-    record Duplicado(UUID proyectoGrado) implements FinalizacionProyectoGradoResult {}
+    record Duplicado(UUID proyectoGrado, int artefactosEliminados) implements FinalizacionProyectoGradoResult {}
 }

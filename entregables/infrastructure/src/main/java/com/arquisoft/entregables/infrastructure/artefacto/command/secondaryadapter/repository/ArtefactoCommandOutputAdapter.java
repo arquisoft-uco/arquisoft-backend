@@ -21,15 +21,22 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     private final AppLogger logger;
 
     @Override
-    public void registrarVersionCerrada(ArtefactoEntity artefacto) {
-        var jpa = ArtefactoJpaMapper.toJpaEntity(artefacto);
-        if (artefactoCommandRepository.existsById(artefacto.id())) {
-            var filas = artefactoCommandRepository.avanzarVersion(jpa);
-            logger.debug(ArtefactoKey.LOG_GUARDADO, artefacto.id(), filas);
-            return;
-        }
-        artefactoCommandRepository.save(jpa);
+    public void insertar(ArtefactoEntity artefacto) {
+        artefactoCommandRepository.insertar(ArtefactoJpaMapper.toJpaEntity(artefacto));
         logger.debug(ArtefactoKey.LOG_GUARDADO, artefacto.id(), 1);
+    }
+
+    @Override
+    public int avanzarVersion(ArtefactoEntity artefacto) {
+        var filas = artefactoCommandRepository.avanzarVersion(ArtefactoJpaMapper.toJpaEntity(artefacto));
+        logger.debug(ArtefactoKey.LOG_GUARDADO, artefacto.id(), filas);
+        return filas;
+    }
+
+    @Override
+    public void registrarLapida(UUID id, UUID proyectoGrado, Instant omitidoEn, Instant ocurridoEn) {
+        artefactoCommandRepository.registrarLapida(id, proyectoGrado, omitidoEn, ocurridoEn);
+        logger.debug(ArtefactoKey.LOG_GUARDADO, id, 1);
     }
 
     @Override
@@ -52,7 +59,8 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     @Override
     public List<ArtefactoEntity> obtenerVigentesPorProyecto(UUID proyectoGrado) {
         return artefactoCommandRepository
-                .findByProyectoGradoAndOmitidoEnIsNullOrderByNombreDocumentoAscIdAsc(proyectoGrado).stream()
+                .findByProyectoGradoAndOmitidoEnIsNullAndNumeroVersionIsNotNullOrderByNombreDocumentoAscIdAsc(proyectoGrado)
+                .stream()
                 .map(ArtefactoJpaMapper::toEntity)
                 .toList();
     }

@@ -6,6 +6,7 @@ import com.arquisoft.entregables.application.paqueteentregable.command.secondary
 import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.model.ArchivoPaqueteArmado;
 import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
 import com.arquisoft.entregables.infrastructure.config.EntregablesAlmacenamientoProperties;
+import com.arquisoft.entregables.infrastructure.config.SincronizacionTransaccional;
 import com.arquisoft.entregables.infrastructure.paqueteentregable.exception.ArchivoArtefactoNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.EntregablesAlmacenamiento;
@@ -21,11 +22,14 @@ import tools.jackson.databind.json.JsonMapper;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -43,16 +47,25 @@ public class ArmadoPaqueteMinioOutputAdapter implements ArmadoPaqueteOutputPort 
     private static final String PREFIJO_TEMPORAL = "paquete-entregable-";
     private static final String NOMBRE_MANIFIESTO = "manifiesto.json";
     private static final String SIN_NOMBRE = "sin-nombre";
-    private static final String SEPARADOR_RUTA = "/";
     private static final String REEMPLAZO = "_";
     private static final int NOMBRE_PROYECTO_MAX = 100;
     private static final String PREFIJO_OOXML = "application/vnd.openxmlformats-officedocument.";
+    private static final int TAMANO_BUFFER = 8192;
+    private static final Map<String, String> EXTENSIONES = Map.of(
+            "application/pdf", ".pdf",
+            "image/png", ".png",
+            "image/jpeg", ".jpg",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ".docx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation", ".pptx");
+    private static final Pattern FINAL_NO_PERMITIDO = Pattern.compile("[. ]+$");
     private static final Set<String> TIPOS_YA_COMPRIMIDOS = Set.of("application/pdf", "image/png", "image/jpeg");
-    private static final Pattern CARACTERES_PROHIBIDOS = Pattern.compile("[\\\\/:*?\"<>|\\p{Cntrl}]");
+    private static final Pattern CARACTERES_PROHIBIDOS = Pattern.compile("[\\\\/:*?\"<>|\\p{Cntrl}\\p{Cf}]");
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
     private final AlmacenamientoObjetos almacenamientoObjetos;
     private final EntregablesAlmacenamientoProperties propiedades;
+    private final SincronizacionTransaccional sincronizacionTransaccional;
     private final AppLogger logger;
 
     @Override
@@ -80,6 +93,16 @@ public class ArmadoPaqueteMinioOutputAdapter implements ArmadoPaqueteOutputPort 
         logger.debug(PaqueteEntregableKey.LOG_PAQUETE_ELIMINADO, bucket, claveObjeto);
     }
 
+    @Override
+    public void eliminarTrasConfirmar(String bucket, String claveObjeto) {
+        sincronizacionTransaccional.trasConfirmar(() -> eliminar(bucket, claveObjeto), bucket, claveObjeto);
+    }
+
+    @Override
+    public void eliminarSiRevierte(String bucket, String claveObjeto) {
+        sincronizacionTransaccional.trasReversion(() -> eliminar(bucket, claveObjeto), bucket, claveObjeto);
+    }
+
     private List<EntradaPaquete> prepararEntradas(String bucket, ContenidoPaqueteEntity contenido) {
         var entradas = new ArrayList<EntradaPaquete>();
         for (var incluido : contenido.incluidos()) {
@@ -90,8 +113,8 @@ public class ArmadoPaqueteMinioOutputAdapter implements ArmadoPaqueteOutputPort 
             }
             var nombreSubido = metadatos.metadatos().get(METADATO_NOMBRE_ARCHIVO);
             var nombreArchivo = UtilTexto.esVacioONulo(nombreSubido)
-                    ? ultimoSegmento(incluido.claveObjeto()) : nombreSubido;
-            var ruta = String.format(Locale.ROOT, "%02d-%s/v%d-%s", entradas.size() + 1,
+                    ? incluido.nombreDocumento() + extensionDe(metadatos.tipoContenido()) : nombreSubido;
+            var ruta = String.format(Locale.ROOT, "%03d-%s/v%d-%s", entradas.size() + 1,
                     sanear(incluido.nombreDocumento()), incluido.numeroVersion(), sanear(nombreArchivo));
             entradas.add(new EntradaPaquete(incluido, ruta, esYaComprimido(metadatos.tipoContenido())));
         }
@@ -120,8 +143,25 @@ public class ArmadoPaqueteMinioOutputAdapter implements ArmadoPaqueteOutputPort 
         try (var objeto = lectura.get()) {
             salida.setLevel(entrada.yaComprimido() ? Deflater.NO_COMPRESSION : Deflater.DEFAULT_COMPRESSION);
             salida.putNextEntry(new ZipEntry(entrada.ruta()));
-            objeto.contenido().transferTo(salida);
+            transferir(objeto.contenido(), salida);
             salida.closeEntry();
+        }
+    }
+
+    private static void transferir(InputStream origen, OutputStream destino) throws IOException {
+        var buffer = new byte[TAMANO_BUFFER];
+        var leidos = leer(origen, buffer);
+        while (leidos >= 0) {
+            destino.write(buffer, 0, leidos);
+            leidos = leer(origen, buffer);
+        }
+    }
+
+    private static int leer(InputStream origen, byte[] buffer) {
+        try {
+            return origen.read(buffer);
+        } catch (IOException e) {
+            throw MinioOperationException.lecturaFallida(e);
         }
     }
 
@@ -182,13 +222,15 @@ public class ArmadoPaqueteMinioOutputAdapter implements ArmadoPaqueteOutputPort 
     }
 
     private static String sanear(String nombre) {
-        var saneado = UtilTexto.aplicarTrim(CARACTERES_PROHIBIDOS.matcher(
-                UtilObjeto.esNulo(nombre) ? UtilTexto.VACIO : nombre).replaceAll(REEMPLAZO));
+        var reemplazado = CARACTERES_PROHIBIDOS.matcher(
+                UtilObjeto.esNulo(nombre) ? UtilTexto.VACIO : nombre).replaceAll(REEMPLAZO);
+        var saneado = FINAL_NO_PERMITIDO.matcher(UtilTexto.aplicarTrim(reemplazado)).replaceAll(UtilTexto.VACIO);
         return UtilTexto.esVacioONulo(saneado) ? SIN_NOMBRE : saneado;
     }
 
-    private static String ultimoSegmento(String ruta) {
-        return ruta.substring(ruta.lastIndexOf(SEPARADOR_RUTA) + 1);
+    private static String extensionDe(String tipoContenido) {
+        var tipo = UtilObjeto.esNulo(tipoContenido) ? UtilTexto.VACIO : tipoContenido.toLowerCase(Locale.ROOT);
+        return EXTENSIONES.getOrDefault(tipo, UtilTexto.VACIO);
     }
 
     private static EntradaPaqueteArmada toEntradaArmada(EntradaPaquete entrada) {

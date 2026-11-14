@@ -8,6 +8,6 @@ public final class ConsultarVistaPreviaPaqueteMapper {
     private ConsultarVistaPreviaPaqueteMapper() {}
 
     public static VistaPreviaPaqueteCriteria toCriteria(ConsultarVistaPreviaPaqueteQuery query) {
-        return new VistaPreviaPaqueteCriteria(query.proyectoGrado());
+        return new VistaPreviaPaqueteCriteria(query.proyectoGrado(), query.asesor());
     }
 }

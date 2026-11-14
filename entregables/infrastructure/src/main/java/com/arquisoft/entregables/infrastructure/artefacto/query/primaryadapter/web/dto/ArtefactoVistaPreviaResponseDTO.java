@@ -2,5 +2,5 @@ package com.arquisoft.entregables.infrastructure.artefacto.query.primaryadapter.
 
 import java.util.UUID;
 
-public record ArtefactoVistaPreviaResponseDTO(UUID artefacto, String documento, int version) {
+public record ArtefactoVistaPreviaResponseDTO(UUID artefacto, String documento, int numeroVersion) {
 }

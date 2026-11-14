@@ -5,9 +5,11 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.GeneracionEntreg
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface GenerarEntregableProyectoGradoValidator {
 
     void validar(GeneracionEntregableProyectoGradoDomain entrada, ProyectoGradoDomain proyecto,
-                 boolean asesorVigente, boolean existeVigente, List<ArtefactoDomain> artefactosVigentes);
+                 boolean asesorVigente, UUID asesorVigenteProyecto, boolean existeVigente,
+                 List<ArtefactoDomain> artefactosVigentes);
 }

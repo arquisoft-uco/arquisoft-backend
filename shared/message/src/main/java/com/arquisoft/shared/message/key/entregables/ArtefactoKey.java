@@ -19,7 +19,7 @@ public enum ArtefactoKey implements ClaveMensaje {
     LOG_PROYECTO_CERRADO("entregables.infraestructura.artefacto.log.proyecto-cerrado", 1),
     LOG_OMITIDO("entregables.infraestructura.artefacto.log.omitido", 1),
     LOG_REACTIVADO("entregables.infraestructura.artefacto.log.reactivado", 1),
-    LOG_SIN_VERSION_CERRADA("entregables.infraestructura.artefacto.log.sin-version-cerrada", 1),
+    LOG_LAPIDA_REGISTRADA("entregables.infraestructura.artefacto.log.lapida-registrada", 1),
     LOG_DESCARTADA("entregables.infraestructura.artefacto.log.descartada", 1),
     LOG_PURGADOS("entregables.infraestructura.artefacto.log.purgados", 2),
     LOG_CONSULTANDO_VISTA_PREVIA("entregables.aplicacion.artefacto.log.consultando-vista-previa", 1),

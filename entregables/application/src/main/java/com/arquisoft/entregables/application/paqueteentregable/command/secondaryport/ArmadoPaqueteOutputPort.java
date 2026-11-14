@@ -8,4 +8,8 @@ public interface ArmadoPaqueteOutputPort {
     ArchivoPaqueteArmado armar(ContenidoPaqueteEntity contenido);
 
     void eliminar(String bucket, String claveObjeto);
+
+    void eliminarTrasConfirmar(String bucket, String claveObjeto);
+
+    void eliminarSiRevierte(String bucket, String claveObjeto);
 }

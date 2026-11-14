@@ -6,6 +6,7 @@ import com.arquisoft.entregables.application.artefacto.command.primaryport.model
 import com.arquisoft.entregables.application.artefacto.command.primaryport.model.RegistrarVersionCerradaArtefactoCommand.DatosVersion;
 import com.arquisoft.entregables.application.artefacto.command.result.RegistroVersionCerradaArtefactoResult;
 import com.arquisoft.entregables.infrastructure.config.EntregablesArtefactosQueueConfig;
+import com.arquisoft.shared.amqp.RabbitListenerConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ArtefactoKey;
@@ -22,8 +23,6 @@ import java.io.IOException;
 @Component
 public class RevisionAsesorCerradaConsumer extends AbstractEventConsumer {
 
-    private static final String UN_SOLO_CONSUMIDOR = "1";
-
     private final RegistrarVersionCerradaArtefactoInteractor registrarVersionCerradaArtefactoInteractor;
     private final AppLogger logger;
 
@@ -38,7 +37,7 @@ public class RevisionAsesorCerradaConsumer extends AbstractEventConsumer {
     }
 
     @RabbitListener(queues = EntregablesArtefactosQueueConfig.REVISION_ASESOR_CERRADA_QUEUE,
-            concurrency = UN_SOLO_CONSUMIDOR)
+            concurrency = RabbitListenerConfig.UN_SOLO_CONSUMIDOR)
     public void onRevisionAsesorCerrada(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
             var payload = deserialize(message, RevisionAsesorCerradaPayload.class);

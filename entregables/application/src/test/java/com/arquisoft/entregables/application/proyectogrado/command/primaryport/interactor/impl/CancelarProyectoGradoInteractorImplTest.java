@@ -31,7 +31,7 @@ class CancelarProyectoGradoInteractorImplTest {
     void debeDelegarEnElUseCase_conElDomainMapeadoDelCommand() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var esperado = new CancelacionProyectoGradoResult.Cancelado(proyectoGrado);
+        var esperado = new CancelacionProyectoGradoResult.Cancelado(proyectoGrado, 1, 2);
         when(cancelarProyectoGradoUseCase.ejecutar(any())).thenReturn(esperado);
 
         // Act
@@ -42,6 +42,8 @@ class CancelarProyectoGradoInteractorImplTest {
         verify(cancelarProyectoGradoUseCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getProyectoGrado()).isEqualTo(proyectoGrado);
         assertThat(captor.getValue().getEstadoNuevo()).isEqualTo(EstadoProyecto.CANCELADO);
+        assertThat(captor.getValue().getPurgaPaquetes().getProyectoGrado()).isEqualTo(proyectoGrado);
+        assertThat(captor.getValue().getPurgaArtefactos().getProyectoGrado()).isEqualTo(proyectoGrado);
         assertThat(resultado).isSameAs(esperado);
     }
 }

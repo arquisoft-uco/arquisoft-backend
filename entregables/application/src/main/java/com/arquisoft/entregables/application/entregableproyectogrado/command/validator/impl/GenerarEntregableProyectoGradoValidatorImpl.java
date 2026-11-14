@@ -6,6 +6,9 @@ import com.arquisoft.entregables.domain.artefacto.model.ArtefactosDelProyecto;
 import com.arquisoft.entregables.domain.artefacto.rules.ArtefactosParaPaqueteRule;
 import com.arquisoft.entregables.domain.artefacto.rules.impl.ArtefactosParaPaqueteRuleImpl;
 import com.arquisoft.entregables.domain.asesor.model.VigenciaAsesor;
+import com.arquisoft.entregables.domain.asesorproyectogrado.model.VigenciaAsesorProyectoGrado;
+import com.arquisoft.entregables.domain.asesorproyectogrado.rules.AsesorAsignadoProyectoGradoRule;
+import com.arquisoft.entregables.domain.asesorproyectogrado.rules.impl.AsesorAsignadoProyectoGradoRuleImpl;
 import com.arquisoft.entregables.domain.asesor.rules.AsesorVigenteRule;
 import com.arquisoft.entregables.domain.asesor.rules.impl.AsesorVigenteRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.GeneracionEntregableProyectoGradoDomain;
@@ -24,12 +27,14 @@ import com.arquisoft.entregables.domain.proyectogrado.rules.impl.ProyectoGradoNo
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class GenerarEntregableProyectoGradoValidatorImpl implements GenerarEntregableProyectoGradoValidator {
 
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
     private final AsesorVigenteRule asesorVigenteRule;
+    private final AsesorAsignadoProyectoGradoRule asesorAsignadoProyectoGradoRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
     private final ProyectoGradoNoCanceladoRule proyectoGradoNoCanceladoRule;
     private final EntregableVigenteUnicoRule entregableVigenteUnicoRule;
@@ -38,6 +43,7 @@ public class GenerarEntregableProyectoGradoValidatorImpl implements GenerarEntre
     public GenerarEntregableProyectoGradoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.asesorVigenteRule = new AsesorVigenteRuleImpl();
+        this.asesorAsignadoProyectoGradoRule = new AsesorAsignadoProyectoGradoRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
         this.proyectoGradoNoCanceladoRule = new ProyectoGradoNoCanceladoRuleImpl();
         this.entregableVigenteUnicoRule = new EntregableVigenteUnicoRuleImpl();
@@ -46,9 +52,12 @@ public class GenerarEntregableProyectoGradoValidatorImpl implements GenerarEntre
 
     @Override
     public void validar(GeneracionEntregableProyectoGradoDomain entrada, ProyectoGradoDomain proyecto,
-                        boolean asesorVigente, boolean existeVigente, List<ArtefactoDomain> artefactosVigentes) {
+                        boolean asesorVigente, UUID asesorVigenteProyecto, boolean existeVigente,
+                        List<ArtefactoDomain> artefactosVigentes) {
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(entrada.getProyectoGrado(), !proyecto.esVacio()));
         asesorVigenteRule.validar(new VigenciaAsesor(entrada.getAsesor(), asesorVigente));
+        asesorAsignadoProyectoGradoRule.validar(new VigenciaAsesorProyectoGrado(
+                entrada.getProyectoGrado(), entrada.getAsesor(), asesorVigenteProyecto));
         proyectoGradoNoFinalizadoRule.validar(new EstadoActualProyectoGrado(
                 entrada.getProyectoGrado(), proyecto.getNombre(), proyecto.getEstadoProyecto()));
         proyectoGradoNoCanceladoRule.validar(new EstadoActualProyectoGrado(

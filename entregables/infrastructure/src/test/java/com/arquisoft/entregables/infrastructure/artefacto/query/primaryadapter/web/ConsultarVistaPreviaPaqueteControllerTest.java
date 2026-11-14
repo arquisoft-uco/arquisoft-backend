@@ -3,7 +3,9 @@ package com.arquisoft.entregables.infrastructure.artefacto.query.primaryadapter.
 import com.arquisoft.entregables.application.artefacto.query.primaryport.interactor.ConsultarVistaPreviaPaqueteInteractor;
 import com.arquisoft.entregables.application.artefacto.query.primaryport.model.ConsultarVistaPreviaPaqueteQuery;
 import com.arquisoft.entregables.application.artefacto.query.readmodel.ArtefactoVistaPreviaReadModel;
+import com.arquisoft.entregables.domain.asesorproyectogrado.exception.AsesorNoAsignadoProyectoGradoException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
+import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -84,7 +86,7 @@ class ConsultarVistaPreviaPaqueteControllerTest {
                 .andExpect(jsonPath("$.cantidad").value(2))
                 .andExpect(jsonPath("$.artefactos[0].artefacto").value(artefacto.toString()))
                 .andExpect(jsonPath("$.artefactos[0].documento").value("Anteproyecto"))
-                .andExpect(jsonPath("$.artefactos[0].version").value(2));
+                .andExpect(jsonPath("$.artefactos[0].numeroVersion").value(2));
         var captor = ArgumentCaptor.forClass(ConsultarVistaPreviaPaqueteQuery.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyecto);
@@ -108,6 +110,21 @@ class ConsultarVistaPreviaPaqueteControllerTest {
         mockMvc.perform(get(ruta("no-es-uuid")).with(token()))
                 .andExpect(status().isBadRequest());
         verify(interactor, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeResponder422ConElCodigoDeAsesorNoAsignado_cuandoElAsesorNoEsElVigente() throws Exception {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        when(interactor.ejecutar(any())).thenThrow(
+                new AsesorNoAsignadoProyectoGradoException(UtilUUID.generarNuevoUUID(), proyecto));
+
+        // Act & Assert
+        mockMvc.perform(get(ruta(proyecto)).with(token()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value(EntregablesCodes.AsesorProyectoGrado.NO_ASIGNADO))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString(proyecto.toString()))));
     }
 
     @Test

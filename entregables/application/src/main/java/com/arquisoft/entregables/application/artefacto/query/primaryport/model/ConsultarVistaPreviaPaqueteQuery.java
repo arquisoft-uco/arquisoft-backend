@@ -7,16 +7,19 @@ import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.UUID;
 
-public record ConsultarVistaPreviaPaqueteQuery(UUID proyectoGrado) {
+public record ConsultarVistaPreviaPaqueteQuery(UUID proyectoGrado, UUID asesor) {
 
-    public static ConsultarVistaPreviaPaqueteQuery crear(UUID proyectoGrado) {
+    public static ConsultarVistaPreviaPaqueteQuery crear(UUID proyectoGrado, UUID asesor) {
         var result = new ValidationResult();
 
         ValidatorObjeto.noNulo(proyectoGrado,
                 EntregablesFields.ProyectoGrado.ID,
                 EntregablesCodes.ProyectoGrado.ID_REQUERIDO, result);
+        ValidatorObjeto.noNulo(asesor,
+                EntregablesFields.AsesorProyectoGrado.ASESOR,
+                EntregablesCodes.AsesorProyectoGrado.ASESOR_REQUERIDO, result);
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new ConsultarVistaPreviaPaqueteQuery(proyectoGrado);
+        return new ConsultarVistaPreviaPaqueteQuery(proyectoGrado, asesor);
     }
 }

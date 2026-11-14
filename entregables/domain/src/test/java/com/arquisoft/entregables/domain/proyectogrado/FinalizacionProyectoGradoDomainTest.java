@@ -1,5 +1,6 @@
 package com.arquisoft.entregables.domain.proyectogrado;
 
+import com.arquisoft.entregables.domain.artefacto.PurgaArtefactosProyectoGradoDomain;
 import com.arquisoft.entregables.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.util.UtilUUID;
@@ -16,18 +17,24 @@ class FinalizacionProyectoGradoDomainTest {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
 
+        var purgaArtefactos = PurgaArtefactosProyectoGradoDomain.crear(proyectoGrado);
+
         // Act
-        var finalizacion = FinalizacionProyectoGradoDomain.crear(proyectoGrado);
+        var finalizacion = FinalizacionProyectoGradoDomain.crear(proyectoGrado, purgaArtefactos);
 
         // Assert
         assertThat(finalizacion.getProyectoGrado()).isEqualTo(proyectoGrado);
+        assertThat(finalizacion.getPurgaArtefactos()).isSameAs(purgaArtefactos);
         assertThat(finalizacion.getEstadoNuevo()).isEqualTo(EstadoProyecto.FINALIZADO);
     }
 
     @Test
     void debeAcumularFieldError_cuandoElProyectoGradoEsNulo() {
+        // Arrange
+        var purgaArtefactos = PurgaArtefactosProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID());
+
         // Act & Assert
-        assertThatThrownBy(() -> FinalizacionProyectoGradoDomain.crear(null))
+        assertThatThrownBy(() -> FinalizacionProyectoGradoDomain.crear(null, purgaArtefactos))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                         .singleElement()

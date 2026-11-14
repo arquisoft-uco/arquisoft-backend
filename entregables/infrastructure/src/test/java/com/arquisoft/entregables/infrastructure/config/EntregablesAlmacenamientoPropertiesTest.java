@@ -12,6 +12,7 @@ class EntregablesAlmacenamientoPropertiesTest {
         // Arrange
         var propiedades = new EntregablesAlmacenamientoProperties();
         propiedades.setBucket("entregables");
+        propiedades.setBucketArtefactos("artefactos");
 
         // Act & Assert
         assertThatCode(propiedades::afterPropertiesSet).doesNotThrowAnyException();
@@ -23,9 +24,24 @@ class EntregablesAlmacenamientoPropertiesTest {
         var sinBucket = new EntregablesAlmacenamientoProperties();
         var enBlanco = new EntregablesAlmacenamientoProperties();
         enBlanco.setBucket("  ");
+        enBlanco.setBucketArtefactos("artefactos");
 
         // Act & Assert
         assertThatThrownBy(sinBucket::afterPropertiesSet).isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(enBlanco::afterPropertiesSet).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void debeFallarElArranque_cuandoElBucketDeArtefactosFaltaOEstaEnBlanco() {
+        // Arrange
+        var sinOrigen = new EntregablesAlmacenamientoProperties();
+        sinOrigen.setBucket("entregables");
+        var origenEnBlanco = new EntregablesAlmacenamientoProperties();
+        origenEnBlanco.setBucket("entregables");
+        origenEnBlanco.setBucketArtefactos("  ");
+
+        // Act & Assert
+        assertThatThrownBy(sinOrigen::afterPropertiesSet).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(origenEnBlanco::afterPropertiesSet).isInstanceOf(IllegalStateException.class);
     }
 }

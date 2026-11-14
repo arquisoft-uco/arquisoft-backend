@@ -9,7 +9,11 @@ import java.util.UUID;
 
 public interface ArtefactoOutputPort {
 
-    void registrarVersionCerrada(ArtefactoEntity artefacto);
+    void insertar(ArtefactoEntity artefacto);
+
+    int avanzarVersion(ArtefactoEntity artefacto);
+
+    void registrarLapida(UUID id, UUID proyectoGrado, Instant omitidoEn, Instant ocurridoEn);
 
     void marcarOmision(UUID id, Instant omitidoEn, Instant ocurridoEn);
 

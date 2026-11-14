@@ -37,7 +37,7 @@ class RegistrarVersionCerradaArtefactoCommandTest {
     @Test
     void debeAcumularErroresDeEntrada_cuandoElPayloadVieneIncompleto() {
         // Arrange
-        var version = new RegistrarVersionCerradaArtefactoCommand.DatosVersion("no-uuid", 0, " ", null);
+        var version = new RegistrarVersionCerradaArtefactoCommand.DatosVersion("no-uuid", null, " ", null);
         var repositorio = new RegistrarVersionCerradaArtefactoCommand.DatosRepositorio(null, "x", "");
 
         // Act & Assert

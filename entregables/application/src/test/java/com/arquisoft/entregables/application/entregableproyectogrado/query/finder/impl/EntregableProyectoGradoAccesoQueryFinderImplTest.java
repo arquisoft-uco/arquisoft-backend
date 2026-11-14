@@ -40,7 +40,7 @@ class EntregableProyectoGradoAccesoQueryFinderImplTest {
         assertThat(entregable.getId()).isEqualTo(id);
         assertThat(entregable.getProyectoGrado()).isEqualTo(proyecto);
         assertThat(entregable.getVersion()).isEqualTo(3);
-        assertThat(entregable.getAsesor()).isEqualTo(asesor);
+        assertThat(UtilUUID.esPorDefecto(entregable.getAsesor())).isTrue();
         assertThat(entregable.isProyectoCancelado()).isTrue();
     }
 

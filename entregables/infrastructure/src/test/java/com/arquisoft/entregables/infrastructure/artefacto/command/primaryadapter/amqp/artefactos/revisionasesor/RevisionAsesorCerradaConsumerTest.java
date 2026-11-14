@@ -119,7 +119,7 @@ class RevisionAsesorCerradaConsumerTest {
     @Test
     void debeEnviarNackSinReencolar_cuandoElPayloadEsInvalido() throws Exception {
         // Act
-        consumer.onRevisionAsesorCerrada(mensaje("0", 3L), channel);
+        consumer.onRevisionAsesorCerrada(mensaje("null", 3L), channel);
 
         // Assert
         verify(interactor, never()).ejecutar(any());
