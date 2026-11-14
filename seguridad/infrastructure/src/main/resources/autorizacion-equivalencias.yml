@@ -156,6 +156,7 @@ security:
         - {method: POST, path: "/api/evaluaciones/items-cuantitativos-jurado", role: "evaluaciones:item-cuantitativo-jurado:create"}
         - {method: DELETE, path: "/api/evaluaciones/items-cuantitativos-jurado/{itemId}", role: "evaluaciones:item-cuantitativo-jurado:delete"}
         - {method: PATCH, path: "/api/evaluaciones/items-cuantitativos-jurado/{itemId}", role: "evaluaciones:item-cuantitativo-jurado:update"}
+        - {method: PATCH, path: "/api/evaluaciones/observaciones-item-asesor/{observacionId}", role: "evaluaciones:observacion-item-asesor:update"}
         - {method: DELETE, path: "/api/evaluaciones/observaciones-item-jurado/{observacionId}", role: "evaluaciones:observacion-item-jurado:delete"}
         - {method: PATCH, path: "/api/evaluaciones/observaciones-item-jurado/{observacionId}", role: "evaluaciones:observacion-item-jurado:update"}
         - {method: POST, path: "/api/evaluaciones/{evaluacionId}/evaluaciones-jurado", role: "evaluaciones:evaluacion-jurado-estudiante:view"}

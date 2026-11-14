@@ -19,4 +19,6 @@ public interface EvaluacionCuantitativaAsesorOutputPort {
     boolean existePorItem(UUID item);
 
     Optional<ContextoEvaluacionCuantitativaAsesorEntity> obtenerContexto(UUID evaluacionCuantitativaAsesor);
+
+    Optional<ContextoEvaluacionCuantitativaAsesorEntity> obtenerContextoPorObservacion(UUID observacion);
 }

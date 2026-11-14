@@ -17,7 +17,18 @@ public enum ObservacionItemAsesorKey implements ClaveMensaje {
     ERROR_DESCRIPCION_DUPLICADA(
             "evaluaciones.dominio.observacionitemasesor.error.descripcion-duplicada", 0),
     ERROR_DESCRIPCION_DUPLICADA_DETALLE(
-            "evaluaciones.dominio.observacionitemasesor.error.descripcion-duplicada-detalle", 1);
+            "evaluaciones.dominio.observacionitemasesor.error.descripcion-duplicada-detalle", 1),
+    LOG_MODIFICANDO("evaluaciones.aplicacion.observacionitemasesor.log.modificando", 1),
+    LOG_VERIFICACION_MODIFICAR("evaluaciones.aplicacion.observacionitemasesor.log.verificacion-modificar", 3),
+    LOG_MODIFICADA("evaluaciones.aplicacion.observacionitemasesor.log.modificada", 1),
+    ERROR_OBSERVACION_NO_ENCONTRADA(
+            "evaluaciones.dominio.observacionitemasesor.error.observacion-no-encontrada", 0),
+    ERROR_OBSERVACION_NO_ENCONTRADA_DETALLE(
+            "evaluaciones.dominio.observacionitemasesor.error.observacion-no-encontrada-detalle", 1),
+    ERROR_MODIFICACION_EVALUACION_FINALIZADA(
+            "evaluaciones.dominio.observacionitemasesor.error.modificacion-evaluacion-finalizada", 0),
+    ERROR_MODIFICACION_EVALUACION_FINALIZADA_DETALLE(
+            "evaluaciones.dominio.observacionitemasesor.error.modificacion-evaluacion-finalizada-detalle", 1);
 
     private final String clave;
     private final int parametros;

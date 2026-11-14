@@ -9,4 +9,8 @@ public interface ObservacionItemAsesorOutputPort {
     void registrar(ObservacionItemAsesorEntity entity);
 
     boolean existePorEvaluacionYDescripcion(UUID evaluacionCuantitativaAsesor, String descripcion);
+
+    boolean existeOtraConDescripcion(UUID observacion, String descripcion);
+
+    void actualizarDescripcion(UUID id, String descripcion);
 }
