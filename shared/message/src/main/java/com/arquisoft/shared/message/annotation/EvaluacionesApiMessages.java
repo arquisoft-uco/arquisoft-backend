@@ -226,7 +226,7 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones cualitativas del asesor";
         public static final String TAG_DESCRIPTION =
-                "Registro, omisión y consulta de las evaluaciones cualitativas asociadas a una evaluación de asesor";
+                "Registro, omisión, cambio de criterio y consulta de las evaluaciones cualitativas asociadas a una evaluación de asesor";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cualitativas del asesor";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta las evaluaciones cualitativas realizadas por el asesor autenticado en una evaluación suya";
@@ -261,6 +261,15 @@ public final class EvaluacionesApiMessages {
         public static final String OMITIR_RESP_422 =
                 "La evaluación no existe, no pertenece al asesor, está finalizada, hay ítems repetidos "
                         + "o algún ítem no tiene evaluación registrada";
+        public static final String CAMBIAR_CRITERIO_SUMMARY = "Cambiar criterio de una evaluación cualitativa del asesor";
+        public static final String CAMBIAR_CRITERIO_DESCRIPTION =
+                "Cambia el criterio con el que el asesor autenticado evaluó un ítem cualitativo en una "
+                        + "evaluación suya que aún no está finalizada";
+        public static final String CAMBIAR_CRITERIO_RESP_204 = "Criterio cambiado";
+        public static final String CAMBIAR_CRITERIO_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_CRITERIO_RESP_422 =
+                "La evaluación cualitativa no existe, no pertenece al asesor, su evaluación está finalizada "
+                        + "o el criterio no existe";
     }
 
     public static final class EvaluacionCuantitativaAsesor {

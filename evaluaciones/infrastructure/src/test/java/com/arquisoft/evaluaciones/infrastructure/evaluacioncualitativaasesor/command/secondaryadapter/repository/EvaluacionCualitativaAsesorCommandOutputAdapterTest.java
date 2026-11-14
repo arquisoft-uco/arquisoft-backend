@@ -126,6 +126,58 @@ class EvaluacionCualitativaAsesorCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var item = UtilUUID.generarNuevoUUID();
+        var criterio = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, criterio)));
+        repository.flush();
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).contains(new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, criterio));
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoNoExiste() {
+        // Act
+        var resultado = adapter.obtenerPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeActualizarSoloElCriterio() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var item = UtilUUID.generarNuevoUUID();
+        var criterioNuevo = UtilUUID.generarNuevoUUID();
+        var otra = new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        adapter.registrarTodas(List.of(
+                new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, UtilUUID.generarNuevoUUID()),
+                otra));
+        repository.flush();
+
+        // Act
+        adapter.actualizar(new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, criterioNuevo));
+        repository.flush();
+
+        // Assert
+        assertThat(adapter.obtenerPorId(id)).contains(
+                new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, criterioNuevo));
+        assertThat(adapter.obtenerPorId(otra.id())).contains(otra);
+        assertThat(repository.findAll()).hasSize(2);
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
     void noDebeTocarOtraEvaluacionAsesor_cuandoMismoItem() {
         // Arrange
         var evaluacionAsesor = UtilUUID.generarNuevoUUID();
