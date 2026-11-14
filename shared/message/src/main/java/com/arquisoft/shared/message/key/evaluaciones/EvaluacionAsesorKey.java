@@ -20,7 +20,10 @@ public enum EvaluacionAsesorKey implements ClaveMensaje {
             "evaluaciones.infraestructura.evaluacionasesor.error.realizada-no-disponible-detalle", 1),
     LOG_CONSULTANDO_REALIZADA("evaluaciones.aplicacion.evaluacionasesor.log.consultando-realizada", 1),
     LOG_CONSULTA_REALIZADA_COMPLETADA(
-            "evaluaciones.aplicacion.evaluacionasesor.log.consulta-realizada-completada", 1);
+            "evaluaciones.aplicacion.evaluacionasesor.log.consulta-realizada-completada", 1),
+    LOG_CONSULTANDO_ASIGNADAS("evaluaciones.aplicacion.evaluacionasesor.log.consultando-asignadas", 5),
+    LOG_CONSULTA_ASIGNADAS_COMPLETADA(
+            "evaluaciones.aplicacion.evaluacionasesor.log.consulta-asignadas-completada", 3);
 
     private final String clave;
     private final int parametros;
