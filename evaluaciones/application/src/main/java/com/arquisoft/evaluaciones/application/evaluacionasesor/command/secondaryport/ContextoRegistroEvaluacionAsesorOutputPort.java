@@ -8,4 +8,7 @@ import java.util.UUID;
 public interface ContextoRegistroEvaluacionAsesorOutputPort {
 
     Optional<ContextoRegistroEvaluacionAsesorEntity> obtenerContextoBloqueado(UUID evaluacionAsesor);
+
+    Optional<ContextoRegistroEvaluacionAsesorEntity> obtenerContextoBloqueadoPorEvaluacionCualitativa(
+            UUID evaluacionCualitativa);
 }

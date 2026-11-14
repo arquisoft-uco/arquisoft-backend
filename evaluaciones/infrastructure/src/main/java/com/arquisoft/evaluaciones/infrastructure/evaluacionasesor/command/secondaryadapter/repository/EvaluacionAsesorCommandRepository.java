@@ -25,4 +25,17 @@ public interface EvaluacionAsesorCommandRepository extends JpaRepository<Evaluac
             """)
     Optional<ContextoRegistroEvaluacionAsesorProjection> buscarContextoBloqueado(
             @Param("evaluacionAsesor") UUID evaluacionAsesor);
+
+    @NativeQuery("""
+            SELECT ea.id AS id, e.id AS evaluacion,
+                   e.estado_evaluacion_id AS estado, e.entregable_id AS entregable,
+                   ea.asesor_id AS asesor
+            FROM evaluacion_cualitativa_asesor eca
+            JOIN evaluacion_asesor ea ON ea.id = eca.evaluacion_asesor_id
+            JOIN evaluacion e ON e.id = ea.evaluacion_id
+            WHERE eca.id = :evaluacionCualitativa
+            FOR UPDATE OF e, ea
+            """)
+    Optional<ContextoRegistroEvaluacionAsesorProjection> buscarContextoBloqueadoPorEvaluacionCualitativa(
+            @Param("evaluacionCualitativa") UUID evaluacionCualitativa);
 }

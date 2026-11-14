@@ -437,6 +437,7 @@
               "evaluaciones:evaluacion-asesor-detalle:view",
               "evaluaciones:evaluacion-cualitativa-asesor:create",
               "evaluaciones:evaluacion-cualitativa-asesor:delete",
+              "evaluaciones:evaluacion-cualitativa-asesor:update",
               "evaluaciones:evaluacion-cuantitativa-asesor:create",
               "evaluaciones:evaluacion-cuantitativa-asesor:delete",
               "evaluaciones:observacion-item-asesor:create",
@@ -2795,6 +2796,15 @@
         {
           "id": "db182474-7206-40ea-8be1-292c1360c1bd",
           "name": "evaluaciones:evaluacion-cualitativa-asesor:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "0e04c7e7-9900-402d-b713-11764f7c64b6",
+          "name": "evaluaciones:evaluacion-cualitativa-asesor:update",
           "description": "",
           "composite": false,
           "clientRole": true,
