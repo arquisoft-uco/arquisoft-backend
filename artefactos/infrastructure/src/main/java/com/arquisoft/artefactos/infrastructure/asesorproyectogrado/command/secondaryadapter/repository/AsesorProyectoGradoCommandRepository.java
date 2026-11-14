@@ -2,9 +2,11 @@ package com.arquisoft.artefactos.infrastructure.asesorproyectogrado.command.seco
 
 import com.arquisoft.artefactos.infrastructure.asesorproyectogrado.command.secondaryadapter.entity.AsesorProyectoGradoJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -20,5 +22,11 @@ public interface AsesorProyectoGradoCommandRepository extends JpaRepository<Ases
             + "WHERE b.proyectoGradoId = :proyectoGradoId)")
     List<AsesorProyectoGradoJpaEntity> findMasRecientesByProyectoGradoId(@Param("proyectoGradoId") UUID proyectoGradoId);
 
-    Optional<AsesorProyectoGradoJpaEntity> findByAsesorIdAndProyectoGradoId(UUID asesorId, UUID proyectoGradoId);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT a FROM AsesorProyectoGradoJpaEntity a
+            WHERE a.asesorId = :asesorId AND a.proyectoGradoId = :proyectoGradoId
+            """)
+    Optional<AsesorProyectoGradoJpaEntity> buscarBloqueadoPorAsesorYProyectoGrado(
+            @Param("asesorId") UUID asesorId, @Param("proyectoGradoId") UUID proyectoGradoId);
 }

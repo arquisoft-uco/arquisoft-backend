@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,14 +29,14 @@ public class AsesorCommandOutputAdapter implements AsesorOutputPort {
     @Override
     public void eliminarLogica(UUID id, Instant ocurridoEn) {
         asesorCommandRepository.eliminarLogica(id, ocurridoEn);
-        logger.debug(AsesorKey.LOG_ACTUALIZADO, id);
+        logger.debug(AsesorKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Override
     public void reactivar(AsesorEntity asesor) {
         asesorCommandRepository.reactivar(asesor.id(), asesor.identificador(), asesor.nombre(),
                 asesor.email(), asesor.ocurridoEn());
-        logger.debug(AsesorKey.LOG_ACTUALIZADO, asesor.id());
+        logger.debug(AsesorKey.LOG_FILA_REACTIVADA, asesor.id());
     }
 
     @Override
@@ -46,6 +47,13 @@ public class AsesorCommandOutputAdapter implements AsesorOutputPort {
     @Override
     public void actualizar(AsesorEntity asesor) {
         asesorCommandRepository.save(AsesorJpaMapper.toJpaEntity(asesor));
-        logger.debug(AsesorKey.LOG_ACTUALIZADO, asesor.id());
+        logger.debug(AsesorKey.LOG_FILA_ACTUALIZADA, asesor.id());
+    }
+
+    @Override
+    public List<AsesorEntity> obtenerAsignadosPorProyectoGrado(UUID proyectoGrado, String estadoAsesor) {
+        return asesorCommandRepository.buscarPorUltimoEstadoEnProyectoGrado(proyectoGrado, estadoAsesor).stream()
+                .map(AsesorJpaMapper::toEntity)
+                .toList();
     }
 }

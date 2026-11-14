@@ -27,6 +27,7 @@ spring:
       - "classpath:rutas-repositorio-artefactos.yml"
       - "classpath:rutas-mapas-ruta.yml"
       - "classpath:rutas-entregables.yml"
+      - "classpath:rutas-biblioteca.yml"
       # Tabla de equivalencias del adaptador role-table (emisor legado); se borra junto con el.
       - "classpath:autorizacion-equivalencias.yml"
   banner:
@@ -36,7 +37,7 @@ spring:
     version: 1.0.0
 
   # ==================== VIRTUAL THREADS (ADR-008) ====================
-  # Java 21 + Spring Boot 4.x: habilita virtual threads en Tomcat, @Async y RabbitMQ listeners.
+  # Java 25 + Spring Boot 4.x: habilita virtual threads en Tomcat, @Async y RabbitMQ listeners.
   # Beneficio: I/O bloqueante (Keycloak, JDBC, Redis) sin consumo de OS threads.
   threads:
     virtual:
@@ -186,8 +187,8 @@ minio:
     descarga-minutos: ${MINIO_DOWNLOAD_EXPIRY_MINUTES:5}
 
 # ==================== REPOSITORIO DE ARTEFACTOS (almacenamiento) ====================
-# El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (5 MB); los 50 MB
-# de ADR-004 son una cuota total por proyecto de grado en artefactos, no un limite por archivo.
+# El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (5 MB). El limite
+# por archivo (50 MB) y la cuota por proyecto de grado (1 GB) de ADR-004 viven en la seccion ARTEFACTOS.
 repositorio-artefactos:
   almacenamiento:
     bucket: ${REPOSITORIO_ARTEFACTOS_BUCKET:repositorio-artefactos}
@@ -198,7 +199,16 @@ repositorio-artefactos:
 artefactos:
   almacenamiento:
     bucket: ${ARTEFACTOS_BUCKET:artefactos}
-    tamano-maximo-bytes: ${ARTEFACTOS_TAMANO_MAXIMO_BYTES:5242880}
+    tamano-maximo-bytes: ${ARTEFACTOS_TAMANO_MAXIMO_BYTES:52428800}
+    cuota-proyecto-grado-bytes: ${ARTEFACTOS_CUOTA_PROYECTO_GRADO_BYTES:1073741824}
+
+# ==================== ENTREGABLES (almacenamiento) ====================
+# Bucket propio (lo crea minio/configurar.sh, nunca el backend): copia de cada artefacto cerrado bajo artefactos/ y
+# ZIP de cada entregable bajo paquetes/. bucket-artefactos es el origen de la copia (el bucket de artefactos).
+entregables:
+  almacenamiento:
+    bucket: ${ENTREGABLES_BUCKET:entregables}
+    bucket-artefactos: ${ENTREGABLES_BUCKET_ARTEFACTOS:${ARTEFACTOS_BUCKET:artefactos}}
 
 # ==================== DATASOURCES POR BOUNDED CONTEXT ====================
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
@@ -397,6 +407,34 @@ security:
           nombre-usuario: preferred_username
           nombre: name
           roles: realm_access.roles
+    # Canal de autenticacion por la cookie de sesion del BFF de Security Baseline, junto a Bearer.
+    # Apagado por defecto: se enciende con SESSION_AUTH_ENABLED=true y SESSION_PDP_URL.
+    # Con el canal encendido el arranque exige CORS_ALLOW_CREDENTIALS=true y origenes explicitos.
+    session:
+      id: ${SESSION_PROVIDER_ID:sesion-pdp}
+      enabled: ${SESSION_AUTH_ENABLED:false}
+      cookie-name: ${SESSION_COOKIE_NAME:SECURITY_BASELINE_SESSION}
+      pdp-url: ${SESSION_PDP_URL:}
+      allow-insecure-http: ${SESSION_ALLOW_INSECURE_HTTP:false}
+      connect-timeout: ${SESSION_CONNECT_TIMEOUT:1s}
+      read-timeout: ${SESSION_READ_TIMEOUT:3s}
+      cache:
+        ttl: ${SESSION_CACHE_TTL:PT60S}
+        max-size: ${SESSION_CACHE_MAX_SIZE:10000}
+      # Id de usuario de la sesion: se resuelve por correo contra el contexto usuarios (POST /usuarios/por-correo)
+      # con una credencial de servicio (client_credentials del cliente arquisoft-seguridad-usuarios, realm arquisoft).
+      # Exige AUTH_LEGACY_ENABLED=true: ese token lo valida el emisor legado.
+      usuarios:
+        url: ${SESSION_USUARIOS_URL:http://localhost:${server.port:8080}}
+        allow-insecure-http: ${SESSION_USUARIOS_ALLOW_INSECURE_HTTP:false}
+        connect-timeout: ${SESSION_USUARIOS_CONNECT_TIMEOUT:1s}
+        read-timeout: ${SESSION_USUARIOS_READ_TIMEOUT:3s}
+        cache-ttl: ${SESSION_USUARIOS_CACHE_TTL:PT5M}
+        token-url: ${SESSION_USUARIOS_TOKEN_URL:${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/token}
+        client-id: ${SESSION_USUARIOS_CLIENT_ID:arquisoft-seguridad-usuarios}
+        client-secret: ${SESSION_USUARIOS_CLIENT_SECRET:}
+        por-correo-path: ${SESSION_USUARIOS_POR_CORREO_PATH:/api/usuarios/por-correo}
+        proveedor: ${SESSION_USUARIOS_PROVEEDOR:legado}
   authorization:
     public-paths: ${SECURITY_PUBLIC_PATHS:/actuator/health/**,/actuator/prometheus,/swagger-ui/**,/v3/api-docs/**,/swagger-resources/**}
     authenticated-paths: ${SECURITY_AUTHENTICATED_PATHS:/auth/logout}
@@ -445,9 +483,9 @@ security:
       client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
       client-secret: ${KEYCLOAK_CLIENT_SECRET:}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173,http://localhost:5174}
     allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
-    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type,X-Correlation-Id}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type,X-Correlation-Id,X-XSRF-TOKEN,X-Proveedor-Identidad}
     max-age: ${CORS_MAX_AGE:3600}
     allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
   rate-limit:

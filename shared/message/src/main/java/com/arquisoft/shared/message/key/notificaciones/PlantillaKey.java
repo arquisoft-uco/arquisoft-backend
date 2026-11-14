@@ -32,9 +32,9 @@ public enum PlantillaKey implements ClaveMensaje {
     CUERPO_SOLICITUD_AMPLIACION_PLAZO(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo", 3),
     ASUNTO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS(
-            "notificaciones.aplicacion.plantilla.asunto.solicitud-registro-modificacion-usuarios", 1),
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-usuarios", 1),
     CUERPO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS(
-            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-registro-modificacion-usuarios", 3),
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-usuarios", 3),
     ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA(
             "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador-respondida", 0),
     CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA(
@@ -52,9 +52,9 @@ public enum PlantillaKey implements ClaveMensaje {
     CUERPO_SOLICITUD_AMPLIACION_PLAZO_RESPONDIDA(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo-respondida", 3),
     ASUNTO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA(
-            "notificaciones.aplicacion.plantilla.asunto.solicitud-registro-modificacion-usuarios-respondida", 0),
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-usuarios-respondida", 0),
     CUERPO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA(
-            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-registro-modificacion-usuarios-respondida", 3),
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-usuarios-respondida", 3),
     ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO(
             "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador-estado-modificado", 0),
     CUERPO_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO(
@@ -72,9 +72,9 @@ public enum PlantillaKey implements ClaveMensaje {
     CUERPO_SOLICITUD_AMPLIACION_PLAZO_ESTADO_MODIFICADO(
             "notificaciones.aplicacion.plantilla.cuerpo.solicitud-ampliacion-plazo-estado-modificado", 3),
     ASUNTO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO(
-            "notificaciones.aplicacion.plantilla.asunto.solicitud-registro-modificacion-usuarios-estado-modificado", 0),
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-usuarios-estado-modificado", 0),
     CUERPO_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO(
-            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-registro-modificacion-usuarios-estado-modificado", 3),
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-usuarios-estado-modificado", 3),
     ASUNTO_REVISION_ITEM_AGREGADA(
             "notificaciones.aplicacion.plantilla.asunto.revision-item-agregada", 1),
     CUERPO_REVISION_ITEM_AGREGADA(
@@ -112,6 +112,18 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.asesor-proyecto-grado-finalizado", 1),
     CUERPO_ASESOR_PROYECTO_GRADO_FINALIZADO(
             "notificaciones.aplicacion.plantilla.cuerpo.asesor-proyecto-grado-finalizado", 2),
+    ASUNTO_PROYECTO_GRADO_FINALIZADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-finalizado-estudiante", 1),
+    CUERPO_PROYECTO_GRADO_FINALIZADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-finalizado-estudiante", 2),
+    ASUNTO_PROYECTO_GRADO_CANCELADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-cancelado-estudiante", 1),
+    CUERPO_PROYECTO_GRADO_CANCELADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-cancelado-estudiante", 3),
+    ASUNTO_PROYECTO_GRADO_CANCELADO_ASESOR(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-cancelado-asesor", 1),
+    CUERPO_PROYECTO_GRADO_CANCELADO_ASESOR(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-cancelado-asesor", 3),
     ASUNTO_ESTADO_FICHA_PERFIL_AGREGADO(
             "notificaciones.aplicacion.plantilla.asunto.estado-ficha-perfil-agregado", 2),
     CUERPO_ESTADO_FICHA_PERFIL_AGREGADO(

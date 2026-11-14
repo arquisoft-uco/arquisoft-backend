@@ -7,6 +7,7 @@ import com.arquisoft.shared.minio.model.MetadatosObjeto;
 import com.arquisoft.shared.minio.model.SolicitudEnlaceDescarga;
 import com.arquisoft.shared.minio.model.SolicitudFormularioCarga;
 
+import java.io.InputStream;
 import java.util.Optional;
 
 public interface AlmacenamientoObjetos {
@@ -19,7 +20,13 @@ public interface AlmacenamientoObjetos {
 
     Optional<LecturaObjeto> abrirLectura(String bucket, String key);
 
-    void copiar(String bucket, String keyOrigen, String keyDestino, String etagEsperado);
+    default void copiar(String bucket, String keyOrigen, String keyDestino, String etagEsperado) {
+        copiar(bucket, keyOrigen, bucket, keyDestino, etagEsperado);
+    }
+
+    void copiar(String bucketOrigen, String keyOrigen, String bucketDestino, String keyDestino, String etagEsperado);
+
+    void subir(String bucket, String key, InputStream contenido, long tamano, String tipoContenido);
 
     void eliminar(String bucket, String key);
 }

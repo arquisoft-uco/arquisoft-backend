@@ -13,7 +13,8 @@ class CambiarEstadoEntregableProyectoGradoMapperTest {
     void debeMapearElCommandAlObjetoDeAccion_cuandoSeConvierte() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
-        var command = CambiarEstadoEntregableProyectoGradoCommand.crear(entregable, "CANCELADO");
+        var asesor = UtilUUID.generarNuevoUUID();
+        var command = CambiarEstadoEntregableProyectoGradoCommand.crear(entregable, "CANCELADO", asesor);
 
         // Act
         var cambio = CambiarEstadoEntregableProyectoGradoMapper.toDomain(command);
@@ -21,5 +22,6 @@ class CambiarEstadoEntregableProyectoGradoMapperTest {
         // Assert
         assertThat(cambio.getEntregableProyectoGrado()).isEqualTo(entregable);
         assertThat(cambio.getEstadoEntregable()).isEqualTo(EstadoEntregable.CANCELADO);
+        assertThat(cambio.getAsesor()).isEqualTo(asesor);
     }
 }

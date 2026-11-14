@@ -1,13 +1,13 @@
 package com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter;
 
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedorAutenticacion;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.DecisionAcceso;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
+import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias.TablaEquivalenciasDecisionAccesoOutputAdapter;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.none.SinDecisionAccesoOutputAdapter;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepDecisionAccesoOutputAdapter;
 import com.arquisoft.seguridad.infrastructure.autorizacion.exception.ProveedorAutorizacionNoDisponibleException;
-import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
-import com.arquisoft.seguridad.infrastructure.config.autenticacion.ClaimsIdentidad;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ModoAutorizacion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,11 +16,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,9 +41,13 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
 
     private DecisionAccesoPorEmisorOutputAdapter adaptador;
 
-    private static AutenticacionProperties.Emisor emisor(String id, ModoAutorizacion modo) {
-        return new AutenticacionProperties.Emisor(id, true, "https://" + id, "", List.of(), modo, false,
-                new ClaimsIdentidad("sub", "email", "preferred_username", "name", ""));
+    private static ProveedorAutenticacion proveedor(String emisor, ModoAutorizacion modo) {
+        var proveedor = mock(ProveedorAutenticacion.class);
+        lenient().when(proveedor.habilitado()).thenReturn(true);
+        lenient().when(proveedor.autorizacion(emisor)).thenReturn(Optional.of(modo));
+        lenient().when(proveedor.autorizacion(org.mockito.ArgumentMatchers.argThat(id -> !emisor.equals(id))))
+                .thenReturn(Optional.empty());
+        return proveedor;
     }
 
     private static SolicitudAcceso solicitud(String emisor) {
@@ -48,13 +56,16 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
 
     @BeforeEach
     void preparar() {
-        var propiedades = new AutenticacionProperties(List.of(emisor("a", ModoAutorizacion.PEP),
-                emisor("b", ModoAutorizacion.ROLE_TABLE), emisor("c", ModoAutorizacion.NONE)));
-        adaptador = new DecisionAccesoPorEmisorOutputAdapter(propiedades, pep, tabla, sin);
+        var proveedores = new ProveedoresAutenticacion(List.of(proveedor("a", ModoAutorizacion.PEP),
+                proveedor("b", ModoAutorizacion.ROLE_TABLE), proveedor("c", ModoAutorizacion.NONE)));
+        lenient().when(pep.modo()).thenReturn(ModoAutorizacion.PEP);
+        lenient().when(tabla.modo()).thenReturn(ModoAutorizacion.ROLE_TABLE);
+        lenient().when(sin.modo()).thenReturn(ModoAutorizacion.NONE);
+        adaptador = new DecisionAccesoPorEmisorOutputAdapter(proveedores, List.of(pep, tabla, sin));
     }
 
     @Test
-    void debeDelegarEnElAdaptadorDelModoDelEmisor_cuandoDecide() {
+    void debeElegirElAdaptadorSegunElModoDelProveedorDelEmisor() {
         // Arrange
         var denegada = new DecisionAcceso.Denegada();
         var permitida = new DecisionAcceso.Permitida("");
@@ -75,6 +86,34 @@ class DecisionAccesoPorEmisorOutputAdapterTest {
         // Act / Assert
         assertThatThrownBy(() -> adaptador.decidir(solicitud("zzz")))
                 .isInstanceOf(ProveedorAutorizacionNoDisponibleException.class);
-        verifyNoInteractions(pep, tabla, sin);
+        verify(pep, never()).decidir(any());
+        verify(tabla, never()).decidir(any());
+        verify(sin, never()).decidir(any());
+    }
+
+    @Test
+    void debeFallarElArranque_cuandoDosAdaptadoresDeclaranElMismoModo() {
+        // Arrange
+        var proveedores = new ProveedoresAutenticacion(List.of());
+        var duplicado = mock(SinDecisionAccesoOutputAdapter.class);
+        when(duplicado.modo()).thenReturn(ModoAutorizacion.PEP);
+        var adaptadores = List.<DecisionAccesoPorModo>of(pep, duplicado, tabla, sin);
+
+        // Act / Assert
+        assertThatThrownBy(() -> new DecisionAccesoPorEmisorOutputAdapter(proveedores, adaptadores))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("PEP");
+    }
+
+    @Test
+    void debeFallarElArranque_cuandoUnModoNoTieneAdaptador() {
+        // Arrange
+        var proveedores = new ProveedoresAutenticacion(List.of());
+        var adaptadores = List.<DecisionAccesoPorModo>of(pep, tabla);
+
+        // Act / Assert
+        assertThatThrownBy(() -> new DecisionAccesoPorEmisorOutputAdapter(proveedores, adaptadores))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("NONE");
     }
 }

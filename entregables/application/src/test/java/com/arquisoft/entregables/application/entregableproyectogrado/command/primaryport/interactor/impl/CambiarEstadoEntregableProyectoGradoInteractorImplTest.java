@@ -30,7 +30,7 @@ class CambiarEstadoEntregableProyectoGradoInteractorImplTest {
         var entregable = UtilUUID.generarNuevoUUID();
 
         // Act
-        interactor.ejecutar(CambiarEstadoEntregableProyectoGradoCommand.crear(entregable, "CERRADO"));
+        interactor.ejecutar(CambiarEstadoEntregableProyectoGradoCommand.crear(entregable, "CERRADO", UtilUUID.generarNuevoUUID()));
 
         // Assert
         var captor = ArgumentCaptor.forClass(CambioEstadoEntregableProyectoGradoDomain.class);

@@ -17,8 +17,8 @@ class CierreEntregablePermitidoRuleImplTest {
     private final CierreEntregablePermitidoRuleImpl rule = new CierreEntregablePermitidoRuleImpl();
 
     @ParameterizedTest
-    @EnumSource(value = EstadoEntregable.class, names = {"APROBADO", "APROBADO_CON_OBSERVACIONES"})
-    void debePasar_cuandoCierraDesdeUnEstadoAprobado(EstadoEntregable actual) {
+    @EnumSource(value = EstadoEntregable.class, names = {"APROBADO", "APROBADO_CON_OBSERVACIONES", "RECHAZADO"})
+    void debePasar_cuandoCierraDesdeAprobadoORechazado(EstadoEntregable actual) {
         // Arrange
         var transicion = new TransicionEstadoEntregable(
                 UtilUUID.generarNuevoUUID(), actual, EstadoEntregable.CERRADO);
@@ -29,7 +29,7 @@ class CierreEntregablePermitidoRuleImplTest {
 
     @ParameterizedTest
     @EnumSource(value = EstadoEntregable.class,
-            names = {"DISPONIBLE_EVALUACION", "EN_EVALUACION", "RECHAZADO", "CANCELADO", "CERRADO"})
+            names = {"DISPONIBLE_EVALUACION", "EN_EVALUACION", "CANCELADO", "CERRADO"})
     void debeLanzar_cuandoCierraDesdeOtroEstado(EstadoEntregable actual) {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();

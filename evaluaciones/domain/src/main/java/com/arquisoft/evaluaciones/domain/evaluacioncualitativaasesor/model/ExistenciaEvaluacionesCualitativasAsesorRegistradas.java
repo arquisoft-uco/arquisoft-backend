@@ -1,0 +1,7 @@
+package com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.model;
+
+import java.util.Set;
+import java.util.UUID;
+
+public record ExistenciaEvaluacionesCualitativasAsesorRegistradas(
+        UUID evaluacionAsesor, Set<UUID> itemsSolicitados, Set<UUID> itemsRegistrados) {}

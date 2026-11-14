@@ -34,7 +34,9 @@ import java.util.UUID;
                            JOIN estado_revision_asesor er ON er.id = ra.estado_revision_asesor_id
                  WHERE v.artefacto_id = a.id
                  ORDER BY ra.fecha_creacion DESC
-                 FETCH FIRST 1 ROW ONLY)          AS estado_ultima_revision
+                 FETCH FIRST 1 ROW ONLY)          AS estado_ultima_revision,
+               (pg.estado_proyecto_id = 'FINALIZADO') AS proyecto_finalizado,
+               (pg.estado_proyecto_id = 'CANCELADO') AS proyecto_cancelado
         FROM artefacto a
                  JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
                  JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
@@ -78,4 +80,10 @@ public class ArtefactoSinAvanceJpaQueryEntity {
 
     @Column(name = "estado_ultima_revision")
     private String estadoUltimaRevision;
+
+    @Column(name = "proyecto_finalizado")
+    private boolean proyectoFinalizado;
+
+    @Column(name = "proyecto_cancelado")
+    private boolean proyectoCancelado;
 }

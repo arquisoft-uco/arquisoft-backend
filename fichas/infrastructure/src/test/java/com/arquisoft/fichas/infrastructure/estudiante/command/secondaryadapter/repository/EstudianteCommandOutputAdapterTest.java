@@ -128,7 +128,7 @@ class EstudianteCommandOutputAdapterTest {
 
         // Assert
         verify(estudianteRepository).eliminarLogica(id, baja);
-        verify(logger).debug(EstudianteKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(EstudianteKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Test
@@ -144,7 +144,7 @@ class EstudianteCommandOutputAdapterTest {
 
         // Assert
         verify(estudianteRepository).reactivar(id, "20161020999", "Ana Gomez", "ana.gomez@uco.edu.co", ocurridoEn);
-        verify(logger).debug(EstudianteKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(EstudianteKey.LOG_FILA_REACTIVADA, id);
     }
 
     @Test
@@ -160,7 +160,7 @@ class EstudianteCommandOutputAdapterTest {
 
         // Assert
         verify(estudianteRepository, org.mockito.Mockito.times(1)).save(any(EstudianteJpaEntity.class));
-        verify(logger).debug(EstudianteKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(EstudianteKey.LOG_FILA_ACTUALIZADA, id);
     }
 
     @Test

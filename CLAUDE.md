@@ -63,7 +63,7 @@ Guía completa: [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md).
 
 ## Architecture
 
-Arquitectura hexagonal (Ports & Adapters) con **12 bounded contexts** y **14 módulos compartidos**.
+Arquitectura hexagonal (Ports & Adapters) con **12 bounded contexts** y **15 módulos compartidos**.
 Los contextos se comunican por eventos de dominio en RabbitMQ y **nunca se importan entre sí**, con
 una única excepción acotada: una **consulta síncrona de solo lectura** a otro contexto, hecha por
 HTTP (nunca un import), para un dato que un comando debe verificar *al momento de escribir* y no
@@ -117,7 +117,7 @@ migración ya aplicada.
 
 `shared:util`, `shared:exception`, `shared:validation`, `shared:domain`, `shared:application`,
 `shared:query`, `shared:logger`, `shared:tracing`, `shared:redis`, `shared:amqp`, `shared:web`,
-`shared:minio`, `shared:jpa`, `shared:message`
+`shared:minio`, `shared:jpa`, `shared:message`, `shared:web-client`
 
 Lo que hay que saber de cada uno para no romper el grafo:
 
@@ -132,13 +132,14 @@ Lo que hay que saber de cada uno para no romper el grafo:
 | `shared:util` | `UtilTexto`, `UtilUUID`, `UtilColeccion`, `UtilFecha`, `UtilNumero`, `UtilObjeto`, `UtilEnum` | Prefijo `Util` en inglés, el resto en español |
 | `shared:tracing` | Contexto de traza completo (ver *Correlación*) | Único `shared:*` con capas hexagonales internas; **no** depende de spring-web ni spring-security |
 | `shared:message` | Códigos, campos, límites, textos Swagger, `EventTopics`, enums `{Feature}Key`, fachada `Mensajes` | — |
-| `shared:minio` | `AlmacenamientoObjetos`: formulario POST firmado con política, `statObject`, lectura en streaming, copia condicionada al ETag y borrado | Nunca crea buckets ni lista (la cuenta del backend en la nube no tiene `ListBucket`): el bucket lo crea `minio/configurar.sh`. Un objeto ausente (`NoSuchKey`) se devuelve vacío, no lanza |
+| `shared:minio` | `AlmacenamientoObjetos`: formulario POST firmado con política, `statObject`, lectura en streaming, subida de un objeto de tamaño conocido, copia condicionada al ETag y borrado | Nunca crea buckets ni lista (la cuenta del backend en la nube no tiene `ListBucket`): el bucket lo crea `minio/configurar.sh`. Un objeto ausente (`NoSuchKey`) se devuelve vacío, no lanza |
+| `shared:web-client` | `ClienteHttp`/`FabricaClienteHttp` (puerto y fábrica), `SolicitudHttp`, `RespuestaHttp`, `ConfiguracionClienteHttp` (URL, tiempos, tipo de contenido) y su implementación sobre `RestClient` | Transporte, no dominio: sin tipos de ningún contexto. Un fallo de transporte sale como `ClienteHttpTransporteException` (`InfrastructureException`, 503). Quien lo consume decide qué credencial envía; nunca `RestClient`/`WebClient` inline en un adaptador |
 
 **Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
 crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
 prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
-tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Aún
-no existe (lo trae una HT aparte). Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
+tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Existe
+desde HT-016-AJ3, sobre `RestClient`, con `seguridad` de primer consumidor. Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
 (`shared:web`, paquete `identidad`) traduce `IdentidadActual.roles()` a los roles de negocio de un
 contexto con un mapa que declara el propio contexto (claves de `UsuariosRoles`, valores en su
 `{Contexto}Roles`). Hoy su único consumidor es `estados-ficha`; el segundo previsto es el filtro de
@@ -151,7 +152,12 @@ replica local, A lee su tabla. Se recurre a una consulta HTTP síncrona **solo**
 tres: (1) el dato es una **precondición de una escritura** en A y debe ser correcto al instante de
 escribir, no eventualmente — una réplica desactualizada dejaría pasar un comando inválido; (2) A no
 necesita el dato para nada más, así que mantener una réplica (más su backfill y su consumer) es puro
-lastre; (3) B ya expone una consulta que responde. Hoy no hay ningún caso implementado.
+lastre; (3) B ya expone una consulta que responde. Único caso implementado, y excepción deliberada a
+las tres condiciones (HT-016-AJ3): `seguridad` resuelve correo → id de `usuarios` con
+`POST /usuarios/por-correo` para que `IdentidadActual.id` del canal de sesión sea el id de aplicación y
+no el `subject` del PDP. No es precondición de una escritura; se aceptó porque la identidad se resuelve
+en cada petición con sesión y una réplica en `seguridad` (sin DB) sería lastre. Va con Bearer de servicio
+(`client_credentials`, nunca la cookie: recursaría), caché Redis y fallo cerrado con 503.
 
 Forma, espejando cualquier otro puerto secundario:
 - Puerto en `application/{feature}/command/secondaryport/{Concepto}OutputPort` (o su propio paquete
@@ -405,13 +411,26 @@ Java puro.
   `TrazabilidadFilter` abre uno por petición HTTP y `AbstractEventConsumer` uno por consumo AMQP,
   pero un `@Scheduled` **no recibe ninguno**: debe abrir el suyo con
   `gestorTraza.abrir(SolicitudTraza.paraProgramado())` o sus líneas salen sin traza.
-- **Dos filtros, y el orden importa:** `TrazabilidadFilter` (`shared:web`, `@Order(-300)`) es el más
-  externo y dueño del alcance y de la línea `AUDIT`; `IdentidadTrazaFilter`
-  (`seguridad:infrastructure`) solo añade el usuario y se registra **dentro** de la cadena de Spring
-  Security (`addFilterAfter(BearerTokenAuthenticationFilter.class)`) — en `LOWEST_PRECEDENCE`
-  quedaría tras `AuthorizationFilter` y todo 403 se auditaría como anónimo. Va declarado como `@Bean`
-  más un `FilterRegistrationBean` deshabilitado, porque si no el servlet container lo registraría
-  también y `OncePerRequestFilter` saltaría la segunda pasada.
+- **El orden de los filtros importa:** `TrazabilidadFilter` (`shared:web`, `@Order(-300)`) es el más
+  externo y dueño del alcance y de la línea `AUDIT`; `AutorizacionAccesoFilter`
+  (`seguridad:infrastructure`) es el **único** filtro de seguridad propio y se registra **dentro** de la
+  cadena de Spring Security (`addFilterAfter(BearerTokenAuthenticationFilter.class)`) — en
+  `LOWEST_PRECEDENCE` quedaría tras `AuthorizationFilter` y todo 403 se auditaría como anónimo. Va
+  declarado como `@Bean` más un `FilterRegistrationBean` deshabilitado, porque si no el servlet
+  container lo registraría también y `OncePerRequestFilter` saltaría la segunda pasada. Ese único
+  filtro elige el proveedor (`SeleccionProveedor` sobre el registro `ProveedoresAutenticacion`, donde
+  Bearer es `ProveedorBearer` y la cookie del BFF es `ProveedorSesionPdp`), valida CSRF si el
+  proveedor lo exige, autentica, aplica la lista negra (`AplicadorListaNegra`), registra el usuario en
+  la traza y consulta la decisión de acceso (`AplicadorDecisionAcceso`). Los consumidores del
+  contexto de seguridad leen `IdentidadAutenticada`, nunca un token concreto; no hay `instanceof` de
+  un proveedor fuera de su propia clase.
+  `X-Proveedor-Identidad` elige el canal (`bearer` o el id de la sesión) **o el emisor de un Bearer**
+  (`legado`, `principal`): sin él, el emisor sale del `iss` del token. Con él, el `iss` y la
+  audiencia del token deben coincidir con el emisor elegido, y la decisión de acceso usa el modo de
+  ese emisor (PEP o tabla de roles). Cualquier cliente puede elegir cualquier emisor habilitado, así
+  que los emisores habilitados con el mismo `issuer` deben declarar la misma `blacklist`, `audiences` y
+  `authorization`; si no, el arranque falla con
+  `seguridad.infraestructura.autorizacion.error.emisores-politica-distinta`.
 - **MDC a través de `@Async`:** la externalización de eventos de Spring Modulith a RabbitMQ corre en
   otro hilo (`applicationTaskExecutor`, tras el commit), donde el MDC estaría vacío y
   `TrazaMessagePostProcessor` fabricaría una correlación nueva. `MdcTaskDecorator`
@@ -427,7 +446,7 @@ Java puro.
 
 | Component | Version |
 |-----------|---------|
-| Java | 21 (Virtual Threads activos automáticamente) |
+| Java | 25 (Virtual Threads activos automáticamente) |
 | Spring Boot | 4.0.5 |
 | Gradle | 9.8.0 |
 | PostgreSQL | 18 (una **base** por contexto, con su DataSource, EntityManagerFactory y Flyway) |
@@ -438,7 +457,7 @@ Java puro.
 | JUnit | 6.0.3 (Jupiter) |
 | Spring Modulith | 2.0.0 |
 | Jackson | 3 — `tools.jackson.databind.*` |
-| Lombok | 1.18.36 |
+| Lombok | 1.18.48 |
 | Bucket4j | 8.18.0 (`com.bucket4j:bucket4j_jdk17-core`) |
 
 La autoconfiguración de `DataSource` está excluida globalmente. Ninguno es `@Primary` salvo
@@ -493,7 +512,7 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
     es por instancia: N réplicas dan N× cuota — sigue siendo un límite, y es el precio de no tener
     estado compartido justo cuando el estado compartido es lo que falló.
 
-  `JwtListaNegraFilter` **sí** falla abierto, y ahí es lo correcto por una razón que no aplica arriba:
+  `AplicadorListaNegra` **sí** falla abierto, y ahí es lo correcto por una razón que no aplica arriba:
   el radio de impacto está acotado porque la entrada de la lista negra expira con el propio token
   (5–15 min), así que una caída solo puede honrar un token revocado hasta que habría expirado igual.
   Detalle: [docs/fail-open-vs-fail-closed.md](docs/fail-open-vs-fail-closed.md).
@@ -528,12 +547,12 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 | `EstadoEvaluacionCommandRepository` | `fichas/…/estadoevaluacion/…/repository/` | Código muerto: ningún `OutputPort`/`OutputAdapter` lo consume |
 | Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/autenticacion/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
 | Enums de catálogo en dos ubicaciones | `domain/{catalogo}/` vs `domain/{feature}/model/` | **Decisión abierta del proyecto, no la "arregles".** Un enum nuevo sigue lo que ya use su contexto |
-| `AdministradorRemovidoConsumer` stub | `solicitudes/…/usuario/…/amqp/usuarios/administrador/` | **Deliberado, HU-232.** Consume `usuarios.administrador.removido` para que el evento tenga cola enlazada, pero solo loguea `info` y confirma: la réplica de `usuario` en `solicitudes` es genérica y no distingue el rol, y qué significa "dejó de ser administrador" ahí es una decisión de negocio pendiente. Activar = invocar un `Interactor` de baja/actualización de la réplica cuando una HU lo defina |
+| `{Administrador,Estudiante,Coordinador,Asesor}RemovidoConsumer` stubs | `solicitudes/…/usuario/…/amqp/usuarios/{administrador,estudiante,coordinador,asesor}/` | **Deliberado, HU-232 y HT-019.** Consumen `usuarios.{rol}.removido` para que cada evento tenga cola enlazada, pero solo loguean `info` y confirman: la réplica de `usuario` en `solicitudes` es genérica (sin rol ni `eliminado_en`) y `remitente`/`destinatario` la referencian por FK, así que qué significa "dejó de ser {rol}" ahí es una decisión de negocio pendiente. No aplican la baja lógica/lápida de *Replicación entre contextos*. Activar = invocar un `Interactor` de baja/actualización de la réplica cuando una HU lo defina |
 | `UsuarioSolicitudesCommandOutputAdapter` / `UsuarioSolicitudesCommandRepository` | `solicitudes/…/usuario/…/repository/` | La réplica lleva el contexto en el nombre. Con los beans nombrados por FQN, una réplica usa el nombre natural (`UsuarioCommandOutputAdapter`); ver `arquisoft-arquitectura/references/eventos.md` → *Replicación entre contextos* |
-| `ProyectoGradoDeEstudianteQueryOutputAdapter` stub | `mapas_ruta/…/asignacionproyecto/query/secondaryadapter/webclient/` | **Deliberado, HU-052.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `ProyectoGradoDeEstudianteQueryFinder` + el corte del use case están cableados y activos; el adaptador ignora al estudiante, devuelve siempre el proyecto fijo de su constante `PROYECTO_GRADO_SIMULADO` y loguea `warn`. Consecuencia: `GET /mapas-ruta/estudiante` devuelve **el mismo mapa a todo estudiante** (no verifica pertenencia), o 404 si ese proyecto no tiene mapa sembrado. Activar = reemplazar el cuerpo del adaptador y borrar la constante; checklist en `PLAN-HU-052.md` §5 |
-| `AsignacionAsesorOutputAdapter` stub | `mapas_ruta/…/asignacionasesor/command/secondaryadapter/webclient/` | **Deliberado, HU-007.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` (¿el asesor está asignado al proyecto?) — ninguno existe aún. El puerto + `AsesorAsignadoProyectoGradoFinder` + `AsesorAsignadoProyectoGradoRule` están cableados y activos; el adaptador ignora los argumentos, devuelve siempre `true` y loguea `warn`. Consecuencia: `POST /mapas-ruta/{mapaRutaId}/tareas` no verifica Tarea-POL-03 (el asesor de la tarea pertenece al proyecto). Además la réplica `asesor` no tiene consumidor: en un entorno real el `INSERT` de `tarea` falla por `fk_tarea_asesor` hasta que una HU la pueble. Activar = reemplazar el cuerpo del adaptador y borrar el `warn`; checklist en `PLAN-HU-007.md` §5 |
-| `artefacto` / `artefacto_entregable` sin productor | `entregables/…/artefactoentregable/query/`, migraciones `crear_artefacto*` | **Deliberado, HU-146.** Las dos tablas del MER existen y la lectura es real (`@Subselect` con `JOIN`), pero ningún contexto ni HU las escribe: no hay comando que vincule un artefacto a un entregable, y `VersionArtefactoGeneradaEvent` no alcanza para replicarlas. Consecuencia: `GET /entregables-proyecto-grado/{entregableProyectoGradoId}/artefactos` responde `200 []` para un entregable propio en un entorno real (uno ajeno o inexistente responde 422, HU-146.1). Activar = una HU de vinculación (o un consumidor) que escriba esas dos tablas; la lectura no cambia |
+| `ProyectoGradoDeEstudianteQueryOutputAdapter` stub | `mapas_ruta/…/asignacionproyecto/query/secondaryadapter/webclient/` | **Deliberado, HU-052.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` (ya existe desde HT-016-AJ3; falta cablear el peer). El puerto + `ProyectoGradoDeEstudianteQueryFinder` + el corte del use case están cableados y activos; el adaptador ignora al estudiante, devuelve siempre el proyecto fijo de su constante `PROYECTO_GRADO_SIMULADO` y loguea `warn`. Consecuencia: `GET /mapas-ruta/estudiante` devuelve **el mismo mapa a todo estudiante** (no verifica pertenencia), o 404 si ese proyecto no tiene mapa sembrado. Activar = reemplazar el cuerpo del adaptador y borrar la constante; checklist en `PLAN-HU-052.md` §5 |
+| `AsignacionAsesorOutputAdapter` stub | `mapas_ruta/…/asignacionasesor/command/secondaryadapter/webclient/` | **Deliberado, HU-007.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` (¿el asesor está asignado al proyecto?) — `shared:web-client` ya existe desde HT-016-AJ3, falta cablear el peer. El puerto + `AsesorAsignadoProyectoGradoFinder` + `AsesorAsignadoProyectoGradoRule` están cableados y activos; el adaptador ignora los argumentos, devuelve siempre `true` y loguea `warn`. Consecuencia: `POST /mapas-ruta/{mapaRutaId}/tareas` no verifica Tarea-POL-03 (el asesor de la tarea pertenece al proyecto). Además la réplica `asesor` no tiene consumidor: en un entorno real el `INSERT` de `tarea` falla por `fk_tarea_asesor` hasta que una HU la pueble. Activar = reemplazar el cuerpo del adaptador y borrar el `warn`; checklist en `PLAN-HU-007.md` §5 |
 | Raíces de ruta fuera de la base del contexto | `artefactos` (`/revisiones-asesor`, `/versiones-artefacto`, `/estados-revision-asesor`), `entregables` (`/entregables-proyecto-grado`, `/estados-entregable`, `/proyectos-grado`), `mapas_ruta` (`/tareas`, `/estados-item`) | La base de un contexto es la de su fila en `arquisoft-arquitectura` → *Rutas en placeholders…*; regla fijada el 2026-10-29. Migrar cada raíz rompe el contrato con el front, así que va en un chore por contexto (rutas, `autorizacion-equivalencias.yml` y tests de controller). Mientras tanto, un controlador nuevo usa la base del contexto aunque sus hermanos no |
+| `GenerarEntregableProyectoGradoInteractorImpl` sin `@Transactional` + `EjecutorTransaccionalOutputPort` | `entregables/…/entregableproyectogrado/command/` (`primaryport/interactor/impl/`, `secondaryport/`, adaptador en `infrastructure/…/secondaryadapter/transaccion/`) | **Deliberado, HT-023-AJ2.** El `UseCase` abre una transacción de lectura (valida sin lock), arma y sube el zip fuera de toda transacción, y abre una transacción corta con el lock de `proyecto_grado` que re-verifica (`ENTREGABLES_PAQUETE_ENTREGABLE_DESACTUALIZADO` → 422) y persiste; así el lock y la conexión no cubren las descargas ni la subida a MinIO (zip de hasta ~1 GB). Un `Finder` con lock fuera de `enEscritura` falla con `TransactionRequiredException`, no en silencio. **No copiar:** todo otro `Interactor` sigue siendo dueño de su `@Transactional` con qualifier explícito |
 
 ## Reference Documentation
 

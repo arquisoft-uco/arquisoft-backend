@@ -4,19 +4,24 @@ import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBl
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.EstudianteArtefactoExisteFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.model.ParticipacionEstudianteArtefacto;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.AnalisisCargaFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.CargaPendienteFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.CuotaProyectoGradoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoMaximoArchivoFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoVigenteProyectoGradoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.AlmacenamientoVersionOutputPort;
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.VersionArtefactoOutputPort;
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.entity.VersionArtefactoEntity;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoContenidoValidator;
+import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoCuotaValidator;
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.GenerarVersionArtefactoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.artefactos.domain.versionartefacto.AnalisisArchivoDomain;
@@ -26,7 +31,10 @@ import com.arquisoft.artefactos.domain.versionartefacto.event.VersionArtefactoGe
 import com.arquisoft.artefactos.domain.versionartefacto.exception.CargaModificadaException;
 import com.arquisoft.artefactos.domain.versionartefacto.exception.CargaNoCorrespondeException;
 import com.arquisoft.artefactos.domain.revisionasesor.model.RevisionVersionAnterior;
+import com.arquisoft.artefactos.domain.versionartefacto.exception.CuotaProyectoGradoExcedidaException;
+import com.arquisoft.artefactos.domain.versionartefacto.model.AlmacenamientoProyectoGrado;
 import com.arquisoft.artefactos.domain.versionartefacto.model.CargaAnalizada;
+import com.arquisoft.artefactos.domain.versionartefacto.model.CuotaProyectoGrado;
 import com.arquisoft.artefactos.domain.versionartefacto.model.PrecondicionesGeneracionVersion;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
@@ -86,6 +94,14 @@ class GenerarVersionArtefactoUseCaseImplTest {
     @Mock
     private GenerarVersionArtefactoContenidoValidator contenidoValidator;
     @Mock
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
+    @Mock
+    private CuotaProyectoGradoFinder cuotaProyectoGradoFinder;
+    @Mock
+    private TamanoVigenteProyectoGradoFinder tamanoVigenteProyectoGradoFinder;
+    @Mock
+    private GenerarVersionArtefactoCuotaValidator cuotaValidator;
+    @Mock
     private AlmacenamientoVersionOutputPort almacenamiento;
     @Mock
     private VersionArtefactoOutputPort versionOutputPort;
@@ -109,7 +125,9 @@ class GenerarVersionArtefactoUseCaseImplTest {
                 estudianteArtefactoExisteFinder, asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 cargaPendienteFinder, analisisCargaFinder, ultimoNumeroVersionArtefactoFinder,
                 revisionVigenteUltimaVersionFinder, tamanoMaximoArchivoFinder, validator,
-                contenidoValidator, almacenamiento, versionOutputPort, eventPublisher, logger);
+                contenidoValidator, proyectoGradoBloqueadoPorArtefactoFinder, cuotaProyectoGradoFinder,
+                tamanoVigenteProyectoGradoFinder, cuotaValidator, almacenamiento, versionOutputPort,
+                eventPublisher, logger);
         generacion = GeneracionVersionArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
         var asesorId = UtilUUID.generarNuevoUUID();
@@ -144,6 +162,10 @@ class GenerarVersionArtefactoUseCaseImplTest {
     private void prepararFinders(int ultimoNumero) {
         prepararFindersDeCarga(ultimoNumero);
         when(analisisCargaFinder.obtener(generacion.getCarga())).thenReturn(analisis);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(generacion.getArtefacto()))
+                .thenReturn(ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null, null));
+        when(cuotaProyectoGradoFinder.obtener()).thenReturn(1_073_741_824L);
+        when(tamanoVigenteProyectoGradoFinder.obtener(generacion.getArtefacto())).thenReturn(0L);
     }
 
     @Test
@@ -195,6 +217,7 @@ class GenerarVersionArtefactoUseCaseImplTest {
         orden.verify(almacenamiento).eliminarCarga(generacion.getCarga());
         var entity = captorVersion.getValue();
         assertThat(entity.numeroVersion()).isEqualTo(5);
+        assertThat(entity.tamanoBytes()).isEqualTo(carga.getTamanoBytes());
         assertThat(entity.artefacto()).isEqualTo(generacion.getArtefacto());
         assertThat(entity.uriArchivo()).isEqualTo(captorUri.getValue()).startsWith("versiones/");
         var evento = (VersionArtefactoGeneradaEvent) captorEvento.getValue();
@@ -229,6 +252,44 @@ class GenerarVersionArtefactoUseCaseImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(generacion)).isInstanceOf(CargaModificadaException.class);
+        verifyNoInteractions(almacenamiento, versionOutputPort, eventPublisher);
+        verify(logger, never()).info(eq(VersionArtefactoKey.LOG_GENERADA), any(), any(), any());
+    }
+
+    @Test
+    void debeBloquearProyectoDespuesDelAnalisisYAntesDeLeerUso() {
+        // Arrange
+        prepararFinders(4);
+
+        // Act
+        useCase.ejecutar(generacion);
+
+        // Assert
+        var orden = inOrder(analisisCargaFinder, contenidoValidator, proyectoGradoBloqueadoPorArtefactoFinder,
+                cuotaProyectoGradoFinder, tamanoVigenteProyectoGradoFinder, cuotaValidator, almacenamiento);
+        orden.verify(analisisCargaFinder).obtener(generacion.getCarga());
+        orden.verify(contenidoValidator).validar(any(), any());
+        orden.verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(generacion.getArtefacto());
+        orden.verify(cuotaProyectoGradoFinder, times(1)).obtener();
+        orden.verify(tamanoVigenteProyectoGradoFinder, times(1)).obtener(generacion.getArtefacto());
+        var captor = ArgumentCaptor.forClass(AlmacenamientoProyectoGrado.class);
+        orden.verify(cuotaValidator).validar(eq(artefacto), eq(carga), captor.capture());
+        orden.verify(almacenamiento).copiarCargaAUri(any(), any(), any());
+        assertThat(captor.getValue().cuotaBytes()).isEqualTo(1_073_741_824L);
+        assertThat(captor.getValue().usoBytes()).isZero();
+        assertThat(captor.getValue().proyectoGrado().getNombre()).isEqualTo("Proyecto");
+    }
+
+    @Test
+    void debeRechazarSinCopiarNiPersistir_cuandoCuotaValidatorLanza() {
+        // Arrange
+        prepararFinders(4);
+        doThrow(new CuotaProyectoGradoExcedidaException(new CuotaProyectoGrado(
+                artefacto.getProyectoGrado(), "Proyecto", "informe.pdf", 1L, 1L, 1L)))
+                .when(cuotaValidator).validar(any(), any(), any());
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(generacion)).isInstanceOf(CuotaProyectoGradoExcedidaException.class);
         verifyNoInteractions(almacenamiento, versionOutputPort, eventPublisher);
         verify(logger, never()).info(eq(VersionArtefactoKey.LOG_GENERADA), any(), any(), any());
     }

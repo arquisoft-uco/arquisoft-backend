@@ -3,6 +3,8 @@ package com.arquisoft.entregables.infrastructure.entregableproyectogrado.command
 import com.arquisoft.entregables.application.entregableproyectogrado.command.primaryport.interactor.CambiarEstadoEntregableProyectoGradoInteractor;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.primaryport.model.CambiarEstadoEntregableProyectoGradoCommand;
 import com.arquisoft.entregables.domain.entregableproyectogrado.exception.EntregableProyectoGradoNoEncontradoException;
+import com.arquisoft.entregables.domain.entregableproyectogrado.exception.EstadoDestinoEntregableNoPermitidoException;
+import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
@@ -78,7 +80,7 @@ class CambiarEstadoEntregableProyectoGradoControllerTest {
     }
 
     @Test
-    void debeResponder204YPasarIdYEstadoAlInteractor_cuandoEsValido() throws Exception {
+    void debeResponder204YPasarIdEstadoYAsesorDelTokenAlInteractor_cuandoEsValido() throws Exception {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
 
@@ -90,6 +92,7 @@ class CambiarEstadoEntregableProyectoGradoControllerTest {
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().entregableProyectoGrado()).isEqualTo(entregable);
         assertThat(captor.getValue().estadoEntregable()).isEqualTo("CERRADO");
+        assertThat(captor.getValue().asesor()).isEqualTo(ASESOR_ID);
     }
 
     @Test
@@ -121,6 +124,21 @@ class CambiarEstadoEntregableProyectoGradoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON).content(cuerpo("CANCELADO")))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(EntregablesCodes.EntregableProyectoGrado.NO_ENCONTRADO));
+    }
+
+    @Test
+    void debeResponder422ConElCodigoDeError_cuandoElDestinoEsRechazado() throws Exception {
+        // Arrange
+        var entregable = UtilUUID.generarNuevoUUID();
+        doThrow(new EstadoDestinoEntregableNoPermitidoException(entregable, EstadoEntregable.RECHAZADO))
+                .when(interactor).ejecutar(any());
+
+        // Act & Assert
+        mockMvc.perform(patch(ruta(entregable)).with(tokenAsesor())
+                        .contentType(MediaType.APPLICATION_JSON).content(cuerpo("RECHAZADO")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode")
+                        .value(EntregablesCodes.EntregableProyectoGrado.ESTADO_DESTINO_NO_PERMITIDO));
     }
 
     @Test

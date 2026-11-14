@@ -21,4 +21,11 @@ public class ContextoRegistroEvaluacionAsesorCommandOutputAdapter
         return repository.buscarContextoBloqueado(evaluacionAsesor)
                 .map(ContextoRegistroEvaluacionAsesorJpaMapper::toEntity);
     }
+
+    @Override
+    public Optional<ContextoRegistroEvaluacionAsesorEntity> obtenerContextoBloqueadoPorEvaluacionCualitativa(
+            UUID evaluacionCualitativa) {
+        return repository.buscarContextoBloqueadoPorEvaluacionCualitativa(evaluacionCualitativa)
+                .map(ContextoRegistroEvaluacionAsesorJpaMapper::toEntity);
+    }
 }

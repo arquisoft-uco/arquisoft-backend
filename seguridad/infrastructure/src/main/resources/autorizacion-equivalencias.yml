@@ -7,12 +7,14 @@ security:
         # usuarios
         - {method: POST, path: "/api/usuarios", role: "usuarios:usuario:create"}
         - {method: POST, path: "/api/usuarios/administrador", role: "usuarios:usuario-administrador:view"}
+        - {method: POST, path: "/api/usuarios/administradores/vigentes", role: "usuarios:administrador-vigente:view"}
         - {method: POST, path: "/api/usuarios/asesores-ficha/vigentes", role: "usuarios:asesor-ficha-vigente:view"}
         - {method: POST, path: "/api/usuarios/asesores/vigentes", role: "usuarios:asesor-vigente:view"}
         - {method: POST, path: "/api/usuarios/coordinadores/vigentes", role: "usuarios:coordinador-vigente:view"}
         - {method: GET, path: "/api/usuarios/estados", role: "usuarios:estado-usuario:view"}
         - {method: POST, path: "/api/usuarios/estudiantes/vigentes", role: "usuarios:estudiante-vigente:view"}
         - {method: POST, path: "/api/usuarios/jurados/vigentes", role: "usuarios:jurado-vigente:view"}
+        - {method: POST, path: "/api/usuarios/por-correo", role: "usuarios:usuario-por-correo:view"}
         - {method: POST, path: "/api/usuarios/representantes-comite/vigentes", role: "usuarios:representante-comite-vigente:view"}
         - {method: DELETE, path: "/api/usuarios/{usuarioId}", role: "usuarios:usuario:delete"}
         - {method: GET, path: "/api/usuarios/{usuarioId}", role: "usuarios:usuario-identidad:view"}
@@ -83,14 +85,19 @@ security:
         - {method: POST, path: "/api/proyectos-grado/asesor", role: "proyectos:proyecto-grado-asesor:view"}
         - {method: POST, path: "/api/proyectos-grado/coordinador", role: "proyectos:proyecto-grado-coordinador:view"}
         - {method: GET, path: "/api/proyectos-grado/estudiante", role: "proyectos:proyecto-grado-estudiante:view"}
+        - {method: GET, path: "/api/proyectos-grado/estudiante/asesores-actuales", role: "proyectos:asesor-actual-proyecto-grado-estudiante:view"}
+        - {method: GET, path: "/api/proyectos-grado/estudiante/coordinadores", role: "proyectos:coordinador-proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/proyectos-grado/estados-asesor", role: "proyectos:estado-asesor:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/asesor", role: "proyectos:proyecto-grado-asesor-detalle:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/asesores", role: "proyectos:asesor-proyecto-grado-coordinador:view"}
         - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/asesores", role: "proyectos:asesor-proyecto-grado:create"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/asesores-asignados", role: "proyectos:asesor-proyecto-grado-estudiante:view"}
         - {method: PATCH, path: "/api/proyectos-grado/{proyectoGradoId}/asesores/{asesorId}/estado", role: "proyectos:asesor-proyecto-grado:update-estado"}
+        - {method: PATCH, path: "/api/proyectos-grado/{proyectoGradoId}/estado", role: "proyectos:proyecto-grado-estado:update"}
+        - {method: PATCH, path: "/api/proyectos-grado/{proyectoGradoId}/cancelacion", role: "proyectos:proyecto-grado-cancelacion:update"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/companeros", role: "proyectos:estudiante-proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/estados", role: "proyectos:estado-proyecto-grado-estudiante:view"}
+        - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/historial-estados", role: "proyectos:historial-estado-proyecto-grado:view"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/estudiantes", role: "proyectos:estudiante-proyecto-grado-coordinador:view"}
         - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/estudiantes", role: "proyectos:estudiante-proyecto-grado:create"}
         - {method: GET, path: "/api/proyectos-grado/{proyectoGradoId}/estudiantes-asesorados", role: "proyectos:estudiante-proyecto-grado-asesor:view"}
@@ -100,8 +107,13 @@ security:
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}", role: "evaluaciones:evaluacion-asesor-detalle:view"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor:create"}
+        - {method: DELETE, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-asesor:delete"}
+        - {method: PATCH, path: "/api/evaluaciones/evaluaciones-cualitativas-asesor/{evaluacionCualitativaAsesorId}/criterio", role: "evaluaciones:evaluacion-cualitativa-asesor:update"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor:create"}
+        - {method: DELETE, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-asesor:delete"}
+        - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cuantitativas/estudiante", role: "evaluaciones:evaluacion-cuantitativa-asesor-estudiante:view"}
+        - {method: GET, path: "/api/evaluaciones/evaluaciones-asesor/{evaluacionAsesorId}/cualitativas/estudiante", role: "evaluaciones:evaluacion-cualitativa-asesor-estudiante:view"}
         - {method: POST, path: "/api/evaluaciones-jurado/{evaluacionJuradoId}/evaluaciones-cualitativas", role: "evaluaciones:evaluacion-cualitativa-jurado:create"}
         - {method: POST, path: "/api/evaluaciones/asesor", role: "evaluaciones:evaluacion-asesor:view"}
         - {method: POST, path: "/api/evaluaciones/jurado", role: "evaluaciones:evaluacion-jurado:view"}
@@ -111,6 +123,9 @@ security:
         - {method: GET, path: "/api/evaluaciones/criterios-item-cualitativo-jurado", role: "evaluaciones:criterio-item-cualitativo-jurado:view"}
         - {method: GET, path: "/api/evaluaciones/estados-evaluacion", role: "evaluaciones:estado-evaluacion:view"}
         - {method: POST, path: "/api/evaluaciones/estudiante", role: "evaluaciones:evaluacion-estudiante:view"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-asesor/{evaluacionCuantitativaAsesorId}/observaciones", role: "evaluaciones:observacion-item-asesor:create"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-asesor/{evaluacionCuantitativaAsesorId}/observaciones/asesor", role: "evaluaciones:observacion-item-asesor-asesor:view"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-asesor/{evaluacionCuantitativaAsesorId}/observaciones/estudiante", role: "evaluaciones:observacion-item-asesor-estudiante:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones", role: "evaluaciones:observacion-item-jurado:create"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/jurado", role: "evaluaciones:observacion-item-jurado-jurado:view"}
         - {method: POST, path: "/api/evaluaciones/evaluaciones-cuantitativas-jurado/{id}/observaciones/estudiante", role: "evaluaciones:observacion-item-jurado-estudiante:view"}
@@ -120,22 +135,32 @@ security:
         - {method: DELETE, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-jurado:delete"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cualitativas", role: "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cualitativas/jurado", role: "evaluaciones:evaluacion-cualitativa-jurado-jurado:view"}
+        - {method: POST, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-jurado:create"}
         - {method: DELETE, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-jurado:delete"}
         - {method: GET, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cuantitativas", role: "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view"}
+        - {method: GET, path: "/api/evaluaciones/evaluaciones-jurado/{evaluacionJuradoId}/cuantitativas/jurado", role: "evaluaciones:evaluacion-cuantitativa-jurado-jurado:view"}
         - {method: GET, path: "/api/evaluaciones/items-cualitativos-jurado", role: "evaluaciones:item-cualitativo-jurado:view"}
         - {method: POST, path: "/api/evaluaciones/items-cualitativos-jurado", role: "evaluaciones:item-cualitativo-jurado:create"}
         - {method: DELETE, path: "/api/evaluaciones/items-cualitativos-jurado/{itemId}", role: "evaluaciones:item-cualitativo-jurado:delete"}
         - {method: PATCH, path: "/api/evaluaciones/items-cualitativos-jurado/{itemId}", role: "evaluaciones:item-cualitativo-jurado:update"}
         - {method: GET, path: "/api/evaluaciones/items-cualitativos-asesor", role: "evaluaciones:item-cualitativo-asesor:view"}
+        - {method: POST, path: "/api/evaluaciones/items-cualitativos-asesor", role: "evaluaciones:item-cualitativo-asesor:create"}
+        - {method: PATCH, path: "/api/evaluaciones/items-cualitativos-asesor/{itemId}", role: "evaluaciones:item-cualitativo-asesor:update"}
+        - {method: DELETE, path: "/api/evaluaciones/items-cualitativos-asesor/{itemId}", role: "evaluaciones:item-cualitativo-asesor:delete"}
         - {method: GET, path: "/api/evaluaciones/criterios-item-cualitativo-asesor", role: "evaluaciones:criterio-item-cualitativo-asesor:view"}
+        - {method: POST, path: "/api/evaluaciones/items-cuantitativos-asesor", role: "evaluaciones:item-cuantitativo-asesor:create"}
         - {method: GET, path: "/api/evaluaciones/items-cuantitativos-asesor", role: "evaluaciones:item-cuantitativo-asesor:view"}
+        - {method: PATCH, path: "/api/evaluaciones/items-cuantitativos-asesor/{itemId}", role: "evaluaciones:item-cuantitativo-asesor:update"}
+        - {method: DELETE, path: "/api/evaluaciones/items-cuantitativos-asesor/{itemId}", role: "evaluaciones:item-cuantitativo-asesor:delete"}
         - {method: GET, path: "/api/evaluaciones/items-cuantitativos-jurado", role: "evaluaciones:item-cuantitativo-jurado:view"}
         - {method: POST, path: "/api/evaluaciones/items-cuantitativos-jurado", role: "evaluaciones:item-cuantitativo-jurado:create"}
         - {method: DELETE, path: "/api/evaluaciones/items-cuantitativos-jurado/{itemId}", role: "evaluaciones:item-cuantitativo-jurado:delete"}
         - {method: PATCH, path: "/api/evaluaciones/items-cuantitativos-jurado/{itemId}", role: "evaluaciones:item-cuantitativo-jurado:update"}
+        - {method: DELETE, path: "/api/evaluaciones/observaciones-item-jurado/{observacionId}", role: "evaluaciones:observacion-item-jurado:delete"}
         - {method: PATCH, path: "/api/evaluaciones/observaciones-item-jurado/{observacionId}", role: "evaluaciones:observacion-item-jurado:update"}
         - {method: POST, path: "/api/evaluaciones/{evaluacionId}/evaluaciones-jurado", role: "evaluaciones:evaluacion-jurado-estudiante:view"}
         - {method: POST, path: "/api/evaluaciones/{evaluacionId}/jurados", role: "evaluaciones:evaluacion-jurado:create"}
+        - {method: DELETE, path: "/api/evaluaciones/{evaluacionId}/jurados", role: "evaluaciones:evaluacion-jurado:delete"}
         # solicitudes
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo", role: "solicitudes:solicitud-ampliacion-plazo:create"}
         - {method: POST, path: "/api/solicitudes/ampliacion-plazo/enviadas", role: "solicitudes:solicitud-ampliacion-plazo-enviada:view"}
@@ -184,6 +209,7 @@ security:
         - {method: POST, path: "/api/solicitudes/registro-modificacion-usuarios/respuestas/enviadas", role: "solicitudes:respuesta-registro-modificacion-usuarios-enviada:view"}
         - {method: DELETE, path: "/api/solicitudes/registro-modificacion-usuarios/{solicitudId}", role: "solicitudes:solicitud-registro-modificacion-usuarios:delete"}
         - {method: GET, path: "/api/solicitudes/tipos-solicitud", role: "solicitudes:tipo-solicitud:view"}
+        - {method: GET, path: "/api/solicitudes/tipos-solicitud/recibidas", role: "solicitudes:tipo-solicitud-recibida:view"}
         # repositorio_artefactos
         - {method: POST, path: "/api/repositorio-artefactos", role: "repositorio-artefactos:repositorio-artefacto:create"}
         - {method: POST, path: "/api/repositorio-artefactos/administrador", role: "repositorio-artefactos:repositorio-artefacto:view"}
@@ -231,17 +257,26 @@ security:
         - {method: POST, path: "/api/mapas-ruta", role: "mapas-ruta:mapa-ruta:create"}
         - {method: POST, path: "/api/mapas-ruta/coordinador", role: "mapas-ruta:mapa-ruta-coordinador:view"}
         - {method: GET, path: "/api/mapas-ruta/estudiante", role: "mapas-ruta:mapa-ruta-estudiante:view"}
+        - {method: GET, path: "/api/mapas-ruta/proyectos-grado/{proyectoGradoId}/asesor", role: "mapas-ruta:mapa-ruta-asesor:view"}
         - {method: PATCH, path: "/api/mapas-ruta/{id}/fecha-fin", role: "mapas-ruta:mapa-ruta:update-fecha-fin"}
         - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas", role: "mapas-ruta:tarea:create"}
         - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas/estudiante", role: "mapas-ruta:tarea-mapa-ruta-estudiante:view"}
+        - {method: POST, path: "/api/mapas-ruta/{mapaRutaId}/tareas/asesor", role: "mapas-ruta:tarea-mapa-ruta-asesor:view"}
+        - {method: POST, path: "/api/mapas-ruta/proyectos-grado/{proyectoGradoId}/planes-estimados/asesor", role: "mapas-ruta:plan-estimado-proyecto-asesor:view"}
         - {method: GET, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:view"}
         - {method: PATCH, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:update"}
         - {method: PATCH, path: "/api/tareas/{tareaId}/estado-item", role: "mapas-ruta:tarea:update-estado-item"}
         - {method: DELETE, path: "/api/tareas/{tareaId}", role: "mapas-ruta:tarea:delete"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados", role: "mapas-ruta:plan-estimado:create"}
         - {method: POST, path: "/api/tareas/{tareaId}/planes-estimados/estudiante", role: "mapas-ruta:plan-estimado-tarea-estudiante:view"}
+        - {method: POST, path: "/api/mapas-ruta/tareas/{tareaId}/planes-reales/estudiante", role: "mapas-ruta:plan-real-tarea-estudiante:view"}
+        - {method: POST, path: "/api/mapas-ruta/proyectos-grado/{proyectoGradoId}/planes-reales/asesor", role: "mapas-ruta:plan-real-proyecto-asesor:view"}
         - {method: PATCH, path: "/api/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:update"}
+        - {method: PATCH, path: "/api/mapas-ruta/planes-reales/{planRealId}", role: "mapas-ruta:plan-real:update"}
+        - {method: DELETE, path: "/api/mapas-ruta/planes-reales/{planRealId}", role: "mapas-ruta:plan-real:delete"}
         - {method: DELETE, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}", role: "mapas-ruta:plan-estimado:delete"}
+        - {method: PATCH, path: "/api/mapas-ruta/planes-estimados/{planEstimadoId}/asesor", role: "mapas-ruta:plan-estimado-asesor:update"}
+        - {method: PATCH, path: "/api/mapas-ruta/planes-reales/{planRealId}/asesor", role: "mapas-ruta:plan-real-asesor:update"}
         - {method: GET, path: "/api/estados-item", role: "mapas-ruta:estado-item:view"}
         # entregables
         - {method: GET, path: "/api/estados-entregable", role: "entregables:estado-entregable:view"}
@@ -251,3 +286,10 @@ security:
         - {method: POST, path: "/api/entregables-proyecto-grado/jurado", role: "entregables:entregable-proyecto-grado-jurado:view"}
         - {method: POST, path: "/api/proyectos-grado/{proyectoGradoId}/entregables/estudiante", role: "entregables:entregable-proyecto-grado-estudiante:view"}
         - {method: GET, path: "/api/entregables-proyecto-grado/{entregableProyectoGradoId}/artefactos", role: "entregables:artefacto-entregable:view"}
+        - {method: GET, path: "/api/entregables/{entregableProyectoGradoId}/paquete", role: "entregables:paquete-entregable:download"}
+        - {method: GET, path: "/api/entregables/{entregableProyectoGradoId}/estados", role: "entregables:estado-entregable-proyecto-grado:view"}
+        - {method: GET, path: "/api/entregables/proyectos-grado/{proyectoGradoId}/vista-previa-paquete", role: "entregables:vista-previa-paquete-entregable:view"}
+        # biblioteca
+        - {method: GET, path: "/api/biblioteca/estados-documentacion", role: "biblioteca:estado-documentacion:view"}
+        - {method: POST, path: "/api/biblioteca/documentaciones/consultar", role: "biblioteca:documentacion:view"}
+        - {method: GET, path: "/api/biblioteca/documentaciones/{documentacionId}/autores", role: "biblioteca:autor-documentacion:view"}

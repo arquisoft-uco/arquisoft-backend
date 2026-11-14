@@ -13,6 +13,26 @@ public final class EvaluacionesFields {
         public static final String ITEM = "itemCualitativoJurado";
     }
 
+    public static final class ItemCualitativoAsesor {
+
+        private ItemCualitativoAsesor() {}
+
+        public static final String NOMBRE = "nombre";
+        public static final String DESCRIPCION = "descripcion";
+        public static final String ITEM = "item";
+    }
+
+    public static final class ItemCuantitativoAsesor {
+
+        private ItemCuantitativoAsesor() {}
+
+        public static final String NOMBRE = "nombre";
+        public static final String DESCRIPCION = "descripcion";
+        public static final String CATEGORIA = "categoria";
+        public static final String VALOR = "valor";
+        public static final String ITEM = "item";
+    }
+
     public static final class CriterioItemCualitativoJurado {
 
         private CriterioItemCualitativoJurado() {}
@@ -52,6 +72,8 @@ public final class EvaluacionesFields {
 
         public static final String EVALUACION_ASESOR = "evaluacionAsesor";
         public static final String ASESOR = "asesor";
+        public static final String EVALUACION_CUALITATIVA_ASESOR = "evaluacionCualitativaAsesor";
+        public static final String ESTUDIANTE = "estudiante";
         public static final String ITEM = "item";
         public static final String CRITERIO = "criterio";
     }
@@ -69,6 +91,7 @@ public final class EvaluacionesFields {
 
         public static final String EVALUACION_ASESOR = "evaluacionAsesor";
         public static final String ASESOR = "asesor";
+        public static final String ESTUDIANTE = "estudiante";
         public static final String ITEM = "item";
         public static final String PUNTAJE = "puntaje";
     }
@@ -80,6 +103,20 @@ public final class EvaluacionesFields {
         public static final String EVALUACIONES = "evaluaciones";
     }
 
+    public static final class OmisionEvaluacionesCualitativasAsesor {
+
+        private OmisionEvaluacionesCualitativasAsesor() {}
+
+        public static final String ITEMS = "item";
+    }
+
+    public static final class OmisionEvaluacionesCuantitativasAsesor {
+
+        private OmisionEvaluacionesCuantitativasAsesor() {}
+
+        public static final String ITEMS = "item";
+    }
+
     public static final class EvaluacionCuantitativaJurado {
 
         private EvaluacionCuantitativaJurado() {}
@@ -89,6 +126,13 @@ public final class EvaluacionesFields {
         public static final String JURADO = "jurado";
         public static final String ITEM = "item";
         public static final String PUNTAJE = "puntaje";
+    }
+
+    public static final class RegistroEvaluacionesCuantitativasJurado {
+
+        private RegistroEvaluacionesCuantitativasJurado() {}
+
+        public static final String EVALUACIONES = "evaluaciones";
     }
 
     public static final class RegistroEvaluacionesCualitativasJurado {
@@ -186,6 +230,28 @@ public final class EvaluacionesFields {
 
         public static final String ID = "id";
         public static final String EVALUACION_CUANTITATIVA_JURADO = "evaluacionCuantitativaJurado";
+        public static final String DESCRIPCION = "descripcion";
+    }
+
+    public static final class Entregable {
+
+        private Entregable() {}
+
+        public static final String ID = "entregable";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String PROYECTO = "proyecto";
+        public static final String VERSION = "version";
+    }
+
+    public static final class ObservacionItemAsesor {
+
+        private ObservacionItemAsesor() {}
+
+        public static final String ID = "id";
+        public static final String EVALUACION_CUANTITATIVA_ASESOR = "evaluacionCuantitativaAsesor";
+        public static final String ASESOR = "asesor";
+        public static final String ESTUDIANTE = "estudiante";
+        public static final String OBSERVACION = "observacion";
         public static final String DESCRIPCION = "descripcion";
     }
 }

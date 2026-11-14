@@ -20,12 +20,15 @@ import java.util.UUID;
                va.uri_archivo       AS uri_archivo,
                va.version_artefacto AS version,
                a.asesor_id          AS asesor_id,
-               vra.nombre_documento AS nombre_documento
+               vra.nombre_documento AS nombre_documento,
+               pg.nombre            AS nombre_proyecto,
+               pg.estado_proyecto_id IN ('FINALIZADO', 'CANCELADO') AS proyecto_finalizado
         FROM version_artefacto va
                  JOIN artefacto a ON a.id = va.artefacto_id
                  JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
+                 JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
         """)
-@Synchronize({"version_artefacto", "artefacto", "version_repositorio_artefacto"})
+@Synchronize({"version_artefacto", "artefacto", "version_repositorio_artefacto", "proyecto_grado"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -47,4 +50,10 @@ public class ArchivoVersionArtefactoJpaQueryEntity {
 
     @Column(name = "nombre_documento")
     private String nombreDocumento;
+
+    @Column(name = "nombre_proyecto")
+    private String nombreProyecto;
+
+    @Column(name = "proyecto_finalizado")
+    private boolean proyectoFinalizado;
 }

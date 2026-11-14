@@ -91,6 +91,10 @@ public final class ArtefactosFields {
 
         public static final String ID = "id";
         public static final String NOMBRE = "nombre";
+        public static final String ENTREGADO_EN = "entregadoEn";
+        public static final String ESTADO_PROYECTO = "estadoProyecto";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+        public static final String CANCELADO_EN = "canceladoEn";
     }
 
     public static final class Asesor {

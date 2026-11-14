@@ -35,7 +35,7 @@ class EliminarVersionArtefactoValidatorImplTest {
         var versionId = UtilUUID.generarNuevoUUID();
         var artefactoId = UtilUUID.generarNuevoUUID();
         eliminacion = EliminacionVersionArtefactoDomain.crear(versionId, UtilUUID.generarNuevoUUID());
-        version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 2, Instant.now(), "versiones/x");
+        version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 2, Instant.now(), "versiones/x", 1024L);
         artefacto = ArtefactoDomain.reconstruir(artefactoId, UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
     }
@@ -64,7 +64,7 @@ class EliminarVersionArtefactoValidatorImplTest {
     void debeNoLanzar_cuandoEsLaPrimeraVersion() {
         // Arrange
         var primera = VersionArtefactoDomain.reconstruir(
-                version.getId(), version.getArtefacto(), 1, Instant.now(), "versiones/x");
+                version.getId(), version.getArtefacto(), 1, Instant.now(), "versiones/x", 1024L);
         var previas = previas(primera, artefacto, RevisionAsesorDomain.VACIO, true, true, false);
 
         // Act & Assert

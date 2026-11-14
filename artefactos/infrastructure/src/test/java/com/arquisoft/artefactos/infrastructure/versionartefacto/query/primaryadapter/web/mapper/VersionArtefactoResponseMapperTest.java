@@ -17,7 +17,7 @@ class VersionArtefactoResponseMapperTest {
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 4,
                 Instant.parse("2026-10-20T10:00:00Z"), "artefactos/v4.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno",
                 UtilUUID.generarNuevoUUID(), "RESUELTA", "Resuelta",
-                Instant.parse("2026-10-21T10:00:00Z"));
+                Instant.parse("2026-10-21T10:00:00Z"), true, false);
 
         // Act
         var response = VersionArtefactoResponseMapper.toResponse(readModel);
@@ -45,7 +45,7 @@ class VersionArtefactoResponseMapperTest {
         var readModel = new VersionArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 1,
                 Instant.parse("2026-10-20T10:00:00Z"), "artefactos/v1.pdf", "Proyecto Uno", "Documento Uno", 1,
-                "repo-uno", "Asesor Uno", null, null, null, null);
+                "repo-uno", "Asesor Uno", null, null, null, null, false, false);
 
         // Act
         var response = VersionArtefactoResponseMapper.toResponse(readModel);

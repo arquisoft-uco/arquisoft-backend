@@ -19,19 +19,17 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_SOLICITUD_AMPLIACION_PLAZO_RESPONDIDA_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-ampliacion-plazo-respondida-recibido", 2),
     LOG_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RESPONDIDA_RECIBIDO(
-            "notificaciones.infraestructura.consumidor.log.solicitud-registro-modificacion-usuarios-respondida-recibido", 2),
+            "notificaciones.infraestructura.consumidor.log.solicitud-usuarios-respondida-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_COORDINADOR_ESTADO_MODIFICADO_RECIBIDO(
-            "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-estado-modificado-recibido",
-            2),
+            "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-estado-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_ASESOR_ESTADO_MODIFICADO_RECIBIDO(
-            "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-estado-modificado-recibido", 2),
+            "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-estado-recibido", 2),
     LOG_SOLICITUD_CAMBIO_ASESOR_ESTADO_MODIFICADO_RECIBIDO(
-            "notificaciones.infraestructura.consumidor.log.solicitud-cambio-asesor-estado-modificado-recibido", 2),
+            "notificaciones.infraestructura.consumidor.log.solicitud-cambio-asesor-estado-recibido", 2),
     LOG_SOLICITUD_AMPLIACION_PLAZO_ESTADO_MODIFICADO_RECIBIDO(
-            "notificaciones.infraestructura.consumidor.log.solicitud-ampliacion-plazo-estado-modificado-recibido", 2),
+            "notificaciones.infraestructura.consumidor.log.solicitud-ampliacion-plazo-estado-recibido", 2),
     LOG_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_ESTADO_MODIFICADO_RECIBIDO(
-            "notificaciones.infraestructura.consumidor.log."
-                    + "solicitud-registro-modificacion-usuarios-estado-modificado-recibido", 2),
+            "notificaciones.infraestructura.consumidor.log.solicitud-usuarios-estado-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_ASESOR_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-recibido", 2),
     LOG_SOLICITUD_CAMBIO_ASESOR_RECIBIDO(
@@ -39,7 +37,7 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_SOLICITUD_AMPLIACION_PLAZO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-ampliacion-plazo-recibido", 2),
     LOG_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RECIBIDO(
-            "notificaciones.infraestructura.consumidor.log.solicitud-registro-modificacion-usuarios-recibido", 2),
+            "notificaciones.infraestructura.consumidor.log.solicitud-usuarios-recibido", 2),
     LOG_REVISION_ITEM_AGREGADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.revision-item-agregado-recibido", 2),
     LOG_USUARIO_ESTADO_CAMBIADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.usuario-estado-cambiado-recibido", 3),
@@ -53,6 +51,10 @@ public enum ConsumidorKey implements ClaveMensaje {
             "notificaciones.infraestructura.consumidor.log.asesor-proyecto-grado-asignado-recibido", 1),
     LOG_ASESOR_PROYECTO_GRADO_FINALIZADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.asesor-proyecto-grado-finalizado-recibido", 1),
+    LOG_PROYECTO_GRADO_ESTADO_CAMBIADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.proyecto-grado-estado-cambiado-recibido", 5),
+    LOG_PROYECTO_GRADO_ESTADO_CAMBIADO_IGNORADO(
+            "notificaciones.infraestructura.consumidor.log.proyecto-grado-estado-cambiado-ignorado", 2),
     LOG_ESTADO_FICHA_PERFIL_AGREGADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.estado-ficha-perfil-agregado-recibido", 3),
     LOG_REVISION_ASESOR_ESTADO_CAMBIADO_RECIBIDO(

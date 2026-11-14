@@ -18,17 +18,17 @@ import java.util.UUID;
 @Subselect("""
         SELECT ae.id                        AS id,
                ae.entregable_id             AS entregable_id,
-               a.id                         AS artefacto_id,
-               a.uri_archivo                AS uri_archivo,
-               a.id_artefacto               AS id_artefacto,
-               a.id_repositorio_artefacto   AS id_repositorio_artefacto,
-               a.nombre_documento           AS nombre_documento,
-               a.id_repositorio             AS id_repositorio,
-               a.nombre_repositorio         AS nombre_repositorio
+               ae.id_version_artefacto      AS id_version_artefacto,
+               ae.uri_archivo               AS uri_archivo,
+               ae.artefacto_id              AS artefacto_id,
+               ae.version_artefacto         AS version_artefacto,
+               ae.id_repositorio_artefacto  AS id_repositorio_artefacto,
+               ae.nombre_documento          AS nombre_documento,
+               ae.id_repositorio            AS id_repositorio,
+               ae.nombre_repositorio        AS nombre_repositorio
         FROM artefacto_entregable ae
-                 JOIN artefacto a ON a.id = ae.artefacto_id
         """)
-@Synchronize({"artefacto_entregable", "artefacto"})
+@Synchronize("artefacto_entregable")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -42,14 +42,17 @@ public class ArtefactoEntregableJpaQueryEntity {
     @Column(name = "entregable_id", columnDefinition = "uuid")
     private UUID entregableId;
 
-    @Column(name = "artefacto_id", columnDefinition = "uuid")
-    private UUID artefactoId;
+    @Column(name = "id_version_artefacto", columnDefinition = "uuid")
+    private UUID versionArtefacto;
 
     @Column(name = "uri_archivo")
     private String uriArchivo;
 
-    @Column(name = "id_artefacto", columnDefinition = "uuid")
-    private UUID idArtefacto;
+    @Column(name = "artefacto_id", columnDefinition = "uuid")
+    private UUID artefacto;
+
+    @Column(name = "version_artefacto")
+    private int numeroVersion;
 
     @Column(name = "id_repositorio_artefacto", columnDefinition = "uuid")
     private UUID idRepositorioArtefacto;

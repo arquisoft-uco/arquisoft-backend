@@ -2,10 +2,12 @@ package com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadap
 
 import com.arquisoft.solicitudes.application.tiposolicitud.query.primaryport.interactor.ConsultarTiposSolicitudInteractor;
 import com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web.dto.TipoSolicitudResponseDTO;
+import com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web.mapper.ConsultarTiposSolicitudRequestMapper;
 import com.arquisoft.solicitudes.infrastructure.tiposolicitud.query.primaryadapter.web.mapper.TipoSolicitudResponseMapper;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.SolicitudesApiMessages;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -51,8 +53,9 @@ public class ConsultarTiposSolicitudController {
                     description = SolicitudesApiMessages.Comun.RESP_403,
                     content = @Content)
     })
-    public ResponseEntity<List<TipoSolicitudResponseDTO>> consultarTiposSolicitud() {
-        var tipos = consultarTiposSolicitudInteractor.ejecutar();
+    public ResponseEntity<List<TipoSolicitudResponseDTO>> consultarTiposSolicitud(IdentidadActual identidad) {
+        var tipos = consultarTiposSolicitudInteractor.ejecutar(
+                ConsultarTiposSolicitudRequestMapper.toQuery(identidad));
 
         return ResponseEntity.ok(tipos.stream()
                 .map(TipoSolicitudResponseMapper::toResponse)

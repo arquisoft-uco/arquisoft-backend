@@ -44,18 +44,23 @@ jobs:
   build:
     name: Lint, Test & Build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Margen para el análisis de SonarQube en los push a develop.
+    timeout-minutes: 30
 
     steps:
       # ── Checkout ──
       - name: Checkout código
         uses: actions/checkout@v4
+        with:
+          # Historial completo: SonarQube usa el blame de git para atribuir issues y
+          # distinguir el código nuevo del existente.
+          fetch-depth: 0
 
-      # ── Setup Java 21 ──
-      - name: Setup Java 21 (Temurin)
+      # ── Setup Java 25 ──
+      - name: Setup Java 25 (Temurin)
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
 
       # ── Cache Gradle ──
@@ -85,6 +90,41 @@ jobs:
       # ── Build ──
       - name: Build del proyecto
         run: ./gradlew build -x test --no-daemon
+
+      # ── Análisis SonarQube ──
+      # SonarQube Community Build analiza una sola rama por proyecto: se usa develop, que es la
+      # rama de integración. Solo corre en push a develop y solo si los secretos están definidos,
+      # así el CI no falla mientras el servidor de SonarQube no esté configurado.
+      - name: Verificar configuración de SonarQube
+        id: sonar-config
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ] && [ -n "$SONAR_HOST_URL" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::SONAR_TOKEN o SONAR_HOST_URL no definidos: se omite el análisis de SonarQube."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cache SonarQube
+        if: steps.sonar-config.outputs.enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: sonar-${{ runner.os }}
+          restore-keys: sonar-${{ runner.os }}
+
+      # Los tests ya corrieron en este job: Gradle los reutiliza (up-to-date) y solo genera
+      # los XML de JaCoCo que SonarQube importa como cobertura.
+      - name: Análisis SonarQube
+        if: steps.sonar-config.outputs.enabled == 'true'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: ./gradlew jacocoTestReport sonar --no-daemon
 
       # ── Upload test reports ──
       - name: Upload test reports

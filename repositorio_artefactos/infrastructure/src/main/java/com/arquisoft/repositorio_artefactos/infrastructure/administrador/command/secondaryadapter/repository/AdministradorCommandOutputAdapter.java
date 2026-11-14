@@ -28,14 +28,14 @@ public class AdministradorCommandOutputAdapter implements AdministradorOutputPor
     @Override
     public void eliminarLogica(UUID id, Instant ocurridoEn) {
         administradorCommandRepository.eliminarLogica(id, ocurridoEn);
-        logger.debug(AdministradorKey.LOG_ACTUALIZADO, id);
+        logger.debug(AdministradorKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Override
     public void reactivar(AdministradorEntity administrador) {
         administradorCommandRepository.reactivar(administrador.id(), administrador.identificador(), administrador.nombre(),
                 administrador.email(), administrador.ocurridoEn());
-        logger.debug(AdministradorKey.LOG_ACTUALIZADO, administrador.id());
+        logger.debug(AdministradorKey.LOG_FILA_REACTIVADA, administrador.id());
     }
 
     @Override
@@ -46,6 +46,6 @@ public class AdministradorCommandOutputAdapter implements AdministradorOutputPor
     @Override
     public void actualizar(AdministradorEntity administrador) {
         administradorCommandRepository.save(AdministradorJpaMapper.toJpaEntity(administrador));
-        logger.debug(AdministradorKey.LOG_ACTUALIZADO, administrador.id());
+        logger.debug(AdministradorKey.LOG_FILA_ACTUALIZADA, administrador.id());
     }
 }

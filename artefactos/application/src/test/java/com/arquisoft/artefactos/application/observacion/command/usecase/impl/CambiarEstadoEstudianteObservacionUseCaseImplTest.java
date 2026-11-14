@@ -6,12 +6,15 @@ import com.arquisoft.artefactos.application.observacion.command.finder.Observaci
 import com.arquisoft.artefactos.application.observacion.command.finder.model.ParticipacionEstudianteObservacion;
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.ObservacionOutputPort;
 import com.arquisoft.artefactos.application.observacion.command.validator.CambiarEstadoEstudianteObservacionValidator;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorObservacionFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorPorObservacionFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.observacion.CambioEstadoEstudianteObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.ObservacionDomain;
 import com.arquisoft.artefactos.domain.observacion.exception.ObservacionNoEditablePorEstudianteException;
 import com.arquisoft.artefactos.domain.observacion.model.EstadoObservacion;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.shared.logger.AppLogger;
@@ -55,6 +58,10 @@ class CambiarEstadoEstudianteObservacionUseCaseImplTest {
     @Mock
     private ObservacionOutputPort observacionOutputPort;
     @Mock
+    private ProyectoGradoBloqueadoPorObservacionFinder proyectoGradoBloqueadoPorObservacionFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -67,6 +74,7 @@ class CambiarEstadoEstudianteObservacionUseCaseImplTest {
 
     @BeforeEach
     void prepararEscenario() {
+        when(proyectoGradoBloqueadoPorObservacionFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         observacionId = UtilUUID.generarNuevoUUID();
         estudianteId = UtilUUID.generarNuevoUUID();
         var revisionId = UtilUUID.generarNuevoUUID();
@@ -99,13 +107,15 @@ class CambiarEstadoEstudianteObservacionUseCaseImplTest {
 
         // Assert
         var orden = inOrder(revisionAsesorPorObservacionFinder, observacionPorIdFinder, artefactoPorObservacionFinder,
-                estudianteParticipaObservacionFinder, validator, observacionOutputPort);
+                estudianteParticipaObservacionFinder, validator, observacionOutputPort, proyectoGradoNoCongeladoValidator);
         orden.verify(revisionAsesorPorObservacionFinder, times(1)).obtener(observacionId);
         orden.verify(observacionPorIdFinder, times(1)).obtener(observacionId);
         orden.verify(artefactoPorObservacionFinder, times(1)).obtener(observacionId);
         orden.verify(estudianteParticipaObservacionFinder, times(1))
                 .obtener(new ParticipacionEstudianteObservacion(observacionId, estudianteId));
         orden.verify(validator).validar(cambio, observacion, revision, artefacto, true);
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoBloqueadoPorObservacionFinder, times(1)).obtener(any());
         orden.verify(observacionOutputPort).actualizarEstado(observacionId, "SOLUCIONADA");
         verify(logger).info(CambiarEstadoEstudianteObservacionKey.LOG_ESTADO_CAMBIADO, observacionId, "SOLUCIONADA");
     }

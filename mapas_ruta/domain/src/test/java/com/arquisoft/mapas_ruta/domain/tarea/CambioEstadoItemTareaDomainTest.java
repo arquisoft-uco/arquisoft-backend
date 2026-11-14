@@ -26,6 +26,24 @@ class CambioEstadoItemTareaDomainTest {
     }
 
     @Test
+    void debeSerFinalizacion_cuandoDestinoFinalizada() {
+        // Act
+        var cambio = CambioEstadoItemTareaDomain.crear(UtilUUID.generarNuevoUUID(), "FINALIZADA");
+
+        // Assert
+        assertThat(cambio.esFinalizacion()).isTrue();
+    }
+
+    @Test
+    void noDebeSerFinalizacion_cuandoOtroDestino() {
+        // Act
+        var cambio = CambioEstadoItemTareaDomain.crear(UtilUUID.generarNuevoUUID(), "EN_PROGRESO");
+
+        // Assert
+        assertThat(cambio.esFinalizacion()).isFalse();
+    }
+
+    @Test
     void debeAcumularErrores_cuandoTareaNulaYEstadoEnBlanco() {
         // Act & Assert
         assertThatThrownBy(() -> CambioEstadoItemTareaDomain.crear(null, "  "))

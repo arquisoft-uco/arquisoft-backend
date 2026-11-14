@@ -48,6 +48,9 @@ public final class EventTopics {
 
         public static final String ASESOR_PROYECTO_GRADO_FINALIZADO =
                 "proyectos.asesor_proyecto_grado.finalizado";
+
+        public static final String PROYECTO_GRADO_ESTADO_CAMBIADO =
+                "proyectos.proyecto_grado.estado_cambiado";
     }
 
     public static final class Usuarios {
@@ -186,6 +189,8 @@ public final class EventTopics {
                 "artefactos.revision_asesor.estado_cambiado";
         public static final String ARTEFACTO_OMITIDO =
                 "artefactos.artefacto.omitido";
+        public static final String ARTEFACTO_REACTIVADO =
+                "artefactos.artefacto.reactivado";
         public static final String ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA =
                 "artefactos.artefacto.version_repositorio_cambiada";
         public static final String REVISION_ASESOR_ENVIADA =
@@ -208,5 +213,24 @@ public final class EventTopics {
                 "mapas_ruta.mapa_ruta.agregado";
         public static final String MAPA_RUTA_FECHA_FIN_CAMBIADA =
                 "mapas_ruta.mapa_ruta.fecha_fin_cambiada";
+        public static final String TAREA_FINALIZADA =
+                "mapas_ruta.tarea.finalizada";
+    }
+
+    public static final class Entregables {
+
+        private Entregables() {}
+
+        public static final String ENTREGABLE_PROYECTO_GRADO_CERRADO =
+                "entregables.entregable_proyecto_grado.cerrado";
+
+        public static final String ENTREGABLE_PROYECTO_GRADO_GENERADO =
+                "entregables.entregable_proyecto_grado.generado";
+        public static final String ENTREGABLE_PROYECTO_GRADO_CANCELADO =
+                "entregables.entregable_proyecto_grado.cancelado";
+        public static final String ENTREGABLE_PROYECTO_GRADO_RECHAZADO =
+                "entregables.entregable_proyecto_grado.rechazado";
+        public static final String ENTREGABLE_PROYECTO_GRADO_DISPONIBLE_EVALUACION =
+                "entregables.entregable_proyecto_grado.disponible_evaluacion";
     }
 }

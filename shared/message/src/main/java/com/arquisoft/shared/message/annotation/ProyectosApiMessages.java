@@ -74,6 +74,47 @@ public final class ProyectosApiMessages {
                         + "permitida";
     }
 
+    public static final class CambioEstadoProyectoGrado {
+
+        private CambioEstadoProyectoGrado() {}
+
+        public static final String TAG_NAME = "Estado del Proyecto de Grado";
+        public static final String TAG_DESCRIPTION = "Gestión del estado de un proyecto de grado";
+
+        public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_DESCRIPTION =
+                "Permite al asesor asignado al proyecto de grado finalizarlo cuando está en proceso o atrasado "
+                        + "y su último entregable está cerrado. El estado finalizado es terminal: bloquea nuevas "
+                        + "entregas y los estudiantes reciben un correo de notificación";
+        public static final String CAMBIAR_ESTADO_RESP_204 = "Nuevo estado del proyecto de grado registrado exitosamente";
+        public static final String CAMBIAR_ESTADO_RESP_400 = "Estado del proyecto de grado ausente";
+        public static final String CAMBIAR_ESTADO_RESP_403 =
+                "Sin permiso para cambiar el estado de un proyecto de grado";
+        public static final String CAMBIAR_ESTADO_RESP_422 =
+                "Estado fuera del catálogo, proyecto de grado no encontrado o sin vínculo con el asesor, "
+                        + "transición de estado no permitida, sin entregables o último entregable sin cerrar";
+    }
+
+    public static final class CancelacionProyectoGrado {
+
+        private CancelacionProyectoGrado() {}
+
+        public static final String TAG_NAME = "Cancelación del Proyecto de Grado";
+        public static final String TAG_DESCRIPTION = "Baja definitiva de un proyecto de grado";
+
+        public static final String CANCELAR_SUMMARY = "Cancelar un proyecto de grado";
+        public static final String CANCELAR_DESCRIPTION =
+                "Permite al coordinador del proyecto de grado darlo de baja de forma definitiva, con un motivo, "
+                        + "cuando está en proceso o atrasado. El estado cancelado es terminal: los archivos de "
+                        + "artefactos se eliminan, no admite más trabajo en artefactos ni entregables y los "
+                        + "estudiantes y el asesor reciben un correo de notificación";
+        public static final String CANCELAR_RESP_204 = "Proyecto de grado cancelado exitosamente";
+        public static final String CANCELAR_RESP_400 = "Motivo ausente, en blanco o demasiado largo";
+        public static final String CANCELAR_RESP_403 = "Sin permiso para cancelar un proyecto de grado";
+        public static final String CANCELAR_RESP_422 =
+                "Proyecto de grado no encontrado, asignado a otro coordinador o que no está en proceso ni atrasado";
+    }
+
     public static final class ConsultaAsesorProyectoGrado {
 
         private ConsultaAsesorProyectoGrado() {}
@@ -106,6 +147,16 @@ public final class ProyectosApiMessages {
                 "Sin permiso para consultar los asesores asignados a un proyecto de grado";
         public static final String CONSULTAR_ASIGNADOS_RESP_422 =
                 "Proyecto de grado no encontrado o estudiante no vinculado a él";
+
+        public static final String CONSULTAR_ACTUALES_SUMMARY =
+                "Consultar los asesores actuales de mis proyectos de grado";
+        public static final String CONSULTAR_ACTUALES_DESCRIPTION =
+                "Permite al estudiante obtener, para cada proyecto de grado al que pertenece, su asesor actual "
+                        + "junto con el título del proyecto, ordenado por título; los proyectos sin asesor actual se omiten";
+        public static final String CONSULTAR_ACTUALES_RESP_200 = "Asesores actuales de los proyectos del estudiante";
+        public static final String CONSULTAR_ACTUALES_RESP_400 = "Identidad del estudiante inválida";
+        public static final String CONSULTAR_ACTUALES_RESP_403 =
+                "Sin permiso para consultar los asesores actuales de los proyectos de grado";
     }
 
     public static final class ConsultaEstadoProyectoGrado {
@@ -119,13 +170,26 @@ public final class ProyectosApiMessages {
         public static final String CONSULTAR_SUMMARY = "Consultar los estados del proyecto de grado";
         public static final String CONSULTAR_DESCRIPTION =
                 "Permite al estudiante vinculado a un proyecto de grado consultar el historial de estados por los "
-                        + "que ha pasado, ordenado por fecha de actualización de la más reciente a la más antigua";
+                        + "que ha pasado, ordenado por fecha de actualización de la más reciente a la más antigua. "
+                        + "El estado de cancelación incluye el motivo con que se canceló el proyecto";
         public static final String CONSULTAR_RESP_200 = "Historial de estados del proyecto de grado";
         public static final String CONSULTAR_RESP_400 = "Identificador de proyecto de grado inválido";
         public static final String CONSULTAR_RESP_403 =
                 "Sin permiso para consultar los estados de un proyecto de grado";
         public static final String CONSULTAR_RESP_422 =
                 "Proyecto de grado no encontrado o estudiante no vinculado a él";
+
+        public static final String HISTORIAL_SUMMARY = "Consultar los estados de un proyecto de grado";
+        public static final String HISTORIAL_DESCRIPTION =
+                "Permite al coordinador del proyecto de grado o a su asesor asignado consultar el historial de "
+                        + "estados por los que ha pasado, ordenado por fecha de actualización de la más reciente a la "
+                        + "más antigua. El estado de cancelación incluye el motivo con que se canceló el proyecto";
+        public static final String HISTORIAL_RESP_200 = "Historial de estados del proyecto de grado";
+        public static final String HISTORIAL_RESP_400 = "Identificador de proyecto de grado inválido";
+        public static final String HISTORIAL_RESP_403 =
+                "Sin permiso para consultar los estados de un proyecto de grado";
+        public static final String HISTORIAL_RESP_422 =
+                "Proyecto de grado no encontrado o usuario que no es su coordinador ni su asesor asignado";
     }
 
     public static final class ConsultaEstadoAsesor {
@@ -167,6 +231,18 @@ public final class ProyectosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Identificador del estudiante inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
                 "Sin permiso para consultar los proyectos de grado del estudiante";
+
+        public static final String CONSULTAR_COORDINADORES_SUMMARY =
+                "Consultar el coordinador de los proyectos de grado del estudiante";
+        public static final String CONSULTAR_COORDINADORES_DESCRIPTION =
+                "Permite al estudiante consultar, para cada proyecto de grado al que está vinculado, "
+                        + "el título y el coordinador asignado, para elegir el destinatario de una solicitud; "
+                        + "lista vacía si no pertenece a ninguno";
+        public static final String CONSULTAR_COORDINADORES_RESP_200 =
+                "Lista de proyectos de grado del estudiante con su coordinador";
+        public static final String CONSULTAR_COORDINADORES_RESP_400 = "Identificador del estudiante inválido";
+        public static final String CONSULTAR_COORDINADORES_RESP_403 =
+                "Sin permiso para consultar los coordinadores de los proyectos de grado del estudiante";
 
         public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar los proyectos de grado que asesora";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =

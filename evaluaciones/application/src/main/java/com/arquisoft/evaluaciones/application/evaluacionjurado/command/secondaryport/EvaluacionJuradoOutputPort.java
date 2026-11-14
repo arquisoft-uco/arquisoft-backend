@@ -20,6 +20,10 @@ public interface EvaluacionJuradoOutputPort {
 
     Set<UUID> consultarJuradosAsignados(UUID evaluacion, Set<UUID> jurados);
 
+    Set<UUID> consultarJuradosConEvaluaciones(UUID evaluacion, Set<UUID> jurados);
+
+    void eliminarPorEvaluacionYJurados(UUID evaluacion, Set<UUID> jurados);
+
     boolean estaFinalizada(UUID evaluacionCuantitativaJurado);
 
     boolean estaFinalizadaPorObservacion(UUID observacion);

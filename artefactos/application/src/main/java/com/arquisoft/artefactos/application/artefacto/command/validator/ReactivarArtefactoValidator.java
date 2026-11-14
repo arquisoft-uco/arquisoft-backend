@@ -1,9 +1,12 @@
 package com.arquisoft.artefactos.application.artefacto.command.validator;
 
 import com.arquisoft.artefactos.domain.artefacto.ReactivacionArtefactoDomain;
+import com.arquisoft.artefactos.domain.artefacto.model.PesoArtefactoReactivable;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.CupoEstudiantesArtefacto;
+
+import com.arquisoft.artefactos.domain.versionartefacto.model.AlmacenamientoProyectoGrado;
 
 import java.util.List;
 
@@ -13,5 +16,7 @@ public interface ReactivarArtefactoValidator {
             ReactivacionArtefactoDomain reactivacion,
             AsesorDomain asesor,
             List<AsesorProyectoGradoDomain> vinculosMasRecientes,
-            CupoEstudiantesArtefacto cupo);
+            CupoEstudiantesArtefacto cupo,
+            PesoArtefactoReactivable peso,
+            AlmacenamientoProyectoGrado almacenamiento);
 }

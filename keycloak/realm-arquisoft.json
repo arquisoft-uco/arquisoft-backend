@@ -56,6 +56,9 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "biblioteca:documentacion:view",
+              "proyectos:proyecto-grado-cancelacion:update",
+              "proyectos:historial-estado-proyecto-grado:view",
               "solicitudes:respuesta-cambio-asesor:delete",
               "solicitudes:respuesta-ampliacion-plazo:delete",
               "solicitudes:respuesta-novedad-coordinador-enviada:view",
@@ -66,10 +69,12 @@
               "fichas:estudiante-ficha-perfil:create",
               "fichas:estado-ficha-perfil-aprobacion:create",
               "usuarios:jurado-vigente:view",
+              "usuarios:administrador-vigente:view",
               "usuarios:coordinador-vigente:view",
               "fichas:estudiante-ficha-perfil-coordinador:view",
               "usuarios:representante-comite-vigente:view",
               "evaluaciones:evaluacion-jurado:create",
+              "evaluaciones:evaluacion-jurado:delete",
               "proyectos:proyecto-grado-coordinador:view",
               "usuarios:asesor-ficha-vigente:view",
               "evaluaciones:evaluacion-coordinador:view",
@@ -81,6 +86,7 @@
               "mapas-ruta:mapa-ruta:create",
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
+              "solicitudes:tipo-solicitud-recibida:view",
               "solicitudes:solicitud-registro-modificacion-usuarios:create",
               "solicitudes:solicitud-registro-modificacion-usuarios:delete",
               "solicitudes:solicitud-registro-modificacion-usuarios-enviada:view",
@@ -131,8 +137,10 @@
               "evaluaciones:evaluacion-cuantitativa-jurado:delete",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:evaluacion-cuantitativa-jurado:update",
+              "evaluaciones:evaluacion-cuantitativa-jurado:create",
               "usuarios:jurado-vigente:view",
               "evaluaciones:observacion-item-jurado:update",
+              "evaluaciones:observacion-item-jurado:delete",
               "evaluaciones:item-cualitativo-jurado:view",
               "evaluaciones:item-cuantitativo-jurado:view",
               "evaluaciones:estado-evaluacion:view",
@@ -146,7 +154,8 @@
               "evaluaciones:criterio-item-cualitativo-jurado:view",
               "evaluaciones:evaluacion-jurado-jurado:view",
               "evaluaciones:evaluacion-jurado:view",
-              "evaluaciones:evaluacion-cualitativa-jurado-jurado:view"
+              "evaluaciones:evaluacion-cualitativa-jurado-jurado:view",
+              "evaluaciones:evaluacion-cuantitativa-jurado-jurado:view"
             ]
           }
         },
@@ -201,7 +210,13 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "evaluaciones:item-cuantitativo-asesor:create",
+              "evaluaciones:item-cuantitativo-asesor:delete",
+              "evaluaciones:item-cuantitativo-asesor:update",
               "evaluaciones:item-cuantitativo-asesor:view",
+              "evaluaciones:item-cualitativo-asesor:create",
+              "evaluaciones:item-cualitativo-asesor:delete",
+              "evaluaciones:item-cualitativo-asesor:update",
               "evaluaciones:item-cualitativo-asesor:view",
               "evaluaciones:criterio-item-cualitativo-asesor:view",
               "solicitudes:respuesta-registro-modificacion-usuarios:delete",
@@ -223,6 +238,7 @@
               "usuarios:estudiante:delete",
               "usuarios:usuario:update",
               "solicitudes:tipo-solicitud:view",
+              "solicitudes:tipo-solicitud-recibida:view",
               "solicitudes:solicitud-registro-modificacion-usuarios-recibida:view",
               "usuarios:administrador:delete",
               "usuarios:asesor:delete",
@@ -265,7 +281,16 @@
         "id": "659943f9-e8a7-4578-8dcd-c1bcbcd1c993",
         "name": "bibliotecario",
         "description": "",
-        "composite": false,
+        "composite": true,
+        "composites": {
+          "client": {
+            "arquisoft-api": [
+              "biblioteca:estado-documentacion:view",
+              "biblioteca:documentacion:view",
+              "biblioteca:autor-documentacion:view"
+            ]
+          }
+        },
         "clientRole": false,
         "containerId": "053aee0b-1eeb-4991-926a-dca686ac045b",
         "attributes": {}
@@ -278,15 +303,18 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "biblioteca:documentacion:view",
               "artefactos:version-artefacto:upload",
               "artefactos:version-artefacto:delete",
               "repositorio-artefactos:version-repositorio-artefacto:download",
               "entregables:entregable-proyecto-grado-estudiante:view",
+              "entregables:paquete-entregable:download",
               "solicitudes:respuesta-cambio-asesor-recibida:view",
               "solicitudes:respuesta-ampliacion-plazo-recibida:view",
               "solicitudes:solicitud-novedad-asesor:delete",
               "solicitudes:respuesta-novedad-coordinador-recibida:view",
               "evaluaciones:observacion-item-jurado-estudiante:view",
+              "evaluaciones:observacion-item-asesor-estudiante:view",
               "fichas:ficha-perfil-estudiante:view",
               "fichas:estado-observacion-revision-estudiante:view",
               "solicitudes:solicitud-novedad-coordinador-enviada:view",
@@ -302,6 +330,9 @@
               "mapas-ruta:plan-estimado:update",
               "mapas-ruta:plan-estimado:delete",
               "mapas-ruta:plan-estimado-tarea-estudiante:view",
+              "mapas-ruta:plan-real-tarea-estudiante:view",
+              "mapas-ruta:plan-real:update",
+              "mapas-ruta:plan-real:delete",
               "mapas-ruta:tarea-mapa-ruta-estudiante:view",
               "mapas-ruta:mapa-ruta-estudiante:view",
               "solicitudes:solicitud-novedad-asesor:create",
@@ -325,10 +356,14 @@
               "fichas:revision-item-visualizada:update",
               "fichas:item-ficha-perfil:delete",
               "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view",
+              "evaluaciones:evaluacion-cuantitativa-asesor-estudiante:view",
+              "evaluaciones:evaluacion-cualitativa-asesor-estudiante:view",
               "fichas:item-ficha-perfil:update",
               "fichas:estado-ficha-perfil-estudiante:view",
               "evaluaciones:estado-evaluacion:view",
               "proyectos:proyecto-grado-estudiante:view",
+              "proyectos:asesor-actual-proyecto-grado-estudiante:view",
+              "proyectos:coordinador-proyecto-grado-estudiante:view",
               "fichas:observacion-evaluacion-estudiante:view",
               "artefactos:revision-asesor-estudiante:view",
               "artefactos:artefacto-estudiante:view",
@@ -360,11 +395,23 @@
         "composites": {
           "client": {
             "arquisoft-api": [
+              "biblioteca:documentacion:view",
+              "proyectos:proyecto-grado-estado:update",
+              "proyectos:historial-estado-proyecto-grado:view",
+              "mapas-ruta:tarea-mapa-ruta-asesor:view",
+              "mapas-ruta:mapa-ruta-asesor:view",
+              "mapas-ruta:plan-estimado-proyecto-asesor:view",
+              "mapas-ruta:plan-estimado-asesor:update",
+              "mapas-ruta:plan-real-proyecto-asesor:view",
+              "mapas-ruta:plan-real-asesor:update",
               "entregables:estado-entregable:view",
               "entregables:entregable-proyecto-grado:create",
               "entregables:entregable-proyecto-grado-estado:update",
               "entregables:entregable-proyecto-grado-asesor:view",
               "entregables:artefacto-entregable:view",
+              "entregables:paquete-entregable:download",
+              "entregables:estado-entregable-proyecto-grado:view",
+              "entregables:vista-previa-paquete-entregable:view",
               "evaluaciones:evaluacion-cualitativa-asesor-asesor:view",
               "evaluaciones:evaluacion-cuantitativa-asesor-asesor:view",
               "solicitudes:respuesta-novedad-asesor-recibida:view",
@@ -385,12 +432,18 @@
               "solicitudes:respuesta-novedad-asesor:create",
               "usuarios:estudiante-vigente:view",
               "solicitudes:tipo-solicitud:view",
+              "solicitudes:tipo-solicitud-recibida:view",
               "proyectos:proyecto-grado-asesor-detalle:view",
               "artefactos:estado-revision-asesor:view",
               "evaluaciones:evaluacion-asesor:view",
               "evaluaciones:evaluacion-asesor-detalle:view",
               "evaluaciones:evaluacion-cualitativa-asesor:create",
+              "evaluaciones:evaluacion-cualitativa-asesor:delete",
+              "evaluaciones:evaluacion-cualitativa-asesor:update",
               "evaluaciones:evaluacion-cuantitativa-asesor:create",
+              "evaluaciones:evaluacion-cuantitativa-asesor:delete",
+              "evaluaciones:observacion-item-asesor:create",
+              "evaluaciones:observacion-item-asesor-asesor:view",
               "artefactos:estudiante-artefacto:view",
               "artefactos:observacion-revision:view",
               "artefactos:revision-asesor-asesor:view",
@@ -478,6 +531,22 @@
         "name": "offline_access",
         "description": "${role_offline-access}",
         "composite": false,
+        "clientRole": false,
+        "containerId": "053aee0b-1eeb-4991-926a-dca686ac045b",
+        "attributes": {}
+      },
+      {
+        "id": "c45fab72-ad8a-4ced-8e97-c05e42d56768",
+        "name": "servicio-identidad",
+        "description": "Rol de servicio: solo resolver el id de un usuario por su correo",
+        "composite": true,
+        "composites": {
+          "client": {
+            "arquisoft-api": [
+              "usuarios:usuario-por-correo:view"
+            ]
+          }
+        },
         "clientRole": false,
         "containerId": "053aee0b-1eeb-4991-926a-dca686ac045b",
         "attributes": {}
@@ -756,6 +825,15 @@
           "attributes": {}
         },
         {
+          "id": "2ddb263d-4824-4a4b-84b8-60fbe25fe02c",
+          "name": "evaluaciones:evaluacion-cuantitativa-jurado-jurado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "abf48b9e-1756-402c-bf37-393426b2e13c",
           "name": "solicitudes:solicitud-novedad-asesor-enviada:view",
           "description": "",
@@ -767,6 +845,15 @@
         {
           "id": "cecbc258-f325-47d8-9778-ea6a7b838772",
           "name": "usuarios:bibliotecario:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7c3e5f1a-2b84-4d96-a1c7-9e0d4b6f8a23",
+          "name": "usuarios:administrador-vigente:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1197,6 +1284,33 @@
           "attributes": {}
         },
         {
+          "id": "93c892ea-1fe2-463e-8498-6ef7f33c2ba1",
+          "name": "biblioteca:estado-documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "2334c846-6d3b-4541-86c5-8dd0259b26e1",
+          "name": "biblioteca:documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "4eefc44a-6618-4727-8926-6113f72bf714",
+          "name": "biblioteca:autor-documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "c2365dde-bb30-4cf4-8406-de657a630afb",
           "name": "entregables:estado-entregable:view",
           "description": "",
@@ -1242,6 +1356,33 @@
           "attributes": {}
         },
         {
+          "id": "2dce97b6-1297-43ef-9726-2435b50fafa7",
+          "name": "entregables:paquete-entregable:download",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5b3e7d91-4c2a-4f08-9a6d-1e8c3f7b2d40",
+          "name": "entregables:vista-previa-paquete-entregable:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "7c1e5a42-93d8-4b6f-a0e7-2f4d8b6c1a95",
+          "name": "entregables:estado-entregable-proyecto-grado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "ff2468d4-bbf2-4e51-bc64-410ad2676e9d",
           "name": "entregables:entregable-proyecto-grado-jurado:view",
           "description": "",
@@ -1271,6 +1412,33 @@
         {
           "id": "35fe0366-a963-4efb-a707-c61e86241bc5",
           "name": "mapas-ruta:tarea:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5c167aa1-c113-45f5-b689-60dfea5bd505",
+          "name": "mapas-ruta:plan-estimado-proyecto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "220f4abb-0288-41d3-8446-9c9df46b1cbc",
+          "name": "mapas-ruta:tarea-mapa-ruta-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5e8c1b7a-3d92-4f06-a4b8-7c1d2e9f0a63",
+          "name": "mapas-ruta:mapa-ruta-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1386,6 +1554,15 @@
           "attributes": {}
         },
         {
+          "id": "7c1e5a42-93b8-4d6f-a0e7-5b2d8c4f9e13",
+          "name": "solicitudes:tipo-solicitud-recibida:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "9582eb8b-526a-4b4f-8c12-94c5925fb242",
           "name": "fichas:evaluacion-ficha-perfil:create",
           "description": "",
@@ -1449,6 +1626,24 @@
           "attributes": {}
         },
         {
+          "id": "93728f6f-99a6-41a1-940f-b52793233d7e",
+          "name": "proyectos:proyecto-grado-estado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a2cbdae4-900e-4328-9f85-52a2fe85a20e",
+          "name": "proyectos:proyecto-grado-cancelacion:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "a479045b-c5ee-44f3-91c5-1b1fc5475adc",
           "name": "proyectos:estado-asesor:view",
           "description": "",
@@ -1478,6 +1673,60 @@
         {
           "id": "ac650632-c7e7-4bc9-8461-daa349cc850e",
           "name": "fichas:revision-item:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "fb89f447-bea0-4f27-bc44-b8215ae4e608",
+          "name": "evaluaciones:item-cualitativo-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3336351a-2316-4b70-89b9-1b2bf2add070",
+          "name": "evaluaciones:item-cualitativo-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b2671b33-6b2e-45af-b1c0-e4243561dffe",
+          "name": "evaluaciones:item-cualitativo-asesor:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "f0b2f7ad-8567-446b-bf70-76e1361a477c",
+          "name": "evaluaciones:item-cuantitativo-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "802b50cc-b93f-4dd2-b88c-697512a55fd7",
+          "name": "evaluaciones:item-cuantitativo-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3ffc7737-aa17-4531-b159-5ad2813acef9",
+          "name": "evaluaciones:item-cuantitativo-asesor:delete",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -1728,6 +1977,15 @@
           "attributes": {}
         },
         {
+          "id": "b3c8f1a2-6d4e-4f7a-9c1b-2e5d8a7f4c60",
+          "name": "evaluaciones:evaluacion-jurado:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "262b4b01-adda-4feb-944a-a1e6124b8f1f",
           "name": "proyectos:proyecto-grado-coordinador:view",
           "description": "",
@@ -1809,6 +2067,15 @@
           "attributes": {}
         },
         {
+          "id": "87595b62-09eb-42af-bf53-78a9a6e5fe75",
+          "name": "evaluaciones:evaluacion-cuantitativa-jurado:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "1e1e0a47-25a6-4507-b0c8-372e2b3f6fa0",
           "name": "fichas:observacion-item-estudiante:view",
           "description": "",
@@ -1865,6 +2132,24 @@
         {
           "id": "c076a3f3-d0b5-4e8b-b02b-682b9d572d2b",
           "name": "proyectos:proyecto-grado-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "d663c150-801a-4702-86ed-adebc1b95faa",
+          "name": "proyectos:asesor-actual-proyecto-grado-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "966f6b2a-0668-43fe-a81f-cb554fc1e0c8",
+          "name": "proyectos:coordinador-proyecto-grado-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2088,6 +2373,15 @@
           "attributes": {}
         },
         {
+          "id": "3c6f1e52-9a47-4d0b-8e1d-5b7a2f9c4e68",
+          "name": "evaluaciones:observacion-item-jurado:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "a238f57f-f3b6-488b-aa94-adc968dc64dc",
           "name": "usuarios:representante-comite-curriculum:create",
           "description": "",
@@ -2214,6 +2508,15 @@
           "attributes": {}
         },
         {
+          "id": "7862bd52-44f0-493a-be04-70753494ef4c",
+          "name": "proyectos:historial-estado-proyecto-grado:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "73819a1f-3756-4407-bde8-dd99a041b98b",
           "name": "proyectos:estado-proyecto-grado-estudiante:view",
           "description": "",
@@ -2297,6 +2600,24 @@
         {
           "id": "784677c7-2f28-4246-bfa8-870fc53707d6",
           "name": "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "fbce4dd3-8be2-4e3b-83d3-311b8f7404d5",
+          "name": "evaluaciones:evaluacion-cuantitativa-asesor-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "dca26948-26d6-45fd-a74d-2d851d30d846",
+          "name": "evaluaciones:evaluacion-cualitativa-asesor-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2493,8 +2814,62 @@
           "attributes": {}
         },
         {
+          "id": "db182474-7206-40ea-8be1-292c1360c1bd",
+          "name": "evaluaciones:evaluacion-cualitativa-asesor:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "0e04c7e7-9900-402d-b713-11764f7c64b6",
+          "name": "evaluaciones:evaluacion-cualitativa-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "6f1c2d4e-8a3b-4c57-9e10-b2a7d5c3f814",
           "name": "evaluaciones:evaluacion-cuantitativa-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "1dab200c-fed0-4820-8274-a5d85afa510e",
+          "name": "evaluaciones:evaluacion-cuantitativa-asesor:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a1b21996-e1f5-4723-9979-cd985ff73120",
+          "name": "evaluaciones:observacion-item-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "0a695c41-b344-430b-b9c2-ff62e2ef5264",
+          "name": "evaluaciones:observacion-item-asesor-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "620cddc0-124b-49eb-b55a-aea2f075348b",
+          "name": "evaluaciones:observacion-item-asesor-estudiante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2790,6 +3165,15 @@
           "attributes": {}
         },
         {
+          "id": "3b8f1d46-9a2e-4c75-b0d3-6e5a7c4f2918",
+          "name": "mapas-ruta:plan-estimado-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "7e3a9d52-1c6b-4f08-a2d4-b95e0c18f6a7",
           "name": "mapas-ruta:plan-estimado:update",
           "description": "",
@@ -2817,6 +3201,51 @@
           "attributes": {}
         },
         {
+          "id": "28bbe823-7e56-4541-9d1a-36ca6fe40c6d",
+          "name": "mapas-ruta:plan-real-tarea-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "98d08967-b177-41fd-8a73-3e3d9f2603d8",
+          "name": "mapas-ruta:plan-real:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "6e3a9d21-4b78-4c05-a1f6-2d8c7e5b9034",
+          "name": "mapas-ruta:plan-real:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "232c7685-59e5-4a28-8891-c75e7f65f504",
+          "name": "mapas-ruta:plan-real-proyecto-asesor:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "c4a7e2b9-5d18-4f36-8e0a-71b3d9f2a6c5",
+          "name": "mapas-ruta:plan-real-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "f52bb47d-a31f-42b3-9f01-ebc19228f717",
           "name": "solicitudes:respuesta-cambio-asesor:create",
           "description": "",
@@ -2837,6 +3266,15 @@
         {
           "id": "d3cbb113-97ee-43fa-96dd-30c12557ba80",
           "name": "solicitudes:respuesta-registro-modificacion-usuarios:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "a4e76f4d-e01d-4890-bb46-c225f9dc7abf",
+          "name": "usuarios:usuario-por-correo:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -3107,6 +3545,22 @@
       },
       "notBefore": 0,
       "groups": []
+    },
+    {
+      "id": "6ca9d6e0-b95d-43d7-a672-198865c4b715",
+      "username": "service-account-arquisoft-seguridad-usuarios",
+      "emailVerified": false,
+      "enabled": true,
+      "createdTimestamp": 1793849667140,
+      "totp": false,
+      "serviceAccountClientId": "arquisoft-seguridad-usuarios",
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "servicio-identidad"
+      ],
+      "notBefore": 0,
+      "groups": []
     }
   ],
   "scopeMappings": [
@@ -3358,6 +3812,65 @@
         "organization",
         "microprofile-jwt"
       ]
+    },
+    {
+      "id": "f685a401-ee8c-449a-a95e-5e7c8288982e",
+      "clientId": "arquisoft-seguridad-usuarios",
+      "name": "",
+      "description": "Cuenta de servicio del contexto seguridad para resolver el id de usuario por correo",
+      "rootUrl": "",
+      "adminUrl": "",
+      "baseUrl": "",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [],
+      "webOrigins": [],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "realm_client": "false",
+        "client_credentials.use_refresh_token": "false",
+        "display.on.consent.screen": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "protocolMappers": [
+        {
+          "id": "eff6087d-684e-4e6f-aa3a-ee934f8182a7",
+          "name": "audience-arquisoft-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "arquisoft-api",
+            "id.token.claim": "false",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "service_account",
+        "acr",
+        "profile",
+        "roles",
+        "basic",
+        "email"
+      ],
+      "optionalClientScopes": []
     },
     {
       "id": "31ffd405-e2fe-4e76-92bd-e4db1032f260",

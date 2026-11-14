@@ -4,12 +4,14 @@ import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.comma
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncuantitativajurado.command.secondaryadapter.entity.EvaluacionCuantitativaJuradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -166,5 +168,57 @@ class EvaluacionCuantitativaJuradoCommandOutputAdapterTest {
         assertThat(entityManager.find(EvaluacionCuantitativaJuradoJpaEntity.class, segunda)).isNull();
         assertThat(entityManager.find(EvaluacionCuantitativaJuradoJpaEntity.class, intacta)).isNotNull();
         verify(logger).debug(any(ClaveMensaje.class), eq(2));
+    }
+
+    @Test
+    void debePersistirElLoteYLogearLaCantidad_cuandoRegistrarTodas() {
+        // Arrange
+        var evaluacionJurado = UtilUUID.generarNuevoUUID();
+        var primera = new EvaluacionCuantitativaJuradoEntity(
+                UtilUUID.generarNuevoUUID(), evaluacionJurado, UtilUUID.generarNuevoUUID(), 100);
+        var segunda = new EvaluacionCuantitativaJuradoEntity(
+                UtilUUID.generarNuevoUUID(), evaluacionJurado, UtilUUID.generarNuevoUUID(), 200);
+
+        // Act
+        adapter.registrarTodas(List.of(primera, segunda));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var persistida = entityManager.find(EvaluacionCuantitativaJuradoJpaEntity.class, segunda.id());
+        assertThat(persistida.getEvaluacionJuradoId()).isEqualTo(evaluacionJurado);
+        assertThat(persistida.getItemId()).isEqualTo(segunda.item());
+        assertThat(persistida.getPuntaje()).isEqualTo(200);
+        assertThat(entityManager.find(EvaluacionCuantitativaJuradoJpaEntity.class, primera.id())).isNotNull();
+        verify(logger).debug(any(ClaveMensaje.class), eq(2));
+    }
+
+    @Test
+    void debeDevolverSoloItemsRegistradosDeLaEvaluacionJurado_cuandoConsultarItemsRegistrados() {
+        // Arrange
+        var evaluacionJurado = UtilUUID.generarNuevoUUID();
+        var itemRegistrado = UtilUUID.generarNuevoUUID();
+        var itemLibre = UtilUUID.generarNuevoUUID();
+        var itemDeOtraEvaluacion = UtilUUID.generarNuevoUUID();
+        sembrarConItem(evaluacionJurado, itemRegistrado);
+        sembrarConItem(UtilUUID.generarNuevoUUID(), itemDeOtraEvaluacion);
+
+        // Act
+        var resultado = adapter.consultarItemsRegistrados(
+                evaluacionJurado, Set.of(itemRegistrado, itemLibre, itemDeOtraEvaluacion));
+
+        // Assert
+        assertThat(resultado).containsExactly(itemRegistrado);
+    }
+
+    private void sembrarConItem(UUID evaluacionJurado, UUID item) {
+        entityManager.persist(EvaluacionCuantitativaJuradoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .evaluacionJuradoId(evaluacionJurado)
+                .itemId(item)
+                .puntaje(300)
+                .build());
+        entityManager.flush();
+        entityManager.clear();
     }
 }

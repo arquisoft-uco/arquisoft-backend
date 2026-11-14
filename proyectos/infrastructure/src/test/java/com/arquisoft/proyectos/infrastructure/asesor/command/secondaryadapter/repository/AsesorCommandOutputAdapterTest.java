@@ -3,6 +3,7 @@ package com.arquisoft.proyectos.infrastructure.asesor.command.secondaryadapter.r
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.entity.AsesorEntity;
 import com.arquisoft.proyectos.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
+import com.arquisoft.proyectos.infrastructure.asesorproyectogrado.command.secondaryadapter.entity.AsesorProyectoGradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.AsesorKey;
 import org.junit.jupiter.api.Test;
@@ -94,7 +95,7 @@ class AsesorCommandOutputAdapterTest {
         assertThat(resultado.get().identificador()).isEqualTo("20161020999");
         assertThat(resultado.get().nombre()).isEqualTo("Ana Actualizada");
         assertThat(resultado.get().ocurridoEn()).isEqualTo(nuevoOcurridoEn);
-        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorKey.LOG_FILA_ACTUALIZADA, id);
     }
 
     private UUID sembrarAsesor(Instant ocurridoEn, Instant eliminadoEn) {
@@ -103,6 +104,52 @@ class AsesorCommandOutputAdapterTest {
                 .id(id).identificador("20161020123").nombre("Ana Perez")
                 .email("ana@uco.edu.co").ocurridoEn(ocurridoEn).eliminadoEn(eliminadoEn).build());
         return id;
+    }
+
+    private void vincular(UUID asesor, UUID proyectoGrado, String estado, String fecha) {
+        entityManager.persist(AsesorProyectoGradoJpaEntity.builder()
+                .id(UUID.randomUUID()).asesorId(asesor).proyectoGradoId(proyectoGrado)
+                .estadoAsesorId(estado).fechaAsignado(Instant.parse(fecha)).build());
+    }
+
+    @Test
+    void debeObtenerAsesor_cuandoUltimoVinculoEsAsignado() {
+        // Arrange
+        var adapter = new AsesorCommandOutputAdapter(asesorCommandRepository, logger);
+        var proyectoGrado = UUID.randomUUID();
+        var asesor = sembrarAsesor(Instant.parse("2026-09-01T10:00:00Z"), null);
+        vincular(asesor, proyectoGrado, "ASIGNADO", "2026-09-02T10:00:00Z");
+        vincular(asesor, proyectoGrado, "FINALIZADO", "2026-09-03T10:00:00Z");
+        vincular(asesor, proyectoGrado, "ASIGNADO", "2026-09-04T10:00:00Z");
+        var otroProyecto = UUID.randomUUID();
+        var otroAsesor = sembrarAsesor(Instant.parse("2026-09-01T10:00:00Z"), null);
+        vincular(otroAsesor, otroProyecto, "ASIGNADO", "2026-09-02T10:00:00Z");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var asesores = adapter.obtenerAsignadosPorProyectoGrado(proyectoGrado, "ASIGNADO");
+
+        // Assert
+        assertThat(asesores).extracting(AsesorEntity::id).containsExactly(asesor);
+    }
+
+    @Test
+    void debeIgnorarAsesor_cuandoUltimoVinculoEsFinalizado() {
+        // Arrange
+        var adapter = new AsesorCommandOutputAdapter(asesorCommandRepository, logger);
+        var proyectoGrado = UUID.randomUUID();
+        var asesor = sembrarAsesor(Instant.parse("2026-09-01T10:00:00Z"), null);
+        vincular(asesor, proyectoGrado, "ASIGNADO", "2026-09-02T10:00:00Z");
+        vincular(asesor, proyectoGrado, "FINALIZADO", "2026-09-03T10:00:00Z");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var asesores = adapter.obtenerAsignadosPorProyectoGrado(proyectoGrado, "ASIGNADO");
+
+        // Assert
+        assertThat(asesores).isEmpty();
     }
 
     @Test
@@ -119,7 +166,7 @@ class AsesorCommandOutputAdapterTest {
         var fila = entityManager.find(AsesorJpaEntity.class, id);
         assertThat(fila.getEliminadoEn()).isEqualTo(ocurridoEn);
         assertThat(fila.getOcurridoEn()).isEqualTo(ocurridoEn);
-        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Test
@@ -141,7 +188,7 @@ class AsesorCommandOutputAdapterTest {
         assertThat(fila.getNombre()).isEqualTo("Ana Gomez");
         assertThat(fila.getEmail()).isEqualTo("ana.gomez@uco.edu.co");
         assertThat(fila.getOcurridoEn()).isEqualTo(ocurridoEn);
-        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorKey.LOG_FILA_REACTIVADA, id);
     }
 
     @Test

@@ -22,6 +22,8 @@ public final class VersionArtefactoResponseMapper {
                 readModel.revisionAsesor(),
                 readModel.estadoRevision(),
                 readModel.nombreEstadoRevision(),
-                readModel.fechaCreacionRevision());
+                readModel.fechaCreacionRevision(),
+                readModel.proyectoFinalizado(),
+                readModel.proyectoCancelado());
     }
 }

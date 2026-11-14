@@ -13,6 +13,7 @@ import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.http.Method;
 import io.minio.MinioClient;
 import io.minio.PostPolicy;
+import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import io.minio.StatObjectArgs;
 import io.minio.StatObjectResponse;
@@ -39,6 +40,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -267,6 +271,34 @@ class MinioAlmacenamientoObjetosTest {
     }
 
     @Test
+    void debeCopiarEntreBucketsDistintos_cuandoSeIndicanOrigenYDestino() throws Exception {
+        // Act
+        almacenamiento.copiar("artefactos", "pendientes/c-1", "entregables", "artefactos/a-1/v1", "\"abc123\"");
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(CopyObjectArgs.class);
+        verify(minioClient).copyObject(captor.capture());
+        assertThat(captor.getValue().source().bucket()).isEqualTo("artefactos");
+        assertThat(captor.getValue().source().object()).isEqualTo("pendientes/c-1");
+        assertThat(captor.getValue().source().matchETag()).isEqualTo("abc123");
+        assertThat(captor.getValue().bucket()).isEqualTo("entregables");
+        assertThat(captor.getValue().object()).isEqualTo("artefactos/a-1/v1");
+    }
+
+    @Test
+    void debeDelegarEnElDeCincoParametrosConElMismoBucket_cuandoSeUsaLaSobrecargaDeCuatro() {
+        // Arrange
+        var delegante = mock(AlmacenamientoObjetos.class, CALLS_REAL_METHODS);
+        doNothing().when(delegante).copiar(any(), any(), any(), any(), any());
+
+        // Act
+        delegante.copiar(BUCKET, "origen", "destino", "etag");
+
+        // Assert
+        verify(delegante).copiar(BUCKET, "origen", BUCKET, "destino", "etag");
+    }
+
+    @Test
     void debeCopiarSinReemplazarMetadatos_cuandoCopia() throws Exception {
         // Act
         almacenamiento.copiar(BUCKET, "pendientes/c-1", "versiones/v-1", "abc");
@@ -308,6 +340,35 @@ class MinioAlmacenamientoObjetosTest {
         // Act & Assert
         assertThatThrownBy(() -> almacenamiento.eliminar(BUCKET, "pendientes/c-1"))
                 .isInstanceOf(MinioOperationException.class);
+    }
+
+    @Test
+    void debeSubirObjetoConTamanoYTipo_cuandoMinioResponde() throws Exception {
+        // Arrange
+        var contenido = new ByteArrayInputStream("zip".getBytes(StandardCharsets.UTF_8));
+
+        // Act
+        almacenamiento.subir(BUCKET, "paquetes/e-1.zip", contenido, 3L, "application/zip");
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(PutObjectArgs.class);
+        verify(minioClient).putObject(captor.capture());
+        assertThat(captor.getValue().bucket()).isEqualTo(BUCKET);
+        assertThat(captor.getValue().object()).isEqualTo("paquetes/e-1.zip");
+        assertThat(captor.getValue().objectSize()).isEqualTo(3L);
+        assertThat(captor.getValue().contentType()).isEqualTo("application/zip");
+    }
+
+    @Test
+    void debeLanzarSubidaFallida_cuandoMinioFalla() throws Exception {
+        // Arrange
+        org.mockito.Mockito.doThrow(new IOException("caido")).when(minioClient).putObject(any(PutObjectArgs.class));
+        var contenido = new ByteArrayInputStream(new byte[] {1});
+
+        // Act & Assert
+        assertThatThrownBy(() -> almacenamiento.subir(BUCKET, "paquetes/e-1.zip", contenido, 1L, "application/zip"))
+                .isInstanceOfSatisfying(MinioOperationException.class,
+                        ex -> assertThat(ex.getCodigoError()).isEqualTo(AppCodes.Minio.SUBIDA_FALLIDA));
     }
 
     private GetPresignedObjectUrlArgs firmar(String nombreArchivo) throws Exception {

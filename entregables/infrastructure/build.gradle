@@ -11,6 +11,7 @@ dependencies {
     implementation project(':shared:tracing')
     implementation project(':shared:web')
     implementation project(':shared:jpa')
+    implementation project(':shared:minio')
 
     // Solo para los slices de test: un controlador de produccion no puede importar seguridad.
     testImplementation "org.springframework.boot:spring-boot-starter-security"

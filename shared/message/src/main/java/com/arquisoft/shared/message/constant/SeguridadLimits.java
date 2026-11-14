@@ -40,4 +40,11 @@ public final class SeguridadLimits {
         public static final int EMISOR_MAX = 100;
         public static final int CORRELACION_MAX = 128;
     }
+
+    public static final class CredencialSesion {
+
+        private CredencialSesion() {}
+
+        public static final int CREDENCIAL_MAX = 4096;
+    }
 }

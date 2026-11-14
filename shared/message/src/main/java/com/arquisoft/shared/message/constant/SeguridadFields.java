@@ -58,4 +58,11 @@ public final class SeguridadFields {
         public static final String EMISOR = "emisor";
         public static final String CORRELACION = "correlacion";
     }
+
+    public static final class CredencialSesion {
+
+        private CredencialSesion() {}
+
+        public static final String CREDENCIAL = "credencial";
+    }
 }

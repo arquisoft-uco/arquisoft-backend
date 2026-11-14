@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public interface AsesorCommandRepository extends JpaRepository<AsesorJpaEntity, UUID> {
@@ -25,4 +26,17 @@ public interface AsesorCommandRepository extends JpaRepository<AsesorJpaEntity, 
     int reactivar(@Param("id") UUID id, @Param("identificador") String identificador,
                   @Param("nombre") String nombre, @Param("email") String email,
                   @Param("ocurridoEn") Instant ocurridoEn);
+
+    @Query("""
+            SELECT a FROM AsesorJpaEntity a
+            WHERE a.id IN (SELECT ap.asesorId FROM AsesorProyectoGradoJpaEntity ap
+                           WHERE ap.proyectoGradoId = :proyectoGrado
+                             AND ap.estadoAsesorId = :estadoAsesor
+                             AND NOT EXISTS (SELECT 1 FROM AsesorProyectoGradoJpaEntity s
+                                             WHERE s.asesorId = ap.asesorId
+                                               AND s.proyectoGradoId = ap.proyectoGradoId
+                                               AND s.fechaAsignado > ap.fechaAsignado))
+            """)
+    List<AsesorJpaEntity> buscarPorUltimoEstadoEnProyectoGrado(@Param("proyectoGrado") UUID proyectoGrado,
+                                                                @Param("estadoAsesor") String estadoAsesor);
 }

@@ -1,10 +1,16 @@
 package com.arquisoft.mapas_ruta.infrastructure.planestimado.query.secondaryadapter.repository;
 
 import com.arquisoft.mapas_ruta.application.planestimado.query.criteria.PlanEstimadoTareaCriteria;
+import com.arquisoft.mapas_ruta.application.planestimado.query.criteria.PlanEstimadoProyectoCriteria;
+import com.arquisoft.mapas_ruta.application.planestimado.query.primaryport.mapper.ConsultarPlanesEstimadosProyectoGradoAsesorMapper;
 import com.arquisoft.mapas_ruta.application.planestimado.query.primaryport.mapper.ConsultarPlanesEstimadosTareaEstudianteMapper;
+import com.arquisoft.mapas_ruta.application.planestimado.query.primaryport.model.ConsultarPlanesEstimadosProyectoGradoAsesorQuery;
 import com.arquisoft.mapas_ruta.application.planestimado.query.primaryport.model.ConsultarPlanesEstimadosTareaEstudianteQuery;
+import com.arquisoft.mapas_ruta.application.planestimado.query.readmodel.PlanEstimadoProyectoReadModel;
 import com.arquisoft.mapas_ruta.application.planestimado.query.readmodel.PlanEstimadoReadModel;
+import com.arquisoft.mapas_ruta.infrastructure.maparuta.command.secondaryadapter.entity.MapaRutaJpaEntity;
 import com.arquisoft.mapas_ruta.infrastructure.planestimado.command.secondaryadapter.entity.PlanEstimadoJpaEntity;
+import com.arquisoft.mapas_ruta.infrastructure.tarea.command.secondaryadapter.entity.TareaJpaEntity;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
@@ -17,13 +23,16 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import({PlanEstimadoQueryOutputAdapter.class, PlanEstimadoJpaSpecification.class})
+@Import({PlanEstimadoQueryOutputAdapter.class, PlanEstimadoJpaSpecification.class,
+        PlanEstimadoProyectoJpaSpecification.class})
 class PlanEstimadoQueryOutputAdapterTest {
 
     @Autowired
@@ -38,6 +47,7 @@ class PlanEstimadoQueryOutputAdapterTest {
                 .id(id)
                 .tareaId(tarea)
                 .tiempoEstimadoDias(dias)
+                .creadoEn(Instant.now())
                 .descripcionEstimado(descripcion)
                 .build());
         return id;
@@ -157,5 +167,132 @@ class PlanEstimadoQueryOutputAdapterTest {
 
         // Assert
         assertThat(dias(resultado.getContent())).containsExactly(3, 2, 1);
+    }
+
+    private UUID sembrarMapa(UUID proyectoGrado) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(MapaRutaJpaEntity.builder()
+                .id(id)
+                .proyectoGradoId(proyectoGrado)
+                .fechaInicio(LocalDate.of(2026, 10, 1))
+                .fechaFin(LocalDate.of(2026, 12, 1))
+                .build());
+        return id;
+    }
+
+    private UUID sembrarTarea(UUID mapa, String descripcion) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(TareaJpaEntity.builder()
+                .id(id)
+                .mapaRutaId(mapa)
+                .descripcion(descripcion)
+                .asesorId(UtilUUID.generarNuevoUUID())
+                .estadoItemId("NUEVA")
+                .build());
+        return id;
+    }
+
+    private static PlanEstimadoProyectoCriteria criteriaProyecto(
+            UUID proyectoGrado, List<SortOrder> orden, NodoFiltro raiz) {
+        return ConsultarPlanesEstimadosProyectoGradoAsesorMapper.toCriteria(
+                ConsultarPlanesEstimadosProyectoGradoAsesorQuery.crear(proyectoGrado,
+                        ConsultaCriteriaQuery.crear(0, 10, orden, raiz)));
+    }
+
+    @Test
+    void debeDevolverPlanesDelProyecto_incluyendoDescripcionTarea() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var mapa = sembrarMapa(proyecto);
+        var tarea = sembrarTarea(mapa, "Redactar capitulo");
+        var plan = sembrarPlan(tarea, 5, "Revisar borrador");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorProyectoGrado(criteriaProyecto(proyecto, List.of(), null));
+
+        // Assert
+        assertThat(resultado.getTotalElements()).isEqualTo(1);
+        assertThat(resultado.getContent()).singleElement().satisfies(readModel -> {
+            assertThat(readModel.id()).isEqualTo(plan);
+            assertThat(readModel.tarea()).isEqualTo(tarea);
+            assertThat(readModel.descripcionTarea()).isEqualTo("Redactar capitulo");
+            assertThat(readModel.mapaRuta()).isEqualTo(mapa);
+            assertThat(readModel.tiempoEstimadoDias()).isEqualTo(5);
+            assertThat(readModel.descripcionEstimado()).isEqualTo("Revisar borrador");
+        });
+    }
+
+    @Test
+    void debeExcluirPlanesDeOtroProyecto() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        sembrarPlan(sembrarTarea(sembrarMapa(proyecto), "Propia"), 4, "Propio");
+        sembrarPlan(sembrarTarea(sembrarMapa(UtilUUID.generarNuevoUUID()), "Ajena"), 8, "Ajeno");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorProyectoGrado(criteriaProyecto(proyecto, List.of(), null));
+
+        // Assert
+        assertThat(resultado.getContent()).extracting(PlanEstimadoProyectoReadModel::descripcionEstimado)
+                .containsExactly("Propio");
+    }
+
+    @Test
+    void debeFiltrarPorDescripcionTarea() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var mapa = sembrarMapa(proyecto);
+        sembrarPlan(sembrarTarea(mapa, "Redactar capitulo"), 2, "A");
+        sembrarPlan(sembrarTarea(mapa, "Preparar bibliografia"), 3, "B");
+        entityManager.flush();
+        entityManager.clear();
+        var raiz = NodoFiltro.predicado("descripcionTarea", FiltroOperador.CONTIENE, "bibliografia");
+
+        // Act
+        var resultado = adapter.consultarPorProyectoGrado(criteriaProyecto(proyecto, List.of(), raiz));
+
+        // Assert
+        assertThat(resultado.getContent()).extracting(PlanEstimadoProyectoReadModel::descripcionEstimado)
+                .containsExactly("B");
+    }
+
+    @Test
+    void debeOrdenarPorTiempoEstimado() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var mapa = sembrarMapa(proyecto);
+        sembrarPlan(sembrarTarea(mapa, "T1"), 3, "B");
+        sembrarPlan(sembrarTarea(mapa, "T2"), 1, "A");
+        sembrarPlan(sembrarTarea(mapa, "T3"), 2, "C");
+        entityManager.flush();
+        entityManager.clear();
+        var orden = List.of(SortOrder.of("tiempoEstimadoDias", SortDirection.DESC));
+
+        // Act
+        var resultado = adapter.consultarPorProyectoGrado(criteriaProyecto(proyecto, orden, null));
+
+        // Assert
+        assertThat(resultado.getContent()).extracting(PlanEstimadoProyectoReadModel::tiempoEstimadoDias)
+                .containsExactly(3, 2, 1);
+    }
+
+    @Test
+    void debeDevolverPaginaVacia_cuandoProyectoSinPlanes() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        sembrarTarea(sembrarMapa(proyecto), "Sin plan");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorProyectoGrado(criteriaProyecto(proyecto, List.of(), null));
+
+        // Assert
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isZero();
     }
 }

@@ -8,6 +8,8 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.E
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.EstudianteArtefactoOutputPort;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.entity.EstudianteArtefactoEntity;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.validator.AsignarEstudiantesArtefactoValidator;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
@@ -18,6 +20,7 @@ import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDo
 import com.arquisoft.artefactos.domain.estudianteartefacto.event.EstudiantesArtefactoAsignadosEvent;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.ContactoAsesor;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.ContactoEstudiante;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
 import com.arquisoft.shared.logger.AppLogger;
@@ -44,6 +47,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -69,6 +73,10 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @Captor
@@ -84,7 +92,8 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
                 artefactoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 estudiantesPorIdsFinder, estudiantesPertenenciaProyectoGradoFinder,
                 estudiantesYaVinculadosArtefactoFinder, asignarEstudiantesArtefactoValidator,
-                estudianteArtefactoOutputPort, eventPublisher, logger);
+                estudianteArtefactoOutputPort, eventPublisher, proyectoGradoBloqueadoPorArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
     }
 
     private static VersionRepositorioArtefactoDomain version(String nombreDocumento) {
@@ -123,7 +132,7 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
                 artefactoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 estudiantesPorIdsFinder, estudiantesPertenenciaProyectoGradoFinder,
                 estudiantesYaVinculadosArtefactoFinder, asignarEstudiantesArtefactoValidator,
-                estudianteArtefactoOutputPort, eventPublisher, logger);
+                estudianteArtefactoOutputPort, eventPublisher, logger, proyectoGradoNoCongeladoValidator);
         orden.verify(artefactoPorIdFinder).obtener(artefactoId);
         orden.verify(asesorPorIdFinder).obtener(asesorId);
         orden.verify(versionRepositorioArtefactoPorIdFinder).obtener(version.getId());
@@ -132,6 +141,8 @@ class AsignarEstudiantesArtefactoUseCaseImplTest {
         orden.verify(estudiantesYaVinculadosArtefactoFinder).obtener(entrada);
         orden.verify(asignarEstudiantesArtefactoValidator)
                 .validar(entrada, artefacto, asesor, version, estudiantes, idsEstudiantes, List.of());
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(any());
         orden.verify(estudianteArtefactoOutputPort).vincularTodos(entidadesCaptor.capture());
         orden.verify(eventPublisher).publish(eventoCaptor.capture());
         orden.verify(logger).info(EstudianteArtefactoKey.LOG_ASIGNADOS, artefactoId, 2);

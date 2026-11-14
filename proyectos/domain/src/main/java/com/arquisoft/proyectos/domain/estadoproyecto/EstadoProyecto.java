@@ -8,9 +8,9 @@ import java.util.Optional;
 public enum EstadoProyecto {
 
     EN_PROCESO("En proceso"),
-    LISTO_PARA_REVISION("Listo Para Revisión"),
     ATRASADO("Atrasado"),
     FINALIZADO("Finalizado"),
+    CANCELADO("Cancelado"),
 
     VACIO("");
 

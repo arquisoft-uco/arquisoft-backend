@@ -1,6 +1,9 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
+import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAnteriorBloqueadaDeVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorAbiertaPorVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.entity.RevisionAsesorEntity;
@@ -8,6 +11,7 @@ import com.arquisoft.artefactos.application.revisionasesor.command.validator.Reg
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoEsUltimaFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RegistroRevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorAbiertaExistenteException;
@@ -44,6 +48,8 @@ import static org.mockito.Mockito.when;
 class RegistrarRevisionAsesorUseCaseImplTest {
 
     @Mock
+    private RevisionAnteriorBloqueadaDeVersionFinder revisionAnteriorBloqueadaDeVersionFinder;
+    @Mock
     private VersionArtefactoBloqueadaPorIdFinder versionArtefactoBloqueadaPorIdFinder;
     @Mock
     private ArtefactoPorVersionArtefactoFinder artefactoPorVersionArtefactoFinder;
@@ -56,6 +62,10 @@ class RegistrarRevisionAsesorUseCaseImplTest {
     @Mock
     private RevisionAsesorOutputPort revisionAsesorOutputPort;
     @Mock
+    private ProyectoGradoBloqueadoPorVersionArtefactoFinder proyectoGradoBloqueadoPorVersionArtefactoFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -66,16 +76,21 @@ class RegistrarRevisionAsesorUseCaseImplTest {
     private RegistroRevisionAsesorDomain registro;
     private VersionArtefactoDomain version;
     private ArtefactoDomain artefacto;
+    private RevisionAsesorDomain revisionAnterior;
 
     @BeforeEach
     void setUp() {
+        when(proyectoGradoBloqueadoPorVersionArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         asesorId = UtilUUID.generarNuevoUUID();
         versionId = UtilUUID.generarNuevoUUID();
         var artefactoId = UtilUUID.generarNuevoUUID();
         registro = RegistroRevisionAsesorDomain.crear(RevisionAsesorDomain.crear(versionId), asesorId);
-        version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 3, Instant.now(), "versiones/uri");
+        version = VersionArtefactoDomain.reconstruir(versionId, artefactoId, 3, Instant.now(), "versiones/uri", 1024L);
         artefacto = ArtefactoDomain.reconstruir(artefactoId, UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), asesorId, null);
+        revisionAnterior = RevisionAsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), EstadoRevisionAsesor.RESUELTA, Instant.now());
+        when(revisionAnteriorBloqueadaDeVersionFinder.obtener(versionId)).thenReturn(revisionAnterior);
         when(versionArtefactoBloqueadaPorIdFinder.obtener(versionId)).thenReturn(version);
         when(artefactoPorVersionArtefactoFinder.obtener(versionId)).thenReturn(artefacto);
         when(versionArtefactoEsUltimaFinder.obtener(versionId)).thenReturn(true);
@@ -88,16 +103,21 @@ class RegistrarRevisionAsesorUseCaseImplTest {
         var resultado = useCase.ejecutar(registro);
 
         // Assert
-        var orden = inOrder(versionArtefactoBloqueadaPorIdFinder, artefactoPorVersionArtefactoFinder,
-                versionArtefactoEsUltimaFinder, revisionAsesorAbiertaPorVersionFinder, validator,
-                revisionAsesorOutputPort);
+        var orden = inOrder(revisionAnteriorBloqueadaDeVersionFinder, versionArtefactoBloqueadaPorIdFinder,
+                artefactoPorVersionArtefactoFinder, versionArtefactoEsUltimaFinder,
+                revisionAsesorAbiertaPorVersionFinder, validator,
+                revisionAsesorOutputPort, proyectoGradoNoCongeladoValidator);
+        orden.verify(revisionAnteriorBloqueadaDeVersionFinder).obtener(versionId);
         orden.verify(versionArtefactoBloqueadaPorIdFinder).obtener(versionId);
         orden.verify(artefactoPorVersionArtefactoFinder).obtener(versionId);
         orden.verify(versionArtefactoEsUltimaFinder).obtener(versionId);
         orden.verify(revisionAsesorAbiertaPorVersionFinder).obtener(versionId);
-        orden.verify(validator).validar(registro, version, artefacto, true, false);
+        orden.verify(validator).validar(registro, version, artefacto, true, false, revisionAnterior);
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoBloqueadoPorVersionArtefactoFinder, times(1)).obtener(any());
         var captor = ArgumentCaptor.forClass(RevisionAsesorEntity.class);
         orden.verify(revisionAsesorOutputPort).registrar(captor.capture());
+        verify(revisionAnteriorBloqueadaDeVersionFinder, times(1)).obtener(any());
         verify(versionArtefactoBloqueadaPorIdFinder, times(1)).obtener(any());
         verify(artefactoPorVersionArtefactoFinder, times(1)).obtener(any());
         verify(versionArtefactoEsUltimaFinder, times(1)).obtener(any());
@@ -114,7 +134,7 @@ class RegistrarRevisionAsesorUseCaseImplTest {
     void noDebeRegistrar_cuandoValidatorRechaza() {
         // Arrange
         doThrow(new RevisionAsesorAbiertaExistenteException(versionId, 3)).when(validator)
-                .validar(any(), any(), any(), anyBoolean(), anyBoolean());
+                .validar(any(), any(), any(), anyBoolean(), anyBoolean(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(registro))

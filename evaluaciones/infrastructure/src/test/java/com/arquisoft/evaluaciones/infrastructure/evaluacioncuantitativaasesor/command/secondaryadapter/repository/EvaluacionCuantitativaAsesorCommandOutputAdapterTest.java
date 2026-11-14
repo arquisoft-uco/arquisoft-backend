@@ -61,6 +61,67 @@ class EvaluacionCuantitativaAsesorCommandOutputAdapterTest {
     }
 
     @Test
+    void debeEliminarSoloItemsDelLote_cuandoHayOtrosItems() {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var itemOmitido1 = UtilUUID.generarNuevoUUID();
+        var itemOmitido2 = UtilUUID.generarNuevoUUID();
+        var itemConservado = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCuantitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        itemOmitido1, 10),
+                new EvaluacionCuantitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        itemOmitido2, 10),
+                new EvaluacionCuantitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        itemConservado, 10)));
+        repository.flush();
+
+        // Act
+        adapter.eliminarPorItems(evaluacionAsesor, Set.of(itemOmitido1, itemOmitido2));
+
+        // Assert
+        assertThat(repository.findAll()).extracting(e -> e.getItem()).containsExactly(itemConservado);
+        verify(logger).debug(any(ClaveMensaje.class), eq(2));
+    }
+
+    @Test
+    void noDebeTocarOtraEvaluacionAsesor_cuandoMismoItem() {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var otraEvaluacion = UtilUUID.generarNuevoUUID();
+        var item = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCuantitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor, item, 10),
+                new EvaluacionCuantitativaAsesorEntity(UtilUUID.generarNuevoUUID(), otraEvaluacion, item, 10)));
+        repository.flush();
+
+        // Act
+        adapter.eliminarPorItems(evaluacionAsesor, Set.of(item));
+
+        // Assert
+        assertThat(repository.findAll()).extracting(e -> e.getEvaluacionAsesor()).containsExactly(otraEvaluacion);
+    }
+
+    @Test
+    void debeDetectarSoloElItemUsado_cuandoConsultaExistenciaPorItem() {
+        // Arrange
+        var itemUsado = UtilUUID.generarNuevoUUID();
+        var itemSinUso = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCuantitativaAsesorEntity(UtilUUID.generarNuevoUUID(),
+                        UtilUUID.generarNuevoUUID(), itemUsado, 10)));
+        repository.flush();
+
+        // Act
+        var usado = adapter.existePorItem(itemUsado);
+        var sinUso = adapter.existePorItem(itemSinUso);
+
+        // Assert
+        assertThat(usado).isTrue();
+        assertThat(sinUso).isFalse();
+    }
+
+    @Test
     void debeRetornarSoloItemsDeEsaEvaluacion_cuandoConsultaItemsRegistrados() {
         // Arrange
         var evaluacionAsesor = UtilUUID.generarNuevoUUID();

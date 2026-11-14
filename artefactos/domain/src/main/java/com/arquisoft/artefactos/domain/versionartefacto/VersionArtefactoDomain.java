@@ -18,17 +18,19 @@ public final class VersionArtefactoDomain {
 
     public static final VersionArtefactoDomain VACIO = reconstruir(
             UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
-            UtilNumero.CERO, UtilFecha.VACIO, UtilTexto.VACIO);
+            UtilNumero.CERO, UtilFecha.VACIO, UtilTexto.VACIO, UtilNumero.CERO);
 
     private UUID id;
     private UUID artefacto;
     private int numeroVersion;
     private Instant fechaCreacion;
     private String uriArchivo;
+    private long tamanoBytes;
 
     private VersionArtefactoDomain() {}
 
-    public static VersionArtefactoDomain crear(GeneracionVersionArtefactoDomain generacion, int ultimoNumeroVersion) {
+    public static VersionArtefactoDomain crear(GeneracionVersionArtefactoDomain generacion, int ultimoNumeroVersion,
+                                          long tamanoBytes) {
         var version = new VersionArtefactoDomain();
         var result = new ValidationResult();
 
@@ -37,19 +39,22 @@ public final class VersionArtefactoDomain {
         version.setNumeroVersion(ultimoNumeroVersion, result);
         version.setFechaCreacion();
         version.setUriArchivo();
+        version.setTamanoBytes(tamanoBytes, result);
 
         result.lanzarSiTieneErrores();
         return version;
     }
 
     public static VersionArtefactoDomain reconstruir(
-            UUID id, UUID artefacto, int numeroVersion, Instant fechaCreacion, String uriArchivo) {
+            UUID id, UUID artefacto, int numeroVersion, Instant fechaCreacion, String uriArchivo,
+            long tamanoBytes) {
         var version = new VersionArtefactoDomain();
         version.id = id;
         version.artefacto = artefacto;
         version.numeroVersion = numeroVersion;
         version.fechaCreacion = fechaCreacion;
         version.uriArchivo = uriArchivo;
+        version.tamanoBytes = tamanoBytes;
         return version;
     }
 
@@ -83,6 +88,15 @@ public final class VersionArtefactoDomain {
         this.uriArchivo = ArtefactosAlmacenamiento.PREFIJO_VERSIONES + id;
     }
 
+    private void setTamanoBytes(long tamanoBytes, ValidationResult result) {
+        if (!ValidatorNumero.valorMinimo(tamanoBytes, 1,
+                ArtefactosFields.VersionArtefacto.TAMANO_BYTES,
+                ArtefactosCodes.VersionArtefacto.TAMANO_BYTES_INVALIDO, result)) {
+            return;
+        }
+        this.tamanoBytes = tamanoBytes;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -101,6 +115,10 @@ public final class VersionArtefactoDomain {
 
     public String getUriArchivo() {
         return uriArchivo;
+    }
+
+    public long getTamanoBytes() {
+        return tamanoBytes;
     }
 
     public boolean esVacio() {

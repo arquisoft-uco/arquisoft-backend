@@ -1,9 +1,15 @@
 package com.arquisoft.entregables.application.entregableproyectogrado.command.validator;
 
-import com.arquisoft.entregables.domain.asesor.model.VigenciaAsesor;
-import com.arquisoft.entregables.domain.proyectogrado.model.ExistenciaProyectoGrado;
+import com.arquisoft.entregables.domain.artefacto.ArtefactoDomain;
+import com.arquisoft.entregables.domain.entregableproyectogrado.GeneracionEntregableProyectoGradoDomain;
+import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface GenerarEntregableProyectoGradoValidator {
 
-    void validar(ExistenciaProyectoGrado proyectoGrado, VigenciaAsesor asesor);
+    void validar(GeneracionEntregableProyectoGradoDomain entrada, ProyectoGradoDomain proyecto,
+                 boolean asesorVigente, UUID asesorVigenteProyecto, boolean existeVigente,
+                 List<ArtefactoDomain> artefactosVigentes);
 }

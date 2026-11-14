@@ -53,10 +53,19 @@ public final class ProyectosCodes {
         public static final String COORDINADOR_NO_VIGENTE = "PROYECTO_GRADO_COORDINADOR_NO_VIGENTE";
         public static final String NO_ENCONTRADO = "PROYECTO_GRADO_NO_ENCONTRADO";
         public static final String FINALIZADO = "PROYECTO_GRADO_FINALIZADO";
+        public static final String CANCELADO = "PROYECTO_GRADO_CANCELADO";
+        public static final String NO_CANCELABLE = "PROYECTO_GRADO_NO_CANCELABLE";
+        public static final String MOTIVO_REQUERIDO = "PROYECTO_GRADO_MOTIVO_REQUERIDO";
+        public static final String MOTIVO_LONGITUD_MAXIMA = "PROYECTO_GRADO_MOTIVO_LONGITUD_MAXIMA";
         public static final String NO_PERTENECE_COORDINADOR = "PROYECTO_GRADO_NO_PERTENECE_COORDINADOR";
         public static final String ESTUDIANTE_ID_REQUERIDO = "PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
         public static final String ASESOR_ID_REQUERIDO = "PROYECTO_GRADO_ASESOR_ID_REQUERIDO";
         public static final String PROYECTO_GRADO_ID_REQUERIDO = "PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
+        public static final String ESTADO_PROYECTO_REQUERIDO = "PROYECTO_GRADO_ESTADO_PROYECTO_REQUERIDO";
+        public static final String ESTADO_PROYECTO_INVALIDO = "PROYECTO_GRADO_ESTADO_PROYECTO_INVALIDO";
+        public static final String TRANSICION_ESTADO_NO_PERMITIDA = "PROYECTO_GRADO_TRANSICION_ESTADO_NO_PERMITIDA";
+        public static final String SIN_ENTREGABLE = "PROYECTO_GRADO_SIN_ENTREGABLE";
+        public static final String ULTIMO_ENTREGABLE_NO_DEFINITIVO = "PROYECTO_GRADO_ULTIMO_ENTREGABLE_NO_DEFINITIVO";
     }
 
     public static final class EstudianteProyectoGrado {
@@ -85,6 +94,11 @@ public final class ProyectosCodes {
         public static final String PROYECTO_GRADO_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_PROYECTO_GRADO_ID_REQUERIDO";
         public static final String ESTUDIANTE_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTUDIANTE_ID_REQUERIDO";
         public static final String ESTADO_INICIAL_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTADO_INICIAL_REQUERIDO";
+        public static final String ESTADO_PROYECTO_REQUERIDO = "ESTADO_PROYECTO_GRADO_ESTADO_PROYECTO_REQUERIDO";
+        public static final String MOTIVO_REQUERIDO = "ESTADO_PROYECTO_GRADO_MOTIVO_REQUERIDO";
+        public static final String MOTIVO_LONGITUD_MAXIMA = "ESTADO_PROYECTO_GRADO_MOTIVO_LONGITUD_MAXIMA";
+        public static final String USUARIO_ID_REQUERIDO = "ESTADO_PROYECTO_GRADO_USUARIO_ID_REQUERIDO";
+        public static final String USUARIO_SIN_ACCESO = "ESTADO_PROYECTO_GRADO_USUARIO_SIN_ACCESO";
     }
 
     public static final class EstadoProyecto {
@@ -92,6 +106,27 @@ public final class ProyectosCodes {
         private EstadoProyecto() {}
 
         public static final String NO_ENCONTRADO = "ESTADO_PROYECTO_NO_ENCONTRADO";
+    }
+
+    public static final class EstadoEntregable {
+
+        private EstadoEntregable() {}
+
+        public static final String NO_ENCONTRADO = "PROYECTO_GRADO_ESTADO_ENTREGABLE_NO_ENCONTRADO";
+    }
+
+    public static final class EntregableProyectoGrado {
+
+        private EntregableProyectoGrado() {}
+
+        public static final String ID_REQUERIDO = "PROYECTO_GRADO_ENTREGABLE_ID_REQUERIDO";
+        public static final String PROYECTO_GRADO_REQUERIDO = "PROYECTO_GRADO_ENTREGABLE_PROYECTO_GRADO_REQUERIDO";
+        public static final String VERSION_INVALIDA = "PROYECTO_GRADO_ENTREGABLE_VERSION_INVALIDA";
+        public static final String ESTADO_ENTREGABLE_REQUERIDO =
+                "PROYECTO_GRADO_ENTREGABLE_ESTADO_ENTREGABLE_REQUERIDO";
+        public static final String ESTADO_ENTREGABLE_INVALIDO =
+                "PROYECTO_GRADO_ENTREGABLE_ESTADO_ENTREGABLE_INVALIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "PROYECTO_GRADO_ENTREGABLE_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class AsesorProyectoGrado {

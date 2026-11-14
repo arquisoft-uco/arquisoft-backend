@@ -110,6 +110,30 @@ services:
     networks:
       - arquisoft-network
 
+  # ==================== SEMILLAS DE DESARROLLO ====================
+  # Datos de prueba solo dev, fuera de Flyway y del jar. Bajo perfil 'semillas' a propósito:
+  # 'docker compose up' NO carga nada por su cuenta. Se invoca a mano, tras el primer arranque del
+  # backend (que migra):  docker compose --profile semillas run --rm semillas-loader
+  semillas-loader:
+    image: postgres:18-alpine
+    container_name: arquisoft-semillas-loader
+    restart: "no"
+    profiles: ["semillas"]
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: arquisoft123
+      PGDATABASE: biblioteca
+    volumes:
+      - ./semillas:/semillas:ro
+    command: ["sh", "/semillas/cargar.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
 
   # ==================== PLANTILLAS DE CORREO ====================
   # Las plantillas viven en Redis, no en el jar: cambiar el maquetado de un correo no cuesta un

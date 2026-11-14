@@ -29,10 +29,13 @@ seguridad/
     │   ├── primaryadapter/web/                      ResolvedorPlantillaRuta (recurso = prefijo + plantilla MVC), AutorizarAccesoRequestMapper
     │   └── secondaryadapter/                        pep/, equivalencias/ (role-table), none/, DecisionAccesoPorEmisorOutputAdapter
     ├── auth/command/secondaryadapter/               keycloak/ (login directo), jwt/, redis/ (lista negra), security/ (IdentidadActualSeguridadAdapter)
-    ├── config/autenticacion/                        AutenticacionProperties, DecodificadoresPorEmisor, AutenticacionPorEmisorConfig
+    ├── autenticacion/command/primaryadapter/web/    bearer/ProveedorBearer, sesion/ProveedorSesionPdp
+    ├── config/autenticacion/                        AutenticacionProperties, DecodificadoresPorEmisor, AutenticacionPorEmisorConfig,
+    │                                                IdentidadAutenticada, ProveedorAutenticacion = CanalAutenticacion + PoliticaCanal
+    │                                                + PresentadorCredencial, ProveedoresAutenticacion
     ├── config/security/                             SeguridadConfig, RutasPublicas, ValidadorConfiguracionSeguridad,
     │                                                NoAutenticadoEntryPoint, AccesoDenegadoHandler, AudienciaValidator
-    └── filter/                                      AutorizacionAccesoFilter, JwtListaNegraFilter, IdentidadTrazaFilter, LimitadorSolicitudesFilter
+    └── filter/                                      AutorizacionAccesoFilter (filtro único), LimitadorSolicitudesFilter
 ```
 
 ---
@@ -54,17 +57,20 @@ Existen solo mientras dure la transición y se retiran con `security.direct-logi
 
 ### Autenticación y autorización
 - Cada emisor se declara en `security.authentication.issuers[*]` (`id`, `issuer`, `jwks-uri`, `audiences`, `authorization`, `blacklist`, `claims`). Un token de un emisor ausente, deshabilitado, con audiencia ajena o expirado se rechaza con **401**.
-- `AutorizacionAccesoFilter` pregunta, en cada solicitud protegida, si el usuario puede ejecutar el método sobre el recurso (plantilla de ruta con prefijo, p. ej. `/api/fichas-perfil/{fichaPerfilId}/items`). 2xx permite, 401 y 403 se propagan, y cualquier otro resultado o fallo de transporte responde **503** (falla cerrado). No se cachea ninguna decisión ni viaja ningún permiso en el token.
+- `AutorizacionAccesoFilter` es el único filtro de acceso: elige el `ProveedorAutenticacion` (Bearer o cookie de sesión, `X-Proveedor-Identidad` fuerza uno), autentica, aplica la lista negra, registra el sujeto en la traza y pregunta, en cada solicitud protegida, si el usuario puede ejecutar el método sobre el recurso (plantilla de ruta con prefijo, p. ej. `/api/fichas-perfil/{fichaPerfilId}/items`). 2xx permite, 401 y 403 se propagan, y cualquier otro resultado o fallo de transporte responde **503** (falla cerrado). No se cachea ninguna decisión ni viaja ningún permiso en el token.
 - Rutas públicas y exentas del PEP: `security.authorization.public-paths` y `authenticated-paths`.
 - Un endpoint nuevo se registra como recurso en el proveedor de autorización y, mientras exista el emisor legado, con una fila en `autorizacion-equivalencias.yml` (`CompletitudEquivalenciasAutorizacionTest` lo exige; escribe `build/reports/autorizacion/recursos-pdp.csv`).
 - En producción el arranque falla si el modo es `none`, si `security.enabled=false`, si falta cualquier dato obligatorio del PEP o si se permite HTTP inseguro.
+- **Canal de sesión (cookie del BFF): id de usuario por correo.** El `subject` del PDP no es el `usuarios.id`; tras la decisión del PEP, `ResolverIdentidadSesion` resuelve el id consultando a `usuarios` (`POST /api/usuarios/por-correo`, body `{correo}`) con una **credencial de servicio** (`client_credentials` del cliente `arquisoft-seguridad-usuarios`, realm role `servicio-identidad`), nunca con la cookie del llamante (recursaría). Un correo sin usuario vigente responde 403; `usuarios` caído, 5xx o credencial rechazada responde 503. Los aciertos se cachean en Redis (`SESSION_USUARIOS_CACHE_TTL`, `PT5M`) con la huella SHA-256 del correo normalizado; con Redis caído se consulta directo. **Exige `AUTH_LEGACY_ENABLED=true`** donde `SESSION_AUTH_ENABLED=true`: el token de servicio es del realm `arquisoft` y solo lo valida el emisor `legado` (el arranque lo comprueba). La consulta envía `X-Proveedor-Identidad: {SESSION_USUARIOS_PROVEEDOR}` (default `legado`) para que su token de servicio se valide con el emisor `legado` y se autorice con su tabla de roles; `principal` tiene otro issuer, así que sin el encabezado el `iss` del token ya lo asigna a `legado`. Deuda: el Bearer del emisor `principal` tiene el mismo desajuste de id y no se resuelve aquí.
 - Sesión stateless — ningún estado HTTP del lado del servidor.
 
-**Variables de entorno:** `AUTH_ISSUER_URI`, `AUTH_JWKS_URI`, `AUTH_AUDIENCES`, `AUTH_AUTHORIZATION`, `AUTH_CLAIM_ROLES`, `AUTH_LEGACY_ENABLED`, `PEP_URL`, `PEP_APPLICATION_NAME`, `PEP_ENVIRONMENT`, `PEP_REGISTRATION_TOKEN`, `PEP_ALLOW_INSECURE_HTTP`, `PEP_CONNECT_TIMEOUT`, `PEP_READ_TIMEOUT`, `PEP_MAX_RETRIES`, `PEP_RETRY_BACKOFF`, `AUTHORIZATION_PATH_MODE`, `AUTHORIZATION_PATH_PREFIX`, `DIRECT_LOGIN_PROVIDER`, `IDENTITY_PROVISIONING_PROVIDER`, `SECURITY_ENABLED`. Ver `.env.example`.
+**Selector de emisor:** `X-Proveedor-Identidad` también acepta el id de un emisor habilitado (`legado`, `principal`): el Bearer se autentica y se autoriza como ese emisor; su `iss` debe coincidir con el del emisor y su audiencia con la de ese emisor, si no 401. Cualquier cliente puede elegir cualquier emisor habilitado (el token debe pasar firma, `iss` y audiencia; la decisión de acceso sigue siendo del PDP o la tabla). Regla: los emisores habilitados con el mismo `issuer` deben declarar la misma `blacklist`, `audiences` y `authorization`; si no, el arranque falla con `seguridad.infraestructura.autorizacion.error.emisores-politica-distinta`. Así el encabezado nunca cambia un control, solo la lectura de los `claims`.
+
+**Variables de entorno:** `AUTH_ISSUER_URI`, `AUTH_JWKS_URI`, `AUTH_AUDIENCES`, `AUTH_AUTHORIZATION`, `AUTH_CLAIM_ROLES`, `AUTH_LEGACY_ENABLED`, `PEP_URL`, `PEP_APPLICATION_NAME`, `PEP_ENVIRONMENT`, `PEP_REGISTRATION_TOKEN`, `PEP_ALLOW_INSECURE_HTTP`, `PEP_CONNECT_TIMEOUT`, `PEP_READ_TIMEOUT`, `PEP_MAX_RETRIES`, `PEP_RETRY_BACKOFF`, `AUTHORIZATION_PATH_MODE`, `AUTHORIZATION_PATH_PREFIX`, `DIRECT_LOGIN_PROVIDER`, `IDENTITY_PROVISIONING_PROVIDER`, `SECURITY_ENABLED`, `SESSION_USUARIOS_CLIENT_SECRET`, `SESSION_USUARIOS_URL`, `SESSION_USUARIOS_TOKEN_URL`, `SESSION_USUARIOS_CLIENT_ID`, `SESSION_USUARIOS_CACHE_TTL`, `SESSION_USUARIOS_POR_CORREO_PATH`, `SESSION_USUARIOS_PROVEEDOR`. Ver `.env.example`.
 
 ### Lista negra de tokens (logout)
 - Al cerrar sesión, el JTI se guarda en Redis con TTL igual al tiempo de vida restante.
-- `JwtListaNegraFilter` consulta Redis solo para emisores con `blacklist: true`; ante una caída de Redis acepta el token hasta que expire (fail-open acotado).
+- `AplicadorListaNegra` (paso del filtro único, tras autenticar y antes de la traza y la decisión) consulta Redis solo para emisores con `blacklist: true`; ante una caída de Redis acepta el token hasta que expire (fail-open acotado).
 
 ### Rate limiting
 - Implementado con Bucket4j + Redis (distribuido, apto para múltiples instancias).

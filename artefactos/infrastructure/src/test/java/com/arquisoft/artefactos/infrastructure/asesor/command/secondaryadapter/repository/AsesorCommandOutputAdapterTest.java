@@ -97,7 +97,7 @@ class AsesorCommandOutputAdapterTest {
         assertThat(resultado.get().identificador()).isEqualTo("20161020999");
         assertThat(resultado.get().nombre()).isEqualTo("Ana Actualizada");
         assertThat(resultado.get().ocurridoEn()).isEqualTo(nuevoOcurridoEn);
-        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorKey.LOG_FILA_ACTUALIZADA, id);
     }
 
     @Test
@@ -118,7 +118,7 @@ class AsesorCommandOutputAdapterTest {
         assertThat(persistido.getEliminadoEn()).isEqualTo(ocurridoEn);
         assertThat(persistido.getOcurridoEn()).isEqualTo(ocurridoEn);
         assertThat(adapter.obtenerPorId(id)).map(AsesorEntity::eliminadoEn).contains(ocurridoEn);
-        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorKey.LOG_FILA_ELIMINADA, id);
     }
 
     @Test
@@ -143,7 +143,7 @@ class AsesorCommandOutputAdapterTest {
         assertThat(persistido.getNombre()).isEqualTo("Ana Reactivada");
         assertThat(persistido.getEmail()).isEqualTo("reactivada@uco.edu.co");
         assertThat(persistido.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
-        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+        verify(logger).debug(AsesorKey.LOG_FILA_REACTIVADA, id);
     }
 
     @Test

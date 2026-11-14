@@ -10,4 +10,21 @@ public final class EntregablesLimits {
 
         public static final int ULTIMA_VERSION_MIN = 0;
     }
+
+    public static final class Artefacto {
+
+        private Artefacto() {}
+
+        public static final int NUMERO_VERSION_MIN = 1;
+    }
+
+    public static final class ArtefactoEntregable {
+
+        private ArtefactoEntregable() {}
+
+        public static final int NOMBRE_DOCUMENTO_MAX = 100;
+        public static final int NOMBRE_REPOSITORIO_MAX = 100;
+        public static final int URI_ARCHIVO_MAX = 2000;
+        public static final int NUMERO_VERSION_MIN = 1;
+    }
 }

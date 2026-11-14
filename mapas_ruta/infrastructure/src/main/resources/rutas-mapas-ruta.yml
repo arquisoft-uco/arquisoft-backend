@@ -9,10 +9,18 @@ rutas:
       base: /mapas-ruta
       estudiante: /estudiante
       coordinador: /coordinador
+      proyecto-asesor: /proyectos-grado/{proyectoGradoId}/asesor
       fecha-fin: /{id}/fecha-fin
       tareas: /{mapaRutaId}/tareas
       tareas-estudiante: /{mapaRutaId}/tareas/estudiante
+      tareas-asesor: /{mapaRutaId}/tareas/asesor
       planes-estimados: /planes-estimados/{planEstimadoId}
+      planes-estimados-asesor: /planes-estimados/{planEstimadoId}/asesor
+      planes-estimados-proyecto-asesor: /proyectos-grado/{proyectoGradoId}/planes-estimados/asesor
+      planes-reales: /planes-reales/{planRealId}
+      planes-reales-asesor: /planes-reales/{planRealId}/asesor
+      planes-reales-estudiante: /tareas/{tareaId}/planes-reales/estudiante
+      planes-reales-proyecto-asesor: /proyectos-grado/{proyectoGradoId}/planes-reales/asesor
     tareas:
       base: /tareas
       por-id: /{tareaId}

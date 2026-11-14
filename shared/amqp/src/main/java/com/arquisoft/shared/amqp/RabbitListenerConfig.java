@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitListenerConfig {
 
+    public static final String UN_SOLO_CONSUMIDOR = "1-1";
+
     @Value("${spring.rabbitmq.listener.simple.concurrency:5}")
     private int concurrentConsumers;
 

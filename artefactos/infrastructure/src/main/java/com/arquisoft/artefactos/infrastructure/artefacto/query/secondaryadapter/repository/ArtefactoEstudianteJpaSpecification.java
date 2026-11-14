@@ -27,6 +27,8 @@ class ArtefactoEstudianteJpaSpecification extends QueryJpaSpecification<Artefact
                 case ASESOR                        -> CampoSpec.uuid(root -> root.get("asesorId"));
                 case NOMBRE_ASESOR                 -> CampoSpec.texto(root -> root.get("nombreAsesor"));
                 case ESTUDIANTE_ID                 -> CampoSpec.uuid(root -> root.get("estudianteId"));
+                case PROYECTO_FINALIZADO -> CampoSpec.booleano(root -> root.get("proyectoFinalizado"));
+                case PROYECTO_CANCELADO  -> CampoSpec.booleano(root -> root.get("proyectoCancelado"));
             };
             m.put(campo.getClave(), spec);
         }

@@ -2,6 +2,7 @@ package com.arquisoft.mapas_ruta.application.planestimado.command.secondaryport;
 
 import com.arquisoft.mapas_ruta.application.planestimado.command.secondaryport.entity.PlanEstimadoEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface PlanEstimadoOutputPort {
@@ -11,6 +12,8 @@ public interface PlanEstimadoOutputPort {
     boolean existePorTarea(UUID tarea);
 
     boolean existePorId(UUID planEstimado);
+
+    Optional<PlanEstimadoEntity> obtenerPorTarea(UUID tarea);
 
     void actualizarDescripcion(UUID planEstimado, String descripcionEstimado);
 

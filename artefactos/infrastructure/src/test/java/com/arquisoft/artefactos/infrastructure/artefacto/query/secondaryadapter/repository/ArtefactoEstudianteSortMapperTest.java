@@ -26,6 +26,8 @@ class ArtefactoEstudianteSortMapperTest {
         assertThat(ArtefactoEstudianteSortMapper.traducir("versionRepositorioArtefacto")).isNull();
         assertThat(ArtefactoEstudianteSortMapper.traducir("asesor")).isNull();
         assertThat(ArtefactoEstudianteSortMapper.traducir("estudianteId")).isNull();
+        assertThat(ArtefactoEstudianteSortMapper.traducir("proyectoFinalizado")).isNull();
+        assertThat(ArtefactoEstudianteSortMapper.traducir("proyectoCancelado")).isNull();
         assertThat(ArtefactoEstudianteSortMapper.traducir("campoInexistente")).isNull();
     }
 

@@ -28,6 +28,7 @@ rutas:
       registro-modificacion-usuarios-recibidas: /registro-modificacion-usuarios/recibidas
       registro-modificacion-usuarios-por-id: /registro-modificacion-usuarios/{solicitudId}
       tipos-solicitud: /tipos-solicitud
+      tipos-solicitud-recibidas: /tipos-solicitud/recibidas
     respuesta:
       base: /solicitudes
       novedad-coordinador: /novedad-coordinador/{solicitudId}/respuesta

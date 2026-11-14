@@ -29,17 +29,22 @@ rutas:
       cualitativas: /{evaluacionJuradoId}/cualitativas
       cualitativas-jurado: /{evaluacionJuradoId}/cualitativas/jurado
       cuantitativas: /{evaluacionJuradoId}/cuantitativas
+      cuantitativas-jurado: /{evaluacionJuradoId}/cuantitativas/jurado
       jurado: /jurado
     evaluaciones:
       base: /evaluaciones/evaluaciones-asesor
       cuantitativas: /{evaluacionAsesorId}/cuantitativas
+      cuantitativas-estudiante: /{evaluacionAsesorId}/cuantitativas/estudiante
       cualitativas: /{evaluacionAsesorId}/cualitativas
+      cualitativas-estudiante: /{evaluacionAsesorId}/cualitativas/estudiante
     criterios-item-cualitativo-asesor:
       base: /evaluaciones/criterios-item-cualitativo-asesor
     items-cualitativos-asesor:
       base: /evaluaciones/items-cualitativos-asesor
+      por-id: /{itemId}
     items-cuantitativos-asesor:
       base: /evaluaciones/items-cuantitativos-asesor
+      por-id: /{itemId}
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
       por-id: /{itemId}
@@ -52,6 +57,14 @@ rutas:
       observaciones: /{id}/observaciones
       observaciones-jurado: /{id}/observaciones/jurado
       observaciones-estudiante: /{id}/observaciones/estudiante
+    evaluaciones-cuantitativas-asesor:
+      base: /evaluaciones/evaluaciones-cuantitativas-asesor
+      observaciones: /{evaluacionCuantitativaAsesorId}/observaciones
+      observaciones-asesor: /{evaluacionCuantitativaAsesorId}/observaciones/asesor
+      observaciones-estudiante: /{evaluacionCuantitativaAsesorId}/observaciones/estudiante
+    evaluaciones-cualitativas-asesor:
+      base: /evaluaciones/evaluaciones-cualitativas-asesor
+      criterio: /{evaluacionCualitativaAsesorId}/criterio
     observaciones-item-jurado:
       base: /evaluaciones/observaciones-item-jurado
       por-id: /{observacionId}

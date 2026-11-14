@@ -76,7 +76,7 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
         var ids = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
         var omision = OmisionEvaluacionesCuantitativasJuradoDomain.crear(evaluacionJurado, ids);
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO, UUID.randomUUID(), UUID.randomUUID());
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(evaluacionesFinder.obtener(omision)).thenReturn(Set.copyOf(ids));
         when(observacionesFinder.obtener(Set.copyOf(ids))).thenReturn(false);
@@ -148,7 +148,7 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
         var ajena = UUID.randomUUID();
         var omision = OmisionEvaluacionesCuantitativasJuradoDomain.crear(evaluacionJurado, List.of(propia, ajena));
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID(), UUID.randomUUID());
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(evaluacionesFinder.obtener(omision)).thenReturn(Set.of(propia));
         when(observacionesFinder.obtener(any())).thenReturn(false);
@@ -169,7 +169,7 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
         var evaluacion = UUID.randomUUID();
         var omision = OmisionEvaluacionesCuantitativasJuradoDomain.crear(evaluacionJurado, List.of(evaluacion));
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.FINALIZADA, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.FINALIZADA, UUID.randomUUID(), UUID.randomUUID());
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(evaluacionesFinder.obtener(omision)).thenReturn(Set.of(evaluacion));
         when(observacionesFinder.obtener(any())).thenReturn(false);
@@ -193,7 +193,7 @@ class OmitirEvaluacionesCuantitativasJuradoUseCaseImplTest {
         var ids = List.of(UUID.randomUUID(), UUID.randomUUID());
         var omision = OmisionEvaluacionesCuantitativasJuradoDomain.crear(evaluacionJurado, ids);
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO, UUID.randomUUID(), UUID.randomUUID());
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(evaluacionesFinder.obtener(omision)).thenReturn(Set.copyOf(ids));
         when(observacionesFinder.obtener(Set.copyOf(ids))).thenReturn(true);

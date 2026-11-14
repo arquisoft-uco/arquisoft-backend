@@ -6,6 +6,7 @@ import com.arquisoft.artefactos.application.proyectogrado.command.secondaryport.
 import com.arquisoft.artefactos.application.proyectogrado.command.secondaryport.entity.ProyectoGradoEntity;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,7 @@ class AgregarProyectoGradoUseCaseImplTest {
         var captor = ArgumentCaptor.forClass(ProyectoGradoEntity.class);
         verify(proyectoGradoExisteFinder, times(1)).obtener(id);
         verify(proyectoGradoOutputPort, times(1)).guardar(captor.capture());
-        assertThat(captor.getValue()).isEqualTo(new ProyectoGradoEntity(id, "Sistema de gestion"));
+        assertThat(captor.getValue()).isEqualTo(new ProyectoGradoEntity(id, "Sistema de gestion", UtilFecha.VACIO, "EN_PROCESO", UtilFecha.VACIO));
     }
 
     @Test

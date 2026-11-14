@@ -1,6 +1,5 @@
 package com.arquisoft.entregables.domain.entregableproyectogrado;
 
-import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.message.constant.EntregablesFields;
 import com.arquisoft.shared.message.constant.EntregablesLimits;
@@ -16,28 +15,32 @@ public final class EntregableProyectoGradoDomain {
 
     public static final EntregableProyectoGradoDomain VACIO = new EntregableProyectoGradoDomain(
             UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilNumero.CERO,
-            UtilUUID.obtenerUUIDPorDefecto(), EstadoEntregable.VACIO);
+            UtilUUID.obtenerUUIDPorDefecto(), false);
 
     private UUID id;
     private UUID proyectoGrado;
     private int version;
     private UUID asesor;
-    private EstadoEntregable estadoEntregable;
+    private boolean proyectoCancelado;
 
     private EntregableProyectoGradoDomain() {}
 
     private EntregableProyectoGradoDomain(UUID id, UUID proyectoGrado, int version, UUID asesor,
-                                          EstadoEntregable estadoEntregable) {
+                                          boolean proyectoCancelado) {
         this.id = id;
         this.proyectoGrado = proyectoGrado;
         this.version = version;
         this.asesor = asesor;
-        this.estadoEntregable = estadoEntregable;
+        this.proyectoCancelado = proyectoCancelado;
+    }
+
+    public static EntregableProyectoGradoDomain reconstruir(UUID id, UUID proyectoGrado, int version, UUID asesor) {
+        return new EntregableProyectoGradoDomain(id, proyectoGrado, version, asesor, false);
     }
 
     public static EntregableProyectoGradoDomain reconstruir(UUID id, UUID proyectoGrado, int version, UUID asesor,
-                                                            EstadoEntregable estadoEntregable) {
-        return new EntregableProyectoGradoDomain(id, proyectoGrado, version, asesor, estadoEntregable);
+                                                            boolean proyectoCancelado) {
+        return new EntregableProyectoGradoDomain(id, proyectoGrado, version, asesor, proyectoCancelado);
     }
 
     public boolean esVacio() {
@@ -52,7 +55,6 @@ public final class EntregableProyectoGradoDomain {
         entregable.setProyectoGrado(proyectoGrado, result);
         entregable.setVersion(ultimaVersion, result);
         entregable.setAsesor(asesor, result);
-        entregable.setEstadoEntregableInicial();
 
         result.lanzarSiTieneErrores();
         return entregable;
@@ -90,10 +92,6 @@ public final class EntregableProyectoGradoDomain {
         this.asesor = asesor;
     }
 
-    private void setEstadoEntregableInicial() {
-        this.estadoEntregable = EstadoEntregable.DISPONIBLE_EVALUACION;
-    }
-
     public UUID getId() {
         return id;
     }
@@ -110,7 +108,7 @@ public final class EntregableProyectoGradoDomain {
         return asesor;
     }
 
-    public EstadoEntregable getEstadoEntregable() {
-        return estadoEntregable;
+    public boolean isProyectoCancelado() {
+        return proyectoCancelado;
     }
 }

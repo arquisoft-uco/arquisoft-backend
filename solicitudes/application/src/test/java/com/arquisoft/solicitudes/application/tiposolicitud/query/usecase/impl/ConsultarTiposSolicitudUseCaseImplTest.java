@@ -1,9 +1,11 @@
 package com.arquisoft.solicitudes.application.tiposolicitud.query.usecase.impl;
 
-import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
-import com.arquisoft.solicitudes.application.tiposolicitud.query.secondaryport.TipoSolicitudQueryOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.TipoSolicitudKey;
+import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.solicitudes.application.tiposolicitud.query.criteria.TipoSolicitudCriteria;
+import com.arquisoft.solicitudes.application.tiposolicitud.query.readmodel.TipoSolicitudReadModel;
+import com.arquisoft.solicitudes.application.tiposolicitud.query.secondaryport.TipoSolicitudQueryOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,46 +32,52 @@ class ConsultarTiposSolicitudUseCaseImplTest {
     private ConsultarTiposSolicitudUseCaseImpl useCase;
 
     @Test
-    void debeRetornarListaCompleta_cuandoExistenTiposDeSolicitud() {
+    void debeConsultarPorRoles_cuandoHayRoles() {
         // Arrange
-        var tiposEsperados = List.of(
-                new TipoSolicitudReadModel("NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
-                        "Solicitud para temas que surgen de improvisto y que no están tipados"),
-                new TipoSolicitudReadModel("NOVEDAD_PARA_EL_ASESOR", "Novedad para el Asesor",
-                        "Solicitud para temas que surgen de improvisto y que no están tipados"),
+        var actor = UtilUUID.generarNuevoUUID();
+        var roles = List.of("ESTUDIANTE");
+        var esperados = List.of(
                 new TipoSolicitudReadModel("CAMBIO_DE_ASESOR", "Cambio de Asesor",
                         "Solicitud para modificar el asesor"),
-                new TipoSolicitudReadModel("AMPLIACION_DE_PLAZO", "Ampliación de Plazo",
-                        "Solicitud para extender la fecha de entrega del proyecto"),
-                new TipoSolicitudReadModel("REGISTRO_Y_MODIFICACION_DE_USUARIOS",
-                        "Registro y modificación de Usuarios",
-                        "Solicitud para el registro o modificación de usuarios")
-        );
-        when(queryOutputPort.findAll()).thenReturn(tiposEsperados);
+                new TipoSolicitudReadModel("AMPLIACION_DE_PLAZO", "Ampliacion de Plazo",
+                        "Solicitud para extender la fecha de entrega del proyecto"));
+        when(queryOutputPort.consultarPorRoles(roles)).thenReturn(esperados);
 
         // Act
-        var resultado = useCase.ejecutar();
+        var resultado = useCase.ejecutar(new TipoSolicitudCriteria(actor, roles));
 
         // Assert
-        assertThat(resultado).isNotNull();
-        assertThat(resultado).hasSize(5);
-        assertThat(resultado).containsExactlyElementsOf(tiposEsperados);
-        verify(queryOutputPort, times(1)).findAll();
-        verify(logger).debug(eq(TipoSolicitudKey.LOG_CONSULTA_COMPLETADA), eq(tiposEsperados.size()));
+        assertThat(resultado).containsExactlyElementsOf(esperados);
+        verify(queryOutputPort, times(1)).consultarPorRoles(roles);
+        verify(logger).debug(TipoSolicitudKey.LOG_CONSULTANDO, actor, roles);
+        verify(logger).debug(TipoSolicitudKey.LOG_CONSULTA_COMPLETADA, 2);
     }
 
     @Test
-    void debeRetornarListaVacia_cuandoNoHayTiposDeSolicitud() {
+    void debeRetornarListaVacia_cuandoElPuertoNoDevuelveTipos() {
         // Arrange
-        when(queryOutputPort.findAll()).thenReturn(List.of());
+        var roles = List.of("ASESOR");
+        when(queryOutputPort.consultarPorRoles(roles)).thenReturn(List.of());
 
         // Act
-        var resultado = useCase.ejecutar();
+        var resultado = useCase.ejecutar(new TipoSolicitudCriteria(UtilUUID.generarNuevoUUID(), roles));
 
         // Assert
-        assertThat(resultado).isNotNull();
         assertThat(resultado).isEmpty();
-        verify(queryOutputPort, times(1)).findAll();
-        verify(logger).debug(eq(TipoSolicitudKey.LOG_CONSULTA_COMPLETADA), eq(0));
+        verify(logger).debug(TipoSolicitudKey.LOG_CONSULTA_COMPLETADA, 0);
+    }
+
+    @Test
+    void debeInvocarElPuertoConListaVacia_cuandoNoHayRoles() {
+        // Arrange
+        var roles = List.<String>of();
+        when(queryOutputPort.consultarPorRoles(roles)).thenReturn(List.of());
+
+        // Act
+        var resultado = useCase.ejecutar(new TipoSolicitudCriteria(UtilUUID.generarNuevoUUID(), roles));
+
+        // Assert
+        assertThat(resultado).isEmpty();
+        verify(queryOutputPort, times(1)).consultarPorRoles(roles);
     }
 }

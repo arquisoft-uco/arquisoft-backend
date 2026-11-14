@@ -1,6 +1,9 @@
 package com.arquisoft.artefactos.application.revisionasesor.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
+import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAnteriorBloqueadaDeVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorAbiertaPorVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.mapper.RevisionAsesorMapper;
@@ -10,6 +13,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.finder.Vers
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.VersionArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.revisionasesor.RegistroRevisionAsesorDomain;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import com.arquisoft.shared.message.key.artefactos.RegistrarRevisionAsesorKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,12 +24,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RegistrarRevisionAsesorUseCaseImpl implements RegistrarRevisionAsesorUseCase {
 
+    private final RevisionAnteriorBloqueadaDeVersionFinder revisionAnteriorBloqueadaDeVersionFinder;
     private final VersionArtefactoBloqueadaPorIdFinder versionArtefactoBloqueadaPorIdFinder;
     private final ArtefactoPorVersionArtefactoFinder artefactoPorVersionArtefactoFinder;
     private final VersionArtefactoEsUltimaFinder versionArtefactoEsUltimaFinder;
     private final RevisionAsesorAbiertaPorVersionFinder revisionAsesorAbiertaPorVersionFinder;
     private final RegistrarRevisionAsesorValidator registrarRevisionAsesorValidator;
     private final RevisionAsesorOutputPort revisionAsesorOutputPort;
+    private final ProyectoGradoBloqueadoPorVersionArtefactoFinder proyectoGradoBloqueadoPorVersionArtefactoFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -35,14 +42,21 @@ public class RegistrarRevisionAsesorUseCaseImpl implements RegistrarRevisionAses
 
         logger.info(RegistrarRevisionAsesorKey.LOG_REGISTRANDO, versionArtefacto, registro.getAsesor());
 
+        var revisionAnterior = revisionAnteriorBloqueadaDeVersionFinder.obtener(versionArtefacto);
         var version = versionArtefactoBloqueadaPorIdFinder.obtener(versionArtefacto);
         var artefacto = artefactoPorVersionArtefactoFinder.obtener(versionArtefacto);
         var esUltima = versionArtefactoEsUltimaFinder.obtener(versionArtefacto);
         var existeAbierta = revisionAsesorAbiertaPorVersionFinder.obtener(versionArtefacto);
+        var proyecto = proyectoGradoBloqueadoPorVersionArtefactoFinder.obtener(versionArtefacto);
         logger.debug(RegistrarRevisionAsesorKey.LOG_VERIFICACION_REGISTRO,
-                !version.esVacio(), !artefacto.esVacio(), esUltima, existeAbierta);
+                !version.esVacio(), !artefacto.esVacio(), esUltima, existeAbierta,
+                revisionAnterior.getEstado().getId());
 
-        registrarRevisionAsesorValidator.validar(registro, version, artefacto, esUltima, existeAbierta);
+        registrarRevisionAsesorValidator.validar(registro, version, artefacto, esUltima, existeAbierta,
+                revisionAnterior);
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         revisionAsesorOutputPort.registrar(RevisionAsesorMapper.toEntity(revision));
 

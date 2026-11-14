@@ -99,6 +99,15 @@ public final class UsuariosApiMessages {
         public static final String CONSULTAR_IDENTIDAD_RESP_422 = "Usuario inexistente o eliminado";
         public static final String CONSULTAR_IDENTIDAD_RESP_503 =
                 "No fue posible leer la identidad en el proveedor; el servicio no está disponible temporalmente";
+
+        public static final String CONSULTAR_POR_CORREO_SUMMARY = "Consultar el id de un usuario por su correo";
+        public static final String CONSULTAR_POR_CORREO_DESCRIPTION =
+                "Devuelve únicamente el id del usuario registrado y vigente con ese correo, sin distinguir "
+                        + "mayúsculas. El correo viaja en el cuerpo para que no quede en la URL. Exclusivo de la "
+                        + "cuenta de servicio del contexto de seguridad.";
+        public static final String CONSULTAR_POR_CORREO_RESP_200 = "Id del usuario";
+        public static final String CONSULTAR_POR_CORREO_RESP_400 = "Correo ausente, demasiado largo o con formato inválido";
+        public static final String CONSULTAR_POR_CORREO_RESP_422 = "No hay un usuario vigente con ese correo";
     }
 
     public static final class Estudiante {
@@ -300,5 +309,13 @@ public final class UsuariosApiMessages {
                         + "administrador vigente";
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+
+        public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los administradores vigentes";
+        public static final String CONSULTAR_VIGENTES_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de los administradores con el rol vigente. Expone y "
+                        + "permite filtrar por el estado del usuario, pero no la vigencia. Exclusivo del rol "
+                        + "coordinador.";
+        public static final String CONSULTAR_RESP_200 = "Página de administradores";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 }

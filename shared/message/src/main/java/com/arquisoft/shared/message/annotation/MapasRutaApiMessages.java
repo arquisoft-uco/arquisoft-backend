@@ -47,6 +47,16 @@ public final class MapasRutaApiMessages {
                 "El identificador del estudiante del token no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_404 =
                 "El estudiante no tiene proyecto de grado asignado o su proyecto no tiene mapa de ruta";
+        public static final String CONSULTAR_PROYECTO_ASESOR_SUMMARY =
+                "Consultar el mapa de ruta de un proyecto de grado que asesora";
+        public static final String CONSULTAR_PROYECTO_ASESOR_DESCRIPTION =
+                "Devuelve el identificador del mapa de ruta, el título del proyecto de grado y las fechas "
+                        + "de inicio y fin del mapa de ruta del proyecto indicado";
+        public static final String CONSULTAR_PROYECTO_ASESOR_RESP_200 = "Mapa de ruta encontrado";
+        public static final String CONSULTAR_PROYECTO_ASESOR_RESP_400 =
+                "El identificador del proyecto de grado no es un UUID válido";
+        public static final String CONSULTAR_PROYECTO_ASESOR_RESP_404 =
+                "El proyecto de grado no tiene mapa de ruta";
         public static final String CONSULTAR_COORDINADOR_SUMMARY = "Consultar mapas de ruta según fechas";
         public static final String CONSULTAR_COORDINADOR_DESCRIPTION =
                 "Lista paginada de los mapas de ruta de los proyectos de grado asignados al coordinador autenticado, "
@@ -86,6 +96,16 @@ public final class MapasRutaApiMessages {
                         + "tareas la página llega vacía";
         public static final String CONSULTAR_POR_MAPA_RUTA_RESP_200 = "Página de tareas del mapa de ruta";
         public static final String CONSULTAR_POR_MAPA_RUTA_RESP_400 =
+                "Identificador de mapa de ruta inválido, o filtro u ordenamiento no permitido";
+        public static final String CONSULTAR_POR_MAPA_RUTA_ASESOR_SUMMARY =
+                "Consultar las tareas de un mapa de ruta que asesora";
+        public static final String CONSULTAR_POR_MAPA_RUTA_ASESOR_DESCRIPTION =
+                "Devuelve, paginadas, filtradas y ordenadas, las tareas de un mapa de ruta para que el asesor "
+                        + "verifique el alcance del proyecto. Filtros por descripción, estado y asesor; sin orden se "
+                        + "ordena por descripción ascendente. Si el mapa no tiene tareas la página llega vacía";
+        public static final String CONSULTAR_POR_MAPA_RUTA_ASESOR_RESP_200 =
+                "Página de tareas del mapa de ruta";
+        public static final String CONSULTAR_POR_MAPA_RUTA_ASESOR_RESP_400 =
                 "Identificador de mapa de ruta inválido, o filtro u ordenamiento no permitido";
         public static final String CAMBIAR_ESTADO_ITEM_SUMMARY = "Cambiar el estado de una tarea";
         public static final String CAMBIAR_ESTADO_ITEM_DESCRIPTION =
@@ -136,6 +156,17 @@ public final class MapasRutaApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de planes estimados de la tarea";
         public static final String CONSULTAR_RESP_400 =
                 "Identificador de tarea inválido, o filtro u ordenamiento no permitido";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_SUMMARY =
+                "Consultar los planes estimados de un proyecto de grado";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_DESCRIPTION =
+                "Devuelve, paginados, filtrados y ordenados, los planes estimados de todas las tareas de un "
+                        + "proyecto de grado, con la descripción de la tarea de cada plan. Filtros por tiempo "
+                        + "estimado, descripción del plan y descripción de la tarea; sin orden se ordena por "
+                        + "tiempo estimado ascendente. Si el proyecto no tiene planes estimados la página llega vacía";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_200 =
+                "Página de planes estimados del proyecto de grado";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_400 =
+                "Identificador de proyecto de grado inválido, o filtro u ordenamiento no permitido";
         public static final String MODIFICAR_SUMMARY = "Modificar un plan estimado";
         public static final String MODIFICAR_DESCRIPTION =
                 "Modifica la descripción de un plan estimado existente. La descripción es opcional: si no llega "
@@ -143,11 +174,66 @@ public final class MapasRutaApiMessages {
         public static final String MODIFICAR_RESP_204 = "Plan estimado modificado";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "Plan estimado inexistente";
+        public static final String APORTAR_SUMMARY = "Aportar a un plan estimado";
+        public static final String APORTAR_DESCRIPTION =
+                "El asesor aporta a un plan estimado existente: el aporte reemplaza la descripción del plan, es "
+                        + "obligatorio y no puede estar en blanco. El tiempo estimado no se modifica";
+        public static final String APORTAR_RESP_204 = "Aporte registrado en el plan estimado";
+        public static final String APORTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String APORTAR_RESP_422 = "Plan estimado inexistente";
         public static final String REMOVER_SUMMARY = "Remover un plan estimado";
         public static final String REMOVER_DESCRIPTION =
                 "Remueve un plan estimado existente; la tarea queda libre para recibir otro plan estimado";
         public static final String REMOVER_RESP_204 = "Plan estimado removido";
         public static final String REMOVER_RESP_422 = "Plan estimado inexistente";
+    }
+
+    public static final class PlanReal {
+
+        private PlanReal() {}
+
+        public static final String TAG_NAME = "Planes reales";
+        public static final String TAG_DESCRIPTION = "Planes reales de las tareas del mapa de ruta";
+        public static final String CONSULTAR_SUMMARY = "Consultar los planes reales de una tarea";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Devuelve, paginados, filtrados y ordenados, los planes reales de una tarea. Filtros por tiempo "
+                        + "real y descripción; sin orden se ordena por tiempo real ascendente. Si la tarea "
+                        + "no tiene plan real la página llega vacía";
+        public static final String CONSULTAR_RESP_200 = "Página de planes reales de la tarea";
+        public static final String CONSULTAR_RESP_400 =
+                "Identificador de tarea inválido, o filtro u ordenamiento no permitido";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_SUMMARY =
+                "Consultar los planes reales de un proyecto de grado";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_DESCRIPTION =
+                "Devuelve, paginados, filtrados y ordenados, los planes reales de todas las tareas de un "
+                        + "proyecto de grado, con la descripción de la tarea de cada plan. Filtros por tiempo "
+                        + "real, descripción del plan y descripción de la tarea; sin orden se ordena por "
+                        + "tiempo real ascendente. Si el proyecto no tiene planes reales la página llega vacía";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_200 =
+                "Página de planes reales del proyecto de grado";
+        public static final String CONSULTAR_POR_PROYECTO_GRADO_ASESOR_RESP_400 =
+                "Identificador de proyecto de grado inválido, o filtro u ordenamiento no permitido";
+        public static final String MODIFICAR_SUMMARY = "Modificar un plan real";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica el tiempo real en días y la descripción de un plan real existente. La descripción es "
+                        + "opcional: si no llega o llega en blanco, el plan queda sin descripción. El plan real se "
+                        + "regenera cuando la tarea se finaliza de nuevo";
+        public static final String MODIFICAR_RESP_204 = "Plan real modificado";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 = "Plan real inexistente";
+        public static final String APORTAR_SUMMARY = "Aportar a un plan real";
+        public static final String APORTAR_DESCRIPTION =
+                "El asesor aporta a un plan real existente: el aporte reemplaza la descripción del plan, es "
+                        + "obligatorio y no puede estar en blanco. El tiempo real no se modifica";
+        public static final String APORTAR_RESP_204 = "Aporte registrado en el plan real";
+        public static final String APORTAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String APORTAR_RESP_422 = "Plan real inexistente";
+        public static final String REMOVER_SUMMARY = "Remover un plan real";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve un plan real existente; la tarea queda sin plan real. El plan real se regenera "
+                        + "cuando la tarea se finaliza de nuevo";
+        public static final String REMOVER_RESP_204 = "Plan real removido";
+        public static final String REMOVER_RESP_422 = "Plan real inexistente";
     }
 
     public static final class EstadoItem {

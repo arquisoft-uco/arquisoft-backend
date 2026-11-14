@@ -65,6 +65,7 @@ public final class AppCodes {
         public static final String LECTURA_FALLIDA = "MINIO_LECTURA_FALLIDA";
         public static final String COPIA_FALLIDA = "MINIO_COPIA_FALLIDA";
         public static final String ELIMINACION_FALLIDA = "MINIO_ELIMINACION_FALLIDA";
+        public static final String SUBIDA_FALLIDA = "MINIO_SUBIDA_FALLIDA";
         public static final String URL_DESCARGA_FALLIDA = "MINIO_URL_DESCARGA_FALLIDA";
     }
 }

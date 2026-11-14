@@ -11,4 +11,6 @@ public interface ContextoRegistroEvaluacionJuradoProjection {
     String getEstado();
 
     UUID getEntregable();
+
+    UUID getJurado();
 }

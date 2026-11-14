@@ -54,6 +54,17 @@ public class EvaluacionJuradoCommandOutputAdapter implements EvaluacionJuradoOut
     }
 
     @Override
+    public Set<UUID> consultarJuradosConEvaluaciones(UUID evaluacion, Set<UUID> jurados) {
+        return repository.findJuradosConEvaluaciones(evaluacion, jurados);
+    }
+
+    @Override
+    public void eliminarPorEvaluacionYJurados(UUID evaluacion, Set<UUID> jurados) {
+        repository.eliminarPorEvaluacionYJurados(evaluacion, jurados);
+        logger.debug(EvaluacionJuradoKey.LOG_LOTE_ELIMINADO, jurados.size());
+    }
+
+    @Override
     public boolean estaFinalizada(UUID evaluacionCuantitativaJurado) {
         return repository.estaFinalizada(evaluacionCuantitativaJurado).orElse(false);
     }

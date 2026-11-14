@@ -10,7 +10,10 @@ public final class UtilNumero {
     public static final BigDecimal CERO_DECIMAL = BigDecimal.ZERO;
 
     private static final BigDecimal BYTES_POR_MEGABYTE = BigDecimal.valueOf(1_048_576L);
+    private static final BigDecimal BYTES_POR_GIGABYTE = BigDecimal.valueOf(1_073_741_824L);
     private static final int DECIMALES_MEGABYTES = 2;
+    private static final String SUFIJO_MEGABYTES = " MB";
+    private static final String SUFIJO_GIGABYTES = " GB";
 
     private UtilNumero() {}
 
@@ -46,6 +49,20 @@ public final class UtilNumero {
     public static String formatearMegabytes(final long bytes) {
         return BigDecimal.valueOf(bytes)
                 .divide(BYTES_POR_MEGABYTE, DECIMALES_MEGABYTES, RoundingMode.HALF_UP)
+                .stripTrailingZeros()
+                .toPlainString();
+    }
+
+    public static String formatearTamano(final long bytes) {
+        if (bytes >= BYTES_POR_GIGABYTE.longValue()) {
+            return dividir(bytes, BYTES_POR_GIGABYTE) + SUFIJO_GIGABYTES;
+        }
+        return formatearMegabytes(bytes) + SUFIJO_MEGABYTES;
+    }
+
+    private static String dividir(final long bytes, final BigDecimal unidad) {
+        return BigDecimal.valueOf(bytes)
+                .divide(unidad, DECIMALES_MEGABYTES, RoundingMode.HALF_UP)
                 .stripTrailingZeros()
                 .toPlainString();
     }

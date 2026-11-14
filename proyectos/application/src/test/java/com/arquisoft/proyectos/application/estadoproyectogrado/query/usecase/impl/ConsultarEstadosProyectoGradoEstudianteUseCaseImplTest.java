@@ -47,7 +47,7 @@ class ConsultarEstadosProyectoGradoEstudianteUseCaseImplTest {
     private ConsultarEstadosProyectoGradoEstudianteUseCaseImpl useCase;
 
     private EstadoProyectoGradoReadModel estado(String estadoProyecto, String nombre) {
-        return new EstadoProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), estadoProyecto, nombre, Instant.now());
+        return new EstadoProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), estadoProyecto, nombre, Instant.now(), null);
     }
 
     @Test

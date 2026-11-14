@@ -11,4 +11,9 @@ public final class EvaluacionCualitativaAsesorMapper {
         return new EvaluacionCualitativaAsesorEntity(
                 domain.getId(), domain.getEvaluacionAsesor(), domain.getItem(), domain.getCriterio());
     }
+
+    public static EvaluacionCualitativaAsesorDomain toDomain(EvaluacionCualitativaAsesorEntity entity) {
+        return EvaluacionCualitativaAsesorDomain.reconstruir(
+                entity.id(), entity.evaluacionAsesor(), entity.item(), entity.criterio());
+    }
 }

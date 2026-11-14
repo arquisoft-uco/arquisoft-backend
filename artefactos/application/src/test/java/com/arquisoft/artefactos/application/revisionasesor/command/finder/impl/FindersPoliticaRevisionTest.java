@@ -77,7 +77,7 @@ class FindersPoliticaRevisionTest {
         var artefacto = UtilUUID.generarNuevoUUID();
         var fecha = Instant.parse("2026-10-28T10:00:00Z");
         when(versionArtefactoOutputPort.obtenerPorId(id))
-                .thenReturn(Optional.of(new VersionArtefactoEntity(id, artefacto, 3, fecha, "versiones/uri")));
+                .thenReturn(Optional.of(new VersionArtefactoEntity(id, artefacto, 3, fecha, "versiones/uri", 1024L)));
 
         // Act
         var resultado = finder.obtener(id);

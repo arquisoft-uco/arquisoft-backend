@@ -35,5 +35,19 @@ public final class MapasRutaFields {
         public static final String TIEMPO_ESTIMADO_DIAS = "tiempoEstimadoDias";
         public static final String DESCRIPCION_ESTIMADO = "descripcionEstimado";
         public static final String PLAN_ESTIMADO = "planEstimado";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+    }
+
+    public static final class PlanReal {
+
+        private PlanReal() {}
+
+        public static final String TAREA = "tarea";
+        public static final String TIEMPO_REAL_DIAS = "tiempoRealDias";
+        public static final String DESCRIPCION_REAL = "descripcionReal";
+        public static final String CREADO_EN = "creadoEn";
+        public static final String FINALIZADA_EN = "finalizadaEn";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String PLAN_REAL = "planReal";
     }
 }
