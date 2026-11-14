@@ -41,7 +41,7 @@ public final class EntregablesApiMessages {
         public static final String GENERAR_RESP_422 =
                 "El proyecto de grado no existe, el asesor no está vigente ni asignado al proyecto, el proyecto no "
                         + "tiene artefactos con una revisión cerrada o el paquete cambió mientras se armaba "
-                        + "(PAQUETE_DESACTUALIZADO: vuelve a generar el entregable)";
+                        + "(ENTREGABLES_PAQUETE_ENTREGABLE_DESACTUALIZADO: vuelve a generar el entregable)";
         public static final String GENERAR_RESP_503 = "Falta el archivo de un artefacto en el almacenamiento";
         public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de un entregable de proyecto de grado";
         public static final String CAMBIAR_ESTADO_DESCRIPTION =

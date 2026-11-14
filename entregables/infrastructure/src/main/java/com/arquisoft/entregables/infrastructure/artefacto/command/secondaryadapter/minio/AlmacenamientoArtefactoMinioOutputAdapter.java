@@ -3,7 +3,7 @@ package com.arquisoft.entregables.infrastructure.artefacto.command.secondaryadap
 import com.arquisoft.entregables.application.artefacto.command.secondaryport.AlmacenamientoArtefactoOutputPort;
 import com.arquisoft.entregables.application.artefacto.command.secondaryport.entity.ArchivoOrigenArtefactoEntity;
 import com.arquisoft.entregables.infrastructure.config.EntregablesAlmacenamientoProperties;
-import com.arquisoft.entregables.infrastructure.config.SincronizacionTransaccional;
+import com.arquisoft.entregables.infrastructure.transaccion.SincronizacionTransaccional;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ArtefactoKey;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;

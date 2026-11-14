@@ -15,6 +15,7 @@ import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
 import com.arquisoft.shared.query.pagination.SortDirection;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -336,7 +337,7 @@ class EntregableProyectoGradoQueryOutputAdapterTest {
     }
 
     private void sembrarVinculo(UUID asesor, UUID proyecto, String ocurridoEn, String finalizadoEn) {
-        var fin = finalizadoEn == null ? null : Instant.parse(finalizadoEn);
+        var fin = UtilObjeto.esNulo(finalizadoEn) ? null : Instant.parse(finalizadoEn);
         entityManager.persist(AsesorProyectoGradoJpaEntity.builder().id(UtilUUID.generarNuevoUUID()).asesorId(asesor)
                 .proyectoGradoId(proyecto).ocurridoEn(Instant.parse(ocurridoEn)).finalizadoEn(fin).build());
     }

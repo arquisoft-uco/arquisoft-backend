@@ -1,4 +1,4 @@
-package com.arquisoft.entregables.infrastructure.config;
+package com.arquisoft.entregables.infrastructure.transaccion;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey;
@@ -44,7 +44,7 @@ public class SincronizacionTransaccional {
         try {
             efecto.run();
         } catch (RuntimeException e) {
-            logger.warn(PaqueteEntregableKey.LOG_EFECTO_DIFERIDO_FALLIDO, bucket, clave);
+            logger.error(PaqueteEntregableKey.LOG_EFECTO_DIFERIDO_FALLIDO, e, bucket, clave);
         }
     }
 }

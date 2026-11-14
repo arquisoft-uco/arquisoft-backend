@@ -34,8 +34,14 @@ public class ArtefactoCommandOutputAdapter implements ArtefactoOutputPort {
     }
 
     @Override
-    public void registrarLapida(UUID id, UUID proyectoGrado, Instant omitidoEn, Instant ocurridoEn) {
-        artefactoCommandRepository.registrarLapida(id, proyectoGrado, omitidoEn, ocurridoEn);
+    public void registrarLapidaOmitida(UUID id, UUID proyectoGrado, Instant omitidoEn, Instant ocurridoEn) {
+        artefactoCommandRepository.registrarLapidaOmitida(id, proyectoGrado, omitidoEn, ocurridoEn);
+        logger.debug(ArtefactoKey.LOG_GUARDADO, id, 1);
+    }
+
+    @Override
+    public void registrarLapidaVigente(UUID id, UUID proyectoGrado, Instant ocurridoEn) {
+        artefactoCommandRepository.registrarLapidaVigente(id, proyectoGrado, ocurridoEn);
         logger.debug(ArtefactoKey.LOG_GUARDADO, id, 1);
     }
 

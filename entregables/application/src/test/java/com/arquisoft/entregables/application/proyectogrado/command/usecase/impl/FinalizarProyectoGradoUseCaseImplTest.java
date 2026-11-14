@@ -1,12 +1,9 @@
 package com.arquisoft.entregables.application.proyectogrado.command.usecase.impl;
 
-import com.arquisoft.entregables.application.artefacto.command.result.PurgaArtefactosProyectoGradoResult;
-import com.arquisoft.entregables.application.artefacto.command.usecase.PurgarArtefactosProyectoGradoUseCase;
 import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.entregables.application.proyectogrado.command.result.FinalizacionProyectoGradoResult;
 import com.arquisoft.entregables.application.proyectogrado.command.secondaryport.ProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.proyectogrado.command.validator.FinalizarProyectoGradoValidator;
-import com.arquisoft.entregables.domain.artefacto.PurgaArtefactosProyectoGradoDomain;
 import com.arquisoft.entregables.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.entregables.domain.proyectogrado.FinalizacionProyectoGradoDomain;
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
@@ -42,9 +39,6 @@ class FinalizarProyectoGradoUseCaseImplTest {
     private FinalizarProyectoGradoValidator finalizarProyectoGradoValidator;
 
     @Mock
-    private PurgarArtefactosProyectoGradoUseCase purgarArtefactosProyectoGradoUseCase;
-
-    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -53,48 +47,39 @@ class FinalizarProyectoGradoUseCaseImplTest {
     private final ProyectoGradoDomain proyectoEnProceso = ProyectoGradoDomain.crear(
             UtilUUID.generarNuevoUUID(), "Sistema de gestion");
     private final FinalizacionProyectoGradoDomain entrada = FinalizacionProyectoGradoDomain.crear(
-            proyectoEnProceso.getId(), PurgaArtefactosProyectoGradoDomain.crear(proyectoEnProceso.getId()));
+            proyectoEnProceso.getId());
 
     @Test
-    void debeActualizarElEstadoPurgarYRetornarFinalizado_cuandoElProyectoEstaEnProceso() {
+    void debeActualizarElEstadoYRetornarFinalizado_cuandoElProyectoEstaEnProceso() {
         // Arrange
         when(proyectoGradoPorIdFinder.obtener(proyectoEnProceso.getId())).thenReturn(proyectoEnProceso);
-        when(purgarArtefactosProyectoGradoUseCase.ejecutar(entrada.getPurgaArtefactos()))
-                .thenReturn(new PurgaArtefactosProyectoGradoResult(proyectoEnProceso.getId(), 3));
 
         // Act
         var resultado = useCase.ejecutar(entrada);
 
         // Assert
-        var orden = inOrder(proyectoGradoPorIdFinder, finalizarProyectoGradoValidator, proyectoGradoOutputPort,
-                purgarArtefactosProyectoGradoUseCase);
+        var orden = inOrder(proyectoGradoPorIdFinder, finalizarProyectoGradoValidator, proyectoGradoOutputPort);
         orden.verify(proyectoGradoPorIdFinder).obtener(proyectoEnProceso.getId());
         orden.verify(finalizarProyectoGradoValidator)
                 .validar(new ExistenciaProyectoGrado(proyectoEnProceso.getId(), true));
         orden.verify(proyectoGradoOutputPort)
                 .actualizarEstado(proyectoEnProceso.getId(), EstadoProyecto.FINALIZADO.getId());
-        orden.verify(purgarArtefactosProyectoGradoUseCase).ejecutar(entrada.getPurgaArtefactos());
-        assertThat(resultado).isEqualTo(
-                new FinalizacionProyectoGradoResult.Finalizado(proyectoEnProceso.getId(), 3));
+        assertThat(resultado).isEqualTo(new FinalizacionProyectoGradoResult.Finalizado(proyectoEnProceso.getId()));
     }
 
     @Test
-    void debeRetornarDuplicadoSinActualizarPeroPurgando_cuandoElProyectoYaEstaFinalizado() {
+    void debeRetornarDuplicadoSinActualizar_cuandoElProyectoYaEstaFinalizado() {
         // Arrange
         var finalizado = ProyectoGradoDomain.reconstruir(
                 proyectoEnProceso.getId(), "Sistema de gestion", EstadoProyecto.FINALIZADO);
         when(proyectoGradoPorIdFinder.obtener(proyectoEnProceso.getId())).thenReturn(finalizado);
-        when(purgarArtefactosProyectoGradoUseCase.ejecutar(entrada.getPurgaArtefactos()))
-                .thenReturn(new PurgaArtefactosProyectoGradoResult(proyectoEnProceso.getId(), 1));
 
         // Act
         var resultado = useCase.ejecutar(entrada);
 
         // Assert
         verify(proyectoGradoOutputPort, never()).actualizarEstado(any(), any());
-        verify(purgarArtefactosProyectoGradoUseCase).ejecutar(entrada.getPurgaArtefactos());
-        assertThat(resultado).isEqualTo(
-                new FinalizacionProyectoGradoResult.Duplicado(proyectoEnProceso.getId(), 1));
+        assertThat(resultado).isEqualTo(new FinalizacionProyectoGradoResult.Duplicado(proyectoEnProceso.getId()));
     }
 
     @Test
@@ -108,6 +93,5 @@ class FinalizarProyectoGradoUseCaseImplTest {
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada)).isInstanceOf(ProyectoGradoNoEncontradoException.class);
         verify(proyectoGradoOutputPort, never()).actualizarEstado(any(), any());
-        verify(purgarArtefactosProyectoGradoUseCase, never()).ejecutar(any());
     }
 }

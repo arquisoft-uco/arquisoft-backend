@@ -4,6 +4,7 @@ import com.arquisoft.entregables.application.asesorproyectogrado.command.primary
 import com.arquisoft.entregables.application.asesorproyectogrado.command.primaryport.model.AgregarAsesorProyectoGradoCommand;
 import com.arquisoft.entregables.application.asesorproyectogrado.command.result.AgregacionAsesorProyectoGradoResult;
 import com.arquisoft.entregables.infrastructure.config.EntregablesProyectosQueueConfig;
+import com.arquisoft.shared.amqp.RabbitListenerConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.AsesorProyectoGradoKey;
@@ -33,7 +34,8 @@ public class AsesorProyectoGradoAsignadoConsumer extends AbstractEventConsumer {
         this.logger = logger;
     }
 
-    @RabbitListener(queues = EntregablesProyectosQueueConfig.ASESOR_PROYECTO_GRADO_ASIGNADO_QUEUE)
+    @RabbitListener(queues = EntregablesProyectosQueueConfig.ASESOR_PROYECTO_GRADO_ASIGNADO_QUEUE,
+            concurrency = RabbitListenerConfig.UN_SOLO_CONSUMIDOR)
     public void onAsesorProyectoGradoAsignado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
             var payload = deserialize(message, AsesorProyectoGradoAsignadoPayload.class);

@@ -75,7 +75,7 @@ class ReactivarArtefactoUseCaseImplTest {
         var resultado = useCase.ejecutar(ReactivacionArtefactoDomain.crear(id, proyecto, ocurridoEn));
 
         // Assert
-        verify(artefactoOutputPort).registrarLapida(id, proyecto, null, ocurridoEn);
+        verify(artefactoOutputPort).registrarLapidaVigente(id, proyecto, ocurridoEn);
         verify(artefactoOutputPort, never()).limpiarOmision(any(), any());
         assertThat(resultado).isEqualTo(new ReactivacionArtefactoResult.Anticipada(id));
     }
@@ -97,7 +97,7 @@ class ReactivarArtefactoUseCaseImplTest {
 
         // Assert
         verify(artefactoOutputPort).limpiarOmision(id, ocurridoEn);
-        verify(artefactoOutputPort, never()).registrarLapida(any(), any(), any(), any());
+        verify(artefactoOutputPort, never()).registrarLapidaVigente(any(), any(), any());
         assertThat(resultado).isEqualTo(new ReactivacionArtefactoResult.Reactivada(id));
     }
 

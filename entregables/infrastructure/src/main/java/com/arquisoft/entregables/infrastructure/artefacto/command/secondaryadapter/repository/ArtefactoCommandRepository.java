@@ -27,8 +27,14 @@ public interface ArtefactoCommandRepository extends JpaRepository<ArtefactoJpaEn
     @Query(value = "INSERT INTO artefacto (id, proyecto_grado_id, omitido_en, omision_ocurrida_en) "
             + "VALUES (:id, :proyectoGrado, CAST(:omitidoEn AS TIMESTAMP WITH TIME ZONE), :ocurridoEn)",
             nativeQuery = true)
-    void registrarLapida(@Param("id") UUID id, @Param("proyectoGrado") UUID proyectoGrado,
-                         @Param("omitidoEn") Instant omitidoEn, @Param("ocurridoEn") Instant ocurridoEn);
+    void registrarLapidaOmitida(@Param("id") UUID id, @Param("proyectoGrado") UUID proyectoGrado,
+                                @Param("omitidoEn") Instant omitidoEn, @Param("ocurridoEn") Instant ocurridoEn);
+
+    @Modifying
+    @Query(value = "INSERT INTO artefacto (id, proyecto_grado_id, omision_ocurrida_en) "
+            + "VALUES (:id, :proyectoGrado, :ocurridoEn)", nativeQuery = true)
+    void registrarLapidaVigente(@Param("id") UUID id, @Param("proyectoGrado") UUID proyectoGrado,
+                                @Param("ocurridoEn") Instant ocurridoEn);
 
     @Modifying
     @Query("UPDATE ArtefactoJpaEntity a SET a.versionArtefacto = :#{#a.versionArtefacto}, "

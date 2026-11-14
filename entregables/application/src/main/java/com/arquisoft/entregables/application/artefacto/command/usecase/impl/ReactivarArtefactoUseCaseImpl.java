@@ -26,8 +26,8 @@ public class ReactivarArtefactoUseCaseImpl implements ReactivarArtefactoUseCase 
                 reactivacion.getOcurridoEn());
 
         if (artefacto.esVacio()) {
-            artefactoOutputPort.registrarLapida(reactivacion.getArtefacto(), reactivacion.getProyectoGrado(),
-                    null, reactivacion.getOcurridoEn());
+            artefactoOutputPort.registrarLapidaVigente(reactivacion.getArtefacto(), reactivacion.getProyectoGrado(),
+                    reactivacion.getOcurridoEn());
             return ReactivacionArtefactoResultMapper.toResultAnticipada(reactivacion);
         }
         if (artefacto.tieneOmisionIgualOPosteriorA(reactivacion.getOcurridoEn())) {

@@ -5,6 +5,7 @@ import com.arquisoft.entregables.infrastructure.asesorproyectogrado.command.seco
 import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,7 +128,6 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
             assertThat(acceso.id()).isEqualTo(entregable);
             assertThat(acceso.proyectoGrado()).isEqualTo(proyecto);
             assertThat(acceso.version()).isEqualTo(3);
-            assertThat(acceso.asesorVigente()).isEqualTo(asesor);
             assertThat(acceso.proyectoCancelado()).isFalse();
         });
     }
@@ -187,7 +187,7 @@ class EntregableProyectoGradoAccesoQueryOutputAdapterTest {
         return AsesorProyectoGradoJpaEntity.builder()
                 .id(UtilUUID.generarNuevoUUID()).asesorId(asesor).proyectoGradoId(proyecto)
                 .ocurridoEn(Instant.parse(ocurridoEn))
-                .finalizadoEn(finalizadoEn == null ? null : Instant.parse(finalizadoEn))
+                .finalizadoEn(UtilObjeto.esNulo(finalizadoEn) ? null : Instant.parse(finalizadoEn))
                 .build();
     }
 

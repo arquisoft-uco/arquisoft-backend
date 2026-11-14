@@ -11,7 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.data.jpa.repository.Lock;
 
+import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -60,8 +62,8 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
         confirmar();
 
         // Act
-        var encontrado = adapter.obtenerPorAsesorYProyectoGrado(asesor, proyecto);
-        var ausente = adapter.obtenerPorAsesorYProyectoGrado(UtilUUID.generarNuevoUUID(), proyecto);
+        var encontrado = adapter.obtenerBloqueadoPorAsesorYProyectoGrado(asesor, proyecto);
+        var ausente = adapter.obtenerBloqueadoPorAsesorYProyectoGrado(UtilUUID.generarNuevoUUID(), proyecto);
 
         // Assert
         assertThat(encontrado).contains(buscado);
@@ -81,7 +83,7 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
         // Act
         adapter.guardar(new AsesorProyectoGradoEntity(original.id(), asesor, proyecto, T1, T1));
         confirmar();
-        var leido = adapter.obtenerPorAsesorYProyectoGrado(asesor, proyecto);
+        var leido = adapter.obtenerBloqueadoPorAsesorYProyectoGrado(asesor, proyecto);
 
         // Assert
         assertThat(leido).hasValueSatisfying(actual -> {
@@ -157,5 +159,40 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
         // Act & Assert
         assertThat(adapter.obtenerAsesorVigentePorEntregable(entregable)).isEmpty();
         assertThat(adapter.obtenerAsesorVigentePorEntregable(UtilUUID.generarNuevoUUID())).isEmpty();
+    }
+
+    @Test
+    void debeDesempatarPorAsesor_cuandoDosVinculosDelProyectoTienenElMismoInstante() {
+        // Arrange
+        var menor = UUID.fromString("11111111-1111-1111-1111-111111111111");
+        var mayor = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        var conMenorFinalizado = UtilUUID.generarNuevoUUID();
+        var conMenorVigente = UtilUUID.generarNuevoUUID();
+        adapter.guardar(vinculo(menor, conMenorFinalizado, T1, T1));
+        adapter.guardar(vinculo(mayor, conMenorFinalizado, T1, UtilFecha.VACIO));
+        adapter.guardar(vinculo(menor, conMenorVigente, T1, UtilFecha.VACIO));
+        adapter.guardar(vinculo(mayor, conMenorVigente, T1, T1));
+        confirmar();
+
+        // Act
+        var vigenteConMenorFinalizado = adapter.obtenerAsesorVigentePorProyectoGrado(conMenorFinalizado);
+        var vigenteConMenorVigente = adapter.obtenerAsesorVigentePorProyectoGrado(conMenorVigente);
+
+        // Assert
+        assertThat(vigenteConMenorFinalizado).isEmpty();
+        assertThat(vigenteConMenorVigente).contains(menor);
+    }
+
+    @Test
+    void debeBloquearLaFilaDelVinculo_cuandoSeLeeParaEscribir() throws Exception {
+        // Arrange
+        var metodo = AsesorProyectoGradoCommandRepository.class.getMethod(
+                "buscarBloqueadoPorAsesorYProyectoGrado", UUID.class, UUID.class);
+
+        // Act
+        var lock = metodo.getAnnotation(Lock.class);
+
+        // Assert
+        assertThat(lock.value()).isEqualTo(LockModeType.PESSIMISTIC_WRITE);
     }
 }

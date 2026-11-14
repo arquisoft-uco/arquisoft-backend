@@ -3,6 +3,7 @@ package com.arquisoft.entregables.infrastructure.asesorproyectogrado.command.pri
 import com.arquisoft.entregables.application.asesorproyectogrado.command.primaryport.interactor.AgregarAsesorProyectoGradoInteractor;
 import com.arquisoft.entregables.application.asesorproyectogrado.command.primaryport.model.AgregarAsesorProyectoGradoCommand;
 import com.arquisoft.entregables.application.asesorproyectogrado.command.result.AgregacionAsesorProyectoGradoResult;
+import com.arquisoft.shared.amqp.RabbitListenerConfig;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.AsesorProyectoGradoKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.dao.QueryTimeoutException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -167,5 +169,17 @@ class AsesorProyectoGradoAsignadoConsumerTest {
         // Assert
         verify(channel).basicNack(7L, false, false);
         verify(channel, never()).basicAck(7L, false);
+    }
+
+    @Test
+    void debeDeclararUnSoloConsumidor_cuandoSeRegistraElListener() throws Exception {
+        // Arrange
+        var metodo = AsesorProyectoGradoAsignadoConsumer.class.getMethod("onAsesorProyectoGradoAsignado", Message.class, Channel.class);
+
+        // Act
+        var listener = metodo.getAnnotation(RabbitListener.class);
+
+        // Assert
+        assertThat(listener.concurrency()).isEqualTo(RabbitListenerConfig.UN_SOLO_CONSUMIDOR);
     }
 }

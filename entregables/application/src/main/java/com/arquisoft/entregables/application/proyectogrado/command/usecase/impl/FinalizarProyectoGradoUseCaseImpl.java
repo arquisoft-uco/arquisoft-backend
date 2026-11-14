@@ -1,6 +1,5 @@
 package com.arquisoft.entregables.application.proyectogrado.command.usecase.impl;
 
-import com.arquisoft.entregables.application.artefacto.command.usecase.PurgarArtefactosProyectoGradoUseCase;
 import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
 import com.arquisoft.entregables.application.proyectogrado.command.result.FinalizacionProyectoGradoResult;
 import com.arquisoft.entregables.application.proyectogrado.command.result.mapper.FinalizacionProyectoGradoResultMapper;
@@ -22,7 +21,6 @@ public class FinalizarProyectoGradoUseCaseImpl implements FinalizarProyectoGrado
     private final ProyectoGradoOutputPort proyectoGradoOutputPort;
     private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
     private final FinalizarProyectoGradoValidator finalizarProyectoGradoValidator;
-    private final PurgarArtefactosProyectoGradoUseCase purgarArtefactosProyectoGradoUseCase;
     private final AppLogger logger;
 
     @Override
@@ -33,16 +31,11 @@ public class FinalizarProyectoGradoUseCaseImpl implements FinalizarProyectoGrado
         finalizarProyectoGradoValidator.validar(
                 new ExistenciaProyectoGrado(entrada.getProyectoGrado(), !proyecto.esVacio()));
 
-        var yaFinalizado = proyecto.getEstadoProyecto() == EstadoProyecto.FINALIZADO;
-        if (!yaFinalizado) {
-            proyectoGradoOutputPort.actualizarEstado(entrada.getProyectoGrado(), entrada.getEstadoNuevo().getId());
+        if (proyecto.getEstadoProyecto() == EstadoProyecto.FINALIZADO) {
+            return FinalizacionProyectoGradoResultMapper.toResultDuplicado(entrada);
         }
 
-        var purgaArtefactos = purgarArtefactosProyectoGradoUseCase.ejecutar(entrada.getPurgaArtefactos());
-
-        if (yaFinalizado) {
-            return FinalizacionProyectoGradoResultMapper.toResultDuplicado(entrada, purgaArtefactos);
-        }
-        return FinalizacionProyectoGradoResultMapper.toResultFinalizado(entrada, purgaArtefactos);
+        proyectoGradoOutputPort.actualizarEstado(entrada.getProyectoGrado(), entrada.getEstadoNuevo().getId());
+        return FinalizacionProyectoGradoResultMapper.toResultFinalizado(entrada);
     }
 }

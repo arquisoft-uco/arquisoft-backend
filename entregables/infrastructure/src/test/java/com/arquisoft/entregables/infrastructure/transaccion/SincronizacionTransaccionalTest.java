@@ -1,4 +1,4 @@
-package com.arquisoft.entregables.infrastructure.config;
+package com.arquisoft.entregables.infrastructure.transaccion;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
@@ -91,7 +91,7 @@ class SincronizacionTransaccionalTest {
     }
 
     @Test
-    void noDebePropagarYDebeAvisar_cuandoElEfectoLanza() {
+    void noDebePropagarYDebeRegistrarErrorConLaCausa_cuandoElEfectoLanza() {
         // Arrange
         TransactionSynchronizationManager.initSynchronization();
         sincronizacion.trasConfirmar(() -> {
@@ -106,7 +106,8 @@ class SincronizacionTransaccionalTest {
             TransactionSynchronizationUtils.triggerAfterCommit();
             TransactionSynchronizationUtils.triggerAfterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK);
         }).doesNotThrowAnyException();
-        verify(logger).warn(any(ClaveMensaje.class), eq("bucket"), eq("clave"));
-        verify(logger).warn(any(ClaveMensaje.class), eq("bucket"), eq("otra-clave"));
+        verify(logger).error(any(ClaveMensaje.class), any(IllegalStateException.class), eq("bucket"), eq("clave"));
+        verify(logger).error(any(ClaveMensaje.class), any(IllegalStateException.class), eq("bucket"),
+                eq("otra-clave"));
     }
 }

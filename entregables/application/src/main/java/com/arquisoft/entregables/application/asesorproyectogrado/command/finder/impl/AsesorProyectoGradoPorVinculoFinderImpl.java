@@ -17,7 +17,7 @@ public class AsesorProyectoGradoPorVinculoFinderImpl implements AsesorProyectoGr
     @Override
     public AsesorProyectoGradoDomain obtener(VinculoAsesorProyectoGrado vinculo) {
         return asesorProyectoGradoOutputPort
-                .obtenerPorAsesorYProyectoGrado(vinculo.asesor(), vinculo.proyectoGrado())
+                .obtenerBloqueadoPorAsesorYProyectoGrado(vinculo.asesor(), vinculo.proyectoGrado())
                 .map(AsesorProyectoGradoMapper::toDomain)
                 .orElse(AsesorProyectoGradoDomain.VACIO);
     }

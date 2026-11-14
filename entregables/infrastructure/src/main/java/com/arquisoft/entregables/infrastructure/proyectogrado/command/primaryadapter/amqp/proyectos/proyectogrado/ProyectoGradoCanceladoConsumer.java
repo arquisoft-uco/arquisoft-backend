@@ -1,5 +1,9 @@
 package com.arquisoft.entregables.infrastructure.proyectogrado.command.primaryadapter.amqp.proyectos.proyectogrado;
 
+import com.arquisoft.entregables.application.artefacto.command.primaryport.interactor.PurgarArtefactosProyectoGradoInteractor;
+import com.arquisoft.entregables.application.artefacto.command.primaryport.model.PurgarArtefactosProyectoGradoCommand;
+import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.interactor.PurgarPaquetesProyectoGradoInteractor;
+import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.model.PurgarPaquetesProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.interactor.CancelarProyectoGradoInteractor;
 import com.arquisoft.entregables.application.proyectogrado.command.primaryport.model.CancelarProyectoGradoCommand;
 import com.arquisoft.entregables.application.proyectogrado.command.result.CancelacionProyectoGradoResult;
@@ -23,15 +27,21 @@ import java.io.IOException;
 public class ProyectoGradoCanceladoConsumer extends AbstractEventConsumer {
 
     private final CancelarProyectoGradoInteractor cancelarProyectoGradoInteractor;
+    private final PurgarPaquetesProyectoGradoInteractor purgarPaquetesProyectoGradoInteractor;
+    private final PurgarArtefactosProyectoGradoInteractor purgarArtefactosProyectoGradoInteractor;
     private final AppLogger logger;
 
     public ProyectoGradoCanceladoConsumer(
             CancelarProyectoGradoInteractor cancelarProyectoGradoInteractor,
+            PurgarPaquetesProyectoGradoInteractor purgarPaquetesProyectoGradoInteractor,
+            PurgarArtefactosProyectoGradoInteractor purgarArtefactosProyectoGradoInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza, logger);
         this.cancelarProyectoGradoInteractor = cancelarProyectoGradoInteractor;
+        this.purgarPaquetesProyectoGradoInteractor = purgarPaquetesProyectoGradoInteractor;
+        this.purgarArtefactosProyectoGradoInteractor = purgarArtefactosProyectoGradoInteractor;
         this.logger = logger;
     }
 
@@ -45,19 +55,19 @@ public class ProyectoGradoCanceladoConsumer extends AbstractEventConsumer {
                     CancelarProyectoGradoCommand.crear(payload.proyectoGradoId()));
 
             switch (resultado) {
-                case CancelacionProyectoGradoResult.Cancelado cancelado -> {
-                    logger.info(ProyectoGradoKey.LOG_CANCELADO, cancelado.proyectoGrado());
-                    logger.info(PaqueteEntregableKey.LOG_PURGADOS,
-                            cancelado.proyectoGrado(), cancelado.paquetesEliminados());
-                    logger.info(ArtefactoKey.LOG_PURGADOS, cancelado.proyectoGrado(), cancelado.artefactosEliminados());
-                }
-                case CancelacionProyectoGradoResult.Duplicado duplicado -> {
-                    logger.info(ProyectoGradoKey.LOG_YA_CANCELADO, duplicado.proyectoGrado());
-                    logger.info(PaqueteEntregableKey.LOG_PURGADOS,
-                            duplicado.proyectoGrado(), duplicado.paquetesEliminados());
-                    logger.info(ArtefactoKey.LOG_PURGADOS, duplicado.proyectoGrado(), duplicado.artefactosEliminados());
-                }
+                case CancelacionProyectoGradoResult.Cancelado cancelado ->
+                        logger.info(ProyectoGradoKey.LOG_CANCELADO, cancelado.proyectoGrado());
+                case CancelacionProyectoGradoResult.Duplicado duplicado ->
+                        logger.info(ProyectoGradoKey.LOG_YA_CANCELADO, duplicado.proyectoGrado());
             }
+
+            var purgaPaquetes = purgarPaquetesProyectoGradoInteractor.ejecutar(
+                    PurgarPaquetesProyectoGradoCommand.crear(payload.proyectoGradoId()));
+            logger.info(PaqueteEntregableKey.LOG_PURGADOS, purgaPaquetes.proyectoGrado(), purgaPaquetes.eliminados());
+
+            var purgaArtefactos = purgarArtefactosProyectoGradoInteractor.ejecutar(
+                    PurgarArtefactosProyectoGradoCommand.crear(payload.proyectoGradoId()));
+            logger.info(ArtefactoKey.LOG_PURGADOS, purgaArtefactos.proyectoGrado(), purgaArtefactos.eliminadas());
         });
     }
 }

@@ -6,6 +6,7 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.exception.Entreg
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -48,10 +49,16 @@ class ConsultarArtefactosEntregableValidatorImplTest {
     }
 
     @Test
-    void debeLanzarAsesorNoAsignado_cuandoElAsesorNoEsElVigenteDelProyecto() {
+    void debeLanzarAsesorNoAsignadoConElProyectoDelEntregable_cuandoElAsesorNoEsElVigenteDelProyecto() {
+        // Arrange
+        var entregable = existente();
+        var solicitante = UtilUUID.generarNuevoUUID();
+
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(UtilUUID.generarNuevoUUID(), existente(),
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID()))
-                .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
+        assertThatThrownBy(() -> validator.validar(entregable.getId(), entregable,
+                UtilUUID.generarNuevoUUID(), solicitante))
+                .isInstanceOfSatisfying(AsesorNoAsignadoProyectoGradoException.class, ex ->
+                        assertThat(ex.getMessage()).contains(
+                                entregable.getProyectoGrado().toString(), solicitante.toString()));
     }
 }

@@ -76,7 +76,7 @@ class OmitirArtefactoUseCaseImplTest {
         var resultado = useCase.ejecutar(OmisionArtefactoDomain.crear(id, proyecto, ocurridoEn));
 
         // Assert
-        verify(artefactoOutputPort).registrarLapida(eq(id), eq(proyecto), any(Instant.class), eq(ocurridoEn));
+        verify(artefactoOutputPort).registrarLapidaOmitida(eq(id), eq(proyecto), any(Instant.class), eq(ocurridoEn));
         verify(artefactoOutputPort, never()).marcarOmision(any(), any(), any());
         assertThat(resultado).isEqualTo(new OmisionArtefactoResult.Anticipada(id));
     }
@@ -101,7 +101,7 @@ class OmitirArtefactoUseCaseImplTest {
 
         // Assert
         verify(artefactoOutputPort).marcarOmision(eq(id), any(Instant.class), eq(ocurridoEn));
-        verify(artefactoOutputPort, never()).registrarLapida(any(), any(), any(), any());
+        verify(artefactoOutputPort, never()).registrarLapidaOmitida(any(), any(), any(), any());
         assertThat(resultado).isEqualTo(new OmisionArtefactoResult.Omitida(id));
     }
 
@@ -117,7 +117,7 @@ class OmitirArtefactoUseCaseImplTest {
 
         // Assert
         verify(artefactoOutputPort, never()).marcarOmision(any(), any(), any());
-        verify(artefactoOutputPort, never()).registrarLapida(any(), any(), any(), any());
+        verify(artefactoOutputPort, never()).registrarLapidaOmitida(any(), any(), any(), any());
         assertThat(resultado).isEqualTo(new OmisionArtefactoResult.Descartada(id));
     }
 

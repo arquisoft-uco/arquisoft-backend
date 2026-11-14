@@ -32,6 +32,7 @@ import com.arquisoft.entregables.domain.paqueteentregable.model.VigenciaPaqueteA
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
+import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -153,7 +154,7 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
     }
 
     @Test
-    void debeArmarFueraDeLaTransaccionPersistirFotoYBorrarAnteriores_enOrden() {
+    void debeArmarFueraDeLaTransaccionPersistirFotoYBorrarAnteriores_cuandoLasDosLecturasCoinciden() {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
@@ -263,6 +264,8 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         orden.verify(confirmarGeneracionValidator).validar(any(), anyInt(), anyInt(), any(), any());
         verify(proyectoGradoPorIdFinder, times(1)).obtener(proyecto);
         verify(proyectoGradoBloqueadoPorIdFinder, times(1)).obtener(proyecto);
+        verify(logger, times(2)).debug(eq(EntregableProyectoGradoKey.LOG_VERIFICACION_GENERAR), anyBoolean(), any(),
+                anyBoolean(), anyBoolean(), anyBoolean(), anyInt(), anyInt());
         verify(entregableProyectoGradoOutputPort, never()).registrar(any());
         verify(estadoEntregableProyectoGradoOutputPort, never()).registrar(any());
         verify(paqueteEntregableOutputPort, never()).guardar(any());

@@ -1,6 +1,6 @@
 package com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.transaccion;
 
-import com.arquisoft.entregables.infrastructure.config.SincronizacionTransaccional;
+import com.arquisoft.entregables.infrastructure.transaccion.SincronizacionTransaccional;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

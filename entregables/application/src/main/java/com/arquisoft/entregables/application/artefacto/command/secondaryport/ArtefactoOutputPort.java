@@ -13,7 +13,9 @@ public interface ArtefactoOutputPort {
 
     int avanzarVersion(ArtefactoEntity artefacto);
 
-    void registrarLapida(UUID id, UUID proyectoGrado, Instant omitidoEn, Instant ocurridoEn);
+    void registrarLapidaOmitida(UUID id, UUID proyectoGrado, Instant omitidoEn, Instant ocurridoEn);
+
+    void registrarLapidaVigente(UUID id, UUID proyectoGrado, Instant ocurridoEn);
 
     void marcarOmision(UUID id, Instant omitidoEn, Instant ocurridoEn);
 

@@ -1,7 +1,7 @@
 package com.arquisoft.entregables.infrastructure.artefacto.command.secondaryadapter.minio;
 
 import com.arquisoft.entregables.infrastructure.config.EntregablesAlmacenamientoProperties;
-import com.arquisoft.entregables.infrastructure.config.SincronizacionTransaccional;
+import com.arquisoft.entregables.infrastructure.transaccion.SincronizacionTransaccional;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
 import com.arquisoft.shared.minio.model.MetadatosObjeto;

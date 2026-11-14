@@ -6,7 +6,7 @@ import com.arquisoft.entregables.application.paqueteentregable.command.secondary
 import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.model.ArchivoPaqueteArmado;
 import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
 import com.arquisoft.entregables.infrastructure.config.EntregablesAlmacenamientoProperties;
-import com.arquisoft.entregables.infrastructure.config.SincronizacionTransaccional;
+import com.arquisoft.entregables.infrastructure.transaccion.SincronizacionTransaccional;
 import com.arquisoft.entregables.infrastructure.paqueteentregable.exception.ArchivoArtefactoNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.EntregablesAlmacenamiento;

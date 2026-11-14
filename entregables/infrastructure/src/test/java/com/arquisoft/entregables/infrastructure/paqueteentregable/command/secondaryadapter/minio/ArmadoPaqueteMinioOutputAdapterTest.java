@@ -4,7 +4,7 @@ import com.arquisoft.entregables.application.paqueteentregable.command.secondary
 import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.entity.ContenidoPaqueteEntity;
 import com.arquisoft.entregables.application.paqueteentregable.command.secondaryport.model.EntradaPaqueteArmada;
 import com.arquisoft.entregables.infrastructure.config.EntregablesAlmacenamientoProperties;
-import com.arquisoft.entregables.infrastructure.config.SincronizacionTransaccional;
+import com.arquisoft.entregables.infrastructure.transaccion.SincronizacionTransaccional;
 import com.arquisoft.entregables.infrastructure.paqueteentregable.exception.ArchivoArtefactoNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.AppCodes;
@@ -17,6 +17,7 @@ import com.arquisoft.shared.minio.model.LecturaObjeto;
 import com.arquisoft.shared.minio.model.MetadatosObjeto;
 import com.arquisoft.shared.minio.model.SolicitudEnlaceDescarga;
 import com.arquisoft.shared.minio.model.SolicitudFormularioCarga;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -388,7 +389,7 @@ class ArmadoPaqueteMinioOutputAdapterTest {
         @Override
         public MetadatosObjeto consultarMetadatos(String bucket, String key) {
             var objeto = objetos.get(key);
-            if (objeto == null) {
+            if (UtilObjeto.esNulo(objeto)) {
                 return MetadatosObjeto.VACIO;
             }
             return new MetadatosObjeto(objeto.contenido().length, objeto.tipo(), "etag", objeto.metadatos());

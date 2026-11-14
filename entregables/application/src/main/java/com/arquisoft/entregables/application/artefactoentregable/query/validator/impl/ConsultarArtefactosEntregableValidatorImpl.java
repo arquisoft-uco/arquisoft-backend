@@ -8,7 +8,6 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.model.Existencia
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.EntregableProyectoGradoExisteRule;
 import com.arquisoft.entregables.domain.entregableproyectogrado.rules.impl.EntregableProyectoGradoExisteRuleImpl;
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
-import com.arquisoft.shared.util.UtilUUID;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -30,6 +29,6 @@ public class ConsultarArtefactosEntregableValidatorImpl implements ConsultarArte
         entregableProyectoGradoExisteRule.validar(new ExistenciaEntregableProyectoGrado(
                 entregableProyectoGrado, !entregable.esVacio()));
         asesorAsignadoProyectoGradoRule.validar(new VigenciaAsesorProyectoGrado(
-                UtilUUID.obtenerUUIDPorDefecto(), asesorSolicitante, asesorVigente));
+                entregable.getProyectoGrado(), asesorSolicitante, asesorVigente));
     }
 }

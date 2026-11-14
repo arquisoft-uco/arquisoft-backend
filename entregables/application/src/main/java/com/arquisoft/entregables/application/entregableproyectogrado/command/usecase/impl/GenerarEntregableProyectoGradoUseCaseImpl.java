@@ -80,10 +80,7 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
 
         var primera = ejecutorTransaccionalOutputPort.enLectura(() -> leer(
                 entrada, proyectoGradoPorIdFinder.obtener(entrada.getProyectoGrado())));
-        logger.debug(EntregableProyectoGradoKey.LOG_VERIFICACION_GENERAR,
-                !primera.proyecto().esVacio(), primera.proyecto().getEstadoProyecto().getId(),
-                primera.asesorVigente(), !UtilUUID.esPorDefecto(primera.asesorVigenteProyecto()),
-                primera.existeVigente(), primera.ultimaVersion(), primera.artefactosVigentes().size());
+        registrarVerificacion(primera);
 
         generarEntregableProyectoGradoValidator.validar(entrada, primera.proyecto(), primera.asesorVigente(),
                 primera.asesorVigenteProyecto(), primera.existeVigente(), primera.artefactosVigentes());
@@ -110,6 +107,7 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
 
         var segunda = leer(entrada, proyectoGradoBloqueadoPorIdFinder.obtener(entrada.getProyectoGrado()));
         var paquetesAnteriores = paquetesProyectoGradoFinder.obtener(entrada.getProyectoGrado());
+        registrarVerificacion(segunda);
 
         generarEntregableProyectoGradoValidator.validar(entrada, segunda.proyecto(), segunda.asesorVigente(),
                 segunda.asesorVigenteProyecto(), segunda.existeVigente(), segunda.artefactosVigentes());
@@ -144,6 +142,13 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
                 entregableVigenteExisteFinder.obtener(entrada.getProyectoGrado()),
                 ultimaVersionEntregableProyectoGradoFinder.obtener(entrada.getProyectoGrado()),
                 artefactosVigentesProyectoFinder.obtener(entrada.getProyectoGrado()));
+    }
+
+    private void registrarVerificacion(Lectura lectura) {
+        logger.debug(EntregableProyectoGradoKey.LOG_VERIFICACION_GENERAR,
+                !lectura.proyecto().esVacio(), lectura.proyecto().getEstadoProyecto().getId(),
+                lectura.asesorVigente(), !UtilUUID.esPorDefecto(lectura.asesorVigenteProyecto()),
+                lectura.existeVigente(), lectura.ultimaVersion(), lectura.artefactosVigentes().size());
     }
 
     private static Set<UUID> versionesDe(List<ArtefactoDomain> artefactos) {

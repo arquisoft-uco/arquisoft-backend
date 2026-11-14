@@ -1,5 +1,6 @@
 package com.arquisoft.entregables.application.artefacto.command.primaryport.model;
 
+import com.arquisoft.entregables.application.paqueteentregable.command.primaryport.model.PurgarPaquetesProyectoGradoCommand;
 import com.arquisoft.shared.message.constant.EntregablesFields;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ApplicationValidationException;
@@ -44,6 +45,24 @@ class OmisionYPurgasCommandTest {
                             .tieneErroresDeCampo(EntregablesFields.Artefacto.OCURRIDO_EN)).isTrue();
                 });
         assertThatThrownBy(() -> ReactivarArtefactoCommand.crear(null, null, null))
+                .isInstanceOf(ApplicationValidationException.class);
+    }
+
+    @Test
+    void debeCrearORechazarPurgas_cuandoElProyectoEsONoEsUnUuid() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var purgaArtefactos = PurgarArtefactosProyectoGradoCommand.crear(proyecto.toString());
+        var purgaPaquetes = PurgarPaquetesProyectoGradoCommand.crear(proyecto.toString());
+
+        // Assert
+        assertThat(purgaArtefactos.proyectoGrado()).isEqualTo(proyecto);
+        assertThat(purgaPaquetes.proyectoGrado()).isEqualTo(proyecto);
+        assertThatThrownBy(() -> PurgarArtefactosProyectoGradoCommand.crear("no-uuid"))
+                .isInstanceOf(ApplicationValidationException.class);
+        assertThatThrownBy(() -> PurgarPaquetesProyectoGradoCommand.crear(null))
                 .isInstanceOf(ApplicationValidationException.class);
     }
 }

@@ -218,7 +218,7 @@ class ArtefactoCommandOutputAdapterTest {
         var proyecto = UtilUUID.generarNuevoUUID();
 
         // Act
-        adapter.registrarLapida(id, proyecto, T0.plusSeconds(60), T0.plusSeconds(30));
+        adapter.registrarLapidaOmitida(id, proyecto, T0.plusSeconds(60), T0.plusSeconds(30));
         entityManager.flush();
         entityManager.clear();
         var leida = adapter.obtenerPorId(id);
@@ -244,7 +244,7 @@ class ArtefactoCommandOutputAdapterTest {
         var id = UtilUUID.generarNuevoUUID();
 
         // Act
-        adapter.registrarLapida(id, UtilUUID.generarNuevoUUID(), null, T0.plusSeconds(30));
+        adapter.registrarLapidaVigente(id, UtilUUID.generarNuevoUUID(), T0.plusSeconds(30));
         var actual = recargar(id);
 
         // Assert
@@ -257,8 +257,8 @@ class ArtefactoCommandOutputAdapterTest {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         adapter.insertar(entity(UtilUUID.generarNuevoUUID(), proyecto, "Manual", 1, "clave-a"));
-        adapter.registrarLapida(UtilUUID.generarNuevoUUID(), proyecto, null, T0);
-        adapter.registrarLapida(UtilUUID.generarNuevoUUID(), proyecto, T0, T0);
+        adapter.registrarLapidaVigente(UtilUUID.generarNuevoUUID(), proyecto, T0);
+        adapter.registrarLapidaOmitida(UtilUUID.generarNuevoUUID(), proyecto, T0, T0);
         entityManager.flush();
         entityManager.clear();
 
@@ -276,7 +276,7 @@ class ArtefactoCommandOutputAdapterTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
-        adapter.registrarLapida(id, proyecto, T0.plusSeconds(60), T0.plusSeconds(30));
+        adapter.registrarLapidaOmitida(id, proyecto, T0.plusSeconds(60), T0.plusSeconds(30));
         entityManager.flush();
         entityManager.clear();
         var cierre = entity(id, proyecto, "Informe", 1, "clave-v1");

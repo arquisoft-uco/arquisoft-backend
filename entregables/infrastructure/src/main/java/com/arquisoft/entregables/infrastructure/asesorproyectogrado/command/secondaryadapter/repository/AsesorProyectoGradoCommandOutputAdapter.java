@@ -19,21 +19,20 @@ public class AsesorProyectoGradoCommandOutputAdapter implements AsesorProyectoGr
     private final AppLogger logger;
 
     @Override
-    public Optional<AsesorProyectoGradoEntity> obtenerPorAsesorYProyectoGrado(UUID asesor, UUID proyectoGrado) {
-        return asesorProyectoGradoCommandRepository.findByAsesorIdAndProyectoGradoId(asesor, proyectoGrado)
+    public Optional<AsesorProyectoGradoEntity> obtenerBloqueadoPorAsesorYProyectoGrado(
+            UUID asesor, UUID proyectoGrado) {
+        return asesorProyectoGradoCommandRepository.buscarBloqueadoPorAsesorYProyectoGrado(asesor, proyectoGrado)
                 .map(AsesorProyectoGradoJpaMapper::toEntity);
     }
 
     @Override
     public Optional<UUID> obtenerAsesorVigentePorProyectoGrado(UUID proyectoGrado) {
-        return asesorProyectoGradoCommandRepository.findAsesorVigenteByProyectoGradoId(proyectoGrado)
-                .stream().findFirst();
+        return asesorProyectoGradoCommandRepository.buscarAsesorVigentePorProyectoGrado(proyectoGrado);
     }
 
     @Override
     public Optional<UUID> obtenerAsesorVigentePorEntregable(UUID entregable) {
-        return asesorProyectoGradoCommandRepository.findAsesorVigenteByEntregableId(entregable)
-                .stream().findFirst();
+        return asesorProyectoGradoCommandRepository.buscarAsesorVigentePorEntregable(entregable);
     }
 
     @Override
