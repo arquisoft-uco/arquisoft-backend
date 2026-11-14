@@ -441,6 +441,7 @@
               "evaluaciones:evaluacion-cuantitativa-asesor:create",
               "evaluaciones:evaluacion-cuantitativa-asesor:delete",
               "evaluaciones:observacion-item-asesor:create",
+              "evaluaciones:observacion-item-asesor:update",
               "evaluaciones:observacion-item-asesor-asesor:view",
               "artefactos:estudiante-artefacto:view",
               "artefactos:observacion-revision:view",
@@ -2850,6 +2851,15 @@
         {
           "id": "620cddc0-124b-49eb-b55a-aea2f075348b",
           "name": "evaluaciones:observacion-item-asesor-estudiante:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "e82916f0-a3ea-4d6f-ae7c-dbbad4f5edbc",
+          "name": "evaluaciones:observacion-item-asesor:update",
           "description": "",
           "composite": false,
           "clientRole": true,

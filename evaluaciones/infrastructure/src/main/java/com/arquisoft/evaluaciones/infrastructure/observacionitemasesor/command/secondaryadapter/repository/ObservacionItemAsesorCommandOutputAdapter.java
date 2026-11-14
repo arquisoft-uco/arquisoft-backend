@@ -28,4 +28,15 @@ public class ObservacionItemAsesorCommandOutputAdapter implements ObservacionIte
         return repository.existsByEvaluacionCuantitativaAsesorIdAndDescripcion(
                 evaluacionCuantitativaAsesor, descripcion);
     }
+
+    @Override
+    public boolean existeOtraConDescripcion(UUID observacion, String descripcion) {
+        return repository.existeOtraConDescripcion(observacion, descripcion);
+    }
+
+    @Override
+    public void actualizarDescripcion(UUID id, String descripcion) {
+        repository.actualizarDescripcion(id, descripcion);
+        logger.debug(ObservacionItemAsesorKey.LOG_GUARDADA, id);
+    }
 }

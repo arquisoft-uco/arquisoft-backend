@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -76,5 +78,71 @@ class ObservacionItemAsesorCommandOutputAdapterTest {
         assertThat(existe).isTrue();
         assertThat(otraEvaluacion).isFalse();
         assertThat(otraDescripcion).isFalse();
+    }
+
+    @Test
+    void debeActualizarSoloLaDescripcionDeLaObservacion_cuandoActualizar() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var id = sembrar(evaluacion, "Original");
+        var otra = sembrar(evaluacion, "Otra");
+
+        // Act
+        adapter.actualizarDescripcion(id, "Nueva");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var actualizada = entityManager.find(ObservacionItemAsesorJpaEntity.class, id);
+        assertThat(actualizada.getDescripcion()).isEqualTo("Nueva");
+        assertThat(actualizada.getEvaluacionCuantitativaAsesorId()).isEqualTo(evaluacion);
+        assertThat(entityManager.find(ObservacionItemAsesorJpaEntity.class, otra).getDescripcion())
+                .isEqualTo("Otra");
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeIgnorarLaPropiaObservacion_cuandoExisteOtraConDescripcion() {
+        // Arrange
+        var propia = sembrar(UtilUUID.generarNuevoUUID(), "Sustento");
+
+        // Act
+        var existe = adapter.existeOtraConDescripcion(propia, "Sustento");
+
+        // Assert
+        assertThat(existe).isFalse();
+    }
+
+    @Test
+    void debeDetectarSoloOtraDeLaMismaEvaluacion_cuandoExisteOtraConDescripcion() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var propia = sembrar(evaluacion, "Original");
+        sembrar(evaluacion, "Repetida");
+        sembrar(UtilUUID.generarNuevoUUID(), "Solo en otra evaluacion");
+
+        // Act
+        var enOtraDeLaMisma = adapter.existeOtraConDescripcion(propia, "Repetida");
+        var enOtraEvaluacion = adapter.existeOtraConDescripcion(propia, "Solo en otra evaluacion");
+        var distinta = adapter.existeOtraConDescripcion(propia, "Distinta");
+        var observacionInexistente = adapter.existeOtraConDescripcion(UtilUUID.generarNuevoUUID(), "Repetida");
+
+        // Assert
+        assertThat(enOtraDeLaMisma).isTrue();
+        assertThat(enOtraEvaluacion).isFalse();
+        assertThat(distinta).isFalse();
+        assertThat(observacionInexistente).isFalse();
+    }
+
+    private UUID sembrar(UUID evaluacion, String descripcion) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(ObservacionItemAsesorJpaEntity.builder()
+                .id(id)
+                .evaluacionCuantitativaAsesorId(evaluacion)
+                .descripcion(descripcion)
+                .build());
+        entityManager.flush();
+        entityManager.clear();
+        return id;
     }
 }

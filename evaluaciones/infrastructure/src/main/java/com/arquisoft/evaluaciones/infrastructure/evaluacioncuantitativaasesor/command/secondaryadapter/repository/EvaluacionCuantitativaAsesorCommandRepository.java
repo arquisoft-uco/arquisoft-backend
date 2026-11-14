@@ -38,4 +38,16 @@ public interface EvaluacionCuantitativaAsesorCommandRepository
             """)
     Optional<ContextoEvaluacionCuantitativaAsesorProjection> buscarContexto(
             @Param("evaluacionCuantitativaAsesor") UUID evaluacionCuantitativaAsesor);
+
+    @NativeQuery("""
+            SELECT eca.id AS id, eca.evaluacion_asesor_id AS evaluacionAsesor,
+                   ea.asesor_id AS asesor, e.estado_evaluacion_id AS estado
+            FROM observacion_item_asesor oia
+            JOIN evaluacion_cuantitativa_asesor eca ON eca.id = oia.evaluacion_cuantitativa_asesor_id
+            JOIN evaluacion_asesor ea ON ea.id = eca.evaluacion_asesor_id
+            JOIN evaluacion e ON e.id = ea.evaluacion_id
+            WHERE oia.id = :observacion
+            """)
+    Optional<ContextoEvaluacionCuantitativaAsesorProjection> buscarContextoPorObservacion(
+            @Param("observacion") UUID observacion);
 }

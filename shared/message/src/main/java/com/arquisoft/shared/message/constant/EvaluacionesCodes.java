@@ -447,5 +447,9 @@ public final class EvaluacionesCodes {
         public static final String EVALUACION_NO_ENCONTRADA =
                 "OBSERVACION_ITEM_ASESOR_EVALUACION_NO_ENCONTRADA";
         public static final String DESCRIPCION_DUPLICADA = "OBSERVACION_ITEM_ASESOR_DESCRIPCION_DUPLICADA";
+        public static final String ID_REQUERIDO = "OBSERVACION_ITEM_ASESOR_ID_REQUERIDO";
+        public static final String NO_ENCONTRADA = "OBSERVACION_ITEM_ASESOR_NO_ENCONTRADA";
+        public static final String MODIFICACION_EVALUACION_FINALIZADA =
+                "OBSERVACION_ITEM_ASESOR_MODIFICACION_EVALUACION_FINALIZADA";
     }
 }

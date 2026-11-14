@@ -52,4 +52,10 @@ public class EvaluacionCuantitativaAsesorCommandOutputAdapter implements Evaluac
         return repository.buscarContexto(evaluacionCuantitativaAsesor)
                 .map(ContextoEvaluacionCuantitativaAsesorJpaMapper::toEntity);
     }
+
+    @Override
+    public Optional<ContextoEvaluacionCuantitativaAsesorEntity> obtenerContextoPorObservacion(UUID observacion) {
+        return repository.buscarContextoPorObservacion(observacion)
+                .map(ContextoEvaluacionCuantitativaAsesorJpaMapper::toEntity);
+    }
 }

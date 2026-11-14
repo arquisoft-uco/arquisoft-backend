@@ -62,6 +62,9 @@ rutas:
     evaluaciones-cualitativas-asesor:
       base: /evaluaciones/evaluaciones-cualitativas-asesor
       criterio: /{evaluacionCualitativaAsesorId}/criterio
+    observaciones-item-asesor:
+      base: /evaluaciones/observaciones-item-asesor
+      por-id: /{observacionId}
     observaciones-item-jurado:
       base: /evaluaciones/observaciones-item-jurado
       por-id: /{observacionId}
