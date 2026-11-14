@@ -150,6 +150,7 @@
               "evaluaciones:categoria-item-cuantitativo-jurado:view",
               "evaluaciones:evaluacion-cualitativa-jurado:create",
               "evaluaciones:evaluacion-cualitativa-jurado:delete",
+              "evaluaciones:evaluacion-cualitativa-jurado:update",
               "evaluaciones:criterio-item-cualitativo-jurado:view",
               "evaluaciones:evaluacion-jurado-jurado:view",
               "evaluaciones:evaluacion-jurado:view",
@@ -2041,6 +2042,15 @@
         {
           "id": "359bad00-6ca4-4550-bdf2-04207b7571b1",
           "name": "solicitudes:estado-respuesta:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "5c0e2b7d-3a41-4f86-9d1e-8b6a2f94c7e3",
+          "name": "evaluaciones:evaluacion-cualitativa-jurado:update",
           "description": "",
           "composite": false,
           "clientRole": true,
