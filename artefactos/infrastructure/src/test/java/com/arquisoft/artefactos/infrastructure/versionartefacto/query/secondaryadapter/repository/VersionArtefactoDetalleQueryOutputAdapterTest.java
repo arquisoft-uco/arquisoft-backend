@@ -20,6 +20,8 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.estadoDe;
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.ocurridoEnDe;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -63,8 +65,12 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
     }
 
     private UUID sembrarArtefacto(Instant omitidoEn, Instant finalizadoEn, Instant canceladoEn) {
+        return sembrarArtefactoConEstado(omitidoEn, estadoDe(finalizadoEn, canceladoEn), ocurridoEnDe(finalizadoEn, canceladoEn));
+    }
+
+    private UUID sembrarArtefactoConEstado(Instant omitidoEn, String estado, Instant ocurridoEn) {
         var proyecto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, "Alfa", null, finalizadoEn, canceladoEn));
+        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, "Alfa", null, estado, ocurridoEn));
         var documento = UtilUUID.generarNuevoUUID();
         entityManager.persist(new VersionRepositorioArtefactoJpaEntity(
                 documento, "Anteproyecto", 1, UtilUUID.generarNuevoUUID(), "Repo Uno",
@@ -234,6 +240,24 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
             assertThat(archivo.nombreProyecto()).isEqualTo("Alfa");
             assertThat(archivo.proyectoFinalizado()).isFalse();
         });
+    }
+
+    @Test
+    void debeNoMarcarCierre_cuandoElProyectoEstaAtrasado() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(
+                sembrarArtefactoConEstado(null, "ATRASADO", Instant.parse("2026-11-03T10:00:00Z")), 1);
+        confirmarSiembra();
+
+        // Act
+        var archivo = accesoAdapter.obtenerArchivoPorId(version);
+        var detalle = detalleAdapter.consultarPorId(version);
+
+        // Assert
+        assertThat(archivo).hasValueSatisfying(a -> assertThat(a.proyectoFinalizado()).isFalse());
+        assertThat(detalle.proyectoFinalizado()).isFalse();
+        assertThat(detalle.proyectoCancelado()).isFalse();
     }
 
     @Test

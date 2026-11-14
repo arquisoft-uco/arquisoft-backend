@@ -22,6 +22,11 @@ import java.util.UUID;
                p.id                                 AS proyecto_grado_id,
                p.nombre                             AS proyecto_grado_nombre,
                a.id                                 AS asesor_id,
+               (SELECT CASE WHEN av.finalizado_en IS NULL THEN av.asesor_id END
+                FROM asesor_proyecto_grado av
+                WHERE av.proyecto_grado_id = e.proyecto_grado_id
+                ORDER BY av.ocurrido_en DESC, av.asesor_id
+                FETCH FIRST 1 ROWS ONLY) AS asesor_vigente_id,
                a.nombre                             AS asesor_nombre,
                a.email                              AS asesor_email,
                s.id                                 AS estado_id,
@@ -39,7 +44,7 @@ import java.util.UUID;
                  JOIN estado_entregable s ON s.id = eepg.estado_entregable_id
         """)
 @Synchronize({"entregable_proyecto_grado", "estado_entregable_proyecto_grado", "proyecto_grado", "asesor",
-        "estado_entregable"})
+        "estado_entregable", "asesor_proyecto_grado"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -61,6 +66,9 @@ public class EntregableProyectoGradoJpaQueryEntity {
 
     @Column(name = "asesor_id", columnDefinition = "uuid")
     private UUID asesorId;
+
+    @Column(name = "asesor_vigente_id", columnDefinition = "uuid")
+    private UUID asesorVigenteId;
 
     @Column(name = "asesor_nombre")
     private String asesorNombre;

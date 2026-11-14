@@ -1,7 +1,7 @@
 package com.arquisoft.artefactos.application.versionartefacto.command.usecase.impl;
 
 import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoBloqueadoPorVersionArtefactoFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorVersionArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAnteriorBloqueadaDeVersionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionDeVersionExisteFinder;
@@ -68,7 +68,7 @@ class EliminarVersionArtefactoUseCaseImplTest {
     @Mock
     private VersionArtefactoOutputPort versionOutputPort;
     @Mock
-    private ProyectoGradoPorVersionArtefactoFinder proyectoGradoPorVersionArtefactoFinder;
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     @Mock
     private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     @Mock
@@ -84,8 +84,8 @@ class EliminarVersionArtefactoUseCaseImplTest {
     void setUp() {
         useCase = new EliminarVersionArtefactoUseCaseImpl(artefactoFinder, revisionAnteriorFinder, versionFinder,
                 participaFinder, esUltimaFinder, revisionDeVersionFinder, validator, almacenamiento,
-                versionOutputPort, proyectoGradoPorVersionArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
-        when(proyectoGradoPorVersionArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+                versionOutputPort, proyectoGradoBloqueadoPorArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         var versionId = UtilUUID.generarNuevoUUID();
         var artefactoId = UtilUUID.generarNuevoUUID();
         eliminacion = EliminacionVersionArtefactoDomain.crear(versionId, UtilUUID.generarNuevoUUID());
@@ -121,8 +121,12 @@ class EliminarVersionArtefactoUseCaseImplTest {
         var captor = ArgumentCaptor.forClass(PrecondicionesEliminacionVersion.class);
         orden.verify(validator).validar(eq(eliminacion), captor.capture());
         orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
-        verify(proyectoGradoPorVersionArtefactoFinder, times(1)).obtener(any());
+        verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(artefacto.getId());
         orden.verify(almacenamiento).eliminarArchivo(URI);
+        var bloqueo = inOrder(proyectoGradoBloqueadoPorArtefactoFinder, almacenamiento, versionOutputPort);
+        bloqueo.verify(proyectoGradoBloqueadoPorArtefactoFinder).obtener(artefacto.getId());
+        bloqueo.verify(almacenamiento).eliminarArchivo(URI);
+        bloqueo.verify(versionOutputPort).eliminar(id);
         orden.verify(versionOutputPort).eliminar(id);
         orden.verify(logger).info(any(ClaveMensaje.class), eq(id), eq(2), eq(artefacto.getId()));
 

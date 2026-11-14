@@ -9,7 +9,7 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.secondar
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.mapper.EstudianteArtefactoMapper;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.validator.AsignarEstudiantesArtefactoValidator;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
@@ -36,7 +36,7 @@ public class AsignarEstudiantesArtefactoUseCaseImpl implements AsignarEstudiante
     private final AsignarEstudiantesArtefactoValidator asignarEstudiantesArtefactoValidator;
     private final EstudianteArtefactoOutputPort estudianteArtefactoOutputPort;
     private final EventPublisher eventPublisher;
-    private final ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    private final ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -51,7 +51,7 @@ public class AsignarEstudiantesArtefactoUseCaseImpl implements AsignarEstudiante
         var estudiantes = estudiantesPorIdsFinder.obtener(entrada.getEstudiantes());
         var pertenencias = estudiantesPertenenciaProyectoGradoFinder.obtener(entrada);
         var yaVinculados = estudiantesYaVinculadosArtefactoFinder.obtener(entrada);
-        var proyecto = proyectoGradoPorArtefactoFinder.obtener(entrada.getArtefacto());
+        var proyecto = proyectoGradoBloqueadoPorArtefactoFinder.obtener(entrada.getArtefacto());
         logger.debug(EstudianteArtefactoKey.LOG_VERIFICACION_ASIGNAR,
                 !artefacto.esVacio(), !asesor.esVacio(), !versionRepositorio.esVacio(), estudiantes.size(),
                 pertenencias.size(), yaVinculados.size());

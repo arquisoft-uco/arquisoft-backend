@@ -17,8 +17,8 @@ class CancelacionEntregablePermitidaRuleImplTest {
     private final CancelacionEntregablePermitidaRuleImpl rule = new CancelacionEntregablePermitidaRuleImpl();
 
     @ParameterizedTest
-    @EnumSource(value = EstadoEntregable.class, names = {"DISPONIBLE_EVALUACION", "RECHAZADO"})
-    void debePermitir_cuandoCancelaDesdeDisponibleEvaluacionORechazado(EstadoEntregable actual) {
+    @EnumSource(value = EstadoEntregable.class, names = {"NUEVO", "RECHAZADO"})
+    void debePermitir_cuandoCancelaDesdeNuevoORechazado(EstadoEntregable actual) {
         // Arrange
         var transicion = new TransicionEstadoEntregable(
                 UtilUUID.generarNuevoUUID(), actual, EstadoEntregable.CANCELADO);
@@ -29,8 +29,8 @@ class CancelacionEntregablePermitidaRuleImplTest {
 
     @ParameterizedTest
     @EnumSource(value = EstadoEntregable.class,
-            names = {"EN_EVALUACION", "APROBADO", "APROBADO_CON_OBSERVACIONES"})
-    void debeLanzar_cuandoCancelaDesdeUnEstadoDistintoDeDisponibleEvaluacion(EstadoEntregable actual) {
+            names = {"DISPONIBLE_EVALUACION", "EN_EVALUACION", "APROBADO", "APROBADO_CON_OBSERVACIONES"})
+    void debeLanzar_cuandoCancelaDesdeUnEstadoDistintoDeNuevoYRechazado(EstadoEntregable actual) {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var transicion = new TransicionEstadoEntregable(id, actual, EstadoEntregable.CANCELADO);

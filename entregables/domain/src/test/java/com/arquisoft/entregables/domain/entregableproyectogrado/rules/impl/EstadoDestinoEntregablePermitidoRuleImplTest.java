@@ -17,8 +17,8 @@ class EstadoDestinoEntregablePermitidoRuleImplTest {
     private final EstadoDestinoEntregablePermitidoRuleImpl rule = new EstadoDestinoEntregablePermitidoRuleImpl();
 
     @ParameterizedTest
-    @EnumSource(value = EstadoEntregable.class, names = {"CANCELADO", "CERRADO"})
-    void debePasar_cuandoElDestinoEsCanceladoOCerrado(EstadoEntregable destino) {
+    @EnumSource(value = EstadoEntregable.class, names = {"DISPONIBLE_EVALUACION", "CANCELADO", "CERRADO"})
+    void debePasar_cuandoElDestinoEsDisponibleEvaluacionCanceladoOCerrado(EstadoEntregable destino) {
         // Arrange
         var transicion = new TransicionEstadoEntregable(
                 UtilUUID.generarNuevoUUID(), EstadoEntregable.APROBADO, destino);
@@ -29,8 +29,8 @@ class EstadoDestinoEntregablePermitidoRuleImplTest {
 
     @ParameterizedTest
     @EnumSource(value = EstadoEntregable.class,
-            names = {"DISPONIBLE_EVALUACION", "EN_EVALUACION", "APROBADO", "APROBADO_CON_OBSERVACIONES", "RECHAZADO"})
-    void debeLanzar_cuandoElDestinoNoEsCanceladoNiCerrado(EstadoEntregable destino) {
+            names = {"NUEVO", "EN_EVALUACION", "APROBADO", "APROBADO_CON_OBSERVACIONES", "RECHAZADO"})
+    void debeLanzar_cuandoElDestinoNoEsDisponibleEvaluacionCanceladoNiCerrado(EstadoEntregable destino) {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var transicion = new TransicionEstadoEntregable(id, EstadoEntregable.APROBADO, destino);

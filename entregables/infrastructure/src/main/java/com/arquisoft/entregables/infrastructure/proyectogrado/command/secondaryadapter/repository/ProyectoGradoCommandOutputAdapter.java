@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.entregables.ProyectoGradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,13 +41,13 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     }
 
     @Override
-    public Optional<ProyectoGradoEntity> obtenerPorEntregable(UUID entregable) {
-        return proyectoGradoCommandRepository.buscarPorEntregable(entregable).map(ProyectoGradoJpaMapper::toEntity);
+    public Optional<ProyectoGradoEntity> obtenerBloqueadoPorEntregable(UUID entregable) {
+        return proyectoGradoCommandRepository.buscarBloqueadoPorEntregable(entregable).map(ProyectoGradoJpaMapper::toEntity);
     }
 
     @Override
-    public void actualizarEstado(UUID proyectoGrado, String estadoProyecto) {
-        proyectoGradoCommandRepository.actualizarEstado(proyectoGrado, estadoProyecto);
-        logger.debug(ProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, proyectoGrado, estadoProyecto);
+    public void actualizarEstado(UUID proyectoGrado, String estadoProyecto, Instant ocurridoEn) {
+        proyectoGradoCommandRepository.actualizarEstado(proyectoGrado, estadoProyecto, ocurridoEn);
+        logger.debug(ProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, proyectoGrado, estadoProyecto, ocurridoEn);
     }
 }

@@ -36,6 +36,11 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     }
 
     @Override
+    public Optional<ProyectoGradoEntity> obtenerBloqueadoPorId(UUID id) {
+        return proyectoGradoCommandRepository.bloquearPorId(id).map(ProyectoGradoJpaMapper::toEntity);
+    }
+
+    @Override
     public Optional<ProyectoGradoEntity> obtenerPorArtefacto(UUID artefacto) {
         return proyectoGradoCommandRepository.obtenerPorArtefacto(artefacto).map(ProyectoGradoJpaMapper::toEntity);
     }
@@ -46,20 +51,20 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     }
 
     @Override
-    public Optional<ProyectoGradoEntity> obtenerPorRevisionAsesor(UUID revisionAsesor) {
-        return proyectoGradoCommandRepository.obtenerPorRevisionAsesor(revisionAsesor)
+    public Optional<ProyectoGradoEntity> obtenerBloqueadoPorRevisionAsesor(UUID revisionAsesor) {
+        return proyectoGradoCommandRepository.bloquearPorRevisionAsesor(revisionAsesor)
                 .map(ProyectoGradoJpaMapper::toEntity);
     }
 
     @Override
-    public Optional<ProyectoGradoEntity> obtenerPorObservacion(UUID observacion) {
-        return proyectoGradoCommandRepository.obtenerPorObservacion(observacion)
+    public Optional<ProyectoGradoEntity> obtenerBloqueadoPorObservacion(UUID observacion) {
+        return proyectoGradoCommandRepository.bloquearPorObservacion(observacion)
                 .map(ProyectoGradoJpaMapper::toEntity);
     }
 
     @Override
-    public Optional<ProyectoGradoEntity> obtenerPorVersionArtefacto(UUID versionArtefacto) {
-        return proyectoGradoCommandRepository.obtenerPorVersionArtefacto(versionArtefacto)
+    public Optional<ProyectoGradoEntity> obtenerBloqueadoPorVersionArtefacto(UUID versionArtefacto) {
+        return proyectoGradoCommandRepository.bloquearPorVersionArtefacto(versionArtefacto)
                 .map(ProyectoGradoJpaMapper::toEntity);
     }
 
@@ -76,14 +81,8 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     }
 
     @Override
-    public void marcarFinalizado(UUID id, Instant finalizadoEn) {
-        proyectoGradoCommandRepository.marcarFinalizado(id, finalizadoEn);
-        logger.debug(ProyectoGradoKey.LOG_FINALIZADO_MARCADO, id, finalizadoEn);
-    }
-
-    @Override
-    public void marcarCancelado(UUID id, Instant canceladoEn) {
-        proyectoGradoCommandRepository.marcarCancelado(id, canceladoEn);
-        logger.debug(ProyectoGradoKey.LOG_CANCELADO_MARCADO, id, canceladoEn);
+    public void actualizarEstado(UUID id, String estadoProyecto, Instant ocurridoEn) {
+        proyectoGradoCommandRepository.actualizarEstado(id, estadoProyecto, ocurridoEn);
+        logger.debug(ProyectoGradoKey.LOG_ESTADO_ACTUALIZADO, id, estadoProyecto, ocurridoEn);
     }
 }

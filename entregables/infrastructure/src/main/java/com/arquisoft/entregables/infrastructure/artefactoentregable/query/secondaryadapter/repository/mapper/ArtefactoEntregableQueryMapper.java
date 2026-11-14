@@ -11,10 +11,10 @@ public final class ArtefactoEntregableQueryMapper {
         return new ArtefactoEntregableReadModel(
                 entity.getId(),
                 entity.getEntregableId(),
-                entity.getArtefactoId(),
+                entity.getVersionArtefacto(),
                 entity.getNumeroVersion(),
                 entity.getUriArchivo(),
-                entity.getIdArtefacto(),
+                entity.getArtefacto(),
                 entity.getIdRepositorioArtefacto(),
                 entity.getNombreDocumento(),
                 entity.getIdRepositorio(),

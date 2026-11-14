@@ -8,7 +8,7 @@ import com.arquisoft.artefactos.application.observacion.command.finder.Observaci
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.ObservacionOutputPort;
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.entity.ObservacionEntity;
 import com.arquisoft.artefactos.application.observacion.command.validator.CambiarEstadoAsesorObservacionValidator;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorObservacionFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorObservacionFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorPorObservacionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVersionSiguientePorObservacionFinder;
@@ -89,7 +89,7 @@ class CambiarEstadoAsesorObservacionUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
-    private ProyectoGradoPorObservacionFinder proyectoGradoPorObservacionFinder;
+    private ProyectoGradoBloqueadoPorObservacionFinder proyectoGradoBloqueadoPorObservacionFinder;
     @Mock
     private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     @Mock
@@ -111,7 +111,7 @@ class CambiarEstadoAsesorObservacionUseCaseImplTest {
 
     @BeforeEach
     void prepararEscenario() {
-        when(proyectoGradoPorObservacionFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+        when(proyectoGradoBloqueadoPorObservacionFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         observacionId = UtilUUID.generarNuevoUUID();
         revisionId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
@@ -190,7 +190,7 @@ class CambiarEstadoAsesorObservacionUseCaseImplTest {
         orden.verify(validator).validar(cambio, observacion, revision, artefacto, asesor,
                 versionRepositorio, versiones());
         orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
-        verify(proyectoGradoPorObservacionFinder, times(1)).obtener(any());
+        verify(proyectoGradoBloqueadoPorObservacionFinder, times(1)).obtener(any());
         orden.verify(observacionOutputPort).actualizarEstado(observacionId, "CERRADA");
         orden.verify(logger).info(
                 CambiarEstadoAsesorObservacionKey.LOG_ESTADO_CAMBIADO, observacionId, "CERRADA");

@@ -16,15 +16,18 @@ public final class CambioEstadoEntregableProyectoGradoDomain {
 
     private UUID entregableProyectoGrado;
     private EstadoEntregable estadoEntregable;
+    private UUID asesor;
 
     private CambioEstadoEntregableProyectoGradoDomain() {}
 
-    public static CambioEstadoEntregableProyectoGradoDomain crear(UUID entregableProyectoGrado, String estadoEntregable) {
+    public static CambioEstadoEntregableProyectoGradoDomain crear(UUID entregableProyectoGrado, String estadoEntregable,
+                                                                  UUID asesor) {
         var cambio = new CambioEstadoEntregableProyectoGradoDomain();
         var result = new ValidationResult();
 
         cambio.setEntregableProyectoGrado(entregableProyectoGrado, result);
         cambio.setEstadoEntregable(estadoEntregable, result);
+        cambio.setAsesor(asesor, result);
 
         result.lanzarSiTieneErrores();
         return cambio;
@@ -56,11 +59,24 @@ public final class CambioEstadoEntregableProyectoGradoDomain {
         this.estadoEntregable = EstadoEntregable.desde(recortado);
     }
 
+    private void setAsesor(UUID asesor, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(asesor,
+                EntregablesFields.EntregableProyectoGrado.ASESOR,
+                EntregablesCodes.EntregableProyectoGrado.ASESOR_REQUERIDO, result)) {
+            return;
+        }
+        this.asesor = asesor;
+    }
+
     public UUID getEntregableProyectoGrado() {
         return entregableProyectoGrado;
     }
 
     public EstadoEntregable getEstadoEntregable() {
         return estadoEntregable;
+    }
+
+    public UUID getAsesor() {
+        return asesor;
     }
 }

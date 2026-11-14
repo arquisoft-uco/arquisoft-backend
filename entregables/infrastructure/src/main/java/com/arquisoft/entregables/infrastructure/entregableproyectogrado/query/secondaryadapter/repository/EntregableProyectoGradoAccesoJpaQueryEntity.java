@@ -16,14 +16,18 @@ import java.util.UUID;
 @Immutable
 @Subselect("""
         SELECT e.id                                 AS id,
-               e.asesor_id                          AS asesor_id,
+               (SELECT CASE WHEN av.finalizado_en IS NULL THEN av.asesor_id END
+                FROM asesor_proyecto_grado av
+                WHERE av.proyecto_grado_id = e.proyecto_grado_id
+                ORDER BY av.ocurrido_en DESC, av.asesor_id
+                FETCH FIRST 1 ROWS ONLY) AS asesor_vigente_id,
                e.proyecto_grado_id                  AS proyecto_grado_id,
                CAST(e.version_entregable AS BIGINT) AS version_entregable,
                (pg.estado_proyecto_id = 'CANCELADO') AS proyecto_cancelado
         FROM entregable_proyecto_grado e
         JOIN proyecto_grado pg ON pg.id = e.proyecto_grado_id
         """)
-@Synchronize({"entregable_proyecto_grado", "proyecto_grado"})
+@Synchronize({"entregable_proyecto_grado", "proyecto_grado", "asesor_proyecto_grado"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,8 +37,8 @@ public class EntregableProyectoGradoAccesoJpaQueryEntity {
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "asesor_id")
-    private UUID asesorId;
+    @Column(name = "asesor_vigente_id")
+    private UUID asesorVigenteId;
 
     @Column(name = "proyecto_grado_id")
     private UUID proyectoGradoId;

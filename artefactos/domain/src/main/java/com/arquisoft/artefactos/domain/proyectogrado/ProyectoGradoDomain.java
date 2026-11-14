@@ -1,5 +1,6 @@
 package com.arquisoft.artefactos.domain.proyectogrado;
 
+import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyecto;
 import com.arquisoft.shared.message.constant.ArtefactosCodes;
 import com.arquisoft.shared.message.constant.ArtefactosFields;
 import com.arquisoft.shared.message.constant.ArtefactosLimits;
@@ -18,14 +19,14 @@ import java.util.UUID;
 public final class ProyectoGradoDomain {
 
     public static final ProyectoGradoDomain VACIO = reconstruir(
-            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilFecha.VACIO, UtilFecha.VACIO,
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilFecha.VACIO, EstadoProyecto.VACIO,
             UtilFecha.VACIO);
 
     private UUID id;
     private String nombre;
     private Instant entregadoEn;
-    private Instant finalizadoEn;
-    private Instant canceladoEn;
+    private EstadoProyecto estadoProyecto;
+    private Instant ocurridoEn;
 
     private ProyectoGradoDomain() {}
 
@@ -35,20 +36,20 @@ public final class ProyectoGradoDomain {
         proyecto.setId(id, result);
         proyecto.setNombre(nombre, result);
         proyecto.setEntregadoEn();
-        proyecto.setFinalizadoEn();
-        proyecto.setCanceladoEn();
+        proyecto.setEstadoProyectoInicial();
+        proyecto.setOcurridoEnInicial();
         result.lanzarSiTieneErrores();
         return proyecto;
     }
 
-    public static ProyectoGradoDomain reconstruir(UUID id, String nombre, Instant entregadoEn, Instant finalizadoEn,
-                                                  Instant canceladoEn) {
+    public static ProyectoGradoDomain reconstruir(UUID id, String nombre, Instant entregadoEn,
+                                                  EstadoProyecto estadoProyecto, Instant ocurridoEn) {
         var proyecto = new ProyectoGradoDomain();
         proyecto.id = id;
         proyecto.nombre = nombre;
         proyecto.entregadoEn = UtilObjeto.aplicarPorDefecto(entregadoEn, UtilFecha.VACIO);
-        proyecto.finalizadoEn = UtilObjeto.aplicarPorDefecto(finalizadoEn, UtilFecha.VACIO);
-        proyecto.canceladoEn = UtilObjeto.aplicarPorDefecto(canceladoEn, UtilFecha.VACIO);
+        proyecto.estadoProyecto = estadoProyecto;
+        proyecto.ocurridoEn = UtilObjeto.aplicarPorDefecto(ocurridoEn, UtilFecha.VACIO);
         return proyecto;
     }
 
@@ -81,12 +82,12 @@ public final class ProyectoGradoDomain {
         this.entregadoEn = UtilFecha.VACIO;
     }
 
-    private void setFinalizadoEn() {
-        this.finalizadoEn = UtilFecha.VACIO;
+    private void setEstadoProyectoInicial() {
+        this.estadoProyecto = EstadoProyecto.EN_PROCESO;
     }
 
-    private void setCanceladoEn() {
-        this.canceladoEn = UtilFecha.VACIO;
+    private void setOcurridoEnInicial() {
+        this.ocurridoEn = UtilFecha.VACIO;
     }
 
     public UUID getId() {
@@ -101,12 +102,12 @@ public final class ProyectoGradoDomain {
         return entregadoEn;
     }
 
-    public Instant getFinalizadoEn() {
-        return finalizadoEn;
+    public EstadoProyecto getEstadoProyecto() {
+        return estadoProyecto;
     }
 
-    public Instant getCanceladoEn() {
-        return canceladoEn;
+    public Instant getOcurridoEn() {
+        return ocurridoEn;
     }
 
     public boolean estaEntregado() {
@@ -114,11 +115,11 @@ public final class ProyectoGradoDomain {
     }
 
     public boolean estaFinalizado() {
-        return !UtilFecha.VACIO.equals(finalizadoEn);
+        return estadoProyecto == EstadoProyecto.FINALIZADO;
     }
 
     public boolean estaCancelado() {
-        return !UtilFecha.VACIO.equals(canceladoEn);
+        return estadoProyecto == EstadoProyecto.CANCELADO;
     }
 
     public boolean estaConcluido() {

@@ -14,24 +14,27 @@ class CambiarEstadoEntregableProyectoGradoCommandTest {
     void debeCrearConElEstadoRecortado_cuandoLosDatosSonValidos() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
 
         // Act
-        var command = CambiarEstadoEntregableProyectoGradoCommand.crear(entregable, "  CANCELADO ");
+        var command = CambiarEstadoEntregableProyectoGradoCommand.crear(entregable, "  CANCELADO ", asesor);
 
         // Assert
         assertThat(command.entregableProyectoGrado()).isEqualTo(entregable);
         assertThat(command.estadoEntregable()).isEqualTo("CANCELADO");
+        assertThat(command.asesor()).isEqualTo(asesor);
     }
 
     @Test
-    void debeAcumularErrores_cuandoFaltanEntregableYEstado() {
+    void debeAcumularErrores_cuandoFaltanAsesorEntregableYEstado() {
         // Act & Assert
-        assertThatThrownBy(() -> CambiarEstadoEntregableProyectoGradoCommand.crear(null, "   "))
+        assertThatThrownBy(() -> CambiarEstadoEntregableProyectoGradoCommand.crear(null, "   ", null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, ex ->
                         assertThat(ex.getValidationResult().getErrores())
                                 .extracting("codigoError")
                                 .containsExactlyInAnyOrder(
                                         EntregablesCodes.EntregableProyectoGrado.ID_REQUERIDO,
-                                        EntregablesCodes.EntregableProyectoGrado.ESTADO_ENTREGABLE_REQUERIDO));
+                                        EntregablesCodes.EntregableProyectoGrado.ESTADO_ENTREGABLE_REQUERIDO,
+                                        EntregablesCodes.EntregableProyectoGrado.ASESOR_REQUERIDO));
     }
 }

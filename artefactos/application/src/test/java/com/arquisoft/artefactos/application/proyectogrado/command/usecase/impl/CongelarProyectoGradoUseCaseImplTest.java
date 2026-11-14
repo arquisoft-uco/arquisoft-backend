@@ -6,6 +6,7 @@ import com.arquisoft.artefactos.application.proyectogrado.command.secondaryport.
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.CongelarProyectoGradoValidator;
 import com.arquisoft.artefactos.domain.proyectogrado.CongelacionProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyecto;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.artefactos.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.shared.logger.AppLogger;
@@ -51,7 +52,7 @@ class CongelarProyectoGradoUseCaseImplTest {
         var entregadoEn = Instant.parse("2026-11-01T10:00:00Z");
         var congelacion = CongelacionProyectoGradoDomain.crear(id, entregadoEn);
         when(proyectoGradoPorIdFinder.obtener(id))
-                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, null));
+                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, EstadoProyecto.EN_PROCESO, null));
 
         // Act
         var resultado = useCase.ejecutar(congelacion);
@@ -70,7 +71,7 @@ class CongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var congelacion = CongelacionProyectoGradoDomain.crear(id, Instant.parse("2026-11-01T10:00:00Z"));
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO, null));
+                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), EstadoProyecto.EN_PROCESO, null));
 
         // Act
         var resultado = useCase.ejecutar(congelacion);
@@ -87,7 +88,7 @@ class CongelarProyectoGradoUseCaseImplTest {
         var entregadoEn = Instant.parse("2026-11-02T10:00:00Z");
         var congelacion = CongelacionProyectoGradoDomain.crear(id, entregadoEn);
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO, null));
+                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), EstadoProyecto.EN_PROCESO, null));
 
         // Act
         var resultado = useCase.ejecutar(congelacion);

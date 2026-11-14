@@ -4,6 +4,7 @@ import com.arquisoft.artefactos.application.proyectogrado.command.primaryport.in
 import com.arquisoft.artefactos.application.proyectogrado.command.primaryport.model.DescongelarProyectoGradoCommand;
 import com.arquisoft.artefactos.application.proyectogrado.command.result.DescongelacionProyectoGradoResult;
 import com.arquisoft.artefactos.infrastructure.config.ArtefactosEntregablesQueueConfig;
+import com.arquisoft.shared.amqp.RabbitListenerConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
@@ -20,8 +21,6 @@ import java.io.IOException;
 @Component
 public class EntregableProyectoGradoCanceladoConsumer extends AbstractEventConsumer {
 
-    private static final String UN_SOLO_CONSUMIDOR = "1";
-
     private final DescongelarProyectoGradoInteractor descongelarProyectoGradoInteractor;
     private final AppLogger logger;
 
@@ -36,7 +35,7 @@ public class EntregableProyectoGradoCanceladoConsumer extends AbstractEventConsu
     }
 
     @RabbitListener(queues = ArtefactosEntregablesQueueConfig.ENTREGABLE_PROYECTO_GRADO_CANCELADO_QUEUE,
-            concurrency = UN_SOLO_CONSUMIDOR)
+            concurrency = RabbitListenerConfig.UN_SOLO_CONSUMIDOR)
     public void onEntregableProyectoGradoCancelado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
             var payload = deserialize(message, EntregableProyectoGradoCanceladoPayload.class);

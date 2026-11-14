@@ -40,6 +40,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -265,6 +268,34 @@ class MinioAlmacenamientoObjetosTest {
         assertThat(captor.getValue().object()).isEqualTo("versiones/v-1");
         assertThat(captor.getValue().source().object()).isEqualTo("pendientes/c-1");
         assertThat(captor.getValue().source().matchETag()).isEqualTo("abc123");
+    }
+
+    @Test
+    void debeCopiarEntreBucketsDistintos_cuandoSeIndicanOrigenYDestino() throws Exception {
+        // Act
+        almacenamiento.copiar("artefactos", "pendientes/c-1", "entregables", "artefactos/a-1/v1", "\"abc123\"");
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(CopyObjectArgs.class);
+        verify(minioClient).copyObject(captor.capture());
+        assertThat(captor.getValue().source().bucket()).isEqualTo("artefactos");
+        assertThat(captor.getValue().source().object()).isEqualTo("pendientes/c-1");
+        assertThat(captor.getValue().source().matchETag()).isEqualTo("abc123");
+        assertThat(captor.getValue().bucket()).isEqualTo("entregables");
+        assertThat(captor.getValue().object()).isEqualTo("artefactos/a-1/v1");
+    }
+
+    @Test
+    void debeDelegarEnElDeCincoParametrosConElMismoBucket_cuandoSeUsaLaSobrecargaDeCuatro() {
+        // Arrange
+        var delegante = mock(AlmacenamientoObjetos.class, CALLS_REAL_METHODS);
+        doNothing().when(delegante).copiar(any(), any(), any(), any(), any());
+
+        // Act
+        delegante.copiar(BUCKET, "origen", "destino", "etag");
+
+        // Assert
+        verify(delegante).copiar(BUCKET, "origen", BUCKET, "destino", "etag");
     }
 
     @Test

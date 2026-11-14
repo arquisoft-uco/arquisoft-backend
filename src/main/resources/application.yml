@@ -202,6 +202,14 @@ artefactos:
     tamano-maximo-bytes: ${ARTEFACTOS_TAMANO_MAXIMO_BYTES:52428800}
     cuota-proyecto-grado-bytes: ${ARTEFACTOS_CUOTA_PROYECTO_GRADO_BYTES:1073741824}
 
+# ==================== ENTREGABLES (almacenamiento) ====================
+# Bucket propio (lo crea minio/configurar.sh, nunca el backend): copia de cada artefacto cerrado bajo artefactos/ y
+# ZIP de cada entregable bajo paquetes/. bucket-artefactos es el origen de la copia (el bucket de artefactos).
+entregables:
+  almacenamiento:
+    bucket: ${ENTREGABLES_BUCKET:entregables}
+    bucket-artefactos: ${ENTREGABLES_BUCKET_ARTEFACTOS:${ARTEFACTOS_BUCKET:artefactos}}
+
 # ==================== DATASOURCES POR BOUNDED CONTEXT ====================
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
 # usando @ConfigurationProperties("datasource.{contexto}").
