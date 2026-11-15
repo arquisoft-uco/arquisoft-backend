@@ -15,4 +15,13 @@ public final class ItemCuantitativoAsesorMapper {
                 domain.getCategoria(),
                 domain.getValor());
     }
+
+    public static ItemCuantitativoAsesorDomain toDomain(ItemCuantitativoAsesorEntity entity) {
+        return ItemCuantitativoAsesorDomain.reconstruir(
+                entity.id(),
+                entity.nombre(),
+                entity.descripcion(),
+                entity.categoriaId(),
+                entity.valor());
+    }
 }

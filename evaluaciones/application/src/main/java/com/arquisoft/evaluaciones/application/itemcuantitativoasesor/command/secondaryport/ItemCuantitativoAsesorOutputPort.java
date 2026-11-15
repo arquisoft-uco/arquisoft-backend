@@ -3,12 +3,15 @@ package com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.se
 import com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.secondaryport.entity.ItemCuantitativoAsesorEntity;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 public interface ItemCuantitativoAsesorOutputPort {
 
     Map<UUID, Integer> consultarValoresMaximosPorIds(Set<UUID> ids);
+
+    Optional<ItemCuantitativoAsesorEntity> obtenerPorId(UUID id);
 
     void registrar(ItemCuantitativoAsesorEntity entity);
 

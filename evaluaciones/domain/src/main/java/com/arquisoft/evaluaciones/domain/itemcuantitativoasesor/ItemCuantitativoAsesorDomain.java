@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.domain.itemcuantitativoasesor;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.constant.EvaluacionesLimits;
+import com.arquisoft.shared.util.UtilNumero;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -14,6 +15,13 @@ import com.arquisoft.shared.validation.ValidatorTexto;
 import java.util.UUID;
 
 public final class ItemCuantitativoAsesorDomain {
+
+    public static final ItemCuantitativoAsesorDomain VACIO = new ItemCuantitativoAsesorDomain(
+            UtilUUID.obtenerUUIDPorDefecto(),
+            UtilTexto.VACIO,
+            UtilTexto.VACIO,
+            UtilUUID.obtenerUUIDPorDefecto(),
+            UtilNumero.CERO);
 
     private UUID id;
     private String nombre;
@@ -145,5 +153,9 @@ public final class ItemCuantitativoAsesorDomain {
 
     public Integer getValor() {
         return valor;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

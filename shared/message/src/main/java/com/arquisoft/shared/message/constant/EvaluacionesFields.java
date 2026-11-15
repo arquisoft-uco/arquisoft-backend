@@ -89,6 +89,7 @@ public final class EvaluacionesFields {
 
         private EvaluacionCuantitativaAsesor() {}
 
+        public static final String ID = "evaluacionCuantitativaAsesor";
         public static final String EVALUACION_ASESOR = "evaluacionAsesor";
         public static final String ASESOR = "asesor";
         public static final String ESTUDIANTE = "estudiante";

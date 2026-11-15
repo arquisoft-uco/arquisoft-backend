@@ -16,4 +16,13 @@ public final class ItemCuantitativoAsesorJpaMapper {
                 .valor(entity.valor())
                 .build();
     }
+
+    public static ItemCuantitativoAsesorEntity toEntity(ItemCuantitativoAsesorJpaEntity jpaEntity) {
+        return new ItemCuantitativoAsesorEntity(
+                jpaEntity.getId(),
+                jpaEntity.getNombre(),
+                jpaEntity.getDescripcion(),
+                jpaEntity.getCategoria(),
+                jpaEntity.getValor());
+    }
 }

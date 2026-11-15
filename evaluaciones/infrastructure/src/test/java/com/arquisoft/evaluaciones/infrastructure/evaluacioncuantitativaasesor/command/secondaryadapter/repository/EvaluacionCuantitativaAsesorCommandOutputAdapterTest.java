@@ -143,4 +143,53 @@ class EvaluacionCuantitativaAsesorCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).containsExactly(itemRegistrado);
     }
+
+    @Test
+    void debeActualizarSoloElPuntajeDeLaFila_cuandoExiste() {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var objetivo = UtilUUID.generarNuevoUUID();
+        var itemObjetivo = UtilUUID.generarNuevoUUID();
+        var otra = UtilUUID.generarNuevoUUID();
+        var itemOtra = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCuantitativaAsesorEntity(objetivo, evaluacionAsesor, itemObjetivo, 10),
+                new EvaluacionCuantitativaAsesorEntity(otra, evaluacionAsesor, itemOtra, 20)));
+        repository.flush();
+
+        // Act
+        adapter.actualizarPuntaje(objetivo, 450);
+
+        // Assert
+        var filas = repository.findAll();
+        var actualizada = filas.stream().filter(e -> e.getId().equals(objetivo)).findFirst().orElseThrow();
+        var intacta = filas.stream().filter(e -> e.getId().equals(otra)).findFirst().orElseThrow();
+        assertThat(actualizada.getPuntaje()).isEqualTo(450);
+        assertThat(actualizada.getItem()).isEqualTo(itemObjetivo);
+        assertThat(actualizada.getEvaluacionAsesor()).isEqualTo(evaluacionAsesor);
+        assertThat(intacta.getPuntaje()).isEqualTo(20);
+        verify(logger).debug(any(ClaveMensaje.class), eq(objetivo));
+    }
+
+    @Test
+    void debeObtenerElItemDeLaFilaPedida_cuandoExisteYVacioCuandoNo() {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var pedida = UtilUUID.generarNuevoUUID();
+        var itemPedido = UtilUUID.generarNuevoUUID();
+        var otra = UtilUUID.generarNuevoUUID();
+        var itemOtra = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCuantitativaAsesorEntity(pedida, evaluacionAsesor, itemPedido, 10),
+                new EvaluacionCuantitativaAsesorEntity(otra, evaluacionAsesor, itemOtra, 20)));
+        repository.flush();
+
+        // Act
+        var encontrado = adapter.obtenerItem(pedida);
+        var inexistente = adapter.obtenerItem(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrado).contains(itemPedido);
+        assertThat(inexistente).isEmpty();
+    }
 }

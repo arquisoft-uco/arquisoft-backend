@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,6 +28,11 @@ public class ItemCuantitativoAsesorCommandOutputAdapter implements ItemCuantitat
                 .collect(Collectors.toUnmodifiableMap(
                         ValorMaximoItemCuantitativoAsesorProjection::getId,
                         ValorMaximoItemCuantitativoAsesorProjection::getValor));
+    }
+
+    @Override
+    public Optional<ItemCuantitativoAsesorEntity> obtenerPorId(UUID id) {
+        return repository.findById(id).map(ItemCuantitativoAsesorJpaMapper::toEntity);
     }
 
     @Override

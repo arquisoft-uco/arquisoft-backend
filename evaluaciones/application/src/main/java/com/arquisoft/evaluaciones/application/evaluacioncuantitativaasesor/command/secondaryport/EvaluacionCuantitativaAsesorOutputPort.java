@@ -21,4 +21,8 @@ public interface EvaluacionCuantitativaAsesorOutputPort {
     Optional<ContextoEvaluacionCuantitativaAsesorEntity> obtenerContexto(UUID evaluacionCuantitativaAsesor);
 
     Optional<ContextoEvaluacionCuantitativaAsesorEntity> obtenerContextoPorObservacion(UUID observacion);
+
+    Optional<UUID> obtenerItem(UUID evaluacionCuantitativaAsesor);
+
+    void actualizarPuntaje(UUID id, Integer puntaje);
 }

@@ -24,4 +24,21 @@ class ItemCuantitativoAsesorMapperTest {
         assertThat(entity.categoriaId()).isEqualTo(categoria);
         assertThat(entity.valor()).isEqualTo(80);
     }
+
+    @Test
+    void debeMapearEntityADomain_cuandoEntityEsValida() {
+        // Arrange
+        var entity = new com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.secondaryport.entity
+                .ItemCuantitativoAsesorEntity(
+                UtilUUID.generarNuevoUUID(), "Avance", "Porcentaje", UtilUUID.generarNuevoUUID(), 80);
+
+        // Act
+        var domain = ItemCuantitativoAsesorMapper.toDomain(entity);
+
+        // Assert
+        assertThat(domain.getId()).isEqualTo(entity.id());
+        assertThat(domain.getNombre()).isEqualTo("Avance");
+        assertThat(domain.getValor()).isEqualTo(80);
+        assertThat(domain.esVacio()).isFalse();
+    }
 }
