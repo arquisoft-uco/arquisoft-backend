@@ -1,18 +1,18 @@
-package com.arquisoft.evaluaciones.application.evaluacion.query.criteria;
+package com.arquisoft.evaluaciones.application.evaluacionasesor.query.criteria;
 
 import com.arquisoft.shared.query.QueryCriteria;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-public final class EvaluacionAsesorCriteria extends QueryCriteria {
+public final class EvaluacionesAsignadasAsesorCriteria extends QueryCriteria {
 
     public enum Campo {
         ESTADO("estado", true, true),
         PROYECTO("proyecto", true, true),
-        ENTREGABLE_ID("entregableId", true, false),
-        ASESOR_ID("asesorId", true, false);
+        VERSION("version", false, true);
 
         private final String clave;
         private final boolean filtrable;
@@ -47,8 +47,15 @@ public final class EvaluacionAsesorCriteria extends QueryCriteria {
         }
     }
 
-    private EvaluacionAsesorCriteria(Builder b) {
+    private final UUID asesor;
+
+    private EvaluacionesAsignadasAsesorCriteria(Builder b) {
         super(b);
+        this.asesor = b.asesor;
+    }
+
+    public UUID getAsesor() {
+        return asesor;
     }
 
     public static Builder builder() {
@@ -56,6 +63,13 @@ public final class EvaluacionAsesorCriteria extends QueryCriteria {
     }
 
     public static final class Builder extends QueryCriteria.BaseBuilder<Builder> {
+
+        private UUID asesor;
+
+        public Builder asesor(UUID asesor) {
+            this.asesor = asesor;
+            return this;
+        }
 
         @Override
         protected Set<String> camposFiltrables() {
@@ -67,8 +81,8 @@ public final class EvaluacionAsesorCriteria extends QueryCriteria {
             return Campo.CLAVES_ORDENABLES;
         }
 
-        public EvaluacionAsesorCriteria build() {
-            return new EvaluacionAsesorCriteria(this);
+        public EvaluacionesAsignadasAsesorCriteria build() {
+            return new EvaluacionesAsignadasAsesorCriteria(this);
         }
     }
 }

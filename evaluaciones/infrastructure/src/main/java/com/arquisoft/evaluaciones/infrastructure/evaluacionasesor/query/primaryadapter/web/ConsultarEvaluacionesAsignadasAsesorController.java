@@ -1,16 +1,16 @@
-package com.arquisoft.evaluaciones.infrastructure.evaluacion.query.primaryadapter.web;
+package com.arquisoft.evaluaciones.infrastructure.evaluacionasesor.query.primaryadapter.web;
 
-import com.arquisoft.evaluaciones.application.evaluacion.query.primaryport.interactor.ConsultarEvaluacionesAsesorInteractor;
-import com.arquisoft.evaluaciones.infrastructure.evaluacion.query.primaryadapter.web.dto.EvaluacionResponseDTO;
-import com.arquisoft.evaluaciones.infrastructure.evaluacion.query.primaryadapter.web.mapper.ConsultarEvaluacionesAsesorRequestMapper;
-import com.arquisoft.evaluaciones.infrastructure.evaluacion.query.primaryadapter.web.mapper.EvaluacionResponseMapper;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.query.primaryport.interactor.ConsultarEvaluacionesAsignadasAsesorInteractor;
+import com.arquisoft.evaluaciones.infrastructure.evaluacionasesor.query.primaryadapter.web.dto.EvaluacionAsignadaAsesorResponseDTO;
+import com.arquisoft.evaluaciones.infrastructure.evaluacionasesor.query.primaryadapter.web.mapper.ConsultarEvaluacionesAsignadasAsesorRequestMapper;
+import com.arquisoft.evaluaciones.infrastructure.evaluacionasesor.query.primaryadapter.web.mapper.EvaluacionAsignadaAsesorResponseMapper;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
 import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
-import com.arquisoft.shared.web.identidad.IdentidadActual;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
+import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,30 +27,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("${rutas.evaluaciones.evaluacion.base:/evaluaciones}")
+@RequestMapping("${rutas.evaluaciones.evaluaciones.base:/evaluaciones/evaluaciones-asesor}")
 @RequiredArgsConstructor
 @Tag(
-        name = EvaluacionesApiMessages.Evaluacion.TAG_NAME,
-        description = EvaluacionesApiMessages.Evaluacion.TAG_DESCRIPTION)
-public class ConsultarEvaluacionesAsesorController {
+        name = EvaluacionesApiMessages.EvaluacionAsesor.TAG_NAME,
+        description = EvaluacionesApiMessages.EvaluacionAsesor.TAG_DESCRIPTION)
+public class ConsultarEvaluacionesAsignadasAsesorController {
 
-    private final ConsultarEvaluacionesAsesorInteractor consultarEvaluacionesAsesorInteractor;
+    private final ConsultarEvaluacionesAsignadasAsesorInteractor interactor;
 
-    @PostMapping("${rutas.evaluaciones.evaluacion.asesor:/asesor}")
+    @PostMapping("${rutas.evaluaciones.evaluaciones.asesor:/asesor}")
     @Operation(
-            summary = EvaluacionesApiMessages.Evaluacion.CONSULTAR_ASESOR_SUMMARY,
-            description = EvaluacionesApiMessages.Evaluacion.CONSULTAR_ASESOR_DESCRIPTION,
+            summary = EvaluacionesApiMessages.EvaluacionAsesor.CONSULTAR_ASIGNADAS_SUMMARY,
+            description = EvaluacionesApiMessages.EvaluacionAsesor.CONSULTAR_ASIGNADAS_DESCRIPTION,
             security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH))
     @ApiResponses({
             @ApiResponse(
                     responseCode = ApiCodes.OK,
-                    description = EvaluacionesApiMessages.Evaluacion.CONSULTAR_RESP_200,
+                    description = EvaluacionesApiMessages.EvaluacionAsesor.CONSULTAR_ASIGNADAS_RESP_200,
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = PageResponseDTO.class))),
             @ApiResponse(
                     responseCode = ApiCodes.BAD_REQUEST,
-                    description = EvaluacionesApiMessages.Evaluacion.CONSULTAR_RESP_400,
+                    description = EvaluacionesApiMessages.EvaluacionAsesor.CONSULTAR_ASIGNADAS_RESP_400,
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
             @ApiResponse(
                     responseCode = ApiCodes.UNAUTHORIZED,
@@ -59,15 +59,14 @@ public class ConsultarEvaluacionesAsesorController {
                     responseCode = ApiCodes.FORBIDDEN,
                     description = EvaluacionesApiMessages.Comun.RESP_403)
     })
-    public ResponseEntity<PageResponseDTO<EvaluacionResponseDTO>> consultarEvaluacionesAsesor(
-            @RequestBody(required = false) QueryCriteriaRequestDTO request,
-            IdentidadActual identidad) {
+    public ResponseEntity<PageResponseDTO<EvaluacionAsignadaAsesorResponseDTO>> consultarEvaluacionesAsignadasAsesor(
+            IdentidadActual identidad,
+            @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
-        var asesor = identidad.id();
-        var resultado = consultarEvaluacionesAsesorInteractor.ejecutar(
-                ConsultarEvaluacionesAsesorRequestMapper.toQuery(request, asesor));
+        var query = ConsultarEvaluacionesAsignadasAsesorRequestMapper.toQuery(request, identidad.id());
+        var resultado = interactor.ejecutar(query);
 
         return ResponseEntity.ok(PageResponseDTO.from(
-                resultado.map(EvaluacionResponseMapper::toResponse)));
+                resultado.map(EvaluacionAsignadaAsesorResponseMapper::toResponse)));
     }
 }

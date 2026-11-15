@@ -435,8 +435,8 @@
               "solicitudes:tipo-solicitud-recibida:view",
               "proyectos:proyecto-grado-asesor-detalle:view",
               "artefactos:estado-revision-asesor:view",
-              "evaluaciones:evaluacion-asesor:view",
               "evaluaciones:evaluacion-asesor-detalle:view",
+              "evaluaciones:evaluacion-asesor-asesor:view",
               "evaluaciones:evaluacion-cualitativa-asesor:create",
               "evaluaciones:evaluacion-cualitativa-asesor:delete",
               "evaluaciones:evaluacion-cualitativa-asesor:update",
@@ -2437,8 +2437,8 @@
           "attributes": {}
         },
         {
-          "id": "7c2e5a1d-3b9f-4d6a-8e41-5f0a9c3d2b17",
-          "name": "evaluaciones:evaluacion-asesor:view",
+          "id": "a9a9a449-36e2-4b65-9cc1-738241f54845",
+          "name": "evaluaciones:evaluacion-asesor-detalle:view",
           "description": "",
           "composite": false,
           "clientRole": true,
@@ -2446,8 +2446,8 @@
           "attributes": {}
         },
         {
-          "id": "a9a9a449-36e2-4b65-9cc1-738241f54845",
-          "name": "evaluaciones:evaluacion-asesor-detalle:view",
+          "id": "3c9dfddb-83b0-4b2e-b840-3b5fd4819ef9",
+          "name": "evaluaciones:evaluacion-asesor-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,

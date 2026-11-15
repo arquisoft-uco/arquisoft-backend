@@ -1,10 +1,10 @@
-package com.arquisoft.evaluaciones.infrastructure.evaluacion.query.primaryadapter.web;
+package com.arquisoft.evaluaciones.infrastructure.evaluacionasesor.query.primaryadapter.web;
 
-import com.arquisoft.evaluaciones.application.evaluacion.query.primaryport.interactor.ConsultarEvaluacionesAsesorInteractor;
-import com.arquisoft.evaluaciones.application.evaluacion.query.primaryport.model.ConsultarEvaluacionesAsesorQuery;
-import com.arquisoft.evaluaciones.application.evaluacion.query.readmodel.EvaluacionReadModel;
-import com.arquisoft.shared.logger.AppLoggerConfig;
-import com.arquisoft.shared.query.exception.FiltroInvalidoException;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.query.primaryport.interactor.ConsultarEvaluacionesAsignadasAsesorInteractor;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.query.primaryport.model.ConsultarEvaluacionesAsignadasAsesorQuery;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.query.readmodel.EvaluacionAsignadaAsesorReadModel;
+import com.arquisoft.shared.message.constant.AppCodes;
+import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
@@ -36,16 +36,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ConsultarEvaluacionesAsesorController.class)
-@Import({
-        IdentidadActualTestConfig.class,
-        AppLoggerConfig.class,
+@WebMvcTest(ConsultarEvaluacionesAsignadasAsesorController.class)
+@Import({IdentidadActualTestConfig.class,
+        com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
-        ConsultarEvaluacionesAsesorControllerTest.TestSecurityConfig.class
+        ConsultarEvaluacionesAsignadasAsesorControllerTest.TestSecurityConfig.class
 })
-class ConsultarEvaluacionesAsesorControllerTest {
+class ConsultarEvaluacionesAsignadasAsesorControllerTest {
 
-    private static final String RUTA = "/evaluaciones/asesor";
+    private static final String RUTA = "/evaluaciones/evaluaciones-asesor/asesor";
 
     @TestConfiguration
     @EnableWebSecurity
@@ -69,58 +68,66 @@ class ConsultarEvaluacionesAsesorControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ConsultarEvaluacionesAsesorInteractor interactor;
+    private ConsultarEvaluacionesAsignadasAsesorInteractor interactor;
 
     @MockitoBean
     private GestorTraza gestorTraza;
 
-    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDelAsesor(String sub) {
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDelAsesor(String subject) {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(token -> token.subject(sub));
+                .jwt(token -> token.subject(subject));
     }
 
     @Test
-    void debeRetornar200ConElContratoExacto_yPasarElSubDelJwtYLosDefaultsAlInteractor() throws Exception {
+    void debeResponder200ConPagina_yPasarAlInteractorElAsesorDelJwt_cuandoNoHayBody() throws Exception {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
-        var idEvaluacion = UtilUUID.generarNuevoUUID();
-        var idEntregable = UtilUUID.generarNuevoUUID();
-        when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(
-                List.of(new EvaluacionReadModel(idEvaluacion,
-                        new EvaluacionReadModel.Entregable(idEntregable, "Robot seguidor", 2),
-                        new EvaluacionReadModel.Estado("PENDIENTE", "Pendiente"))),
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+        when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(List.of(new EvaluacionAsignadaAsesorReadModel(
+                evaluacionAsesor,
+                new EvaluacionAsignadaAsesorReadModel.Evaluacion(evaluacion,
+                        new EvaluacionAsignadaAsesorReadModel.Estado("PENDIENTE", "Pendiente")),
+                new EvaluacionAsignadaAsesorReadModel.Entregable(entregable, "Robot seguidor", 2),
+                true, false)),
                 0, 10, 1));
 
         // Act & Assert
         mockMvc.perform(post(RUTA).with(jwtDelAsesor(asesor.toString())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].id").value(idEvaluacion.toString()))
-                .andExpect(jsonPath("$.content[0].entregable.id").value(idEntregable.toString()))
+                .andExpect(jsonPath("$.content[0].id").value(evaluacionAsesor.toString()))
+                .andExpect(jsonPath("$.content[0].evaluacion.id").value(evaluacion.toString()))
+                .andExpect(jsonPath("$.content[0].evaluacion.estado.id").value("PENDIENTE"))
+                .andExpect(jsonPath("$.content[0].evaluacion.estado.nombre").value("Pendiente"))
+                .andExpect(jsonPath("$.content[0].entregable.id").value(entregable.toString()))
                 .andExpect(jsonPath("$.content[0].entregable.proyecto").value("Robot seguidor"))
                 .andExpect(jsonPath("$.content[0].entregable.version").value(2))
-                .andExpect(jsonPath("$.content[0].estado.id").value("PENDIENTE"))
-                .andExpect(jsonPath("$.content[0].estado.nombre").value("Pendiente"))
+                .andExpect(jsonPath("$.content[0].tieneEvaluacionesCualitativas").value(true))
+                .andExpect(jsonPath("$.content[0].tieneEvaluacionesCuantitativas").value(false))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(10))
                 .andExpect(jsonPath("$.totalElements").value(1));
 
-        var captor = ArgumentCaptor.forClass(ConsultarEvaluacionesAsesorQuery.class);
+        var captor = ArgumentCaptor.forClass(ConsultarEvaluacionesAsignadasAsesorQuery.class);
         verify(interactor).ejecutar(captor.capture());
-        var query = captor.getValue();
-        assertThat(query.asesor()).isEqualTo(asesor);
-        assertThat(query.criterio().pagina()).isZero();
-        assertThat(query.criterio().tamanio()).isEqualTo(10);
+        assertThat(captor.getValue().asesor()).isEqualTo(asesor);
+        assertThat(captor.getValue().criterio().pagina()).isZero();
+        assertThat(captor.getValue().criterio().tamanio()).isEqualTo(10);
     }
 
     @Test
-    void debePasarPaginacionOrdenYFiltroDelBodyAlInteractor() throws Exception {
+    void debeResponder200YPasarPaginacionOrdenYFiltro_cuandoLlegaBody() throws Exception {
         // Arrange
         when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(List.of(), 1, 5, 0));
         var body = """
                 {
                   "pagina": 1,
                   "tamanio": 5,
-                  "ordenamiento": ["estado:desc"],
-                  "filtros": { "tipo": "PREDICADO", "campo": "proyecto", "operador": "CONTIENE", "valor": "robot" }
+                  "ordenamiento": ["proyecto:desc"],
+                  "filtros": { "tipo": "PREDICADO", "campo": "estado", "operador": "ES",
+                               "valor": "PENDIENTE" }
                 }
                 """;
 
@@ -129,9 +136,9 @@ class ConsultarEvaluacionesAsesorControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(0));
+                .andExpect(jsonPath("$.content.length()").value(0));
 
-        var captor = ArgumentCaptor.forClass(ConsultarEvaluacionesAsesorQuery.class);
+        var captor = ArgumentCaptor.forClass(ConsultarEvaluacionesAsignadasAsesorQuery.class);
         verify(interactor).ejecutar(captor.capture());
         var criterio = captor.getValue().criterio();
         assertThat(criterio.pagina()).isEqualTo(1);
@@ -141,9 +148,10 @@ class ConsultarEvaluacionesAsesorControllerTest {
     }
 
     @Test
-    void debeRetornar400_cuandoElInteractorRechazaElFiltro() throws Exception {
+    void debeResponder400_cuandoElInteractorRechazaElFiltroOElOrden() throws Exception {
         // Arrange
-        when(interactor.ejecutar(any())).thenThrow(new FiltroInvalidoException("Campo no permitido"));
+        when(interactor.ejecutar(any())).thenThrow(
+                new FiltroException("Campo de orden no permitido", AppCodes.Consulta.CAMPO_ORDEN_NO_PERMITIDO));
 
         // Act & Assert
         mockMvc.perform(post(RUTA).with(jwtDelAsesor(UtilUUID.generarNuevoUUID().toString())))
@@ -151,19 +159,17 @@ class ConsultarEvaluacionesAsesorControllerTest {
     }
 
     @Test
-    void debeRetornar401SinInvocarAlInteractor_cuandoElSubNoEsUnUuid() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post(RUTA).with(jwtDelAsesor("no-es-un-uuid")))
-                .andExpect(status().isUnauthorized());
-
-        verify(interactor, never()).ejecutar(any());
-    }
-
-    @Test
-    void debeRetornar401_cuandoNoHayJwt() throws Exception {
+    void debeResponder401_sinToken() throws Exception {
         // Act & Assert
         mockMvc.perform(post(RUTA))
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void debeResponder401_cuandoElSubjectNoEsUUID() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post(RUTA).with(jwtDelAsesor("no-es-uuid")))
+                .andExpect(status().isUnauthorized());
+        verify(interactor, never()).ejecutar(any());
+    }
 }

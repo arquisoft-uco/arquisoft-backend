@@ -393,11 +393,6 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de evaluaciones";
         public static final String CONSULTAR_RESP_400 =
                 "El filtro, el orden o la paginación solicitados no son aceptados";
-        public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar evaluaciones (asesor)";
-        public static final String CONSULTAR_ASESOR_DESCRIPTION =
-                "Consulta de forma paginada las evaluaciones asociadas al asesor autenticado con su entregable y "
-                        + "su estado, con filtro por estado, proyecto o identificador del entregable y orden por "
-                        + "proyecto (por defecto, ascendente) o estado";
         public static final String CONSULTAR_JURADO_SUMMARY = "Filtrar evaluaciones (jurado)";
         public static final String CONSULTAR_JURADO_DESCRIPTION =
                 "Consulta de forma paginada las evaluaciones asociadas al jurado autenticado con su entregable y "
@@ -560,6 +555,15 @@ public final class EvaluacionesApiMessages {
                 "El identificador de la evaluación del asesor no es válido";
         public static final String CONSULTAR_REALIZADA_RESP_422 =
                 "La evaluación del asesor no existe o pertenece a otro asesor";
+        public static final String CONSULTAR_ASIGNADAS_SUMMARY = "Consultar evaluaciones asignadas al asesor";
+        public static final String CONSULTAR_ASIGNADAS_DESCRIPTION =
+                "Consulta de forma paginada las evaluaciones del asesor autenticado, con el identificador de su "
+                        + "evaluación, el estado, el entregable y si ya registró evaluaciones cualitativas y "
+                        + "cuantitativas, con filtro por estado y proyecto y orden por estado, proyecto y versión "
+                        + "(por defecto, ascendente)";
+        public static final String CONSULTAR_ASIGNADAS_RESP_200 = "Página de evaluaciones asignadas al asesor";
+        public static final String CONSULTAR_ASIGNADAS_RESP_400 =
+                "El filtro u orden solicitado no es aceptado o la identidad del asesor no es válida";
     }
 
     public static final class ObservacionItemAsesor {
