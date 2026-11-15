@@ -39,6 +39,18 @@ public final class BibliotecaApiMessages {
                         + "el resto de roles solo las documentaciones publicadas";
         public static final String CONSULTAR_RESP_200 = "Página de documentaciones";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
+        public static final String PARAM_DOCUMENTACION = "Identificador de la documentación";
+        public static final String DESCARGAR_SUMMARY = "Descargar el contenido de una documentación";
+        public static final String DESCARGAR_DESCRIPTION =
+                "Devuelve un enlace temporal firmado para descargar el archivo de la documentación. "
+                        + "El bibliotecario puede descargarla en cualquier estado; el asesor, el coordinador "
+                        + "y el estudiante solo si está publicada";
+        public static final String DESCARGAR_RESP_200 = "Enlace temporal de descarga y su fecha de expiración";
+        public static final String DESCARGAR_RESP_400 = "Identificador de documentación inválido";
+        public static final String DESCARGAR_RESP_422 =
+                "La documentación no está disponible para descargar o su archivo aún no está disponible";
+        public static final String DESCARGAR_RESP_503 =
+                "El servicio de almacenamiento no responde o el archivo no existe en él";
     }
 
     public static final class AutorDocumentacion {

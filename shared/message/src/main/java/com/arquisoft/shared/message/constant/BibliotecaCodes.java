@@ -30,6 +30,10 @@ public final class BibliotecaCodes {
         private Documentacion() {}
 
         public static final String ROLES_REQUERIDOS = "DOCUMENTACION_ROLES_REQUERIDOS";
+        public static final String DOCUMENTACION_ID_REQUERIDO = "DOCUMENTACION_ID_REQUERIDO";
+        public static final String NO_DESCARGABLE = "DOCUMENTACION_NO_DESCARGABLE";
+        public static final String ARCHIVO_NO_DISPONIBLE = "DOCUMENTACION_ARCHIVO_NO_DISPONIBLE";
+        public static final String ARCHIVO_AUSENTE = "DOCUMENTACION_ARCHIVO_AUSENTE";
     }
 
     public static final class Autor {
