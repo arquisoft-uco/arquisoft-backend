@@ -28,7 +28,15 @@ public enum ObservacionItemAsesorKey implements ClaveMensaje {
     ERROR_MODIFICACION_EVALUACION_FINALIZADA(
             "evaluaciones.dominio.observacionitemasesor.error.modificacion-evaluacion-finalizada", 0),
     ERROR_MODIFICACION_EVALUACION_FINALIZADA_DETALLE(
-            "evaluaciones.dominio.observacionitemasesor.error.modificacion-evaluacion-finalizada-detalle", 1);
+            "evaluaciones.dominio.observacionitemasesor.error.modificacion-evaluacion-finalizada-detalle", 1),
+    LOG_REMOVIENDO("evaluaciones.aplicacion.observacionitemasesor.log.removiendo", 1),
+    LOG_VERIFICACION_REMOVER("evaluaciones.aplicacion.observacionitemasesor.log.verificacion-remover", 2),
+    LOG_REMOVIDA("evaluaciones.aplicacion.observacionitemasesor.log.removida", 1),
+    LOG_ELIMINADA("evaluaciones.infraestructura.observacionitemasesor.log.eliminada", 1),
+    ERROR_REMOCION_EVALUACION_FINALIZADA(
+            "evaluaciones.dominio.observacionitemasesor.error.remocion-evaluacion-finalizada", 0),
+    ERROR_REMOCION_EVALUACION_FINALIZADA_DETALLE(
+            "evaluaciones.dominio.observacionitemasesor.error.remocion-evaluacion-finalizada-detalle", 1);
 
     private final String clave;
     private final int parametros;

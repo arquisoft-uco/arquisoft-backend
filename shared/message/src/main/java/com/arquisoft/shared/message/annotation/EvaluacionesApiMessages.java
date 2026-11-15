@@ -580,7 +580,9 @@ public final class EvaluacionesApiMessages {
         private ObservacionItemAsesor() {}
 
         public static final String TAG_NAME = "Observaciones de ítems cuantitativos del asesor";
-        public static final String TAG_DESCRIPTION = "Registro, modificación y consulta de observaciones sobre evaluaciones cuantitativas del asesor";
+        public static final String TAG_DESCRIPTION =
+                "Registro, modificación, remoción y consulta de observaciones sobre evaluaciones "
+                        + "cuantitativas del asesor";
         public static final String REGISTRAR_SUMMARY = "Registrar observación";
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra una nueva observación textual sobre una evaluación cuantitativa del asesor";
@@ -598,6 +600,14 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_422 =
                 "La observación no existe, pertenece a otro asesor, su evaluación ya está finalizada, "
                         + "o ya existe otra observación con esa descripción";
+        public static final String REMOVER_SUMMARY = "Remover observación";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve una observación que el asesor registró sobre una evaluación cuantitativa, "
+                        + "mientras la evaluación no esté finalizada";
+        public static final String REMOVER_RESP_204 = "Observación removida";
+        public static final String REMOVER_RESP_400 = "Datos de entrada inválidos";
+        public static final String REMOVER_RESP_422 =
+                "La observación no existe, pertenece a otro asesor o su evaluación ya está finalizada";
         public static final String CONSULTAR_SUMMARY = "Consultar observaciones";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta de forma paginada las observaciones registradas por el asesor asignado sobre una "

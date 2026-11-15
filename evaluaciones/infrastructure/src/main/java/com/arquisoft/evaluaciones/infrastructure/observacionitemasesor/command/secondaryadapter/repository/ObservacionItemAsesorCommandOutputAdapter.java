@@ -39,4 +39,10 @@ public class ObservacionItemAsesorCommandOutputAdapter implements ObservacionIte
         repository.actualizarDescripcion(id, descripcion);
         logger.debug(ObservacionItemAsesorKey.LOG_GUARDADA, id);
     }
+
+    @Override
+    public void eliminar(UUID id) {
+        repository.eliminarPorId(id);
+        logger.debug(ObservacionItemAsesorKey.LOG_ELIMINADA, id);
+    }
 }

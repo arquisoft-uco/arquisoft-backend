@@ -13,4 +13,6 @@ public interface ObservacionItemAsesorOutputPort {
     boolean existeOtraConDescripcion(UUID observacion, String descripcion);
 
     void actualizarDescripcion(UUID id, String descripcion);
+
+    void eliminar(UUID id);
 }
