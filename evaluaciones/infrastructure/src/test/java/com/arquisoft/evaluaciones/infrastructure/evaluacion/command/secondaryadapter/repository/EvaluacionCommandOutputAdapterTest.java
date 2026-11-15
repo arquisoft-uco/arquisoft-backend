@@ -1,10 +1,14 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.repository;
 
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.EvaluacionEntity;
+import com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.entity.EvaluacionJpaEntity;
 import com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.projection.ContextoAsignacionEvaluacionProjection;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionKey;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,6 +32,37 @@ class EvaluacionCommandOutputAdapterTest {
 
     @InjectMocks
     private EvaluacionCommandOutputAdapter adapter;
+
+    @Test
+    void debeGuardarYLoguear_cuandoRegistra() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+
+        // Act
+        adapter.registrar(new EvaluacionEntity(id, entregable, "PENDIENTE"));
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(EvaluacionJpaEntity.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo(id);
+        assertThat(captor.getValue().getEntregable()).isEqualTo(entregable);
+        assertThat(captor.getValue().getEstadoEvaluacion()).isEqualTo("PENDIENTE");
+        verify(logger).debug(EvaluacionKey.LOG_GUARDADA, id);
+    }
+
+    @Test
+    void debeDelegarExistePorEntregable() {
+        // Arrange
+        var entregable = UtilUUID.generarNuevoUUID();
+        when(repository.existsByEntregable(entregable)).thenReturn(true);
+
+        // Act
+        var existe = adapter.existePorEntregable(entregable);
+
+        // Assert
+        assertThat(existe).isTrue();
+    }
 
     @Test
     void debeDelegarActualizacionYLoguear_cuandoSeActualizaElEstado() {

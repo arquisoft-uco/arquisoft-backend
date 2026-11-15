@@ -165,6 +165,15 @@ public final class EvaluacionesFields {
         public static final String ASESOR = "asesor";
         public static final String JURADO = "jurado";
         public static final String ESTUDIANTE = "estudiante";
+        public static final String ENTREGABLE = "entregable";
+    }
+
+    public static final class GeneracionEvaluacion {
+
+        private GeneracionEvaluacion() {}
+
+        public static final String ENTREGABLE = "entregable";
+        public static final String EVALUACION = "evaluacion";
     }
 
     public static final class EvaluacionJurado {
