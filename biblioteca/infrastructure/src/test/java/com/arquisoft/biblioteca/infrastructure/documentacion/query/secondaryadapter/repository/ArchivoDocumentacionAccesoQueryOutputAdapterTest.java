@@ -48,8 +48,9 @@ class ArchivoDocumentacionAccesoQueryOutputAdapterTest {
                 .setParameter(5, clave).setParameter(6, nombre)
                 .executeUpdate();
         var id = UtilUUID.generarNuevoUUID();
-        em.createNativeQuery("INSERT INTO documentacion (id, url, entregable_proyecto_grado_id, "
-                        + "bibliotecario_id, estado_documentacion_id) VALUES (?1, ?2, ?3, ?4, ?5)")
+        em.createNativeQuery("INSERT INTO documentacion (id, url, fecha_publicacion, "
+                        + "entregable_proyecto_grado_id, bibliotecario_id, estado_documentacion_id) "
+                        + "VALUES (?1, ?2, CURRENT_TIMESTAMP, ?3, ?4, ?5)")
                 .setParameter(1, id).setParameter(2, "https://biblioteca.test/" + id)
                 .setParameter(3, entregable).setParameter(4, UtilUUID.generarNuevoUUID())
                 .setParameter(5, estado)

@@ -30,7 +30,7 @@ public final class BibliotecaApiMessages {
         private Documentacion() {}
 
         public static final String TAG_NAME = "Documentaciones";
-        public static final String TAG_DESCRIPTION = "Consulta de las documentaciones de la biblioteca";
+        public static final String TAG_DESCRIPTION = "Consulta y cambio de estado de las documentaciones de la biblioteca";
         public static final String CONSULTAR_SUMMARY = "Consultar las documentaciones";
         public static final String CONSULTAR_DESCRIPTION =
                 "Devuelve de forma paginada las documentaciones de la biblioteca. Admite filtros por "
@@ -51,6 +51,16 @@ public final class BibliotecaApiMessages {
                 "La documentación no está disponible para descargar o su archivo aún no está disponible";
         public static final String DESCARGAR_RESP_503 =
                 "El servicio de almacenamiento no responde o el archivo no existe en él";
+        public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar el estado de una documentación";
+        public static final String CAMBIAR_ESTADO_DESCRIPTION =
+                "Cambia el estado de una documentación a PUBLICADO o NO_PUBLICADO para decidir qué trabajos "
+                        + "ven el asesor, el coordinador y el estudiante. Nunca vuelve a PENDIENTE y no admite "
+                        + "el estado en que ya está. Solo cambia el estado: no se pide ni se guarda un motivo";
+        public static final String CAMBIAR_ESTADO_RESP_204 = "Estado de la documentación cambiado";
+        public static final String CAMBIAR_ESTADO_RESP_400 =
+                "Identificador de documentación inválido o estado ausente";
+        public static final String CAMBIAR_ESTADO_RESP_422 =
+                "La documentación no existe, el estado no es válido o la transición no está permitida";
     }
 
     public static final class AutorDocumentacion {

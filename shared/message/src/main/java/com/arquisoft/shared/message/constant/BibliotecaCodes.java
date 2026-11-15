@@ -34,6 +34,11 @@ public final class BibliotecaCodes {
         public static final String NO_DESCARGABLE = "DOCUMENTACION_NO_DESCARGABLE";
         public static final String ARCHIVO_NO_DISPONIBLE = "DOCUMENTACION_ARCHIVO_NO_DISPONIBLE";
         public static final String ARCHIVO_AUSENTE = "DOCUMENTACION_ARCHIVO_AUSENTE";
+        public static final String ESTADO_REQUERIDO = "DOCUMENTACION_ESTADO_REQUERIDO";
+        public static final String ESTADO_INVALIDO = "DOCUMENTACION_ESTADO_INVALIDO";
+        public static final String NO_ENCONTRADA = "DOCUMENTACION_NO_ENCONTRADA";
+        public static final String ESTADO_DESTINO_NO_PERMITIDO = "DOCUMENTACION_ESTADO_DESTINO_NO_PERMITIDO";
+        public static final String ESTADO_SIN_CAMBIO = "DOCUMENTACION_ESTADO_SIN_CAMBIO";
     }
 
     public static final class Autor {

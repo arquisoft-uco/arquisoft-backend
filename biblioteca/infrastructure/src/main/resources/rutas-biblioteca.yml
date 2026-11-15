@@ -12,3 +12,4 @@ rutas:
       consultar: /consultar
       autores: /{documentacionId}/autores
       descarga: /{documentacionId}/descarga
+      estado: /{documentacionId}/estado
