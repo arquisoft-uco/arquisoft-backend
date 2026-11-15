@@ -437,6 +437,7 @@
               "artefactos:estado-revision-asesor:view",
               "evaluaciones:evaluacion-asesor:view",
               "evaluaciones:evaluacion-asesor-detalle:view",
+              "evaluaciones:evaluacion-asesor-asesor:view",
               "evaluaciones:evaluacion-cualitativa-asesor:create",
               "evaluaciones:evaluacion-cualitativa-asesor:delete",
               "evaluaciones:evaluacion-cualitativa-asesor:update",
@@ -2448,6 +2449,15 @@
         {
           "id": "a9a9a449-36e2-4b65-9cc1-738241f54845",
           "name": "evaluaciones:evaluacion-asesor-detalle:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3c9dfddb-83b0-4b2e-b840-3b5fd4819ef9",
+          "name": "evaluaciones:evaluacion-asesor-asesor:view",
           "description": "",
           "composite": false,
           "clientRole": true,
