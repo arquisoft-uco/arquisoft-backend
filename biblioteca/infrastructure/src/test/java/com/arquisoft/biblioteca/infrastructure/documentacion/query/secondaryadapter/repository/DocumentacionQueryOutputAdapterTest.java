@@ -44,7 +44,8 @@ class DocumentacionQueryOutputAdapterTest {
                 + "ocurrido_en TIMESTAMP WITH TIME ZONE, eliminado_en TIMESTAMP WITH TIME ZONE)").executeUpdate();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS entregable_proyecto_grado (id UUID PRIMARY KEY, "
                 + "proyecto_grado_id UUID, version_entregable INTEGER, asesor_id UUID, "
-                + "estado_entregable_nombre VARCHAR(60))").executeUpdate();
+                + "estado_entregable_nombre VARCHAR(60), bucket VARCHAR(63), clave_objeto VARCHAR(2000), "
+                + "nombre_archivo VARCHAR(255))").executeUpdate();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS documentacion (id UUID PRIMARY KEY, url VARCHAR(2000), "
                 + "fecha_publicacion TIMESTAMP WITH TIME ZONE, entregable_proyecto_grado_id UUID, "
                 + "bibliotecario_id UUID, estado_documentacion_id VARCHAR(60))").executeUpdate();
