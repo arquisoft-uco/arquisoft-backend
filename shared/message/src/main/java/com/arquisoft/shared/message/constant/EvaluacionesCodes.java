@@ -216,6 +216,16 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_ASESOR_OMISION_EVALUACION_ASESOR_FINALIZADA";
         public static final String EVALUACIONES_NO_REGISTRADAS =
                 "EVALUACION_CUANTITATIVA_ASESOR_EVALUACIONES_NO_REGISTRADAS";
+        public static final String ID_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_ASESOR_ID_REQUERIDO";
+        public static final String PUNTAJE_NO_ENTERO =
+                "EVALUACION_CUANTITATIVA_ASESOR_PUNTAJE_NO_ENTERO";
+        public static final String NO_ENCONTRADA =
+                "EVALUACION_CUANTITATIVA_ASESOR_NO_ENCONTRADA";
+        public static final String CAMBIO_PUNTAJE_EVALUACION_FINALIZADA =
+                "EVALUACION_CUANTITATIVA_ASESOR_CAMBIO_PUNTAJE_EVALUACION_FINALIZADA";
+        public static final String PUNTAJE_EXCEDE_VALOR_ITEM =
+                "EVALUACION_CUANTITATIVA_ASESOR_PUNTAJE_EXCEDE_VALOR_ITEM";
     }
 
     public static final class OmisionEvaluacionesCuantitativasAsesor {

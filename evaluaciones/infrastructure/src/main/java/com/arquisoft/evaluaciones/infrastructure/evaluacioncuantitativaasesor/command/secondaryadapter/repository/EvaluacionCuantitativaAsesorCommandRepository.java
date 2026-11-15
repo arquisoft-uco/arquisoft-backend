@@ -50,4 +50,11 @@ public interface EvaluacionCuantitativaAsesorCommandRepository
             """)
     Optional<ContextoEvaluacionCuantitativaAsesorProjection> buscarContextoPorObservacion(
             @Param("observacion") UUID observacion);
+
+    @Query("select e.item from EvaluacionCuantitativaAsesorJpaEntity e where e.id = :evaluacionCuantitativaAsesor")
+    Optional<UUID> buscarItem(@Param("evaluacionCuantitativaAsesor") UUID evaluacionCuantitativaAsesor);
+
+    @Modifying(clearAutomatically = true)
+    @Query("update EvaluacionCuantitativaAsesorJpaEntity e set e.puntaje = :puntaje where e.id = :id")
+    int actualizarPuntaje(@Param("id") UUID id, @Param("puntaje") Integer puntaje);
 }

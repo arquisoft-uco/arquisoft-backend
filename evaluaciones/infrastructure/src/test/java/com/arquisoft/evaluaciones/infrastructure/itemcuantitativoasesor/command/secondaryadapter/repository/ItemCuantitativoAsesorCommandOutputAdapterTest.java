@@ -162,6 +162,36 @@ class ItemCuantitativoAsesorCommandOutputAdapterTest {
         verify(logger).debug(any(ClaveMensaje.class), eq(aEliminar));
     }
 
+    @Test
+    void debeObtenerElItemPorId_cuandoExiste() {
+        // Arrange
+        var categoria = UtilUUID.generarNuevoUUID();
+        var id = sembrar("Item consultado", categoria, 70);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(id);
+            assertThat(entity.nombre()).isEqualTo("Item consultado");
+            assertThat(entity.valor()).isEqualTo(70);
+        });
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElItemNoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
     private UUID sembrar(String nombre, UUID categoria, int valor) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(ItemCuantitativoAsesorJpaEntity.builder()

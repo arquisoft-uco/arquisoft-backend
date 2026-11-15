@@ -287,7 +287,7 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones cuantitativas del asesor";
         public static final String TAG_DESCRIPTION =
-                "Registro, omisión y consulta de las evaluaciones cuantitativas asociadas a una evaluación de asesor";
+                "Registro, omisión, cambio de puntaje y consulta de las evaluaciones cuantitativas asociadas a una evaluación de asesor";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cuantitativas del asesor";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta las evaluaciones cuantitativas realizadas por el asesor autenticado en una evaluación suya";
@@ -322,6 +322,15 @@ public final class EvaluacionesApiMessages {
         public static final String OMITIR_RESP_422 =
                 "La evaluación no existe, no pertenece al asesor, está finalizada, hay ítems repetidos "
                         + "o algún ítem no tiene evaluación registrada";
+        public static final String CAMBIAR_PUNTAJE_SUMMARY = "Cambiar puntaje de evaluación cuantitativa del asesor";
+        public static final String CAMBIAR_PUNTAJE_DESCRIPTION =
+                "Permite al asesor corregir el puntaje que asignó a una de sus evaluaciones cuantitativas "
+                        + "registradas, mientras su evaluación no esté finalizada";
+        public static final String CAMBIAR_PUNTAJE_RESP_204 = "Puntaje actualizado";
+        public static final String CAMBIAR_PUNTAJE_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_PUNTAJE_RESP_422 =
+                "La evaluación cuantitativa no existe, no pertenece al asesor autenticado, su evaluación "
+                        + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
     }
 
     public static final class EvaluacionCuantitativaJurado {

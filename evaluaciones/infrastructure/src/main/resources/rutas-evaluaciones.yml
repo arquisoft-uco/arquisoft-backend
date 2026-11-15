@@ -59,6 +59,7 @@ rutas:
       observaciones-estudiante: /{id}/observaciones/estudiante
     evaluaciones-cuantitativas-asesor:
       base: /evaluaciones/evaluaciones-cuantitativas-asesor
+      puntaje: /{evaluacionCuantitativaAsesorId}/puntaje
       observaciones: /{evaluacionCuantitativaAsesorId}/observaciones
       observaciones-asesor: /{evaluacionCuantitativaAsesorId}/observaciones/asesor
       observaciones-estudiante: /{evaluacionCuantitativaAsesorId}/observaciones/estudiante
