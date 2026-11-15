@@ -23,4 +23,8 @@ public interface ObservacionItemAsesorCommandRepository
     @Modifying(clearAutomatically = true)
     @Query("update ObservacionItemAsesorJpaEntity o set o.descripcion = :descripcion where o.id = :id")
     void actualizarDescripcion(@Param("id") UUID id, @Param("descripcion") String descripcion);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from ObservacionItemAsesorJpaEntity o where o.id = :id")
+    void eliminarPorId(@Param("id") UUID id);
 }

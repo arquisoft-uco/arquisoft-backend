@@ -134,6 +134,38 @@ class ObservacionItemAsesorCommandOutputAdapterTest {
         assertThat(observacionInexistente).isFalse();
     }
 
+    @Test
+    void debeEliminarSoloLaObservacion_cuandoEliminar() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var id = sembrar(evaluacion, "A eliminar");
+        var otra = sembrar(evaluacion, "Se queda");
+
+        // Act
+        adapter.eliminar(id);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ObservacionItemAsesorJpaEntity.class, id)).isNull();
+        assertThat(entityManager.find(ObservacionItemAsesorJpaEntity.class, otra)).isNotNull();
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void noDebeFallar_cuandoEliminarIdInexistente() {
+        // Arrange
+        var existente = sembrar(UtilUUID.generarNuevoUUID(), "Se queda");
+
+        // Act
+        adapter.eliminar(UtilUUID.generarNuevoUUID());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(ObservacionItemAsesorJpaEntity.class, existente)).isNotNull();
+    }
+
     private UUID sembrar(UUID evaluacion, String descripcion) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(ObservacionItemAsesorJpaEntity.builder()

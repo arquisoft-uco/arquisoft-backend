@@ -478,5 +478,7 @@ public final class EvaluacionesCodes {
         public static final String NO_ENCONTRADA = "OBSERVACION_ITEM_ASESOR_NO_ENCONTRADA";
         public static final String MODIFICACION_EVALUACION_FINALIZADA =
                 "OBSERVACION_ITEM_ASESOR_MODIFICACION_EVALUACION_FINALIZADA";
+        public static final String REMOCION_EVALUACION_FINALIZADA =
+                "OBSERVACION_ITEM_ASESOR_REMOCION_EVALUACION_FINALIZADA";
     }
 }
