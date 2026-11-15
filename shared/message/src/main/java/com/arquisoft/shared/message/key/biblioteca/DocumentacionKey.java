@@ -14,7 +14,19 @@ public enum DocumentacionKey implements ClaveMensaje {
     ERROR_ARCHIVO_NO_DISPONIBLE("biblioteca.dominio.documentacion.error.archivo-no-disponible", 0),
     ERROR_ARCHIVO_NO_DISPONIBLE_DETALLE("biblioteca.dominio.documentacion.error.archivo-no-disponible-detalle", 1),
     ERROR_ARCHIVO_AUSENTE("biblioteca.infraestructura.documentacion.error.archivo-ausente", 0),
-    ERROR_ARCHIVO_AUSENTE_DETALLE("biblioteca.infraestructura.documentacion.error.archivo-ausente-detalle", 3);
+    ERROR_ARCHIVO_AUSENTE_DETALLE("biblioteca.infraestructura.documentacion.error.archivo-ausente-detalle", 3),
+    LOG_CAMBIANDO_ESTADO("biblioteca.aplicacion.documentacion.log.cambiando-estado", 2),
+    LOG_VERIFICACION_CAMBIAR_ESTADO("biblioteca.aplicacion.documentacion.log.verificacion-cambiar-estado", 2),
+    LOG_ESTADO_CAMBIADO("biblioteca.aplicacion.documentacion.log.estado-cambiado", 3),
+    LOG_ESTADO_ACTUALIZADO("biblioteca.infraestructura.documentacion.log.estado-actualizado", 1),
+    ERROR_NO_ENCONTRADA("biblioteca.dominio.documentacion.error.no-encontrada", 0),
+    ERROR_NO_ENCONTRADA_DETALLE("biblioteca.dominio.documentacion.error.no-encontrada-detalle", 1),
+    ERROR_ESTADO_INVALIDO("biblioteca.dominio.documentacion.error.estado-invalido", 0),
+    ERROR_ESTADO_DESTINO_NO_PERMITIDO("biblioteca.dominio.documentacion.error.estado-destino-no-permitido", 1),
+    ERROR_ESTADO_DESTINO_NO_PERMITIDO_DETALLE(
+            "biblioteca.dominio.documentacion.error.estado-destino-no-permitido-detalle", 2),
+    ERROR_ESTADO_SIN_CAMBIO("biblioteca.dominio.documentacion.error.estado-sin-cambio", 1),
+    ERROR_ESTADO_SIN_CAMBIO_DETALLE("biblioteca.dominio.documentacion.error.estado-sin-cambio-detalle", 2);
 
     private final String clave;
     private final int parametros;

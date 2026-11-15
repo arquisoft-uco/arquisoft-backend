@@ -24,6 +24,7 @@ public final class BibliotecaFields {
 
         public static final String ROLES = "roles";
         public static final String DOCUMENTACION = "documentacion";
+        public static final String ESTADO = "estado";
     }
 
     public static final class Autor {

@@ -289,6 +289,7 @@
               "biblioteca:estado-documentacion:view",
               "biblioteca:documentacion:view",
               "biblioteca:documentacion:download",
+              "biblioteca:documentacion-estado:update",
               "biblioteca:autor-documentacion:view"
             ]
           }
@@ -1382,6 +1383,15 @@
         {
           "id": "5b3e7d91-4c2a-4f08-9a6d-1e8c3f7b2d40",
           "name": "entregables:vista-previa-paquete-entregable:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "b6a41d3c-5e07-4f82-9c1a-3d8e2f705b64",
+          "name": "biblioteca:documentacion-estado:update",
           "description": "",
           "composite": false,
           "clientRole": true,
