@@ -1,15 +1,17 @@
 package com.arquisoft.biblioteca.infrastructure.documentacion.query.primaryadapter.web.dto;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record DocumentacionResponseDTO(
         UUID id,
-        String url,
+        String tituloProyecto,
         Instant fechaPublicacion,
         EntregableProyectoGradoResponseDTO entregableProyectoGrado,
         BibliotecarioResponseDTO bibliotecario,
-        EstadoDocumentacionResponseDTO estadoDocumentacion
+        EstadoDocumentacionResponseDTO estadoDocumentacion,
+        List<AutorResponseDTO> autores
 ) {
 
     public record EntregableProyectoGradoResponseDTO(
@@ -20,5 +22,8 @@ public record DocumentacionResponseDTO(
     }
 
     public record EstadoDocumentacionResponseDTO(String id, String nombre) {
+    }
+
+    public record AutorResponseDTO(UUID id, String identificador, String nombre) {
     }
 }

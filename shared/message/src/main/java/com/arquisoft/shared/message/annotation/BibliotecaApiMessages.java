@@ -47,7 +47,9 @@ public final class BibliotecaApiMessages {
                 "Devuelve de forma paginada las documentaciones de la biblioteca. Admite filtros por "
                         + "estadoDocumentacion, entregableProyectoGrado y bibliotecario, y orden por "
                         + "fechaPublicacion (descendente por defecto). El bibliotecario ve todos los estados; "
-                        + "el resto de roles solo las documentaciones publicadas";
+                        + "el resto de roles solo las documentaciones publicadas. Cada documentación incluye "
+                        + "tituloProyecto (nulo si el proyecto no está en la biblioteca) y sus autores (id, "
+                        + "identificador y nombre, incluidos los dados de baja); el archivo se obtiene por la descarga";
         public static final String CONSULTAR_RESP_200 = "Página de documentaciones";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
         public static final String PARAM_DOCUMENTACION = "Identificador de la documentación";
