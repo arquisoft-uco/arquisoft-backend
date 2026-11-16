@@ -25,6 +25,9 @@ public final class BibliotecaFields {
         public static final String ROLES = "roles";
         public static final String DOCUMENTACION = "documentacion";
         public static final String ESTADO = "estado";
+        public static final String ENTREGABLE_PROYECTO_GRADO = "entregableProyectoGrado";
+        public static final String BIBLIOTECARIO = "bibliotecario";
+        public static final String URL = "url";
     }
 
     public static final class Autor {
@@ -43,5 +46,25 @@ public final class BibliotecaFields {
         private AutorDocumentacion() {}
 
         public static final String DOCUMENTACION = "documentacion";
+        public static final String AUTOR = "autor";
+    }
+
+    public static final class ProyectoGrado {
+
+        private ProyectoGrado() {}
+
+        public static final String ID = "id";
+        public static final String TITULO = "titulo";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
+    public static final class EstudianteProyectoGrado {
+
+        private EstudianteProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String AUTOR = "autor";
+        public static final String AUTORES = "autores";
+        public static final String OCURRIDO_EN = "ocurridoEn";
     }
 }

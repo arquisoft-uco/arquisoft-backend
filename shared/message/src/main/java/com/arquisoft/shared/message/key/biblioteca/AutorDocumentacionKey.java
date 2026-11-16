@@ -5,7 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum AutorDocumentacionKey implements ClaveMensaje {
 
     LOG_CONSULTANDO("biblioteca.aplicacion.autordocumentacion.log.consultando", 1),
-    LOG_CONSULTA_COMPLETADA("biblioteca.aplicacion.autordocumentacion.log.consulta-completada", 1);
+    LOG_CONSULTA_COMPLETADA("biblioteca.aplicacion.autordocumentacion.log.consulta-completada", 1),
+    LOG_GUARDADOS("biblioteca.infraestructura.autordocumentacion.log.guardados", 1);
 
     private final String clave;
     private final int parametros;

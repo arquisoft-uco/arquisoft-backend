@@ -8,6 +8,16 @@ public final class DocumentacionMapper {
 
     private DocumentacionMapper() {}
 
+    public static DocumentacionEntity toEntity(DocumentacionDomain documentacion) {
+        return new DocumentacionEntity(
+                documentacion.getId(),
+                documentacion.getUrl(),
+                documentacion.getFechaPublicacion(),
+                documentacion.getEntregableProyectoGrado(),
+                documentacion.getBibliotecario(),
+                documentacion.getEstadoDocumentacion().getId());
+    }
+
     public static DocumentacionDomain toDomain(DocumentacionEntity entity) {
         return DocumentacionDomain.reconstruir(
                 entity.id(),

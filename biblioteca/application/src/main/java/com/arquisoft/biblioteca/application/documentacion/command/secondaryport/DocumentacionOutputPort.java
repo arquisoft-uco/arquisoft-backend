@@ -9,5 +9,9 @@ public interface DocumentacionOutputPort {
 
     Optional<DocumentacionEntity> obtenerPorId(UUID id);
 
+    boolean existePorEntregableProyectoGrado(UUID entregableProyectoGrado);
+
+    void registrar(DocumentacionEntity documentacion);
+
     void actualizarEstado(UUID documentacion, String estadoDocumentacion);
 }

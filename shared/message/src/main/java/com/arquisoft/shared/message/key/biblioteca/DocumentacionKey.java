@@ -26,7 +26,13 @@ public enum DocumentacionKey implements ClaveMensaje {
     ERROR_ESTADO_DESTINO_NO_PERMITIDO_DETALLE(
             "biblioteca.dominio.documentacion.error.estado-destino-no-permitido-detalle", 2),
     ERROR_ESTADO_SIN_CAMBIO("biblioteca.dominio.documentacion.error.estado-sin-cambio", 1),
-    ERROR_ESTADO_SIN_CAMBIO_DETALLE("biblioteca.dominio.documentacion.error.estado-sin-cambio-detalle", 2);
+    ERROR_ESTADO_SIN_CAMBIO_DETALLE("biblioteca.dominio.documentacion.error.estado-sin-cambio-detalle", 2),
+    LOG_REGISTRANDO("biblioteca.aplicacion.documentacion.log.registrando", 2),
+    LOG_VERIFICACION_REGISTRO("biblioteca.aplicacion.documentacion.log.verificacion-registro", 4),
+    LOG_REGISTRADA("biblioteca.aplicacion.documentacion.log.registrada", 3),
+    LOG_GUARDADA("biblioteca.infraestructura.documentacion.log.guardada", 1),
+    ERROR_YA_REGISTRADA("biblioteca.dominio.documentacion.error.ya-registrada", 0),
+    ERROR_YA_REGISTRADA_DETALLE("biblioteca.dominio.documentacion.error.ya-registrada-detalle", 1);
 
     private final String clave;
     private final int parametros;
