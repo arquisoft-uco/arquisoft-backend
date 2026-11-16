@@ -17,7 +17,9 @@ public enum BibliotecarioKey implements ClaveMensaje {
     LOG_VERIFICACION_REMOVER("biblioteca.aplicacion.bibliotecario.log.verificacion-remover", 2),
     LOG_REMOVIDO("biblioteca.aplicacion.bibliotecario.log.removido", 1),
     LOG_LAPIDA("biblioteca.aplicacion.bibliotecario.log.lapida", 1),
-    LOG_REMOCION_DESCARTADA("biblioteca.aplicacion.bibliotecario.log.remocion-descartada", 2);
+    LOG_REMOCION_DESCARTADA("biblioteca.aplicacion.bibliotecario.log.remocion-descartada", 2),
+    ERROR_NO_VIGENTE("biblioteca.dominio.bibliotecario.error.no-vigente", 0),
+    ERROR_NO_VIGENTE_DETALLE("biblioteca.dominio.bibliotecario.error.no-vigente-detalle", 1);
 
     private final String clave;
     private final int parametros;

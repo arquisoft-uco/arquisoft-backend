@@ -18,6 +18,8 @@ public interface DocumentacionCommandRepository extends JpaRepository<Documentac
     @Query("SELECT d FROM DocumentacionJpaEntity d WHERE d.id = :documentacion")
     Optional<DocumentacionJpaEntity> buscarBloqueadaPorId(@Param("documentacion") UUID documentacion);
 
+    boolean existsByEntregableProyectoGradoId(UUID entregableProyectoGradoId);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE DocumentacionJpaEntity d SET d.estadoDocumentacion = :estado WHERE d.id = :documentacion")
     int actualizarEstado(@Param("documentacion") UUID documentacion, @Param("estado") String estado);

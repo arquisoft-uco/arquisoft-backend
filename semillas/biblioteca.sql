@@ -43,3 +43,64 @@ INSERT INTO autor_documentacion (id, autor_id, documentacion_id) VALUES
     ('a1a1a1a1-0000-4000-8000-000000000005', 'd1d1d1d1-0000-4000-8000-000000000003', 'f1f1f1f1-0000-4000-8000-000000000003'),
     ('a1a1a1a1-0000-4000-8000-000000000006', 'd1d1d1d1-0000-4000-8000-000000000003', 'f1f1f1f1-0000-4000-8000-000000000004')
 ON CONFLICT (id) DO NOTHING;
+
+-- HU-307 — Registrar la documentación de un entregable. Una semilla por rama del endpoint; los entregables
+-- ...0001 a ...0004 ya tienen documentación y ejercitan el 422 de documentación duplicada.
+-- Requiere las migraciones de proyecto_grado y estudiante_proyecto_grado ya aplicadas.
+
+INSERT INTO bibliotecario (id, identificador, nombre, email, ocurrido_en, eliminado_en) VALUES
+    ('b1b1b1b1-0000-4000-8000-000000000002', 'BIB-SEMILLA-02', 'Bibliotecario Eliminado', 'bibliotecario.eliminado@uco.edu.co',
+     '2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO autor (id, identificador, nombre, email, ocurrido_en, eliminado_en) VALUES
+    ('d1d1d1d1-0000-4000-8000-000000000004', 'AUT-SEMILLA-04', 'Autor Semilla Eliminado', 'autor.eliminado@uco.edu.co',
+     '2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO entregable_proyecto_grado (id, proyecto_grado_id, version_entregable, asesor_id, estado_entregable_nombre,
+                                       bucket, clave_objeto, nombre_archivo) VALUES
+    -- Camino feliz: 201 con dos autores
+    ('e1e1e1e1-0000-4000-8000-000000000005', 'a0a0a0a0-0000-4000-8000-000000000005', 1,
+     'c0c0c0c0-0000-4000-8000-000000000001', 'Aprobado',
+     'entregables', 'proyectos/a0a0a0a0-0000-4000-8000-000000000005/entregable-v1.zip', 'entregable-v1.zip'),
+    -- 422 archivo no disponible
+    ('e1e1e1e1-0000-4000-8000-000000000006', 'a0a0a0a0-0000-4000-8000-000000000006', 1,
+     'c0c0c0c0-0000-4000-8000-000000000001', 'Aprobado', NULL, NULL, NULL),
+    -- 422 sin autores (proyecto sin vínculos)
+    ('e1e1e1e1-0000-4000-8000-000000000007', 'a0a0a0a0-0000-4000-8000-000000000007', 1,
+     'c0c0c0c0-0000-4000-8000-000000000001', 'Aprobado',
+     'entregables', 'proyectos/a0a0a0a0-0000-4000-8000-000000000007/entregable-v1.zip', 'entregable-v1.zip'),
+    -- 422 autor no vigente (ausente de autor)
+    ('e1e1e1e1-0000-4000-8000-000000000008', 'a0a0a0a0-0000-4000-8000-000000000008', 1,
+     'c0c0c0c0-0000-4000-8000-000000000001', 'Aprobado',
+     'entregables', 'proyectos/a0a0a0a0-0000-4000-8000-000000000008/entregable-v1.zip', 'entregable-v1.zip'),
+    -- 422 autor no vigente (eliminado)
+    ('e1e1e1e1-0000-4000-8000-000000000009', 'a0a0a0a0-0000-4000-8000-000000000009', 1,
+     'c0c0c0c0-0000-4000-8000-000000000001', 'Aprobado',
+     'entregables', 'proyectos/a0a0a0a0-0000-4000-8000-000000000009/entregable-v1.zip', 'entregable-v1.zip')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO proyecto_grado (id, titulo, ocurrido_en) VALUES
+    ('a0a0a0a0-0000-4000-8000-000000000005', 'Proyecto semilla con dos autores', '2026-01-01T00:00:00Z'),
+    ('a0a0a0a0-0000-4000-8000-000000000006', 'Proyecto semilla sin archivo', '2026-01-01T00:00:00Z'),
+    ('a0a0a0a0-0000-4000-8000-000000000007', 'Proyecto semilla sin autores', '2026-01-01T00:00:00Z'),
+    ('a0a0a0a0-0000-4000-8000-000000000008', 'Proyecto semilla con autor ausente', '2026-01-01T00:00:00Z'),
+    ('a0a0a0a0-0000-4000-8000-000000000009', 'Proyecto semilla con autor eliminado', '2026-01-01T00:00:00Z')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO estudiante_proyecto_grado (id, proyecto_grado_id, autor_id, ocurrido_en, eliminado_en) VALUES
+    ('e5e5e5e5-0000-4000-8000-000000000001', 'a0a0a0a0-0000-4000-8000-000000000005',
+     'd1d1d1d1-0000-4000-8000-000000000001', '2026-01-01T00:00:00Z', NULL),
+    ('e5e5e5e5-0000-4000-8000-000000000002', 'a0a0a0a0-0000-4000-8000-000000000005',
+     'd1d1d1d1-0000-4000-8000-000000000002', '2026-01-01T00:00:00Z', NULL),
+    -- Vínculo retirado: no se copia a autor_documentacion
+    ('e5e5e5e5-0000-4000-8000-000000000003', 'a0a0a0a0-0000-4000-8000-000000000005',
+     'd1d1d1d1-0000-4000-8000-000000000003', '2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z'),
+    ('e5e5e5e5-0000-4000-8000-000000000004', 'a0a0a0a0-0000-4000-8000-000000000008',
+     'd1d1d1d1-0000-4000-8000-000000000003', '2026-01-01T00:00:00Z', NULL),
+    ('e5e5e5e5-0000-4000-8000-000000000005', 'a0a0a0a0-0000-4000-8000-000000000008',
+     'd1d1d1d1-0000-4000-8000-000000000099', '2026-01-01T00:00:00Z', NULL),
+    ('e5e5e5e5-0000-4000-8000-000000000006', 'a0a0a0a0-0000-4000-8000-000000000009',
+     'd1d1d1d1-0000-4000-8000-000000000004', '2026-01-01T00:00:00Z', NULL)
+ON CONFLICT (id) DO NOTHING;

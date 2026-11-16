@@ -24,6 +24,17 @@ public class DocumentacionCommandOutputAdapter implements DocumentacionOutputPor
     }
 
     @Override
+    public boolean existePorEntregableProyectoGrado(UUID entregableProyectoGrado) {
+        return documentacionCommandRepository.existsByEntregableProyectoGradoId(entregableProyectoGrado);
+    }
+
+    @Override
+    public void registrar(DocumentacionEntity documentacion) {
+        documentacionCommandRepository.save(DocumentacionJpaMapper.toJpaEntity(documentacion));
+        logger.debug(DocumentacionKey.LOG_GUARDADA, documentacion.id());
+    }
+
+    @Override
     public void actualizarEstado(UUID documentacion, String estadoDocumentacion) {
         documentacionCommandRepository.actualizarEstado(documentacion, estadoDocumentacion);
         logger.debug(DocumentacionKey.LOG_ESTADO_ACTUALIZADO, documentacion);

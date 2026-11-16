@@ -298,3 +298,4 @@ security:
         - {method: GET, path: "/api/biblioteca/documentaciones/{documentacionId}/autores", role: "biblioteca:autor-documentacion:view"}
         - {method: GET, path: "/api/biblioteca/documentaciones/{documentacionId}/descarga", role: "biblioteca:documentacion:download"}
         - {method: PATCH, path: "/api/biblioteca/documentaciones/{documentacionId}/estado", role: "biblioteca:documentacion-estado:update"}
+        - {method: POST, path: "/api/biblioteca/documentaciones", role: "biblioteca:documentacion:create"}

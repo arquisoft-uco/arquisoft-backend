@@ -16,4 +16,15 @@ public final class DocumentacionJpaMapper {
                 jpaEntity.getBibliotecarioId(),
                 jpaEntity.getEstadoDocumentacion());
     }
+
+    public static DocumentacionJpaEntity toJpaEntity(DocumentacionEntity entity) {
+        return DocumentacionJpaEntity.builder()
+                .id(entity.id())
+                .url(entity.url())
+                .fechaPublicacion(entity.fechaPublicacion())
+                .entregableProyectoGradoId(entity.entregableProyectoGrado())
+                .bibliotecarioId(entity.bibliotecario())
+                .estadoDocumentacion(entity.estadoDocumentacion())
+                .build();
+    }
 }

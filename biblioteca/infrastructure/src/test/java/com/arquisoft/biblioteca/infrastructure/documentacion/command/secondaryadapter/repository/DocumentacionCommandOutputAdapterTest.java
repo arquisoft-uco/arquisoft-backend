@@ -1,5 +1,6 @@
 package com.arquisoft.biblioteca.infrastructure.documentacion.command.secondaryadapter.repository;
 
+import com.arquisoft.biblioteca.application.documentacion.command.secondaryport.entity.DocumentacionEntity;
 import com.arquisoft.biblioteca.infrastructure.documentacion.command.secondaryadapter.entity.DocumentacionJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.biblioteca.DocumentacionKey;
@@ -100,6 +101,26 @@ class DocumentacionCommandOutputAdapterTest {
         assertThat(adapter.obtenerPorId(otra))
                 .hasValueSatisfying(intacta -> assertThat(intacta.estadoDocumentacion()).isEqualTo("PENDIENTE"));
         verify(logger).debug(DocumentacionKey.LOG_ESTADO_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debePersistirLaDocumentacionYResponderExistencia_cuandoSeRegistra() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+        var bibliotecario = UtilUUID.generarNuevoUUID();
+        var entity = new DocumentacionEntity(id, "entregables/a.zip", FECHA, entregable, bibliotecario, "PENDIENTE");
+
+        // Act
+        adapter.registrar(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(adapter.obtenerPorId(id)).hasValue(entity);
+        assertThat(adapter.existePorEntregableProyectoGrado(entregable)).isTrue();
+        assertThat(adapter.existePorEntregableProyectoGrado(UtilUUID.generarNuevoUUID())).isFalse();
+        verify(logger).debug(DocumentacionKey.LOG_GUARDADA, id);
     }
 
     @Test

@@ -30,7 +30,18 @@ public final class BibliotecaApiMessages {
         private Documentacion() {}
 
         public static final String TAG_NAME = "Documentaciones";
-        public static final String TAG_DESCRIPTION = "Consulta y cambio de estado de las documentaciones de la biblioteca";
+        public static final String TAG_DESCRIPTION =
+                "Registro, consulta y cambio de estado de las documentaciones de la biblioteca";
+        public static final String REGISTRAR_SUMMARY = "Registrar la documentación de un entregable";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra en la biblioteca la documentación de un entregable aprobado. Nace en estado PENDIENTE, "
+                        + "con la ubicación del archivo del entregable y con los autores del proyecto como "
+                        + "autores de la documentación. Cada entregable admite una sola documentación";
+        public static final String REGISTRAR_RESP_201 = "Documentación registrada; devuelve su identificador";
+        public static final String REGISTRAR_RESP_400 = "Identificador de entregable ausente o con formato inválido";
+        public static final String REGISTRAR_RESP_422 =
+                "El entregable no existe, ya tiene documentación, no tiene archivo disponible, el bibliotecario "
+                        + "no está vigente o el proyecto no tiene autores vigentes";
         public static final String CONSULTAR_SUMMARY = "Consultar las documentaciones";
         public static final String CONSULTAR_DESCRIPTION =
                 "Devuelve de forma paginada las documentaciones de la biblioteca. Admite filtros por "
