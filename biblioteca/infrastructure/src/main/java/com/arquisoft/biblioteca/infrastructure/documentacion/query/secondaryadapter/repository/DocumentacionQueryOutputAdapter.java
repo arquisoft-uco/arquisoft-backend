@@ -10,6 +10,11 @@ import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class DocumentacionQueryOutputAdapter implements DocumentacionQueryOutputPort {
@@ -17,6 +22,7 @@ public class DocumentacionQueryOutputAdapter implements DocumentacionQueryOutput
     private static final String RUTA_DESEMPATE = "id";
 
     private final DocumentacionQueryRepository documentacionQueryRepository;
+    private final AutorDeDocumentacionQueryRepository autorDeDocumentacionQueryRepository;
     private final DocumentacionJpaSpecification specification;
 
     @Override
@@ -24,8 +30,18 @@ public class DocumentacionQueryOutputAdapter implements DocumentacionQueryOutput
         var pageable = PageableMapper.toPageable(criteria, DocumentacionSortMapper::traducir, RUTA_DESEMPATE);
         var spec = specification.desdeCriteria(criteria);
 
-        return PaginationMapper.toResult(
-                documentacionQueryRepository.findAll(spec, pageable)
-                        .map(DocumentacionQueryMapper::toReadModel));
+        var pagina = documentacionQueryRepository.findAll(spec, pageable);
+        var ids = pagina.getContent().stream().map(DocumentacionJpaQueryEntity::getId).toList();
+        var autoresPorDocumentacion = new LinkedHashMap<UUID, List<AutorDeDocumentacionJpaQueryEntity>>();
+
+        if (!ids.isEmpty()) {
+            autorDeDocumentacionQueryRepository.findByDocumentacionIdInOrderByNombreAscIdAsc(ids)
+                    .forEach(autor -> autoresPorDocumentacion
+                            .computeIfAbsent(autor.getDocumentacionId(), clave -> new ArrayList<>())
+                            .add(autor));
+        }
+
+        return PaginationMapper.toResult(pagina.map(documentacion -> DocumentacionQueryMapper.toReadModel(
+                documentacion, autoresPorDocumentacion.getOrDefault(documentacion.getId(), List.of()))));
     }
 }

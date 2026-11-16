@@ -1,16 +1,20 @@
 package com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.repository.mapper;
 
 import com.arquisoft.biblioteca.application.documentacion.query.readmodel.DocumentacionReadModel;
+import com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.repository.AutorDeDocumentacionJpaQueryEntity;
 import com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.repository.DocumentacionJpaQueryEntity;
+
+import java.util.List;
 
 public final class DocumentacionQueryMapper {
 
     private DocumentacionQueryMapper() {}
 
-    public static DocumentacionReadModel toReadModel(DocumentacionJpaQueryEntity entity) {
+    public static DocumentacionReadModel toReadModel(
+            DocumentacionJpaQueryEntity entity, List<AutorDeDocumentacionJpaQueryEntity> autores) {
         return new DocumentacionReadModel(
                 entity.getId(),
-                entity.getUrl(),
+                entity.getTituloProyecto(),
                 entity.getFechaPublicacion(),
                 new DocumentacionReadModel.EntregableProyectoGradoResumen(
                         entity.getEntregableId(),
@@ -22,6 +26,10 @@ public final class DocumentacionQueryMapper {
                         entity.getBibliotecarioNombre()),
                 new DocumentacionReadModel.EstadoDocumentacionResumen(
                         entity.getEstadoId(),
-                        entity.getEstadoNombre()));
+                        entity.getEstadoNombre()),
+                autores.stream()
+                        .map(autor -> new DocumentacionReadModel.AutorResumen(
+                                autor.getAutorId(), autor.getIdentificador(), autor.getNombre()))
+                        .toList());
     }
 }
