@@ -49,6 +49,14 @@ public final class BibliotecaFields {
         public static final String AUTOR = "autor";
     }
 
+    public static final class EntregableProyectoGrado {
+
+        private EntregableProyectoGrado() {}
+
+        public static final String PAGINA = "pagina";
+        public static final String TAMANIO = "tamanio";
+    }
+
     public static final class ProyectoGrado {
 
         private ProyectoGrado() {}

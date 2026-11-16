@@ -73,6 +73,9 @@ public final class BibliotecaCodes {
         public static final String ID_REQUERIDO = "ENTREGABLE_PROYECTO_GRADO_ID_REQUERIDO";
         public static final String NO_ENCONTRADO = "ENTREGABLE_PROYECTO_GRADO_NO_ENCONTRADO";
         public static final String ARCHIVO_NO_DISPONIBLE = "ENTREGABLE_PROYECTO_GRADO_ARCHIVO_NO_DISPONIBLE";
+        public static final String PAGINA_INVALIDA = "ENTREGABLE_PROYECTO_GRADO_PAGINA_INVALIDA";
+        public static final String TAMANIO_INVALIDO = "ENTREGABLE_PROYECTO_GRADO_TAMANIO_INVALIDO";
+        public static final String TITULO_LONGITUD_EXCEDIDA = "ENTREGABLE_PROYECTO_GRADO_TITULO_LONGITUD_EXCEDIDA";
     }
 
     public static final class ProyectoGrado {

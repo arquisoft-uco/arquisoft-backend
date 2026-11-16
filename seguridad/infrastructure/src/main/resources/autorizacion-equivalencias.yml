@@ -299,3 +299,4 @@ security:
         - {method: GET, path: "/api/biblioteca/documentaciones/{documentacionId}/descarga", role: "biblioteca:documentacion:download"}
         - {method: PATCH, path: "/api/biblioteca/documentaciones/{documentacionId}/estado", role: "biblioteca:documentacion-estado:update"}
         - {method: POST, path: "/api/biblioteca/documentaciones", role: "biblioteca:documentacion:create"}
+        - {method: POST, path: "/api/biblioteca/entregables-proyecto-grado/consultar", role: "biblioteca:entregable-proyecto-grado:view"}

@@ -10,4 +10,11 @@ public final class BibliotecaLimits {
 
         public static final int URL_MAX = 2000;
     }
+
+    public static final class ProyectoGrado {
+
+        private ProyectoGrado() {}
+
+        public static final int TITULO_MAX = 100;
+    }
 }
