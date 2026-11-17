@@ -464,6 +464,12 @@ abre el archivo con `Read`**: es igual de vinculante. Ante la duda, ábrelo.
   `seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml`, el mapa endpoint → client role.
   `CompletitudEquivalenciasAutorizacionTest` rompe el build si falta la fila o sobra una, y escribe
   `build/reports/autorizacion/recursos-pdp.csv` con la lista para el equipo de seguridad.
+  **Excepción: un endpoint que solo exige una identidad autenticada** (sin distinguir rol, p. ej. `GET
+  /usuarios/mi/perfil`) va en la sección `security.authorization.authenticated-only` del mismo archivo, nunca
+  también en `role-table`, y no lleva client role ni cambios en `realm-arquisoft.json`. `AutorizarAccesoUseCaseImpl`
+  lo permite sin consultar al PDP (no hay `X-Decision-Id`), y la prueba de completitud exige que cada endpoint esté
+  en una de las dos tablas. Úsala solo si el recurso no expone datos de terceros ni de un id de la petición; no la
+  confundas con `authenticated-paths`, que exime rutas no de negocio del PEP.
 - **Cada fila de la tabla exige su client role en `keycloak/realm-arquisoft.json`**, en dos sitios: en
   `roles.client.arquisoft-api` (el rol existe) y en los `composites.client.arquisoft-api` de cada realm
   role de negocio que usa el endpoint (el rol se otorga). El token del emisor `role-table` lleva solo
