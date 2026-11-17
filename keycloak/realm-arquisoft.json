@@ -291,7 +291,8 @@
               "biblioteca:documentacion:download",
               "biblioteca:documentacion-estado:update",
               "biblioteca:documentacion:create",
-              "biblioteca:autor-documentacion:view"
+              "biblioteca:autor-documentacion:view",
+              "biblioteca:entregable-proyecto-grado:view"
             ]
           }
         },
@@ -1394,6 +1395,15 @@
         {
           "id": "b6a41d3c-5e07-4f82-9c1a-3d8e2f705b64",
           "name": "biblioteca:documentacion-estado:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "34e8e89b-f709-4b6b-9122-e18d1e411558",
+          "name": "biblioteca:entregable-proyecto-grado:view",
           "description": "",
           "composite": false,
           "clientRole": true,
