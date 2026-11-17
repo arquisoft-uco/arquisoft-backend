@@ -90,4 +90,22 @@ public final class BibliotecaApiMessages {
         public static final String CONSULTAR_RESP_200 = "Lista de autores de la documentación";
         public static final String CONSULTAR_RESP_400 = "Identificador de documentación inválido";
     }
+
+    public static final class EntregableProyectoGrado {
+
+        private EntregableProyectoGrado() {}
+
+        public static final String TAG_NAME = "Entregables de proyecto de grado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de los entregables disponibles para registrar en la biblioteca";
+        public static final String CONSULTAR_DISPONIBLES_SUMMARY =
+                "Consultar los entregables disponibles para registrar";
+        public static final String CONSULTAR_DISPONIBLES_DESCRIPTION =
+                "Devuelve, paginados, los entregables aprobados que tienen archivo y aún no tienen documentación, "
+                        + "con el título del proyecto y sus autores vigentes. Admite buscar por título del proyecto "
+                        + "sin distinguir mayúsculas. Ordena por título (los sin título al final), versión e identificador";
+        public static final String CONSULTAR_DISPONIBLES_RESP_200 = "Página de entregables disponibles";
+        public static final String CONSULTAR_DISPONIBLES_RESP_400 =
+                "Página, tamaño o título inválidos";
+    }
 }
