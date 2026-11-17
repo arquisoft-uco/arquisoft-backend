@@ -71,7 +71,7 @@ D  ruta/eliminada.java
 **Endpoints documentados:** {Sí / N/A — la HU no expone endpoints}
 
 **Autorización:** {una línea por endpoint nuevo: recurso PDP (`{MÉTODO} /api/{plantilla}`) + client role de
-`autorizacion-equivalencias.yml` + realm roles que lo otorgan en `realm-arquisoft.json` / N/A — la HU
+`autorizacion-equivalencias.yml` + realm roles que lo otorgan en `realm-arquisoft.json` / `authenticated-only` sin client role / N/A — la HU
 no crea endpoints}
 
 ## Próximos pasos

@@ -18,6 +18,7 @@ rutas:
       modificar: /{usuarioId}
       eliminar: /{usuarioId}
       identidad: /{usuarioId}
+      mi-perfil: /mi/perfil
       por-correo: /por-correo
       estado: /{usuarioId}/estado
       usuarios-administrador: /administrador

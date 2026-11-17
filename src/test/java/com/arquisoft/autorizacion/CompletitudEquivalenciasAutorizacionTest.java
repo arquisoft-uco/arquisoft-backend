@@ -2,6 +2,7 @@ package com.arquisoft.autorizacion;
 
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.ResolvedorPlantillaRuta;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias.EquivalenciasProperties;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias.SoloAutenticacionProperties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -36,6 +37,7 @@ class CompletitudEquivalenciasAutorizacionTest {
     private static StandardEnvironment entorno;
     private static List<ResolvedorPlantillaRuta.Recurso> recursos;
     private static Set<String> filasDeLaTabla;
+    private static Set<String> filasSoloAutenticacion;
     private static List<String> patronesExentos;
 
     @BeforeAll
@@ -59,6 +61,11 @@ class CompletitudEquivalenciasAutorizacionTest {
         filasDeLaTabla = new TreeSet<>(equivalencias.entries().stream()
                 .map(EquivalenciasProperties.Entrada::clave).toList());
 
+        filasSoloAutenticacion = new TreeSet<>(new Binder(ConfigurationPropertySources.from(entorno.getPropertySources()))
+                .bind("security.authorization.authenticated-only", SoloAutenticacionProperties.class)
+                .orElseThrow(() -> new IllegalStateException("recursos solo-autenticacion vacios"))
+                .entries().stream().map(SoloAutenticacionProperties.Entrada::clave).toList());
+
         patronesExentos = new ArrayList<>();
         patronesExentos.addAll(lista("security.authorization.public-paths"));
         patronesExentos.addAll(lista("security.authorization.authenticated-paths"));
@@ -71,14 +78,44 @@ class CompletitudEquivalenciasAutorizacionTest {
     }
 
     @Test
-    void debePasar_cuandoTodosLosMapeosTienenFilaOEstanExentos() {
+    void debePasar_cuandoTodosLosMapeosTienenFilaEnUnaDeLasDosTablasOEstanExentos() {
         // Act
-        var sinFila = endpointsSinFila(recursos, filasDeLaTabla, patronesExentos);
-        var huerfanas = filasHuerfanas(recursos, filasDeLaTabla);
+        var sinFila = endpointsSinFila(recursos, filasCubiertas(filasDeLaTabla, filasSoloAutenticacion),
+                patronesExentos);
+        var huerfanas = filasHuerfanas(recursos, filasCubiertas(filasDeLaTabla, filasSoloAutenticacion));
+        var enAmbas = enAmbasTablas(filasDeLaTabla, filasSoloAutenticacion);
 
         // Assert
         assertThat(sinFila).as("endpoints sin fila en autorizacion-equivalencias.yml").isEmpty();
         assertThat(huerfanas).as("filas sin mapeo").isEmpty();
+        assertThat(enAmbas).as("recursos en role-table y en authenticated-only").isEmpty();
+    }
+
+    @Test
+    void debeFallar_cuandoUnEndpointEstaEnAmbasTablas() {
+        // Arrange
+        var repetida = filasSoloAutenticacion.iterator().next();
+        var conRepetida = new TreeSet<>(filasDeLaTabla);
+        conRepetida.add(repetida);
+
+        // Act
+        var enAmbas = enAmbasTablas(conRepetida, filasSoloAutenticacion);
+
+        // Assert
+        assertThat(enAmbas).containsExactly(repetida);
+    }
+
+    @Test
+    void debeFallar_cuandoUnaFilaDeAuthenticatedOnlyEsHuerfana() {
+        // Arrange
+        var conHuerfana = new TreeSet<>(filasSoloAutenticacion);
+        conHuerfana.add("GET /api/no-existe/mi");
+
+        // Act
+        var huerfanas = filasHuerfanas(recursos, filasCubiertas(filasDeLaTabla, conHuerfana));
+
+        // Assert
+        assertThat(huerfanas).containsExactly("GET /api/no-existe/mi");
     }
 
     @Test
@@ -115,6 +152,7 @@ class CompletitudEquivalenciasAutorizacionTest {
         lineas.add("METODO;RUTA");
         recursos.stream()
                 .filter(recurso -> !esExento(PREFIJO + recurso.plantilla(), patronesExentos))
+                .filter(recurso -> !filasSoloAutenticacion.contains(recurso.metodo() + " " + PREFIJO + recurso.plantilla()))
                 .map(recurso -> recurso.metodo() + ";" + PREFIJO + recurso.plantilla())
                 .sorted()
                 .forEach(lineas::add);
@@ -125,6 +163,16 @@ class CompletitudEquivalenciasAutorizacionTest {
 
         // Assert
         assertThat(Files.readAllLines(REPORTE)).hasSizeGreaterThan(1).first().isEqualTo("METODO;RUTA");
+    }
+
+    static Set<String> filasCubiertas(Set<String> roleTable, Set<String> soloAutenticacion) {
+        var cubiertas = new TreeSet<>(roleTable);
+        cubiertas.addAll(soloAutenticacion);
+        return cubiertas;
+    }
+
+    static List<String> enAmbasTablas(Set<String> roleTable, Set<String> soloAutenticacion) {
+        return roleTable.stream().filter(soloAutenticacion::contains).sorted().toList();
     }
 
     static List<String> endpointsSinFila(List<ResolvedorPlantillaRuta.Recurso> recursos, Set<String> filas,

@@ -300,3 +300,9 @@ security:
         - {method: PATCH, path: "/api/biblioteca/documentaciones/{documentacionId}/estado", role: "biblioteca:documentacion-estado:update"}
         - {method: POST, path: "/api/biblioteca/documentaciones", role: "biblioteca:documentacion:create"}
         - {method: POST, path: "/api/biblioteca/entregables-proyecto-grado/consultar", role: "biblioteca:entregable-proyecto-grado:view"}
+
+    # Recursos que solo exigen una identidad autenticada: el PDP no los ve y no llevan client role.
+    # Un recurso va en role-table o aqui, nunca en ambas.
+    authenticated-only:
+      entries:
+        - {method: GET, path: "/api/usuarios/mi/perfil"}
