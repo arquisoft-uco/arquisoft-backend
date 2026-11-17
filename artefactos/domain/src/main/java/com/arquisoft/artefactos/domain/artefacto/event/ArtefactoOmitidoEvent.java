@@ -6,6 +6,7 @@ import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.message.constant.EventTopics;
 
 import java.util.List;
+import java.util.UUID;
 
 public final class ArtefactoOmitidoEvent extends DomainEvent {
 
@@ -15,13 +16,18 @@ public final class ArtefactoOmitidoEvent extends DomainEvent {
     private final String documento;
     private final List<ContactoEstudiante> estudiantes;
     private final ContactoAsesor asesor;
+    private final UUID artefacto;
+    private final UUID proyectoGrado;
 
     public ArtefactoOmitidoEvent(
-            String documento, List<ContactoEstudiante> estudiantes, ContactoAsesor asesor) {
+            String documento, List<ContactoEstudiante> estudiantes, ContactoAsesor asesor, UUID artefacto,
+            UUID proyectoGrado) {
         super(EVENT_TOPIC, EVENT_TYPE);
         this.documento = documento;
         this.estudiantes = List.copyOf(estudiantes);
         this.asesor = asesor;
+        this.artefacto = artefacto;
+        this.proyectoGrado = proyectoGrado;
     }
 
     public String getDocumento() {
@@ -34,5 +40,13 @@ public final class ArtefactoOmitidoEvent extends DomainEvent {
 
     public ContactoAsesor getAsesor() {
         return asesor;
+    }
+
+    public UUID getArtefacto() {
+        return artefacto;
+    }
+
+    public UUID getProyectoGrado() {
+        return proyectoGrado;
     }
 }

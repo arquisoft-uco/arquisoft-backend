@@ -218,6 +218,15 @@ public final class EvaluacionesApiMessages {
         public static final String OMITIR_RESP_422 =
                 "La evaluación de jurado no existe, está finalizada, "
                         + "o alguna evaluación cualitativa no existe en ella o está repetida";
+        public static final String CAMBIAR_CRITERIO_SUMMARY = "Cambiar criterio de evaluación cualitativa del jurado";
+        public static final String CAMBIAR_CRITERIO_DESCRIPTION =
+                "Reemplaza el criterio de una evaluación cualitativa del jurado autenticado mientras su "
+                        + "evaluación de jurado no esté finalizada";
+        public static final String CAMBIAR_CRITERIO_RESP_204 = "Criterio actualizado";
+        public static final String CAMBIAR_CRITERIO_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_CRITERIO_RESP_422 =
+                "La evaluación cualitativa o el criterio no existen, pertenece a otro jurado, "
+                        + "está finalizada o el criterio ya es el actual";
     }
 
     public static final class EvaluacionCualitativaAsesor {
@@ -226,7 +235,7 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones cualitativas del asesor";
         public static final String TAG_DESCRIPTION =
-                "Registro y consulta de las evaluaciones cualitativas asociadas a una evaluación de asesor";
+                "Registro, omisión, cambio de criterio y consulta de las evaluaciones cualitativas asociadas a una evaluación de asesor";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cualitativas del asesor";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta las evaluaciones cualitativas realizadas por el asesor autenticado en una evaluación suya";
@@ -250,6 +259,26 @@ public final class EvaluacionesApiMessages {
         public static final String REGISTRAR_RESP_422 =
                 "La evaluación no existe, no pertenece al asesor, está finalizada, "
                         + "o algún ítem/criterio no existe o ya fue registrado";
+        public static final String OMITIR_SUMMARY = "Omitir evaluaciones cualitativas del asesor";
+        public static final String OMITIR_DESCRIPTION =
+                "Retira en un solo lote las evaluaciones cualitativas que el asesor autenticado registró en una "
+                        + "evaluación suya, indicando los ítems a omitir";
+        public static final String OMITIR_PARAM_ITEM =
+                "Identificador del ítem cualitativo a omitir; se repite el parámetro por cada ítem del lote";
+        public static final String OMITIR_RESP_204 = "Lote omitido";
+        public static final String OMITIR_RESP_400 = "Datos de entrada inválidos";
+        public static final String OMITIR_RESP_422 =
+                "La evaluación no existe, no pertenece al asesor, está finalizada, hay ítems repetidos "
+                        + "o algún ítem no tiene evaluación registrada";
+        public static final String CAMBIAR_CRITERIO_SUMMARY = "Cambiar criterio de una evaluación cualitativa del asesor";
+        public static final String CAMBIAR_CRITERIO_DESCRIPTION =
+                "Cambia el criterio con el que el asesor autenticado evaluó un ítem cualitativo en una "
+                        + "evaluación suya que aún no está finalizada";
+        public static final String CAMBIAR_CRITERIO_RESP_204 = "Criterio cambiado";
+        public static final String CAMBIAR_CRITERIO_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_CRITERIO_RESP_422 =
+                "La evaluación cualitativa no existe, no pertenece al asesor, su evaluación está finalizada "
+                        + "o el criterio no existe";
     }
 
     public static final class EvaluacionCuantitativaAsesor {
@@ -258,7 +287,7 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Evaluaciones cuantitativas del asesor";
         public static final String TAG_DESCRIPTION =
-                "Registro y consulta de las evaluaciones cuantitativas asociadas a una evaluación de asesor";
+                "Registro, omisión, cambio de puntaje y consulta de las evaluaciones cuantitativas asociadas a una evaluación de asesor";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cuantitativas del asesor";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta las evaluaciones cuantitativas realizadas por el asesor autenticado en una evaluación suya";
@@ -282,6 +311,26 @@ public final class EvaluacionesApiMessages {
         public static final String REGISTRAR_RESP_422 =
                 "La evaluación no existe, no pertenece al asesor, está finalizada, algún ítem no existe "
                         + "o ya fue registrado, o algún puntaje excede el valor máximo del ítem";
+        public static final String OMITIR_SUMMARY = "Omitir evaluaciones cuantitativas del asesor";
+        public static final String OMITIR_DESCRIPTION =
+                "Retira en un solo lote las evaluaciones cuantitativas que el asesor autenticado registró en una "
+                        + "evaluación suya, indicando los ítems a omitir; las observaciones de esos ítems se eliminan con ellas";
+        public static final String OMITIR_PARAM_ITEM =
+                "Identificador del ítem cuantitativo a omitir; se repite el parámetro por cada ítem del lote";
+        public static final String OMITIR_RESP_204 = "Lote omitido";
+        public static final String OMITIR_RESP_400 = "Datos de entrada inválidos";
+        public static final String OMITIR_RESP_422 =
+                "La evaluación no existe, no pertenece al asesor, está finalizada, hay ítems repetidos "
+                        + "o algún ítem no tiene evaluación registrada";
+        public static final String CAMBIAR_PUNTAJE_SUMMARY = "Cambiar puntaje de evaluación cuantitativa del asesor";
+        public static final String CAMBIAR_PUNTAJE_DESCRIPTION =
+                "Permite al asesor corregir el puntaje que asignó a una de sus evaluaciones cuantitativas "
+                        + "registradas, mientras su evaluación no esté finalizada";
+        public static final String CAMBIAR_PUNTAJE_RESP_204 = "Puntaje actualizado";
+        public static final String CAMBIAR_PUNTAJE_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_PUNTAJE_RESP_422 =
+                "La evaluación cuantitativa no existe, no pertenece al asesor autenticado, su evaluación "
+                        + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
     }
 
     public static final class EvaluacionCuantitativaJurado {
@@ -297,6 +346,15 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cuantitativas del jurado";
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
         public static final String CONSULTAR_RESP_422 = "La evaluación de jurado no existe";
+        public static final String CONSULTAR_REALIZADAS_SUMMARY =
+                "Consultar evaluaciones cuantitativas realizadas por el jurado";
+        public static final String CONSULTAR_REALIZADAS_DESCRIPTION =
+                "Consulta las evaluaciones cuantitativas de una evaluación de jurado que pertenece al jurado autenticado";
+        public static final String CONSULTAR_REALIZADAS_RESP_200 =
+                "Listado de evaluaciones cuantitativas realizadas por el jurado";
+        public static final String CONSULTAR_REALIZADAS_RESP_400 = "Datos de entrada inválidos";
+        public static final String CONSULTAR_REALIZADAS_RESP_422 =
+                "La evaluación de jurado no existe o pertenece a otro jurado";
         public static final String CAMBIAR_PUNTAJE_SUMMARY = "Cambiar puntaje de evaluación cuantitativa";
         public static final String CAMBIAR_PUNTAJE_DESCRIPTION =
                 "Permite a un jurado corregir el puntaje que asignó a una de sus evaluaciones "
@@ -344,11 +402,6 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de evaluaciones";
         public static final String CONSULTAR_RESP_400 =
                 "El filtro, el orden o la paginación solicitados no son aceptados";
-        public static final String CONSULTAR_ASESOR_SUMMARY = "Filtrar evaluaciones (asesor)";
-        public static final String CONSULTAR_ASESOR_DESCRIPTION =
-                "Consulta de forma paginada las evaluaciones asociadas al asesor autenticado con su entregable y "
-                        + "su estado, con filtro por estado, proyecto o identificador del entregable y orden por "
-                        + "proyecto (por defecto, ascendente) o estado";
         public static final String CONSULTAR_JURADO_SUMMARY = "Filtrar evaluaciones (jurado)";
         public static final String CONSULTAR_JURADO_DESCRIPTION =
                 "Consulta de forma paginada las evaluaciones asociadas al jurado autenticado con su entregable y "
@@ -511,6 +564,67 @@ public final class EvaluacionesApiMessages {
                 "El identificador de la evaluación del asesor no es válido";
         public static final String CONSULTAR_REALIZADA_RESP_422 =
                 "La evaluación del asesor no existe o pertenece a otro asesor";
+        public static final String CONSULTAR_ASIGNADAS_SUMMARY = "Consultar evaluaciones asignadas al asesor";
+        public static final String CONSULTAR_ASIGNADAS_DESCRIPTION =
+                "Consulta de forma paginada las evaluaciones del asesor autenticado, con el identificador de su "
+                        + "evaluación, el estado, el entregable y si ya registró evaluaciones cualitativas y "
+                        + "cuantitativas, con filtro por estado y proyecto y orden por estado, proyecto y versión "
+                        + "(por defecto, ascendente)";
+        public static final String CONSULTAR_ASIGNADAS_RESP_200 = "Página de evaluaciones asignadas al asesor";
+        public static final String CONSULTAR_ASIGNADAS_RESP_400 =
+                "El filtro u orden solicitado no es aceptado o la identidad del asesor no es válida";
+    }
+
+    public static final class ObservacionItemAsesor {
+
+        private ObservacionItemAsesor() {}
+
+        public static final String TAG_NAME = "Observaciones de ítems cuantitativos del asesor";
+        public static final String TAG_DESCRIPTION =
+                "Registro, modificación, remoción y consulta de observaciones sobre evaluaciones "
+                        + "cuantitativas del asesor";
+        public static final String REGISTRAR_SUMMARY = "Registrar observación";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra una nueva observación textual sobre una evaluación cuantitativa del asesor";
+        public static final String REGISTRAR_RESP_201 = "Observación registrada";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación cuantitativa no existe, pertenece a otro asesor, su evaluación ya está "
+                        + "finalizada, o ya existe una observación con esa descripción";
+        public static final String MODIFICAR_SUMMARY = "Modificar observación";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica la descripción de una observación que el asesor registró sobre una evaluación "
+                        + "cuantitativa, mientras la evaluación no esté finalizada";
+        public static final String MODIFICAR_RESP_204 = "Observación modificada";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 =
+                "La observación no existe, pertenece a otro asesor, su evaluación ya está finalizada, "
+                        + "o ya existe otra observación con esa descripción";
+        public static final String REMOVER_SUMMARY = "Remover observación";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve una observación que el asesor registró sobre una evaluación cuantitativa, "
+                        + "mientras la evaluación no esté finalizada";
+        public static final String REMOVER_RESP_204 = "Observación removida";
+        public static final String REMOVER_RESP_400 = "Datos de entrada inválidos";
+        public static final String REMOVER_RESP_422 =
+                "La observación no existe, pertenece a otro asesor o su evaluación ya está finalizada";
+        public static final String CONSULTAR_SUMMARY = "Consultar observaciones";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta de forma paginada las observaciones registradas por el asesor asignado sobre una "
+                        + "evaluación cuantitativa del asesor, con filtro y orden por descripción "
+                        + "(por defecto, ascendente)";
+        public static final String CONSULTAR_RESP_200 = "Página de observaciones de la evaluación cuantitativa";
+        public static final String CONSULTAR_RESP_400 =
+                "El identificador no es válido o el filtro/orden solicitado no es aceptado";
+        public static final String CONSULTAR_RESP_422 =
+                "La evaluación cuantitativa del asesor no existe o pertenece a otro asesor";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar observaciones como estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Consulta de forma paginada las observaciones que el asesor registró sobre una evaluación "
+                        + "cuantitativa de un proyecto del que el estudiante hace parte, con filtro y orden por "
+                        + "descripción (por defecto, ascendente)";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_422 =
+                "La evaluación cuantitativa del asesor no existe o el estudiante no está vinculado a su proyecto";
     }
 
     public static final class EstadoEvaluacion {

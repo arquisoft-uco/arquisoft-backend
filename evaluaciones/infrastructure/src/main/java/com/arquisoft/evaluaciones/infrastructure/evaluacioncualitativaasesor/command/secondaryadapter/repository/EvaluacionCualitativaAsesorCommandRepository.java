@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativaasesor.co
 
 import com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativaasesor.command.secondaryadapter.entity.EvaluacionCualitativaAsesorJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -17,4 +18,10 @@ public interface EvaluacionCualitativaAsesorCommandRepository
             @Param("evaluacionAsesor") UUID evaluacionAsesor, @Param("items") Set<UUID> items);
 
     boolean existsByItem(UUID item);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from EvaluacionCualitativaAsesorJpaEntity e "
+            + "where e.evaluacionAsesor = :evaluacionAsesor and e.item in :items")
+    void eliminarPorItems(
+            @Param("evaluacionAsesor") UUID evaluacionAsesor, @Param("items") Set<UUID> items);
 }

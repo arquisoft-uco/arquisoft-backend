@@ -1,6 +1,7 @@
 package com.arquisoft.entregables.application.estadoentregableproyectogrado.query.usecase.impl;
 
-import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.AsesorDeEntregableProyectoGradoQueryFinder;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.EntregableProyectoGradoAccesoQueryFinder;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.AsesorVigenteDeEntregableProyectoGradoQueryFinder;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.query.criteria.EstadoEntregableProyectoGradoCriteria;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.query.readmodel.EstadoEntregableProyectoGradoReadModel;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.query.secondaryport.EstadoEntregableProyectoGradoQueryOutputPort;
@@ -19,7 +20,8 @@ public class ConsultarEstadosEntregableProyectoGradoUseCaseImpl
         implements ConsultarEstadosEntregableProyectoGradoUseCase {
 
     private final EstadoEntregableProyectoGradoQueryOutputPort estadoEntregableProyectoGradoQueryOutputPort;
-    private final AsesorDeEntregableProyectoGradoQueryFinder asesorDeEntregableProyectoGradoQueryFinder;
+    private final EntregableProyectoGradoAccesoQueryFinder entregableProyectoGradoAccesoQueryFinder;
+    private final AsesorVigenteDeEntregableProyectoGradoQueryFinder asesorVigenteDeEntregableProyectoGradoQueryFinder;
     private final ConsultarEstadosEntregableProyectoGradoValidator consultarEstadosEntregableProyectoGradoValidator;
     private final AppLogger logger;
 
@@ -27,10 +29,11 @@ public class ConsultarEstadosEntregableProyectoGradoUseCaseImpl
     public List<EstadoEntregableProyectoGradoReadModel> ejecutar(EstadoEntregableProyectoGradoCriteria entrada) {
         logger.debug(EstadoEntregableProyectoGradoKey.LOG_CONSULTANDO_HISTORIAL, entrada.entregableProyectoGrado());
 
-        var asesorAsignado = asesorDeEntregableProyectoGradoQueryFinder.obtener(entrada.entregableProyectoGrado());
+        var entregable = entregableProyectoGradoAccesoQueryFinder.obtener(entrada.entregableProyectoGrado());
+        var asesorVigente = asesorVigenteDeEntregableProyectoGradoQueryFinder.obtener(entrada.entregableProyectoGrado());
 
         consultarEstadosEntregableProyectoGradoValidator.validar(
-                entrada.entregableProyectoGrado(), asesorAsignado, entrada.asesor());
+                entrada.entregableProyectoGrado(), entregable, asesorVigente, entrada.asesor());
 
         var estados = estadoEntregableProyectoGradoQueryOutputPort
                 .consultarPorEntregable(entrada.entregableProyectoGrado());

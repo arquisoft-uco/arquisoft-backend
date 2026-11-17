@@ -6,7 +6,6 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.pri
 import com.arquisoft.entregables.application.entregableproyectogrado.command.usecase.GenerarEntregableProyectoGradoUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -17,7 +16,6 @@ public class GenerarEntregableProyectoGradoInteractorImpl implements GenerarEntr
     private final GenerarEntregableProyectoGradoUseCase generarEntregableProyectoGradoUseCase;
 
     @Override
-    @Transactional(transactionManager = "entregablesTransactionManager")
     public UUID ejecutar(GenerarEntregableProyectoGradoCommand command) {
         return generarEntregableProyectoGradoUseCase.ejecutar(GenerarEntregableProyectoGradoMapper.toDomain(command));
     }

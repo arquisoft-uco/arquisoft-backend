@@ -28,8 +28,7 @@ class EntregableProyectoGradoAccesoQueryFinderImplTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
-        var asesor = UtilUUID.generarNuevoUUID();
-        var entity = new EntregableProyectoGradoAccesoEntity(id, proyecto, 3, asesor, true);
+        var entity = new EntregableProyectoGradoAccesoEntity(id, proyecto, 3, true);
         when(entregableProyectoGradoAccesoQueryOutputPort.obtenerAccesoPorId(id)).thenReturn(Optional.of(entity));
 
         // Act
@@ -40,7 +39,7 @@ class EntregableProyectoGradoAccesoQueryFinderImplTest {
         assertThat(entregable.getId()).isEqualTo(id);
         assertThat(entregable.getProyectoGrado()).isEqualTo(proyecto);
         assertThat(entregable.getVersion()).isEqualTo(3);
-        assertThat(entregable.getAsesor()).isEqualTo(asesor);
+        assertThat(UtilUUID.esPorDefecto(entregable.getAsesor())).isTrue();
         assertThat(entregable.isProyectoCancelado()).isTrue();
     }
 

@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.application.versionartefacto.command.validator.
 
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyecto;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoCongeladoException;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.artefactos.domain.versionartefacto.CargaPendienteDomain;
@@ -67,7 +68,7 @@ class GenerarVersionArtefactoCuotaValidatorImplTest {
     @Test
     void debeLanzarCongelado_antesQueCuota() {
         // Arrange
-        var congelado = ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, Instant.now(), null);
+        var congelado = ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, EstadoProyecto.FINALIZADO, Instant.now());
         var almacenamiento = new AlmacenamientoProyectoGrado(congelado, CUOTA, CUOTA);
 
         // Act & Assert

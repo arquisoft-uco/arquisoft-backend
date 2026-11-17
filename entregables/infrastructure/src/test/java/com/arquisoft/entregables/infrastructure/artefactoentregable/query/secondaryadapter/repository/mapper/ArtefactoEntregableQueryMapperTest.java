@@ -13,8 +13,8 @@ class ArtefactoEntregableQueryMapperTest {
         // Arrange
         var entity = ArtefactoEntregableJpaQueryEntity.builder()
                 .id(UtilUUID.generarNuevoUUID()).entregableId(UtilUUID.generarNuevoUUID())
-                .artefactoId(UtilUUID.generarNuevoUUID()).numeroVersion(3).uriArchivo("uri")
-                .idArtefacto(UtilUUID.generarNuevoUUID()).idRepositorioArtefacto(UtilUUID.generarNuevoUUID())
+                .versionArtefacto(UtilUUID.generarNuevoUUID()).numeroVersion(3).uriArchivo("uri")
+                .artefacto(UtilUUID.generarNuevoUUID()).idRepositorioArtefacto(UtilUUID.generarNuevoUUID())
                 .nombreDocumento("Doc").idRepositorio(UtilUUID.generarNuevoUUID())
                 .nombreRepositorio("Repo").build();
 
@@ -24,9 +24,9 @@ class ArtefactoEntregableQueryMapperTest {
         // Assert
         assertThat(readModel.id()).isEqualTo(entity.getId());
         assertThat(readModel.entregableProyectoGrado()).isEqualTo(entity.getEntregableId());
-        assertThat(readModel.versionArtefacto()).isEqualTo(entity.getArtefactoId());
+        assertThat(readModel.versionArtefacto()).isEqualTo(entity.getVersionArtefacto());
         assertThat(readModel.uriArchivo()).isEqualTo("uri");
-        assertThat(readModel.artefacto()).isEqualTo(entity.getIdArtefacto());
+        assertThat(readModel.artefacto()).isEqualTo(entity.getArtefacto());
         assertThat(readModel.versionRepositorioArtefacto()).isEqualTo(entity.getIdRepositorioArtefacto());
         assertThat(readModel.nombreDocumento()).isEqualTo("Doc");
         assertThat(readModel.repositorio()).isEqualTo(entity.getIdRepositorio());

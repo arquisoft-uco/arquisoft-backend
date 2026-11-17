@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public enum EstadoEntregable {
 
+    NUEVO("Nuevo"),
     DISPONIBLE_EVALUACION("Disponible Evaluacion"),
     CANCELADO("Cancelado"),
     CERRADO("Cerrado"),

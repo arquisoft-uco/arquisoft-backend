@@ -30,9 +30,9 @@ public class ProyectoGradoJpaEntity {
     @Column(name = "entregado_en")
     private Instant entregadoEn;
 
-    @Column(name = "finalizado_en")
-    private Instant finalizadoEn;
+    @Column(name = "estado_proyecto_id", nullable = false, length = 60)
+    private String estadoProyectoId;
 
-    @Column(name = "cancelado_en")
-    private Instant canceladoEn;
+    @Column(name = "ocurrido_en")
+    private Instant ocurridoEn;
 }

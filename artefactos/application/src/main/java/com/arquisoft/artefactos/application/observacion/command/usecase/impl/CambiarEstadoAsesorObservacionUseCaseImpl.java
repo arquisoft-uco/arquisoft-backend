@@ -10,7 +10,7 @@ import com.arquisoft.artefactos.application.observacion.command.secondaryport.Ob
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.mapper.ObservacionMapper;
 import com.arquisoft.artefactos.application.observacion.command.usecase.CambiarEstadoAsesorObservacionUseCase;
 import com.arquisoft.artefactos.application.observacion.command.validator.CambiarEstadoAsesorObservacionValidator;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorObservacionFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorObservacionFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorPorObservacionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVersionSiguientePorObservacionFinder;
@@ -47,7 +47,7 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
     private final CambiarEstadoAsesorObservacionValidator cambiarEstadoAsesorObservacionValidator;
     private final ObservacionOutputPort observacionOutputPort;
     private final EventPublisher eventPublisher;
-    private final ProyectoGradoPorObservacionFinder proyectoGradoPorObservacionFinder;
+    private final ProyectoGradoBloqueadoPorObservacionFinder proyectoGradoBloqueadoPorObservacionFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -73,7 +73,7 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
         var versiones = new VersionesDeObservacion(
                 version, ultimoNumeroVersion, revisionVersionSiguiente, descripcionRepetida);
 
-        var proyecto = proyectoGradoPorObservacionFinder.obtener(observacionId);
+        var proyecto = proyectoGradoBloqueadoPorObservacionFinder.obtener(observacionId);
         logger.debug(CambiarEstadoAsesorObservacionKey.LOG_VERIFICACION_CAMBIO_ESTADO,
                 !observacion.esVacio(), !revision.esVacio(), !artefacto.esVacio(), !asesor.esVacio(),
                 !version.esVacio(), !versionRepositorio.esVacio(), estudiantes.size(),

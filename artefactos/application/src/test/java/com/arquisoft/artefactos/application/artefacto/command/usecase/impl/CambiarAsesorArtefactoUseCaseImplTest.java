@@ -5,7 +5,7 @@ import com.arquisoft.artefactos.application.artefacto.command.secondaryport.Arte
 import com.arquisoft.artefactos.application.artefacto.command.validator.CambiarAsesorArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.CambioAsesorArtefactoDomain;
@@ -52,7 +52,7 @@ class CambiarAsesorArtefactoUseCaseImplTest {
     @Mock
     private ArtefactoOutputPort artefactoOutputPort;
     @Mock
-    private ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     @Mock
     private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     @Mock
@@ -69,7 +69,7 @@ class CambiarAsesorArtefactoUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        when(proyectoGradoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         artefactoId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         proyecto = UtilUUID.generarNuevoUUID();
@@ -102,7 +102,7 @@ class CambiarAsesorArtefactoUseCaseImplTest {
         orden.verify(vinculosMasRecientesProyectoGradoFinder, times(1)).obtener(proyecto);
         orden.verify(cambiarAsesorArtefactoValidator).validar(cambio, artefacto, asesor, vinculos);
         orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
-        verify(proyectoGradoPorArtefactoFinder, times(1)).obtener(any());
+        verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(any());
         orden.verify(artefactoOutputPort).cambiarAsesor(artefactoId, asesorId);
         orden.verify(logger).info(eq(ArtefactoKey.LOG_ASESOR_CAMBIADO), eq(artefactoId), eq(asesorId));
     }

@@ -13,6 +13,8 @@ import java.util.UUID;
 
 public interface EvaluacionCommandRepository extends JpaRepository<EvaluacionJpaEntity, UUID> {
 
+    boolean existsByEntregable(UUID entregable);
+
     @Modifying(clearAutomatically = true)
     @Query("update EvaluacionJpaEntity evaluacion "
             + "set evaluacion.estadoEvaluacion = :estado where evaluacion.id = :id")

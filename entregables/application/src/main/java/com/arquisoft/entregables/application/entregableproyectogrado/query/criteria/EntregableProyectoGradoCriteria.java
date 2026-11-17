@@ -12,6 +12,7 @@ public final class EntregableProyectoGradoCriteria extends QueryCriteria {
         PROYECTO_GRADO_ID    ("proyectoGradoId",     true, false),
         PROYECTO_GRADO_NOMBRE("proyectoGradoNombre", true, true),
         ASESOR_ID            ("asesorId",            true, false),
+        ASESOR_VIGENTE_ID    ("asesorVigenteId",     true, false),
         ASESOR_NOMBRE        ("asesorNombre",        true, true),
         ESTADO_ENTREGABLE    ("estadoEntregable",    true, false),
         VERSION_ENTREGABLE   ("versionEntregable",   true, true),

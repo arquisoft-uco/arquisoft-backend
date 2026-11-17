@@ -23,7 +23,7 @@ class EstadoEntregableProyectoGradoDomainTest {
         // Assert
         assertThat(estado.getId()).isNotNull();
         assertThat(estado.getEntregableProyectoGrado()).isEqualTo(entregable);
-        assertThat(estado.getEstadoEntregable()).isEqualTo(EstadoEntregable.DISPONIBLE_EVALUACION);
+        assertThat(estado.getEstadoEntregable()).isEqualTo(EstadoEntregable.NUEVO);
         assertThat(estado.getFechaActualizacion()).isNotNull();
         assertThat(estado.esVacio()).isFalse();
     }

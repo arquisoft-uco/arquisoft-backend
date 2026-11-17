@@ -12,8 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.data.jpa.repository.Lock;
 
+import jakarta.persistence.LockModeType;
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,8 +59,8 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var encontrado = adapter.obtenerPorAsesorYProyectoGrado(asesor, proyecto);
-        var ausente = adapter.obtenerPorAsesorYProyectoGrado(UtilUUID.generarNuevoUUID(), proyecto);
+        var encontrado = adapter.obtenerBloqueadoPorAsesorYProyectoGrado(asesor, proyecto);
+        var ausente = adapter.obtenerBloqueadoPorAsesorYProyectoGrado(UtilUUID.generarNuevoUUID(), proyecto);
 
         // Assert
         assertThat(encontrado).contains(buscado);
@@ -83,7 +86,7 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        assertThat(adapter.obtenerPorAsesorYProyectoGrado(asesor, proyecto)).contains(finalizado);
+        assertThat(adapter.obtenerBloqueadoPorAsesorYProyectoGrado(asesor, proyecto)).contains(finalizado);
         assertThat(entityManager.find(AsesorProyectoGradoJpaEntity.class, vigente.id()).getFinalizadoEn())
                 .isEqualTo(FINALIZADO_EN);
     }
@@ -203,5 +206,18 @@ class AsesorProyectoGradoCommandOutputAdapterTest {
             adapter.guardar(repetido);
             entityManager.flush();
         }).isInstanceOf(ConstraintViolationException.class);
+    }
+
+    @Test
+    void debeBloquearLaFilaDelVinculo_cuandoSeLeeParaEscribir() throws Exception {
+        // Arrange
+        var metodo = AsesorProyectoGradoCommandRepository.class.getMethod(
+                "buscarBloqueadoPorAsesorYProyectoGrado", UUID.class, UUID.class);
+
+        // Act
+        var lock = metodo.getAnnotation(Lock.class);
+
+        // Assert
+        assertThat(lock.value()).isEqualTo(LockModeType.PESSIMISTIC_WRITE);
     }
 }

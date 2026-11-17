@@ -9,6 +9,7 @@ import com.arquisoft.shared.query.SortOrder;
 import com.arquisoft.shared.query.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.pagination.SortDirection;
 import jakarta.persistence.EntityManager;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,10 +80,11 @@ class EvaluacionQueryOutputAdapterTest {
 
     private UUID sembrarEvaluacion(UUID entregable, String proyecto, int version, String estado) {
         entityManager.createNativeQuery(
-                        "INSERT INTO entregable (id, proyecto, version_entregable) VALUES (?, ?, ?)")
+                        "INSERT INTO entregable (id, proyecto, version_entregable, proyecto_grado_id) VALUES (?, ?, ?, ?)")
                 .setParameter(1, entregable)
                 .setParameter(2, proyecto + " " + sufijo)
                 .setParameter(3, version)
+                .setParameter(4, UtilUUID.generarNuevoUUID())
                 .executeUpdate();
         var evaluacion = UUID.randomUUID();
         entityManager.createNativeQuery(

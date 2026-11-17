@@ -209,6 +209,14 @@ biblioteca:
     url-base: ${BIBLIOTECA_ENLACES_URL_BASE:http://localhost:3000}
     ruta-documentacion: ${BIBLIOTECA_ENLACES_RUTA_DOCUMENTACION:/doc/{documentacionId}}
 
+# ==================== ENTREGABLES (almacenamiento) ====================
+# Bucket propio (lo crea minio/configurar.sh, nunca el backend): copia de cada artefacto cerrado bajo artefactos/ y
+# ZIP de cada entregable bajo paquetes/. bucket-artefactos es el origen de la copia (el bucket de artefactos).
+entregables:
+  almacenamiento:
+    bucket: ${ENTREGABLES_BUCKET:entregables}
+    bucket-artefactos: ${ENTREGABLES_BUCKET_ARTEFACTOS:${ARTEFACTOS_BUCKET:artefactos}}
+
 # ==================== DATASOURCES POR BOUNDED CONTEXT ====================
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
 # usando @ConfigurationProperties("datasource.{contexto}").

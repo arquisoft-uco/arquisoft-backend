@@ -52,6 +52,50 @@ class ContextoRegistroEvaluacionAsesorCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerContextoPorEvaluacionCualitativa_cuandoExiste() {
+        // Arrange
+        var evaluacionCualitativa = UtilUUID.generarNuevoUUID();
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var proyeccion = mock(ContextoRegistroEvaluacionAsesorProjection.class);
+        when(proyeccion.getId()).thenReturn(evaluacionAsesor);
+        when(proyeccion.getEvaluacion()).thenReturn(evaluacion);
+        when(proyeccion.getEstado()).thenReturn("EN_PROGRESO");
+        when(proyeccion.getEntregable()).thenReturn(entregable);
+        when(proyeccion.getAsesor()).thenReturn(asesor);
+        when(repository.buscarContextoBloqueadoPorEvaluacionCualitativa(evaluacionCualitativa))
+                .thenReturn(Optional.of(proyeccion));
+
+        // Act
+        var resultado = adapter.obtenerContextoBloqueadoPorEvaluacionCualitativa(evaluacionCualitativa);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(contexto -> {
+            assertThat(contexto.id()).isEqualTo(evaluacionAsesor);
+            assertThat(contexto.evaluacion()).isEqualTo(evaluacion);
+            assertThat(contexto.estado()).isEqualTo("EN_PROGRESO");
+            assertThat(contexto.entregable()).isEqualTo(entregable);
+            assertThat(contexto.asesor()).isEqualTo(asesor);
+        });
+    }
+
+    @Test
+    void debeRetornarVacioPorEvaluacionCualitativa_cuandoNoExiste() {
+        // Arrange
+        var evaluacionCualitativa = UtilUUID.generarNuevoUUID();
+        when(repository.buscarContextoBloqueadoPorEvaluacionCualitativa(evaluacionCualitativa))
+                .thenReturn(Optional.empty());
+
+        // Act
+        var resultado = adapter.obtenerContextoBloqueadoPorEvaluacionCualitativa(evaluacionCualitativa);
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
     void debeRetornarVacio_cuandoLaEvaluacionDeAsesorNoExiste() {
         // Arrange
         var evaluacionAsesor = UtilUUID.generarNuevoUUID();

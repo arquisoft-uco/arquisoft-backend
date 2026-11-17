@@ -7,6 +7,6 @@ public record AccesoPaqueteEntregable(
         UUID actor,
         boolean comoAsesor,
         boolean comoEstudiante,
-        UUID asesor,
+        UUID asesorVigente,
         boolean participa
 ) {}

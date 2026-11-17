@@ -18,7 +18,7 @@ import java.util.UUID;
 @Immutable
 @Subselect("""
         SELECT d.id                                 AS id,
-               d.url                                AS url,
+               p.titulo                             AS titulo_proyecto,
                d.fecha_publicacion                  AS fecha_publicacion,
                e.id                                 AS entregable_id,
                e.proyecto_grado_id                  AS proyecto_grado_id,
@@ -32,8 +32,10 @@ import java.util.UUID;
                  JOIN entregable_proyecto_grado e ON e.id = d.entregable_proyecto_grado_id
                  JOIN bibliotecario b ON b.id = d.bibliotecario_id
                  JOIN estado_documentacion s ON s.id = d.estado_documentacion_id
+                 LEFT JOIN proyecto_grado p ON p.id = e.proyecto_grado_id
         """)
-@Synchronize({"documentacion", "entregable_proyecto_grado", "bibliotecario", "estado_documentacion"})
+@Synchronize({"documentacion", "entregable_proyecto_grado", "bibliotecario", "estado_documentacion",
+        "proyecto_grado"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -44,8 +46,8 @@ public class DocumentacionJpaQueryEntity {
     @Column(name = "id", columnDefinition = "uuid")
     private UUID id;
 
-    @Column(name = "url")
-    private String url;
+    @Column(name = "titulo_proyecto")
+    private String tituloProyecto;
 
     @Column(name = "fecha_publicacion")
     private Instant fechaPublicacion;

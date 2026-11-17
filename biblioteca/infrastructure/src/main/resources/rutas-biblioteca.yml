@@ -9,6 +9,9 @@ rutas:
       base: /biblioteca
       estados-documentacion: /estados-documentacion
       documentaciones: /documentaciones
+      entregables-proyecto-grado: /entregables-proyecto-grado
       consultar: /consultar
       autores: /{documentacionId}/autores
       enlace: /{documentacionId}/enlace
+      descarga: /{documentacionId}/descarga
+      estado: /{documentacionId}/estado

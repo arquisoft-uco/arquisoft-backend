@@ -15,7 +15,7 @@ import com.arquisoft.proyectos.domain.estudiante.EstudianteDomain;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.model.ContactoEstudiante;
 import com.arquisoft.proyectos.domain.proyectogrado.CancelacionProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
-import com.arquisoft.proyectos.domain.proyectogrado.event.ProyectoGradoCanceladoEvent;
+import com.arquisoft.proyectos.domain.proyectogrado.event.ProyectoGradoEstadoCambiadoEvent;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoCancelableException;
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.logger.AppLogger;
@@ -116,9 +116,11 @@ class CancelarProyectoGradoUseCaseImplTest {
         assertThat(fila.getValue().estadoProyecto()).isEqualTo(EstadoProyecto.CANCELADO.getId());
         assertThat(fila.getValue().proyectoGrado()).isEqualTo(proyecto.getId());
         assertThat(fila.getValue().motivo()).isEqualTo("Falta de avance");
-        assertThat(evento.getValue()).isInstanceOfSatisfying(ProyectoGradoCanceladoEvent.class, publicado -> {
+        assertThat(evento.getValue()).isInstanceOfSatisfying(ProyectoGradoEstadoCambiadoEvent.class, publicado -> {
             assertThat(publicado.getProyectoGradoId()).isEqualTo(proyecto.getId());
             assertThat(publicado.getTituloProyecto()).isEqualTo("Sistema de gestión");
+            assertThat(publicado.getEstadoAnterior()).isEqualTo(EstadoProyecto.EN_PROCESO.getId());
+            assertThat(publicado.getEstadoNuevo()).isEqualTo(EstadoProyecto.CANCELADO.getId());
             assertThat(publicado.getMotivo()).isEqualTo("Falta de avance");
             assertThat(publicado.getEstudiantes()).containsExactly(
                     new ContactoEstudiante(ana.getId(), "Ana Ruiz", "ana.ruiz@soyuco.edu.co"),
@@ -157,7 +159,7 @@ class CancelarProyectoGradoUseCaseImplTest {
         // Assert
         var evento = ArgumentCaptor.forClass(DomainEvent.class);
         verify(eventPublisher).publish(evento.capture());
-        assertThat(evento.getValue()).isInstanceOfSatisfying(ProyectoGradoCanceladoEvent.class, publicado -> {
+        assertThat(evento.getValue()).isInstanceOfSatisfying(ProyectoGradoEstadoCambiadoEvent.class, publicado -> {
             assertThat(publicado.getEstudiantes()).isEmpty();
             assertThat(publicado.getAsesores()).isEmpty();
         });

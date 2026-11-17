@@ -5,7 +5,7 @@ import com.arquisoft.artefactos.application.observacion.command.finder.Observaci
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.ObservacionOutputPort;
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.entity.ObservacionEntity;
 import com.arquisoft.artefactos.application.observacion.command.validator.RegistrarObservacionValidator;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
@@ -57,7 +57,7 @@ class RegistrarObservacionUseCaseImplTest {
     @Mock
     private ObservacionOutputPort observacionOutputPort;
     @Mock
-    private ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private ProyectoGradoBloqueadoPorRevisionAsesorFinder proyectoGradoBloqueadoPorRevisionAsesorFinder;
     @Mock
     private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     @Mock
@@ -75,7 +75,7 @@ class RegistrarObservacionUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        when(proyectoGradoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+        when(proyectoGradoBloqueadoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         revisionId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         observacion = ObservacionDomain.crear(revisionId, "Detalle");
@@ -102,7 +102,7 @@ class RegistrarObservacionUseCaseImplTest {
         orden.verify(observacionDescripcionExisteFinder).obtener(observacion);
         orden.verify(validator).validar(registro, revision, artefacto, false);
         orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
-        verify(proyectoGradoPorRevisionAsesorFinder, times(1)).obtener(any());
+        verify(proyectoGradoBloqueadoPorRevisionAsesorFinder, times(1)).obtener(any());
         var captor = ArgumentCaptor.forClass(ObservacionEntity.class);
         orden.verify(observacionOutputPort).registrar(captor.capture());
         verify(revisionAsesorFinder, times(1)).obtener(any());

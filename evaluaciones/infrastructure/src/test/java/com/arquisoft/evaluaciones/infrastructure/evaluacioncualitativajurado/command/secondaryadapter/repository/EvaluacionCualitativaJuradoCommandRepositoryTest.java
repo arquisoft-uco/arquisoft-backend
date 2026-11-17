@@ -148,6 +148,34 @@ class EvaluacionCualitativaJuradoCommandRepositoryTest {
         assertThat(restantes).containsExactlyInAnyOrder(idNoPedido, idDeOtraEvaluacion);
     }
 
+    @Test
+    void debeActualizarElCriterioSinDuplicarLaFila_cuandoSeGuardaUnaEntidadExistente() {
+        // Arrange
+        var evaluacionJurado = UUID.randomUUID();
+        var id = sembrar(evaluacionJurado);
+        testEntityManager.flush();
+        testEntityManager.clear();
+        var item = repository.findById(id).orElseThrow().getItem();
+        var criterioNuevo = UUID.randomUUID();
+        testEntityManager.clear();
+
+        // Act
+        repository.save(EvaluacionCualitativaJuradoJpaEntity.builder()
+                .id(id)
+                .evaluacionJurado(evaluacionJurado)
+                .item(item)
+                .criterio(criterioNuevo)
+                .build());
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        // Assert
+        var actualizada = repository.findById(id).orElseThrow();
+        assertThat(actualizada.getCriterio()).isEqualTo(criterioNuevo);
+        assertThat(actualizada.getItem()).isEqualTo(item);
+        assertThat(repository.count()).isEqualTo(1);
+    }
+
     private UUID sembrar(UUID evaluacionJurado) {
         var entidad = EvaluacionCualitativaJuradoJpaEntity.builder()
                 .id(UUID.randomUUID())

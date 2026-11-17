@@ -11,7 +11,8 @@
       "Bash(gh pr create *)",
       "Bash(gh pr view *)",
       "Bash(gh pr list *)",
-      "Bash(gh pr checks *)"
+      "Bash(gh pr checks *)",
+      "Agent(4c-commit)"
     ],
     "deny": [
       "Bash(gh pr merge *)",

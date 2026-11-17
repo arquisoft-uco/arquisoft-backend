@@ -18,6 +18,8 @@ class EstadoEntregableTest {
         assertThat(estado).isEqualTo(EstadoEntregable.DISPONIBLE_EVALUACION);
         assertThat(estado.getId()).isEqualTo("DISPONIBLE_EVALUACION");
         assertThat(estado.getNombre()).isEqualTo("Disponible Evaluacion");
+        assertThat(EstadoEntregable.desde("NUEVO")).isEqualTo(EstadoEntregable.NUEVO);
+        assertThat(EstadoEntregable.desde("NUEVO").getNombre()).isEqualTo("Nuevo");
         assertThat(EstadoEntregable.esValido("CERRADO")).isTrue();
         assertThat(EstadoEntregable.esValido("CANCELADO")).isTrue();
         assertThat(EstadoEntregable.esValido("RECHAZADO")).isTrue();

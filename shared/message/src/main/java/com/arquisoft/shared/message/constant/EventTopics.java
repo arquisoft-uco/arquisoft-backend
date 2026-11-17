@@ -49,11 +49,8 @@ public final class EventTopics {
         public static final String ASESOR_PROYECTO_GRADO_FINALIZADO =
                 "proyectos.asesor_proyecto_grado.finalizado";
 
-        public static final String PROYECTO_GRADO_FINALIZADO =
-                "proyectos.proyecto_grado.finalizado";
-
-        public static final String PROYECTO_GRADO_CANCELADO =
-                "proyectos.proyecto_grado.cancelado";
+        public static final String PROYECTO_GRADO_ESTADO_CAMBIADO =
+                "proyectos.proyecto_grado.estado_cambiado";
     }
 
     public static final class Usuarios {
@@ -190,6 +187,8 @@ public final class EventTopics {
                 "artefactos.revision_asesor.estado_cambiado";
         public static final String ARTEFACTO_OMITIDO =
                 "artefactos.artefacto.omitido";
+        public static final String ARTEFACTO_REACTIVADO =
+                "artefactos.artefacto.reactivado";
         public static final String ARTEFACTO_VERSION_REPOSITORIO_CAMBIADA =
                 "artefactos.artefacto.version_repositorio_cambiada";
         public static final String REVISION_ASESOR_ENVIADA =
@@ -202,8 +201,6 @@ public final class EventTopics {
                 "artefactos.estudiante_artefacto.removido";
         public static final String VERSION_REPOSITORIO_ARTEFACTO_ELIMINACION_AUTORIZADA =
                 "artefactos.version_repositorio_artefacto.eliminacion_autorizada";
-        public static final String PAQUETE_ENTREGABLE_GENERADO =
-                "artefactos.paquete_entregable.generado";
     }
 
     public static final class MapasRuta {
@@ -231,5 +228,7 @@ public final class EventTopics {
                 "entregables.entregable_proyecto_grado.cancelado";
         public static final String ENTREGABLE_PROYECTO_GRADO_RECHAZADO =
                 "entregables.entregable_proyecto_grado.rechazado";
+        public static final String ENTREGABLE_PROYECTO_GRADO_DISPONIBLE_EVALUACION =
+                "entregables.entregable_proyecto_grado.disponible_evaluacion";
     }
 }

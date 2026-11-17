@@ -28,6 +28,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.estadoDe;
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.ocurridoEnDe;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -68,7 +70,7 @@ class ArtefactoSinAvanceQueryOutputAdapterTest {
 
     private UUID sembrarProyecto(String nombre) {
         var id = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(id, nombre, null, null, null));
+        entityManager.persist(new ProyectoGradoJpaEntity(id, nombre, null, "EN_PROCESO", null));
         return id;
     }
 
@@ -250,10 +252,33 @@ class ArtefactoSinAvanceQueryOutputAdapterTest {
     }
 
     private UUID sembrarArtefactoDeProyecto(String nombre, Instant finalizadoEn, Instant canceladoEn) {
+        return sembrarArtefactoDeProyectoConEstado(
+                nombre, estadoDe(finalizadoEn, canceladoEn), ocurridoEnDe(finalizadoEn, canceladoEn));
+    }
+
+    private UUID sembrarArtefactoDeProyectoConEstado(String nombre, String estado, Instant ocurridoEn) {
         var proyecto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, nombre, null, finalizadoEn, canceladoEn));
+        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, nombre, null, estado, ocurridoEn));
         var version = sembrarVersionRepositorio("Documento " + nombre, 1, "Repo " + nombre);
         return sembrarArtefacto(proyecto, version, asesorA);
+    }
+
+    @Test
+    void debeNoMarcarCierre_cuandoElProyectoEstaAtrasado() {
+        // Arrange
+        var atrasado = sembrarArtefactoDeProyectoConEstado("Atrasado", "ATRASADO", Instant.now());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarSinAvance(criteria(asesorA));
+
+        // Assert
+        assertThat(resultado.getContent()).filteredOn(a -> a.id().equals(atrasado)).singleElement()
+                .satisfies(a -> {
+                    assertThat(a.proyectoFinalizado()).isFalse();
+                    assertThat(a.proyectoCancelado()).isFalse();
+                });
     }
 
     @Test

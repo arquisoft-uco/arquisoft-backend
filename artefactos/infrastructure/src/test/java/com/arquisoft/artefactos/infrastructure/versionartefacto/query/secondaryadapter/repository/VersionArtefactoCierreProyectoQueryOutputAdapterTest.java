@@ -28,6 +28,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.estadoDe;
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.ocurridoEnDe;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -100,8 +102,15 @@ class VersionArtefactoCierreProyectoQueryOutputAdapterTest {
 
     private UUID sembrarVersionDeProyecto(
             String nombre, Instant finalizadoEn, Instant canceladoEn, UUID asesor, UUID estudiante) {
+        return sembrarVersionDeProyectoConEstado(
+                nombre, estadoDe(finalizadoEn, canceladoEn), ocurridoEnDe(finalizadoEn, canceladoEn),
+                asesor, estudiante);
+    }
+
+    private UUID sembrarVersionDeProyectoConEstado(
+            String nombre, String estado, Instant ocurridoEn, UUID asesor, UUID estudiante) {
         var proyecto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, nombre, null, finalizadoEn, canceladoEn));
+        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, nombre, null, estado, ocurridoEn));
         var documento = sembrarVersionRepositorio("Documento " + nombre, 1, "Repo " + nombre);
         var artefacto = sembrarArtefacto(proyecto, documento, asesor);
         entityManager.persist(new EstudianteArtefactoTestEntity(UtilUUID.generarNuevoUUID(), artefacto, estudiante));
@@ -123,6 +132,28 @@ class VersionArtefactoCierreProyectoQueryOutputAdapterTest {
         return NodoFiltro.grupo(FiltroConector.AND, List.of(
                 NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "false"),
                 NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false")));
+    }
+
+    @Test
+    void debeNoMarcarCierre_cuandoElProyectoEstaAtrasado() {
+        // Arrange
+        entityManager.persist(new AsesorJpaEntity(asesorA, "ID-Ana", "Ana", "ana@uco.edu.co", Instant.now(), null));
+        var atrasada = sembrarVersionDeProyectoConEstado("Atrasado", "ATRASADO", Instant.now(), asesorA, estudianteX);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var deAsesor = adapter.consultarTodasAsesor(criteria(asesorA, null));
+        var deEstudiante = adapter.consultarTodasEstudiante(criteriaEstudiante(estudianteX, null));
+
+        // Assert
+        for (var resultado : List.of(deAsesor, deEstudiante)) {
+            assertThat(resultado.getContent()).filteredOn(v -> v.id().equals(atrasada))
+                    .singleElement().satisfies(v -> {
+                        assertThat(v.proyectoFinalizado()).isFalse();
+                        assertThat(v.proyectoCancelado()).isFalse();
+                    });
+        }
     }
 
     @Test

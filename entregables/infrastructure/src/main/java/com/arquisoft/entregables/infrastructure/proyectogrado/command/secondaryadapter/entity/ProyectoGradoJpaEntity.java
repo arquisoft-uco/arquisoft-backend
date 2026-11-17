@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -28,4 +29,7 @@ public class ProyectoGradoJpaEntity {
 
     @Column(name = "estado_proyecto_id", nullable = false, length = 60)
     private String estadoProyectoId;
+
+    @Column(name = "ocurrido_en")
+    private Instant ocurridoEn;
 }

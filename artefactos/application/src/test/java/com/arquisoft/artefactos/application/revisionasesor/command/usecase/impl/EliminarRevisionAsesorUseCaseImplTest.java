@@ -9,7 +9,7 @@ import com.arquisoft.artefactos.domain.revisionasesor.EliminacionRevisionAsesorD
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionAsesorNoEliminableException;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
@@ -46,7 +46,7 @@ class EliminarRevisionAsesorUseCaseImplTest {
     @Mock
     private RevisionAsesorOutputPort revisionAsesorOutputPort;
     @Mock
-    private ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private ProyectoGradoBloqueadoPorRevisionAsesorFinder proyectoGradoBloqueadoPorRevisionAsesorFinder;
     @Mock
     private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     @Mock
@@ -57,7 +57,7 @@ class EliminarRevisionAsesorUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        when(proyectoGradoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+        when(proyectoGradoBloqueadoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
     }
 
     @Test
@@ -86,7 +86,7 @@ class EliminarRevisionAsesorUseCaseImplTest {
                 EstadoRevisionAsesor.PENDIENTE.getId());
         orden.verify(validator).validar(eliminacion, revision, artefacto);
         orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
-        verify(proyectoGradoPorRevisionAsesorFinder, times(1)).obtener(any());
+        verify(proyectoGradoBloqueadoPorRevisionAsesorFinder, times(1)).obtener(any());
         orden.verify(revisionAsesorOutputPort).eliminar(revisionId);
         orden.verify(logger).info(EliminarRevisionAsesorKey.LOG_ELIMINADA, revisionId);
         verify(revisionAsesorFinder, times(1)).obtener(any());

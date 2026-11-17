@@ -5,7 +5,7 @@ import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFin
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
 import com.arquisoft.artefactos.application.observacion.command.finder.ObservacionesDeRevisionExistenFinder;
 import com.arquisoft.artefactos.application.observacion.command.usecase.AvanzarObservacionesRevisionUseCase;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorRevisionAsesorFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.secondaryport.RevisionAsesorOutputPort;
@@ -80,7 +80,7 @@ class EnviarRevisionAsesorUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
-    private ProyectoGradoPorRevisionAsesorFinder proyectoGradoPorRevisionAsesorFinder;
+    private ProyectoGradoBloqueadoPorRevisionAsesorFinder proyectoGradoBloqueadoPorRevisionAsesorFinder;
     @Mock
     private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     @Mock
@@ -102,7 +102,7 @@ class EnviarRevisionAsesorUseCaseImplTest {
 
     @BeforeEach
     void prepararEscenario() {
-        when(proyectoGradoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
+        when(proyectoGradoBloqueadoPorRevisionAsesorFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         revisionId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         versionId = UtilUUID.generarNuevoUUID();
@@ -160,7 +160,7 @@ class EnviarRevisionAsesorUseCaseImplTest {
         orden.verify(validator).validar(envio, revision, artefacto, asesor, version, versionRepositorio,
                 new ObservacionesDeRevision(revisionId, true));
         orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
-        verify(proyectoGradoPorRevisionAsesorFinder, times(1)).obtener(any());
+        verify(proyectoGradoBloqueadoPorRevisionAsesorFinder, times(1)).obtener(any());
         orden.verify(revisionAsesorOutputPort).actualizarEstado(revisionId, "EN_PROGRESO");
         orden.verify(avanzarObservacionesRevisionUseCase).ejecutar(envio.getObservaciones());
         var captor = ArgumentCaptor.forClass(RevisionAsesorEnviadaEvent.class);

@@ -30,7 +30,7 @@ class ProyectoGradoPorIdFinderImplTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         when(proyectoGradoOutputPort.obtenerPorId(id))
-                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Sistema de gestion", "FINALIZADO")));
+                .thenReturn(Optional.of(new ProyectoGradoEntity(id, "Sistema de gestion", "FINALIZADO", null)));
 
         // Act
         var resultado = finder.obtener(id);

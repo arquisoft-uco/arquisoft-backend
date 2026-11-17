@@ -9,10 +9,11 @@ import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.util.UUID;
 
-public record CambiarEstadoEntregableProyectoGradoCommand(UUID entregableProyectoGrado, String estadoEntregable) {
+public record CambiarEstadoEntregableProyectoGradoCommand(
+        UUID entregableProyectoGrado, String estadoEntregable, UUID asesor) {
 
     public static CambiarEstadoEntregableProyectoGradoCommand crear(
-            UUID entregableProyectoGrado, String estadoEntregable) {
+            UUID entregableProyectoGrado, String estadoEntregable, UUID asesor) {
         var result = new ValidationResult();
         var estadoRecortado = UtilTexto.aplicarTrim(estadoEntregable);
 
@@ -22,8 +23,12 @@ public record CambiarEstadoEntregableProyectoGradoCommand(UUID entregableProyect
         ValidatorTexto.noEnBlanco(estadoRecortado,
                 EntregablesFields.EntregableProyectoGrado.ESTADO_ENTREGABLE,
                 EntregablesCodes.EntregableProyectoGrado.ESTADO_ENTREGABLE_REQUERIDO, result);
+        ValidatorObjeto.noNulo(asesor,
+                EntregablesFields.EntregableProyectoGrado.ASESOR,
+                EntregablesCodes.EntregableProyectoGrado.ASESOR_REQUERIDO, result);
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new CambiarEstadoEntregableProyectoGradoCommand(entregableProyectoGrado, estadoRecortado);
+        return new CambiarEstadoEntregableProyectoGradoCommand(
+                entregableProyectoGrado, estadoRecortado, asesor);
     }
 }

@@ -8,7 +8,7 @@ import com.arquisoft.artefactos.application.artefacto.command.validator.Registra
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorIdFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
@@ -24,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RegistrarArtefactoUseCaseImpl implements RegistrarArtefactoUseCase {
 
-    private final ProyectoGradoPorIdFinder proyectoGradoPorIdFinder;
+    private final ProyectoGradoBloqueadoPorIdFinder proyectoGradoBloqueadoPorIdFinder;
     private final AsesorPorIdFinder asesorPorIdFinder;
     private final VinculosMasRecientesProyectoGradoFinder vinculosMasRecientesProyectoGradoFinder;
     private final VersionRepositorioArtefactoBloqueadaPorIdFinder versionRepositorioArtefactoBloqueadaPorIdFinder;
@@ -39,12 +39,12 @@ public class RegistrarArtefactoUseCaseImpl implements RegistrarArtefactoUseCase 
     public UUID ejecutar(AsignacionArtefactoDomain registro) {
         var artefacto = registro.getArtefacto();
 
-        var proyecto = proyectoGradoPorIdFinder.obtener(artefacto.getProyectoGrado());
         var asesor = asesorPorIdFinder.obtener(artefacto.getAsesor());
         var vinculosMasRecientes = vinculosMasRecientesProyectoGradoFinder.obtener(artefacto.getProyectoGrado());
         var versionRepositorio = versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(
                 artefacto.getVersionRepositorioArtefacto());
         var versionesAsignadas = versionesAsignadasProyectoFinder.obtener(artefacto.getProyectoGrado());
+        var proyecto = proyectoGradoBloqueadoPorIdFinder.obtener(artefacto.getProyectoGrado());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_REGISTRAR,
                 !proyecto.esVacio(), !asesor.esVacio() && !asesor.estaEliminado(),
                 vinculosMasRecientes.size(), !versionRepositorio.esVacio(), versionesAsignadas.size());

@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -61,7 +62,7 @@ class ConsultarEnlaceDocumentacionUseCaseImplTest {
         var bibliotecario = new DocumentacionReadModel.BibliotecarioResumen(UtilUUID.generarNuevoUUID(), "Ana");
         var estado = new DocumentacionReadModel.EstadoDocumentacionResumen("PUBLICADO", "Publicado");
         var leida = new DocumentacionReadModel(id, "https://archivo.test/secreto",
-                Instant.parse("2026-11-10T10:00:00Z"), entregable, bibliotecario, estado);
+                Instant.parse("2026-11-10T10:00:00Z"), entregable, bibliotecario, estado, List.of());
         when(estadoDeDocumentacionQueryFinder.obtener(id)).thenReturn(EstadoDocumentacion.PUBLICADO);
         when(documentacionQueryOutputPort.consultarPorId(id)).thenReturn(leida);
         when(enlaceDocumentacionQueryOutputPort.generar(id)).thenReturn("https://front.test/doc/" + id);

@@ -18,7 +18,7 @@ final class EntregableProyectoGradoSortMapper {
                 case PROYECTO_GRADO_NOMBRE -> "proyectoGradoNombre";
                 case ASESOR_NOMBRE -> "asesorNombre";
                 case VERSION_ENTREGABLE -> "versionEntregable";
-                case PROYECTO_GRADO_ID, ASESOR_ID, ESTADO_ENTREGABLE, PROYECTO_FINALIZADO, PROYECTO_CANCELADO -> null;
+                case PROYECTO_GRADO_ID, ASESOR_ID, ASESOR_VIGENTE_ID, ESTADO_ENTREGABLE, PROYECTO_FINALIZADO, PROYECTO_CANCELADO -> null;
             };
             if (UtilObjeto.noEsNulo(ruta)) {
                 m.put(campo.getClave(), ruta);

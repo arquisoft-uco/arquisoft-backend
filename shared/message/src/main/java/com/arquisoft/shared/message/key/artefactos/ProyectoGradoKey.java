@@ -15,13 +15,9 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     LOG_VERIFICACION_CONGELAR("artefactos.aplicacion.proyectogrado.log.verificacion-congelar", 2),
     LOG_CONGELADO("artefactos.aplicacion.proyectogrado.log.congelado", 1),
     LOG_YA_CONGELADO("artefactos.aplicacion.proyectogrado.log.ya-congelado", 1),
-    LOG_FINALIZACION_RECIBIDA("artefactos.infraestructura.proyectogrado.log.finalizacion-recibida", 3),
-    LOG_VERIFICACION_FINALIZAR("artefactos.aplicacion.proyectogrado.log.verificacion-finalizar", 2),
-    LOG_FINALIZADO("artefactos.aplicacion.proyectogrado.log.finalizado", 1),
-    LOG_YA_FINALIZADO("artefactos.aplicacion.proyectogrado.log.ya-finalizado", 1),
+    LOG_ENTREGABLE_GENERADO_RECIBIDO("artefactos.infraestructura.proyectogrado.log.entregable-generado-recibido", 4),
     LOG_VERIFICACION_CONGELAMIENTO("artefactos.aplicacion.proyectogrado.log.verificacion-congelamiento", 2),
     LOG_ENTREGADO_MARCADO("artefactos.infraestructura.proyectogrado.log.entregado-marcado", 2),
-    LOG_FINALIZADO_MARCADO("artefactos.infraestructura.proyectogrado.log.finalizado-marcado", 2),
     LOG_CANCELACION_RECIBIDA("artefactos.infraestructura.proyectogrado.log.cancelacion-recibida", 4),
     LOG_VERIFICACION_DESCONGELAR("artefactos.aplicacion.proyectogrado.log.verificacion-descongelar", 2),
     LOG_DESCONGELADO("artefactos.aplicacion.proyectogrado.log.descongelado", 1),
@@ -31,11 +27,13 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     ERROR_CONGELADO_DETALLE("artefactos.dominio.proyectogrado.error.congelado-detalle", 1),
     ERROR_NO_CONCLUIDO("artefactos.dominio.proyectogrado.error.no-concluido", 1),
     ERROR_NO_CONCLUIDO_DETALLE("artefactos.dominio.proyectogrado.error.no-concluido-detalle", 1),
-    LOG_CANCELACION_PROYECTO_RECIBIDA("artefactos.infraestructura.proyectogrado.log.cancelacion-proyecto-recibida", 3),
-    LOG_VERIFICACION_CANCELAR("artefactos.aplicacion.proyectogrado.log.verificacion-cancelar", 2),
-    LOG_CANCELADO("artefactos.aplicacion.proyectogrado.log.cancelado", 1),
-    LOG_YA_CANCELADO("artefactos.aplicacion.proyectogrado.log.ya-cancelado", 1),
-    LOG_CANCELADO_MARCADO("artefactos.infraestructura.proyectogrado.log.cancelado-marcado", 2);
+    LOG_ESTADO_RECIBIDO("artefactos.infraestructura.proyectogrado.log.estado-recibido", 4),
+    LOG_VERIFICACION_ACTUALIZAR_ESTADO("artefactos.aplicacion.proyectogrado.log.verificacion-actualizar-estado", 2),
+    LOG_ESTADO_APLICADO("artefactos.aplicacion.proyectogrado.log.estado-aplicado", 2),
+    LOG_ESTADO_DESCARTADO("artefactos.aplicacion.proyectogrado.log.estado-descartado", 2),
+    LOG_ESTADO_ACTUALIZADO("artefactos.infraestructura.proyectogrado.log.estado-actualizado", 3),
+    ERROR_ESTADO_NO_ENCONTRADO("artefactos.dominio.proyectogrado.error.estado-no-encontrado", 0),
+    ERROR_ESTADO_NO_ENCONTRADO_DETALLE("artefactos.dominio.proyectogrado.error.estado-no-encontrado-detalle", 1);
 
     private final String clave;
     private final int parametros;

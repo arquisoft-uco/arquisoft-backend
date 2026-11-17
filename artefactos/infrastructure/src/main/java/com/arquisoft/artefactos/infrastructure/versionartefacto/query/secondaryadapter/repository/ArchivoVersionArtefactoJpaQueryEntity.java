@@ -22,7 +22,7 @@ import java.util.UUID;
                a.asesor_id          AS asesor_id,
                vra.nombre_documento AS nombre_documento,
                pg.nombre            AS nombre_proyecto,
-               (pg.finalizado_en IS NOT NULL OR pg.cancelado_en IS NOT NULL) AS proyecto_finalizado
+               pg.estado_proyecto_id IN ('FINALIZADO', 'CANCELADO') AS proyecto_finalizado
         FROM version_artefacto va
                  JOIN artefacto a ON a.id = va.artefacto_id
                  JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id

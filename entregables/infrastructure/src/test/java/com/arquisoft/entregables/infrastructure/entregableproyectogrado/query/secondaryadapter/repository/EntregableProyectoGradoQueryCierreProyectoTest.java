@@ -4,6 +4,7 @@ import com.arquisoft.entregables.application.entregableproyectogrado.query.crite
 import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.mapper.ConsultarEntregablesProyectoGradoAsesorMapper;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.model.ConsultarEntregablesProyectoGradoAsesorQuery;
 import com.arquisoft.entregables.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
+import com.arquisoft.entregables.infrastructure.asesorproyectogrado.command.secondaryadapter.entity.AsesorProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.estadoentregableproyectogrado.command.secondaryadapter.entity.EstadoEntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
@@ -72,6 +73,9 @@ class EntregableProyectoGradoQueryCierreProyectoTest {
                 .id(proyecto).nombre("Proyecto " + estadoProyecto).estadoProyectoId(estadoProyecto).build());
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(new EntregableProyectoGradoJpaEntity(id, proyecto, 1, asesor));
+        entityManager.persist(AsesorProyectoGradoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID()).asesorId(asesor).proyectoGradoId(proyecto)
+                .ocurridoEn(FECHA_BASE).build());
         entityManager.persist(new EstadoEntregableProyectoGradoJpaEntity(
                 UtilUUID.generarNuevoUUID(), id, estadoEntregable, FECHA_BASE));
         return id;

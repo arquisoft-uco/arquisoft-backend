@@ -3,7 +3,7 @@ package com.arquisoft.entregables.infrastructure.artefactoentregable.query.prima
 import com.arquisoft.entregables.application.artefactoentregable.query.primaryport.interactor.ConsultarArtefactosEntregableInteractor;
 import com.arquisoft.entregables.application.artefactoentregable.query.primaryport.model.ConsultarArtefactosEntregableQuery;
 import com.arquisoft.entregables.application.artefactoentregable.query.readmodel.ArtefactoEntregableReadModel;
-import com.arquisoft.entregables.domain.entregableproyectogrado.exception.AsesorNoPropietarioEntregableProyectoGradoException;
+import com.arquisoft.entregables.domain.asesorproyectogrado.exception.AsesorNoAsignadoProyectoGradoException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
@@ -130,17 +130,17 @@ class ConsultarArtefactosEntregableControllerTest {
     }
 
     @Test
-    void debeResponder422_cuandoElEntregableNoEsDelAsesor() throws Exception {
+    void debeResponder422_cuandoElAsesorNoEstaAsignadoAlProyecto() throws Exception {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(any(ConsultarArtefactosEntregableQuery.class)))
-                .thenThrow(new AsesorNoPropietarioEntregableProyectoGradoException(
+                .thenThrow(new AsesorNoAsignadoProyectoGradoException(
                         UtilUUID.generarNuevoUUID(), entregable));
 
         // Act & Assert
         mockMvc.perform(get(ruta(entregable.toString())).with(jwt()))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode")
-                        .value(EntregablesCodes.EntregableProyectoGrado.ASESOR_NO_PROPIETARIO));
+                        .value(EntregablesCodes.AsesorProyectoGrado.NO_ASIGNADO));
     }
 }

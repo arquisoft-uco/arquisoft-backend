@@ -37,13 +37,6 @@ public final class ArtefactosLimits {
         public static final int DESCRIPCION_MAX = 1000;
     }
 
-    public static final class PaqueteEntregable {
-
-        private PaqueteEntregable() {}
-
-        public static final int CLAVE_OBJETO_MAX = 2000;
-    }
-
     public static final class ProyectoGrado {
 
         private ProyectoGrado() {}

@@ -10,7 +10,7 @@ public final class DocumentacionResponseMapper {
     public static DocumentacionResponseDTO toResponse(DocumentacionReadModel readModel) {
         return new DocumentacionResponseDTO(
                 readModel.id(),
-                readModel.url(),
+                readModel.tituloProyecto(),
                 readModel.fechaPublicacion(),
                 new DocumentacionResponseDTO.EntregableProyectoGradoResponseDTO(
                         readModel.entregableProyectoGrado().id(),
@@ -22,6 +22,10 @@ public final class DocumentacionResponseMapper {
                         readModel.bibliotecario().nombre()),
                 new DocumentacionResponseDTO.EstadoDocumentacionResponseDTO(
                         readModel.estadoDocumentacion().id(),
-                        readModel.estadoDocumentacion().nombre()));
+                        readModel.estadoDocumentacion().nombre()),
+                readModel.autores().stream()
+                        .map(autor -> new DocumentacionResponseDTO.AutorResponseDTO(
+                                autor.id(), autor.identificador(), autor.nombre()))
+                        .toList());
     }
 }

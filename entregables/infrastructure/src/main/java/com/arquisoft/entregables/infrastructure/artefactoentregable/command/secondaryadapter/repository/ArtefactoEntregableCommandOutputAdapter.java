@@ -9,27 +9,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class ArtefactoEntregableCommandOutputAdapter implements ArtefactoEntregableOutputPort {
 
-    private final ArtefactoCommandRepository artefactoCommandRepository;
     private final ArtefactoEntregableCommandRepository artefactoEntregableCommandRepository;
     private final AppLogger logger;
-
-    @Override
-    public List<UUID> obtenerIdsExistentes(List<UUID> versionesArtefacto) {
-        return artefactoCommandRepository.buscarIdsExistentes(versionesArtefacto);
-    }
-
-    @Override
-    public void guardarArtefactos(List<ArtefactoEntregableEntity> artefactos) {
-        artefactoCommandRepository.saveAll(
-                artefactos.stream().map(ArtefactoEntregableJpaMapper::toArtefactoJpaEntity).toList());
-        logger.debug(ArtefactoEntregableKey.LOG_ARTEFACTOS_GUARDADOS, artefactos.size());
-    }
 
     @Override
     public void vincular(List<ArtefactoEntregableEntity> artefactos) {

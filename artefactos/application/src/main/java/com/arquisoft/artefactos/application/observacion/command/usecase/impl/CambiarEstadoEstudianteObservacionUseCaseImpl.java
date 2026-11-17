@@ -7,7 +7,7 @@ import com.arquisoft.artefactos.application.observacion.command.finder.model.Par
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.ObservacionOutputPort;
 import com.arquisoft.artefactos.application.observacion.command.usecase.CambiarEstadoEstudianteObservacionUseCase;
 import com.arquisoft.artefactos.application.observacion.command.validator.CambiarEstadoEstudianteObservacionValidator;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorObservacionFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorObservacionFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorPorObservacionFinder;
 import com.arquisoft.artefactos.domain.observacion.CambioEstadoEstudianteObservacionDomain;
@@ -27,7 +27,7 @@ public class CambiarEstadoEstudianteObservacionUseCaseImpl implements CambiarEst
     private final EstudianteParticipaObservacionFinder estudianteParticipaObservacionFinder;
     private final CambiarEstadoEstudianteObservacionValidator cambiarEstadoEstudianteObservacionValidator;
     private final ObservacionOutputPort observacionOutputPort;
-    private final ProyectoGradoPorObservacionFinder proyectoGradoPorObservacionFinder;
+    private final ProyectoGradoBloqueadoPorObservacionFinder proyectoGradoBloqueadoPorObservacionFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -45,7 +45,7 @@ public class CambiarEstadoEstudianteObservacionUseCaseImpl implements CambiarEst
         var vinculado = estudianteParticipaObservacionFinder.obtener(
                 new ParticipacionEstudianteObservacion(observacionId, cambio.getEstudiante()));
 
-        var proyecto = proyectoGradoPorObservacionFinder.obtener(observacionId);
+        var proyecto = proyectoGradoBloqueadoPorObservacionFinder.obtener(observacionId);
         logger.debug(CambiarEstadoEstudianteObservacionKey.LOG_VERIFICACION_CAMBIO_ESTADO,
                 !observacion.esVacio(), !revision.esVacio(), !artefacto.esVacio(), vinculado);
 

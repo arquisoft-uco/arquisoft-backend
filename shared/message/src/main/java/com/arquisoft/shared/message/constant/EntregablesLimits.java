@@ -11,6 +11,13 @@ public final class EntregablesLimits {
         public static final int ULTIMA_VERSION_MIN = 0;
     }
 
+    public static final class Artefacto {
+
+        private Artefacto() {}
+
+        public static final int NUMERO_VERSION_MIN = 1;
+    }
+
     public static final class ArtefactoEntregable {
 
         private ArtefactoEntregable() {}

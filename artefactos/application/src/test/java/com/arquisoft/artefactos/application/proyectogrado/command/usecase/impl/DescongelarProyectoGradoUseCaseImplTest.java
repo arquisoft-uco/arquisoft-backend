@@ -6,6 +6,7 @@ import com.arquisoft.artefactos.application.proyectogrado.command.secondaryport.
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.DescongelarProyectoGradoValidator;
 import com.arquisoft.artefactos.domain.proyectogrado.DescongelacionProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.model.EstadoProyecto;
 import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.artefactos.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.shared.logger.AppLogger;
@@ -52,7 +53,7 @@ class DescongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var descongelacion = DescongelacionProyectoGradoDomain.crear(id, CANCELADO_EN);
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), UtilFecha.VACIO, null));
+                id, "Proyecto", Instant.parse("2026-11-01T10:00:00Z"), EstadoProyecto.EN_PROCESO, null));
 
         // Act
         var resultado = useCase.ejecutar(descongelacion);
@@ -71,7 +72,7 @@ class DescongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var descongelacion = DescongelacionProyectoGradoDomain.crear(id, CANCELADO_EN);
         when(proyectoGradoPorIdFinder.obtener(id))
-                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", CANCELADO_EN, UtilFecha.VACIO, null));
+                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", CANCELADO_EN, EstadoProyecto.EN_PROCESO, null));
 
         // Act
         var resultado = useCase.ejecutar(descongelacion);
@@ -87,7 +88,7 @@ class DescongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var descongelacion = DescongelacionProyectoGradoDomain.crear(id, CANCELADO_EN);
         when(proyectoGradoPorIdFinder.obtener(id)).thenReturn(ProyectoGradoDomain.reconstruir(
-                id, "Proyecto", Instant.parse("2026-11-03T10:00:00Z"), UtilFecha.VACIO, null));
+                id, "Proyecto", Instant.parse("2026-11-03T10:00:00Z"), EstadoProyecto.EN_PROCESO, null));
 
         // Act
         var resultado = useCase.ejecutar(descongelacion);
@@ -103,7 +104,7 @@ class DescongelarProyectoGradoUseCaseImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var descongelacion = DescongelacionProyectoGradoDomain.crear(id, CANCELADO_EN);
         when(proyectoGradoPorIdFinder.obtener(id))
-                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, UtilFecha.VACIO, null));
+                .thenReturn(ProyectoGradoDomain.reconstruir(id, "Proyecto", UtilFecha.VACIO, EstadoProyecto.EN_PROCESO, null));
 
         // Act
         var resultado = useCase.ejecutar(descongelacion);

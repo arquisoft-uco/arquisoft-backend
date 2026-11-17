@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -70,11 +71,12 @@ class ConsultarDocumentacionesControllerTest {
         // Arrange
         var fecha = Instant.parse("2026-11-10T10:00:00Z");
         var documentacion = new DocumentacionReadModel(
-                UtilUUID.generarNuevoUUID(), "https://biblioteca.test/doc", fecha,
+                UtilUUID.generarNuevoUUID(), "Proyecto", fecha,
                 new DocumentacionReadModel.EntregableProyectoGradoResumen(
                         UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2, "Aprobado"),
                 new DocumentacionReadModel.BibliotecarioResumen(UtilUUID.generarNuevoUUID(), "Ana"),
-                new DocumentacionReadModel.EstadoDocumentacionResumen("PUBLICADO", "Publicado"));
+                new DocumentacionReadModel.EstadoDocumentacionResumen("PUBLICADO", "Publicado"),
+                List.of(new DocumentacionReadModel.AutorResumen(UtilUUID.generarNuevoUUID(), "AUT-1", "Beto")));
         when(consultarDocumentacionesInteractor.ejecutar(any(ConsultarDocumentacionesQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(documentacion), 0, 10, 1L));
         var sujeto = UtilUUID.generarNuevoUUID().toString();
@@ -87,7 +89,11 @@ class ConsultarDocumentacionesControllerTest {
                                 .jwt(j -> j.subject(sujeto).claim("roles", List.of("estudiante")))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(documentacion.id().toString()))
-                .andExpect(jsonPath("$.content[0].url").value("https://biblioteca.test/doc"))
+                .andExpect(jsonPath("$.content[0].url").doesNotExist())
+                .andExpect(jsonPath("$.content[0].tituloProyecto").value("Proyecto"))
+                .andExpect(jsonPath("$.content[0].autores[0].identificador").value("AUT-1"))
+                .andExpect(jsonPath("$.content[0].autores[0].nombre").value("Beto"))
+                .andExpect(jsonPath("$.content[0].autores[0].email").doesNotExist())
                 .andExpect(jsonPath("$.content[0].bibliotecario.nombre").value("Ana"))
                 .andExpect(jsonPath("$.content[0].estadoDocumentacion.id").value("PUBLICADO"))
                 .andExpect(jsonPath("$.content[0].entregableProyectoGrado.versionEntregable").value(2))
@@ -96,6 +102,31 @@ class ConsultarDocumentacionesControllerTest {
         var captor = ArgumentCaptor.forClass(ConsultarDocumentacionesQuery.class);
         verify(consultarDocumentacionesInteractor).ejecutar(captor.capture());
         assertThat(captor.getValue().roles()).containsExactly(RolConsultaDocumentacion.ESTUDIANTE);
+    }
+
+    @Test
+    void debeSerializarTituloNuloYAutoresVacio_cuandoNoHayProyectoNiVinculos() throws Exception {
+        // Arrange
+        var documentacion = new DocumentacionReadModel(
+                UtilUUID.generarNuevoUUID(), null, Instant.parse("2026-11-10T10:00:00Z"),
+                new DocumentacionReadModel.EntregableProyectoGradoResumen(
+                        UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2, "Aprobado"),
+                new DocumentacionReadModel.BibliotecarioResumen(UtilUUID.generarNuevoUUID(), "Ana"),
+                new DocumentacionReadModel.EstadoDocumentacionResumen("PUBLICADO", "Publicado"),
+                List.of());
+        when(consultarDocumentacionesInteractor.ejecutar(any(ConsultarDocumentacionesQuery.class)))
+                .thenReturn(PaginatedResult.of(List.of(documentacion), 0, 10, 1L));
+        var sujeto = UtilUUID.generarNuevoUUID().toString();
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"pagina\":0,\"tamanio\":10}")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(j -> j.subject(sujeto))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].tituloProyecto").value(nullValue()))
+                .andExpect(jsonPath("$.content[0].autores").isArray())
+                .andExpect(jsonPath("$.content[0].autores").isEmpty());
     }
 
     @Test

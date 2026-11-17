@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.usecase.impl;
 
+import com.arquisoft.proyectos.application.asesor.command.finder.AsesoresAsignadosDeProyectoGradoFinder;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.finder.AsesorAsignadoProyectoGradoFinder;
 import com.arquisoft.proyectos.application.entregableproyectogrado.command.finder.UltimoEntregableProyectoGradoFinder;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
@@ -8,6 +9,8 @@ import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondary
 import com.arquisoft.proyectos.application.estudiante.command.finder.EstudiantesVigentesDeProyectoGradoFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.CambiarEstadoProyectoGradoValidator;
+import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
+import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
 import com.arquisoft.proyectos.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
@@ -15,7 +18,7 @@ import com.arquisoft.proyectos.domain.estudiante.EstudianteDomain;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.model.ContactoEstudiante;
 import com.arquisoft.proyectos.domain.proyectogrado.CambioEstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
-import com.arquisoft.proyectos.domain.proyectogrado.event.ProyectoGradoFinalizadoEvent;
+import com.arquisoft.proyectos.domain.proyectogrado.event.ProyectoGradoEstadoCambiadoEvent;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.TransicionEstadoProyectoNoPermitidaException;
 import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.shared.events.DomainEvent;
@@ -66,6 +69,9 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
     private EstudiantesVigentesDeProyectoGradoFinder estudiantesVigentesDeProyectoGradoFinder;
 
     @Mock
+    private AsesoresAsignadosDeProyectoGradoFinder asesoresAsignadosDeProyectoGradoFinder;
+
+    @Mock
     private CambiarEstadoProyectoGradoValidator validator;
 
     @Mock
@@ -91,12 +97,23 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
                 Instant.parse("2026-09-01T10:00:00Z"), null);
     }
 
-    private void stubFinders(List<EstudianteDomain> estudiantes) {
+    private AsesorDomain asesor(String nombre, String email) {
+        return AsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(), "2015", nombre, email,
+                Instant.parse("2026-09-01T10:00:00Z"), null);
+    }
+
+    private void stubFinders(List<EstudianteDomain> estudiantes, List<AsesorDomain> asesores) {
+        stubFinders(estadoActual, estudiantes, asesores);
+    }
+
+    private void stubFinders(EstadoProyectoGradoDomain estado, List<EstudianteDomain> estudiantes,
+                             List<AsesorDomain> asesores) {
         when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
-        when(estadoActualProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estadoActual);
+        when(estadoActualProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estado);
         when(asesorAsignadoProyectoGradoFinder.obtener(entrada)).thenReturn(true);
         when(ultimoEntregableProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(ultimoEntregable);
         when(estudiantesVigentesDeProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estudiantes);
+        when(asesoresAsignadosDeProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(asesores);
     }
 
     @Test
@@ -105,7 +122,8 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
         var ana = estudiante("Ana Ruiz", "ana.ruiz@soyuco.edu.co");
         var luis = estudiante("Luis Diaz", "luis.diaz@soyuco.edu.co");
         var eva = estudiante("Eva Mora", "eva.mora@soyuco.edu.co");
-        stubFinders(List.of(ana, luis, eva));
+        var mario = asesor("Mario Peña", "mario.pena@uco.edu.co");
+        stubFinders(List.of(ana, luis, eva), List.of(mario));
 
         // Act
         useCase.ejecutar(entrada);
@@ -117,19 +135,24 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
         verify(eventPublisher).publish(evento.capture());
         assertThat(fila.getValue().estadoProyecto()).isEqualTo(EstadoProyecto.FINALIZADO.getId());
         assertThat(fila.getValue().proyectoGrado()).isEqualTo(proyecto.getId());
-        assertThat(evento.getValue()).isInstanceOfSatisfying(ProyectoGradoFinalizadoEvent.class, publicado -> {
+        assertThat(evento.getValue()).isInstanceOfSatisfying(ProyectoGradoEstadoCambiadoEvent.class, publicado -> {
             assertThat(publicado.getProyectoGradoId()).isEqualTo(proyecto.getId());
             assertThat(publicado.getTituloProyecto()).isEqualTo("Sistema de gestión");
+            assertThat(publicado.getEstadoAnterior()).isEqualTo(EstadoProyecto.EN_PROCESO.getId());
+            assertThat(publicado.getEstadoNuevo()).isEqualTo(EstadoProyecto.FINALIZADO.getId());
+            assertThat(publicado.getMotivo()).isEmpty();
             assertThat(publicado.getEstudiantes()).containsExactly(
                     new ContactoEstudiante(ana.getId(), "Ana Ruiz", "ana.ruiz@soyuco.edu.co"),
                     new ContactoEstudiante(luis.getId(), "Luis Diaz", "luis.diaz@soyuco.edu.co"),
                     new ContactoEstudiante(eva.getId(), "Eva Mora", "eva.mora@soyuco.edu.co"));
+            assertThat(publicado.getAsesores()).containsExactly(
+                    new ContactoAsesor("Mario Peña", "mario.pena@uco.edu.co"));
         });
 
         var orden = inOrder(proyectoGradoBloqueadoPorIdFinder, estadoActualProyectoGradoFinder,
                 asesorAsignadoProyectoGradoFinder, ultimoEntregableProyectoGradoFinder,
-                estudiantesVigentesDeProyectoGradoFinder, validator, estadoProyectoGradoOutputPort,
-                eventPublisher, logger);
+                estudiantesVigentesDeProyectoGradoFinder, asesoresAsignadosDeProyectoGradoFinder, validator,
+                estadoProyectoGradoOutputPort, eventPublisher, logger);
         orden.verify(logger).info(eq(ProyectoGradoKey.LOG_CAMBIANDO_ESTADO),
                 eq(proyecto.getId()), eq(entrada.getAsesor()), eq("FINALIZADO"));
         orden.verify(proyectoGradoBloqueadoPorIdFinder, times(1)).obtener(proyecto.getId());
@@ -137,8 +160,9 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
         orden.verify(asesorAsignadoProyectoGradoFinder, times(1)).obtener(entrada);
         orden.verify(ultimoEntregableProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(estudiantesVigentesDeProyectoGradoFinder, times(1)).obtener(proyecto.getId());
+        orden.verify(asesoresAsignadosDeProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(logger).debug(eq(ProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO),
-                eq(true), eq(true), eq(true), eq(true), eq(3));
+                eq(true), eq(true), eq(true), eq(true), eq(3), eq(1));
         orden.verify(validator).validar(entrada, proyecto, estadoActual, true, ultimoEntregable);
         orden.verify(estadoProyectoGradoOutputPort).registrar(any());
         orden.verify(eventPublisher).publish(any());
@@ -147,9 +171,10 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
     }
 
     @Test
-    void debePublicarConListaVacia_cuandoNoHayEstudiantesVigentes() {
+    void debePublicarEstadoAnteriorAtrasado_cuandoFinalizaDesdeAtrasado() {
         // Arrange
-        stubFinders(List.of());
+        var atrasado = EstadoProyectoGradoDomain.crearConEstado(proyecto.getId(), EstadoProyecto.ATRASADO);
+        stubFinders(atrasado, List.of(), List.of());
 
         // Act
         useCase.ejecutar(entrada);
@@ -157,15 +182,19 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
         // Assert
         var evento = ArgumentCaptor.forClass(DomainEvent.class);
         verify(eventPublisher).publish(evento.capture());
-        assertThat(evento.getValue()).isInstanceOfSatisfying(ProyectoGradoFinalizadoEvent.class,
-                publicado -> assertThat(publicado.getEstudiantes()).isEmpty());
+        assertThat(evento.getValue()).isInstanceOfSatisfying(ProyectoGradoEstadoCambiadoEvent.class, publicado -> {
+            assertThat(publicado.getEstadoAnterior()).isEqualTo(EstadoProyecto.ATRASADO.getId());
+            assertThat(publicado.getEstadoNuevo()).isEqualTo(EstadoProyecto.FINALIZADO.getId());
+            assertThat(publicado.getEstudiantes()).isEmpty();
+            assertThat(publicado.getAsesores()).isEmpty();
+        });
         verify(estadoProyectoGradoOutputPort).registrar(any());
     }
 
     @Test
     void debeNoPersistirNiPublicar_cuandoElValidatorRechaza() {
         // Arrange
-        stubFinders(List.of());
+        stubFinders(List.of(), List.of());
         doThrow(new TransicionEstadoProyectoNoPermitidaException(proyecto.getId(), proyecto.getTituloProyecto(),
                 EstadoProyecto.FINALIZADO, EstadoProyecto.FINALIZADO))
                 .when(validator).validar(entrada, proyecto, estadoActual, true, ultimoEntregable);

@@ -24,11 +24,29 @@ public class ArtefactoEntregableJpaEntity {
     private UUID id;
 
     @Column(name = "artefacto_id", nullable = false, columnDefinition = "UUID")
-    private UUID artefactoId;
+    private UUID artefacto;
 
     @Column(name = "entregable_id", nullable = false, columnDefinition = "UUID")
     private UUID entregableId;
 
     @Column(name = "uri_archivo", nullable = false, length = 2000)
     private String uriArchivo;
+
+    @Column(name = "id_version_artefacto", nullable = false, columnDefinition = "UUID")
+    private UUID versionArtefacto;
+
+    @Column(name = "version_artefacto", nullable = false)
+    private int numeroVersion;
+
+    @Column(name = "nombre_documento", nullable = false, length = 100)
+    private String nombreDocumento;
+
+    @Column(name = "id_repositorio_artefacto", nullable = false, columnDefinition = "UUID")
+    private UUID versionRepositorioArtefacto;
+
+    @Column(name = "id_repositorio", nullable = false, columnDefinition = "UUID")
+    private UUID repositorio;
+
+    @Column(name = "nombre_repositorio", nullable = false, length = 100)
+    private String nombreRepositorio;
 }

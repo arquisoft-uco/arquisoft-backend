@@ -6,7 +6,7 @@ import com.arquisoft.artefactos.application.artefacto.command.usecase.CambiarVer
 import com.arquisoft.artefactos.application.artefacto.command.validator.CambiarVersionRepositorioArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
@@ -38,7 +38,7 @@ public class CambiarVersionRepositorioArtefactoUseCaseImpl implements CambiarVer
     private final CambiarVersionRepositorioArtefactoValidator cambiarVersionRepositorioArtefactoValidator;
     private final ArtefactoOutputPort artefactoOutputPort;
     private final EventPublisher eventPublisher;
-    private final ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    private final ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -53,7 +53,7 @@ public class CambiarVersionRepositorioArtefactoUseCaseImpl implements CambiarVer
         var ultimoNumero = ultimoNumeroVersionArtefactoFinder.obtener(cambio.getArtefacto());
         var revisionVigente = revisionVigenteUltimaVersionFinder.obtener(cambio.getArtefacto());
         var estudiantes = estudiantesVinculadosArtefactoFinder.obtener(cambio.getArtefacto());
-        var proyecto = proyectoGradoPorArtefactoFinder.obtener(cambio.getArtefacto());
+        var proyecto = proyectoGradoBloqueadoPorArtefactoFinder.obtener(cambio.getArtefacto());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_CAMBIAR_VERSION_REPOSITORIO,
                 !artefacto.esVacio(), !asesor.esVacio(), !actual.esVacio(), !elegida.esVacio(),
                 ultimoNumero, revisionVigente.getEstado().getId(), estudiantes.size());

@@ -53,6 +53,7 @@ import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoAsesorKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.JuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.ObservacionItemAsesorKey;
 import com.arquisoft.shared.message.key.evaluaciones.ObservacionItemJuradoKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
@@ -127,6 +128,7 @@ import com.arquisoft.shared.message.key.usuarios.ConsultarJuradosVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstadosUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarIdentidadUsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarMiPerfilKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuarioPorCorreoKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuariosAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.CambiarEstadoUsuarioKey;
@@ -159,6 +161,7 @@ public final class ClavesCatalogo {
             EstadoEvaluacionFichaKey.class,
             EstadoEvaluacionKey.class,
             com.arquisoft.shared.message.key.evaluaciones.EstadoEvaluacionKey.class,
+            com.arquisoft.shared.message.key.evaluaciones.EntregableKey.class,
             EstadoFichaKey.class,
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,
@@ -180,6 +183,7 @@ public final class ClavesCatalogo {
             EvaluacionJuradoKey.class,
             EvaluacionKey.class,
             EvaluacionAsesorKey.class,
+            ObservacionItemAsesorKey.class,
             ObservacionItemJuradoKey.class,
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
@@ -234,6 +238,9 @@ public final class ClavesCatalogo {
             DocumentacionKey.class,
             AutorKey.class,
             AutorDocumentacionKey.class,
+            com.arquisoft.shared.message.key.biblioteca.EntregableProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.biblioteca.ProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.biblioteca.EstudianteProyectoGradoKey.class,
             EstadoRevisionAsesorKey.class,
             RevisionAsesorKey.class,
             CambiarEstadoRevisionAsesorKey.class,
@@ -258,7 +265,6 @@ public final class ClavesCatalogo {
             EliminarVersionRepositorioArtefactoKey.class,
             ArtefactoKey.class,
             com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey.class,
-            com.arquisoft.shared.message.key.artefactos.PaqueteEntregableKey.class,
             com.arquisoft.shared.message.key.artefactos.AsesorKey.class,
             com.arquisoft.shared.message.key.artefactos.EstudianteKey.class,
             com.arquisoft.shared.message.key.artefactos.AsesorProyectoGradoKey.class,
@@ -287,6 +293,7 @@ public final class ClavesCatalogo {
             ConsultarUsuariosAdministradorKey.class,
             ConsultarEstadosUsuarioKey.class,
             ConsultarIdentidadUsuarioKey.class,
+            ConsultarMiPerfilKey.class,
             ConsultarUsuarioPorCorreoKey.class,
             AsignacionProyectoKey.class,
             MapaRutaKey.class,
@@ -296,10 +303,12 @@ public final class ClavesCatalogo {
             EntregableProyectoGradoKey.class,
             com.arquisoft.shared.message.key.entregables.EstadoEntregableProyectoGradoKey.class,
             com.arquisoft.shared.message.key.entregables.ArtefactoEntregableKey.class,
+            com.arquisoft.shared.message.key.entregables.ArtefactoKey.class,
             com.arquisoft.shared.message.key.entregables.ProyectoGradoKey.class,
             com.arquisoft.shared.message.key.entregables.EstadoProyectoKey.class,
             com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey.class,
             com.arquisoft.shared.message.key.entregables.AsesorKey.class,
+            com.arquisoft.shared.message.key.entregables.AsesorProyectoGradoKey.class,
             com.arquisoft.shared.message.key.entregables.EstudianteProyectoGradoKey.class,
             AsignacionAsesorKey.class,
             ProyectoGradoMapasRutaKey.class,

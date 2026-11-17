@@ -2,30 +2,23 @@ package com.arquisoft.entregables.infrastructure.artefactoentregable.command.sec
 
 import com.arquisoft.entregables.application.artefactoentregable.command.secondaryport.entity.ArtefactoEntregableEntity;
 import com.arquisoft.entregables.infrastructure.artefactoentregable.command.secondaryadapter.entity.ArtefactoEntregableJpaEntity;
-import com.arquisoft.entregables.infrastructure.artefactoentregable.command.secondaryadapter.entity.ArtefactoJpaEntity;
 
 public final class ArtefactoEntregableJpaMapper {
 
     private ArtefactoEntregableJpaMapper() {}
 
-    public static ArtefactoJpaEntity toArtefactoJpaEntity(ArtefactoEntregableEntity entity) {
-        return ArtefactoJpaEntity.builder()
-                .id(entity.versionArtefacto())
-                .artefacto(entity.artefacto())
-                .numeroVersion(entity.numeroVersion())
-                .versionRepositorioArtefacto(entity.versionRepositorioArtefacto())
-                .nombreDocumento(entity.nombreDocumento())
-                .repositorio(entity.repositorio())
-                .nombreRepositorio(entity.nombreRepositorio())
-                .build();
-    }
-
     public static ArtefactoEntregableJpaEntity toJpaEntity(ArtefactoEntregableEntity entity) {
         return ArtefactoEntregableJpaEntity.builder()
                 .id(entity.id())
-                .artefactoId(entity.versionArtefacto())
+                .artefacto(entity.artefacto())
                 .entregableId(entity.entregableProyectoGrado())
                 .uriArchivo(entity.uriArchivo())
+                .versionArtefacto(entity.versionArtefacto())
+                .numeroVersion(entity.numeroVersion())
+                .nombreDocumento(entity.nombreDocumento())
+                .versionRepositorioArtefacto(entity.versionRepositorioArtefacto())
+                .repositorio(entity.repositorio())
+                .nombreRepositorio(entity.nombreRepositorio())
                 .build();
     }
 }

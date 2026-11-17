@@ -16,16 +16,15 @@ class PaqueteEntregableDomainTest {
     @Test
     void debeCrear_cuandoDatosValidos() {
         // Arrange
-        var id = UtilUUID.generarNuevoUUID();
         var entregable = UtilUUID.generarNuevoUUID();
         var generadoEn = Instant.now();
 
         // Act
         var paquete = PaqueteEntregableDomain.crear(
-                id, entregable, "bucket", "paquetes/x.zip", "p.zip", 10L, generadoEn);
+                entregable, "bucket", "paquetes/x.zip", "p.zip", 10L, generadoEn);
 
         // Assert
-        assertThat(paquete.getId()).isEqualTo(id);
+        assertThat(paquete.getId()).isNotNull();
         assertThat(paquete.getEntregableProyectoGrado()).isEqualTo(entregable);
         assertThat(paquete.getBucket()).isEqualTo("bucket");
         assertThat(paquete.getClaveObjeto()).isEqualTo("paquetes/x.zip");
@@ -38,12 +37,11 @@ class PaqueteEntregableDomainTest {
     @Test
     void debeAcumularErroresDeCampo_cuandoFaltanDatosYTamanoEsCero() {
         // Act & Assert
-        assertThatThrownBy(() -> PaqueteEntregableDomain.crear(null, null, " ", null, "", 0L, null))
+        assertThatThrownBy(() -> PaqueteEntregableDomain.crear(null, " ", null, "", 0L, null))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> {
                     var errores = ((DomainValidationException) ex).getValidationResult().getErrores();
                     assertThat(errores).extracting(error -> error.campo()).contains(
-                            EntregablesFields.PaqueteEntregable.ID,
                             EntregablesFields.PaqueteEntregable.ENTREGABLE_PROYECTO_GRADO,
                             EntregablesFields.PaqueteEntregable.BUCKET,
                             EntregablesFields.PaqueteEntregable.CLAVE_OBJETO,

@@ -16,6 +16,7 @@ import com.arquisoft.artefactos.application.versionartefacto.command.finder.Tama
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoVigenteProyectoGradoFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ReactivacionArtefactoDomain;
+import com.arquisoft.artefactos.domain.artefacto.event.ArtefactoReactivadoEvent;
 import com.arquisoft.artefactos.domain.estudianteartefacto.AgregacionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.DepuracionEstudiantesArtefactoDomain;
 import com.arquisoft.artefactos.domain.estudianteartefacto.EstudianteArtefactoDomain;
@@ -24,6 +25,7 @@ import com.arquisoft.artefactos.domain.estudianteartefacto.model.CupoEstudiantes
 import com.arquisoft.artefactos.domain.versionartefacto.model.AlmacenamientoProyectoGrado;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilColeccion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -46,6 +48,7 @@ public class ReactivarArtefactoUseCaseImpl implements ReactivarArtefactoUseCase 
     private final ArtefactoOutputPort artefactoOutputPort;
     private final DepurarEstudiantesArtefactoUseCase depurarEstudiantesArtefactoUseCase;
     private final AsignarEstudiantesArtefactoUseCase asignarEstudiantesArtefactoUseCase;
+    private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
@@ -71,6 +74,8 @@ public class ReactivarArtefactoUseCaseImpl implements ReactivarArtefactoUseCase 
                 new AlmacenamientoProyectoGrado(proyectoGrado, cuotaBytes, usoBytes));
 
         artefactoOutputPort.reactivar(reactivacion.getArtefacto(), reactivacion.getAsesor());
+        eventPublisher.publish(new ArtefactoReactivadoEvent(
+                reactivacion.getArtefacto(), artefacto.getProyectoGrado()));
         depurarEstudiantesArtefactoUseCase.ejecutar(DepuracionEstudiantesArtefactoDomain.crear(
                 reactivacion.getArtefacto(), reactivacion.getEstudiantes()));
 

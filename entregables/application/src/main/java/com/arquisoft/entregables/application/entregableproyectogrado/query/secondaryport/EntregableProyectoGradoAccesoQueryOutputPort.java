@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface EntregableProyectoGradoAccesoQueryOutputPort {
 
-    Optional<UUID> obtenerAsesorPorId(UUID entregableProyectoGrado);
+    Optional<UUID> obtenerAsesorVigentePorId(UUID entregableProyectoGrado);
 
     Optional<EntregableProyectoGradoAccesoEntity> obtenerAccesoPorId(UUID entregableProyectoGrado);
 

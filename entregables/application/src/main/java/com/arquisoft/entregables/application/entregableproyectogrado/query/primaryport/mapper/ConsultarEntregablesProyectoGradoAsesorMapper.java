@@ -15,7 +15,7 @@ public final class ConsultarEntregablesProyectoGradoAsesorMapper {
         var criterio = query.criterio();
 
         var forzado = NodoFiltro.predicado(
-                EntregableProyectoGradoCriteria.Campo.ASESOR_ID.getClave(), FiltroOperador.ES,
+                EntregableProyectoGradoCriteria.Campo.ASESOR_VIGENTE_ID.getClave(), FiltroOperador.ES,
                 query.asesor().toString());
 
         var raizFinal = FiltroCierreProyectoEntregable.combinar(List.of(forzado), criterio.raiz());

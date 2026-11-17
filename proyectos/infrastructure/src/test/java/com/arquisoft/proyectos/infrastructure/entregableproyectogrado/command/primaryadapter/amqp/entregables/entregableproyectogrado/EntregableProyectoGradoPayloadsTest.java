@@ -45,12 +45,14 @@ class EntregableProyectoGradoPayloadsTest {
     }
 
     @Test
-    void debeLeerLosCamposQueUsaProyectosEIgnorarElResto_cuandoSeLeenLosTresEventosPublicados() {
+    void debeLeerLosCamposQueUsaProyectosEIgnorarElResto_cuandoSeLeenLosEventosPublicados() {
         // Arrange
         var entregable = UUID.randomUUID();
         var proyectoGrado = UUID.randomUUID();
         var generado = new EntregableEventoDePrueba(
                 EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_GENERADO, entregable, proyectoGrado, 2);
+        var disponible = new EntregableEventoDePrueba(
+                EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_DISPONIBLE_EVALUACION, entregable, proyectoGrado, 2);
         var cerrado = new EntregableEventoDePrueba(
                 EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_CERRADO, entregable, proyectoGrado, 2);
         var cancelado = new EntregableEventoDePrueba(
@@ -61,6 +63,8 @@ class EntregableProyectoGradoPayloadsTest {
         // Act
         var payloadGenerado = mapper.readValue(
                 mapper.writeValueAsString(generado), EntregableProyectoGradoGeneradoPayload.class);
+        var payloadDisponible = mapper.readValue(
+                mapper.writeValueAsString(disponible), EntregableProyectoGradoDisponibleEvaluacionPayload.class);
         var payloadCerrado = mapper.readValue(
                 mapper.writeValueAsString(cerrado), EntregableProyectoGradoCerradoPayload.class);
         var payloadCancelado = mapper.readValue(
@@ -74,6 +78,11 @@ class EntregableProyectoGradoPayloadsTest {
         assertThat(payloadGenerado.entregableProyectoGrado()).isEqualTo(entregable.toString());
         assertThat(payloadGenerado.proyectoGrado()).isEqualTo(proyectoGrado.toString());
         assertThat(payloadGenerado.version()).isEqualTo(2);
+        assertThat(payloadDisponible.idEvento()).isEqualTo(disponible.getIdEvento());
+        assertThat(payloadDisponible.ocurridoEn()).isEqualTo(disponible.getOcurridoEn());
+        assertThat(payloadDisponible.entregableProyectoGrado()).isEqualTo(entregable.toString());
+        assertThat(payloadDisponible.proyectoGrado()).isEqualTo(proyectoGrado.toString());
+        assertThat(payloadDisponible.version()).isEqualTo(2);
         assertThat(payloadCerrado.entregableProyectoGrado()).isEqualTo(entregable.toString());
         assertThat(payloadCerrado.version()).isEqualTo(2);
         assertThat(payloadCancelado.proyectoGrado()).isEqualTo(proyectoGrado.toString());

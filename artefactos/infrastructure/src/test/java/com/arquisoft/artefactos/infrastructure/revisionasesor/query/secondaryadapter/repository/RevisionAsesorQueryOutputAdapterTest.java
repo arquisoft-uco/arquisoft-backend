@@ -73,7 +73,7 @@ class RevisionAsesorQueryOutputAdapterTest {
 
     private UUID sembrarArtefacto(String proyecto, String documento, int versionDocumento, UUID... estudiantes) {
         var proyectoId = UUID.randomUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyectoId, proyecto, null, null, null));
+        entityManager.persist(new ProyectoGradoJpaEntity(proyectoId, proyecto, null, "EN_PROCESO", null));
         var documentoId = UUID.randomUUID();
         entityManager.persist(new VersionRepositorioArtefactoJpaEntity(
                 documentoId, documento, versionDocumento, UUID.randomUUID(), "Repo",

@@ -1,0 +1,24 @@
+package com.arquisoft.entregables.application.asesorproyectogrado.command.finder.impl;
+
+import com.arquisoft.entregables.application.asesorproyectogrado.command.finder.AsesorProyectoGradoPorVinculoFinder;
+import com.arquisoft.entregables.application.asesorproyectogrado.command.finder.model.VinculoAsesorProyectoGrado;
+import com.arquisoft.entregables.application.asesorproyectogrado.command.secondaryport.AsesorProyectoGradoOutputPort;
+import com.arquisoft.entregables.application.asesorproyectogrado.command.secondaryport.mapper.AsesorProyectoGradoMapper;
+import com.arquisoft.entregables.domain.asesorproyectogrado.AsesorProyectoGradoDomain;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class AsesorProyectoGradoPorVinculoFinderImpl implements AsesorProyectoGradoPorVinculoFinder {
+
+    private final AsesorProyectoGradoOutputPort asesorProyectoGradoOutputPort;
+
+    @Override
+    public AsesorProyectoGradoDomain obtener(VinculoAsesorProyectoGrado vinculo) {
+        return asesorProyectoGradoOutputPort
+                .obtenerBloqueadoPorAsesorYProyectoGrado(vinculo.asesor(), vinculo.proyectoGrado())
+                .map(AsesorProyectoGradoMapper::toDomain)
+                .orElse(AsesorProyectoGradoDomain.VACIO);
+    }
+}

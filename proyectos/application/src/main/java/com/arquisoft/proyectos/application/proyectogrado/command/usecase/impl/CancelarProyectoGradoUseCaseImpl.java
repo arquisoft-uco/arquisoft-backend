@@ -9,10 +9,11 @@ import com.arquisoft.proyectos.application.proyectogrado.command.finder.Proyecto
 import com.arquisoft.proyectos.application.proyectogrado.command.usecase.CancelarProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.CancelarProyectoGradoValidator;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
+import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.model.ContactoEstudiante;
 import com.arquisoft.proyectos.domain.proyectogrado.CancelacionProyectoGradoDomain;
-import com.arquisoft.proyectos.domain.proyectogrado.event.ProyectoGradoCanceladoEvent;
+import com.arquisoft.proyectos.domain.proyectogrado.event.ProyectoGradoEstadoCambiadoEvent;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.ProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
@@ -57,8 +58,9 @@ public class CancelarProyectoGradoUseCaseImpl implements CancelarProyectoGradoUs
         var contactosAsesores = asesores.stream()
                 .map(asesor -> new ContactoAsesor(asesor.getNombre(), asesor.getEmail()))
                 .toList();
-        eventPublisher.publish(new ProyectoGradoCanceladoEvent(
-                proyecto.getId(), proyecto.getTituloProyecto(), entrada.getMotivo(),
+        eventPublisher.publish(new ProyectoGradoEstadoCambiadoEvent(
+                proyecto.getId(), proyecto.getTituloProyecto(), estadoActual.getEstadoProyecto().getId(),
+                EstadoProyecto.CANCELADO.getId(), entrada.getMotivo(),
                 contactosEstudiantes, contactosAsesores));
 
         logger.info(ProyectoGradoKey.LOG_CANCELADO, entrada.getProyectoGrado(), entrada.getCoordinador());

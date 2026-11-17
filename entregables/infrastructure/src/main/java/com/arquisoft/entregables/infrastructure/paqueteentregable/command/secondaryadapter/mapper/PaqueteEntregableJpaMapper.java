@@ -18,4 +18,15 @@ public final class PaqueteEntregableJpaMapper {
                 .generadoEn(entity.generadoEn())
                 .build();
     }
+
+    public static PaqueteEntregableEntity toEntity(PaqueteEntregableJpaEntity jpa) {
+        return new PaqueteEntregableEntity(
+                jpa.getId(),
+                jpa.getEntregableProyectoGradoId(),
+                jpa.getBucket(),
+                jpa.getClaveObjeto(),
+                jpa.getNombreArchivo(),
+                jpa.getTamanoBytes(),
+                jpa.getGeneradoEn());
+    }
 }

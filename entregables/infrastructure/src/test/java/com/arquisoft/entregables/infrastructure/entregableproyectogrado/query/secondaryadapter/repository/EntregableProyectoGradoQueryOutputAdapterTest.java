@@ -5,6 +5,7 @@ import com.arquisoft.entregables.application.entregableproyectogrado.query.prima
 import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.mapper.ConsultarEntregablesProyectoGradoJuradoMapper;
 import com.arquisoft.entregables.application.entregableproyectogrado.query.primaryport.model.ConsultarEntregablesProyectoGradoEstudianteQuery;
 import com.arquisoft.entregables.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
+import com.arquisoft.entregables.infrastructure.asesorproyectogrado.command.secondaryadapter.entity.AsesorProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.estadoentregableproyectogrado.command.secondaryadapter.entity.EstadoEntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
@@ -14,6 +15,7 @@ import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
 import com.arquisoft.shared.query.pagination.SortDirection;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -332,6 +334,52 @@ class EntregableProyectoGradoQueryOutputAdapterTest {
         // Assert
         assertThat(resultado.getContent()).extracting("id").containsExactly(id);
         assertThat(resultado.getContent().get(0).asesor().nombre()).isEqualTo("Ana");
+    }
+
+    private void sembrarVinculo(UUID asesor, UUID proyecto, String ocurridoEn, String finalizadoEn) {
+        var fin = UtilObjeto.esNulo(finalizadoEn) ? null : Instant.parse(finalizadoEn);
+        entityManager.persist(AsesorProyectoGradoJpaEntity.builder().id(UtilUUID.generarNuevoUUID()).asesorId(asesor)
+                .proyectoGradoId(proyecto).ocurridoEn(Instant.parse(ocurridoEn)).finalizadoEn(fin).build());
+    }
+
+    @Test
+    void debeFiltrarPorAsesorVigenteDelProyecto_cuandoElProyectoCambioDeAsesor() {
+        // Arrange
+        var proyecto = sembrarProyecto("Cambio");
+        var anterior = sembrarAsesor("Ana", null);
+        var nuevo = sembrarAsesor("Luis", null);
+        var generadoPorAnterior = sembrarEntregable(proyecto, 1, anterior, "APROBADO");
+        sembrarVinculo(anterior, proyecto, "2026-02-01T00:00:00Z", "2026-03-01T00:00:00Z");
+        sembrarVinculo(nuevo, proyecto, "2026-03-01T00:00:01Z", null);
+        confirmar();
+
+        // Act
+        var delNuevo = adapter.consultar(criteria(
+                NodoFiltro.predicado("asesorVigenteId", FiltroOperador.ES, nuevo.toString())));
+        var delAnterior = adapter.consultar(criteria(
+                NodoFiltro.predicado("asesorVigenteId", FiltroOperador.ES, anterior.toString())));
+
+        // Assert
+        assertThat(delNuevo.getContent()).extracting("id").containsExactly(generadoPorAnterior);
+        assertThat(delNuevo.getContent().get(0).asesor().id()).isEqualTo(anterior);
+        assertThat(delAnterior.getContent()).isEmpty();
+    }
+
+    @Test
+    void noDebeCoincidirConNingunAsesorVigente_cuandoElVinculoMasRecienteEstaFinalizado() {
+        // Arrange
+        var proyecto = sembrarProyecto("Sin asesor");
+        var asesor = sembrarAsesor("Ana", null);
+        sembrarEntregable(proyecto, 1, asesor, "APROBADO");
+        sembrarVinculo(asesor, proyecto, "2026-02-01T00:00:00Z", "2026-03-01T00:00:00Z");
+        confirmar();
+
+        // Act
+        var resultado = adapter.consultar(criteria(
+                NodoFiltro.predicado("asesorVigenteId", FiltroOperador.ES, asesor.toString())));
+
+        // Assert
+        assertThat(resultado.getContent()).isEmpty();
     }
 
     @Test

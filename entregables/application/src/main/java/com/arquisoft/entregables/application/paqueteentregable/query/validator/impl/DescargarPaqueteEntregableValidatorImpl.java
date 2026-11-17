@@ -25,6 +25,8 @@ import com.arquisoft.entregables.domain.paqueteentregable.rules.impl.PaqueteEntr
 import com.arquisoft.entregables.domain.paqueteentregable.rules.impl.PaqueteEntregableProyectoNoCanceladoRuleImpl;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class DescargarPaqueteEntregableValidatorImpl implements DescargarPaqueteEntregableValidator {
 
@@ -47,12 +49,12 @@ public class DescargarPaqueteEntregableValidatorImpl implements DescargarPaquete
     @Override
     public void validar(DescargaPaqueteEntregableCriteria criteria, EntregableProyectoGradoDomain entregable,
                         EstadoEntregableProyectoGradoDomain estadoActual, boolean participa,
-                        PaqueteEntregableDomain paquete) {
+                        PaqueteEntregableDomain paquete, UUID asesorVigente) {
         entregableProyectoGradoExisteRule.validar(new ExistenciaEntregableProyectoGrado(
                 criteria.entregableProyectoGrado(), !entregable.esVacio()));
         actorAccedePaqueteEntregableRule.validar(new AccesoPaqueteEntregable(
                 criteria.entregableProyectoGrado(), criteria.actor(), criteria.comoAsesor(),
-                criteria.comoEstudiante(), entregable.getAsesor(), participa));
+                criteria.comoEstudiante(), asesorVigente, participa));
         estadoEntregableProyectoGradoExisteRule.validar(new ExistenciaEstadoEntregableProyectoGrado(
                 criteria.entregableProyectoGrado(), !estadoActual.esVacio()));
         paqueteEntregableNoCanceladoRule.validar(new EstadoEntregableDelPaquete(

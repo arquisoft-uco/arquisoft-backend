@@ -6,7 +6,7 @@ import com.arquisoft.artefactos.application.artefacto.command.usecase.CambiarAse
 import com.arquisoft.artefactos.application.artefacto.command.validator.CambiarAsesorArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
 import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.domain.artefacto.CambioAsesorArtefactoDomain;
 import com.arquisoft.shared.logger.AppLogger;
@@ -24,7 +24,7 @@ public class CambiarAsesorArtefactoUseCaseImpl implements CambiarAsesorArtefacto
     private final VinculosMasRecientesProyectoGradoFinder vinculosMasRecientesProyectoGradoFinder;
     private final CambiarAsesorArtefactoValidator cambiarAsesorArtefactoValidator;
     private final ArtefactoOutputPort artefactoOutputPort;
-    private final ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    private final ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
     private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
@@ -35,7 +35,7 @@ public class CambiarAsesorArtefactoUseCaseImpl implements CambiarAsesorArtefacto
         var artefacto = artefactoPorIdFinder.obtener(cambio.getArtefacto());
         var asesor = asesorPorIdFinder.obtener(cambio.getAsesor());
         var vinculosMasRecientes = vinculosMasRecientesProyectoGradoFinder.obtener(artefacto.getProyectoGrado());
-        var proyecto = proyectoGradoPorArtefactoFinder.obtener(cambio.getArtefacto());
+        var proyecto = proyectoGradoBloqueadoPorArtefactoFinder.obtener(cambio.getArtefacto());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_CAMBIAR_ASESOR,
                 !artefacto.esVacio(), !asesor.esVacio() && !asesor.estaEliminado(), vinculosMasRecientes.size());
 

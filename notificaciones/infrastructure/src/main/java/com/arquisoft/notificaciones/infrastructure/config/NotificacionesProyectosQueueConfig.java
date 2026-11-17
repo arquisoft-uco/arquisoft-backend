@@ -68,30 +68,16 @@ public class NotificacionesProyectosQueueConfig {
                 arquisoftDeadLetterExchange);
     }
 
-    public static final String PROYECTO_GRADO_FINALIZADO_QUEUE =
-            NotificacionesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_FINALIZADO;
+    public static final String PROYECTO_GRADO_ESTADO_CAMBIADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_ESTADO_CAMBIADO;
 
     @Bean
-    public Declarables notificacionesProyectoGradoFinalizadoDeclarables(
+    public Declarables notificacionesProyectoGradoEstadoCambiadoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
             @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
         return ColaEvento.declarar(
-                PROYECTO_GRADO_FINALIZADO_QUEUE,
-                EventTopics.Proyectos.PROYECTO_GRADO_FINALIZADO,
-                arquisoftEventsExchange,
-                arquisoftDeadLetterExchange);
-    }
-
-    public static final String PROYECTO_GRADO_CANCELADO_QUEUE =
-            NotificacionesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO;
-
-    @Bean
-    public Declarables notificacionesProyectoGradoCanceladoDeclarables(
-            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
-            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
-        return ColaEvento.declarar(
-                PROYECTO_GRADO_CANCELADO_QUEUE,
-                EventTopics.Proyectos.PROYECTO_GRADO_CANCELADO,
+                PROYECTO_GRADO_ESTADO_CAMBIADO_QUEUE,
+                EventTopics.Proyectos.PROYECTO_GRADO_ESTADO_CAMBIADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
