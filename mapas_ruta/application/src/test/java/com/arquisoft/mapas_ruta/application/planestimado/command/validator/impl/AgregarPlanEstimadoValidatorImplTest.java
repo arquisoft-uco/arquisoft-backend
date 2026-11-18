@@ -4,6 +4,7 @@ import com.arquisoft.mapas_ruta.domain.maparuta.MapaRutaDomain;
 import com.arquisoft.mapas_ruta.domain.maparuta.exception.MapaRutaNoEncontradoException;
 import com.arquisoft.mapas_ruta.domain.planestimado.PlanEstimadoDomain;
 import com.arquisoft.mapas_ruta.domain.planestimado.exception.PlanEstimadoDuplicadoException;
+import com.arquisoft.mapas_ruta.domain.planestimado.exception.PlanEstimadoTareaFinalizadaException;
 import com.arquisoft.mapas_ruta.domain.planestimado.exception.TiempoPlanesExcedePlazoException;
 import com.arquisoft.mapas_ruta.domain.tarea.TareaDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.exception.TareaNoEncontradaException;
@@ -76,6 +77,19 @@ class AgregarPlanEstimadoValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(plan, tarea, mapa, true, 0))
                 .isInstanceOf(PlanEstimadoDuplicadoException.class);
+    }
+
+    @Test
+    void debeLanzarTareaFinalizada_cuandoLaTareaEstaFinalizada() {
+        // Arrange
+        var mapa = mapa();
+        var tarea = TareaDomain.reconstruir(UtilUUID.generarNuevoUUID(), mapa.getId(), "Redactar capitulo",
+                UtilUUID.generarNuevoUUID(), EstadoItem.FINALIZADA);
+        var plan = plan(tarea, 2);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(plan, tarea, mapa, false, 0))
+                .isInstanceOf(PlanEstimadoTareaFinalizadaException.class);
     }
 
     @Test

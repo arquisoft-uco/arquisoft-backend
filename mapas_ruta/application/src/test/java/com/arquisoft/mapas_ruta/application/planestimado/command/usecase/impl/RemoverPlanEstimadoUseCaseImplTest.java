@@ -1,6 +1,10 @@
 package com.arquisoft.mapas_ruta.application.planestimado.command.usecase.impl;
 
-import com.arquisoft.mapas_ruta.application.planestimado.command.finder.PlanEstimadoExisteFinder;
+import com.arquisoft.mapas_ruta.application.planestimado.command.finder.PlanEstimadoPorIdFinder;
+import com.arquisoft.mapas_ruta.application.tarea.command.finder.TareaPorIdFinder;
+import com.arquisoft.mapas_ruta.domain.planestimado.PlanEstimadoDomain;
+import com.arquisoft.mapas_ruta.domain.tarea.TareaDomain;
+import com.arquisoft.mapas_ruta.domain.tarea.model.EstadoItem;
 import com.arquisoft.mapas_ruta.application.planestimado.command.secondaryport.PlanEstimadoOutputPort;
 import com.arquisoft.mapas_ruta.application.planestimado.command.validator.RemoverPlanEstimadoValidator;
 import com.arquisoft.mapas_ruta.domain.planestimado.RemocionPlanEstimadoDomain;
@@ -32,7 +36,10 @@ class RemoverPlanEstimadoUseCaseImplTest {
     private PlanEstimadoOutputPort planEstimadoOutputPort;
 
     @Mock
-    private PlanEstimadoExisteFinder planEstimadoExisteFinder;
+    private PlanEstimadoPorIdFinder planEstimadoPorIdFinder;
+
+    @Mock
+    private TareaPorIdFinder tareaPorIdFinder;
 
     @Mock
     private RemoverPlanEstimadoValidator validator;
@@ -47,18 +54,23 @@ class RemoverPlanEstimadoUseCaseImplTest {
     void debeEliminar_cuandoValidacionPasa() {
         // Arrange
         var remocion = RemocionPlanEstimadoDomain.crear(UtilUUID.generarNuevoUUID());
-        when(planEstimadoExisteFinder.obtener(remocion.getPlanEstimado())).thenReturn(true);
+        var planPersistido = PlanEstimadoDomain.crear(UtilUUID.generarNuevoUUID(), 3, null);
+        var tarea = TareaDomain.reconstruir(planPersistido.getTarea(), UtilUUID.generarNuevoUUID(), "Tarea",
+                UtilUUID.generarNuevoUUID(), EstadoItem.NUEVA);
+        when(planEstimadoPorIdFinder.obtener(remocion.getPlanEstimado())).thenReturn(planPersistido);
+        when(tareaPorIdFinder.obtener(planPersistido.getTarea())).thenReturn(tarea);
 
         // Act
         useCase.ejecutar(remocion);
 
         // Assert
-        var orden = inOrder(planEstimadoExisteFinder, validator, planEstimadoOutputPort);
-        orden.verify(planEstimadoExisteFinder).obtener(remocion.getPlanEstimado());
-        orden.verify(validator).validar(remocion, true);
+        var orden = inOrder(planEstimadoPorIdFinder, tareaPorIdFinder, validator, planEstimadoOutputPort);
+        orden.verify(planEstimadoPorIdFinder).obtener(remocion.getPlanEstimado());
+        orden.verify(validator).validar(remocion, true, tarea);
         orden.verify(planEstimadoOutputPort).eliminar(remocion.getPlanEstimado());
-        verify(planEstimadoExisteFinder, times(1)).obtener(any());
-        verifyNoMoreInteractions(planEstimadoExisteFinder, validator, planEstimadoOutputPort);
+        verify(planEstimadoPorIdFinder, times(1)).obtener(any());
+        verify(tareaPorIdFinder, times(1)).obtener(any());
+        verifyNoMoreInteractions(planEstimadoPorIdFinder, tareaPorIdFinder, validator, planEstimadoOutputPort);
         verify(logger, times(2)).info(any(ClaveMensaje.class), eq(remocion.getPlanEstimado()));
     }
 
@@ -66,9 +78,10 @@ class RemoverPlanEstimadoUseCaseImplTest {
     void debeNoEliminar_cuandoValidatorRechaza() {
         // Arrange
         var remocion = RemocionPlanEstimadoDomain.crear(UtilUUID.generarNuevoUUID());
-        when(planEstimadoExisteFinder.obtener(remocion.getPlanEstimado())).thenReturn(false);
+        when(planEstimadoPorIdFinder.obtener(remocion.getPlanEstimado())).thenReturn(PlanEstimadoDomain.VACIO);
+        when(tareaPorIdFinder.obtener(PlanEstimadoDomain.VACIO.getTarea())).thenReturn(TareaDomain.VACIO);
         doThrow(new PlanEstimadoNoEncontradoException(remocion.getPlanEstimado()))
-                .when(validator).validar(remocion, false);
+                .when(validator).validar(remocion, false, TareaDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(remocion))

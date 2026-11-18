@@ -10,6 +10,8 @@ public enum PlanEstimadoKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADO_DETALLE("mapas_ruta.dominio.planestimado.error.no-encontrado-detalle", 1),
     ERROR_TIEMPO_EXCEDE_PLAZO("mapas_ruta.dominio.planestimado.error.tiempo-excede-plazo", 2),
     ERROR_TIEMPO_EXCEDE_PLAZO_DETALLE("mapas_ruta.dominio.planestimado.error.tiempo-excede-plazo-detalle", 4),
+    ERROR_TAREA_FINALIZADA("mapas_ruta.dominio.planestimado.error.tarea-finalizada", 1),
+    ERROR_TAREA_FINALIZADA_DETALLE("mapas_ruta.dominio.planestimado.error.tarea-finalizada-detalle", 1),
     LOG_AGREGANDO("mapas_ruta.aplicacion.planestimado.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("mapas_ruta.aplicacion.planestimado.log.verificacion-agregar", 4),
     LOG_AGREGADO("mapas_ruta.aplicacion.planestimado.log.agregado", 2),

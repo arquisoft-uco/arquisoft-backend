@@ -7,10 +7,13 @@ import com.arquisoft.mapas_ruta.domain.maparuta.rules.MapaRutaExisteRule;
 import com.arquisoft.mapas_ruta.domain.maparuta.rules.impl.MapaRutaExisteRuleImpl;
 import com.arquisoft.mapas_ruta.domain.planestimado.PlanEstimadoDomain;
 import com.arquisoft.mapas_ruta.domain.planestimado.model.DisponibilidadPlanEstimado;
+import com.arquisoft.mapas_ruta.domain.planestimado.model.EstadoTareaPlanEstimado;
 import com.arquisoft.mapas_ruta.domain.planestimado.model.PlazoPlanesEstimados;
 import com.arquisoft.mapas_ruta.domain.planestimado.rules.PlanEstimadoUnicoPorTareaRule;
+import com.arquisoft.mapas_ruta.domain.planestimado.rules.TareaAceptaPlanEstimadoRule;
 import com.arquisoft.mapas_ruta.domain.planestimado.rules.TiempoPlanesDentroDelPlazoRule;
 import com.arquisoft.mapas_ruta.domain.planestimado.rules.impl.PlanEstimadoUnicoPorTareaRuleImpl;
+import com.arquisoft.mapas_ruta.domain.planestimado.rules.impl.TareaAceptaPlanEstimadoRuleImpl;
 import com.arquisoft.mapas_ruta.domain.planestimado.rules.impl.TiempoPlanesDentroDelPlazoRuleImpl;
 import com.arquisoft.mapas_ruta.domain.tarea.TareaDomain;
 import com.arquisoft.mapas_ruta.domain.tarea.model.ExistenciaTarea;
@@ -24,12 +27,14 @@ public class AgregarPlanEstimadoValidatorImpl implements AgregarPlanEstimadoVali
     private final TareaExisteRule tareaExisteRule;
     private final MapaRutaExisteRule mapaRutaExisteRule;
     private final PlanEstimadoUnicoPorTareaRule planEstimadoUnicoPorTareaRule;
+    private final TareaAceptaPlanEstimadoRule tareaAceptaPlanEstimadoRule;
     private final TiempoPlanesDentroDelPlazoRule tiempoPlanesDentroDelPlazoRule;
 
     public AgregarPlanEstimadoValidatorImpl() {
         this.tareaExisteRule = new TareaExisteRuleImpl();
         this.mapaRutaExisteRule = new MapaRutaExisteRuleImpl();
         this.planEstimadoUnicoPorTareaRule = new PlanEstimadoUnicoPorTareaRuleImpl();
+        this.tareaAceptaPlanEstimadoRule = new TareaAceptaPlanEstimadoRuleImpl();
         this.tiempoPlanesDentroDelPlazoRule = new TiempoPlanesDentroDelPlazoRuleImpl();
     }
 
@@ -40,6 +45,8 @@ public class AgregarPlanEstimadoValidatorImpl implements AgregarPlanEstimadoVali
         mapaRutaExisteRule.validar(new ExistenciaMapaRuta(tarea.getMapaRuta(), !mapaRuta.esVacio()));
         planEstimadoUnicoPorTareaRule.validar(new DisponibilidadPlanEstimado(
                 planEstimado.getTarea(), tarea.getDescripcion(), planExiste));
+        tareaAceptaPlanEstimadoRule.validar(new EstadoTareaPlanEstimado(
+                tarea.getId(), tarea.getDescripcion(), tarea.getEstadoItem()));
         tiempoPlanesDentroDelPlazoRule.validar(new PlazoPlanesEstimados(
                 mapaRuta.getId(), mapaRuta.getFechaInicio(), mapaRuta.getFechaFin(),
                 diasAcumulados, planEstimado.getTiempoEstimadoDias()));

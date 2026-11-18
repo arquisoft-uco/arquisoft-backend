@@ -11,7 +11,7 @@ public interface PlanEstimadoOutputPort {
 
     boolean existePorTarea(UUID tarea);
 
-    boolean existePorId(UUID planEstimado);
+    Optional<PlanEstimadoEntity> obtenerPorId(UUID planEstimado);
 
     Optional<PlanEstimadoEntity> obtenerPorTarea(UUID tarea);
 

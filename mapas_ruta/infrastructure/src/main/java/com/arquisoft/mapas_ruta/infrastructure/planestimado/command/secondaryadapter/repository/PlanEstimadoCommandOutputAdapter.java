@@ -30,8 +30,8 @@ public class PlanEstimadoCommandOutputAdapter implements PlanEstimadoOutputPort 
     }
 
     @Override
-    public boolean existePorId(UUID planEstimado) {
-        return repository.existsById(planEstimado);
+    public Optional<PlanEstimadoEntity> obtenerPorId(UUID planEstimado) {
+        return repository.findById(planEstimado).map(PlanEstimadoJpaMapper::toEntity);
     }
 
     @Override
