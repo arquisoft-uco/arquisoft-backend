@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.observacionitem.command.secondaryada
 
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ContextoObservacionItemEntity;
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ObservacionItemEntity;
+import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ResumenObservacionesRevisionEntity;
 import com.arquisoft.fichas.infrastructure.observacionitem.command.secondaryadapter.entity.ObservacionItemJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.fichas.ObservacionItemKey;
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -110,6 +112,34 @@ class ObservacionItemCommandOutputAdapterTest {
         // Assert
         verify(repository, times(1)).actualizarObservacion(observacionItem, "Texto nuevo");
         verify(logger).debug(eq(ObservacionItemKey.LOG_GUARDADA), eq(observacionItem));
+    }
+
+    @Test
+    void debeDelegarResumirPorRevisionSinLogear_cuandoSeConsultaLaRevision() {
+        // Arrange
+        var revisionItem = UtilUUID.generarNuevoUUID();
+        var resumen = new ResumenObservacionesRevisionEntity(4, 1);
+        when(repository.resumirPorRevision(revisionItem, "PENDIENTE")).thenReturn(resumen);
+
+        // Act
+        var resultado = adapter.resumirPorRevision(revisionItem, "PENDIENTE");
+
+        // Assert
+        assertThat(resultado).isSameAs(resumen);
+        verifyNoInteractions(logger);
+    }
+
+    @Test
+    void debeDelegarYRegistrarDebug_cuandoActualizaElEstadoPorRevision() {
+        // Arrange
+        var revisionItem = UtilUUID.generarNuevoUUID();
+
+        // Act
+        adapter.actualizarEstadoPorRevision(revisionItem, "PENDIENTE", "EN_PROGRESO");
+
+        // Assert
+        verify(repository, times(1)).actualizarEstadoPorRevision(revisionItem, "PENDIENTE", "EN_PROGRESO");
+        verify(logger).debug(eq(ObservacionItemKey.LOG_ESTADO_ACTUALIZADO), eq(revisionItem), eq("EN_PROGRESO"));
     }
 
     @Test

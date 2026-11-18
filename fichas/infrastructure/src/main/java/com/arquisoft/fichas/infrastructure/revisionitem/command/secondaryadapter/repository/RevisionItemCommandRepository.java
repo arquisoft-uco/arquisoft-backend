@@ -15,6 +15,8 @@ public interface RevisionItemCommandRepository extends JpaRepository<RevisionIte
 
     long countByItemId(UUID itemId);
 
+    Optional<RevisionItemJpaEntity> findByItemId(UUID itemId);
+
     @Query("""
             SELECT new com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.PertenenciaRevisionItemEntity(
                 i.fichaPerfilId,

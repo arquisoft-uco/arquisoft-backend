@@ -59,6 +59,7 @@ security:
         - {method: DELETE, path: "/api/fichas-perfil/revisiones/{revisionItemId}", role: "fichas:revision-item:delete"}
         - {method: POST, path: "/api/fichas-perfil/revisiones/{revisionItemId}/observaciones", role: "fichas:observacion-item:create"}
         - {method: PATCH, path: "/api/fichas-perfil/revisiones/{revisionItemId}/visualizada", role: "fichas:revision-item-visualizada:update"}
+        - {method: PATCH, path: "/api/fichas-perfil/revisiones/{revisionItemId}/correcciones", role: "fichas:revision-item-correcciones:update"}
         - {method: GET, path: "/api/fichas-perfil/tipos-item", role: "fichas:tipo-item:view"}
         - {method: POST, path: "/api/fichas-perfil/{fichaId}/evaluaciones", role: "fichas:evaluacion-ficha-perfil:create"}
         - {method: POST, path: "/api/fichas-perfil/{fichaPerfilId}/estados-ficha", role: "fichas:estado-ficha-perfil-asesor:create"}

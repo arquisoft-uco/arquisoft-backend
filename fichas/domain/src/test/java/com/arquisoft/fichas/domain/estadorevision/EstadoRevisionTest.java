@@ -43,6 +43,26 @@ class EstadoRevisionTest {
     }
 
     @Test
+    void debeAtenderObservaciones_soloEnVisualizadaEnProgresoYCorreccionDisponible() {
+        assertThat(EstadoRevision.NUEVA.atiendeObservaciones()).isFalse();
+        assertThat(EstadoRevision.VISUALIZADA.atiendeObservaciones()).isTrue();
+        assertThat(EstadoRevision.EN_PROGRESO.atiendeObservaciones()).isTrue();
+        assertThat(EstadoRevision.CORRECCION_DISPONIBLE.atiendeObservaciones()).isTrue();
+        assertThat(EstadoRevision.CERRADA.atiendeObservaciones()).isFalse();
+        assertThat(EstadoRevision.VACIO.atiendeObservaciones()).isFalse();
+    }
+
+    @Test
+    void debeRetornarAEnProgreso_soloDesdeVisualizadaYCorreccionDisponible() {
+        assertThat(EstadoRevision.NUEVA.retornaAEnProgresoAlModificarItem()).isFalse();
+        assertThat(EstadoRevision.VISUALIZADA.retornaAEnProgresoAlModificarItem()).isTrue();
+        assertThat(EstadoRevision.EN_PROGRESO.retornaAEnProgresoAlModificarItem()).isFalse();
+        assertThat(EstadoRevision.CORRECCION_DISPONIBLE.retornaAEnProgresoAlModificarItem()).isTrue();
+        assertThat(EstadoRevision.CERRADA.retornaAEnProgresoAlModificarItem()).isFalse();
+        assertThat(EstadoRevision.VACIO.retornaAEnProgresoAlModificarItem()).isFalse();
+    }
+
+    @Test
     void debeReportarValidez_sinLanzar_cuandoSeConsultaConEsValido() {
         assertThat(EstadoRevision.esValido("EN_PROGRESO")).isTrue();
         assertThat(EstadoRevision.esValido("NO_EXISTE")).isFalse();
