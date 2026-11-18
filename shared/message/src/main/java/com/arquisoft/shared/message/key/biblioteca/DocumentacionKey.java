@@ -32,7 +32,12 @@ public enum DocumentacionKey implements ClaveMensaje {
     LOG_REGISTRADA("biblioteca.aplicacion.documentacion.log.registrada", 3),
     LOG_GUARDADA("biblioteca.infraestructura.documentacion.log.guardada", 1),
     ERROR_YA_REGISTRADA("biblioteca.dominio.documentacion.error.ya-registrada", 0),
-    ERROR_YA_REGISTRADA_DETALLE("biblioteca.dominio.documentacion.error.ya-registrada-detalle", 1);
+    ERROR_YA_REGISTRADA_DETALLE("biblioteca.dominio.documentacion.error.ya-registrada-detalle", 1),
+    LOG_CONSULTANDO_ENLACE("biblioteca.aplicacion.documentacion.log.consultando-enlace", 1),
+    LOG_VERIFICACION_ENLACE("biblioteca.aplicacion.documentacion.log.verificacion-enlace", 2),
+    LOG_ENLACE_GENERADO("biblioteca.aplicacion.documentacion.log.enlace-generado", 2),
+    ERROR_NO_COMPARTIBLE("biblioteca.dominio.documentacion.error.no-compartible", 0),
+    ERROR_NO_COMPARTIBLE_DETALLE("biblioteca.dominio.documentacion.error.no-compartible-detalle", 1);
 
     private final String clave;
     private final int parametros;

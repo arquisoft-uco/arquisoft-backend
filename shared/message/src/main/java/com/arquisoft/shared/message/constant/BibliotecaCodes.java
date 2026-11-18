@@ -45,6 +45,7 @@ public final class BibliotecaCodes {
         public static final String URL_REQUERIDA = "DOCUMENTACION_URL_REQUERIDA";
         public static final String URL_LONGITUD_EXCEDIDA = "DOCUMENTACION_URL_LONGITUD_EXCEDIDA";
         public static final String YA_REGISTRADA = "DOCUMENTACION_YA_REGISTRADA";
+        public static final String NO_COMPARTIBLE = "DOCUMENTACION_NO_COMPARTIBLE";
     }
 
     public static final class Autor {
