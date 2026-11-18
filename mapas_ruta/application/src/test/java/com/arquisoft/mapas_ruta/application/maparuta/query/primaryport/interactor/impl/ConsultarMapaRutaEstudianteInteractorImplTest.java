@@ -30,9 +30,9 @@ class ConsultarMapaRutaEstudianteInteractorImplTest {
     @Test
     void debeMapearYDelegarEnElUseCase_cuandoSeEjecuta() {
         // Arrange
-        var estudiante = UtilUUID.generarNuevoUUID();
-        var query = ConsultarMapaRutaEstudianteQuery.crear(estudiante);
-        var criteria = new MapaRutaEstudianteCriteria(estudiante);
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var query = ConsultarMapaRutaEstudianteQuery.crear(proyectoGrado);
+        var criteria = new MapaRutaEstudianteCriteria(proyectoGrado);
         var readModel = new MapaRutaEstudianteReadModel(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                 "Titulo", LocalDate.of(2026, 10, 1), LocalDate.of(2026, 12, 1));
         var esperado = Optional.of(readModel);

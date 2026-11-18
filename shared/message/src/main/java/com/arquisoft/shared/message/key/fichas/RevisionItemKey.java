@@ -13,6 +13,12 @@ public enum RevisionItemKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADA_DETALLE("fichas.dominio.revisionitem.error.no-encontrada-detalle", 1),
     ERROR_CERRADA("fichas.dominio.revisionitem.error.cerrada", 0),
     ERROR_CERRADA_DETALLE("fichas.dominio.revisionitem.error.cerrada-detalle", 1),
+    ERROR_NO_EN_PROGRESO("fichas.dominio.revisionitem.error.no-en-progreso", 0),
+    ERROR_NO_EN_PROGRESO_DETALLE("fichas.dominio.revisionitem.error.no-en-progreso-detalle", 1),
+    ERROR_SIN_OBSERVACIONES("fichas.dominio.revisionitem.error.sin-observaciones", 0),
+    ERROR_SIN_OBSERVACIONES_DETALLE("fichas.dominio.revisionitem.error.sin-observaciones-detalle", 1),
+    ERROR_OBSERVACIONES_PENDIENTES("fichas.dominio.revisionitem.error.observaciones-pendientes", 0),
+    ERROR_OBSERVACIONES_PENDIENTES_DETALLE("fichas.dominio.revisionitem.error.observaciones-pendientes-detalle", 2),
     LOG_AGREGANDO("fichas.aplicacion.revisionitem.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.revisionitem.log.verificacion-agregar", 3),
     LOG_AGREGADO("fichas.aplicacion.revisionitem.log.agregado", 2),
@@ -27,6 +33,9 @@ public enum RevisionItemKey implements ClaveMensaje {
     LOG_REMOVIENDO("fichas.aplicacion.revisionitem.log.removiendo", 2),
     LOG_VERIFICACION_REMOVER("fichas.aplicacion.revisionitem.log.verificacion-remover", 3),
     LOG_REMOVIDA("fichas.aplicacion.revisionitem.log.removida", 1),
+    LOG_ENVIANDO_CORRECCIONES("fichas.aplicacion.revisionitem.log.enviando-correcciones", 2),
+    LOG_VERIFICACION_ENVIAR_CORRECCIONES("fichas.aplicacion.revisionitem.log.verificacion-enviar-correcciones", 5),
+    LOG_CORRECCIONES_ENVIADAS("fichas.aplicacion.revisionitem.log.correcciones-enviadas", 1),
     LOG_ACTUALIZADO("fichas.infraestructura.revisionitem.log.actualizado", 2),
     LOG_ELIMINADO("fichas.infraestructura.revisionitem.log.eliminado", 1);
 

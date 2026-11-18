@@ -14,6 +14,8 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     LOG_CONSULTA_COMPLETADA("proyectos.aplicacion.proyectogrado.log.consulta-completada", 3),
     LOG_CONSULTANDO_ESTUDIANTE("proyectos.aplicacion.proyectogrado.log.consultando-estudiante", 1),
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("proyectos.aplicacion.proyectogrado.log.consulta-estudiante-completada", 1),
+    LOG_CONSULTANDO_COORDINADORES("proyectos.aplicacion.proyectogrado.log.consultando-coordinadores", 1),
+    LOG_CONSULTA_COORDINADORES_COMPLETADA("proyectos.aplicacion.proyectogrado.log.consulta-coordinadores-completada", 1),
     LOG_CONSULTANDO_ASESOR("proyectos.aplicacion.proyectogrado.log.consultando-asesor", 4),
     LOG_CONSULTA_ASESOR_COMPLETADA("proyectos.aplicacion.proyectogrado.log.consulta-asesor-completada", 3),
     LOG_CONSULTANDO_DETALLE_ASESOR("proyectos.aplicacion.proyectogrado.log.consultando-detalle-asesor", 2),
@@ -27,7 +29,27 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     ERROR_FINALIZADO("proyectos.dominio.proyectogrado.error.finalizado", 1),
     ERROR_FINALIZADO_DETALLE("proyectos.dominio.proyectogrado.error.finalizado-detalle", 1),
     ERROR_NO_PERTENECE_COORDINADOR("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador", 0),
-    ERROR_NO_PERTENECE_COORDINADOR_DETALLE("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador-detalle", 2);
+    ERROR_NO_PERTENECE_COORDINADOR_DETALLE("proyectos.dominio.proyectogrado.error.no-pertenece-coordinador-detalle", 2),
+    LOG_CAMBIANDO_ESTADO("proyectos.aplicacion.proyectogrado.log.cambiando-estado", 3),
+    LOG_VERIFICACION_CAMBIO_ESTADO("proyectos.aplicacion.proyectogrado.log.verificacion-cambio-estado", 6),
+    LOG_ESTADO_CAMBIADO("proyectos.aplicacion.proyectogrado.log.estado-cambiado", 3),
+    ERROR_TRANSICION_ESTADO_NO_PERMITIDA(
+            "proyectos.dominio.proyectogrado.error.transicion-estado-no-permitida", 3),
+    ERROR_TRANSICION_ESTADO_NO_PERMITIDA_DETALLE(
+            "proyectos.dominio.proyectogrado.error.transicion-estado-no-permitida-detalle", 3),
+    ERROR_SIN_ENTREGABLE("proyectos.dominio.proyectogrado.error.sin-entregable", 1),
+    ERROR_SIN_ENTREGABLE_DETALLE("proyectos.dominio.proyectogrado.error.sin-entregable-detalle", 1),
+    ERROR_ULTIMO_ENTREGABLE_NO_DEFINITIVO(
+            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-definitivo", 3),
+    ERROR_ULTIMO_ENTREGABLE_NO_DEFINITIVO_DETALLE(
+            "proyectos.dominio.proyectogrado.error.ultimo-entregable-no-definitivo-detalle", 3),
+    LOG_CANCELANDO("proyectos.aplicacion.proyectogrado.log.cancelando", 2),
+    LOG_VERIFICACION_CANCELACION("proyectos.aplicacion.proyectogrado.log.verificacion-cancelacion", 4),
+    LOG_CANCELADO("proyectos.aplicacion.proyectogrado.log.cancelado", 2),
+    ERROR_NO_CANCELABLE("proyectos.dominio.proyectogrado.error.no-cancelable", 2),
+    ERROR_NO_CANCELABLE_DETALLE("proyectos.dominio.proyectogrado.error.no-cancelable-detalle", 2),
+    ERROR_CANCELADO("proyectos.dominio.proyectogrado.error.cancelado", 1),
+    ERROR_CANCELADO_DETALLE("proyectos.dominio.proyectogrado.error.cancelado-detalle", 1);
 
     private final String clave;
     private final int parametros;

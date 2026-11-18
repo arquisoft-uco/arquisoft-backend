@@ -1,5 +1,6 @@
 package com.arquisoft.entregables.application.entregableproyectogrado.query.readmodel;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record EntregableProyectoGradoReadModel(
@@ -7,7 +8,9 @@ public record EntregableProyectoGradoReadModel(
         int versionEntregable,
         ProyectoGradoResumen proyectoGrado,
         AsesorResumen asesor,
-        EstadoEntregableResumen estadoEntregable
+        EstadoEntregableResumen estadoEntregable,
+        boolean proyectoFinalizado,
+        boolean proyectoCancelado
 ) {
 
     public record ProyectoGradoResumen(UUID id, String nombre) {
@@ -16,6 +19,6 @@ public record EntregableProyectoGradoReadModel(
     public record AsesorResumen(UUID id, String nombre, String email) {
     }
 
-    public record EstadoEntregableResumen(String id, String nombre) {
+    public record EstadoEntregableResumen(String id, String nombre, Instant fechaActualizacion) {
     }
 }

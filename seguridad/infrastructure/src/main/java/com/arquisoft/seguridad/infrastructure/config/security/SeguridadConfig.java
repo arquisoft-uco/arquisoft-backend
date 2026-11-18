@@ -4,6 +4,7 @@ import com.arquisoft.seguridad.infrastructure.autenticacion.command.primaryadapt
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.ProveedoresAutenticacion;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.primaryadapter.web.AplicadorDecisionAcceso;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias.EquivalenciasProperties;
+import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.equivalencias.SoloAutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.autorizacion.command.secondaryadapter.pep.PepProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.AutenticacionProperties;
 import com.arquisoft.seguridad.infrastructure.config.autenticacion.SesionProperties;
@@ -31,7 +32,8 @@ import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties({PepProperties.class, EquivalenciasProperties.class, SesionProperties.class})
+@EnableConfigurationProperties({PepProperties.class, EquivalenciasProperties.class,
+        SoloAutenticacionProperties.class, SesionProperties.class})
 @RequiredArgsConstructor
 public class SeguridadConfig {
 

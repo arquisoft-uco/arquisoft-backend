@@ -9,6 +9,7 @@ public final class ProyectosLimits {
         private ProyectoGrado() {}
 
         public static final int TITULO_MAX = 100;
+        public static final int MOTIVO_MAX = 500;
     }
 
     public static final class EstudianteProyectoGrado {

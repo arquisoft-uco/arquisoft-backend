@@ -11,6 +11,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 import org.hibernate.annotations.Synchronize;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -21,16 +22,29 @@ import java.util.UUID;
                p.id                                 AS proyecto_grado_id,
                p.nombre                             AS proyecto_grado_nombre,
                a.id                                 AS asesor_id,
+               (SELECT CASE WHEN av.finalizado_en IS NULL THEN av.asesor_id END
+                FROM asesor_proyecto_grado av
+                WHERE av.proyecto_grado_id = e.proyecto_grado_id
+                ORDER BY av.ocurrido_en DESC, av.asesor_id
+                FETCH FIRST 1 ROWS ONLY) AS asesor_vigente_id,
                a.nombre                             AS asesor_nombre,
                a.email                              AS asesor_email,
                s.id                                 AS estado_id,
-               s.nombre                             AS estado_nombre
+               s.nombre                             AS estado_nombre,
+               eepg.fecha_actualizacion             AS estado_fecha_actualizacion,
+               (p.estado_proyecto_id = 'FINALIZADO') AS proyecto_finalizado,
+               (p.estado_proyecto_id = 'CANCELADO')  AS proyecto_cancelado
         FROM entregable_proyecto_grado e
                  JOIN proyecto_grado p ON p.id = e.proyecto_grado_id
                  JOIN asesor a ON a.id = e.asesor_id
-                 JOIN estado_entregable s ON s.id = e.estado_entregable_id
+                 JOIN estado_entregable_proyecto_grado eepg ON eepg.entregable_proyecto_grado_id = e.id
+                      AND NOT EXISTS (SELECT 1 FROM estado_entregable_proyecto_grado ult
+                                      WHERE ult.entregable_proyecto_grado_id = eepg.entregable_proyecto_grado_id
+                                        AND ult.fecha_actualizacion > eepg.fecha_actualizacion)
+                 JOIN estado_entregable s ON s.id = eepg.estado_entregable_id
         """)
-@Synchronize({"entregable_proyecto_grado", "proyecto_grado", "asesor", "estado_entregable"})
+@Synchronize({"entregable_proyecto_grado", "estado_entregable_proyecto_grado", "proyecto_grado", "asesor",
+        "estado_entregable", "asesor_proyecto_grado"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -53,6 +67,9 @@ public class EntregableProyectoGradoJpaQueryEntity {
     @Column(name = "asesor_id", columnDefinition = "uuid")
     private UUID asesorId;
 
+    @Column(name = "asesor_vigente_id", columnDefinition = "uuid")
+    private UUID asesorVigenteId;
+
     @Column(name = "asesor_nombre")
     private String asesorNombre;
 
@@ -64,4 +81,13 @@ public class EntregableProyectoGradoJpaQueryEntity {
 
     @Column(name = "estado_nombre")
     private String estadoNombre;
+
+    @Column(name = "estado_fecha_actualizacion")
+    private Instant estadoFechaActualizacion;
+
+    @Column(name = "proyecto_finalizado")
+    private boolean proyectoFinalizado;
+
+    @Column(name = "proyecto_cancelado")
+    private boolean proyectoCancelado;
 }

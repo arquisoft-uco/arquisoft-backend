@@ -29,11 +29,13 @@ class ContextoRegistroEvaluacionJuradoCommandOutputAdapterTest {
         var evaluacionJurado = UUID.randomUUID();
         var evaluacion = UUID.randomUUID();
         var entregable = UUID.randomUUID();
+        var jurado = UUID.randomUUID();
         var proyeccion = mock(ContextoRegistroEvaluacionJuradoProjection.class);
         when(proyeccion.getId()).thenReturn(evaluacionJurado);
         when(proyeccion.getEvaluacion()).thenReturn(evaluacion);
         when(proyeccion.getEstado()).thenReturn("PENDIENTE");
         when(proyeccion.getEntregable()).thenReturn(entregable);
+        when(proyeccion.getJurado()).thenReturn(jurado);
         when(repository.buscarContextoBloqueado(evaluacionJurado)).thenReturn(Optional.of(proyeccion));
 
         // Act
@@ -45,6 +47,7 @@ class ContextoRegistroEvaluacionJuradoCommandOutputAdapterTest {
             assertThat(contexto.evaluacion()).isEqualTo(evaluacion);
             assertThat(contexto.estado()).isEqualTo("PENDIENTE");
             assertThat(contexto.entregable()).isEqualTo(entregable);
+            assertThat(contexto.jurado()).isEqualTo(jurado);
         });
     }
 

@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration;
         description = "API REST del sistema de gestion de proyectos de grado — Universidad Cooperativa de Colombia. "
             + "Autenticacion via proveedor de identidad OIDC (JWT Bearer). "
             + "Contextos: Seguridad, Usuarios, Fichas de Perfil, Proyectos de Grado, "
-            + "Artefactos, Repositorio de Artefactos, Entregables, Evaluaciones y Mapas de Ruta.",
+            + "Artefactos, Repositorio de Artefactos, Entregables, Evaluaciones, Mapas de Ruta y Biblioteca.",
         contact = @Contact(
             name = "Equipo Arquisoft UCO",
             email = "arquisoft@uco.edu.co"
@@ -75,6 +75,9 @@ public class OpenApiConfig {
 
     @Value("${rutas.mapas-ruta.mapas-ruta.base:/mapas-ruta}")
     private String mapasRutaBasePath;
+
+    @Value("${rutas.biblioteca.biblioteca.base:/biblioteca}")
+    private String bibliotecaBasePath;
 
     @Value("${rutas.entregables.estados-entregable.base:/estados-entregable}")
     private String estadosEntregableBasePath;
@@ -183,6 +186,15 @@ public class OpenApiConfig {
             .group("10-mapas-ruta")
             .displayName("Mapas de Ruta")
             .pathsToMatch(mapasRutaBasePath + "/**")
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi bibliotecaApi() {
+        return GroupedOpenApi.builder()
+            .group("11-biblioteca")
+            .displayName("Biblioteca")
+            .pathsToMatch(bibliotecaBasePath + "/**")
             .build();
     }
 }

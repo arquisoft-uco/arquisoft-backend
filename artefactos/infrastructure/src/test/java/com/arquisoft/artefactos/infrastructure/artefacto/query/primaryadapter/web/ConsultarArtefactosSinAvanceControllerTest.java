@@ -78,10 +78,10 @@ class ConsultarArtefactosSinAvanceControllerTest {
         var fecha = Instant.parse("2026-09-01T10:00:00Z");
         var artefacto = new ArtefactoSinAvanceReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto Alfa",
-                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", fecha, 61L, "Pendiente");
+                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", fecha, 61L, "Pendiente", true, false);
         var sinVersion = new ArtefactoSinAvanceReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto Beta",
-                UtilUUID.generarNuevoUUID(), "Informe", 1, "Repositorio", null, null, null);
+                UtilUUID.generarNuevoUUID(), "Informe", 1, "Repositorio", null, null, null, false, true);
         when(consultarArtefactosSinAvanceInteractor.ejecutar(any(ConsultarArtefactosSinAvanceQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(artefacto, sinVersion), 0, 10, 2L));
         var body = """
@@ -102,6 +102,10 @@ class ConsultarArtefactosSinAvanceControllerTest {
                 .andExpect(jsonPath("$.content[0].versionDocumento").value(2))
                 .andExpect(jsonPath("$.content[0].diasSinAvance").value(61))
                 .andExpect(jsonPath("$.content[0].estadoUltimaRevision").value("Pendiente"))
+                .andExpect(jsonPath("$.content[0].proyectoFinalizado").value(true))
+                .andExpect(jsonPath("$.content[0].proyectoCancelado").value(false))
+                .andExpect(jsonPath("$.content[1].proyectoFinalizado").value(false))
+                .andExpect(jsonPath("$.content[1].proyectoCancelado").value(true))
                 .andExpect(jsonPath("$.content[1].fechaUltimaVersion").doesNotExist())
                 .andExpect(jsonPath("$.content[1].diasSinAvance").doesNotExist())
                 .andExpect(jsonPath("$.content[1].estadoUltimaRevision").doesNotExist())

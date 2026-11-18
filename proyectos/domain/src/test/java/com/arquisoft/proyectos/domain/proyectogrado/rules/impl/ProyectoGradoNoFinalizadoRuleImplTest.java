@@ -22,8 +22,7 @@ class ProyectoGradoNoFinalizadoRuleImplTest {
     @Test
     void debePasar_cuandoEstaEnCualquierEstadoDistintoDeFinalizado() {
         // Arrange
-        var estados = List.of(EstadoProyecto.EN_PROCESO, EstadoProyecto.LISTO_PARA_REVISION,
-                EstadoProyecto.ATRASADO, EstadoProyecto.VACIO);
+        var estados = List.of(EstadoProyecto.EN_PROCESO, EstadoProyecto.ATRASADO, EstadoProyecto.VACIO);
 
         // Act & Assert
         for (var estado : estados) {

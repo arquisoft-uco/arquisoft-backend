@@ -1,0 +1,8 @@
+package com.arquisoft.proyectos.domain.proyectogrado.model;
+
+import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
+
+import java.util.UUID;
+
+public record TransicionEstadoProyecto(UUID proyectoGrado, String tituloProyecto, EstadoProyecto actual,
+                                       EstadoProyecto nuevo) {}

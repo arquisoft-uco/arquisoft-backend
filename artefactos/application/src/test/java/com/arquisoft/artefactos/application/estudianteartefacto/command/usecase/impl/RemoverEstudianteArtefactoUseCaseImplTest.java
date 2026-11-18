@@ -7,6 +7,8 @@ import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.E
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.model.ParticipacionEstudianteArtefacto;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.secondaryport.EstudianteArtefactoOutputPort;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.validator.RemoverEstudianteArtefactoValidator;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
@@ -16,6 +18,7 @@ import com.arquisoft.artefactos.domain.estudianteartefacto.RemocionEstudianteArt
 import com.arquisoft.artefactos.domain.estudianteartefacto.event.EstudianteArtefactoRemovidoEvent;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.ContactoAsesor;
 import com.arquisoft.artefactos.domain.estudianteartefacto.model.ContactoEstudiante;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
 import com.arquisoft.shared.logger.AppLogger;
@@ -64,6 +67,10 @@ class RemoverEstudianteArtefactoUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @Captor
@@ -76,7 +83,8 @@ class RemoverEstudianteArtefactoUseCaseImplTest {
         useCase = new RemoverEstudianteArtefactoUseCaseImpl(
                 artefactoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 estudiantePorIdFinder, estudianteArtefactoExisteFinder, removerEstudianteArtefactoValidator,
-                estudianteArtefactoOutputPort, eventPublisher, logger);
+                estudianteArtefactoOutputPort, eventPublisher, proyectoGradoBloqueadoPorArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
     }
 
     @Test
@@ -108,7 +116,7 @@ class RemoverEstudianteArtefactoUseCaseImplTest {
         var orden = inOrder(
                 logger, artefactoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorIdFinder,
                 estudiantePorIdFinder, estudianteArtefactoExisteFinder, removerEstudianteArtefactoValidator,
-                estudianteArtefactoOutputPort, eventPublisher);
+                estudianteArtefactoOutputPort, eventPublisher, proyectoGradoNoCongeladoValidator);
         orden.verify(logger).info(EstudianteArtefactoKey.LOG_REMOVIENDO, artefactoId, asesorId, estudianteId);
         orden.verify(artefactoPorIdFinder).obtener(artefactoId);
         orden.verify(asesorPorIdFinder).obtener(asesorId);
@@ -117,6 +125,8 @@ class RemoverEstudianteArtefactoUseCaseImplTest {
         orden.verify(estudianteArtefactoExisteFinder).obtener(participacion);
         orden.verify(removerEstudianteArtefactoValidator)
                 .validar(entrada, artefacto, asesor, version, estudiante, true);
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(any());
         orden.verify(estudianteArtefactoOutputPort).eliminarPorArtefactoYEstudiante(artefactoId, estudianteId);
         orden.verify(eventPublisher).publish(eventoCaptor.capture());
         orden.verify(logger).info(EstudianteArtefactoKey.LOG_REMOVIDO, artefactoId, estudianteId);

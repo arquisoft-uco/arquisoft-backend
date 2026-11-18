@@ -51,6 +51,19 @@ public final class ProyectosFields {
         public static final String ESTUDIANTE = "estudiante";
         public static final String ASESOR = "asesor";
         public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String ESTADO_PROYECTO = "estadoProyecto";
+        public static final String MOTIVO = "motivo";
+    }
+
+    public static final class EntregableProyectoGrado {
+
+        private EntregableProyectoGrado() {}
+
+        public static final String ID = "entregableProyectoGrado";
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String VERSION = "version";
+        public static final String ESTADO_ENTREGABLE = "estadoEntregable";
+        public static final String OCURRIDO_EN = "ocurridoEn";
     }
 
     public static final class EstudianteProyectoGrado {
@@ -70,7 +83,10 @@ public final class ProyectosFields {
 
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String ESTADO_INICIAL = "estadoInicial";
+        public static final String ESTADO_PROYECTO = "estadoProyecto";
         public static final String ESTUDIANTE = "estudiante";
+        public static final String MOTIVO = "motivo";
+        public static final String USUARIO = "usuario";
     }
 
     public static final class AsesorProyectoGrado {

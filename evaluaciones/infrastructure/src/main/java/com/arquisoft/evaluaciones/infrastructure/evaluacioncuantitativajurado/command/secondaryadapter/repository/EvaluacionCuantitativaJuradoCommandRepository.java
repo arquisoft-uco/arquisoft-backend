@@ -19,6 +19,11 @@ public interface EvaluacionCuantitativaJuradoCommandRepository
     Set<UUID> findIdsPorEvaluacionJurado(
             @Param("evaluacionJurado") UUID evaluacionJurado, @Param("evaluaciones") Set<UUID> evaluaciones);
 
+    @Query("select e.itemId from EvaluacionCuantitativaJuradoJpaEntity e "
+            + "where e.evaluacionJuradoId = :evaluacionJurado and e.itemId in :items")
+    Set<UUID> findItemsRegistrados(
+            @Param("evaluacionJurado") UUID evaluacionJurado, @Param("items") Set<UUID> items);
+
     @Modifying(clearAutomatically = true)
     @Query("delete from EvaluacionCuantitativaJuradoJpaEntity e "
             + "where e.evaluacionJuradoId = :evaluacionJurado and e.id in :evaluaciones")

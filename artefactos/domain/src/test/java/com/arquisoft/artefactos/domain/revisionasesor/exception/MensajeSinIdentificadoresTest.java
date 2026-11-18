@@ -37,6 +37,9 @@ class MensajeSinIdentificadoresTest {
                 (estudiante, revision) -> new VersionArtefactoNoEsUltimaException(revision, 3),
                 (estudiante, revision) -> new RevisionVersionAnteriorNoEnProgresoException(3,
                         RevisionAsesorDomain.reconstruir(revision, estudiante, EstadoRevisionAsesor.PENDIENTE,
+                                UtilFecha.generarInstanteActual())),
+                (estudiante, revision) -> new RevisionVersionAnteriorNoResueltaException(3,
+                        RevisionAsesorDomain.reconstruir(revision, estudiante, EstadoRevisionAsesor.EN_PROGRESO,
                                 UtilFecha.generarInstanteActual())));
     }
 

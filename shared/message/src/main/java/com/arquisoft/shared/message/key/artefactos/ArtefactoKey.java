@@ -8,7 +8,7 @@ public enum ArtefactoKey implements ClaveMensaje {
     LOG_ASIGNANDO("artefactos.aplicacion.artefacto.log.asignando", 2),
     LOG_VERIFICACION_ASIGNAR("artefactos.aplicacion.artefacto.log.verificacion-asignar", 1),
     LOG_VERIFICACION_REGISTRAR("artefactos.aplicacion.artefacto.log.verificacion-registrar", 5),
-    LOG_VERIFICACION_REACTIVAR("artefactos.aplicacion.artefacto.log.verificacion-reactivar", 4),
+    LOG_VERIFICACION_REACTIVAR("artefactos.aplicacion.artefacto.log.verificacion-reactivar", 7),
     LOG_ASIGNADO("artefactos.aplicacion.artefacto.log.asignado", 2),
     LOG_TRASPASANDO("artefactos.aplicacion.artefacto.log.traspasando", 2),
     LOG_CONSULTANDO_ASESOR("artefactos.aplicacion.artefacto.log.consultando-asesor", 4),

@@ -12,6 +12,16 @@ public final class PlanEstimadoMapper {
                 domain.getId(),
                 domain.getTarea(),
                 domain.getTiempoEstimadoDias(),
-                domain.getDescripcionEstimado());
+                domain.getDescripcionEstimado(),
+                domain.getCreadoEn());
+    }
+
+    public static PlanEstimadoDomain toDomain(PlanEstimadoEntity entity) {
+        return PlanEstimadoDomain.reconstruir(
+                entity.id(),
+                entity.tarea(),
+                entity.tiempoEstimadoDias(),
+                entity.descripcionEstimado(),
+                entity.creadoEn());
     }
 }

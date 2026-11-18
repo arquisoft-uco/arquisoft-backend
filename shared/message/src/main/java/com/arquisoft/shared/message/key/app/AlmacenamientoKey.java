@@ -12,6 +12,8 @@ public enum AlmacenamientoKey implements ClaveMensaje {
     ERROR_LECTURA_DETALLE("app.infraestructura.almacenamiento.error.lectura-detalle", 0),
     ERROR_COPIA("app.infraestructura.almacenamiento.error.copia", 0),
     ERROR_COPIA_DETALLE("app.infraestructura.almacenamiento.error.copia-detalle", 0),
+    ERROR_SUBIDA("app.infraestructura.almacenamiento.error.subida", 0),
+    ERROR_SUBIDA_DETALLE("app.infraestructura.almacenamiento.error.subida-detalle", 0),
     ERROR_ELIMINACION("app.infraestructura.almacenamiento.error.eliminacion", 0),
     ERROR_ELIMINACION_DETALLE("app.infraestructura.almacenamiento.error.eliminacion-detalle", 0),
     ERROR_URL_DESCARGA("app.infraestructura.almacenamiento.error.url-descarga", 0),

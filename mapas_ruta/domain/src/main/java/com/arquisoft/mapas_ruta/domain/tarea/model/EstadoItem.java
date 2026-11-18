@@ -41,6 +41,10 @@ public enum EstadoItem {
         return this == NUEVA || this == EN_PROGRESO;
     }
 
+    public boolean permitePlanEstimado() {
+        return this != FINALIZADA;
+    }
+
     public static EstadoItem desde(String id) {
         return delCatalogo(id).orElseThrow(() -> new EstadoItemNoEncontradoException(id));
     }

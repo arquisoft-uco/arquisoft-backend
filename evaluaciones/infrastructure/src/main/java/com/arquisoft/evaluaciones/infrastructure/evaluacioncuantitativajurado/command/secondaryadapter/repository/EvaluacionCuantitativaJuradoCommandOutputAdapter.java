@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJurad
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -44,5 +45,19 @@ public class EvaluacionCuantitativaJuradoCommandOutputAdapter implements Evaluac
     public void eliminarPorIds(UUID evaluacionJurado, Set<UUID> evaluaciones) {
         repository.eliminarPorIds(evaluacionJurado, evaluaciones);
         logger.debug(EvaluacionCuantitativaJuradoKey.LOG_LOTE_ELIMINADO, evaluaciones.size());
+    }
+
+    @Override
+    public void registrarTodas(List<EvaluacionCuantitativaJuradoEntity> entidades) {
+        var jpaEntidades = entidades.stream()
+                .map(EvaluacionCuantitativaJuradoJpaMapper::toJpaEntity)
+                .toList();
+        repository.saveAll(jpaEntidades);
+        logger.debug(EvaluacionCuantitativaJuradoKey.LOG_LOTE_GUARDADO, entidades.size());
+    }
+
+    @Override
+    public Set<UUID> consultarItemsRegistrados(UUID evaluacionJurado, Set<UUID> items) {
+        return repository.findItemsRegistrados(evaluacionJurado, items);
     }
 }

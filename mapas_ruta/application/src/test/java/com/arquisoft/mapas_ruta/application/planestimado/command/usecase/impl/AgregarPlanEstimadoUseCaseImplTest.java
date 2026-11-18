@@ -87,7 +87,7 @@ class AgregarPlanEstimadoUseCaseImplTest {
         orden.verify(diasEstimadosAcumuladosDeMapaRutaFinder).obtener(tarea.getId());
         orden.verify(validator).validar(plan, tarea, mapa, false, 7L);
         orden.verify(planEstimadoOutputPort).registrar(
-                new PlanEstimadoEntity(plan.getId(), tarea.getId(), 5, "Revisar"));
+                new PlanEstimadoEntity(plan.getId(), tarea.getId(), 5, "Revisar", plan.getCreadoEn()));
         verify(tareaPorIdFinder, times(1)).obtener(any());
         verify(mapaRutaDeTareaFinder, times(1)).obtener(any());
         verify(planEstimadoDeTareaExisteFinder, times(1)).obtener(any());

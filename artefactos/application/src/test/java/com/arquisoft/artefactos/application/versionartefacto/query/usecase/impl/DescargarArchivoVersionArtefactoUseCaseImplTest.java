@@ -59,7 +59,7 @@ class DescargarArchivoVersionArtefactoUseCaseImplTest {
     void debeGenerarEnlace_cuandoElActorTieneAcceso() {
         // Arrange
         var archivo = ArchivoVersionArtefactoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), "versiones/x", 2, "Documento");
+                UtilUUID.generarNuevoUUID(), "versiones/x", 2, "Documento", "Proyecto", false);
         var participacion = new ParticipacionVersionArtefacto(criteria.versionArtefacto(), criteria.actor());
         var esperado = new EnlaceDescargaVersionArtefactoReadModel("http://minio/x", Instant.now());
         when(archivoVersionArtefactoQueryFinder.obtener(criteria.versionArtefacto())).thenReturn(archivo);

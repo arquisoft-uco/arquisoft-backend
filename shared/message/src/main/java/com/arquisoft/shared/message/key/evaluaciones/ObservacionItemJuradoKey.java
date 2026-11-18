@@ -14,6 +14,10 @@ public enum ObservacionItemJuradoKey implements ClaveMensaje {
     LOG_VERIFICACION_MODIFICAR(
             "evaluaciones.aplicacion.observacionitemjurado.log.verificacion-modificar", 3),
     LOG_MODIFICADA("evaluaciones.aplicacion.observacionitemjurado.log.modificada", 1),
+    LOG_REMOVIENDO("evaluaciones.aplicacion.observacionitemjurado.log.removiendo", 1),
+    LOG_VERIFICACION_REMOVER("evaluaciones.aplicacion.observacionitemjurado.log.verificacion-remover", 2),
+    LOG_REMOVIDA("evaluaciones.aplicacion.observacionitemjurado.log.removida", 1),
+    LOG_ELIMINADA("evaluaciones.infraestructura.observacionitemjurado.log.eliminada", 1),
     ERROR_EVALUACION_CUANTITATIVA_JURADO_NO_ENCONTRADA(
             "evaluaciones.dominio.observacionitemjurado.error.evaluacion-no-encontrada", 0),
     ERROR_EVALUACION_CUANTITATIVA_JURADO_NO_ENCONTRADA_DETALLE(

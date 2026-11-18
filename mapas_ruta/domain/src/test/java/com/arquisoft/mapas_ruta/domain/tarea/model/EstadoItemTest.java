@@ -55,6 +55,14 @@ class EstadoItemTest {
     }
 
     @Test
+    void debePermitirPlanEstimadoMientrasNoEsteFinalizada() {
+        // Act & Assert
+        assertThat(EstadoItem.NUEVA.permitePlanEstimado()).isTrue();
+        assertThat(EstadoItem.EN_PROGRESO.permitePlanEstimado()).isTrue();
+        assertThat(EstadoItem.FINALIZADA.permitePlanEstimado()).isFalse();
+    }
+
+    @Test
     void debeValidarElId_cuandoSeConsultaEsValido() {
         // Act & Assert
         assertThat(EstadoItem.esValido("EN_PROGRESO")).isTrue();

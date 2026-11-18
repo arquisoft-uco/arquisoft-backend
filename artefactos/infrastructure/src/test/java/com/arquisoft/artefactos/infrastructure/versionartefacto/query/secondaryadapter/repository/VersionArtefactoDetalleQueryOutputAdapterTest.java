@@ -20,6 +20,8 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.estadoDe;
+import static com.arquisoft.artefactos.infrastructure.proyectogrado.EstadoProyectoFixture.ocurridoEnDe;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -55,8 +57,20 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
     }
 
     private UUID sembrarArtefacto(Instant omitidoEn) {
+        return sembrarArtefacto(omitidoEn, null);
+    }
+
+    private UUID sembrarArtefacto(Instant omitidoEn, Instant finalizadoEn) {
+        return sembrarArtefacto(omitidoEn, finalizadoEn, null);
+    }
+
+    private UUID sembrarArtefacto(Instant omitidoEn, Instant finalizadoEn, Instant canceladoEn) {
+        return sembrarArtefactoConEstado(omitidoEn, estadoDe(finalizadoEn, canceladoEn), ocurridoEnDe(finalizadoEn, canceladoEn));
+    }
+
+    private UUID sembrarArtefactoConEstado(Instant omitidoEn, String estado, Instant ocurridoEn) {
         var proyecto = UtilUUID.generarNuevoUUID();
-        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, "Alfa"));
+        entityManager.persist(new ProyectoGradoJpaEntity(proyecto, "Alfa", null, estado, ocurridoEn));
         var documento = UtilUUID.generarNuevoUUID();
         entityManager.persist(new VersionRepositorioArtefactoJpaEntity(
                 documento, "Anteproyecto", 1, UtilUUID.generarNuevoUUID(), "Repo Uno",
@@ -178,6 +192,75 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
     }
 
     @Test
+    void debeTraerNombreYFinalizado_cuandoElProyectoEstaFinalizado() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(sembrarArtefacto(null, Instant.parse("2026-11-02T10:00:00Z")), 1);
+        confirmarSiembra();
+
+        // Act
+        var resultado = accesoAdapter.obtenerArchivoPorId(version);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(archivo -> {
+            assertThat(archivo.nombreProyecto()).isEqualTo("Alfa");
+            assertThat(archivo.proyectoFinalizado()).isTrue();
+        });
+    }
+
+    @Test
+    void debeMarcarProyectoFinalizado_cuandoElProyectoEstaCancelado() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(sembrarArtefacto(null, null, Instant.parse("2026-11-03T10:00:00Z")), 1);
+        confirmarSiembra();
+
+        // Act
+        var resultado = accesoAdapter.obtenerArchivoPorId(version);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(archivo -> {
+            assertThat(archivo.nombreProyecto()).isEqualTo("Alfa");
+            assertThat(archivo.proyectoFinalizado()).isTrue();
+        });
+    }
+
+    @Test
+    void debeMarcarNoFinalizado_cuandoFinalizadoEnEsNulo() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(sembrarArtefacto(null), 1);
+        confirmarSiembra();
+
+        // Act
+        var resultado = accesoAdapter.obtenerArchivoPorId(version);
+
+        // Assert
+        assertThat(resultado).hasValueSatisfying(archivo -> {
+            assertThat(archivo.nombreProyecto()).isEqualTo("Alfa");
+            assertThat(archivo.proyectoFinalizado()).isFalse();
+        });
+    }
+
+    @Test
+    void debeNoMarcarCierre_cuandoElProyectoEstaAtrasado() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var version = sembrarVersion(
+                sembrarArtefactoConEstado(null, "ATRASADO", Instant.parse("2026-11-03T10:00:00Z")), 1);
+        confirmarSiembra();
+
+        // Act
+        var archivo = accesoAdapter.obtenerArchivoPorId(version);
+        var detalle = detalleAdapter.consultarPorId(version);
+
+        // Assert
+        assertThat(archivo).hasValueSatisfying(a -> assertThat(a.proyectoFinalizado()).isFalse());
+        assertThat(detalle.proyectoFinalizado()).isFalse();
+        assertThat(detalle.proyectoCancelado()).isFalse();
+    }
+
+    @Test
     void debeDevolverVacio_cuandoLaVersionNoExiste() {
         // Act
         var resultado = accesoAdapter.obtenerArchivoPorId(UtilUUID.generarNuevoUUID());
@@ -218,5 +301,24 @@ class VersionArtefactoDetalleQueryOutputAdapterTest {
         assertThat(vinculado).isTrue();
         assertThat(noVinculado).isFalse();
         assertThat(versionAjena).isFalse();
+    }
+
+    @Test
+    void debeRetornarIndicadoresDeCierre_cuandoElProyectoEstaCancelado() {
+        // Arrange
+        sembrarAsesorYEstados();
+        var cancelada = sembrarVersion(sembrarArtefacto(null, null, Instant.parse("2026-11-03T10:00:00Z")), 1);
+        var activa = sembrarVersion(sembrarArtefacto(null), 1);
+        confirmarSiembra();
+
+        // Act
+        var deCancelado = detalleAdapter.consultarPorId(cancelada);
+        var deActivo = detalleAdapter.consultarPorId(activa);
+
+        // Assert
+        assertThat(deCancelado.proyectoCancelado()).isTrue();
+        assertThat(deCancelado.proyectoFinalizado()).isFalse();
+        assertThat(deActivo.proyectoCancelado()).isFalse();
+        assertThat(deActivo.proyectoFinalizado()).isFalse();
     }
 }

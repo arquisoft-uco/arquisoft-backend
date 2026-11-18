@@ -3,7 +3,7 @@ package com.arquisoft.entregables.infrastructure.artefactoentregable.query.prima
 import com.arquisoft.entregables.application.artefactoentregable.query.primaryport.interactor.ConsultarArtefactosEntregableInteractor;
 import com.arquisoft.entregables.application.artefactoentregable.query.primaryport.model.ConsultarArtefactosEntregableQuery;
 import com.arquisoft.entregables.application.artefactoentregable.query.readmodel.ArtefactoEntregableReadModel;
-import com.arquisoft.entregables.domain.entregableproyectogrado.exception.AsesorNoPropietarioEntregableProyectoGradoException;
+import com.arquisoft.entregables.domain.asesorproyectogrado.exception.AsesorNoAsignadoProyectoGradoException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
@@ -81,7 +81,7 @@ class ConsultarArtefactosEntregableControllerTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var id = UtilUUID.generarNuevoUUID();
-        var readModel = new ArtefactoEntregableReadModel(id, entregable, UtilUUID.generarNuevoUUID(), "uri",
+        var readModel = new ArtefactoEntregableReadModel(id, entregable, UtilUUID.generarNuevoUUID(), 3, "uri",
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Doc", UtilUUID.generarNuevoUUID(), "Repo");
         var asesor = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(any(ConsultarArtefactosEntregableQuery.class))).thenReturn(List.of(readModel));
@@ -92,6 +92,7 @@ class ConsultarArtefactosEntregableControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(id.toString()))
                 .andExpect(jsonPath("$[0].entregableProyectoGrado").value(entregable.toString()))
+                .andExpect(jsonPath("$[0].numeroVersion").value(3))
                 .andExpect(jsonPath("$[0].nombreDocumento").value("Doc"))
                 .andExpect(jsonPath("$[0].nombreRepositorio").value("Repo"))
                 .andExpect(jsonPath("$[0].uriArchivo").value("uri"));
@@ -129,17 +130,17 @@ class ConsultarArtefactosEntregableControllerTest {
     }
 
     @Test
-    void debeResponder422_cuandoElEntregableNoEsDelAsesor() throws Exception {
+    void debeResponder422_cuandoElAsesorNoEstaAsignadoAlProyecto() throws Exception {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(any(ConsultarArtefactosEntregableQuery.class)))
-                .thenThrow(new AsesorNoPropietarioEntregableProyectoGradoException(
+                .thenThrow(new AsesorNoAsignadoProyectoGradoException(
                         UtilUUID.generarNuevoUUID(), entregable));
 
         // Act & Assert
         mockMvc.perform(get(ruta(entregable.toString())).with(jwt()))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode")
-                        .value(EntregablesCodes.EntregableProyectoGrado.ASESOR_NO_PROPIETARIO));
+                        .value(EntregablesCodes.AsesorProyectoGrado.NO_ASIGNADO));
     }
 }

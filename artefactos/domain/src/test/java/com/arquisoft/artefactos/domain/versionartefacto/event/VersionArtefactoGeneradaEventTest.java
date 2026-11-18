@@ -16,7 +16,7 @@ class VersionArtefactoGeneradaEventTest {
         // Arrange
         var generacion = GeneracionVersionArtefactoDomain.crear(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
-        var version = VersionArtefactoDomain.crear(generacion, 2);
+        var version = VersionArtefactoDomain.crear(generacion, 2, 1024L);
         var asesor = new ContactoAsesor("Ana Perez", "ana@uco.edu.co");
 
         // Act

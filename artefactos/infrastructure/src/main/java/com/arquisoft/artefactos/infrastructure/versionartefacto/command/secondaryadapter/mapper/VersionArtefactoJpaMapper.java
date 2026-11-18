@@ -14,6 +14,7 @@ public final class VersionArtefactoJpaMapper {
                 .numeroVersion(entity.numeroVersion())
                 .fechaCreacion(entity.fechaCreacion())
                 .uriArchivo(entity.uriArchivo())
+                .tamanoBytes(entity.tamanoBytes())
                 .build();
     }
 
@@ -23,6 +24,7 @@ public final class VersionArtefactoJpaMapper {
                 jpaEntity.getArtefacto(),
                 jpaEntity.getNumeroVersion(),
                 jpaEntity.getFechaCreacion(),
-                jpaEntity.getUriArchivo());
+                jpaEntity.getUriArchivo(),
+                jpaEntity.getTamanoBytes());
     }
 }

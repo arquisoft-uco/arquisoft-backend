@@ -2,9 +2,11 @@ package com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command
 
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.entity.ItemCuantitativoJuradoEntity;
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.entity.ItemCuantitativoJuradoJpaEntity;
+import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.projection.ValorMaximoItemCuantitativoJuradoProjection;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -12,12 +14,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -133,5 +139,22 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
         // Assert
         verify(repository).deleteById(id);
         verify(logger).debug(eq(ItemCuantitativoJuradoKey.LOG_ELIMINADO), eq(id));
+    }
+
+    @Test
+    void debeConvertirProyeccionesAMapaIdValor_cuandoConsultaValoresMaximosPorIds() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var ids = Set.of(id);
+        var proyeccion = mock(ValorMaximoItemCuantitativoJuradoProjection.class);
+        when(proyeccion.getId()).thenReturn(id);
+        when(proyeccion.getValor()).thenReturn(350);
+        when(repository.findValoresMaximosByIdIn(ids)).thenReturn(List.of(proyeccion));
+
+        // Act
+        var resultado = adapter.consultarValoresMaximosPorIds(ids);
+
+        // Assert
+        assertThat(resultado).containsExactly(Map.entry(id, 350));
     }
 }

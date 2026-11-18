@@ -36,6 +36,11 @@ public class RevisionItemCommandOutputAdapter implements RevisionItemOutputPort 
     }
 
     @Override
+    public Optional<RevisionItemEntity> buscarPorItem(UUID item) {
+        return repository.findByItemId(item).map(RevisionItemJpaMapper::toEntity);
+    }
+
+    @Override
     public Optional<PertenenciaRevisionItemEntity> obtenerPertenencia(UUID revisionItem, UUID estudiante) {
         return repository.obtenerPertenencia(revisionItem, estudiante);
     }

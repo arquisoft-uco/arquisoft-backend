@@ -20,4 +20,6 @@ public interface EstudianteOutputPort {
     void actualizar(EstudianteEntity estudiante);
 
     List<EstudianteEntity> obtenerVigentesPorIds(List<UUID> ids);
+
+    List<EstudianteEntity> obtenerVigentesPorProyectoGrado(UUID proyectoGrado);
 }

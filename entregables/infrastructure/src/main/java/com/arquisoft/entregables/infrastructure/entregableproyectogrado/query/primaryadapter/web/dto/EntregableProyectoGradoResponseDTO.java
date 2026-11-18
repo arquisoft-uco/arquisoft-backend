@@ -1,5 +1,6 @@
 package com.arquisoft.entregables.infrastructure.entregableproyectogrado.query.primaryadapter.web.dto;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record EntregableProyectoGradoResponseDTO(
@@ -7,7 +8,9 @@ public record EntregableProyectoGradoResponseDTO(
         int versionEntregable,
         ProyectoGradoResponseDTO proyectoGrado,
         AsesorResponseDTO asesor,
-        EstadoEntregableResponseDTO estadoEntregable
+        EstadoEntregableResponseDTO estadoEntregable,
+        boolean proyectoFinalizado,
+        boolean proyectoCancelado
 ) {
 
     public record ProyectoGradoResponseDTO(UUID id, String nombre) {
@@ -16,6 +19,6 @@ public record EntregableProyectoGradoResponseDTO(
     public record AsesorResponseDTO(UUID id, String nombre, String email) {
     }
 
-    public record EstadoEntregableResponseDTO(String id, String nombre) {
+    public record EstadoEntregableResponseDTO(String id, String nombre, Instant fechaActualizacion) {
     }
 }

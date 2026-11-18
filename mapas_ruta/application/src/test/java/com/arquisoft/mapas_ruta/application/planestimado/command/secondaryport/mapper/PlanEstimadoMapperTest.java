@@ -22,6 +22,24 @@ class PlanEstimadoMapperTest {
         assertThat(entity.tarea()).isEqualTo(plan.getTarea());
         assertThat(entity.tiempoEstimadoDias()).isEqualTo(6);
         assertThat(entity.descripcionEstimado()).isEqualTo("Revisar");
+        assertThat(entity.creadoEn()).isEqualTo(plan.getCreadoEn());
+    }
+
+    @Test
+    void debeMapearADomain_cuandoEntityValida() {
+        // Arrange
+        var plan = PlanEstimadoDomain.crear(UtilUUID.generarNuevoUUID(), 6, "Revisar");
+        var entity = PlanEstimadoMapper.toEntity(plan);
+
+        // Act
+        var reconstruido = PlanEstimadoMapper.toDomain(entity);
+
+        // Assert
+        assertThat(reconstruido.getId()).isEqualTo(plan.getId());
+        assertThat(reconstruido.getTarea()).isEqualTo(plan.getTarea());
+        assertThat(reconstruido.getTiempoEstimadoDias()).isEqualTo(6);
+        assertThat(reconstruido.getDescripcionEstimado()).isEqualTo("Revisar");
+        assertThat(reconstruido.getCreadoEn()).isEqualTo(plan.getCreadoEn());
     }
 
     @Test

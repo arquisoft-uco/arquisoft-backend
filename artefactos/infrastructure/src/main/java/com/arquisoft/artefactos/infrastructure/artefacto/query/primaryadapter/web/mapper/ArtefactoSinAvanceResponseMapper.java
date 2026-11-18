@@ -18,6 +18,8 @@ public final class ArtefactoSinAvanceResponseMapper {
                 readModel.nombreRepositorio(),
                 readModel.fechaUltimaVersion(),
                 readModel.diasSinAvance(),
-                readModel.estadoUltimaRevision());
+                readModel.estadoUltimaRevision(),
+                readModel.proyectoFinalizado(),
+                readModel.proyectoCancelado());
     }
 }

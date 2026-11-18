@@ -2,6 +2,7 @@ package com.arquisoft.fichas.application.observacionitem.command.secondaryport;
 
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ContextoObservacionItemEntity;
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ObservacionItemEntity;
+import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ResumenObservacionesRevisionEntity;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -19,4 +20,8 @@ public interface ObservacionItemOutputPort {
     void actualizarObservacion(UUID observacionItem, String observacion);
 
     void removerObservacion(UUID observacionItem);
+
+    ResumenObservacionesRevisionEntity resumirPorRevision(UUID revisionItem, String estadoPendiente);
+
+    void actualizarEstadoPorRevision(UUID revisionItem, String estadoActual, String estadoNuevo);
 }

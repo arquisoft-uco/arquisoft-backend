@@ -94,7 +94,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         var criterio = UUID.randomUUID();
         var registro = registroValido(evaluacionJurado, item, criterio);
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, evaluacion, EstadoEvaluacion.PENDIENTE, entregable);
+                evaluacionJurado, evaluacion, EstadoEvaluacion.PENDIENTE, entregable, UUID.randomUUID());
 
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
@@ -151,7 +151,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         var criterio = UUID.randomUUID();
         var registro = registroValido(evaluacionJurado, item, criterio);
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.EN_PROGRESO, UUID.randomUUID(), UUID.randomUUID());
 
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
@@ -199,7 +199,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         var criterio = UUID.randomUUID();
         var registro = registroValido(evaluacionJurado, item, criterio);
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID(), UUID.randomUUID());
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of());
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
@@ -224,7 +224,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         var criterio = UUID.randomUUID();
         var registro = registroValido(evaluacionJurado, item, criterio);
         var contexto = ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID());
+                evaluacionJurado, UUID.randomUUID(), EstadoEvaluacion.PENDIENTE, UUID.randomUUID(), UUID.randomUUID());
         var fallo = new RuntimeException("fallo de persistencia");
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(contexto);
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));

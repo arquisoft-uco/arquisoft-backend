@@ -6,7 +6,6 @@ public record EntregableProyectoGradoEntity(
         UUID id,
         UUID proyectoGrado,
         int version,
-        UUID asesor,
-        String estadoEntregable
+        UUID asesor
 ) {
 }

@@ -56,4 +56,11 @@ public class EstudianteCommandOutputAdapter implements EstudianteOutputPort {
                 .map(EstudianteJpaMapper::toEntity)
                 .toList();
     }
+
+    @Override
+    public List<EstudianteEntity> obtenerVigentesPorProyectoGrado(UUID proyectoGrado) {
+        return estudianteRepository.buscarVigentesPorProyectoGrado(proyectoGrado).stream()
+                .map(EstudianteJpaMapper::toEntity)
+                .toList();
+    }
 }

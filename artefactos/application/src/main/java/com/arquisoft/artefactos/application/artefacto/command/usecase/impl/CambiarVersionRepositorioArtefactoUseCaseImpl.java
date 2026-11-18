@@ -6,6 +6,8 @@ import com.arquisoft.artefactos.application.artefacto.command.usecase.CambiarVer
 import com.arquisoft.artefactos.application.artefacto.command.validator.CambiarVersionRepositorioArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorArtefactoFinder;
@@ -17,6 +19,7 @@ import com.arquisoft.artefactos.domain.artefacto.model.ContactoEstudiante;
 import com.arquisoft.artefactos.domain.revisionasesor.model.RevisionVersionAnterior;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.ArtefactoKey;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -35,6 +38,8 @@ public class CambiarVersionRepositorioArtefactoUseCaseImpl implements CambiarVer
     private final CambiarVersionRepositorioArtefactoValidator cambiarVersionRepositorioArtefactoValidator;
     private final ArtefactoOutputPort artefactoOutputPort;
     private final EventPublisher eventPublisher;
+    private final ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -48,12 +53,16 @@ public class CambiarVersionRepositorioArtefactoUseCaseImpl implements CambiarVer
         var ultimoNumero = ultimoNumeroVersionArtefactoFinder.obtener(cambio.getArtefacto());
         var revisionVigente = revisionVigenteUltimaVersionFinder.obtener(cambio.getArtefacto());
         var estudiantes = estudiantesVinculadosArtefactoFinder.obtener(cambio.getArtefacto());
+        var proyecto = proyectoGradoBloqueadoPorArtefactoFinder.obtener(cambio.getArtefacto());
         logger.debug(ArtefactoKey.LOG_VERIFICACION_CAMBIAR_VERSION_REPOSITORIO,
                 !artefacto.esVacio(), !asesor.esVacio(), !actual.esVacio(), !elegida.esVacio(),
                 ultimoNumero, revisionVigente.getEstado().getId(), estudiantes.size());
 
         cambiarVersionRepositorioArtefactoValidator.validar(
                 cambio, artefacto, asesor, actual, elegida, new RevisionVersionAnterior(ultimoNumero, revisionVigente));
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         artefacto.cambiarVersionRepositorio(cambio.getVersionRepositorioArtefacto());
         artefactoOutputPort.cambiarVersionRepositorio(artefacto.getId(), artefacto.getVersionRepositorioArtefacto());

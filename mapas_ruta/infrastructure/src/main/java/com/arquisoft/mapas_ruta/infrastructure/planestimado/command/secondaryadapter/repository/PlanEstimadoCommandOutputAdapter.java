@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.mapas_ruta.PlanEstimadoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -29,8 +30,13 @@ public class PlanEstimadoCommandOutputAdapter implements PlanEstimadoOutputPort 
     }
 
     @Override
-    public boolean existePorId(UUID planEstimado) {
-        return repository.existsById(planEstimado);
+    public Optional<PlanEstimadoEntity> obtenerPorId(UUID planEstimado) {
+        return repository.findById(planEstimado).map(PlanEstimadoJpaMapper::toEntity);
+    }
+
+    @Override
+    public Optional<PlanEstimadoEntity> obtenerPorTarea(UUID tarea) {
+        return repository.findByTareaId(tarea).map(PlanEstimadoJpaMapper::toEntity);
     }
 
     @Override

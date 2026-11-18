@@ -88,6 +88,11 @@ public class AlmacenamientoVersionMinioOutputAdapter implements AlmacenamientoVe
         return propiedades.getTamanoMaximoBytes();
     }
 
+    @Override
+    public long cuotaProyectoGradoBytes() {
+        return propiedades.getCuotaProyectoGradoBytes();
+    }
+
     private static String keyPendiente(UUID carga) {
         return ArtefactosAlmacenamiento.PREFIJO_PENDIENTES + carga;
     }

@@ -15,7 +15,7 @@ final class VersionArtefactoEstudianteSortMapper {
         Map<String, String> m = new LinkedHashMap<>();
         for (var campo : VersionArtefactoEstudianteCriteria.Campo.values()) {
             var ruta = switch (campo) {
-                case ARTEFACTO      -> null;
+                case ARTEFACTO, PROYECTO_FINALIZADO, PROYECTO_CANCELADO -> null;
                 case PROYECTO_GRADO   -> null;
                 case NOMBRE_PROYECTO  -> null;
                 case NOMBRE_DOCUMENTO -> null;

@@ -35,4 +35,7 @@ public class VersionArtefactoJpaEntity {
 
     @Column(name = "uri_archivo", nullable = false, length = 2000)
     private String uriArchivo;
+
+    @Column(name = "tamano_bytes", nullable = false)
+    private long tamanoBytes;
 }

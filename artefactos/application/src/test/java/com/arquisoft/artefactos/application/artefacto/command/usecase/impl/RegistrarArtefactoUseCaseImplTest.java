@@ -7,7 +7,9 @@ import com.arquisoft.artefactos.application.artefacto.command.validator.Registra
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.asesorproyectogrado.command.finder.VinculosMasRecientesProyectoGradoFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.usecase.AsignarEstudiantesArtefactoUseCase;
-import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoExisteFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorIdFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoBloqueadaPorIdFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.AsignacionArtefactoDomain;
@@ -46,7 +48,7 @@ import static org.mockito.Mockito.when;
 class RegistrarArtefactoUseCaseImplTest {
 
     @Mock
-    private ProyectoGradoExisteFinder proyectoGradoExisteFinder;
+    private ProyectoGradoBloqueadoPorIdFinder proyectoGradoBloqueadoPorIdFinder;
     @Mock
     private AsesorPorIdFinder asesorPorIdFinder;
     @Mock
@@ -62,6 +64,8 @@ class RegistrarArtefactoUseCaseImplTest {
     @Mock
     private AsignarEstudiantesArtefactoUseCase asignarEstudiantesArtefactoUseCase;
     @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @Captor
@@ -72,9 +76,10 @@ class RegistrarArtefactoUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new RegistrarArtefactoUseCaseImpl(
-                proyectoGradoExisteFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
+                proyectoGradoBloqueadoPorIdFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
                 versionRepositorioArtefactoBloqueadaPorIdFinder, versionesAsignadasProyectoFinder,
-                registrarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase, logger);
+                registrarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase,
+                proyectoGradoNoCongeladoValidator, logger);
     }
 
     private static AsignacionArtefactoDomain registro(UUID proyecto, UUID asesor, UUID version) {
@@ -91,7 +96,8 @@ class RegistrarArtefactoUseCaseImplTest {
         var asesor = UtilUUID.generarNuevoUUID();
         var version = UtilUUID.generarNuevoUUID();
         var registro = registro(proyecto, asesor, version);
-        when(proyectoGradoExisteFinder.obtener(proyecto)).thenReturn(true);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto))
+                .thenReturn(ProyectoGradoDomain.reconstruir(proyecto, "Proyecto", null, null, null));
         when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
         when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
         when(versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(version))
@@ -103,17 +109,18 @@ class RegistrarArtefactoUseCaseImplTest {
 
         // Assert
         assertThat(id).isEqualTo(registro.getArtefacto().getId());
-        var orden = inOrder(proyectoGradoExisteFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
+        var orden = inOrder(proyectoGradoBloqueadoPorIdFinder, asesorPorIdFinder, vinculosMasRecientesProyectoGradoFinder,
                 versionRepositorioArtefactoBloqueadaPorIdFinder, versionesAsignadasProyectoFinder, logger,
-                registrarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase);
-        orden.verify(proyectoGradoExisteFinder, times(1)).obtener(proyecto);
+                registrarArtefactoValidator, artefactoOutputPort, asignarEstudiantesArtefactoUseCase, proyectoGradoNoCongeladoValidator);
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesor);
         orden.verify(vinculosMasRecientesProyectoGradoFinder, times(1)).obtener(proyecto);
         orden.verify(versionRepositorioArtefactoBloqueadaPorIdFinder, times(1)).obtener(version);
         orden.verify(versionesAsignadasProyectoFinder, times(1)).obtener(proyecto);
+        orden.verify(proyectoGradoBloqueadoPorIdFinder, times(1)).obtener(proyecto);
         orden.verify(logger).debug(ArtefactoKey.LOG_VERIFICACION_REGISTRAR, true, false, 0, false, 0);
         orden.verify(registrarArtefactoValidator).validar(
                 registro, true, AsesorDomain.VACIO, List.of(), VersionRepositorioArtefactoDomain.VACIO, List.of());
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
         orden.verify(artefactoOutputPort).registrar(entidadCaptor.capture());
         orden.verify(asignarEstudiantesArtefactoUseCase).ejecutar(registro.getEstudiantes());
         assertThat(entidadCaptor.getValue().id()).isEqualTo(id);
@@ -125,7 +132,7 @@ class RegistrarArtefactoUseCaseImplTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
         var registro = registro(proyecto, asesor, UtilUUID.generarNuevoUUID());
-        when(proyectoGradoExisteFinder.obtener(proyecto)).thenReturn(false);
+        when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto)).thenReturn(ProyectoGradoDomain.VACIO);
         when(asesorPorIdFinder.obtener(asesor)).thenReturn(AsesorDomain.VACIO);
         when(vinculosMasRecientesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
         when(versionRepositorioArtefactoBloqueadaPorIdFinder.obtener(any()))

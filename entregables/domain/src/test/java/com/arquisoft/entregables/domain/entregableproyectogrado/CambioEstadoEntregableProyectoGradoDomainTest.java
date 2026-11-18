@@ -16,25 +16,28 @@ class CambioEstadoEntregableProyectoGradoDomainTest {
     void debeCrearRecortandoElEstado_cuandoLosDatosSonValidos() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
 
         // Act
-        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(entregable, "  CERRADO ");
+        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(entregable, "  CERRADO ", asesor);
 
         // Assert
         assertThat(cambio.getEntregableProyectoGrado()).isEqualTo(entregable);
         assertThat(cambio.getEstadoEntregable()).isEqualTo(EstadoEntregable.CERRADO);
+        assertThat(cambio.getAsesor()).isEqualTo(asesor);
     }
 
     @Test
-    void debeAcumularFieldErrors_cuandoFaltanEntregableYEstado() {
+    void debeAcumularFieldErrors_cuandoFaltanAsesorEntregableYEstado() {
         // Act & Assert
-        assertThatThrownBy(() -> CambioEstadoEntregableProyectoGradoDomain.crear(null, "  "))
+        assertThatThrownBy(() -> CambioEstadoEntregableProyectoGradoDomain.crear(null, "  ", null))
                 .isInstanceOfSatisfying(DomainValidationException.class, ex ->
                         assertThat(ex.getValidationResult().getErrores())
                                 .extracting("codigoError")
                                 .containsExactlyInAnyOrder(
                                         EntregablesCodes.EntregableProyectoGrado.ID_REQUERIDO,
-                                        EntregablesCodes.EntregableProyectoGrado.ESTADO_ENTREGABLE_REQUERIDO));
+                                        EntregablesCodes.EntregableProyectoGrado.ESTADO_ENTREGABLE_REQUERIDO,
+                                        EntregablesCodes.EntregableProyectoGrado.ASESOR_REQUERIDO));
     }
 
     @Test
@@ -43,7 +46,7 @@ class CambioEstadoEntregableProyectoGradoDomainTest {
         var entregable = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> CambioEstadoEntregableProyectoGradoDomain.crear(entregable, "INEXISTENTE"))
+        assertThatThrownBy(() -> CambioEstadoEntregableProyectoGradoDomain.crear(entregable, "INEXISTENTE", UtilUUID.generarNuevoUUID()))
                 .isInstanceOfSatisfying(DomainValidationException.class, ex -> {
                     assertThat(ex.getValidationResult().getErrores())
                             .extracting("codigoError")
@@ -60,7 +63,7 @@ class CambioEstadoEntregableProyectoGradoDomainTest {
         var entregable = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> CambioEstadoEntregableProyectoGradoDomain.crear(entregable, "VACIO"))
+        assertThatThrownBy(() -> CambioEstadoEntregableProyectoGradoDomain.crear(entregable, "VACIO", UtilUUID.generarNuevoUUID()))
                 .isInstanceOfSatisfying(DomainValidationException.class, ex ->
                         assertThat(ex.getValidationResult().getErrores())
                                 .extracting("codigoError")

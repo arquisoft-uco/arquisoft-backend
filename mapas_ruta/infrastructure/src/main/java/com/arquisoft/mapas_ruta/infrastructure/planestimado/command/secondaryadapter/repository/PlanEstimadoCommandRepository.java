@@ -6,11 +6,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface PlanEstimadoCommandRepository extends JpaRepository<PlanEstimadoJpaEntity, UUID> {
 
     boolean existsByTareaId(UUID tareaId);
+
+    Optional<PlanEstimadoJpaEntity> findByTareaId(UUID tareaId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE PlanEstimadoJpaEntity pe SET pe.descripcionEstimado = :descripcionEstimado WHERE pe.id = :id")

@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.observacionitem.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ContextoObservacionItemEntity;
+import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ResumenObservacionesRevisionEntity;
 import com.arquisoft.fichas.infrastructure.observacionitem.command.secondaryadapter.entity.ObservacionItemJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -37,6 +38,25 @@ public interface ObservacionItemCommandRepository extends JpaRepository<Observac
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ObservacionItemJpaEntity o SET o.observacion = :observacion WHERE o.id = :id")
     int actualizarObservacion(@Param("id") UUID id, @Param("observacion") String observacion);
+
+    @Query("""
+            SELECT new com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ResumenObservacionesRevisionEntity(
+                COUNT(o),
+                COALESCE(SUM(CASE WHEN o.estadoObservacionRevision.id = :estadoPendiente THEN 1L ELSE 0L END), 0L))
+            FROM ObservacionItemJpaEntity o
+            WHERE o.revisionItemId = :revisionItem
+            """)
+    ResumenObservacionesRevisionEntity resumirPorRevision(@Param("revisionItem") UUID revisionItem,
+                                                          @Param("estadoPendiente") String estadoPendiente);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE ObservacionItemJpaEntity o SET o.estadoObservacionRevision.id = :estadoNuevo
+            WHERE o.revisionItemId = :revisionItem AND o.estadoObservacionRevision.id = :estadoActual
+            """)
+    int actualizarEstadoPorRevision(@Param("revisionItem") UUID revisionItem,
+                                    @Param("estadoActual") String estadoActual,
+                                    @Param("estadoNuevo") String estadoNuevo);
 
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM ObservacionItemJpaEntity o WHERE o.id = :id")

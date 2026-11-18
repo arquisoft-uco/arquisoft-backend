@@ -2,7 +2,6 @@ package com.arquisoft.entregables.application.entregableproyectogrado.command.se
 
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.entity.EntregableProyectoGradoEntity;
 import com.arquisoft.entregables.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
-import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
@@ -25,14 +24,13 @@ class EntregableProyectoGradoMapperTest {
         assertThat(entity.proyectoGrado()).isEqualTo(proyecto);
         assertThat(entity.version()).isEqualTo(2);
         assertThat(entity.asesor()).isEqualTo(asesor);
-        assertThat(entity.estadoEntregable()).isEqualTo(EstadoEntregable.DISPONIBLE_EVALUACION.getId());
     }
 
     @Test
-    void debeReconstruirElDomainConElEstadoDelCatalogo_cuandoSeConvierteDesdeEntity() {
+    void debeReconstruirElDomain_cuandoSeConvierteDesdeEntity() {
         // Arrange
         var entity = new EntregableProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                4, UtilUUID.generarNuevoUUID(), "APROBADO_CON_OBSERVACIONES");
+                4, UtilUUID.generarNuevoUUID());
 
         // Act
         var domain = EntregableProyectoGradoMapper.toDomain(entity);
@@ -42,6 +40,5 @@ class EntregableProyectoGradoMapperTest {
         assertThat(domain.getProyectoGrado()).isEqualTo(entity.proyectoGrado());
         assertThat(domain.getVersion()).isEqualTo(4);
         assertThat(domain.getAsesor()).isEqualTo(entity.asesor());
-        assertThat(domain.getEstadoEntregable()).isEqualTo(EstadoEntregable.APROBADO_CON_OBSERVACIONES);
     }
 }

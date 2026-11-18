@@ -81,10 +81,11 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
     private UUID sembrarAsignacion(
             UUID jurado, UUID entregable, String proyecto, int version, String estado, String estadoJurado) {
         entityManager.createNativeQuery(
-                        "INSERT INTO entregable (id, proyecto, version_entregable) VALUES (?, ?, ?)")
+                        "INSERT INTO entregable (id, proyecto, version_entregable, proyecto_grado_id) VALUES (?, ?, ?, ?)")
                 .setParameter(1, entregable)
                 .setParameter(2, proyecto)
                 .setParameter(3, version)
+                .setParameter(4, UtilUUID.generarNuevoUUID())
                 .executeUpdate();
         var evaluacion = UtilUUID.generarNuevoUUID();
         entityManager.createNativeQuery(

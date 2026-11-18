@@ -100,6 +100,16 @@ public final class UsuariosApiMessages {
         public static final String CONSULTAR_IDENTIDAD_RESP_503 =
                 "No fue posible leer la identidad en el proveedor; el servicio no está disponible temporalmente";
 
+        public static final String CONSULTAR_MI_PERFIL_SUMMARY = "Consultar mi perfil de usuario";
+        public static final String CONSULTAR_MI_PERFIL_DESCRIPTION =
+                "Devuelve la información personal, el estado y los roles vigentes del usuario autenticado. "
+                        + "La identidad sale de la sesión: el endpoint no recibe ningún identificador. "
+                        + "Disponible para cualquier usuario autenticado, sin rol específico.";
+        public static final String CONSULTAR_MI_PERFIL_RESP_200 = "Perfil del usuario autenticado";
+        public static final String CONSULTAR_MI_PERFIL_RESP_422 = "El usuario autenticado no existe o está eliminado";
+        public static final String CONSULTAR_MI_PERFIL_RESP_503 =
+                "No fue posible leer el perfil del usuario; el servicio no está disponible temporalmente";
+
         public static final String CONSULTAR_POR_CORREO_SUMMARY = "Consultar el id de un usuario por su correo";
         public static final String CONSULTAR_POR_CORREO_DESCRIPTION =
                 "Devuelve únicamente el id del usuario registrado y vigente con ese correo, sin distinguir "

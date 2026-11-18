@@ -86,6 +86,23 @@ class ProyectoGradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeObtenerBloqueadoPorId_cuandoExiste() {
+        // Arrange
+        var registrado = proyecto(UtilUUID.generarNuevoUUID());
+        adapter.registrar(registrado);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var bloqueado = adapter.obtenerBloqueadoPorId(registrado.id());
+        var ausente = adapter.obtenerBloqueadoPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(bloqueado).contains(registrado);
+        assertThat(ausente).isEmpty();
+    }
+
+    @Test
     void debeDevolverVacio_cuandoElProyectoNoExiste() {
         // Act & Assert
         assertThat(adapter.obtenerPorId(UUID.randomUUID())).isEmpty();

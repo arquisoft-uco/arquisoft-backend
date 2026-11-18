@@ -41,7 +41,7 @@ class EstadoProyectoGradoCommandOutputAdapterTest {
 
     private EstadoProyectoGradoEntity estado(UUID proyectoGrado, String estadoProyecto, String fecha) {
         return new EstadoProyectoGradoEntity(UtilUUID.generarNuevoUUID(), proyectoGrado, estadoProyecto,
-                Instant.parse(fecha));
+                Instant.parse(fecha), null);
     }
 
     @Test
@@ -57,6 +57,37 @@ class EstadoProyectoGradoCommandOutputAdapterTest {
         // Assert
         assertThat(adapter.obtenerEstadoActual(registrado.proyectoGrado())).contains(registrado);
         verify(logger).debug(EstadoProyectoGradoKey.LOG_GUARDADO, registrado.id(), registrado.proyectoGrado());
+    }
+
+    @Test
+    void debeGuardarMotivo_cuandoCancelado() {
+        // Arrange
+        var cancelado = new EstadoProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                "CANCELADO", Instant.parse("2026-10-01T10:00:00Z"), "Falta de avance");
+
+        // Act
+        adapter.registrar(cancelado);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(adapter.obtenerEstadoActual(cancelado.proyectoGrado()))
+                .hasValueSatisfying(leido -> assertThat(leido.motivo()).isEqualTo("Falta de avance"));
+    }
+
+    @Test
+    void debeGuardarSinMotivo_cuandoOtroEstado() {
+        // Arrange
+        var registrado = estado(UtilUUID.generarNuevoUUID(), EN_PROCESO, "2026-10-01T10:00:00Z");
+
+        // Act
+        adapter.registrar(registrado);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(adapter.obtenerEstadoActual(registrado.proyectoGrado()))
+                .hasValueSatisfying(leido -> assertThat(leido.motivo()).isNull());
     }
 
     @Test

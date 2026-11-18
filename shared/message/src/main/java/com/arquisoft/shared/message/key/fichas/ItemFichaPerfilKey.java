@@ -19,7 +19,7 @@ public enum ItemFichaPerfilKey implements ClaveMensaje {
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.itemfichaperfil.log.verificacion-agregar", 3),
     LOG_AGREGADO("fichas.aplicacion.itemfichaperfil.log.agregado", 3),
     LOG_MODIFICANDO("fichas.aplicacion.itemfichaperfil.log.modificando", 2),
-    LOG_VERIFICACION_MODIFICAR("fichas.aplicacion.itemfichaperfil.log.verificacion-modificar", 3),
+    LOG_VERIFICACION_MODIFICAR("fichas.aplicacion.itemfichaperfil.log.verificacion-modificar", 4),
     LOG_MODIFICADO("fichas.aplicacion.itemfichaperfil.log.modificado", 1),
     LOG_REMOVIENDO("fichas.aplicacion.itemfichaperfil.log.removiendo", 2),
     LOG_VERIFICACION_REMOVER("fichas.aplicacion.itemfichaperfil.log.verificacion-remover", 3),

@@ -3,13 +3,17 @@ package com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.ItemCuantitativoJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.entity.ItemCuantitativoJuradoEntity;
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.mapper.ItemCuantitativoJuradoJpaMapper;
+import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.projection.ValorMaximoItemCuantitativoJuradoProjection;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -51,5 +55,13 @@ public class ItemCuantitativoJuradoCommandOutputAdapter
     public void eliminar(UUID id) {
         repository.deleteById(id);
         logger.debug(ItemCuantitativoJuradoKey.LOG_ELIMINADO, id);
+    }
+
+    @Override
+    public Map<UUID, Integer> consultarValoresMaximosPorIds(Set<UUID> ids) {
+        return repository.findValoresMaximosByIdIn(ids).stream()
+                .collect(Collectors.toUnmodifiableMap(
+                        ValorMaximoItemCuantitativoJuradoProjection::getId,
+                        ValorMaximoItemCuantitativoJuradoProjection::getValor));
     }
 }

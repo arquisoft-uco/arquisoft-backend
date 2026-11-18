@@ -12,6 +12,7 @@ public final class ArtefactoEntregableResponseMapper {
                 readModel.id(),
                 readModel.entregableProyectoGrado(),
                 readModel.versionArtefacto(),
+                readModel.numeroVersion(),
                 readModel.uriArchivo(),
                 readModel.artefacto(),
                 readModel.versionRepositorioArtefacto(),

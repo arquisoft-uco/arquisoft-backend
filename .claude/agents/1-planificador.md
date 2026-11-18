@@ -75,7 +75,7 @@ su client role —para el recurso del anexo y la sección 9— y recuerda que el
 `seguridad/infrastructure/src/main/resources/autorizacion-equivalencias.yml`
 (`CompletitudEquivalenciasAutorizacionTest` lo comprueba), y ese client role en
 `keycloak/realm-arquisoft.json`, como composite de los realm roles que respondió el usuario: sin eso
-el endpoint da 403 a todos (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera
+el endpoint da 403 a todos; excepción: si la HU dice que basta estar autenticado, la fila va en `authenticated-only`, sin client role ni roles PDP (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera
 del controlador*). El controlador recibe
 `IdentidadActual`, nunca `Jwt` ni `@PreAuthorize`; si la lógica depende del rol del llamante, el plan lo
 traduce en el `RequestMapper` con `RolesIdentidad` (misma sección). Roles de negocio actuales: `coordinador`,
@@ -195,7 +195,7 @@ Desde la sección 4 el plan es condicional:
 ### {contexto}/infrastructure — `…/infrastructure/{feature}/`
 ### shared:message y catálogo
 ### Autorización — `seguridad/infrastructure/src/main/resources/`
-| ✏️ | `autorizacion-equivalencias.yml` | Fila `{MÉTODO} /api/{plantilla}` → client role, solo si el endpoint es nuevo |
+| ✏️ | `autorizacion-equivalencias.yml` | Fila `{MÉTODO} /api/{plantilla}` → client role (o sección `authenticated-only` si basta estar autenticado), solo si el endpoint es nuevo |
 | ✏️ | `keycloak/realm-arquisoft.json` | Client role en `arquisoft-api` + composite en cada realm role de la sección 9 |
 ### Migración
 
@@ -240,7 +240,7 @@ Paquetes y sufijos exactos: `arquisoft-arquitectura`. Lo que suele faltar en el 
 | Caso | Filas |
 |---|---|
 | Escritura | `Command`, `primaryport/mapper/` (siempre), `Interactor`, `UseCase` (recibe dominio), `Finder`s, `secondaryport/` (`OutputPort` + `entity/` + `mapper/`), `Controller` + `dto/` + `mapper/`, `secondaryadapter/` (`JpaEntity`, `JpaMapper`, `CommandOutputAdapter`, `CommandRepository`) |
-| Endpoint nuevo (escritura o consulta) | Recurso nuevo en el PDP (sección 9), ✏️ fila en `autorizacion-equivalencias.yml`, ✏️ client role en `realm-arquisoft.json` y `IdentidadActual` en el controlador (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*) |
+| Endpoint nuevo (escritura o consulta) | Recurso nuevo en el PDP (sección 9), ✏️ fila en `autorizacion-equivalencias.yml`, ✏️ client role en `realm-arquisoft.json` (ambos omitidos si es `authenticated-only`) y `IdentidadActual` en el controlador (`arquisoft-arquitectura` → *Rutas en placeholders y autorización fuera del controlador*) |
 | `Validator` | solo si la sección 3 tiene alguna `Rule` |
 | `result/` + `ResponseMapper` | solo si la pregunta 11 fue C |
 | `event/` | solo si la pregunta 5 fue A/B |

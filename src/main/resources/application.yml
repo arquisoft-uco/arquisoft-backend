@@ -27,6 +27,7 @@ spring:
       - "classpath:rutas-repositorio-artefactos.yml"
       - "classpath:rutas-mapas-ruta.yml"
       - "classpath:rutas-entregables.yml"
+      - "classpath:rutas-biblioteca.yml"
       # Tabla de equivalencias del adaptador role-table (emisor legado); se borra junto con el.
       - "classpath:autorizacion-equivalencias.yml"
   banner:
@@ -186,8 +187,8 @@ minio:
     descarga-minutos: ${MINIO_DOWNLOAD_EXPIRY_MINUTES:5}
 
 # ==================== REPOSITORIO DE ARTEFACTOS (almacenamiento) ====================
-# El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (5 MB); los 50 MB
-# de ADR-004 son una cuota total por proyecto de grado en artefactos, no un limite por archivo.
+# El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (5 MB). El limite
+# por archivo (50 MB) y la cuota por proyecto de grado (1 GB) de ADR-004 viven en la seccion ARTEFACTOS.
 repositorio-artefactos:
   almacenamiento:
     bucket: ${REPOSITORIO_ARTEFACTOS_BUCKET:repositorio-artefactos}
@@ -198,7 +199,16 @@ repositorio-artefactos:
 artefactos:
   almacenamiento:
     bucket: ${ARTEFACTOS_BUCKET:artefactos}
-    tamano-maximo-bytes: ${ARTEFACTOS_TAMANO_MAXIMO_BYTES:5242880}
+    tamano-maximo-bytes: ${ARTEFACTOS_TAMANO_MAXIMO_BYTES:52428800}
+    cuota-proyecto-grado-bytes: ${ARTEFACTOS_CUOTA_PROYECTO_GRADO_BYTES:1073741824}
+
+# ==================== ENTREGABLES (almacenamiento) ====================
+# Bucket propio (lo crea minio/configurar.sh, nunca el backend): copia de cada artefacto cerrado bajo artefactos/ y
+# ZIP de cada entregable bajo paquetes/. bucket-artefactos es el origen de la copia (el bucket de artefactos).
+entregables:
+  almacenamiento:
+    bucket: ${ENTREGABLES_BUCKET:entregables}
+    bucket-artefactos: ${ENTREGABLES_BUCKET_ARTEFACTOS:${ARTEFACTOS_BUCKET:artefactos}}
 
 # ==================== DATASOURCES POR BOUNDED CONTEXT ====================
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java

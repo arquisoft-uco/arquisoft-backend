@@ -24,7 +24,11 @@ import com.arquisoft.shared.message.key.artefactos.AgregarVersionRepositorioArte
 import com.arquisoft.shared.message.key.artefactos.CambiarNombreRepositorioVersionRepositorioArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.EliminarVersionArtefactoKey;
 import com.arquisoft.shared.message.key.artefactos.EliminarVersionRepositorioArtefactoKey;
+import com.arquisoft.shared.message.key.biblioteca.AutorDocumentacionKey;
+import com.arquisoft.shared.message.key.biblioteca.AutorKey;
 import com.arquisoft.shared.message.key.biblioteca.BibliotecarioKey;
+import com.arquisoft.shared.message.key.biblioteca.DocumentacionKey;
+import com.arquisoft.shared.message.key.biblioteca.EstadoDocumentacionKey;
 import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
 import com.arquisoft.shared.message.key.entregables.EstadoEntregableKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
@@ -49,6 +53,7 @@ import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoAsesorKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.JuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.ObservacionItemAsesorKey;
 import com.arquisoft.shared.message.key.evaluaciones.ObservacionItemJuradoKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
@@ -68,7 +73,6 @@ import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.message.key.fichas.EstadoRevisionKey;
 import com.arquisoft.shared.message.key.mapas_ruta.AsignacionAsesorKey;
-import com.arquisoft.shared.message.key.mapas_ruta.AsignacionProyectoKey;
 import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
 import com.arquisoft.shared.message.key.mapas_ruta.EstadoItemKey;
 import com.arquisoft.shared.message.key.mapas_ruta.PlanEstimadoKey;
@@ -123,6 +127,7 @@ import com.arquisoft.shared.message.key.usuarios.ConsultarJuradosVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstadosUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarIdentidadUsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarMiPerfilKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuarioPorCorreoKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuariosAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.CambiarEstadoUsuarioKey;
@@ -155,6 +160,7 @@ public final class ClavesCatalogo {
             EstadoEvaluacionFichaKey.class,
             EstadoEvaluacionKey.class,
             com.arquisoft.shared.message.key.evaluaciones.EstadoEvaluacionKey.class,
+            com.arquisoft.shared.message.key.evaluaciones.EntregableKey.class,
             EstadoFichaKey.class,
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,
@@ -176,6 +182,7 @@ public final class ClavesCatalogo {
             EvaluacionJuradoKey.class,
             EvaluacionKey.class,
             EvaluacionAsesorKey.class,
+            ObservacionItemAsesorKey.class,
             ObservacionItemJuradoKey.class,
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
@@ -226,6 +233,13 @@ public final class ClavesCatalogo {
             AgregarBibliotecarioKey.class,
             RemoverBibliotecarioKey.class,
             BibliotecarioKey.class,
+            EstadoDocumentacionKey.class,
+            DocumentacionKey.class,
+            AutorKey.class,
+            AutorDocumentacionKey.class,
+            com.arquisoft.shared.message.key.biblioteca.EntregableProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.biblioteca.ProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.biblioteca.EstudianteProyectoGradoKey.class,
             EstadoRevisionAsesorKey.class,
             RevisionAsesorKey.class,
             CambiarEstadoRevisionAsesorKey.class,
@@ -264,6 +278,8 @@ public final class ClavesCatalogo {
             EstudianteProyectoGradoKey.class,
             EstadoProyectoGradoKey.class,
             EstadoProyectoKey.class,
+            com.arquisoft.shared.message.key.proyectos.EntregableProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.proyectos.EstadoEntregableKey.class,
             AsesorProyectoGradoKey.class,
             EstadoAsesorKey.class,
             ConsultarAdministradoresVigentesKey.class,
@@ -276,16 +292,21 @@ public final class ClavesCatalogo {
             ConsultarUsuariosAdministradorKey.class,
             ConsultarEstadosUsuarioKey.class,
             ConsultarIdentidadUsuarioKey.class,
+            ConsultarMiPerfilKey.class,
             ConsultarUsuarioPorCorreoKey.class,
-            AsignacionProyectoKey.class,
             MapaRutaKey.class,
             TareaKey.class,
             EstadoItemKey.class,
             EstadoEntregableKey.class,
             EntregableProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.entregables.EstadoEntregableProyectoGradoKey.class,
             com.arquisoft.shared.message.key.entregables.ArtefactoEntregableKey.class,
+            com.arquisoft.shared.message.key.entregables.ArtefactoKey.class,
             com.arquisoft.shared.message.key.entregables.ProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.entregables.EstadoProyectoKey.class,
+            com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey.class,
             com.arquisoft.shared.message.key.entregables.AsesorKey.class,
+            com.arquisoft.shared.message.key.entregables.AsesorProyectoGradoKey.class,
             com.arquisoft.shared.message.key.entregables.EstudianteProyectoGradoKey.class,
             AsignacionAsesorKey.class,
             ProyectoGradoMapasRutaKey.class,

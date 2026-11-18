@@ -49,13 +49,39 @@ class EstadoProyectoGradoDomainTest {
     }
 
     @Test
+    void debeCrearConElEstadoIndicado_cuandoEsFinalizado() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var estado = EstadoProyectoGradoDomain.crearConEstado(proyectoGrado, EstadoProyecto.FINALIZADO);
+
+        // Assert
+        assertThat(estado.getProyectoGrado()).isEqualTo(proyectoGrado);
+        assertThat(estado.getEstadoProyecto()).isEqualTo(EstadoProyecto.FINALIZADO);
+        assertThat(UtilUUID.esPorDefecto(estado.getId())).isFalse();
+    }
+
+    @Test
+    void debeRechazarElEstado_cuandoEsNuloOElCentinela() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> EstadoProyectoGradoDomain.crearConEstado(proyectoGrado, null))
+                .isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> EstadoProyectoGradoDomain.crearConEstado(proyectoGrado, EstadoProyecto.VACIO))
+                .isInstanceOf(DomainValidationException.class);
+    }
+
+    @Test
     void debeReconstruirSinValidar_cuandoLlegaDePersistencia() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var fecha = Instant.parse("2026-10-01T10:00:00Z");
 
         // Act
-        var estado = EstadoProyectoGradoDomain.reconstruir(id, null, EstadoProyecto.FINALIZADO, fecha);
+        var estado = EstadoProyectoGradoDomain.reconstruir(id, null, EstadoProyecto.FINALIZADO, fecha, null);
 
         // Assert
         assertThat(estado.getId()).isEqualTo(id);
@@ -63,6 +89,54 @@ class EstadoProyectoGradoDomainTest {
         assertThat(estado.getEstadoProyecto()).isEqualTo(EstadoProyecto.FINALIZADO);
         assertThat(estado.getFechaActualizacion()).isEqualTo(fecha);
         assertThat(estado.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeCrearCancelado_cuandoMotivoValido() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+
+        // Act
+        var estado = EstadoProyectoGradoDomain.crearCancelado(proyectoGrado, "  Falta de avance  ");
+
+        // Assert
+        assertThat(estado.getProyectoGrado()).isEqualTo(proyectoGrado);
+        assertThat(estado.getEstadoProyecto()).isEqualTo(EstadoProyecto.CANCELADO);
+        assertThat(estado.getMotivo()).isEqualTo("Falta de avance");
+        assertThat(UtilUUID.esPorDefecto(estado.getId())).isFalse();
+    }
+
+    @Test
+    void debeRechazar_cuandoMotivoVacioAlCancelar() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> EstadoProyectoGradoDomain.crearCancelado(proyectoGrado, " "))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .singleElement()
+                        .satisfies(error -> {
+                            assertThat(error.campo()).isEqualTo(ProyectosFields.EstadoProyectoGrado.MOTIVO);
+                            assertThat(error.codigoError())
+                                    .isEqualTo(ProyectosCodes.EstadoProyectoGrado.MOTIVO_REQUERIDO);
+                        }));
+    }
+
+    @Test
+    void debeReconstruirConMotivo_cuandoSeReconstruye() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var fecha = Instant.parse("2026-10-01T10:00:00Z");
+
+        // Act
+        var estado = EstadoProyectoGradoDomain.reconstruir(
+                id, proyectoGrado, EstadoProyecto.CANCELADO, fecha, "Abandono");
+
+        // Assert
+        assertThat(estado.getEstadoProyecto()).isEqualTo(EstadoProyecto.CANCELADO);
+        assertThat(estado.getMotivo()).isEqualTo("Abandono");
     }
 
     @Test

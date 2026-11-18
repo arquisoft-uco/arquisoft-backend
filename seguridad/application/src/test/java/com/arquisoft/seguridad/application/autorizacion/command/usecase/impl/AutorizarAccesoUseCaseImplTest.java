@@ -1,11 +1,13 @@
 package com.arquisoft.seguridad.application.autorizacion.command.usecase.impl;
 
+import com.arquisoft.seguridad.application.autorizacion.command.finder.RecursoSoloAutenticacionFinder;
 import com.arquisoft.seguridad.application.autorizacion.command.result.DecisionAccesoResult;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.DecisionAccesoOutputPort;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.DecisionAcceso;
 import com.arquisoft.seguridad.application.autorizacion.command.secondaryport.model.SolicitudAcceso;
 import com.arquisoft.seguridad.domain.autorizacion.AccesoDomain;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.seguridad.AutorizacionKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,12 +17,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AutorizarAccesoUseCaseImplTest {
+
+    @Mock
+    private RecursoSoloAutenticacionFinder recursoSoloAutenticacionFinder;
 
     @Mock
     private DecisionAccesoOutputPort decisionAccesoOutputPort;
@@ -38,6 +45,21 @@ class AutorizarAccesoUseCaseImplTest {
     void preparar() {
         acceso = AccesoDomain.crear("GET", "/api/x", "token", "principal", "corr");
         solicitud = new SolicitudAcceso("GET", "/api/x", "token", "principal", "corr");
+        lenient().when(recursoSoloAutenticacionFinder.obtener(acceso)).thenReturn(false);
+    }
+
+    @Test
+    void debeRetornarPermitidaSinIdSinInvocarElPuertoDeDecision_cuandoElRecursoSoloExigeAutenticacion() {
+        // Arrange
+        when(recursoSoloAutenticacionFinder.obtener(acceso)).thenReturn(true);
+
+        // Act
+        var resultado = useCase.ejecutar(acceso);
+
+        // Assert
+        assertThat(resultado).isEqualTo(new DecisionAccesoResult.Permitida(""));
+        verifyNoInteractions(decisionAccesoOutputPort);
+        verify(logger).info(AutorizacionKey.LOG_SOLO_AUTENTICACION, "GET", "/api/x");
     }
 
     @Test

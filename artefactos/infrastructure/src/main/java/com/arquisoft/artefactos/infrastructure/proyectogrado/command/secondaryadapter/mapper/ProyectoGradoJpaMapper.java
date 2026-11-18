@@ -2,6 +2,8 @@ package com.arquisoft.artefactos.infrastructure.proyectogrado.command.secondarya
 
 import com.arquisoft.artefactos.application.proyectogrado.command.secondaryport.entity.ProyectoGradoEntity;
 import com.arquisoft.artefactos.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
 
 public final class ProyectoGradoJpaMapper {
 
@@ -11,6 +13,17 @@ public final class ProyectoGradoJpaMapper {
         return ProyectoGradoJpaEntity.builder()
                 .id(entity.id())
                 .nombre(entity.nombre())
+                .entregadoEn(UtilFecha.VACIO.equals(entity.entregadoEn()) ? null : entity.entregadoEn())
+                .estadoProyectoId(entity.estadoProyecto())
+                .ocurridoEn(UtilFecha.VACIO.equals(entity.ocurridoEn()) ? null : entity.ocurridoEn())
                 .build();
+    }
+
+    public static ProyectoGradoEntity toEntity(ProyectoGradoJpaEntity jpaEntity) {
+        return new ProyectoGradoEntity(
+                jpaEntity.getId(), jpaEntity.getNombre(),
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getEntregadoEn(), UtilFecha.VACIO),
+                jpaEntity.getEstadoProyectoId(),
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getOcurridoEn(), UtilFecha.VACIO));
     }
 }

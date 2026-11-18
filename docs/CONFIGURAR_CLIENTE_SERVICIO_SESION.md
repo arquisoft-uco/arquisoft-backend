@@ -96,7 +96,7 @@ Keycloak lo genera al crear o importar el cliente.
 
 ## 3. Variables del backend
 
-En el `.env` local (nunca versionado) y en el `ENV_FILE` del despliegue:
+En el `.env` local (nunca versionado) y en Doppler (`arquisoft-backend/test`) para el despliegue:
 
 ```
 SESSION_AUTH_ENABLED=true

@@ -1,0 +1,7 @@
+package com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.rules;
+
+import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.EstadoCambioCriterioEvaluacionCualitativaJurado;
+import com.arquisoft.shared.rules.DomainRule;
+
+public interface EvaluacionJuradoAdmiteCambioCriterioRule extends DomainRule<EstadoCambioCriterioEvaluacionCualitativaJurado> {
+}

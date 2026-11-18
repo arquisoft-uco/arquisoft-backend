@@ -23,9 +23,11 @@ import com.arquisoft.proyectos.domain.proyectogrado.model.ExistenciaProyectoGrad
 import com.arquisoft.proyectos.domain.proyectogrado.model.PropiedadCoordinadorProyectoGrado;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.CoordinadorProyectoGradoPropietarioRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoExisteRule;
+import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoNoCanceladoRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoNoFinalizadoRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.CoordinadorProyectoGradoPropietarioRuleImpl;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoExisteRuleImpl;
+import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoNoCanceladoRuleImpl;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoNoFinalizadoRuleImpl;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +38,7 @@ public class CambiarEstadoAsesorProyectoGradoValidatorImpl implements CambiarEst
     private final EstadoProyectoGradoExisteRule estadoProyectoGradoExisteRule;
     private final CoordinadorProyectoGradoPropietarioRule coordinadorPropietarioRule;
     private final ProyectoGradoNoFinalizadoRule proyectoGradoNoFinalizadoRule;
+    private final ProyectoGradoNoCanceladoRule proyectoGradoNoCanceladoRule;
     private final AsesorProyectoGradoExisteRule asesorProyectoGradoExisteRule;
     private final AsesorExisteRule asesorExisteRule;
     private final TransicionEstadoAsesorPermitidaRule transicionPermitidaRule;
@@ -45,6 +48,7 @@ public class CambiarEstadoAsesorProyectoGradoValidatorImpl implements CambiarEst
         this.estadoProyectoGradoExisteRule = new EstadoProyectoGradoExisteRuleImpl();
         this.coordinadorPropietarioRule = new CoordinadorProyectoGradoPropietarioRuleImpl();
         this.proyectoGradoNoFinalizadoRule = new ProyectoGradoNoFinalizadoRuleImpl();
+        this.proyectoGradoNoCanceladoRule = new ProyectoGradoNoCanceladoRuleImpl();
         this.asesorProyectoGradoExisteRule = new AsesorProyectoGradoExisteRuleImpl();
         this.asesorExisteRule = new AsesorExisteRuleImpl();
         this.transicionPermitidaRule = new TransicionEstadoAsesorPermitidaRuleImpl();
@@ -60,6 +64,9 @@ public class CambiarEstadoAsesorProyectoGradoValidatorImpl implements CambiarEst
         coordinadorPropietarioRule.validar(new PropiedadCoordinadorProyectoGrado(
                 entrada.getProyectoGrado(), proyecto.getCoordinador(), entrada.getCoordinador()));
         proyectoGradoNoFinalizadoRule.validar(
+                new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getTituloProyecto(),
+                        estadoActual.getEstadoProyecto()));
+        proyectoGradoNoCanceladoRule.validar(
                 new EstadoActualProyectoGrado(entrada.getProyectoGrado(), proyecto.getTituloProyecto(),
                         estadoActual.getEstadoProyecto()));
         asesorExisteRule.validar(new ExistenciaAsesor(entrada.getAsesor(), !asesor.esVacio()));

@@ -37,6 +37,11 @@ public final class MinioOperationException extends InfrastructureException {
                 AlmacenamientoKey.ERROR_COPIA_DETALLE, cause);
     }
 
+    public static MinioOperationException subidaFallida(Throwable cause) {
+        return crear(AppCodes.Minio.SUBIDA_FALLIDA, AlmacenamientoKey.ERROR_SUBIDA,
+                AlmacenamientoKey.ERROR_SUBIDA_DETALLE, cause);
+    }
+
     public static MinioOperationException eliminacionFallida(Throwable cause) {
         return crear(AppCodes.Minio.ELIMINACION_FALLIDA, AlmacenamientoKey.ERROR_ELIMINACION,
                 AlmacenamientoKey.ERROR_ELIMINACION_DETALLE, cause);

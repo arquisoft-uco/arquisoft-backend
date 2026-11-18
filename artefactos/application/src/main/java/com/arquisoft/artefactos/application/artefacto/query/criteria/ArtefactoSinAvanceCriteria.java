@@ -18,7 +18,9 @@ public final class ArtefactoSinAvanceCriteria extends QueryCriteria {
         VERSION_DOCUMENTO             ("versionDocumento",            true,  true),
         NOMBRE_REPOSITORIO            ("nombreRepositorio",           true,  true),
         ESTADO_ULTIMA_REVISION        ("estadoUltimaRevision",        true,  true),
-        FECHA_ULTIMA_VERSION          ("fechaUltimaVersion",          false, true);
+        FECHA_ULTIMA_VERSION          ("fechaUltimaVersion",          false, true),
+        PROYECTO_FINALIZADO("proyectoFinalizado", true, false),
+        PROYECTO_CANCELADO("proyectoCancelado", true, false);
 
         private final String  clave;
         private final boolean filtrable;

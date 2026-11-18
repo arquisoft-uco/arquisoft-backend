@@ -10,6 +10,8 @@ import com.arquisoft.artefactos.application.observacion.command.secondaryport.Ob
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.mapper.ObservacionMapper;
 import com.arquisoft.artefactos.application.observacion.command.usecase.CambiarEstadoAsesorObservacionUseCase;
 import com.arquisoft.artefactos.application.observacion.command.validator.CambiarEstadoAsesorObservacionValidator;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorObservacionFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorPorObservacionFinder;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVersionSiguientePorObservacionFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
@@ -23,6 +25,7 @@ import com.arquisoft.artefactos.domain.revisionasesor.model.ContactoAsesor;
 import com.arquisoft.artefactos.domain.revisionasesor.model.ContactoEstudiante;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.CambiarEstadoAsesorObservacionKey;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -44,6 +47,8 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
     private final CambiarEstadoAsesorObservacionValidator cambiarEstadoAsesorObservacionValidator;
     private final ObservacionOutputPort observacionOutputPort;
     private final EventPublisher eventPublisher;
+    private final ProyectoGradoBloqueadoPorObservacionFinder proyectoGradoBloqueadoPorObservacionFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -68,6 +73,7 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
         var versiones = new VersionesDeObservacion(
                 version, ultimoNumeroVersion, revisionVersionSiguiente, descripcionRepetida);
 
+        var proyecto = proyectoGradoBloqueadoPorObservacionFinder.obtener(observacionId);
         logger.debug(CambiarEstadoAsesorObservacionKey.LOG_VERIFICACION_CAMBIO_ESTADO,
                 !observacion.esVacio(), !revision.esVacio(), !artefacto.esVacio(), !asesor.esVacio(),
                 !version.esVacio(), !versionRepositorio.esVacio(), estudiantes.size(),
@@ -75,6 +81,9 @@ public class CambiarEstadoAsesorObservacionUseCaseImpl implements CambiarEstadoA
 
         cambiarEstadoAsesorObservacionValidator.validar(
                 cambio, observacion, revision, artefacto, asesor, versionRepositorio, versiones);
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         observacionOutputPort.actualizarEstado(observacionId, cambio.getEstado().getId());
 

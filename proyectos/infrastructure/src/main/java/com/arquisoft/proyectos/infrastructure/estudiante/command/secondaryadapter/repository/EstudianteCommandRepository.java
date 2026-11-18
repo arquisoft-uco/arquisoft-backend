@@ -15,6 +15,14 @@ public interface EstudianteCommandRepository extends JpaRepository<EstudianteJpa
 
     List<EstudianteJpaEntity> findAllByIdInAndEliminadoEnIsNull(Collection<UUID> ids);
 
+    @Query("""
+            SELECT e FROM EstudianteJpaEntity e
+            WHERE e.eliminadoEn IS NULL
+              AND e.id IN (SELECT ep.estudianteId FROM EstudianteProyectoGradoJpaEntity ep
+                           WHERE ep.proyectoGradoId = :proyectoGrado)
+            """)
+    List<EstudianteJpaEntity> buscarVigentesPorProyectoGrado(@Param("proyectoGrado") UUID proyectoGrado);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE EstudianteJpaEntity e SET e.eliminadoEn = :ocurridoEn, e.ocurridoEn = :ocurridoEn WHERE e.id = :id")
     int eliminarLogica(@Param("id") UUID id, @Param("ocurridoEn") Instant ocurridoEn);

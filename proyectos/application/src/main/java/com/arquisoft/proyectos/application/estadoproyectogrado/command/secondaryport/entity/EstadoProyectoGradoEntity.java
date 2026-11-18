@@ -4,5 +4,5 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record EstadoProyectoGradoEntity(UUID id, UUID proyectoGrado, String estadoProyecto,
-                                        Instant fechaActualizacion) {
+                                        Instant fechaActualizacion, String motivo) {
 }

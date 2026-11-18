@@ -13,7 +13,7 @@ class EntregableProyectoGradoJpaMapperTest {
     void debeMapearTodosLosCampos_cuandoSeConvierteAJpaEntity() {
         // Arrange
         var entity = new EntregableProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                3, UtilUUID.generarNuevoUUID(), "DISPONIBLE_EVALUACION");
+                3, UtilUUID.generarNuevoUUID());
 
         // Act
         var jpa = EntregableProyectoGradoJpaMapper.toJpaEntity(entity);
@@ -23,7 +23,6 @@ class EntregableProyectoGradoJpaMapperTest {
         assertThat(jpa.getProyectoGrado()).isEqualTo(entity.proyectoGrado());
         assertThat(jpa.getVersion()).isEqualTo(3);
         assertThat(jpa.getAsesor()).isEqualTo(entity.asesor());
-        assertThat(jpa.getEstadoEntregable()).isEqualTo("DISPONIBLE_EVALUACION");
     }
 
     @Test
@@ -34,7 +33,6 @@ class EntregableProyectoGradoJpaMapperTest {
                 .proyectoGrado(UtilUUID.generarNuevoUUID())
                 .version(2)
                 .asesor(UtilUUID.generarNuevoUUID())
-                .estadoEntregable("CERRADO")
                 .build();
 
         // Act
@@ -45,6 +43,5 @@ class EntregableProyectoGradoJpaMapperTest {
         assertThat(entity.proyectoGrado()).isEqualTo(jpa.getProyectoGrado());
         assertThat(entity.version()).isEqualTo(2);
         assertThat(entity.asesor()).isEqualTo(jpa.getAsesor());
-        assertThat(entity.estadoEntregable()).isEqualTo("CERRADO");
     }
 }

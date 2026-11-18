@@ -13,6 +13,8 @@ public record ArtefactoResponseDTO(
         String nombreDocumento,
         int versionDocumento,
         String nombreRepositorio,
-        boolean omitido
+        boolean omitido,
+        boolean proyectoFinalizado,
+        boolean proyectoCancelado
 ) {
 }

@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -31,4 +32,7 @@ public class PlanEstimadoJpaEntity {
 
     @Column(name = "descripcion_estimado", length = 200)
     private String descripcionEstimado;
+
+    @Column(name = "creado_en", nullable = false)
+    private Instant creadoEn;
 }

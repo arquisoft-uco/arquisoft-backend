@@ -115,6 +115,22 @@ class RevisionItemCommandOutputAdapterTest {
     }
 
     @Test
+    void debeMapearLaRevisionDelItem_cuandoBuscaPorItem() {
+        // Arrange
+        var revision = new RevisionItemEntity(
+                UUID.randomUUID(), UUID.randomUUID(), "VISUALIZADA", Instant.now());
+        when(repository.findByItemId(revision.item()))
+                .thenReturn(Optional.of(RevisionItemJpaMapper.toJpaEntity(revision)));
+
+        // Act
+        var resultado = adapter.buscarPorItem(revision.item());
+
+        // Assert
+        assertThat(resultado).contains(revision);
+        verify(repository, times(1)).findByItemId(revision.item());
+    }
+
+    @Test
     void debeDelegarSinLogear_cuandoObtienePertenencia() {
         // Arrange
         var revisionItem = UUID.randomUUID();

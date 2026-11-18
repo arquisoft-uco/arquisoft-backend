@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,5 +48,12 @@ public class AsesorCommandOutputAdapter implements AsesorOutputPort {
     public void actualizar(AsesorEntity asesor) {
         asesorCommandRepository.save(AsesorJpaMapper.toJpaEntity(asesor));
         logger.debug(AsesorKey.LOG_FILA_ACTUALIZADA, asesor.id());
+    }
+
+    @Override
+    public List<AsesorEntity> obtenerAsignadosPorProyectoGrado(UUID proyectoGrado, String estadoAsesor) {
+        return asesorCommandRepository.buscarPorUltimoEstadoEnProyectoGrado(proyectoGrado, estadoAsesor).stream()
+                .map(AsesorJpaMapper::toEntity)
+                .toList();
     }
 }

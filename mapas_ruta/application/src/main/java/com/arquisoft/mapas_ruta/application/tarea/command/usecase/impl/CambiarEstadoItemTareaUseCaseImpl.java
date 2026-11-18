@@ -5,8 +5,10 @@ import com.arquisoft.mapas_ruta.application.tarea.command.secondaryport.TareaOut
 import com.arquisoft.mapas_ruta.application.tarea.command.usecase.CambiarEstadoItemTareaUseCase;
 import com.arquisoft.mapas_ruta.application.tarea.command.validator.CambiarEstadoItemTareaValidator;
 import com.arquisoft.mapas_ruta.domain.tarea.CambioEstadoItemTareaDomain;
+import com.arquisoft.mapas_ruta.domain.tarea.event.TareaFinalizadaEvent;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.mapas_ruta.TareaKey;
+import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,7 @@ public class CambiarEstadoItemTareaUseCaseImpl implements CambiarEstadoItemTarea
     private final TareaOutputPort tareaOutputPort;
     private final TareaPorIdFinder tareaPorIdFinder;
     private final CambiarEstadoItemTareaValidator cambiarEstadoItemTareaValidator;
+    private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
@@ -29,6 +32,10 @@ public class CambiarEstadoItemTareaUseCaseImpl implements CambiarEstadoItemTarea
         cambiarEstadoItemTareaValidator.validar(entrada, tarea);
 
         tareaOutputPort.actualizarEstadoItem(entrada.getTarea(), entrada.getEstadoItem().getId());
+
+        if (entrada.esFinalizacion()) {
+            eventPublisher.publish(new TareaFinalizadaEvent(entrada.getTarea()));
+        }
 
         logger.info(TareaKey.LOG_ESTADO_ITEM_CAMBIADO,
                 entrada.getTarea(), tarea.getEstadoItem().getId(), entrada.getEstadoItem().getId());

@@ -20,4 +20,6 @@ public interface AlmacenamientoVersionOutputPort {
     void eliminarArchivo(String uriArchivo);
 
     long tamanoMaximoBytes();
+
+    long cuotaProyectoGradoBytes();
 }

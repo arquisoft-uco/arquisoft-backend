@@ -47,6 +47,12 @@ public class ObservacionItemJuradoCommandOutputAdapter implements ObservacionIte
     }
 
     @Override
+    public void eliminar(UUID id) {
+        repository.deleteById(id);
+        logger.debug(ObservacionItemJuradoKey.LOG_ELIMINADA, id);
+    }
+
+    @Override
     public boolean existenPorEvaluacionesCuantitativas(Set<UUID> evaluacionesCuantitativas) {
         return repository.existsByEvaluacionCuantitativaJuradoIdIn(evaluacionesCuantitativas);
     }

@@ -10,6 +10,7 @@ public final class ContextoRegistroEvaluacionJuradoMapper {
 
     public static ContextoRegistroEvaluacionJuradoDomain toDomain(ContextoRegistroEvaluacionJuradoEntity entity) {
         return ContextoRegistroEvaluacionJuradoDomain.reconstruir(
-                entity.id(), entity.evaluacion(), EstadoEvaluacion.desde(entity.estado()), entity.entregable());
+                entity.id(), entity.evaluacion(), EstadoEvaluacion.desde(entity.estado()), entity.entregable(),
+                entity.jurado());
     }
 }

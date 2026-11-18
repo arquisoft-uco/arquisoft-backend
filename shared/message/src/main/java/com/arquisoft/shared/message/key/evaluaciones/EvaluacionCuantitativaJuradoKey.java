@@ -5,6 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum EvaluacionCuantitativaJuradoKey implements ClaveMensaje {
 
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.consultando", 1),
+    LOG_CONSULTANDO_REALIZADAS("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.consultando-realizadas", 2),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.consulta-completada", 1),
     LOG_CAMBIANDO_PUNTAJE("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.cambiando-puntaje", 2),
     LOG_VERIFICACION_CAMBIAR_PUNTAJE(
@@ -39,7 +40,23 @@ public enum EvaluacionCuantitativaJuradoKey implements ClaveMensaje {
     ERROR_EVALUACION_FINALIZADA_DETALLE(
             "evaluaciones.dominio.evaluacioncuantitativajurado.error.evaluacion-finalizada-detalle", 1),
     ERROR_PUNTAJE_EXCEDE_VALOR_ITEM(
-            "evaluaciones.dominio.evaluacioncuantitativajurado.error.puntaje-excede-valor-item", 3);
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.puntaje-excede-valor-item", 3),
+    ERROR_ITEMS_NO_ENCONTRADOS(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.items-no-encontrados", 0),
+    ERROR_ITEMS_NO_ENCONTRADOS_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.items-no-encontrados-detalle", 1),
+    ERROR_PUNTAJES_EXCEDEN_VALOR_ITEM(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.puntajes-exceden-valor-item", 0),
+    ERROR_PUNTAJES_EXCEDEN_VALOR_ITEM_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.puntajes-exceden-valor-item-detalle", 1),
+    ERROR_ITEMS_YA_REGISTRADOS(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.items-ya-registrados", 0),
+    ERROR_ITEMS_YA_REGISTRADOS_DETALLE(
+            "evaluaciones.dominio.evaluacioncuantitativajurado.error.items-ya-registrados-detalle", 1),
+    LOG_REGISTRANDO_LOTE("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.registrando-lote", 2),
+    LOG_VERIFICACION_LOTE("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.verificacion-lote", 4),
+    LOG_LOTE_REGISTRADO("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.lote-registrado", 2),
+    LOG_LOTE_GUARDADO("evaluaciones.infraestructura.evaluacioncuantitativajurado.log.lote-guardado", 1);
 
     private final String clave;
     private final int parametros;

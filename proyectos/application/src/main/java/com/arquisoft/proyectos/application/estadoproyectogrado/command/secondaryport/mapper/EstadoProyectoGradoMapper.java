@@ -3,6 +3,8 @@ package com.arquisoft.proyectos.application.estadoproyectogrado.command.secondar
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.entity.EstadoProyectoGradoEntity;
 import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
+import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilTexto;
 
 public final class EstadoProyectoGradoMapper {
 
@@ -13,7 +15,8 @@ public final class EstadoProyectoGradoMapper {
                 estado.getId(),
                 estado.getProyectoGrado(),
                 estado.getEstadoProyecto().getId(),
-                estado.getFechaActualizacion());
+                estado.getFechaActualizacion(),
+                UtilTexto.esVacioONulo(estado.getMotivo()) ? null : estado.getMotivo());
     }
 
     public static EstadoProyectoGradoDomain toDomain(EstadoProyectoGradoEntity entity) {
@@ -21,6 +24,7 @@ public final class EstadoProyectoGradoMapper {
                 entity.id(),
                 entity.proyectoGrado(),
                 EstadoProyecto.desde(entity.estadoProyecto()),
-                entity.fechaActualizacion());
+                entity.fechaActualizacion(),
+                UtilObjeto.aplicarPorDefecto(entity.motivo(), UtilTexto.VACIO));
     }
 }

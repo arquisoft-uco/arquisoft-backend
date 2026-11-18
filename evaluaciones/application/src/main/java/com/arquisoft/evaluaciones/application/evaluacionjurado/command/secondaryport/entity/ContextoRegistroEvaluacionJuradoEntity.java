@@ -6,5 +6,6 @@ public record ContextoRegistroEvaluacionJuradoEntity(
         UUID id,
         UUID evaluacion,
         String estado,
-        UUID entregable) {
+        UUID entregable,
+        UUID jurado) {
 }

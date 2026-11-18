@@ -25,6 +25,8 @@ class ArtefactoAsesorJpaSpecification extends QueryJpaSpecification<ArtefactoAse
                 case VERSION_DOCUMENTO             -> CampoSpec.entero(root -> root.get("versionDocumento"));
                 case NOMBRE_REPOSITORIO            -> CampoSpec.texto(root -> root.get("nombreRepositorio"));
                 case ASESOR_ID                     -> CampoSpec.uuid(root -> root.get("asesorId"));
+                case PROYECTO_FINALIZADO -> CampoSpec.booleano(root -> root.get("proyectoFinalizado"));
+                case PROYECTO_CANCELADO  -> CampoSpec.booleano(root -> root.get("proyectoCancelado"));
             };
             m.put(campo.getClave(), spec);
         }

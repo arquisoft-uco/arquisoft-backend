@@ -6,6 +6,7 @@ public record ArtefactoEntregableResponseDTO(
         UUID id,
         UUID entregableProyectoGrado,
         UUID versionArtefacto,
+        int numeroVersion,
         String uriArchivo,
         UUID artefacto,
         UUID versionRepositorioArtefacto,

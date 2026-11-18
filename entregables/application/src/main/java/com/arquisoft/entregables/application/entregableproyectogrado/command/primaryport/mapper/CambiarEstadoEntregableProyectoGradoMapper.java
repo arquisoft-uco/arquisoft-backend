@@ -10,6 +10,6 @@ public final class CambiarEstadoEntregableProyectoGradoMapper {
     public static CambioEstadoEntregableProyectoGradoDomain toDomain(
             CambiarEstadoEntregableProyectoGradoCommand command) {
         return CambioEstadoEntregableProyectoGradoDomain.crear(
-                command.entregableProyectoGrado(), command.estadoEntregable());
+                command.entregableProyectoGrado(), command.estadoEntregable(), command.asesor());
     }
 }

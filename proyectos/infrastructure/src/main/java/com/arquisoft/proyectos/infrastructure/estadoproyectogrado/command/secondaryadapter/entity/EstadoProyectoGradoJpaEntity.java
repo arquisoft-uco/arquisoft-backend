@@ -32,4 +32,7 @@ public class EstadoProyectoGradoJpaEntity {
 
     @Column(name = "fecha_actualizacion", nullable = false)
     private Instant fechaActualizacion;
+
+    @Column(name = "motivo", length = 500)
+    private String motivo;
 }

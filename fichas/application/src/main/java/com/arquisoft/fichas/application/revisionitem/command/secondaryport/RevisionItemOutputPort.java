@@ -15,6 +15,8 @@ public interface RevisionItemOutputPort {
 
     Optional<RevisionItemEntity> buscarPorId(UUID revisionItemId);
 
+    Optional<RevisionItemEntity> buscarPorItem(UUID item);
+
     Optional<PertenenciaRevisionItemEntity> obtenerPertenencia(UUID revisionItem, UUID estudiante);
 
     Optional<AsesoriaRevisionItemEntity> obtenerAsesoria(UUID revisionItem);

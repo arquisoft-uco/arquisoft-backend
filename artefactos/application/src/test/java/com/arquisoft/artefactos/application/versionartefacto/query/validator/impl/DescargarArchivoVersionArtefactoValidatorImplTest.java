@@ -3,6 +3,7 @@ package com.arquisoft.artefactos.application.versionartefacto.query.validator.im
 import com.arquisoft.artefactos.application.versionartefacto.query.criteria.DescargaVersionArtefactoCriteria;
 import com.arquisoft.artefactos.domain.versionartefacto.ArchivoVersionArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionartefacto.exception.ActorSinAccesoVersionArtefactoException;
+import com.arquisoft.artefactos.domain.versionartefacto.exception.ArchivoVersionPurgadoException;
 import com.arquisoft.artefactos.domain.versionartefacto.exception.VersionArtefactoNoEncontradaException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ class DescargarArchivoVersionArtefactoValidatorImplTest {
             UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), false, true);
 
     private static ArchivoVersionArtefactoDomain archivoDe(UUID asesor) {
-        return ArchivoVersionArtefactoDomain.reconstruir(asesor, "versiones/x", 1, "Documento");
+        return ArchivoVersionArtefactoDomain.reconstruir(asesor, "versiones/x", 1, "Documento", "Proyecto", false);
     }
 
     @Test
@@ -68,5 +69,27 @@ class DescargarArchivoVersionArtefactoValidatorImplTest {
 
         // Act & Assert
         assertThatCode(() -> validator.validar(comoEstudiante, archivo, true)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarArchivoPurgado_cuandoElProyectoEstaFinalizado() {
+        // Arrange
+        var finalizado = ArchivoVersionArtefactoDomain.reconstruir(
+                comoAsesor.actor(), "versiones/x", 1, "Documento", "Proyecto", true);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(comoAsesor, finalizado, false))
+                .isInstanceOf(ArchivoVersionPurgadoException.class);
+    }
+
+    @Test
+    void debeValidarAccesoAntesQuePurgado_cuandoElActorNoTieneAccesoYElProyectoEstaFinalizado() {
+        // Arrange
+        var finalizado = ArchivoVersionArtefactoDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), "versiones/x", 1, "Documento", "Proyecto", true);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(comoAsesor, finalizado, false))
+                .isInstanceOf(ActorSinAccesoVersionArtefactoException.class);
     }
 }

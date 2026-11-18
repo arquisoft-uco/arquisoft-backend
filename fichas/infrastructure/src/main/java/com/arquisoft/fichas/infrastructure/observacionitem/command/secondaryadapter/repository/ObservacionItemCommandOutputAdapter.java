@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.observacionitem.command.secondaryada
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.ObservacionItemOutputPort;
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ContextoObservacionItemEntity;
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ObservacionItemEntity;
+import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ResumenObservacionesRevisionEntity;
 import com.arquisoft.fichas.infrastructure.observacionitem.command.secondaryadapter.mapper.ObservacionItemJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.fichas.ObservacionItemKey;
@@ -44,6 +45,17 @@ public class ObservacionItemCommandOutputAdapter implements ObservacionItemOutpu
     public void actualizarObservacion(UUID observacionItem, String observacion) {
         repository.actualizarObservacion(observacionItem, observacion);
         logger.debug(ObservacionItemKey.LOG_GUARDADA, observacionItem);
+    }
+
+    @Override
+    public ResumenObservacionesRevisionEntity resumirPorRevision(UUID revisionItem, String estadoPendiente) {
+        return repository.resumirPorRevision(revisionItem, estadoPendiente);
+    }
+
+    @Override
+    public void actualizarEstadoPorRevision(UUID revisionItem, String estadoActual, String estadoNuevo) {
+        repository.actualizarEstadoPorRevision(revisionItem, estadoActual, estadoNuevo);
+        logger.debug(ObservacionItemKey.LOG_ESTADO_ACTUALIZADO, revisionItem, estadoNuevo);
     }
 
     @Override

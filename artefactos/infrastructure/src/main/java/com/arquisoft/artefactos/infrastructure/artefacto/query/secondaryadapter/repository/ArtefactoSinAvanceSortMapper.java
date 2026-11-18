@@ -15,7 +15,7 @@ final class ArtefactoSinAvanceSortMapper {
         Map<String, String> m = new LinkedHashMap<>();
         for (var campo : ArtefactoSinAvanceCriteria.Campo.values()) {
             var ruta = switch (campo) {
-                case PROYECTO_GRADO, VERSION_REPOSITORIO_ARTEFACTO -> null;
+                case PROYECTO_GRADO, VERSION_REPOSITORIO_ARTEFACTO, PROYECTO_FINALIZADO, PROYECTO_CANCELADO -> null;
                 case NOMBRE_PROYECTO         -> "nombreProyecto";
                 case NOMBRE_DOCUMENTO        -> "nombreDocumento";
                 case VERSION_DOCUMENTO       -> "versionDocumento";

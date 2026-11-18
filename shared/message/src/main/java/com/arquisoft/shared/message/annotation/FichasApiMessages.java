@@ -268,6 +268,19 @@ public final class FichasApiMessages {
         public static final String VISUALIZAR_RESP_422 =
                 "Revisión no encontrada, ficha no vinculada al estudiante autenticado o revisión cerrada";
 
+        public static final String ENVIAR_CORRECCIONES_SUMMARY = "Enviar correcciones de una revisión de ítem";
+        public static final String ENVIAR_CORRECCIONES_DESCRIPTION =
+                "Permite al estudiante vinculado a la ficha declarar que terminó de atender las "
+                        + "observaciones de una revisión de ítem, llevándola de 'EN_PROGRESO' a "
+                        + "'CORRECCION_DISPONIBLE', y avisa por correo al asesor de la ficha. La revisión debe "
+                        + "tener observaciones y ninguna en 'PENDIENTE'.";
+        public static final String ENVIAR_CORRECCIONES_RESP_204 = "Correcciones enviadas exitosamente";
+        public static final String ENVIAR_CORRECCIONES_RESP_400 = "Identificador de revisión inválido";
+        public static final String ENVIAR_CORRECCIONES_RESP_403 = "Sin permiso para enviar correcciones de revisiones";
+        public static final String ENVIAR_CORRECCIONES_RESP_422 =
+                "Revisión no encontrada, ficha no vinculada al estudiante autenticado, revisión cerrada, "
+                        + "fuera de 'EN_PROGRESO', sin observaciones o con observaciones pendientes";
+
         public static final String REMOVER_SUMMARY = "Remover revisión de un ítem";
         public static final String REMOVER_DESCRIPTION =
                 "Permite al asesor asignado a la ficha remover una revisión de ítem junto con sus "

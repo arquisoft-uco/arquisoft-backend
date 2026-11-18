@@ -39,6 +39,8 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_SOLICITUD_REGISTRO_MODIFICACION_USUARIOS_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-usuarios-recibido", 2),
     LOG_REVISION_ITEM_AGREGADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.revision-item-agregado-recibido", 2),
+    LOG_REVISION_ITEM_CORRECCIONES_ENVIADAS_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.revision-item-correcciones-enviadas-recibido", 2),
     LOG_USUARIO_ESTADO_CAMBIADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.usuario-estado-cambiado-recibido", 3),
     LOG_FICHA_APROBADA_RECIBIDO("notificaciones.infraestructura.consumidor.log.ficha-aprobada-recibido", 3),
@@ -51,6 +53,10 @@ public enum ConsumidorKey implements ClaveMensaje {
             "notificaciones.infraestructura.consumidor.log.asesor-proyecto-grado-asignado-recibido", 1),
     LOG_ASESOR_PROYECTO_GRADO_FINALIZADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.asesor-proyecto-grado-finalizado-recibido", 1),
+    LOG_PROYECTO_GRADO_ESTADO_CAMBIADO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.proyecto-grado-estado-cambiado-recibido", 5),
+    LOG_PROYECTO_GRADO_ESTADO_CAMBIADO_IGNORADO(
+            "notificaciones.infraestructura.consumidor.log.proyecto-grado-estado-cambiado-ignorado", 2),
     LOG_ESTADO_FICHA_PERFIL_AGREGADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.estado-ficha-perfil-agregado-recibido", 3),
     LOG_REVISION_ASESOR_ESTADO_CAMBIADO_RECIBIDO(

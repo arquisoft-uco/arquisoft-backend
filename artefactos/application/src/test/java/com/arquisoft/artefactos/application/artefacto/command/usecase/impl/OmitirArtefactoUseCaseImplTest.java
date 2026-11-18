@@ -5,6 +5,8 @@ import com.arquisoft.artefactos.application.artefacto.command.secondaryport.Arte
 import com.arquisoft.artefactos.application.artefacto.command.validator.OmitirArtefactoValidator;
 import com.arquisoft.artefactos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.artefactos.application.estudiante.command.finder.EstudiantesVinculadosArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.versionrepositorioartefacto.command.finder.VersionRepositorioArtefactoPorArtefactoFinder;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.OmisionArtefactoDomain;
@@ -12,6 +14,7 @@ import com.arquisoft.artefactos.domain.artefacto.event.ArtefactoOmitidoEvent;
 import com.arquisoft.artefactos.domain.artefacto.exception.AsesorNoPropietarioArtefactoException;
 import com.arquisoft.artefactos.domain.asesor.AsesorDomain;
 import com.arquisoft.artefactos.domain.estudiante.EstudianteDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain;
 import com.arquisoft.artefactos.domain.versionrepositorioartefacto.VersionRepositorioArtefactoDomain.DatosArchivo;
 import com.arquisoft.shared.logger.AppLogger;
@@ -60,6 +63,10 @@ class OmitirArtefactoUseCaseImplTest {
     @Mock
     private EventPublisher eventPublisher;
     @Mock
+    private ProyectoGradoBloqueadoPorArtefactoFinder proyectoGradoBloqueadoPorArtefactoFinder;
+    @Mock
+    private ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
+    @Mock
     private AppLogger logger;
 
     @Captor
@@ -82,7 +89,8 @@ class OmitirArtefactoUseCaseImplTest {
         useCase = new OmitirArtefactoUseCaseImpl(
                 artefactoBloqueadoPorIdFinder, asesorPorIdFinder, versionRepositorioArtefactoPorArtefactoFinder,
                 estudiantesVinculadosArtefactoFinder, omitirArtefactoValidator, artefactoOutputPort,
-                eventPublisher, logger);
+                eventPublisher, proyectoGradoBloqueadoPorArtefactoFinder, proyectoGradoNoCongeladoValidator, logger);
+        when(proyectoGradoBloqueadoPorArtefactoFinder.obtener(any())).thenReturn(ProyectoGradoDomain.VACIO);
         artefactoId = UtilUUID.generarNuevoUUID();
         asesorId = UtilUUID.generarNuevoUUID();
         var versionId = UtilUUID.generarNuevoUUID();
@@ -113,7 +121,7 @@ class OmitirArtefactoUseCaseImplTest {
         // Assert
         var orden = inOrder(artefactoBloqueadoPorIdFinder, asesorPorIdFinder,
                 versionRepositorioArtefactoPorArtefactoFinder, estudiantesVinculadosArtefactoFinder,
-                omitirArtefactoValidator, artefactoOutputPort, eventPublisher, logger);
+                omitirArtefactoValidator, artefactoOutputPort, eventPublisher, logger, proyectoGradoNoCongeladoValidator);
         orden.verify(logger).info(ArtefactoKey.LOG_OMITIENDO, artefactoId, asesorId);
         orden.verify(artefactoBloqueadoPorIdFinder, times(1)).obtener(artefactoId);
         orden.verify(asesorPorIdFinder, times(1)).obtener(asesorId);
@@ -121,6 +129,8 @@ class OmitirArtefactoUseCaseImplTest {
         orden.verify(estudiantesVinculadosArtefactoFinder, times(1)).obtener(artefactoId);
         orden.verify(logger).debug(ArtefactoKey.LOG_VERIFICACION_OMITIR, true, true, true, 3);
         orden.verify(omitirArtefactoValidator).validar(omision, artefacto, asesor, version);
+        orden.verify(proyectoGradoNoCongeladoValidator).validar(any(ProyectoGradoDomain.class));
+        verify(proyectoGradoBloqueadoPorArtefactoFinder, times(1)).obtener(any());
         orden.verify(artefactoOutputPort).omitir(eq(artefactoId), instanteCaptor.capture());
         orden.verify(eventPublisher).publish(eventoCaptor.capture());
         orden.verify(logger).info(ArtefactoKey.LOG_OMITIDO, artefactoId, asesorId);
@@ -128,6 +138,8 @@ class OmitirArtefactoUseCaseImplTest {
         assertThat(instanteCaptor.getValue()).isEqualTo(artefacto.getOmitidoEn()).isNotEqualTo(UtilFecha.VACIO);
         var evento = eventoCaptor.getValue();
         assertThat(evento.getDocumento()).isEqualTo("Formato A");
+        assertThat(evento.getArtefacto()).isEqualTo(artefactoId);
+        assertThat(evento.getProyectoGrado()).isEqualTo(artefacto.getProyectoGrado());
         assertThat(evento.getAsesor().nombre()).isEqualTo("Ana Perez");
         assertThat(evento.getAsesor().email()).isEqualTo("ana@uco.edu.co");
         assertThat(evento.getEstudiantes()).extracting(contacto -> contacto.nombre())

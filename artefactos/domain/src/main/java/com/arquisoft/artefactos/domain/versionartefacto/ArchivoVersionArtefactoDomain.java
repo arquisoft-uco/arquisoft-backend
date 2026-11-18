@@ -11,22 +11,28 @@ public final class ArchivoVersionArtefactoDomain {
     private static final String SEPARADOR_VERSION = "-v";
 
     public static final ArchivoVersionArtefactoDomain VACIO = ArchivoVersionArtefactoDomain.reconstruir(
-            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilNumero.CERO, UtilTexto.VACIO);
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilNumero.CERO, UtilTexto.VACIO, UtilTexto.VACIO,
+            false);
 
     private UUID asesor;
     private String uriArchivo;
     private int numeroVersion;
     private String nombreDocumento;
+    private String nombreProyecto;
+    private boolean proyectoFinalizado;
 
     private ArchivoVersionArtefactoDomain() {}
 
     public static ArchivoVersionArtefactoDomain reconstruir(UUID asesor, String uriArchivo, int numeroVersion,
-                                                            String nombreDocumento) {
+                                                            String nombreDocumento, String nombreProyecto,
+                                                            boolean proyectoFinalizado) {
         var archivo = new ArchivoVersionArtefactoDomain();
         archivo.asesor = asesor;
         archivo.uriArchivo = uriArchivo;
         archivo.numeroVersion = numeroVersion;
         archivo.nombreDocumento = nombreDocumento;
+        archivo.nombreProyecto = nombreProyecto;
+        archivo.proyectoFinalizado = proyectoFinalizado;
         return archivo;
     }
 
@@ -44,6 +50,14 @@ public final class ArchivoVersionArtefactoDomain {
 
     public String getNombreDocumento() {
         return nombreDocumento;
+    }
+
+    public String getNombreProyecto() {
+        return nombreProyecto;
+    }
+
+    public boolean isProyectoFinalizado() {
+        return proyectoFinalizado;
     }
 
     public String getNombreRespaldo() {

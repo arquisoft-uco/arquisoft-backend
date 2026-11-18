@@ -1,8 +1,9 @@
 #!/bin/sh
 #
-# Prepara el almacenamiento de objetos: crea los buckets del repositorio de artefactos (HU-275) y de
-# artefactos (HU-043) y aplica a cada uno el ciclo de vida que expira los archivos pendientes de
-# confirmar. Es idempotente: se puede correr cuantas veces haga falta y el resultado es siempre el mismo.
+# Prepara el almacenamiento de objetos: crea los buckets del repositorio de artefactos (HU-275), de
+# artefactos (HU-043) y de entregables (HT-023), y aplica a los dos primeros el ciclo de vida que expira los
+# archivos pendientes de confirmar. El de entregables solo se crea: no recibe cargas pendientes que expirar.
+# Es idempotente: se puede correr cuantas veces haga falta y el resultado es siempre el mismo.
 #
 # Los buckets los crea este script y nunca el backend: en la nube la cuenta del backend no tiene
 # ListBucket ni CreateBucket, y un bucket creado "al vuelo" ocultaria que falta configurarlo.
@@ -17,6 +18,7 @@
 #   MINIO_ROOT_PASSWORD           obligatorio
 #   BUCKET_REPOSITORIO_ARTEFACTOS opcional, por defecto $BUCKET o repositorio-artefactos
 #   BUCKET_ARTEFACTOS             opcional, por defecto artefactos
+#   BUCKET_ENTREGABLES            opcional, por defecto entregables
 #   MINIO_DIR                     opcional, directorio de los JSON de ciclo de vida (por defecto, el del
 #                                 propio script)
 #
@@ -26,6 +28,7 @@ set -eu
 
 BUCKET_REPOSITORIO_ARTEFACTOS="${BUCKET_REPOSITORIO_ARTEFACTOS:-${BUCKET:-repositorio-artefactos}}"
 BUCKET_ARTEFACTOS="${BUCKET_ARTEFACTOS:-artefactos}"
+BUCKET_ENTREGABLES="${BUCKET_ENTREGABLES:-entregables}"
 MINIO_DIR="${MINIO_DIR:-$(dirname "$0")}"
 CICLO_VIDA_REPOSITORIO_ARTEFACTOS="$MINIO_DIR/ciclo-vida-repositorio-artefactos.json"
 CICLO_VIDA_ARTEFACTOS="$MINIO_DIR/ciclo-vida-artefactos.json"
@@ -50,6 +53,15 @@ done
 
 mcli alias set local "$MINIO_ENDPOINT" "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" > /dev/null
 
+crear_bucket() {
+    bucket="$1"
+
+    # Privado por defecto, como los demas. Sin ciclo de vida: nada en este bucket queda pendiente de confirmar.
+    mcli mb --ignore-existing "local/$bucket"
+
+    echo "Bucket '$bucket' listo."
+}
+
 configurar_bucket() {
     bucket="$1"
     ciclo_vida="$2"
@@ -65,3 +77,4 @@ configurar_bucket() {
 
 configurar_bucket "$BUCKET_REPOSITORIO_ARTEFACTOS" "$CICLO_VIDA_REPOSITORIO_ARTEFACTOS"
 configurar_bucket "$BUCKET_ARTEFACTOS" "$CICLO_VIDA_ARTEFACTOS"
+crear_bucket "$BUCKET_ENTREGABLES"

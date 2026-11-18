@@ -17,7 +17,9 @@ public final class VersionArtefactoEstudianteCriteria extends QueryCriteria {
         FECHA_CREACION ("fechaCreacion", true, true),
         ESTUDIANTE_ID      ("estudianteId",      true, false),
         ESTADO_REVISION("estadoRevision", true, true),
-        FECHA_CREACION_REVISION("fechaCreacionRevision", true, true);
+        FECHA_CREACION_REVISION("fechaCreacionRevision", true, true),
+        PROYECTO_FINALIZADO("proyectoFinalizado", true, false),
+        PROYECTO_CANCELADO("proyectoCancelado", true, false);
 
         private final String  clave;
         private final boolean filtrable;

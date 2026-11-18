@@ -9,6 +9,7 @@ public enum AutorizacionKey implements ClaveMensaje {
     ERROR_EMISORES_POLITICA_DISTINTA("seguridad.infraestructura.autorizacion.error.emisores-politica-distinta", 2),
     LOG_AUTORIZANDO("seguridad.aplicacion.autorizacion.log.autorizando", 2),
     LOG_DECISION("seguridad.aplicacion.autorizacion.log.decision", 3),
+    LOG_SOLO_AUTENTICACION("seguridad.aplicacion.autorizacion.log.solo-autenticacion", 2),
     LOG_PEP_NO_DISPONIBLE("seguridad.infraestructura.autorizacion.log.pep-no-disponible", 2),
     LOG_CONFIGURACION_AUTORIZACION("seguridad.infraestructura.autorizacion.log.configuracion", 3),
     LOG_AUDIENCIA_SIN_VALIDAR("seguridad.infraestructura.autorizacion.log.audiencia-sin-validar", 1);

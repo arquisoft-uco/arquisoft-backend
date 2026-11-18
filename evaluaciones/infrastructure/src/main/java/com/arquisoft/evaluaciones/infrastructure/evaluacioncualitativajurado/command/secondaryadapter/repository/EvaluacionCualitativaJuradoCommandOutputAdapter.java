@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -47,5 +48,16 @@ public class EvaluacionCualitativaJuradoCommandOutputAdapter implements Evaluaci
     public void eliminarPorIds(UUID evaluacionJurado, Set<UUID> evaluaciones) {
         repository.eliminarPorIds(evaluacionJurado, evaluaciones);
         logger.debug(EvaluacionCualitativaJuradoKey.LOG_LOTE_ELIMINADO, evaluaciones.size());
+    }
+
+    @Override
+    public Optional<EvaluacionCualitativaJuradoEntity> obtenerPorId(UUID id) {
+        return repository.findById(id).map(EvaluacionCualitativaJuradoJpaMapper::toEntity);
+    }
+
+    @Override
+    public void actualizar(EvaluacionCualitativaJuradoEntity entity) {
+        repository.save(EvaluacionCualitativaJuradoJpaMapper.toJpaEntity(entity));
+        logger.debug(EvaluacionCualitativaJuradoKey.LOG_GUARDADO, entity.id());
     }
 }

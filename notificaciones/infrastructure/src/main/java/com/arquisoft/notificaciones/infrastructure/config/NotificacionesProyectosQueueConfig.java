@@ -67,4 +67,18 @@ public class NotificacionesProyectosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String PROYECTO_GRADO_ESTADO_CAMBIADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Proyectos.PROYECTO_GRADO_ESTADO_CAMBIADO;
+
+    @Bean
+    public Declarables notificacionesProyectoGradoEstadoCambiadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                PROYECTO_GRADO_ESTADO_CAMBIADO_QUEUE,
+                EventTopics.Proyectos.PROYECTO_GRADO_ESTADO_CAMBIADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

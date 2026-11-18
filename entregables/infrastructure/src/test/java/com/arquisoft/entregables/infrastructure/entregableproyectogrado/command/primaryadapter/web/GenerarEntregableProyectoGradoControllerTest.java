@@ -2,6 +2,7 @@ package com.arquisoft.entregables.infrastructure.entregableproyectogrado.command
 
 import com.arquisoft.entregables.application.entregableproyectogrado.command.primaryport.interactor.GenerarEntregableProyectoGradoInteractor;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.primaryport.model.GenerarEntregableProyectoGradoCommand;
+import com.arquisoft.entregables.domain.artefacto.exception.ProyectoSinArtefactosParaPaqueteException;
 import com.arquisoft.entregables.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
@@ -107,6 +108,18 @@ class GenerarEntregableProyectoGradoControllerTest {
         mockMvc.perform(post(ruta(proyecto)).with(tokenAsesor()))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(EntregablesCodes.ProyectoGrado.NO_ENCONTRADO));
+    }
+
+    @Test
+    void debeResponder422ConElCodigoDeError_cuandoElProyectoNoTieneArtefactosVigentes() throws Exception {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        when(interactor.ejecutar(any())).thenThrow(new ProyectoSinArtefactosParaPaqueteException(proyecto, "Proyecto"));
+
+        // Act & Assert
+        mockMvc.perform(post(ruta(proyecto)).with(tokenAsesor()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value(EntregablesCodes.Artefacto.SIN_ARTEFACTOS_PARA_PAQUETE));
     }
 
     @Test

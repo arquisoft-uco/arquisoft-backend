@@ -9,6 +9,8 @@ import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult.ValidationError;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
@@ -28,6 +30,43 @@ class PlanEstimadoDomainTest {
         assertThat(plan.getTarea()).isEqualTo(tarea);
         assertThat(plan.getTiempoEstimadoDias()).isEqualTo(5);
         assertThat(plan.getDescripcionEstimado()).isEqualTo("Redactar y revisar");
+    }
+
+    @Test
+    void debeAsignarCreadoEn_cuandoCrea() {
+        // Arrange
+        var antes = Instant.now();
+
+        // Act
+        var plan = PlanEstimadoDomain.crear(UtilUUID.generarNuevoUUID(), 1, null);
+
+        // Assert
+        assertThat(plan.getCreadoEn()).isBetween(antes, Instant.now());
+    }
+
+    @Test
+    void debeReconstruirConCreadoEn_sinRevalidar() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var tarea = UtilUUID.generarNuevoUUID();
+        var creadoEn = Instant.parse("2026-11-01T10:00:00Z");
+
+        // Act
+        var plan = PlanEstimadoDomain.reconstruir(id, tarea, 4, "desc", creadoEn);
+
+        // Assert
+        assertThat(plan.getId()).isEqualTo(id);
+        assertThat(plan.getTarea()).isEqualTo(tarea);
+        assertThat(plan.getTiempoEstimadoDias()).isEqualTo(4);
+        assertThat(plan.getDescripcionEstimado()).isEqualTo("desc");
+        assertThat(plan.getCreadoEn()).isEqualTo(creadoEn);
+        assertThat(plan.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeSerVacio_cuandoEsCentinela() {
+        // Assert
+        assertThat(PlanEstimadoDomain.VACIO.esVacio()).isTrue();
     }
 
     @Test

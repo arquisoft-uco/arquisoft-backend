@@ -32,7 +32,7 @@ class ContextoRegistroEvaluacionJuradoFinderImplTest {
         var evaluacion = UUID.randomUUID();
         var entregable = UUID.randomUUID();
         var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, evaluacion, "PENDIENTE", entregable);
+                evaluacionJurado, evaluacion, "PENDIENTE", entregable, UUID.randomUUID());
         when(outputPort.obtenerContextoBloqueado(evaluacionJurado)).thenReturn(Optional.of(contexto));
 
         // Act

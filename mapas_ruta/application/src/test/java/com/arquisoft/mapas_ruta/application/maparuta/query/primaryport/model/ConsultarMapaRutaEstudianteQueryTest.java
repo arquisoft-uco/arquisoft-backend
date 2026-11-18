@@ -14,25 +14,25 @@ import static org.assertj.core.api.Assertions.tuple;
 class ConsultarMapaRutaEstudianteQueryTest {
 
     @Test
-    void debeCrearLaConsulta_cuandoElEstudianteEsValido() {
+    void debeCrearLaConsulta_cuandoElProyectoGradoEsValido() {
         // Arrange
-        var estudiante = UtilUUID.generarNuevoUUID();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
 
         // Act
-        var query = ConsultarMapaRutaEstudianteQuery.crear(estudiante);
+        var query = ConsultarMapaRutaEstudianteQuery.crear(proyectoGrado);
 
         // Assert
-        assertThat(query.estudiante()).isEqualTo(estudiante);
+        assertThat(query.proyectoGrado()).isEqualTo(proyectoGrado);
     }
 
     @Test
-    void debeLanzarApplicationValidationException_cuandoElEstudianteEsNulo() {
+    void debeLanzarApplicationValidationException_cuandoElProyectoGradoEsNulo() {
         // Act & Assert
         assertThatThrownBy(() -> ConsultarMapaRutaEstudianteQuery.crear(null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, excepcion ->
                         assertThat(excepcion.getValidationResult().getErrores())
                                 .extracting(ValidationError::campo, ValidationError::codigoError)
-                                .containsExactly(tuple(MapasRutaFields.MapaRuta.ESTUDIANTE,
-                                        MapasRutaCodes.MapaRuta.ESTUDIANTE_REQUERIDO)));
+                                .containsExactly(tuple(MapasRutaFields.MapaRuta.PROYECTO_GRADO,
+                                        MapasRutaCodes.MapaRuta.PROYECTO_GRADO_REQUERIDO)));
     }
 }

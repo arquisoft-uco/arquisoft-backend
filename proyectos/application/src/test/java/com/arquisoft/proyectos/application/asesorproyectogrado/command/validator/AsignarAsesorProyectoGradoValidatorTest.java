@@ -12,6 +12,7 @@ import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.exception.EstadoProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoCanceladoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoFinalizadoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoPerteneceCoordinadorException;
@@ -38,7 +39,10 @@ class AsignarAsesorProyectoGradoValidatorTest {
 
     private final EstadoProyectoGradoDomain estadoFinalizado = EstadoProyectoGradoDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), proyecto.getId(), EstadoProyecto.FINALIZADO,
-            UtilFecha.generarInstanteActual());
+            UtilFecha.generarInstanteActual(), null);
+
+    private final EstadoProyectoGradoDomain estadoCancelado = EstadoProyectoGradoDomain.crearCancelado(
+            proyecto.getId(), "Abandono del estudiante");
 
     private final AsesorDomain asesor = asesor(null);
 
@@ -156,5 +160,14 @@ class AsignarAsesorProyectoGradoValidatorTest {
         assertThatThrownBy(() -> validator.validar(
                 entrada(), ProyectoGradoDomain.VACIO, EstadoProyectoGradoDomain.VACIO, asesor, false, 0))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzar_cuandoProyectoCancelado() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(entrada(), proyecto, estadoCancelado, asesor, false, 0))
+                .isInstanceOfSatisfying(ProyectoGradoCanceladoException.class,
+                        exception -> assertThat(exception.getCodigoError())
+                                .isEqualTo(ProyectosCodes.ProyectoGrado.CANCELADO));
     }
 }

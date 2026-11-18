@@ -80,6 +80,13 @@ public final class ArtefactosCodes {
         public static final String NOMBRE_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_NOMBRE_REQUERIDO";
         public static final String NOMBRE_DEMASIADO_LARGO = "ARTEFACTOS_PROYECTO_GRADO_NOMBRE_DEMASIADO_LARGO";
         public static final String NO_ENCONTRADO = "ARTEFACTOS_PROYECTO_GRADO_NO_ENCONTRADO";
+        public static final String ENTREGADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_ENTREGADO_EN_REQUERIDO";
+        public static final String ESTADO_PROYECTO_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_ESTADO_PROYECTO_REQUERIDO";
+        public static final String ESTADO_PROYECTO_NO_ENCONTRADO = "ARTEFACTOS_PROYECTO_GRADO_ESTADO_PROYECTO_NO_ENCONTRADO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
+        public static final String CANCELADO_EN_REQUERIDO = "ARTEFACTOS_PROYECTO_GRADO_CANCELADO_EN_REQUERIDO";
+        public static final String CONGELADO = "ARTEFACTOS_PROYECTO_GRADO_CONGELADO";
+        public static final String NO_CONCLUIDO = "ARTEFACTOS_PROYECTO_GRADO_NO_CONCLUIDO";
     }
 
     public static final class Asesor {
@@ -149,6 +156,8 @@ public final class ArtefactosCodes {
         public static final String VERSION_ANTERIOR_SIN_REVISION = "REVISION_ASESOR_VERSION_ANTERIOR_SIN_REVISION";
         public static final String VERSION_ANTERIOR_NO_EN_PROGRESO =
                 "REVISION_ASESOR_VERSION_ANTERIOR_NO_EN_PROGRESO";
+        public static final String VERSION_ANTERIOR_NO_RESUELTA =
+                "REVISION_ASESOR_VERSION_ANTERIOR_NO_RESUELTA";
         public static final String PENDIENTE = "REVISION_ASESOR_PENDIENTE";
         public static final String SIN_VERSION_POSTERIOR = "REVISION_ASESOR_SIN_VERSION_POSTERIOR";
         public static final String NO_ADMITE_OBSERVACIONES = "REVISION_ASESOR_NO_ADMITE_OBSERVACIONES";
@@ -174,6 +183,7 @@ public final class ArtefactosCodes {
 
         private VersionArtefacto() {}
 
+        public static final String ARCHIVO_PURGADO = "VERSION_ARTEFACTO_ARCHIVO_PURGADO";
         public static final String ASESOR_REQUERIDO = "VERSION_ARTEFACTO_ASESOR_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO = "VERSION_ARTEFACTO_ESTUDIANTE_REQUERIDO";
         public static final String ARTEFACTO_REQUERIDO = "VERSION_ARTEFACTO_ARTEFACTO_REQUERIDO";
@@ -197,6 +207,8 @@ public final class ArtefactosCodes {
         public static final String CARGA_NO_CORRESPONDE = "VERSION_ARTEFACTO_CARGA_NO_CORRESPONDE";
         public static final String CARGA_MODIFICADA = "VERSION_ARTEFACTO_CARGA_MODIFICADA";
         public static final String TAMANO_ARCHIVO_EXCEDIDO = "VERSION_ARTEFACTO_TAMANO_ARCHIVO_EXCEDIDO";
+        public static final String CUOTA_PROYECTO_GRADO_EXCEDIDA =
+                "VERSION_ARTEFACTO_CUOTA_PROYECTO_GRADO_EXCEDIDA";
         public static final String TIPO_ARCHIVO_NO_COINCIDE = "VERSION_ARTEFACTO_TIPO_ARCHIVO_NO_COINCIDE";
         public static final String NO_ENCONTRADA = "VERSION_ARTEFACTO_NO_ENCONTRADA";
         public static final String NO_ES_ULTIMA = "VERSION_ARTEFACTO_NO_ES_ULTIMA";

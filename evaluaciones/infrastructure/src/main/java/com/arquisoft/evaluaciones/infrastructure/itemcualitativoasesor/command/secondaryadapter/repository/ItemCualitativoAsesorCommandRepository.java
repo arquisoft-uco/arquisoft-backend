@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.infrastructure.itemcualitativoasesor.command.
 
 import com.arquisoft.evaluaciones.infrastructure.itemcualitativoasesor.command.secondaryadapter.entity.ItemCualitativoAsesorJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -12,4 +13,10 @@ public interface ItemCualitativoAsesorCommandRepository extends JpaRepository<It
 
     @Query("select e.id from ItemCualitativoAsesorJpaEntity e where e.id in :ids")
     Set<UUID> findIdsByIdIn(@Param("ids") Set<UUID> ids);
+
+    boolean existsByNombreIgnoreCase(String nombre);
+
+    @Modifying(clearAutomatically = true)
+    @Query("update ItemCualitativoAsesorJpaEntity item set item.descripcion = :descripcion where item.id = :id")
+    int actualizarDescripcion(@Param("id") UUID id, @Param("descripcion") String descripcion);
 }

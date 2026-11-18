@@ -21,7 +21,8 @@ import java.util.UUID;
                epg.proyecto_grado_id   AS proyecto_grado_id,
                epg.estado_proyecto_id  AS estado_proyecto,
                ep.nombre               AS estado_proyecto_nombre,
-               epg.fecha_actualizacion AS fecha_actualizacion
+               epg.fecha_actualizacion AS fecha_actualizacion,
+               epg.motivo              AS motivo
         FROM estado_proyecto_grado epg
         JOIN estado_proyecto ep ON ep.id = epg.estado_proyecto_id
         """)
@@ -47,4 +48,7 @@ public class EstadoProyectoGradoJpaQueryEntity {
 
     @Column(name = "fecha_actualizacion")
     private Instant fechaActualizacion;
+
+    @Column(name = "motivo")
+    private String motivo;
 }

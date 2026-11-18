@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -17,7 +18,12 @@ public class EvaluacionCuantitativaAsesorQueryOutputAdapter implements Evaluacio
 
     @Override
     public List<EvaluacionCuantitativaAsesorReadModel> consultar(EvaluacionCuantitativaAsesorCriteria criteria) {
-        return repository.findByEvaluacionAsesorIdOrderByItemNombreAscIdAsc(criteria.evaluacionAsesor())
+        return consultarPorEvaluacionAsesor(criteria.evaluacionAsesor());
+    }
+
+    @Override
+    public List<EvaluacionCuantitativaAsesorReadModel> consultarPorEvaluacionAsesor(UUID evaluacionAsesor) {
+        return repository.findByEvaluacionAsesorIdOrderByItemNombreAscIdAsc(evaluacionAsesor)
                 .stream()
                 .map(EvaluacionCuantitativaAsesorQueryMapper::toReadModel)
                 .toList();

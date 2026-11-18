@@ -294,6 +294,86 @@ class ObservacionItemCommandRepositoryTest {
     }
 
     @Test
+    void debeResumirTotalYPendientes_cuandoLaRevisionTieneObservacionesMezcladas() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "EN_PROGRESO");
+        var otraRevision = sembrarRevisionDelItem(ficha.item(), "NUEVA");
+        sembrarObservacionDeLaRevision(revision, "Primera", "PENDIENTE");
+        sembrarObservacionDeLaRevision(revision, "Segunda", "EN_PROGRESO");
+        sembrarObservacionDeLaRevision(revision, "Tercera", "PENDIENTE");
+        sembrarObservacionDeLaRevision(otraRevision, "Ajena", "PENDIENTE");
+        testEntityManager.clear();
+
+        // Act
+        var resumen = repository.resumirPorRevision(revision, "PENDIENTE");
+
+        // Assert
+        assertThat(resumen.total()).isEqualTo(3);
+        assertThat(resumen.pendientes()).isEqualTo(2);
+    }
+
+    @Test
+    void debeResumirTodasPendientes_cuandoNingunaObservacionFueAtendida() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "EN_PROGRESO");
+        sembrarObservacionDeLaRevision(revision, "Primera", "PENDIENTE");
+        sembrarObservacionDeLaRevision(revision, "Segunda", "PENDIENTE");
+        testEntityManager.clear();
+
+        // Act
+        var resumen = repository.resumirPorRevision(revision, "PENDIENTE");
+
+        // Assert
+        assertThat(resumen.total()).isEqualTo(2);
+        assertThat(resumen.pendientes()).isEqualTo(2);
+    }
+
+    @Test
+    void debeResumirEnCero_cuandoLaRevisionNoTieneObservaciones() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "EN_PROGRESO");
+        testEntityManager.clear();
+
+        // Act
+        var resumen = repository.resumirPorRevision(revision, "PENDIENTE");
+
+        // Assert
+        assertThat(resumen.total()).isZero();
+        assertThat(resumen.pendientes()).isZero();
+    }
+
+    @Test
+    void debeCambiarSoloLasObservacionesDelEstadoYLaRevisionIndicados_cuandoActualizaPorRevision() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "VISUALIZADA");
+        var otraRevision = sembrarRevisionDelItem(ficha.item(), "VISUALIZADA");
+        var pendiente = sembrarObservacionDeLaRevision(revision, "Pendiente", "PENDIENTE");
+        var yaEnProgreso = sembrarObservacionDeLaRevision(revision, "En progreso", "EN_PROGRESO");
+        var ajena = sembrarObservacionDeLaRevision(otraRevision, "Ajena", "PENDIENTE");
+        var cerrada = sembrarObservacionDeLaRevision(revision, "Cerrada", "CERRADA");
+        testEntityManager.clear();
+
+        // Act
+        var filas = repository.actualizarEstadoPorRevision(revision, "PENDIENTE", "EN_PROGRESO");
+
+        // Assert
+        assertThat(filas).isEqualTo(1);
+        assertThat(estadoDe(pendiente)).isEqualTo("EN_PROGRESO");
+        assertThat(estadoDe(yaEnProgreso)).isEqualTo("EN_PROGRESO");
+        assertThat(estadoDe(cerrada)).isEqualTo("CERRADA");
+        assertThat(estadoDe(ajena)).isEqualTo("PENDIENTE");
+    }
+
+    private String estadoDe(UUID observacion) {
+        return testEntityManager.find(ObservacionItemJpaEntity.class, observacion)
+                .getEstadoObservacionRevision().getId();
+    }
+
+    @Test
     void debeRetornarCeroFilas_cuandoLaObservacionNoExiste() {
         // Act
         var filas = repository.removerPorId(UtilUUID.generarNuevoUUID());

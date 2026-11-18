@@ -18,5 +18,7 @@ public interface ObservacionItemJuradoOutputPort {
 
     void actualizarDescripcion(UUID id, String descripcion);
 
+    void eliminar(UUID id);
+
     boolean existenPorEvaluacionesCuantitativas(Set<UUID> evaluacionesCuantitativas);
 }

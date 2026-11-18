@@ -22,6 +22,8 @@ public final class VersionArtefactoAsesorQueryMapper {
                 entity.getRevisionAsesorId(),
                 entity.getEstadoRevisionId(),
                 entity.getNombreEstadoRevision(),
-                entity.getFechaCreacionRevision());
+                entity.getFechaCreacionRevision(),
+                entity.isProyectoFinalizado(),
+                entity.isProyectoCancelado());
     }
 }

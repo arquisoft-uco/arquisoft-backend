@@ -14,7 +14,7 @@ class EstadoProyectoGradoResponseMapperTest {
     void debeMapearTodosLosCampos_cuandoReadModelCompleto() {
         // Arrange
         var readModel = new EstadoProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), "EN_PROCESO", "En proceso",
-                Instant.parse("2026-10-05T10:00:00Z"));
+                Instant.parse("2026-10-05T10:00:00Z"), null);
 
         // Act
         var dto = EstadoProyectoGradoResponseMapper.toResponse(readModel);
@@ -24,5 +24,19 @@ class EstadoProyectoGradoResponseMapperTest {
         assertThat(dto.estadoProyecto()).isEqualTo("EN_PROCESO");
         assertThat(dto.estadoProyectoNombre()).isEqualTo("En proceso");
         assertThat(dto.fechaActualizacion()).isEqualTo(Instant.parse("2026-10-05T10:00:00Z"));
+        assertThat(dto.motivo()).isNull();
+    }
+
+    @Test
+    void debeMapearMotivo_cuandoElReadModelLoTrae() {
+        // Arrange
+        var readModel = new EstadoProyectoGradoReadModel(UtilUUID.generarNuevoUUID(), "CANCELADO", "Cancelado",
+                Instant.parse("2026-10-05T10:00:00Z"), "Cancelado por inactividad");
+
+        // Act
+        var dto = EstadoProyectoGradoResponseMapper.toResponse(readModel);
+
+        // Assert
+        assertThat(dto.motivo()).isEqualTo("Cancelado por inactividad");
     }
 }

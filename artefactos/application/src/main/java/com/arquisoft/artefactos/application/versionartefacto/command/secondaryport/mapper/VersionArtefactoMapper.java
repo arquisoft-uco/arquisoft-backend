@@ -13,7 +13,8 @@ public final class VersionArtefactoMapper {
                 version.getArtefacto(),
                 version.getNumeroVersion(),
                 version.getFechaCreacion(),
-                version.getUriArchivo());
+                version.getUriArchivo(),
+                version.getTamanoBytes());
     }
 
     public static VersionArtefactoDomain toDomain(VersionArtefactoEntity entity) {
@@ -22,6 +23,7 @@ public final class VersionArtefactoMapper {
                 entity.artefacto(),
                 entity.numeroVersion(),
                 entity.fechaCreacion(),
-                entity.uriArchivo());
+                entity.uriArchivo(),
+                entity.tamanoBytes());
     }
 }

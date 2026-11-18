@@ -5,7 +5,8 @@ import com.arquisoft.entregables.application.artefactoentregable.query.readmodel
 import com.arquisoft.entregables.application.artefactoentregable.query.secondaryport.ArtefactoEntregableQueryOutputPort;
 import com.arquisoft.entregables.application.artefactoentregable.query.usecase.ConsultarArtefactosEntregableUseCase;
 import com.arquisoft.entregables.application.artefactoentregable.query.validator.ConsultarArtefactosEntregableValidator;
-import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.AsesorDeEntregableProyectoGradoQueryFinder;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.EntregableProyectoGradoAccesoQueryFinder;
+import com.arquisoft.entregables.application.entregableproyectogrado.query.finder.AsesorVigenteDeEntregableProyectoGradoQueryFinder;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.ArtefactoEntregableKey;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,8 @@ import java.util.List;
 public class ConsultarArtefactosEntregableUseCaseImpl implements ConsultarArtefactosEntregableUseCase {
 
     private final ArtefactoEntregableQueryOutputPort artefactoEntregableQueryOutputPort;
-    private final AsesorDeEntregableProyectoGradoQueryFinder asesorDeEntregableProyectoGradoQueryFinder;
+    private final EntregableProyectoGradoAccesoQueryFinder entregableProyectoGradoAccesoQueryFinder;
+    private final AsesorVigenteDeEntregableProyectoGradoQueryFinder asesorVigenteDeEntregableProyectoGradoQueryFinder;
     private final ConsultarArtefactosEntregableValidator consultarArtefactosEntregableValidator;
     private final AppLogger logger;
 
@@ -26,10 +28,11 @@ public class ConsultarArtefactosEntregableUseCaseImpl implements ConsultarArtefa
     public List<ArtefactoEntregableReadModel> ejecutar(ArtefactoEntregableCriteria entrada) {
         logger.debug(ArtefactoEntregableKey.LOG_CONSULTANDO, entrada.entregableProyectoGrado());
 
-        var asesorAsignado = asesorDeEntregableProyectoGradoQueryFinder.obtener(entrada.entregableProyectoGrado());
+        var entregable = entregableProyectoGradoAccesoQueryFinder.obtener(entrada.entregableProyectoGrado());
+        var asesorVigente = asesorVigenteDeEntregableProyectoGradoQueryFinder.obtener(entrada.entregableProyectoGrado());
 
         consultarArtefactosEntregableValidator.validar(
-                entrada.entregableProyectoGrado(), asesorAsignado, entrada.asesor());
+                entrada.entregableProyectoGrado(), entregable, asesorVigente, entrada.asesor());
 
         var artefactos = artefactoEntregableQueryOutputPort.consultarPorEntregable(entrada.entregableProyectoGrado());
 

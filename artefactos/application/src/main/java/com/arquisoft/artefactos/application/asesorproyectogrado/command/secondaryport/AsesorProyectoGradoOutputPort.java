@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface AsesorProyectoGradoOutputPort {
 
-    Optional<AsesorProyectoGradoEntity> obtenerPorAsesorYProyectoGrado(UUID asesor, UUID proyectoGrado);
+    Optional<AsesorProyectoGradoEntity> obtenerBloqueadoPorAsesorYProyectoGrado(UUID asesor, UUID proyectoGrado);
 
     Optional<Instant> obtenerUltimoOcurridoEnPorProyectoGrado(UUID proyectoGrado);
 

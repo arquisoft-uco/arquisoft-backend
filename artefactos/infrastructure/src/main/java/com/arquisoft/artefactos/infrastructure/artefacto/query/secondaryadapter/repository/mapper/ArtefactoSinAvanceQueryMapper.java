@@ -27,6 +27,8 @@ public final class ArtefactoSinAvanceQueryMapper {
                 entity.getNombreRepositorio(),
                 fechaUltimaVersion,
                 diasSinAvance,
-                entity.getEstadoUltimaRevision());
+                entity.getEstadoUltimaRevision(),
+                entity.isProyectoFinalizado(),
+                entity.isProyectoCancelado());
     }
 }

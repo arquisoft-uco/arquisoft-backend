@@ -38,4 +38,9 @@ public class ProyectoGradoCommandOutputAdapter implements ProyectoGradoOutputPor
     public Optional<ProyectoGradoEntity> obtenerPorId(UUID proyectoGrado) {
         return proyectoGradoRepository.findById(proyectoGrado).map(ProyectoGradoJpaMapper::toEntity);
     }
+
+    @Override
+    public Optional<ProyectoGradoEntity> obtenerBloqueadoPorId(UUID proyectoGrado) {
+        return proyectoGradoRepository.buscarBloqueadoPorId(proyectoGrado).map(ProyectoGradoJpaMapper::toEntity);
+    }
 }

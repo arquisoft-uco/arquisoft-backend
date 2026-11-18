@@ -72,6 +72,27 @@ class ArtefactoOmitidoPayloadTest {
     }
 
     @Test
+    void debeIgnorarCamposNuevos_cuandoElEventoLosTrae() {
+        // Arrange
+        var json = """
+                {"idEvento":"evt-1","ocurridoEn":"2026-11-10T10:00:00Z","documento":"Formato A",
+                 "artefacto":"11111111-1111-1111-1111-111111111111",
+                 "proyectoGrado":"22222222-2222-2222-2222-222222222222",
+                 "asesor":{"nombre":"Ana","email":"ana@uco.edu.co"},
+                 "estudiantes":[{"nombre":"Luis","email":"luis@uco.edu.co"}]}
+                """;
+
+        // Act
+        var payload = mapper.readValue(json, ArtefactoOmitidoPayload.class);
+
+        // Assert
+        assertThat(payload.idEvento()).isEqualTo("evt-1");
+        assertThat(payload.documento()).isEqualTo("Formato A");
+        assertThat(payload.asesor().email()).isEqualTo("ana@uco.edu.co");
+        assertThat(payload.estudiantes()).hasSize(1);
+    }
+
+    @Test
     void debeDeserializarConNull_cuandoFaltaCampo() {
         // Arrange
         var json = """

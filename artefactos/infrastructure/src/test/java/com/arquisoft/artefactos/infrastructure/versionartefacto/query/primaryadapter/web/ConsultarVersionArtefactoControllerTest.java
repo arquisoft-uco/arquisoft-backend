@@ -87,7 +87,7 @@ class ConsultarVersionArtefactoControllerTest {
                 versionId, UtilUUID.generarNuevoUUID(), 2, Instant.parse("2026-10-20T10:00:00Z"),
                 "artefactos/v2.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno",
                 UtilUUID.generarNuevoUUID(), "PENDIENTE", "Pendiente",
-                Instant.parse("2026-10-21T10:00:00Z"));
+                Instant.parse("2026-10-21T10:00:00Z"), true, false);
         when(consultarVersionArtefactoInteractor.ejecutar(any(ConsultarVersionArtefactoQuery.class)))
                 .thenReturn(version);
 
@@ -99,7 +99,9 @@ class ConsultarVersionArtefactoControllerTest {
                 .andExpect(jsonPath("$.uriArchivo").value("artefactos/v2.pdf"))
                 .andExpect(jsonPath("$.nombreProyecto").value("Proyecto Uno"))
                 .andExpect(jsonPath("$.estadoRevision").value("PENDIENTE"))
-                .andExpect(jsonPath("$.fechaCreacionRevision").value("2026-10-21T10:00:00Z"));
+                .andExpect(jsonPath("$.fechaCreacionRevision").value("2026-10-21T10:00:00Z"))
+                .andExpect(jsonPath("$.proyectoFinalizado").value(true))
+                .andExpect(jsonPath("$.proyectoCancelado").value(false));
 
         var captor = ArgumentCaptor.forClass(ConsultarVersionArtefactoQuery.class);
         verify(consultarVersionArtefactoInteractor).ejecutar(captor.capture());
@@ -166,7 +168,7 @@ class ConsultarVersionArtefactoControllerTest {
         var version = new VersionArtefactoReadModel(
                 versionId, UtilUUID.generarNuevoUUID(), 1, Instant.parse("2026-10-20T10:00:00Z"),
                 "artefactos/v1.pdf", "Proyecto Uno", "Documento Uno", 1, "repo-uno", "Asesor Uno",
-                null, null, null, null);
+                null, null, null, null, false, false);
         when(consultarVersionArtefactoInteractor.ejecutar(any(ConsultarVersionArtefactoQuery.class)))
                 .thenReturn(version);
 

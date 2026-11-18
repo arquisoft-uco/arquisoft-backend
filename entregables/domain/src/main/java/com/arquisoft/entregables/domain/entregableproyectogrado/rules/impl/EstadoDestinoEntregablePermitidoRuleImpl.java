@@ -10,7 +10,9 @@ public class EstadoDestinoEntregablePermitidoRuleImpl implements EstadoDestinoEn
     @Override
     public void validar(TransicionEstadoEntregable transicion) {
         var nuevo = transicion.nuevo();
-        if (nuevo != EstadoEntregable.CANCELADO && nuevo != EstadoEntregable.CERRADO) {
+        var permitido = nuevo == EstadoEntregable.DISPONIBLE_EVALUACION || nuevo == EstadoEntregable.CANCELADO
+                || nuevo == EstadoEntregable.CERRADO;
+        if (!permitido) {
             throw new EstadoDestinoEntregableNoPermitidoException(transicion.entregableProyectoGrado(), nuevo);
         }
     }

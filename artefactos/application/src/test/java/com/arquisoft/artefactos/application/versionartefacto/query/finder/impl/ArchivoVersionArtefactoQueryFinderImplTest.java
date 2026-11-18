@@ -29,7 +29,7 @@ class ArchivoVersionArtefactoQueryFinderImplTest {
         var version = UtilUUID.generarNuevoUUID();
         var asesor = UtilUUID.generarNuevoUUID();
         when(outputPort.obtenerArchivoPorId(version)).thenReturn(
-                Optional.of(new ArchivoVersionArtefactoEntity(asesor, "versiones/x", 2, "Documento")));
+                Optional.of(new ArchivoVersionArtefactoEntity(asesor, "versiones/x", 2, "Documento", "Proyecto", false)));
 
         // Act
         var resultado = finder.obtener(version);

@@ -27,7 +27,10 @@ class ConsultarEntregablesProyectoGradoAsesorMapperTest {
         var criteria = ConsultarEntregablesProyectoGradoAsesorMapper.toCriteria(query);
 
         // Assert
-        var esperado = NodoFiltro.predicado("asesorId", FiltroOperador.ES, asesor.toString());
+        var esperado = NodoFiltro.grupo(FiltroConector.AND, List.of(
+                NodoFiltro.predicado("asesorVigenteId", FiltroOperador.ES, asesor.toString()),
+                NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false"),
+                NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "false")));
         assertThat(criteria.getRaiz()).isEqualTo(esperado);
     }
 
@@ -43,8 +46,31 @@ class ConsultarEntregablesProyectoGradoAsesorMapperTest {
         var criteria = ConsultarEntregablesProyectoGradoAsesorMapper.toCriteria(query);
 
         // Assert
-        var forzado = NodoFiltro.predicado("asesorId", FiltroOperador.ES, asesor.toString());
-        var esperado = NodoFiltro.grupo(FiltroConector.AND, List.of(forzado, raiz));
+        var forzado = NodoFiltro.predicado("asesorVigenteId", FiltroOperador.ES, asesor.toString());
+        var esperado = NodoFiltro.grupo(FiltroConector.AND, List.of(
+                forzado,
+                NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false"),
+                NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "false"),
+                raiz));
+        assertThat(criteria.getRaiz()).isEqualTo(esperado);
+    }
+
+    @Test
+    void debeRespetarProyectoFinalizadoDelCliente_cuandoLoNombra() {
+        // Arrange
+        var asesor = UtilUUID.generarNuevoUUID();
+        var raiz = NodoFiltro.predicado("proyectoFinalizado", FiltroOperador.ES, "true");
+        var query = ConsultarEntregablesProyectoGradoAsesorQuery.crear(
+                asesor, ConsultaCriteriaQuery.crear(0, 10, List.of(), raiz));
+
+        // Act
+        var criteria = ConsultarEntregablesProyectoGradoAsesorMapper.toCriteria(query);
+
+        // Assert
+        var esperado = NodoFiltro.grupo(FiltroConector.AND, List.of(
+                NodoFiltro.predicado("asesorVigenteId", FiltroOperador.ES, asesor.toString()),
+                NodoFiltro.predicado("proyectoCancelado", FiltroOperador.ES, "false"),
+                raiz));
         assertThat(criteria.getRaiz()).isEqualTo(esperado);
     }
 

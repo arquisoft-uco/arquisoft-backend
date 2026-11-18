@@ -12,15 +12,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ConsultarMapaRutaEstudianteRequestMapperTest {
 
     @Test
-    void debeCrearLaConsultaConElEstudiante_cuandoElUuidEsValido() {
+    void debeCrearLaConsultaConElProyectoGrado_cuandoElUuidEsValido() {
         // Arrange
-        var estudiante = UtilUUID.generarNuevoUUID();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
 
         // Act
-        var query = ConsultarMapaRutaEstudianteRequestMapper.toQuery(estudiante);
+        var query = ConsultarMapaRutaEstudianteRequestMapper.toQuery(proyectoGrado);
 
         // Assert
-        assertThat(query.estudiante()).isEqualTo(estudiante);
+        assertThat(query.proyectoGrado()).isEqualTo(proyectoGrado);
     }
 
     @Test
@@ -30,6 +30,6 @@ class ConsultarMapaRutaEstudianteRequestMapperTest {
                 .isInstanceOfSatisfying(ApplicationValidationException.class, excepcion ->
                         assertThat(excepcion.getValidationResult().getErrores())
                                 .extracting(ValidationError::codigoError)
-                                .containsExactly(MapasRutaCodes.MapaRuta.ESTUDIANTE_REQUERIDO));
+                                .containsExactly(MapasRutaCodes.MapaRuta.PROYECTO_GRADO_REQUERIDO));
     }
 }

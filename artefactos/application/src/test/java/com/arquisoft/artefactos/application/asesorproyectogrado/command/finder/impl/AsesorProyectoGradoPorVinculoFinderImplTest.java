@@ -35,7 +35,7 @@ class AsesorProyectoGradoPorVinculoFinderImplTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var entity = new AsesorProyectoGradoEntity(
                 UtilUUID.generarNuevoUUID(), asesor, proyecto, OCURRIDO_EN, UtilFecha.VACIO);
-        when(asesorProyectoGradoOutputPort.obtenerPorAsesorYProyectoGrado(asesor, proyecto))
+        when(asesorProyectoGradoOutputPort.obtenerBloqueadoPorAsesorYProyectoGrado(asesor, proyecto))
                 .thenReturn(Optional.of(entity));
 
         // Act
@@ -52,7 +52,7 @@ class AsesorProyectoGradoPorVinculoFinderImplTest {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
-        when(asesorProyectoGradoOutputPort.obtenerPorAsesorYProyectoGrado(asesor, proyecto))
+        when(asesorProyectoGradoOutputPort.obtenerBloqueadoPorAsesorYProyectoGrado(asesor, proyecto))
                 .thenReturn(Optional.empty());
 
         // Act

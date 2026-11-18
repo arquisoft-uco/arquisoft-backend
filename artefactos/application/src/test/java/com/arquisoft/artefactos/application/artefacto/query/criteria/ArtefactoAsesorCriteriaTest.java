@@ -49,4 +49,26 @@ class ArtefactoAsesorCriteriaTest {
         // Act & Assert
         assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
     }
+
+    @Test
+    void debeDeclararFiltrableYNoOrdenable_indicadoresDeCierreDelProyecto() {
+        // Arrange
+        var claves = List.of("proyectoFinalizado", "proyectoCancelado");
+
+        // Act & Assert
+        assertThat(claves).allSatisfy(clave -> {
+            assertThat(ArtefactoAsesorCriteria.Campo.esValidoParaFiltrar(clave)).isTrue();
+            assertThat(ArtefactoAsesorCriteria.Campo.esValidoParaOrdenar(clave)).isFalse();
+        });
+    }
+
+    @Test
+    void debeLanzarFiltroException_cuandoOrdenaPorProyectoCancelado() {
+        // Arrange
+        var ordenamiento = List.of(SortOrder.of("proyectoCancelado", SortDirection.ASC));
+        var builder = ArtefactoAsesorCriteria.builder().pagina(0).tamanio(10);
+
+        // Act & Assert
+        assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
+    }
 }

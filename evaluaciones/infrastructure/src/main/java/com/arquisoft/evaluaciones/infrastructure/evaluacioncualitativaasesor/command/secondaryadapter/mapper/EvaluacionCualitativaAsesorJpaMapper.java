@@ -15,4 +15,9 @@ public final class EvaluacionCualitativaAsesorJpaMapper {
                 .criterio(entity.criterio())
                 .build();
     }
+
+    public static EvaluacionCualitativaAsesorEntity toEntity(EvaluacionCualitativaAsesorJpaEntity jpaEntity) {
+        return new EvaluacionCualitativaAsesorEntity(
+                jpaEntity.getId(), jpaEntity.getEvaluacionAsesor(), jpaEntity.getItem(), jpaEntity.getCriterio());
+    }
 }

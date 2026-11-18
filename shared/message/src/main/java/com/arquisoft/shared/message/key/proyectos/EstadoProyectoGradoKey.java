@@ -10,7 +10,10 @@ public enum EstadoProyectoGradoKey implements ClaveMensaje {
     LOG_CONSULTA_COMPLETADA("proyectos.aplicacion.estadoproyectogrado.log.consulta-completada", 1),
     LOG_GUARDADO("proyectos.infraestructura.estadoproyectogrado.log.guardado", 2),
     ERROR_NO_ENCONTRADO("proyectos.dominio.estadoproyectogrado.error.no-encontrado", 0),
-    ERROR_NO_ENCONTRADO_DETALLE("proyectos.dominio.estadoproyectogrado.error.no-encontrado-detalle", 1);
+    ERROR_NO_ENCONTRADO_DETALLE("proyectos.dominio.estadoproyectogrado.error.no-encontrado-detalle", 1),
+    LOG_CONSULTANDO_HISTORIAL("proyectos.aplicacion.estadoproyectogrado.log.consultando-historial", 2),
+    ERROR_USUARIO_SIN_ACCESO("proyectos.dominio.estadoproyectogrado.error.usuario-sin-acceso", 0),
+    ERROR_USUARIO_SIN_ACCESO_DETALLE("proyectos.dominio.estadoproyectogrado.error.usuario-sin-acceso-detalle", 2);
 
     private final String clave;
     private final int parametros;

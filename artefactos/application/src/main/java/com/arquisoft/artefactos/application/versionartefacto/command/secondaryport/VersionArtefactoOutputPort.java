@@ -2,6 +2,7 @@ package com.arquisoft.artefactos.application.versionartefacto.command.secondaryp
 
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.entity.VersionArtefactoEntity;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,4 +21,10 @@ public interface VersionArtefactoOutputPort {
     boolean existeParticipacion(UUID versionArtefacto, UUID estudiante);
 
     void eliminar(UUID versionArtefacto);
+
+    long tamanoVigenteDelProyectoDeArtefacto(UUID artefacto, String estadoCerrada);
+
+    long tamanoVigenteDelArtefacto(UUID artefacto, String estadoCerrada);
+
+    List<String> obtenerUrisArchivoPorProyectoGrado(UUID proyectoGrado);
 }

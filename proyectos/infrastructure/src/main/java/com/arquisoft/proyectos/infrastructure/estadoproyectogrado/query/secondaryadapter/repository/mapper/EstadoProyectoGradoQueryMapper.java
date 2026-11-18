@@ -12,6 +12,7 @@ public final class EstadoProyectoGradoQueryMapper {
                 entity.getId(),
                 entity.getEstadoProyecto(),
                 entity.getEstadoProyectoNombre(),
-                entity.getFechaActualizacion());
+                entity.getFechaActualizacion(),
+                entity.getMotivo());
     }
 }

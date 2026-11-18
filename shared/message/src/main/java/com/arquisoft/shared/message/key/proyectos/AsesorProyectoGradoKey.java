@@ -11,6 +11,8 @@ public enum AsesorProyectoGradoKey implements ClaveMensaje {
     LOG_CONSULTANDO("proyectos.aplicacion.asesorproyectogrado.log.consultando", 2),
     LOG_CONSULTANDO_ASIGNADOS("proyectos.aplicacion.asesorproyectogrado.log.consultando-asignados", 2),
     LOG_CONSULTA_COMPLETADA("proyectos.aplicacion.asesorproyectogrado.log.consulta-completada", 1),
+    LOG_CONSULTANDO_ACTUALES("proyectos.aplicacion.asesorproyectogrado.log.consultando-actuales", 1),
+    LOG_CONSULTA_ACTUALES_COMPLETADA("proyectos.aplicacion.asesorproyectogrado.log.consulta-actuales-completada", 1),
     LOG_CAMBIANDO_ESTADO("proyectos.aplicacion.asesorproyectogrado.log.cambiando-estado", 3),
     LOG_VERIFICACION_CAMBIO_ESTADO("proyectos.aplicacion.asesorproyectogrado.log.verificacion-cambio-estado", 4),
     LOG_ESTADO_CAMBIADO("proyectos.aplicacion.asesorproyectogrado.log.estado-cambiado", 3),

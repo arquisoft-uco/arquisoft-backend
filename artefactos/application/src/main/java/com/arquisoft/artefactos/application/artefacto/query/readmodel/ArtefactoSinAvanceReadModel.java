@@ -13,6 +13,8 @@ public record ArtefactoSinAvanceReadModel(
         String nombreRepositorio,
         Instant fechaUltimaVersion,
         Long diasSinAvance,
-        String estadoUltimaRevision
+        String estadoUltimaRevision,
+        boolean proyectoFinalizado,
+        boolean proyectoCancelado
 ) {
 }

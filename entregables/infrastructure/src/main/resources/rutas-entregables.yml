@@ -7,6 +7,11 @@ rutas:
   entregables:
     estados-entregable:
       base: /estados-entregable
+    entregables:
+      base: /entregables
+      paquete: /{entregableProyectoGradoId}/paquete
+      estados: /{entregableProyectoGradoId}/estados
+      vista-previa-paquete: /proyectos-grado/{proyectoGradoId}/vista-previa-paquete
     proyectos-grado:
       base: /proyectos-grado
       entregables: /{proyectoGradoId}/entregables

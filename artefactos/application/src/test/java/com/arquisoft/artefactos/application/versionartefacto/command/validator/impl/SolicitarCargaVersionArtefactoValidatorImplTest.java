@@ -4,13 +4,18 @@ import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoNoEncontradoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.ArtefactoOmitidoException;
 import com.arquisoft.artefactos.domain.artefacto.exception.EstudianteNoPropietarioArtefactoException;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoCongeladoException;
+import com.arquisoft.artefactos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.ArtefactoCerradoException;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.RevisionVersionAnteriorNoEnProgresoException;
 import com.arquisoft.artefactos.domain.revisionasesor.exception.VersionAnteriorSinRevisionException;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.artefactos.domain.versionartefacto.SolicitudCargaVersionArtefactoDomain;
+import com.arquisoft.artefactos.domain.versionartefacto.exception.CuotaProyectoGradoExcedidaException;
 import com.arquisoft.artefactos.domain.versionartefacto.exception.TamanoArchivoExcedidoException;
+import com.arquisoft.artefactos.domain.versionartefacto.model.AlmacenamientoProyectoGrado;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +36,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
 
     private SolicitudCargaVersionArtefactoDomain solicitud;
     private ArtefactoDomain artefacto;
+    private AlmacenamientoProyectoGrado almacenamiento;
 
     @BeforeEach
     void setUp() {
@@ -38,6 +44,8 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
                 UtilUUID.generarNuevoUUID(), "informe.pdf", "application/pdf", 2048L);
         artefacto = ArtefactoDomain.reconstruir(solicitud.getArtefacto(), UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
+        almacenamiento = new AlmacenamientoProyectoGrado(
+                ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null, null), 1_073_741_824L, 0L);
     }
 
     private RevisionAsesorDomain revisionEn(EstadoRevisionAsesor estado) {
@@ -49,7 +57,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
     void debePermitir_cuandoPrimeraVersion() {
         // Act & Assert
         assertThatCode(() -> validator.validar(
-                solicitud, artefacto, true, MAXIMO, 0, RevisionAsesorDomain.VACIO)).doesNotThrowAnyException();
+                solicitud, artefacto, true, MAXIMO, 0, RevisionAsesorDomain.VACIO, almacenamiento)).doesNotThrowAnyException();
     }
 
     @Test
@@ -58,7 +66,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
         var revision = revisionEn(EstadoRevisionAsesor.EN_PROGRESO);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(solicitud, artefacto, true, MAXIMO, 2, revision))
+        assertThatCode(() -> validator.validar(solicitud, artefacto, true, MAXIMO, 2, revision, almacenamiento))
                 .doesNotThrowAnyException();
     }
 
@@ -66,7 +74,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
     void debeLanzarArtefactoNoEncontrado_primero() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                solicitud, ArtefactoDomain.VACIO, false, 1L, 2, RevisionAsesorDomain.VACIO))
+                solicitud, ArtefactoDomain.VACIO, false, 1L, 2, RevisionAsesorDomain.VACIO, almacenamiento))
                 .isInstanceOf(ArtefactoNoEncontradoException.class);
     }
 
@@ -74,7 +82,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
     void debeLanzarNoPropietario_antesQueLaPoliticaDeSubida() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                solicitud, artefacto, false, 1L, 2, RevisionAsesorDomain.VACIO))
+                solicitud, artefacto, false, 1L, 2, RevisionAsesorDomain.VACIO, almacenamiento))
                 .isInstanceOf(EstudianteNoPropietarioArtefactoException.class);
     }
 
@@ -86,7 +94,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                solicitud, omitido, true, MAXIMO, 2, RevisionAsesorDomain.VACIO))
+                solicitud, omitido, true, MAXIMO, 2, RevisionAsesorDomain.VACIO, almacenamiento))
                 .isInstanceOf(ArtefactoOmitidoException.class);
     }
 
@@ -94,7 +102,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
     void debeRechazar_cuandoSinRevision() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                solicitud, artefacto, true, MAXIMO, 2, RevisionAsesorDomain.VACIO))
+                solicitud, artefacto, true, MAXIMO, 2, RevisionAsesorDomain.VACIO, almacenamiento))
                 .isInstanceOf(VersionAnteriorSinRevisionException.class);
     }
 
@@ -105,7 +113,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
         var revision = revisionEn(estado);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(solicitud, artefacto, true, MAXIMO, 2, revision))
+        assertThatThrownBy(() -> validator.validar(solicitud, artefacto, true, MAXIMO, 2, revision, almacenamiento))
                 .isInstanceOf(RevisionVersionAnteriorNoEnProgresoException.class);
     }
 
@@ -115,7 +123,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
         var revision = revisionEn(EstadoRevisionAsesor.CERRADA);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(solicitud, artefacto, true, MAXIMO, 2, revision))
+        assertThatThrownBy(() -> validator.validar(solicitud, artefacto, true, MAXIMO, 2, revision, almacenamiento))
                 .isInstanceOf(ArtefactoCerradoException.class);
     }
 
@@ -125,7 +133,7 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
         var revision = revisionEn(EstadoRevisionAsesor.PENDIENTE);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(solicitud, artefacto, true, 1024L, 2, revision))
+        assertThatThrownBy(() -> validator.validar(solicitud, artefacto, true, 1024L, 2, revision, almacenamiento))
                 .isInstanceOf(RevisionVersionAnteriorNoEnProgresoException.class);
     }
 
@@ -133,7 +141,66 @@ class SolicitarCargaVersionArtefactoValidatorImplTest {
     void debeLanzarTamanoExcedido_cuandoLaPoliticaPermiteSubir() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                solicitud, artefacto, true, 1024L, 0, RevisionAsesorDomain.VACIO))
+                solicitud, artefacto, true, 1024L, 0, RevisionAsesorDomain.VACIO, almacenamiento))
                 .isInstanceOf(TamanoArchivoExcedidoException.class);
+    }
+
+    @Test
+    void debeLanzarCuotaExcedida_cuandoElArchivoNoCabe() {
+        // Arrange
+        var sinEspacio = new AlmacenamientoProyectoGrado(
+                almacenamiento.proyectoGrado(), 1_073_741_824L, 1_073_741_824L - 2047L);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                solicitud, artefacto, true, MAXIMO, 0, RevisionAsesorDomain.VACIO, sinEspacio))
+                .isInstanceOf(CuotaProyectoGradoExcedidaException.class);
+    }
+
+    @Test
+    void debePermitir_cuandoElArchivoOcupaExactamenteElEspacioDisponible() {
+        // Arrange
+        var justo = new AlmacenamientoProyectoGrado(
+                almacenamiento.proyectoGrado(), 1_073_741_824L, 1_073_741_824L - 2048L);
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(
+                solicitud, artefacto, true, MAXIMO, 0, RevisionAsesorDomain.VACIO, justo)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarProyectoNoEncontrado_antesQueLaCuota() {
+        // Arrange
+        var sinProyecto = new AlmacenamientoProyectoGrado(ProyectoGradoDomain.VACIO, 1_073_741_824L, 1_073_741_824L);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                solicitud, artefacto, true, MAXIMO, 0, RevisionAsesorDomain.VACIO, sinProyecto))
+                .isInstanceOf(ProyectoGradoNoEncontradoException.class);
+    }
+
+    @Test
+    void debePriorizarRevisionSobreCuota_cuandoElArtefactoEstaCerradoYSinEspacio() {
+        // Arrange
+        var revision = revisionEn(EstadoRevisionAsesor.CERRADA);
+        var sinEspacio = new AlmacenamientoProyectoGrado(
+                almacenamiento.proyectoGrado(), 1_073_741_824L, 1_073_741_824L);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(solicitud, artefacto, true, MAXIMO, 2, revision, sinEspacio))
+                .isInstanceOf(ArtefactoCerradoException.class);
+    }
+
+    @Test
+    void debeLanzarCongelado_antesQueCuota() {
+        // Arrange
+        var congelado = new AlmacenamientoProyectoGrado(
+                ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", Instant.now(), null, null),
+                1_073_741_824L, 1_073_741_824L);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                solicitud, artefacto, true, MAXIMO, 0, RevisionAsesorDomain.VACIO, congelado))
+                .isInstanceOf(ProyectoGradoCongeladoException.class);
     }
 }

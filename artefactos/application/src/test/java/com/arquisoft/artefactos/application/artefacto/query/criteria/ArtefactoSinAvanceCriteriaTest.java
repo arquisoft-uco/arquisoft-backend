@@ -51,4 +51,26 @@ class ArtefactoSinAvanceCriteriaTest {
         // Assert
         assertThat(criteria.getOrdenamiento()).hasSize(1);
     }
+
+    @Test
+    void debeDeclararFiltrableYNoOrdenable_indicadoresDeCierreDelProyecto() {
+        // Arrange
+        var claves = List.of("proyectoFinalizado", "proyectoCancelado");
+
+        // Act & Assert
+        assertThat(claves).allSatisfy(clave -> {
+            assertThat(ArtefactoSinAvanceCriteria.Campo.esValidoParaFiltrar(clave)).isTrue();
+            assertThat(ArtefactoSinAvanceCriteria.Campo.esValidoParaOrdenar(clave)).isFalse();
+        });
+    }
+
+    @Test
+    void debeLanzarFiltroException_cuandoOrdenaPorProyectoCancelado() {
+        // Arrange
+        var ordenamiento = List.of(SortOrder.of("proyectoCancelado", SortDirection.ASC));
+        var builder = ArtefactoSinAvanceCriteria.builder().pagina(0).tamanio(10);
+
+        // Act & Assert
+        assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
+    }
 }

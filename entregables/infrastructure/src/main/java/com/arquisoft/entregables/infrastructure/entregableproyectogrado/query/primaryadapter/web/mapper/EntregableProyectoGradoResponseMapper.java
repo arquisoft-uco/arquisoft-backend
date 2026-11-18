@@ -20,6 +20,9 @@ public final class EntregableProyectoGradoResponseMapper {
                         readModel.asesor().email()),
                 new EntregableProyectoGradoResponseDTO.EstadoEntregableResponseDTO(
                         readModel.estadoEntregable().id(),
-                        readModel.estadoEntregable().nombre()));
+                        readModel.estadoEntregable().nombre(),
+                        readModel.estadoEntregable().fechaActualizacion()),
+                readModel.proyectoFinalizado(),
+                readModel.proyectoCancelado());
     }
 }

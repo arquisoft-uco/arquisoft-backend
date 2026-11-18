@@ -4,7 +4,10 @@ import com.arquisoft.artefactos.application.artefacto.command.finder.ArtefactoPo
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.EstudianteArtefactoExisteFinder;
 import com.arquisoft.artefactos.application.estudianteartefacto.command.finder.model.ParticipacionEstudianteArtefacto;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionVigenteUltimaVersionFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoPorArtefactoFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.CuotaProyectoGradoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoMaximoArchivoFinder;
+import com.arquisoft.artefactos.application.versionartefacto.command.finder.TamanoVigenteProyectoGradoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.finder.UltimoNumeroVersionArtefactoFinder;
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.AlmacenamientoVersionOutputPort;
 import com.arquisoft.artefactos.application.versionartefacto.command.secondaryport.entity.SolicitudCargaEntity;
@@ -12,9 +15,11 @@ import com.arquisoft.artefactos.application.versionartefacto.command.secondarypo
 import com.arquisoft.artefactos.application.versionartefacto.command.validator.SolicitarCargaVersionArtefactoValidator;
 import com.arquisoft.artefactos.domain.artefacto.ArtefactoDomain;
 import com.arquisoft.artefactos.domain.artefacto.exception.EstudianteNoPropietarioArtefactoException;
+import com.arquisoft.artefactos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.RevisionAsesorDomain;
 import com.arquisoft.artefactos.domain.revisionasesor.model.EstadoRevisionAsesor;
 import com.arquisoft.artefactos.domain.versionartefacto.SolicitudCargaVersionArtefactoDomain;
+import com.arquisoft.artefactos.domain.versionartefacto.model.AlmacenamientoProyectoGrado;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.VersionArtefactoKey;
 import com.arquisoft.shared.util.UtilUUID;
@@ -47,6 +52,8 @@ import static org.mockito.Mockito.when;
 class SolicitarCargaVersionArtefactoUseCaseImplTest {
 
     private static final long MAXIMO = 5_242_880L;
+    private static final long CUOTA = 1_073_741_824L;
+    private static final long USO = 4096L;
 
     @Mock
     private ArtefactoPorIdFinder artefactoPorIdFinder;
@@ -59,6 +66,12 @@ class SolicitarCargaVersionArtefactoUseCaseImplTest {
     @Mock
     private RevisionVigenteUltimaVersionFinder revisionVigenteUltimaVersionFinder;
     @Mock
+    private ProyectoGradoPorArtefactoFinder proyectoGradoPorArtefactoFinder;
+    @Mock
+    private CuotaProyectoGradoFinder cuotaProyectoGradoFinder;
+    @Mock
+    private TamanoVigenteProyectoGradoFinder tamanoVigenteProyectoGradoFinder;
+    @Mock
     private SolicitarCargaVersionArtefactoValidator validator;
     @Mock
     private AlmacenamientoVersionOutputPort almacenamiento;
@@ -69,18 +82,21 @@ class SolicitarCargaVersionArtefactoUseCaseImplTest {
     private SolicitudCargaVersionArtefactoDomain solicitud;
     private ArtefactoDomain artefacto;
     private RevisionAsesorDomain revisionVigente;
+    private ProyectoGradoDomain proyectoGrado;
 
     @BeforeEach
     void setUp() {
         revisionVigente = RevisionAsesorDomain.reconstruir(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), EstadoRevisionAsesor.EN_PROGRESO, Instant.now());
         useCase = new SolicitarCargaVersionArtefactoUseCaseImpl(artefactoPorIdFinder,
-                estudianteArtefactoExisteFinder, tamanoMaximoArchivoFinder, ultimoNumeroVersionArtefactoFinder,
+                estudianteArtefactoExisteFinder, tamanoMaximoArchivoFinder, proyectoGradoPorArtefactoFinder,
+                cuotaProyectoGradoFinder, tamanoVigenteProyectoGradoFinder, ultimoNumeroVersionArtefactoFinder,
                 revisionVigenteUltimaVersionFinder, validator, almacenamiento, logger);
         solicitud = SolicitudCargaVersionArtefactoDomain.crear(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), "informe.pdf", "application/pdf", 2048L);
         artefacto = ArtefactoDomain.reconstruir(solicitud.getArtefacto(), UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), null);
+        proyectoGrado = ProyectoGradoDomain.reconstruir(artefacto.getProyectoGrado(), "Proyecto", null, null, null);
     }
 
     private void prepararFinders() {
@@ -89,6 +105,9 @@ class SolicitarCargaVersionArtefactoUseCaseImplTest {
                 new ParticipacionEstudianteArtefacto(solicitud.getSolicitante(), solicitud.getArtefacto())))
                 .thenReturn(true);
         when(tamanoMaximoArchivoFinder.obtener()).thenReturn(MAXIMO);
+        when(proyectoGradoPorArtefactoFinder.obtener(solicitud.getArtefacto())).thenReturn(proyectoGrado);
+        when(cuotaProyectoGradoFinder.obtener()).thenReturn(CUOTA);
+        when(tamanoVigenteProyectoGradoFinder.obtener(solicitud.getArtefacto())).thenReturn(USO);
         when(ultimoNumeroVersionArtefactoFinder.obtener(solicitud.getArtefacto())).thenReturn(2);
         when(revisionVigenteUltimaVersionFinder.obtener(solicitud.getArtefacto())).thenReturn(revisionVigente);
     }
@@ -112,7 +131,8 @@ class SolicitarCargaVersionArtefactoUseCaseImplTest {
         orden.verify(tamanoMaximoArchivoFinder).obtener();
         orden.verify(ultimoNumeroVersionArtefactoFinder).obtener(solicitud.getArtefacto());
         orden.verify(revisionVigenteUltimaVersionFinder).obtener(solicitud.getArtefacto());
-        orden.verify(validator).validar(solicitud, artefacto, true, MAXIMO, 2, revisionVigente);
+        orden.verify(validator).validar(solicitud, artefacto, true, MAXIMO, 2, revisionVigente,
+                new AlmacenamientoProyectoGrado(proyectoGrado, CUOTA, USO));
         var captor = ArgumentCaptor.forClass(SolicitudCargaEntity.class);
         orden.verify(almacenamiento).generarFormularioCarga(captor.capture());
         verify(artefactoPorIdFinder, times(1)).obtener(any());
@@ -120,6 +140,11 @@ class SolicitarCargaVersionArtefactoUseCaseImplTest {
         verify(tamanoMaximoArchivoFinder, times(1)).obtener();
         verify(ultimoNumeroVersionArtefactoFinder, times(1)).obtener(any());
         verify(revisionVigenteUltimaVersionFinder, times(1)).obtener(any());
+        verify(proyectoGradoPorArtefactoFinder, times(1)).obtener(any());
+        verify(cuotaProyectoGradoFinder, times(1)).obtener();
+        verify(tamanoVigenteProyectoGradoFinder, times(1)).obtener(any());
+        verify(logger).debug(VersionArtefactoKey.LOG_VERIFICACION_SOLICITAR_CARGA, true, true, 2,
+                EstadoRevisionAsesor.EN_PROGRESO.getId(), true, USO);
         assertThat(captor.getValue().carga()).isEqualTo(solicitud.getCarga());
         assertThat(captor.getValue().artefacto()).isEqualTo(solicitud.getArtefacto());
         assertThat(captor.getValue().nombreArchivo()).isEqualTo("informe.pdf");
@@ -135,7 +160,7 @@ class SolicitarCargaVersionArtefactoUseCaseImplTest {
         prepararFinders();
         doThrow(new EstudianteNoPropietarioArtefactoException(
                 solicitud.getSolicitante(), solicitud.getArtefacto()))
-                .when(validator).validar(any(), any(), anyBoolean(), anyLong(), anyInt(), any());
+                .when(validator).validar(any(), any(), anyBoolean(), anyLong(), anyInt(), any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(solicitud))

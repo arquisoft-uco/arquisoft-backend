@@ -6,9 +6,12 @@ import com.arquisoft.artefactos.application.observacion.command.secondaryport.Ob
 import com.arquisoft.artefactos.application.observacion.command.secondaryport.mapper.ObservacionMapper;
 import com.arquisoft.artefactos.application.observacion.command.usecase.RegistrarObservacionUseCase;
 import com.arquisoft.artefactos.application.observacion.command.validator.RegistrarObservacionValidator;
+import com.arquisoft.artefactos.application.proyectogrado.command.finder.ProyectoGradoBloqueadoPorRevisionAsesorFinder;
+import com.arquisoft.artefactos.application.proyectogrado.command.validator.ProyectoGradoNoCongeladoValidator;
 import com.arquisoft.artefactos.application.revisionasesor.command.finder.RevisionAsesorFinder;
 import com.arquisoft.artefactos.domain.observacion.RegistroObservacionDomain;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.artefactos.ProyectoGradoKey;
 import com.arquisoft.shared.message.key.artefactos.RegistrarObservacionKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,6 +27,8 @@ public class RegistrarObservacionUseCaseImpl implements RegistrarObservacionUseC
     private final ObservacionDescripcionExisteFinder observacionDescripcionExisteFinder;
     private final RegistrarObservacionValidator registrarObservacionValidator;
     private final ObservacionOutputPort observacionOutputPort;
+    private final ProyectoGradoBloqueadoPorRevisionAsesorFinder proyectoGradoBloqueadoPorRevisionAsesorFinder;
+    private final ProyectoGradoNoCongeladoValidator proyectoGradoNoCongeladoValidator;
     private final AppLogger logger;
 
     @Override
@@ -37,10 +42,14 @@ public class RegistrarObservacionUseCaseImpl implements RegistrarObservacionUseC
         var artefacto = artefactoPorRevisionAsesorFinder.obtener(revisionAsesor);
         var descripcionExiste = observacionDescripcionExisteFinder.obtener(observacion);
 
+        var proyecto = proyectoGradoBloqueadoPorRevisionAsesorFinder.obtener(revisionAsesor);
         logger.debug(RegistrarObservacionKey.LOG_VERIFICACION_REGISTRO,
                 !revision.esVacio(), !artefacto.esVacio(), descripcionExiste);
 
         registrarObservacionValidator.validar(registro, revision, artefacto, descripcionExiste);
+
+        logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CONGELAMIENTO, !proyecto.esVacio(), proyecto.estaCongelado());
+        proyectoGradoNoCongeladoValidator.validar(proyecto);
 
         observacionOutputPort.registrar(ObservacionMapper.toEntity(observacion));
 

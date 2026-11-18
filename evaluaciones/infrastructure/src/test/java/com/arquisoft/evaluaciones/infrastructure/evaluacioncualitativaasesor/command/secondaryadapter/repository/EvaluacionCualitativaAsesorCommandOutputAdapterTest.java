@@ -81,4 +81,119 @@ class EvaluacionCualitativaAsesorCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).containsExactly(itemRegistrado);
     }
+
+    @Test
+    void debeDetectarSoloElItemUsado_cuandoConsultaExistenciaPorItem() {
+        // Arrange
+        var itemUsado = UtilUUID.generarNuevoUUID();
+        var itemSinUso = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                        itemUsado, UtilUUID.generarNuevoUUID())));
+        repository.flush();
+
+        // Act
+        var usado = adapter.existePorItem(itemUsado);
+        var sinUso = adapter.existePorItem(itemSinUso);
+
+        // Assert
+        assertThat(usado).isTrue();
+        assertThat(sinUso).isFalse();
+    }
+
+    @Test
+    void debeEliminarSoloItemsDelLote_cuandoHayOtrosItems() {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var itemOmitido1 = UtilUUID.generarNuevoUUID();
+        var itemOmitido2 = UtilUUID.generarNuevoUUID();
+        var itemConservado = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        itemOmitido1, UtilUUID.generarNuevoUUID()),
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        itemOmitido2, UtilUUID.generarNuevoUUID()),
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        itemConservado, UtilUUID.generarNuevoUUID())));
+        repository.flush();
+
+        // Act
+        adapter.eliminarPorItems(evaluacionAsesor, Set.of(itemOmitido1, itemOmitido2));
+
+        // Assert
+        assertThat(repository.findAll()).extracting(e -> e.getItem()).containsExactly(itemConservado);
+        verify(logger).debug(any(ClaveMensaje.class), eq(2));
+    }
+
+    @Test
+    void debeObtenerPorId_cuandoExiste() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var item = UtilUUID.generarNuevoUUID();
+        var criterio = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, criterio)));
+        repository.flush();
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).contains(new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, criterio));
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoNoExiste() {
+        // Act
+        var resultado = adapter.obtenerPorId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeActualizarSoloElCriterio() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var item = UtilUUID.generarNuevoUUID();
+        var criterioNuevo = UtilUUID.generarNuevoUUID();
+        var otra = new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        adapter.registrarTodas(List.of(
+                new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, UtilUUID.generarNuevoUUID()),
+                otra));
+        repository.flush();
+
+        // Act
+        adapter.actualizar(new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, criterioNuevo));
+        repository.flush();
+
+        // Assert
+        assertThat(adapter.obtenerPorId(id)).contains(
+                new EvaluacionCualitativaAsesorEntity(id, evaluacionAsesor, item, criterioNuevo));
+        assertThat(adapter.obtenerPorId(otra.id())).contains(otra);
+        assertThat(repository.findAll()).hasSize(2);
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void noDebeTocarOtraEvaluacionAsesor_cuandoMismoItem() {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var otraEvaluacion = UtilUUID.generarNuevoUUID();
+        var item = UtilUUID.generarNuevoUUID();
+        adapter.registrarTodas(List.of(
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), evaluacionAsesor,
+                        item, UtilUUID.generarNuevoUUID()),
+                new EvaluacionCualitativaAsesorEntity(UtilUUID.generarNuevoUUID(), otraEvaluacion,
+                        item, UtilUUID.generarNuevoUUID())));
+        repository.flush();
+
+        // Act
+        adapter.eliminarPorItems(evaluacionAsesor, Set.of(item));
+
+        // Assert
+        assertThat(repository.findAll()).extracting(e -> e.getEvaluacionAsesor()).containsExactly(otraEvaluacion);
+    }
 }

@@ -7,5 +7,6 @@ public record EstadoProyectoGradoResponseDTO(
         UUID id,
         String estadoProyecto,
         String estadoProyectoNombre,
-        Instant fechaActualizacion
+        Instant fechaActualizacion,
+        String motivo
 ) {}

@@ -12,7 +12,7 @@ class ArtefactoEntregableResponseMapperTest {
     void debeMapearTodosLosCampos() {
         // Arrange
         var rm = new ArtefactoEntregableReadModel(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), "uri", UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), 3, "uri", UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                 "Doc", UtilUUID.generarNuevoUUID(), "Repo");
 
         // Act
@@ -22,6 +22,7 @@ class ArtefactoEntregableResponseMapperTest {
         assertThat(dto.id()).isEqualTo(rm.id());
         assertThat(dto.entregableProyectoGrado()).isEqualTo(rm.entregableProyectoGrado());
         assertThat(dto.versionArtefacto()).isEqualTo(rm.versionArtefacto());
+        assertThat(dto.numeroVersion()).isEqualTo(3);
         assertThat(dto.uriArchivo()).isEqualTo("uri");
         assertThat(dto.artefacto()).isEqualTo(rm.artefacto());
         assertThat(dto.versionRepositorioArtefacto()).isEqualTo(rm.versionRepositorioArtefacto());

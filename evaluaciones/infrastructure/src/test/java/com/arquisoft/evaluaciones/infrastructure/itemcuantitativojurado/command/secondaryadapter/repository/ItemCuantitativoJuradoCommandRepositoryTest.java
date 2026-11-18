@@ -1,15 +1,18 @@
 package com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.repository;
 
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.entity.ItemCuantitativoJuradoJpaEntity;
+import com.arquisoft.shared.util.UtilUUID;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 @DataJpaTest
 @TestPropertySource(properties = {
@@ -60,5 +63,33 @@ class ItemCuantitativoJuradoCommandRepositoryTest {
 
         // Assert
         assertThat(filasActualizadas).isZero();
+    }
+
+    @Test
+    void debeDevolverValorMaximoSoloDeLosIdsPedidos_cuandoBuscaValoresMaximosPorIds() {
+        // Arrange
+        var pedido = UtilUUID.generarNuevoUUID();
+        var noPedido = UtilUUID.generarNuevoUUID();
+        sembrarItem(pedido, 150);
+        sembrarItem(noPedido, 300);
+
+        // Act
+        var resultado = repository.findValoresMaximosByIdIn(Set.of(pedido, UtilUUID.generarNuevoUUID()));
+
+        // Assert
+        assertThat(resultado)
+                .extracting(proyeccion -> proyeccion.getId(), proyeccion -> proyeccion.getValor())
+                .containsExactly(tuple(pedido, 150));
+    }
+
+    private void sembrarItem(UUID id, int valor) {
+        repository.saveAndFlush(ItemCuantitativoJuradoJpaEntity.builder()
+                .id(id)
+                .nombre("Item " + id)
+                .descripcion("Descripción")
+                .categoriaId(UtilUUID.generarNuevoUUID())
+                .valor(valor)
+                .build());
+        entityManager.clear();
     }
 }

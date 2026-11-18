@@ -110,7 +110,6 @@ services:
     networks:
       - arquisoft-network
 
-
   # ==================== PLANTILLAS DE CORREO ====================
   # Las plantillas viven en Redis, no en el jar: cambiar el maquetado de un correo no cuesta un
   # build. Igual que el catálogo, el backend las lee al arrancar y no levanta si faltan, así que

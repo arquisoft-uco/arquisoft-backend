@@ -79,6 +79,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.revision-item-agregada", 1),
     CUERPO_REVISION_ITEM_AGREGADA(
             "notificaciones.aplicacion.plantilla.cuerpo.revision-item-agregada", 2),
+    ASUNTO_REVISION_ITEM_CORRECCIONES_ENVIADAS(
+            "notificaciones.aplicacion.plantilla.asunto.revision-item-correcciones-enviadas", 1),
+    CUERPO_REVISION_ITEM_CORRECCIONES_ENVIADAS(
+            "notificaciones.aplicacion.plantilla.cuerpo.revision-item-correcciones-enviadas", 2),
     ASUNTO_USUARIO_ESTADO_CAMBIADO(
             "notificaciones.aplicacion.plantilla.asunto.usuario-estado-cambiado", 1),
     CUERPO_USUARIO_ESTADO_CAMBIADO(
@@ -112,6 +116,18 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.asesor-proyecto-grado-finalizado", 1),
     CUERPO_ASESOR_PROYECTO_GRADO_FINALIZADO(
             "notificaciones.aplicacion.plantilla.cuerpo.asesor-proyecto-grado-finalizado", 2),
+    ASUNTO_PROYECTO_GRADO_FINALIZADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-finalizado-estudiante", 1),
+    CUERPO_PROYECTO_GRADO_FINALIZADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-finalizado-estudiante", 2),
+    ASUNTO_PROYECTO_GRADO_CANCELADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-cancelado-estudiante", 1),
+    CUERPO_PROYECTO_GRADO_CANCELADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-cancelado-estudiante", 3),
+    ASUNTO_PROYECTO_GRADO_CANCELADO_ASESOR(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-cancelado-asesor", 1),
+    CUERPO_PROYECTO_GRADO_CANCELADO_ASESOR(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-cancelado-asesor", 3),
     ASUNTO_ESTADO_FICHA_PERFIL_AGREGADO(
             "notificaciones.aplicacion.plantilla.asunto.estado-ficha-perfil-agregado", 2),
     CUERPO_ESTADO_FICHA_PERFIL_AGREGADO(

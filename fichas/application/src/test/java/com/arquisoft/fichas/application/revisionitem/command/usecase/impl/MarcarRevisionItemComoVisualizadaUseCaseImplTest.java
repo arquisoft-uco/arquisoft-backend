@@ -9,6 +9,7 @@ import com.arquisoft.fichas.domain.revisionitem.VisualizacionRevisionItemDomain;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemCerradaException;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemNoEncontradoException;
 import com.arquisoft.fichas.domain.revisionitem.model.PertenenciaRevisionItem;
+import com.arquisoft.fichas.domain.revisionitem.model.RevisionItemDeEstudiante;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +58,7 @@ class MarcarRevisionItemComoVisualizadaUseCaseImplTest {
     private UUID estudiante;
     private UUID fichaPerfil;
     private VisualizacionRevisionItemDomain entrada;
+    private RevisionItemDeEstudiante consulta;
 
     @BeforeEach
     void inicializar() {
@@ -64,12 +66,13 @@ class MarcarRevisionItemComoVisualizadaUseCaseImplTest {
         estudiante = UtilUUID.generarNuevoUUID();
         fichaPerfil = UtilUUID.generarNuevoUUID();
         entrada = VisualizacionRevisionItemDomain.crear(revisionItem, estudiante);
+        consulta = new RevisionItemDeEstudiante(revisionItem, estudiante);
     }
 
     @Test
     void debeActualizarAVisualizada_cuandoLaRevisionEstaNueva() {
         // Arrange
-        when(pertenenciaRevisionItemFinder.obtener(entrada))
+        when(pertenenciaRevisionItemFinder.obtener(consulta))
                 .thenReturn(new PertenenciaRevisionItem(fichaPerfil, true, EstadoRevision.NUEVA));
 
         // Act
@@ -78,7 +81,7 @@ class MarcarRevisionItemComoVisualizadaUseCaseImplTest {
         // Assert
         var orden = inOrder(pertenenciaRevisionItemFinder, marcarRevisionItemComoVisualizadaValidator,
                 revisionItemOutputPort);
-        orden.verify(pertenenciaRevisionItemFinder, times(1)).obtener(entrada);
+        orden.verify(pertenenciaRevisionItemFinder, times(1)).obtener(consulta);
         orden.verify(marcarRevisionItemComoVisualizadaValidator).validar(revisionItem, estudiante, fichaPerfil,
                 true, true, "NUEVA");
         orden.verify(revisionItemOutputPort).actualizarEstado(revisionItem, "NUEVA", "VISUALIZADA");
@@ -88,7 +91,7 @@ class MarcarRevisionItemComoVisualizadaUseCaseImplTest {
     @EnumSource(value = EstadoRevision.class, names = {"VISUALIZADA", "EN_PROGRESO", "CORRECCION_DISPONIBLE"})
     void noDebeActualizarNiLanzar_cuandoLaRevisionYaNoEstaNueva(EstadoRevision estado) {
         // Arrange
-        when(pertenenciaRevisionItemFinder.obtener(entrada))
+        when(pertenenciaRevisionItemFinder.obtener(consulta))
                 .thenReturn(new PertenenciaRevisionItem(fichaPerfil, true, estado));
 
         // Act & Assert
@@ -101,7 +104,7 @@ class MarcarRevisionItemComoVisualizadaUseCaseImplTest {
     @Test
     void debePropagarYNoActualizar_cuandoLaRevisionNoExiste() {
         // Arrange
-        when(pertenenciaRevisionItemFinder.obtener(entrada)).thenReturn(PertenenciaRevisionItem.VACIO);
+        when(pertenenciaRevisionItemFinder.obtener(consulta)).thenReturn(PertenenciaRevisionItem.VACIO);
         doThrow(new RevisionItemNoEncontradoException(revisionItem))
                 .when(marcarRevisionItemComoVisualizadaValidator)
                 .validar(eq(revisionItem), eq(estudiante), any(UUID.class), eq(false), eq(false), anyString());
@@ -115,7 +118,7 @@ class MarcarRevisionItemComoVisualizadaUseCaseImplTest {
     @Test
     void debePropagarYNoActualizar_cuandoElEstudianteNoEsPropietario() {
         // Arrange
-        when(pertenenciaRevisionItemFinder.obtener(entrada))
+        when(pertenenciaRevisionItemFinder.obtener(consulta))
                 .thenReturn(new PertenenciaRevisionItem(fichaPerfil, false, EstadoRevision.NUEVA));
         doThrow(new FichaNoPropietarioException(fichaPerfil, estudiante))
                 .when(marcarRevisionItemComoVisualizadaValidator)
@@ -130,7 +133,7 @@ class MarcarRevisionItemComoVisualizadaUseCaseImplTest {
     @Test
     void debePropagarYNoActualizar_cuandoLaRevisionEstaCerrada() {
         // Arrange
-        when(pertenenciaRevisionItemFinder.obtener(entrada))
+        when(pertenenciaRevisionItemFinder.obtener(consulta))
                 .thenReturn(new PertenenciaRevisionItem(fichaPerfil, true, EstadoRevision.CERRADA));
         doThrow(new RevisionItemCerradaException(revisionItem))
                 .when(marcarRevisionItemComoVisualizadaValidator)

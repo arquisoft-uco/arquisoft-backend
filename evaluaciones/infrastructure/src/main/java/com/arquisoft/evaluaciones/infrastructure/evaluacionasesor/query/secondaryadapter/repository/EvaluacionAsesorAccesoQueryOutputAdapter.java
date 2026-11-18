@@ -4,6 +4,7 @@ import com.arquisoft.evaluaciones.application.evaluacionasesor.query.secondarypo
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 public class EvaluacionAsesorAccesoQueryOutputAdapter implements EvaluacionAsesorAccesoQueryOutputPort {
 
     private final EvaluacionAsesorAccesoQueryRepository repository;
+    private final EstudianteEvaluacionAsesorAccesoQueryRepository estudianteRepository;
 
     @Override
     public Optional<UUID> obtenerAsesorPorId(UUID evaluacionAsesor) {
@@ -21,5 +23,12 @@ public class EvaluacionAsesorAccesoQueryOutputAdapter implements EvaluacionAseso
     @Override
     public Optional<UUID> obtenerPorEvaluacion(UUID evaluacion) {
         return repository.findByEvaluacionId(evaluacion).map(EvaluacionAsesorAccesoJpaQueryEntity::getId);
+    }
+
+    @Override
+    public List<UUID> obtenerEstudiantesVigentesPorId(UUID evaluacionAsesor) {
+        return estudianteRepository.findByEvaluacionAsesorId(evaluacionAsesor).stream()
+                .map(EstudianteEvaluacionAsesorAccesoJpaQueryEntity::getEstudianteId)
+                .toList();
     }
 }
