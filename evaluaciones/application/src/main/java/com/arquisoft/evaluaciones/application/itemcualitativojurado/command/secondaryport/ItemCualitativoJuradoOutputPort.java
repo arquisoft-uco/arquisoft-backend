@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.application.itemcualitativojurado.command.sec
 
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.secondaryport.entity.ItemCualitativoJuradoEntity;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public interface ItemCualitativoJuradoOutputPort {
 
     void actualizarDescripcion(UUID id, String descripcion);
 
-    void eliminar(UUID id);
+    void marcarEliminado(UUID id, Instant eliminadoEn);
 
     Set<UUID> consultarIdsExistentes(Set<UUID> ids);
 }

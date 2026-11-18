@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -57,28 +58,28 @@ class ItemCualitativoJuradoCommandOutputAdapterTest {
     void debeRetornarResultado_cuandoConsultaNombreIgnorandoMayusculas() {
         // Arrange
         String nombre = "claridad";
-        when(repository.existsByNombreIgnoreCase(nombre)).thenReturn(true);
+        when(repository.existsByNombreIgnoreCaseAndEliminadoEnIsNull(nombre)).thenReturn(true);
 
         // Act
         boolean resultado = adapter.existePorNombreIgnorandoMayusculas(nombre);
 
         // Assert
         assertThat(resultado).isTrue();
-        verify(repository).existsByNombreIgnoreCase(nombre);
+        verify(repository).existsByNombreIgnoreCaseAndEliminadoEnIsNull(nombre);
     }
 
     @Test
     void debeDelegarEnRepositorio_cuandoConsultaExistenciaPorId() {
         // Arrange
         UUID id = UUID.randomUUID();
-        when(repository.existsById(id)).thenReturn(true);
+        when(repository.existsByIdAndEliminadoEnIsNull(id)).thenReturn(true);
 
         // Act
         boolean resultado = adapter.existePorId(id);
 
         // Assert
         assertThat(resultado).isTrue();
-        verify(repository).existsById(id);
+        verify(repository).existsByIdAndEliminadoEnIsNull(id);
     }
 
     @Test
@@ -97,15 +98,16 @@ class ItemCualitativoJuradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeEliminarPorIdYRegistrarLog_cuandoEliminaItem() {
+    void debeMarcarEliminadoYRegistrarLog_cuandoEliminaItem() {
         // Arrange
         var id = UUID.randomUUID();
+        var eliminadoEn = Instant.now();
 
         // Act
-        adapter.eliminar(id);
+        adapter.marcarEliminado(id, eliminadoEn);
 
         // Assert
-        verify(repository).deleteById(id);
+        verify(repository).marcarEliminado(id, eliminadoEn);
         verify(logger).debug(ItemCualitativoJuradoKey.LOG_ELIMINADO, id);
     }
 

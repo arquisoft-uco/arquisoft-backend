@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,13 +63,13 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
     void debeDelegarConsultaDeNombreYCategoria() {
         // Arrange
         UUID categoria = UUID.randomUUID();
-        when(repository.existsByNombreIgnoreCaseAndCategoriaId("calidad", categoria))
+        when(repository.existsByNombreIgnoreCaseAndCategoriaIdAndEliminadoEnIsNull("calidad", categoria))
                 .thenReturn(true);
 
         // Act & Assert
         assertThat(adapter.existePorNombreYCategoriaIgnorandoMayusculas(
                 "calidad", categoria)).isTrue();
-        verify(repository).existsByNombreIgnoreCaseAndCategoriaId("calidad", categoria);
+        verify(repository).existsByNombreIgnoreCaseAndCategoriaIdAndEliminadoEnIsNull("calidad", categoria);
     }
 
     @Test
@@ -108,11 +109,11 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
     void debeDelegarConsultaDeExistenciaPorId() {
         // Arrange
         UUID id = UUID.randomUUID();
-        when(repository.existsById(id)).thenReturn(true);
+        when(repository.existsByIdAndEliminadoEnIsNull(id)).thenReturn(true);
 
         // Act & Assert
         assertThat(adapter.existePorId(id)).isTrue();
-        verify(repository).existsById(id);
+        verify(repository).existsByIdAndEliminadoEnIsNull(id);
     }
 
     @Test
@@ -132,12 +133,13 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
     void debeEliminarPorIdYLoguear_cuandoEliminaItem() {
         // Arrange
         var id = UUID.randomUUID();
+        var eliminadoEn = Instant.now();
 
         // Act
-        adapter.eliminar(id);
+        adapter.marcarEliminado(id, eliminadoEn);
 
         // Assert
-        verify(repository).deleteById(id);
+        verify(repository).marcarEliminado(id, eliminadoEn);
         verify(logger).debug(eq(ItemCuantitativoJuradoKey.LOG_ELIMINADO), eq(id));
     }
 

@@ -2,7 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.itemcualitativoasesor.command.
 
 import com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.primaryport.interactor.RemoverItemCualitativoAsesorInteractor;
 import com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.primaryport.model.RemoverItemCualitativoAsesorCommand;
-import com.arquisoft.evaluaciones.domain.itemcualitativoasesor.exception.ItemCualitativoAsesorEnUsoException;
 import com.arquisoft.evaluaciones.domain.itemcualitativoasesor.exception.ItemCualitativoAsesorNoEncontradoException;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -101,20 +100,6 @@ class RemoverItemCualitativoAsesorControllerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode")
                         .value(EvaluacionesCodes.ItemCualitativoAsesor.ITEM_NO_ENCONTRADO));
-    }
-
-    @Test
-    void debeRetornar422_cuandoItemEstaEnUso() throws Exception {
-        // Arrange
-        var itemId = UtilUUID.generarNuevoUUID();
-        doThrow(new ItemCualitativoAsesorEnUsoException(itemId))
-                .when(interactor).ejecutar(any());
-
-        // Act & Assert
-        mockMvc.perform(delete(RUTA, itemId).with(SecurityMockMvcRequestPostProcessors.jwt()))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.errorCode")
-                        .value(EvaluacionesCodes.ItemCualitativoAsesor.ITEM_EN_USO));
     }
 
     @Test

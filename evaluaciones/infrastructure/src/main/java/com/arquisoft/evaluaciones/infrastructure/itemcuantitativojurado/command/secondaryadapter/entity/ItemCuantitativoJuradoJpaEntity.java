@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -34,4 +35,7 @@ public class ItemCuantitativoJuradoJpaEntity {
 
     @Column(name = "valor", nullable = false)
     private Integer valor;
+
+    @Column(name = "eliminado_en")
+    private Instant eliminadoEn;
 }

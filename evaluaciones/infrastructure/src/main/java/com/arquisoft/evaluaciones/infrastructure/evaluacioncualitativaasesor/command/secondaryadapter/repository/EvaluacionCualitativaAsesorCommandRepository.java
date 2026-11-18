@@ -17,8 +17,6 @@ public interface EvaluacionCualitativaAsesorCommandRepository
     Set<UUID> findItemsRegistrados(
             @Param("evaluacionAsesor") UUID evaluacionAsesor, @Param("items") Set<UUID> items);
 
-    boolean existsByItem(UUID item);
-
     @Modifying(clearAutomatically = true)
     @Query("delete from EvaluacionCualitativaAsesorJpaEntity e "
             + "where e.evaluacionAsesor = :evaluacionAsesor and e.item in :items")

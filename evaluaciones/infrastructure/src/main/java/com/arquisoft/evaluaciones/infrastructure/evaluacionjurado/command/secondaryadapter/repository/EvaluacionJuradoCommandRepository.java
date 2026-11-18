@@ -25,11 +25,13 @@ public interface EvaluacionJuradoCommandRepository extends JpaRepository<Evaluac
     @NativeQuery("""
             SELECT CASE WHEN
                 NOT EXISTS (SELECT 1 FROM item_cualitativo_jurado ic
-                            WHERE NOT EXISTS (SELECT 1 FROM evaluacion_cualitativa_jurado ecj
+                            WHERE ic.eliminado_en IS NULL
+                              AND NOT EXISTS (SELECT 1 FROM evaluacion_cualitativa_jurado ecj
                                               WHERE ecj.evaluacion_jurado_id = :evaluacionJurado
                                                 AND ecj.item_id = ic.id))
                 AND NOT EXISTS (SELECT 1 FROM item_cuantitativo_jurado iq
-                                WHERE NOT EXISTS (SELECT 1 FROM evaluacion_cuantitativa_jurado eqj
+                                WHERE iq.eliminado_en IS NULL
+                                  AND NOT EXISTS (SELECT 1 FROM evaluacion_cuantitativa_jurado eqj
                                                   WHERE eqj.evaluacion_jurado_id = :evaluacionJurado
                                                     AND eqj.item_id = iq.id))
             THEN TRUE ELSE FALSE END

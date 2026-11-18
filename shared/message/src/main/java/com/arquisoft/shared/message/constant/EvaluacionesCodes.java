@@ -21,8 +21,6 @@ public final class EvaluacionesCodes {
                 "ITEM_CUALITATIVO_JURADO_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO =
                 "ITEM_CUALITATIVO_JURADO_NO_ENCONTRADO";
-        public static final String ITEM_EN_USO =
-                "ITEM_CUALITATIVO_JURADO_EN_USO";
     }
 
     public static final class ItemCualitativoAsesor {
@@ -37,7 +35,6 @@ public final class EvaluacionesCodes {
         public static final String NOMBRE_DUPLICADO = "ITEM_CUALITATIVO_ASESOR_NOMBRE_DUPLICADO";
         public static final String ITEM_ID_REQUERIDO = "ITEM_CUALITATIVO_ASESOR_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO = "ITEM_CUALITATIVO_ASESOR_NO_ENCONTRADO";
-        public static final String ITEM_EN_USO = "ITEM_CUALITATIVO_ASESOR_EN_USO";
     }
 
     public static final class ItemCuantitativoAsesor {
@@ -57,7 +54,6 @@ public final class EvaluacionesCodes {
                 "ITEM_CUANTITATIVO_ASESOR_NOMBRE_CATEGORIA_DUPLICADO";
         public static final String ITEM_ID_REQUERIDO = "ITEM_CUANTITATIVO_ASESOR_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO = "ITEM_CUANTITATIVO_ASESOR_NO_ENCONTRADO";
-        public static final String ITEM_EN_USO = "ITEM_CUANTITATIVO_ASESOR_EN_USO";
     }
 
     public static final class CriterioItemCualitativoJurado {
@@ -432,8 +428,6 @@ public final class EvaluacionesCodes {
                 "ITEM_CUANTITATIVO_JURADO_ID_REQUERIDO";
         public static final String ITEM_NO_ENCONTRADO =
                 "ITEM_CUANTITATIVO_JURADO_NO_ENCONTRADO";
-        public static final String ITEM_EN_USO =
-                "ITEM_CUANTITATIVO_JURADO_EN_USO";
     }
 
     public static final class ObservacionItemJurado {

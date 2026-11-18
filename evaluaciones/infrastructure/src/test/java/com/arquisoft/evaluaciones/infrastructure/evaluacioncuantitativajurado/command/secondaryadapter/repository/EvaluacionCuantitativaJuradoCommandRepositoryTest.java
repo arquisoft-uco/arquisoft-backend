@@ -20,43 +20,6 @@ class EvaluacionCuantitativaJuradoCommandRepositoryTest {
     @Autowired
     private EntityManager entityManager;
 
-    @Test
-    void debeRetornarTrue_cuandoItemTieneEvaluacionRegistrada() {
-        // Arrange
-        var item = UUID.randomUUID();
-        repository.saveAndFlush(EvaluacionCuantitativaJuradoJpaEntity.builder()
-                .id(UUID.randomUUID())
-                .evaluacionJuradoId(UUID.randomUUID())
-                .itemId(item)
-                .puntaje(300)
-                .build());
-        entityManager.clear();
-
-        // Act
-        var existe = repository.existsByItemId(item);
-
-        // Assert
-        assertThat(existe).isTrue();
-    }
-
-    @Test
-    void debeRetornarFalse_cuandoItemNoTieneEvaluaciones() {
-        // Arrange
-        repository.saveAndFlush(EvaluacionCuantitativaJuradoJpaEntity.builder()
-                .id(UUID.randomUUID())
-                .evaluacionJuradoId(UUID.randomUUID())
-                .itemId(UUID.randomUUID())
-                .puntaje(300)
-                .build());
-        entityManager.clear();
-
-        // Act
-        var existe = repository.existsByItemId(UUID.randomUUID());
-
-        // Assert
-        assertThat(existe).isFalse();
-    }
-
     private UUID sembrarEvaluacion(UUID evaluacionJurado) {
         var id = UUID.randomUUID();
         repository.saveAndFlush(EvaluacionCuantitativaJuradoJpaEntity.builder()

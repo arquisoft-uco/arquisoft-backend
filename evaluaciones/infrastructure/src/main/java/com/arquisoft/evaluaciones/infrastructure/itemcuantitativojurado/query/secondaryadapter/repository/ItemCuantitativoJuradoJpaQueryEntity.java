@@ -22,6 +22,7 @@ import java.util.UUID;
                i.categoria_id  AS categoria_id,
                i.valor         AS valor
         FROM item_cuantitativo_jurado i
+        WHERE i.eliminado_en IS NULL
         """)
 @Synchronize("item_cuantitativo_jurado")
 @Getter

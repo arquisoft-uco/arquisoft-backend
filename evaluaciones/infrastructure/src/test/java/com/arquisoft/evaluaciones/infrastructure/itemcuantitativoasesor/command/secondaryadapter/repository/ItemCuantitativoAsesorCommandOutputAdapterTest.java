@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -143,7 +144,7 @@ class ItemCuantitativoAsesorCommandOutputAdapterTest {
     }
 
     @Test
-    void debeEliminarSoloElItemIndicadoYLoguear_cuandoElimina() {
+    void debeMarcarEliminadoSoloElItemIndicadoYLoguear_cuandoElimina() {
         // Arrange
         var categoria = UtilUUID.generarNuevoUUID();
         var aEliminar = sembrar("Item a eliminar", categoria, 10);
@@ -152,13 +153,14 @@ class ItemCuantitativoAsesorCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        adapter.eliminar(aEliminar);
+        adapter.marcarEliminado(aEliminar, Instant.now());
         entityManager.flush();
         entityManager.clear();
 
         // Assert
-        assertThat(entityManager.find(ItemCuantitativoAsesorJpaEntity.class, aEliminar)).isNull();
-        assertThat(entityManager.find(ItemCuantitativoAsesorJpaEntity.class, conservado)).isNotNull();
+        assertThat(entityManager.find(ItemCuantitativoAsesorJpaEntity.class, aEliminar).getEliminadoEn()).isNotNull();
+        assertThat(adapter.existePorId(aEliminar)).isFalse();
+        assertThat(entityManager.find(ItemCuantitativoAsesorJpaEntity.class, conservado).getEliminadoEn()).isNull();
         verify(logger).debug(any(ClaveMensaje.class), eq(aEliminar));
     }
 

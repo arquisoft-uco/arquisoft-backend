@@ -17,8 +17,6 @@ public interface EvaluacionCualitativaJuradoCommandRepository
     Set<UUID> findItemsRegistrados(
             @Param("evaluacionJurado") UUID evaluacionJurado, @Param("items") Set<UUID> items);
 
-    boolean existsByItem(UUID item);
-
     @Query("select e.id from EvaluacionCualitativaJuradoJpaEntity e "
             + "where e.evaluacionJurado = :evaluacionJurado and e.id in :evaluaciones")
     Set<UUID> findIdsPorEvaluacionJurado(

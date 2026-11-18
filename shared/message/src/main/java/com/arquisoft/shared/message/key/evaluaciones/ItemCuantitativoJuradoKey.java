@@ -16,10 +16,6 @@ public enum ItemCuantitativoJuradoKey implements ClaveMensaje {
             "evaluaciones.dominio.itemcuantitativojurado.error.no-encontrado", 0),
     ERROR_NO_ENCONTRADO_DETALLE(
             "evaluaciones.dominio.itemcuantitativojurado.error.no-encontrado-detalle", 1),
-    ERROR_EN_USO(
-            "evaluaciones.dominio.itemcuantitativojurado.error.en-uso", 0),
-    ERROR_EN_USO_DETALLE(
-            "evaluaciones.dominio.itemcuantitativojurado.error.en-uso-detalle", 1),
     LOG_REGISTRANDO("evaluaciones.aplicacion.itemcuantitativojurado.log.registrando", 2),
     LOG_VERIFICACION_REGISTRAR(
             "evaluaciones.aplicacion.itemcuantitativojurado.log.verificacion-registrar", 2),
@@ -30,7 +26,7 @@ public enum ItemCuantitativoJuradoKey implements ClaveMensaje {
     LOG_MODIFICADO("evaluaciones.aplicacion.itemcuantitativojurado.log.modificado", 1),
     LOG_REMOVIENDO("evaluaciones.aplicacion.itemcuantitativojurado.log.removiendo", 1),
     LOG_VERIFICACION_REMOVER(
-            "evaluaciones.aplicacion.itemcuantitativojurado.log.verificacion-remover", 2),
+            "evaluaciones.aplicacion.itemcuantitativojurado.log.verificacion-remover", 1),
     LOG_REMOVIDO("evaluaciones.aplicacion.itemcuantitativojurado.log.removido", 1),
     LOG_GUARDADO("evaluaciones.infraestructura.itemcuantitativojurado.log.guardado", 1),
     LOG_DESCRIPCION_ACTUALIZADA(

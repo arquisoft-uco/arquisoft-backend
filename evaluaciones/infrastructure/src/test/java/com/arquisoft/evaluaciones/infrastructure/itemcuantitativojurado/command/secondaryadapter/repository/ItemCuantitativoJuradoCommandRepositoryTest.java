@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -91,5 +92,50 @@ class ItemCuantitativoJuradoCommandRepositoryTest {
                 .valor(valor)
                 .build());
         entityManager.clear();
+    }
+
+    @Test
+    void debeMarcarEliminadoYExcluirDeVigentes_cuandoSeMarcaEliminadoEnElItem() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var eliminadoEn = Instant.parse("2026-11-18T10:15:30Z");
+        repository.saveAndFlush(ItemCuantitativoJuradoJpaEntity.builder()
+                .id(id)
+                .nombre("Claridad")
+                .descripcion("Descripción")
+                .categoriaId(UUID.randomUUID())
+                .valor(100)
+                .build());
+        entityManager.clear();
+
+        // Act
+        var filasActualizadas = repository.marcarEliminado(id, eliminadoEn);
+        entityManager.clear();
+
+        // Assert
+        assertThat(filasActualizadas).isEqualTo(1);
+        assertThat(repository.findById(id))
+                .hasValueSatisfying(persistida -> assertThat(persistida.getEliminadoEn()).isEqualTo(eliminadoEn));
+        assertThat(repository.existsByIdAndEliminadoEnIsNull(id)).isFalse();
+    }
+
+    @Test
+    void debeRetornarTrue_cuandoItemNoHaSidoEliminado() {
+        // Arrange
+        var id = UUID.randomUUID();
+        repository.saveAndFlush(ItemCuantitativoJuradoJpaEntity.builder()
+                .id(id)
+                .nombre("Claridad")
+                .descripcion("Descripción")
+                .categoriaId(UUID.randomUUID())
+                .valor(100)
+                .build());
+        entityManager.clear();
+
+        // Act
+        var existe = repository.existsByIdAndEliminadoEnIsNull(id);
+
+        // Assert
+        assertThat(existe).isTrue();
     }
 }

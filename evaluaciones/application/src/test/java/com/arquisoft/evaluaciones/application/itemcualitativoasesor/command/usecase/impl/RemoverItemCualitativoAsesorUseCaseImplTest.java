@@ -1,6 +1,5 @@
 package com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.usecase.impl;
 
-import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.finder.EvaluacionCualitativaAsesorPorItemExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.finder.ItemCualitativoAsesorExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.secondaryport.ItemCualitativoAsesorOutputPort;
 import com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.validator.RemoverItemCualitativoAsesorValidator;
@@ -8,20 +7,21 @@ import com.arquisoft.evaluaciones.domain.itemcualitativoasesor.RemocionItemCuali
 import com.arquisoft.evaluaciones.domain.itemcualitativoasesor.exception.ItemCualitativoAsesorNoEncontradoException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoAsesorKey;
-import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,9 +35,6 @@ class RemoverItemCualitativoAsesorUseCaseImplTest {
     private ItemCualitativoAsesorExisteFinder itemExisteFinder;
 
     @Mock
-    private EvaluacionCualitativaAsesorPorItemExisteFinder evaluacionPorItemExisteFinder;
-
-    @Mock
     private RemoverItemCualitativoAsesorValidator validator;
 
     @Mock
@@ -47,42 +44,50 @@ class RemoverItemCualitativoAsesorUseCaseImplTest {
     private RemoverItemCualitativoAsesorUseCaseImpl useCase;
 
     @Test
-    void debeEliminar_cuandoItemExisteYNoEstaEnUso() {
+    void debeMarcarEliminado_cuandoItemExiste() {
         // Arrange
-        var item = UtilUUID.generarNuevoUUID();
-        var remocion = RemocionItemCualitativoAsesorDomain.crear(item);
-        when(itemExisteFinder.obtener(item)).thenReturn(true);
-        when(evaluacionPorItemExisteFinder.obtener(item)).thenReturn(false);
+        var itemCualitativoAsesor = UUID.randomUUID();
+        var remocion = RemocionItemCualitativoAsesorDomain.crear(itemCualitativoAsesor);
+        when(itemExisteFinder.obtener(itemCualitativoAsesor)).thenReturn(true);
 
         // Act
         useCase.ejecutar(remocion);
 
         // Assert
-        var orden = inOrder(logger, itemExisteFinder, evaluacionPorItemExisteFinder, validator, outputPort);
-        orden.verify(logger).info(ItemCualitativoAsesorKey.LOG_REMOVIENDO, item);
-        orden.verify(itemExisteFinder).obtener(item);
-        orden.verify(evaluacionPorItemExisteFinder).obtener(item);
-        orden.verify(logger).debug(ItemCualitativoAsesorKey.LOG_VERIFICACION_REMOVER, true, false);
-        orden.verify(validator).validar(item, true, false);
-        orden.verify(outputPort).eliminar(item);
-        orden.verify(logger).info(ItemCualitativoAsesorKey.LOG_REMOVIDO, item);
-        verify(itemExisteFinder, times(1)).obtener(item);
-        verify(evaluacionPorItemExisteFinder, times(1)).obtener(item);
+        var orden = inOrder(logger, itemExisteFinder, validator, outputPort);
+        orden.verify(logger).info(ItemCualitativoAsesorKey.LOG_REMOVIENDO, itemCualitativoAsesor);
+        orden.verify(itemExisteFinder).obtener(itemCualitativoAsesor);
+        orden.verify(logger).debug(ItemCualitativoAsesorKey.LOG_VERIFICACION_REMOVER, true);
+        orden.verify(validator).validar(itemCualitativoAsesor, true);
+        orden.verify(outputPort).marcarEliminado(itemCualitativoAsesor, remocion.getEliminadoEn());
+        orden.verify(logger).info(ItemCualitativoAsesorKey.LOG_REMOVIDO, itemCualitativoAsesor);
     }
 
     @Test
-    void debeNoEliminar_cuandoElValidatorRechaza() {
+    void debeRegistrarFechaDeEliminacion_cuandoSeCreaLaRemocion() {
         // Arrange
-        var item = UtilUUID.generarNuevoUUID();
-        var remocion = RemocionItemCualitativoAsesorDomain.crear(item);
-        when(itemExisteFinder.obtener(item)).thenReturn(false);
-        when(evaluacionPorItemExisteFinder.obtener(item)).thenReturn(false);
-        doThrow(new ItemCualitativoAsesorNoEncontradoException(item)).when(validator).validar(item, false, false);
+        var antes = Instant.now();
+
+        // Act
+        var remocion = RemocionItemCualitativoAsesorDomain.crear(UUID.randomUUID());
+
+        // Assert
+        assertThat(remocion.getEliminadoEn()).isBetween(antes, Instant.now());
+    }
+
+    @Test
+    void debeNoMarcarEliminado_cuandoValidatorLanza() {
+        // Arrange
+        var itemCualitativoAsesor = UUID.randomUUID();
+        var remocion = RemocionItemCualitativoAsesorDomain.crear(itemCualitativoAsesor);
+        when(itemExisteFinder.obtener(itemCualitativoAsesor)).thenReturn(false);
+        doThrow(new ItemCualitativoAsesorNoEncontradoException(itemCualitativoAsesor))
+                .when(validator).validar(itemCualitativoAsesor, false);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(remocion))
                 .isInstanceOf(ItemCualitativoAsesorNoEncontradoException.class);
-        verify(outputPort, never()).eliminar(any());
-        verify(logger, never()).info(eq(ItemCualitativoAsesorKey.LOG_REMOVIDO), eq(item));
+        verify(outputPort, never()).marcarEliminado(any(), any());
+        verify(logger, never()).info(ItemCualitativoAsesorKey.LOG_REMOVIDO, itemCualitativoAsesor);
     }
 }

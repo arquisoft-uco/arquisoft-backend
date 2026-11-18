@@ -43,11 +43,6 @@ public class EvaluacionCuantitativaAsesorCommandOutputAdapter implements Evaluac
     }
 
     @Override
-    public boolean existePorItem(UUID item) {
-        return repository.existsByItem(item);
-    }
-
-    @Override
     public Optional<ContextoEvaluacionCuantitativaAsesorEntity> obtenerContexto(UUID evaluacionCuantitativaAsesor) {
         return repository.buscarContexto(evaluacionCuantitativaAsesor)
                 .map(ContextoEvaluacionCuantitativaAsesorJpaMapper::toEntity);

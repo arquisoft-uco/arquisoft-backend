@@ -1,6 +1,5 @@
 package com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.usecase.impl;
 
-import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.finder.EvaluacionCualitativaAsesorPorItemExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.finder.ItemCualitativoAsesorExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.secondaryport.ItemCualitativoAsesorOutputPort;
 import com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.usecase.RemoverItemCualitativoAsesorUseCase;
@@ -18,7 +17,6 @@ public class RemoverItemCualitativoAsesorUseCaseImpl
 
     private final ItemCualitativoAsesorOutputPort itemCualitativoAsesorOutputPort;
     private final ItemCualitativoAsesorExisteFinder itemCualitativoAsesorExisteFinder;
-    private final EvaluacionCualitativaAsesorPorItemExisteFinder evaluacionCualitativaAsesorPorItemExisteFinder;
     private final RemoverItemCualitativoAsesorValidator removerItemCualitativoAsesorValidator;
     private final AppLogger logger;
 
@@ -30,14 +28,13 @@ public class RemoverItemCualitativoAsesorUseCaseImpl
 
         var existe = itemCualitativoAsesorExisteFinder.obtener(
                 remocion.getItemCualitativoAsesor());
-        var enUso = evaluacionCualitativaAsesorPorItemExisteFinder.obtener(
-                remocion.getItemCualitativoAsesor());
 
-        logger.debug(ItemCualitativoAsesorKey.LOG_VERIFICACION_REMOVER, existe, enUso);
+        logger.debug(ItemCualitativoAsesorKey.LOG_VERIFICACION_REMOVER, existe);
         removerItemCualitativoAsesorValidator.validar(
-                remocion.getItemCualitativoAsesor(), existe, enUso);
+                remocion.getItemCualitativoAsesor(), existe);
 
-        itemCualitativoAsesorOutputPort.eliminar(remocion.getItemCualitativoAsesor());
+        itemCualitativoAsesorOutputPort.marcarEliminado(
+                remocion.getItemCualitativoAsesor(), remocion.getEliminadoEn());
 
         logger.info(
                 ItemCualitativoAsesorKey.LOG_REMOVIDO,

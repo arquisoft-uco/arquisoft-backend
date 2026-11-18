@@ -111,28 +111,6 @@ class EvaluacionCuantitativaJuradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeDelegarExistePorItemEnRepositorio_cuandoConsultaExistencia() {
-        // Arrange
-        var item = UUID.randomUUID();
-        entityManager.persist(EvaluacionCuantitativaJuradoJpaEntity.builder()
-                .id(UUID.randomUUID())
-                .evaluacionJuradoId(UUID.randomUUID())
-                .itemId(item)
-                .puntaje(300)
-                .build());
-        entityManager.flush();
-        entityManager.clear();
-
-        // Act
-        var existe = adapter.existePorItem(item);
-        var noExiste = adapter.existePorItem(UUID.randomUUID());
-
-        // Assert
-        assertThat(existe).isTrue();
-        assertThat(noExiste).isFalse();
-    }
-
-    @Test
     void debeDelegarConsultaDeIdsEnRepositorio_cuandoConsultaIdsPorEvaluacionJurado() {
         // Arrange
         var evaluacionJurado = UUID.randomUUID();

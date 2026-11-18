@@ -1,6 +1,5 @@
 package com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.usecase.impl;
 
-import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.finder.EvaluacionCuantitativaAsesorPorItemExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.finder.ItemCuantitativoAsesorExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.secondaryport.ItemCuantitativoAsesorOutputPort;
 import com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.usecase.RemoverItemCuantitativoAsesorUseCase;
@@ -18,7 +17,6 @@ public class RemoverItemCuantitativoAsesorUseCaseImpl
 
     private final ItemCuantitativoAsesorOutputPort itemCuantitativoAsesorOutputPort;
     private final ItemCuantitativoAsesorExisteFinder itemCuantitativoAsesorExisteFinder;
-    private final EvaluacionCuantitativaAsesorPorItemExisteFinder evaluacionCuantitativaAsesorPorItemExisteFinder;
     private final RemoverItemCuantitativoAsesorValidator removerItemCuantitativoAsesorValidator;
     private final AppLogger logger;
 
@@ -30,14 +28,13 @@ public class RemoverItemCuantitativoAsesorUseCaseImpl
 
         var existe = itemCuantitativoAsesorExisteFinder.obtener(
                 remocion.getItemCuantitativoAsesor());
-        var enUso = evaluacionCuantitativaAsesorPorItemExisteFinder.obtener(
-                remocion.getItemCuantitativoAsesor());
 
-        logger.debug(ItemCuantitativoAsesorKey.LOG_VERIFICACION_REMOVER, existe, enUso);
+        logger.debug(ItemCuantitativoAsesorKey.LOG_VERIFICACION_REMOVER, existe);
         removerItemCuantitativoAsesorValidator.validar(
-                remocion.getItemCuantitativoAsesor(), existe, enUso);
+                remocion.getItemCuantitativoAsesor(), existe);
 
-        itemCuantitativoAsesorOutputPort.eliminar(remocion.getItemCuantitativoAsesor());
+        itemCuantitativoAsesorOutputPort.marcarEliminado(
+                remocion.getItemCuantitativoAsesor(), remocion.getEliminadoEn());
 
         logger.info(
                 ItemCuantitativoAsesorKey.LOG_REMOVIDO,
