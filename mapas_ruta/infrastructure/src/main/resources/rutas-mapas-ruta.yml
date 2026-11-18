@@ -7,7 +7,7 @@ rutas:
   mapas-ruta:
     mapas-ruta:
       base: /mapas-ruta
-      estudiante: /estudiante
+      proyecto-estudiante: /proyectos-grado/{proyectoGradoId}/estudiante
       coordinador: /coordinador
       proyecto-asesor: /proyectos-grado/{proyectoGradoId}/asesor
       fecha-fin: /{id}/fecha-fin
