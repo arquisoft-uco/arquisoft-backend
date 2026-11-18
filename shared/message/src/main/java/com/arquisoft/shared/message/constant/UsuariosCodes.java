@@ -16,6 +16,7 @@ public final class UsuariosCodes {
         public static final String MODIFICACION_VACIA = "USUARIO_MODIFICACION_VACIA";
         public static final String NO_ENCONTRADO = "USUARIO_NO_ENCONTRADO";
         public static final String ELIMINADO = "USUARIO_ELIMINADO";
+        public static final String PERFIL_NO_DISPONIBLE = "USUARIO_PERFIL_NO_DISPONIBLE";
         public static final String ROLES_VIGENTES = "USUARIO_ROLES_VIGENTES";
         public static final String ESTADO_REQUERIDO = "USUARIO_ESTADO_REQUERIDO";
         public static final String ESTADO_INVALIDO = "USUARIO_ESTADO_INVALIDO";

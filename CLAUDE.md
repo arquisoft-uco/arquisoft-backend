@@ -301,8 +301,9 @@ el enunciado, para reconocer una desviación de un vistazo.
   (`CompletitudEquivalenciasAutorizacionTest` lo exige), y ese client role en
   `keycloak/realm-arquisoft.json`: creado en `arquisoft-api` y como composite directo de cada realm role
   que lo usa — si falta, el endpoint responde 403 a todos y el build no lo detecta. Un client role por
-  controlador. El controlador recibe `IdentidadActual` (`shared:web`), nunca `Jwt` ni
-  `@AuthenticationPrincipal`.
+  controlador. Excepción: un endpoint que solo exige autenticación va en `authenticated-only` del mismo
+  archivo, sin client role (ver `arquisoft-arquitectura`). El controlador recibe `IdentidadActual`
+  (`shared:web`), nunca `Jwt` ni `@AuthenticationPrincipal`.
 
 **Eventos**
 - El `UseCase` inyecta la **interfaz** `EventPublisher` y publica tras persistir. El agregado es una

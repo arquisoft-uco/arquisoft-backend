@@ -20,7 +20,7 @@ push a develop
    ├─► docker-build.yml  (publica ghcr.io/<repo>:develop  y  :sha-<short>)
    │
    └─► deploy.yml ──SSH──► servidor:
-                              1. escribe $HOME/arquisoft/.env  (desde secreto ENV_FILE)
+                              1. escribe $HOME/arquisoft/.env  (descargado de Doppler)
                               2. espera y hace `docker pull` de :sha-<short>
                               3. reemplaza el contenedor, unido a la red arquisoft-network
                               4. le pone labels de Traefik → expone api.<BASE_DOMAIN> (443/TLS)
@@ -58,7 +58,6 @@ para el health check local; el tráfico externo entra por **Traefik** (HTTPS/443
 | `SSH_USER` | ✅ | Usuario **del SO** en el servidor (el de `ssh USUARIO@host`), en el grupo `docker`. |
 | `SSH_PORT` | ✅ | Puerto SSH (`22`). Si hay NAT, el puerto **redirigido** en el router. |
 | `SSH_PRIVATE_KEY` | ✅ | Clave **privada** OpenSSH completa (multilínea, con cabecera/pie `-----BEGIN/END ...-----`, sin passphrase). |
-| `ENV_FILE` | ✅ | Contenido **completo** del `.env` de runtime (pegar tal cual, ver §3). |
 | `BASE_DOMAIN` | ✅ | Dominio **base** (p. ej. `midominio.com`). El backend se expone en `api.<BASE_DOMAIN>`; el subdominio `api` es fijo en el workflow. |
 | `DOCKER_NETWORK` | ⛔ opcional | Red Docker de la infra. Default: `arquisoft-network`. |
 | `GHCR_USERNAME` | ⛔ opcional | Solo si el paquete GHCR es **privado**: tu usuario de GitHub. |
@@ -69,10 +68,33 @@ para el health check local; el tráfico externo entra por **Traefik** (HTTPS/443
 
 ---
 
-## 3. Preparar el secreto `ENV_FILE`
+## 3. Variables de runtime en Doppler
 
-Es el `.env` que la app usa **dentro del contenedor**. Parte de `.env.example` y
-ajusta los valores para el servidor.
+Es el `.env` que la app usa **dentro del contenedor**. Vive en **Doppler**
+(workplace `arquisoft`, proyecto `arquisoft-backend`, config `test`), **no en
+GitHub**: en cada despliegue el servidor lo descarga con su propio token de solo
+lectura. Parte de `.env.example` y ajusta los valores para el servidor.
+
+**Preparación (una vez):**
+
+```bash
+# En tu equipo (doppler login hecho): proyecto y token de solo lectura del servidor
+doppler projects create arquisoft-backend
+doppler environments create "Test" test --project arquisoft-backend
+doppler configs tokens create servidor-oracle --project arquisoft-backend \
+  --config test --plain | clip            # al portapapeles, no a la pantalla
+
+# En el servidor, como el usuario de SSH_USER (el CLI se instala una vez por servidor)
+mkdir -p ~/arquisoft
+read -rs -p "Token: " T; echo
+doppler configure set token "$T" --scope ~/arquisoft; unset T
+cd ~/arquisoft && doppler secrets --only-names   # debe listar las variables
+```
+
+> **Credenciales compartidas con la infra** (BD, RabbitMQ, Redis, MinIO, cliente de
+> Keycloak): son copias de las de `arquisoft-infra/test`. El plan gratuito de
+> Doppler no permite referencias entre proyectos; si se rota una en infra, hay que
+> actualizarla también aquí.
 
 > ⚠️ **Regla de oro (dentro de un contenedor `localhost` es el propio
 > contenedor, no el host).** Como los servicios de infra corren como contenedores
@@ -112,9 +134,11 @@ MINIO_ENDPOINT=https://s3.midominio.com
 > `DB_ARTEFACTOS_*`, `DB_REPO_ARTEFACTOS_*`, `DB_ENTREGABLES_*`, `DB_EVALUACIONES_*`
 > (una BD por contexto). Respeta esos nombres exactos.
 
-El workflow escribe el archivo en `$HOME/arquisoft/.env` (permisos `600`) y lo
-inyecta con `docker run --env-file`. **Para rotar configuración:** edita el secreto
-`ENV_FILE` y vuelve a desplegar (push a `develop` o disparo manual).
+El workflow descarga los secretos (`--format docker`, sin comillas), los escribe en
+`$HOME/arquisoft/.env` (permisos `600`) y los inyecta con `docker run --env-file`.
+Si Doppler no responde, el despliegue se aborta **antes** de reemplazar el
+contenedor. **Para rotar configuración:** edita la variable en Doppler y vuelve a
+desplegar (push a `develop` o disparo manual).
 
 ---
 
@@ -165,7 +189,7 @@ El workflow no tiene nada "hardcodeado" del entorno: todo viene de secretos.
 2. En `Settings → Secrets and variables → Actions`, **actualiza**:
    - `SSH_HOST`, `SSH_USER`, `SSH_PORT`, `SSH_PRIVATE_KEY` → del nuevo servidor.
    - `BASE_DOMAIN` → el nuevo dominio base (el backend quedará en `api.<nuevo>`).
-   - `ENV_FILE` → hosts/credenciales de la infra del nuevo servidor.
+   - En Doppler (`arquisoft-backend`): hosts/credenciales de la infra del nuevo servidor, y configura su token en el servidor (§3).
    - `DOCKER_NETWORK` → solo si la red no se llama `arquisoft-network`.
 3. Vuelve a desplegar: push a `develop`, o **Actions → CD Deploy (SSH) → Run workflow**.
 
@@ -200,7 +224,7 @@ se activa temporalmente el `push` de esa rama en `deploy.yml`:
 5. **Antes de fusionar**, revierte el trigger a `branches: [develop]`.
 
 > ⚠️ Probar desde la feature despliega al **mismo servidor** de los secretos. Si no
-> quieres tocar producción, apunta `SSH_HOST`/`ENV_FILE`/`BASE_DOMAIN` a un entorno
+> quieres tocar producción, apunta `SSH_HOST`/`BASE_DOMAIN` (y el token de Doppler del servidor) a un entorno
 > de pruebas mientras validas.
 
 ---
@@ -227,11 +251,11 @@ curl -fsS https://api.<BASE_DOMAIN>/api/actuator/health
 | `dial tcp: lookup *** ... i/o timeout` | `SSH_HOST` es un hostname que no resuelve, o IP dinámica cambió | Usa un dominio válido y limpio (sin esquema ni puerto) en `SSH_HOST` |
 | `mkdir: cannot create directory ... Permission denied` | Ruta fuera del `$HOME` del usuario | Ya se usa `$HOME/arquisoft`; revisa que `SSH_USER` sea el correcto |
 | `Connection to localhost:5432 refused` | Un `DB_*_URL`/host apunta a `localhost` | Usa el **nombre de contenedor** (`arquisoft-postgres`, etc.), §3 |
-| `password authentication failed` | Credenciales del `ENV_FILE` no coinciden con la infra | Usa las credenciales reales del stack de infra |
-| Falta `DB_USUARIOS_*` y va a `localhost` | Nombre de variable incorrecto en `ENV_FILE` | Respeta los nombres exactos por contexto (§3) |
+| `password authentication failed` | Credenciales en Doppler no coinciden con la infra | Usa las credenciales reales del stack de infra |
+| Falta `DB_USUARIOS_*` y va a `localhost` | Nombre de variable incorrecto en Doppler | Respeta los nombres exactos por contexto (§3) |
 | `La imagen ... no se publicó a tiempo` | `docker-build.yml` falló o tardó | Revisa ese workflow; el deploy reintenta 30×10s (~5 min) |
 | `denied / unauthorized` al `docker pull` | Paquete GHCR privado sin credenciales | Define `GHCR_USERNAME` + `GHCR_TOKEN`, o haz público el paquete |
-| Health check falla | Alguna dependencia inalcanzable desde el contenedor | Revisa hosts/credenciales en `ENV_FILE`; mira `docker logs` |
+| Health check falla | Alguna dependencia inalcanzable desde el contenedor | Revisa hosts/credenciales en Doppler; mira `docker logs` |
 | HTTPS público sirve `TRAEFIK DEFAULT CERT` | Let's Encrypt no emitió el cert (con DuckDNS, timeout de CAA intermitente) | Reintenta (`docker restart` de Traefik) o usa DNS-01 challenge |
 
 ---
