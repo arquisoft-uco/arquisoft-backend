@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         ConsultarMapaRutaEstudianteControllerTest.TestSecurityConfig.class})
 class ConsultarMapaRutaEstudianteControllerTest {
 
-    private static final String RUTA = "/mapas-ruta/estudiante";
+    private static final String RUTA = "/mapas-ruta/proyectos-grado/{proyectoGradoId}/estudiante";
 
     @TestConfiguration
     @EnableWebSecurity
@@ -65,15 +65,14 @@ class ConsultarMapaRutaEstudianteControllerTest {
     @MockitoBean
     private ConsultarMapaRutaEstudianteInteractor interactor;
 
-    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtEstudiante(String subject) {
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtEstudiante() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(subject));
+                .jwt(jwt -> jwt.subject(UtilUUID.generarNuevoUUID().toString()));
     }
 
     @Test
-    void debeRetornar200ConElDto_cuandoElEstudianteTieneMapa() throws Exception {
+    void debeRetornar200ConElDto_cuandoElProyectoTieneMapa() throws Exception {
         // Arrange
-        var estudiante = UtilUUID.generarNuevoUUID();
         var idMapa = UtilUUID.generarNuevoUUID();
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var readModel = new MapaRutaEstudianteReadModel(idMapa, proyectoGrado, "Sistema de gestion",
@@ -81,7 +80,7 @@ class ConsultarMapaRutaEstudianteControllerTest {
         when(interactor.ejecutar(any())).thenReturn(Optional.of(readModel));
 
         // Act
-        mockMvc.perform(get(RUTA).with(jwtEstudiante(estudiante.toString())))
+        mockMvc.perform(get(RUTA, proyectoGrado).with(jwtEstudiante()))
                 // Assert
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(idMapa.toString()))
@@ -91,7 +90,7 @@ class ConsultarMapaRutaEstudianteControllerTest {
                 .andExpect(jsonPath("$.fechaFin").value("2026-12-01"));
         var captor = ArgumentCaptor.forClass(ConsultarMapaRutaEstudianteQuery.class);
         verify(interactor).ejecutar(captor.capture());
-        assertThat(captor.getValue().estudiante()).isEqualTo(estudiante);
+        assertThat(captor.getValue().proyectoGrado()).isEqualTo(proyectoGrado);
     }
 
     @Test
@@ -100,23 +99,23 @@ class ConsultarMapaRutaEstudianteControllerTest {
         when(interactor.ejecutar(any())).thenReturn(Optional.empty());
 
         // Act & Assert
-        mockMvc.perform(get(RUTA).with(jwtEstudiante(UtilUUID.generarNuevoUUID().toString())))
+        mockMvc.perform(get(RUTA, UtilUUID.generarNuevoUUID()).with(jwtEstudiante()))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(""));
     }
 
     @Test
-    void debeRetornar401SinInvocarElInteractor_cuandoElSubNoEsUuid() throws Exception {
+    void debeRetornar400SinInvocarElInteractor_cuandoElProyectoGradoEstaMalFormado() throws Exception {
         // Act & Assert
-        mockMvc.perform(get(RUTA).with(jwtEstudiante("no-es-un-uuid")))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get(RUTA, "no-es-un-uuid").with(jwtEstudiante()))
+                .andExpect(status().isBadRequest());
         verify(interactor, never()).ejecutar(any());
     }
 
     @Test
     void debeRetornar401_cuandoNoEstaAutenticado() throws Exception {
         // Act & Assert
-        mockMvc.perform(get(RUTA))
+        mockMvc.perform(get(RUTA, UtilUUID.generarNuevoUUID()))
                 .andExpect(status().isUnauthorized());
         verify(interactor, never()).ejecutar(any());
     }

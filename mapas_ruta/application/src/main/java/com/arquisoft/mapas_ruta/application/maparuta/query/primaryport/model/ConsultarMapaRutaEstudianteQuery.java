@@ -7,17 +7,17 @@ import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.UUID;
 
-public record ConsultarMapaRutaEstudianteQuery(UUID estudiante) {
+public record ConsultarMapaRutaEstudianteQuery(UUID proyectoGrado) {
 
-    public static ConsultarMapaRutaEstudianteQuery crear(UUID estudiante) {
+    public static ConsultarMapaRutaEstudianteQuery crear(UUID proyectoGrado) {
         var result = new ValidationResult();
 
-        ValidatorObjeto.noNulo(estudiante,
-                MapasRutaFields.MapaRuta.ESTUDIANTE,
-                MapasRutaCodes.MapaRuta.ESTUDIANTE_REQUERIDO, result);
+        ValidatorObjeto.noNulo(proyectoGrado,
+                MapasRutaFields.MapaRuta.PROYECTO_GRADO,
+                MapasRutaCodes.MapaRuta.PROYECTO_GRADO_REQUERIDO, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new ConsultarMapaRutaEstudianteQuery(estudiante);
+        return new ConsultarMapaRutaEstudianteQuery(proyectoGrado);
     }
 }

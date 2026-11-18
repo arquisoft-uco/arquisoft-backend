@@ -17,7 +17,7 @@ public enum MapaRutaKey implements ClaveMensaje {
     LOG_CAMBIADO("mapas_ruta.aplicacion.maparuta.log.cambiado", 2),
     LOG_GUARDADO("mapas_ruta.infraestructura.maparuta.log.guardado", 1),
     LOG_CONSULTANDO_ESTUDIANTE("mapas_ruta.aplicacion.maparuta.log.consultando-estudiante", 1),
-    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("mapas_ruta.aplicacion.maparuta.log.consulta-estudiante-completada", 2),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("mapas_ruta.aplicacion.maparuta.log.consulta-estudiante-completada", 1),
     LOG_CONSULTANDO_PROYECTO_ASESOR("mapas_ruta.aplicacion.maparuta.log.consultando-proyecto-asesor", 1),
     LOG_CONSULTA_PROYECTO_ASESOR_COMPLETADA(
             "mapas_ruta.aplicacion.maparuta.log.consulta-proyecto-asesor-completada", 1),

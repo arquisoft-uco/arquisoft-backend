@@ -8,7 +8,7 @@ public final class ConsultarMapaRutaEstudianteRequestMapper {
 
     private ConsultarMapaRutaEstudianteRequestMapper() {}
 
-    public static ConsultarMapaRutaEstudianteQuery toQuery(UUID estudiante) {
-        return ConsultarMapaRutaEstudianteQuery.crear(estudiante);
+    public static ConsultarMapaRutaEstudianteQuery toQuery(UUID proyectoGrado) {
+        return ConsultarMapaRutaEstudianteQuery.crear(proyectoGrado);
     }
 }

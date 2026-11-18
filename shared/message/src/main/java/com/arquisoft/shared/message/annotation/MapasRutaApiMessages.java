@@ -40,13 +40,13 @@ public final class MapasRutaApiMessages {
                         + "o fecha de fin no posterior a la de inicio";
         public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar el mapa de ruta del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
-                "Devuelve el título del proyecto de grado al que pertenece el estudiante autenticado "
-                        + "y las fechas de inicio y fin de su mapa de ruta";
+                "Devuelve el título del proyecto de grado indicado y las fechas de inicio y fin "
+                        + "de su mapa de ruta";
         public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Mapa de ruta encontrado";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
-                "El identificador del estudiante del token no es un UUID válido";
+                "El identificador del proyecto de grado no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_404 =
-                "El estudiante no tiene proyecto de grado asignado o su proyecto no tiene mapa de ruta";
+                "El proyecto de grado no tiene mapa de ruta";
         public static final String CONSULTAR_PROYECTO_ASESOR_SUMMARY =
                 "Consultar el mapa de ruta de un proyecto de grado que asesora";
         public static final String CONSULTAR_PROYECTO_ASESOR_DESCRIPTION =

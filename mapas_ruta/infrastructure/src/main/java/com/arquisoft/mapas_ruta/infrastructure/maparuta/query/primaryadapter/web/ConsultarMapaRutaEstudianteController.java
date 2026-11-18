@@ -8,7 +8,6 @@ import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.MapasRutaApiMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
-import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,8 +18,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("${rutas.mapas-ruta.mapas-ruta.base:/mapas-ruta}")
@@ -32,7 +34,7 @@ public class ConsultarMapaRutaEstudianteController {
 
     private final ConsultarMapaRutaEstudianteInteractor consultarMapaRutaEstudianteInteractor;
 
-    @GetMapping("${rutas.mapas-ruta.mapas-ruta.estudiante:/estudiante}")
+    @GetMapping("${rutas.mapas-ruta.mapas-ruta.proyecto-estudiante:/proyectos-grado/{proyectoGradoId}/estudiante}")
     @Operation(
             summary = MapasRutaApiMessages.MapaRuta.CONSULTAR_ESTUDIANTE_SUMMARY,
             description = MapasRutaApiMessages.MapaRuta.CONSULTAR_ESTUDIANTE_DESCRIPTION,
@@ -56,11 +58,9 @@ public class ConsultarMapaRutaEstudianteController {
                     responseCode = ApiCodes.NOT_FOUND,
                     description = MapasRutaApiMessages.MapaRuta.CONSULTAR_ESTUDIANTE_RESP_404)
     })
-    public ResponseEntity<MapaRutaEstudianteResponseDTO> consultarMapaRuta(IdentidadActual identidad) {
-        var estudiante = identidad.id();
-
+    public ResponseEntity<MapaRutaEstudianteResponseDTO> consultarMapaRuta(@PathVariable UUID proyectoGradoId) {
         return consultarMapaRutaEstudianteInteractor
-                .ejecutar(ConsultarMapaRutaEstudianteRequestMapper.toQuery(estudiante))
+                .ejecutar(ConsultarMapaRutaEstudianteRequestMapper.toQuery(proyectoGradoId))
                 .map(MapaRutaEstudianteResponseMapper::toResponse)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());

@@ -8,6 +8,6 @@ public final class ConsultarMapaRutaEstudianteMapper {
     private ConsultarMapaRutaEstudianteMapper() {}
 
     public static MapaRutaEstudianteCriteria toCriteria(ConsultarMapaRutaEstudianteQuery query) {
-        return new MapaRutaEstudianteCriteria(query.estudiante());
+        return new MapaRutaEstudianteCriteria(query.proyectoGrado());
     }
 }
