@@ -1,6 +1,7 @@
 package com.arquisoft.mapas_ruta.application.planestimado.command.usecase.impl;
 
-import com.arquisoft.mapas_ruta.application.planestimado.command.finder.PlanEstimadoExisteFinder;
+import com.arquisoft.mapas_ruta.application.planestimado.command.finder.PlanEstimadoPorIdFinder;
+import com.arquisoft.mapas_ruta.application.tarea.command.finder.TareaPorIdFinder;
 import com.arquisoft.mapas_ruta.application.planestimado.command.secondaryport.PlanEstimadoOutputPort;
 import com.arquisoft.mapas_ruta.application.planestimado.command.usecase.ModificarPlanEstimadoUseCase;
 import com.arquisoft.mapas_ruta.application.planestimado.command.validator.ModificarPlanEstimadoValidator;
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Component;
 public class ModificarPlanEstimadoUseCaseImpl implements ModificarPlanEstimadoUseCase {
 
     private final PlanEstimadoOutputPort planEstimadoOutputPort;
-    private final PlanEstimadoExisteFinder planEstimadoExisteFinder;
+    private final PlanEstimadoPorIdFinder planEstimadoPorIdFinder;
+    private final TareaPorIdFinder tareaPorIdFinder;
     private final ModificarPlanEstimadoValidator modificarPlanEstimadoValidator;
     private final AppLogger logger;
 
@@ -23,10 +25,12 @@ public class ModificarPlanEstimadoUseCaseImpl implements ModificarPlanEstimadoUs
     public void ejecutar(ModificacionPlanEstimadoDomain entrada) {
         logger.info(PlanEstimadoKey.LOG_MODIFICANDO, entrada.getPlanEstimado());
 
-        var planExiste = planEstimadoExisteFinder.obtener(entrada.getPlanEstimado());
+        var plan = planEstimadoPorIdFinder.obtener(entrada.getPlanEstimado());
+        var tarea = tareaPorIdFinder.obtener(plan.getTarea());
+        var planExiste = !plan.esVacio();
 
         logger.debug(PlanEstimadoKey.LOG_VERIFICACION_MODIFICAR, planExiste);
-        modificarPlanEstimadoValidator.validar(entrada, planExiste);
+        modificarPlanEstimadoValidator.validar(entrada, planExiste, tarea);
 
         planEstimadoOutputPort.actualizarDescripcion(entrada.getPlanEstimado(), entrada.getDescripcionEstimado());
 

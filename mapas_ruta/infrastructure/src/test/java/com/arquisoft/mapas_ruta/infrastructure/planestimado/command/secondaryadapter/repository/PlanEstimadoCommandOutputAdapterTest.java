@@ -156,14 +156,18 @@ class PlanEstimadoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeIndicarExistenciaPorId_soloParaElPlanPersistido() {
+    void debeObtenerPorId_soloParaElPlanPersistido() {
         // Arrange
-        var plan = sembrarPlanConDescripcion(UtilUUID.generarNuevoUUID(), 3, "Original");
+        var tarea = UtilUUID.generarNuevoUUID();
+        var plan = sembrarPlanConDescripcion(tarea, 3, "Original");
         entityManager.flush();
 
         // Act & Assert
-        assertThat(adapter.existePorId(plan)).isTrue();
-        assertThat(adapter.existePorId(UtilUUID.generarNuevoUUID())).isFalse();
+        assertThat(adapter.obtenerPorId(plan)).hasValueSatisfying(entity -> {
+            assertThat(entity.id()).isEqualTo(plan);
+            assertThat(entity.tarea()).isEqualTo(tarea);
+        });
+        assertThat(adapter.obtenerPorId(UtilUUID.generarNuevoUUID())).isEmpty();
     }
 
     @Test
