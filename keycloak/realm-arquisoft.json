@@ -57,6 +57,7 @@
           "client": {
             "arquisoft-api": [
               "biblioteca:documentacion:view",
+              "biblioteca:enlace-documentacion:view",
               "biblioteca:documentacion:download",
               "proyectos:proyecto-grado-cancelacion:update",
               "proyectos:historial-estado-proyecto-grado:view",
@@ -292,7 +293,8 @@
               "biblioteca:documentacion-estado:update",
               "biblioteca:documentacion:create",
               "biblioteca:autor-documentacion:view",
-              "biblioteca:entregable-proyecto-grado:view"
+              "biblioteca:entregable-proyecto-grado:view",
+              "biblioteca:enlace-documentacion:view"
             ]
           }
         },
@@ -309,6 +311,7 @@
           "client": {
             "arquisoft-api": [
               "biblioteca:documentacion:view",
+              "biblioteca:enlace-documentacion:view",
               "biblioteca:documentacion:download",
               "artefactos:version-artefacto:upload",
               "artefactos:version-artefacto:delete",
@@ -402,6 +405,7 @@
           "client": {
             "arquisoft-api": [
               "biblioteca:documentacion:view",
+              "biblioteca:enlace-documentacion:view",
               "biblioteca:documentacion:download",
               "proyectos:proyecto-grado-estado:update",
               "proyectos:historial-estado-proyecto-grado:view",
@@ -1314,6 +1318,15 @@
         {
           "id": "4eefc44a-6618-4727-8926-6113f72bf714",
           "name": "biblioteca:autor-documentacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "de47e400-4316-417b-96d9-72a6b4130aab",
+          "name": "biblioteca:enlace-documentacion:view",
           "description": "",
           "composite": false,
           "clientRole": true,

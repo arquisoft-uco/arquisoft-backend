@@ -12,5 +12,6 @@ rutas:
       entregables-proyecto-grado: /entregables-proyecto-grado
       consultar: /consultar
       autores: /{documentacionId}/autores
+      enlace: /{documentacionId}/enlace
       descarga: /{documentacionId}/descarga
       estado: /{documentacionId}/estado
