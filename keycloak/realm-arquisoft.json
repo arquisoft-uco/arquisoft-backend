@@ -363,6 +363,7 @@
               "fichas:tipo-item:view",
               "fichas:observacion-item-estudiante:view",
               "fichas:revision-item-visualizada:update",
+              "fichas:revision-item-correcciones:update",
               "fichas:item-ficha-perfil:delete",
               "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view",
               "evaluaciones:evaluacion-cuantitativa-asesor-estudiante:view",
@@ -2623,6 +2624,15 @@
         {
           "id": "889e1ab2-3cfa-4ea2-ab14-dc1116713ba6",
           "name": "fichas:revision-item-visualizada:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "21962f9e-0d38-4a51-809e-b9866363ffd1",
+          "name": "fichas:revision-item-correcciones:update",
           "description": "",
           "composite": false,
           "clientRole": true,

@@ -31,6 +31,14 @@ public enum EstadoRevision {
         return nombre;
     }
 
+    public boolean atiendeObservaciones() {
+        return this == VISUALIZADA || this == EN_PROGRESO || this == CORRECCION_DISPONIBLE;
+    }
+
+    public boolean retornaAEnProgresoAlModificarItem() {
+        return this == VISUALIZADA || this == CORRECCION_DISPONIBLE;
+    }
+
     public static EstadoRevision desde(String id) {
         return delCatalogo(id).orElseThrow(() -> new EstadoRevisionNoEncontradoException(id));
     }

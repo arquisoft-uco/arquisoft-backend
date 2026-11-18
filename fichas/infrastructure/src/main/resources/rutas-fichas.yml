@@ -28,6 +28,7 @@ rutas:
       item-revisiones: /items/{itemId}/revisiones
       revision-observaciones: /revisiones/{revisionItemId}/observaciones
       revision-visualizada: /revisiones/{revisionItemId}/visualizada
+      revision-correcciones: /revisiones/{revisionItemId}/correcciones
       revision-por-id: /revisiones/{revisionItemId}
       revisiones-item-asesor: /revisiones-item/asesor
       observaciones-item-asesor: /observaciones-item/asesor

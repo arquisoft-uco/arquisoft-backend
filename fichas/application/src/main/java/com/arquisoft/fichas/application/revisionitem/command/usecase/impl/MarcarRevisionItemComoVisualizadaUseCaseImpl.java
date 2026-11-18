@@ -6,6 +6,7 @@ import com.arquisoft.fichas.application.revisionitem.command.usecase.MarcarRevis
 import com.arquisoft.fichas.application.revisionitem.command.validator.MarcarRevisionItemComoVisualizadaValidator;
 import com.arquisoft.fichas.domain.estadorevision.EstadoRevision;
 import com.arquisoft.fichas.domain.revisionitem.VisualizacionRevisionItemDomain;
+import com.arquisoft.fichas.domain.revisionitem.model.RevisionItemDeEstudiante;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,8 @@ public class MarcarRevisionItemComoVisualizadaUseCaseImpl implements MarcarRevis
     public void ejecutar(VisualizacionRevisionItemDomain entrada) {
         logger.info(RevisionItemKey.LOG_VISUALIZANDO, entrada.getRevisionItem(), entrada.getEstudiante());
 
-        var pertenencia = pertenenciaRevisionItemFinder.obtener(entrada);
+        var pertenencia = pertenenciaRevisionItemFinder.obtener(
+                new RevisionItemDeEstudiante(entrada.getRevisionItem(), entrada.getEstudiante()));
         var revisionExiste = !pertenencia.esVacio();
         var estadoRevision = pertenencia.estadoRevision();
 

@@ -7,6 +7,7 @@ import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.entity.ItemFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.entity.RevisionItemJpaEntity;
 import com.arquisoft.fichas.infrastructure.tipoitem.command.secondaryadapter.entity.TipoItemJpaEntity;
+import com.arquisoft.shared.util.UtilUUID;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -246,6 +247,35 @@ class RevisionItemCommandRepositoryTest {
         assertThat(testEntityManager.find(RevisionItemJpaEntity.class, aRemover.getId())).isNull();
         assertThat(testEntityManager.find(RevisionItemJpaEntity.class, aConservar.getId())).isNotNull();
         assertThat(repository.countByItemId(item.getId())).isEqualTo(1);
+    }
+
+    @Test
+    void debeEncontrarLaRevisionDelItem_cuandoElItemTieneRevision() {
+        // Arrange
+        var item = sembrarItemDeFicha(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var revision = sembrarRevisionEnItem(item.getId(), "VISUALIZADA");
+        testEntityManager.clear();
+
+        // Act
+        var resultado = repository.findByItemId(item.getId());
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().getId()).isEqualTo(revision.getId());
+        assertThat(resultado.get().getEstadoRevision().getId()).isEqualTo("VISUALIZADA");
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElItemNoTieneRevision() {
+        // Arrange
+        var item = sembrarItemDeFicha(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        testEntityManager.clear();
+
+        // Act
+        var resultado = repository.findByItemId(item.getId());
+
+        // Assert
+        assertThat(resultado).isEmpty();
     }
 
     @Test

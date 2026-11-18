@@ -55,6 +55,9 @@ public final class FichasCodes {
         public static final String REVISION_ITEM_REQUERIDO = "REVISION_ITEM_REVISION_ITEM_REQUERIDO";
         public static final String NO_ENCONTRADA = "REVISION_ITEM_NO_ENCONTRADA";
         public static final String CERRADA = "REVISION_ITEM_CERRADA";
+        public static final String NO_EN_PROGRESO = "REVISION_ITEM_NO_EN_PROGRESO";
+        public static final String SIN_OBSERVACIONES = "REVISION_ITEM_SIN_OBSERVACIONES";
+        public static final String CON_OBSERVACIONES_PENDIENTES = "REVISION_ITEM_CON_OBSERVACIONES_PENDIENTES";
     }
 
     public static final class ObservacionItem {

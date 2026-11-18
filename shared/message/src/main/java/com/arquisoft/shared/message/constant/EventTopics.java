@@ -20,6 +20,9 @@ public final class EventTopics {
         public static final String REVISION_ITEM_AGREGADO =
                 "fichas.revision_item.agregado";
 
+        public static final String REVISION_ITEM_CORRECCIONES_ENVIADAS =
+                "fichas.revision_item.correcciones_enviadas";
+
         public static final String FICHA_PERFIL_APROBADA =
                 "fichas.ficha_perfil.aprobada";
 

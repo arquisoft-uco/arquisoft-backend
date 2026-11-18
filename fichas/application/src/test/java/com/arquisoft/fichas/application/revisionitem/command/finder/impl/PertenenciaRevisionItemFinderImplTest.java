@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.revisionitem.command.finder.impl;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.RevisionItemOutputPort;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.PertenenciaRevisionItemEntity;
 import com.arquisoft.fichas.domain.estadorevision.EstadoRevision;
-import com.arquisoft.fichas.domain.revisionitem.VisualizacionRevisionItemDomain;
+import com.arquisoft.fichas.domain.revisionitem.model.RevisionItemDeEstudiante;
 import com.arquisoft.fichas.domain.revisionitem.model.PertenenciaRevisionItem;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class PertenenciaRevisionItemFinderImplTest {
         var revisionItem = UtilUUID.generarNuevoUUID();
         var estudiante = UtilUUID.generarNuevoUUID();
         var fichaPerfil = UtilUUID.generarNuevoUUID();
-        var entrada = VisualizacionRevisionItemDomain.crear(revisionItem, estudiante);
+        var entrada = new RevisionItemDeEstudiante(revisionItem, estudiante);
         when(revisionItemOutputPort.obtenerPertenencia(revisionItem, estudiante))
                 .thenReturn(Optional.of(new PertenenciaRevisionItemEntity(fichaPerfil, true, "EN_PROGRESO")));
 
@@ -54,7 +54,7 @@ class PertenenciaRevisionItemFinderImplTest {
         // Arrange
         var revisionItem = UtilUUID.generarNuevoUUID();
         var estudiante = UtilUUID.generarNuevoUUID();
-        var entrada = VisualizacionRevisionItemDomain.crear(revisionItem, estudiante);
+        var entrada = new RevisionItemDeEstudiante(revisionItem, estudiante);
         when(revisionItemOutputPort.obtenerPertenencia(revisionItem, estudiante))
                 .thenReturn(Optional.empty());
 

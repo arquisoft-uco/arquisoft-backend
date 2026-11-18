@@ -59,6 +59,20 @@ public class NotificacionesFichasQueueConfig {
                 arquisoftDeadLetterExchange);
     }
 
+    public static final String REVISION_ITEM_CORRECCIONES_ENVIADAS_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Fichas.REVISION_ITEM_CORRECCIONES_ENVIADAS;
+
+    @Bean
+    public Declarables notificacionesRevisionItemCorreccionesEnviadasDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REVISION_ITEM_CORRECCIONES_ENVIADAS_QUEUE,
+                EventTopics.Fichas.REVISION_ITEM_CORRECCIONES_ENVIADAS,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     @Bean
     public Declarables notificacionesRevisionItemAgregadoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
