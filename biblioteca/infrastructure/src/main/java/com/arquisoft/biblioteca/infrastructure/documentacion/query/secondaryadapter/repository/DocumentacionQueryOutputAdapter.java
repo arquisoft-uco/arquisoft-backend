@@ -3,7 +3,6 @@ package com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryada
 import com.arquisoft.biblioteca.application.documentacion.query.criteria.DocumentacionCriteria;
 import com.arquisoft.biblioteca.application.documentacion.query.readmodel.DocumentacionReadModel;
 import com.arquisoft.biblioteca.application.documentacion.query.secondaryport.DocumentacionQueryOutputPort;
-import com.arquisoft.biblioteca.infrastructure.documentacion.exception.DocumentacionNoDisponibleException;
 import com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.repository.mapper.DocumentacionQueryMapper;
 import com.arquisoft.shared.jpa.util.PageableMapper;
 import com.arquisoft.shared.jpa.util.PaginationMapper;
@@ -44,14 +43,5 @@ public class DocumentacionQueryOutputAdapter implements DocumentacionQueryOutput
 
         return PaginationMapper.toResult(pagina.map(documentacion -> DocumentacionQueryMapper.toReadModel(
                 documentacion, autoresPorDocumentacion.getOrDefault(documentacion.getId(), List.of()))));
-    }
-
-    @Override
-    public DocumentacionReadModel consultarPorId(UUID documentacion) {
-        var autores = autorDeDocumentacionQueryRepository
-                .findByDocumentacionIdInOrderByNombreAscIdAsc(List.of(documentacion));
-        return documentacionQueryRepository.findById(documentacion)
-                .map(entidad -> DocumentacionQueryMapper.toReadModel(entidad, autores))
-                .orElseThrow(() -> new DocumentacionNoDisponibleException(documentacion));
     }
 }

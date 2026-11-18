@@ -52,14 +52,19 @@ public final class BibliotecaApiMessages {
                         + "identificador y nombre, incluidos los dados de baja); el archivo se obtiene por la descarga";
         public static final String CONSULTAR_RESP_200 = "Página de documentaciones";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
-        public static final String ENLACE_SUMMARY = "Compartir la información de una documentación";
+        public static final String ENLACE_SUMMARY = "Compartir una documentación";
         public static final String ENLACE_DESCRIPTION =
-                "Devuelve el enlace permanente a la ficha de la documentación en el frontend junto con su "
-                        + "estado, entregable y bibliotecario. Solo se puede compartir una documentación "
-                        + "publicada; una inexistente o no publicada responde el mismo error";
-        public static final String ENLACE_RESP_200 = "Enlace y datos de la documentación";
+                "Devuelve el enlace temporal firmado para descargar el archivo de la documentación, que quien lo "
+                        + "pide puede enviar a otra persona: quien lo recibe lo abre sin sesión mientras no expire "
+                        + "(vigente unos minutos). Solo se puede compartir una documentación publicada, para "
+                        + "asesor, bibliotecario, coordinador y estudiante; una inexistente o no publicada responde "
+                        + "el mismo error";
+        public static final String ENLACE_RESP_200 = "Enlace temporal de descarga y su fecha de expiración";
         public static final String ENLACE_RESP_400 = "Identificador de documentación inválido";
-        public static final String ENLACE_RESP_422 = "La documentación no está disponible para compartir";
+        public static final String ENLACE_RESP_422 =
+                "La documentación no está disponible para compartir o su archivo aún no está disponible";
+        public static final String ENLACE_RESP_503 =
+                "El servicio de almacenamiento no responde o el archivo no existe en él";
         public static final String PARAM_DOCUMENTACION = "Identificador de la documentación";
         public static final String DESCARGAR_SUMMARY = "Descargar el contenido de una documentación";
         public static final String DESCARGAR_DESCRIPTION =

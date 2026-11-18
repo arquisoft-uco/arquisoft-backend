@@ -3,7 +3,7 @@ package com.arquisoft.biblioteca.application.documentacion.query.primaryport.int
 import com.arquisoft.biblioteca.application.documentacion.query.primaryport.interactor.ConsultarEnlaceDocumentacionInteractor;
 import com.arquisoft.biblioteca.application.documentacion.query.primaryport.mapper.ConsultarEnlaceDocumentacionMapper;
 import com.arquisoft.biblioteca.application.documentacion.query.primaryport.model.ConsultarEnlaceDocumentacionQuery;
-import com.arquisoft.biblioteca.application.documentacion.query.readmodel.EnlaceDocumentacionReadModel;
+import com.arquisoft.biblioteca.application.documentacion.query.readmodel.EnlaceDescargaDocumentacionReadModel;
 import com.arquisoft.biblioteca.application.documentacion.query.usecase.ConsultarEnlaceDocumentacionUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ public class ConsultarEnlaceDocumentacionInteractorImpl implements ConsultarEnla
 
     @Override
     @Transactional(readOnly = true, transactionManager = "bibliotecaTransactionManager")
-    public EnlaceDocumentacionReadModel ejecutar(ConsultarEnlaceDocumentacionQuery entrada) {
+    public EnlaceDescargaDocumentacionReadModel ejecutar(ConsultarEnlaceDocumentacionQuery entrada) {
         var criteria = ConsultarEnlaceDocumentacionMapper.toCriteria(entrada);
         return consultarEnlaceDocumentacionUseCase.ejecutar(criteria);
     }

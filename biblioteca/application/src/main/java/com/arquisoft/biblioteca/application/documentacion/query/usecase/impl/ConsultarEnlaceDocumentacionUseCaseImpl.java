@@ -1,10 +1,9 @@
 package com.arquisoft.biblioteca.application.documentacion.query.usecase.impl;
 
 import com.arquisoft.biblioteca.application.documentacion.query.criteria.EnlaceDocumentacionCriteria;
-import com.arquisoft.biblioteca.application.documentacion.query.finder.EstadoDeDocumentacionQueryFinder;
-import com.arquisoft.biblioteca.application.documentacion.query.readmodel.EnlaceDocumentacionReadModel;
-import com.arquisoft.biblioteca.application.documentacion.query.secondaryport.DocumentacionQueryOutputPort;
-import com.arquisoft.biblioteca.application.documentacion.query.secondaryport.EnlaceDocumentacionQueryOutputPort;
+import com.arquisoft.biblioteca.application.documentacion.query.finder.ArchivoDocumentacionQueryFinder;
+import com.arquisoft.biblioteca.application.documentacion.query.readmodel.EnlaceDescargaDocumentacionReadModel;
+import com.arquisoft.biblioteca.application.documentacion.query.secondaryport.EnlaceDescargaDocumentacionQueryOutputPort;
 import com.arquisoft.biblioteca.application.documentacion.query.usecase.ConsultarEnlaceDocumentacionUseCase;
 import com.arquisoft.biblioteca.application.documentacion.query.validator.ConsultarEnlaceDocumentacionValidator;
 import com.arquisoft.shared.logger.AppLogger;
@@ -16,31 +15,25 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ConsultarEnlaceDocumentacionUseCaseImpl implements ConsultarEnlaceDocumentacionUseCase {
 
-    private final EstadoDeDocumentacionQueryFinder estadoDeDocumentacionQueryFinder;
+    private final ArchivoDocumentacionQueryFinder archivoDocumentacionQueryFinder;
     private final ConsultarEnlaceDocumentacionValidator consultarEnlaceDocumentacionValidator;
-    private final DocumentacionQueryOutputPort documentacionQueryOutputPort;
-    private final EnlaceDocumentacionQueryOutputPort enlaceDocumentacionQueryOutputPort;
+    private final EnlaceDescargaDocumentacionQueryOutputPort enlaceDescargaDocumentacionQueryOutputPort;
     private final AppLogger logger;
 
     @Override
-    public EnlaceDocumentacionReadModel ejecutar(EnlaceDocumentacionCriteria entrada) {
+    public EnlaceDescargaDocumentacionReadModel ejecutar(EnlaceDocumentacionCriteria entrada) {
         logger.debug(DocumentacionKey.LOG_CONSULTANDO_ENLACE, entrada.documentacion());
 
-        var estado = estadoDeDocumentacionQueryFinder.obtener(entrada.documentacion());
+        var archivo = archivoDocumentacionQueryFinder.obtener(entrada.documentacion());
 
-        logger.debug(DocumentacionKey.LOG_VERIFICACION_ENLACE, entrada.documentacion(), estado.getId());
+        logger.debug(DocumentacionKey.LOG_VERIFICACION_ENLACE, !archivo.esVacio(), archivo.estado().getId());
 
-        consultarEnlaceDocumentacionValidator.validar(entrada, estado);
+        consultarEnlaceDocumentacionValidator.validar(entrada, archivo);
 
-        var documentacion = documentacionQueryOutputPort.consultarPorId(entrada.documentacion());
-        var enlace = enlaceDocumentacionQueryOutputPort.generar(entrada.documentacion());
+        var enlace = enlaceDescargaDocumentacionQueryOutputPort.generar(
+                archivo.documentacion(), archivo.bucket(), archivo.claveObjeto(), archivo.nombreArchivo());
 
-        logger.debug(DocumentacionKey.LOG_ENLACE_GENERADO, entrada.documentacion());
-        return new EnlaceDocumentacionReadModel(
-                enlace,
-                documentacion.id(),
-                documentacion.entregableProyectoGrado(),
-                documentacion.bibliotecario(),
-                documentacion.estadoDocumentacion());
+        logger.debug(DocumentacionKey.LOG_ENLACE_GENERADO, entrada.documentacion(), enlace.expiraEn());
+        return enlace;
     }
 }

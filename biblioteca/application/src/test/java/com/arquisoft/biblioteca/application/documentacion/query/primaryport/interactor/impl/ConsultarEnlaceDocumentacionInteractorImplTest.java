@@ -2,8 +2,7 @@ package com.arquisoft.biblioteca.application.documentacion.query.primaryport.int
 
 import com.arquisoft.biblioteca.application.documentacion.query.criteria.EnlaceDocumentacionCriteria;
 import com.arquisoft.biblioteca.application.documentacion.query.primaryport.model.ConsultarEnlaceDocumentacionQuery;
-import com.arquisoft.biblioteca.application.documentacion.query.readmodel.DocumentacionReadModel;
-import com.arquisoft.biblioteca.application.documentacion.query.readmodel.EnlaceDocumentacionReadModel;
+import com.arquisoft.biblioteca.application.documentacion.query.readmodel.EnlaceDescargaDocumentacionReadModel;
 import com.arquisoft.biblioteca.application.documentacion.query.usecase.ConsultarEnlaceDocumentacionUseCase;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -11,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -26,16 +27,12 @@ class ConsultarEnlaceDocumentacionInteractorImplTest {
     private ConsultarEnlaceDocumentacionInteractorImpl interactor;
 
     @Test
-    void debeConvertirQueryACriteriaYDelegar_cuandoEjecuta() {
+    void debeDelegarEnElUseCaseConElCriteria_cuandoEjecuta() {
         // Arrange
         var documentacion = UtilUUID.generarNuevoUUID();
         var query = ConsultarEnlaceDocumentacionQuery.crear(documentacion);
         var criteria = new EnlaceDocumentacionCriteria(documentacion);
-        var esperado = new EnlaceDocumentacionReadModel("https://front.test/doc/x", documentacion,
-                new DocumentacionReadModel.EntregableProyectoGradoResumen(
-                        UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 1, "Aprobado"),
-                new DocumentacionReadModel.BibliotecarioResumen(UtilUUID.generarNuevoUUID(), "Ana"),
-                new DocumentacionReadModel.EstadoDocumentacionResumen("PUBLICADO", "Publicado"));
+        var esperado = new EnlaceDescargaDocumentacionReadModel("https://minio.test/a", Instant.now());
         when(consultarEnlaceDocumentacionUseCase.ejecutar(criteria)).thenReturn(esperado);
 
         // Act
