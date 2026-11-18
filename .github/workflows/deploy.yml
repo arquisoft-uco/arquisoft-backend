@@ -7,8 +7,8 @@
 # Flujo:
 #   1. push a develop  →  docker-build.yml construye y publica ghcr.io/<repo>:sha-<short>
 #   2. este workflow se conecta por SSH al servidor, espera a que la imagen
-#      sha-<short> esté disponible, escribe el .env (desde el secreto ENV_FILE)
-#      y levanta el contenedor con `docker run --env-file`.
+#      sha-<short> esté disponible, escribe el .env (descargado de Doppler en el
+#      propio servidor) y levanta el contenedor con `docker run --env-file`.
 #
 # Por qué se despliega por SHA (sha-<short>) y no por el tag de rama (develop):
 #   El tag `develop` es mutable y podría apuntar a una imagen vieja si el deploy
@@ -21,12 +21,15 @@
 #   SSH_USER          usuario SSH                            (ej. deploy)
 #   SSH_PORT          puerto SSH                             (ej. 22)
 #   SSH_PRIVATE_KEY   clave privada SSH (formato OpenSSH, multilínea)
-#   ENV_FILE          contenido COMPLETO del archivo .env de runtime
 #   BASE_DOMAIN       dominio base (ej. midominio.com). El backend se expone en
 #                     api.<BASE_DOMAIN> vía Traefik (el subdominio "api" es fijo).
 #   GHCR_USERNAME     (opcional) usuario GHCR — solo si el paquete es PRIVADO
 #   GHCR_TOKEN        (opcional) PAT con read:packages — solo si es PRIVADO
 #   DOCKER_NETWORK    (opcional) red Docker de la infra (default: arquisoft-network)
+#
+# Variables de runtime de la app: en Doppler (proyecto arquisoft-backend, config
+# test), NO en GitHub. Prerrequisito en el servidor, como SSH_USER y una sola vez:
+#   doppler configure set token <service-token-solo-lectura> --scope $HOME/arquisoft
 #
 # Cómo apuntar a otro servidor: ver docs/DESPLIEGUE_CD_SSH.md
 # ==============================================================================
@@ -73,23 +76,9 @@ jobs:
           echo "ref=ghcr.io/${REPO_LC}:${TAG}" >> "$GITHUB_OUTPUT"
           echo "Imagen objetivo: ghcr.io/${REPO_LC}:${TAG}"
 
-      # ── Codificar .env a una sola línea ──
-      # appleboy/ssh-action puede romper variables multilínea al forwardearlas.
-      # base64 -w0 convierte el .env (multilínea) en una sola línea segura.
-      - name: Codificar ENV_FILE (base64)
-        id: env
-        env:
-          ENV_FILE: ${{ secrets.ENV_FILE }}
-        run: |
-          set -euo pipefail
-          if [ -z "${ENV_FILE:-}" ]; then
-            echo "✖ El secreto ENV_FILE está vacío o no existe"; exit 1
-          fi
-          B64="$(printf '%s' "$ENV_FILE" | base64 -w0)"
-          echo "::add-mask::$B64"
-          echo "b64=$B64" >> "$GITHUB_OUTPUT"
-
       # ── Despliegue por SSH ──
+      # Los secretos de runtime NO pasan por GitHub: el servidor los descarga de
+      # Doppler (proyecto arquisoft-backend) con su propio token de solo lectura.
       - name: Desplegar contenedor por SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -98,7 +87,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           # Variables forwardeadas a la sesión remota (no se imprimen en logs).
-          envs: IMAGE,ENV_B64,GHCR_USERNAME,GHCR_TOKEN,DOCKER_NETWORK,BASE_DOMAIN
+          envs: IMAGE,GHCR_USERNAME,GHCR_TOKEN,DOCKER_NETWORK,BASE_DOMAIN
           script_stop: true
           script: |
             set -euo pipefail
@@ -126,9 +115,25 @@ jobs:
 
             mkdir -p "$APP_DIR"
 
-            # 1) Escribir el .env de runtime (ENV_B64 = base64 del secreto ENV_FILE; umask 077 → 600)
-            ( umask 077; printf '%s' "$ENV_B64" | base64 -d > "$APP_DIR/.env" )
-            echo "✔ .env escrito en $APP_DIR/.env"
+            # 1) .env de runtime desde Doppler. El token de SOLO LECTURA vive en el
+            #    servidor (`doppler configure set token --scope $APP_DIR`), no en GitHub.
+            #    Se escribe a un temporal y se valida ANTES de tocar el contenedor: si
+            #    Doppler falla, el backend actual sigue corriendo con su .env previo.
+            #    --format docker = KEY=valor sin comillas (lo que espera --env-file).
+            command -v doppler >/dev/null || {
+              echo "✖ Doppler CLI no instalado en el servidor (ver docs/DESPLIEGUE_CD_SSH.md §3)"; exit 1; }
+            ENV_TMP="$(mktemp "$APP_DIR/.env.XXXXXX")"   # mktemp crea el archivo en modo 600
+            if ! ( cd "$APP_DIR" && doppler secrets download --no-file --format docker \
+                     --no-fallback --no-check-version --silent ) > "$ENV_TMP"; then
+              rm -f "$ENV_TMP"
+              echo "✖ No se pudieron obtener los secretos de Doppler (¿token configurado para $APP_DIR?)"; exit 1
+            fi
+            sed -i -E '/^DOPPLER_(PROJECT|CONFIG|ENVIRONMENT)=/d' "$ENV_TMP"
+            if ! grep -qE '^DB_USUARIOS_PASSWORD=.' "$ENV_TMP"; then
+              rm -f "$ENV_TMP"; echo "✖ Secretos de Doppler incompletos (falta DB_USUARIOS_PASSWORD)"; exit 1
+            fi
+            mv "$ENV_TMP" "$APP_DIR/.env"
+            echo "✔ .env escrito en $APP_DIR/.env desde Doppler ($(grep -c '=' "$APP_DIR/.env") variables)"
 
             # 2) Login a GHCR solo si el paquete es privado (credenciales provistas)
             if [ -n "${GHCR_TOKEN:-}" ]; then
@@ -188,7 +193,6 @@ jobs:
             # Sin logout: el trap borra el DOCKER_CONFIG efímero de esta corrida.
         env:
           IMAGE: ${{ steps.image.outputs.ref }}
-          ENV_B64: ${{ steps.env.outputs.b64 }}
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           DOCKER_NETWORK: ${{ secrets.DOCKER_NETWORK }}
