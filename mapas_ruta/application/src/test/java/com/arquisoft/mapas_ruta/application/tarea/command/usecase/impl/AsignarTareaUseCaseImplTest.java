@@ -69,7 +69,7 @@ class AsignarTareaUseCaseImplTest {
         var mapa = MapaRutaDomain.reconstruir(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
                 LocalDate.of(2026, 10, 1), LocalDate.of(2026, 12, 1));
         var proyecto = ProyectoGradoDomain.reconstruir(mapa.getProyectoGrado(), EstadoProyectoGrado.EN_PROCESO,
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Titulo");
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Titulo", null);
         var tarea = TareaDomain.crear(mapa.getId(), "Redactar capitulo", UtilUUID.generarNuevoUUID());
         var asesorEnProyecto = new AsesorEnProyectoGrado(mapa.getProyectoGrado(), tarea.getAsesor());
         when(mapaRutaPorIdFinder.obtener(mapa.getId())).thenReturn(mapa);

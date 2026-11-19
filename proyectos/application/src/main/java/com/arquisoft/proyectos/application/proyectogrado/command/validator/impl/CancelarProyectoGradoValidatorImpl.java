@@ -1,6 +1,10 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.validator.impl;
 
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.CancelarProyectoGradoValidator;
+import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
+import com.arquisoft.proyectos.domain.coordinador.model.ExistenciaCoordinador;
+import com.arquisoft.proyectos.domain.coordinador.rules.CoordinadorExisteRule;
+import com.arquisoft.proyectos.domain.coordinador.rules.impl.CoordinadorExisteRuleImpl;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.model.ExistenciaEstadoProyectoGrado;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.rules.EstadoProyectoGradoExisteRule;
@@ -24,24 +28,27 @@ public class CancelarProyectoGradoValidatorImpl implements CancelarProyectoGrado
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
     private final EstadoProyectoGradoExisteRule estadoProyectoGradoExisteRule;
     private final CoordinadorProyectoGradoPropietarioRule coordinadorPropietarioRule;
+    private final CoordinadorExisteRule coordinadorExisteRule;
     private final ProyectoGradoCancelableRule proyectoGradoCancelableRule;
 
     public CancelarProyectoGradoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.estadoProyectoGradoExisteRule = new EstadoProyectoGradoExisteRuleImpl();
         this.coordinadorPropietarioRule = new CoordinadorProyectoGradoPropietarioRuleImpl();
+        this.coordinadorExisteRule = new CoordinadorExisteRuleImpl();
         this.proyectoGradoCancelableRule = new ProyectoGradoCancelableRuleImpl();
     }
 
     @Override
     public void validar(CancelacionProyectoGradoDomain cancelacion, ProyectoGradoDomain proyecto,
-                        EstadoProyectoGradoDomain estadoActual) {
+                        EstadoProyectoGradoDomain estadoActual, CoordinadorDomain coordinador) {
         proyectoGradoExisteRule.validar(
                 new ExistenciaProyectoGrado(cancelacion.getProyectoGrado(), !proyecto.esVacio()));
         estadoProyectoGradoExisteRule.validar(
                 new ExistenciaEstadoProyectoGrado(cancelacion.getProyectoGrado(), !estadoActual.esVacio()));
         coordinadorPropietarioRule.validar(new PropiedadCoordinadorProyectoGrado(
                 cancelacion.getProyectoGrado(), proyecto.getCoordinador(), cancelacion.getCoordinador()));
+        coordinadorExisteRule.validar(new ExistenciaCoordinador(cancelacion.getCoordinador(), !coordinador.esVacio()));
         proyectoGradoCancelableRule.validar(
                 new EstadoActualProyectoGrado(cancelacion.getProyectoGrado(), proyecto.getTituloProyecto(),
                         estadoActual.getEstadoProyecto()));

@@ -19,6 +19,7 @@ public final class MapasRutaCodes {
         public static final String MAPA_RUTA_REQUERIDO = "MAPA_RUTA_REQUERIDO";
         public static final String MAPA_RUTA_DUPLICADO = "MAPA_RUTA_DUPLICADO";
         public static final String MAPA_RUTA_NO_ENCONTRADO = "MAPA_RUTA_NO_ENCONTRADO";
+        public static final String HOY_REQUERIDA = "MAPA_RUTA_HOY_REQUERIDA";
     }
 
     public static final class ProyectoGrado {
@@ -29,6 +30,12 @@ public final class MapasRutaCodes {
         public static final String NO_PROPIETARIO = "PROYECTO_GRADO_NO_PROPIETARIO";
         public static final String NO_EN_PROCESO = "PROYECTO_GRADO_NO_EN_PROCESO";
         public static final String ESTADO_NO_ENCONTRADO = "PROYECTO_GRADO_ESTADO_NO_ENCONTRADO";
+        public static final String ID_REQUERIDO = "PROYECTO_GRADO_ID_REQUERIDO";
+        public static final String FICHA_PERFIL_REQUERIDA = "PROYECTO_GRADO_FICHA_PERFIL_REQUERIDA";
+        public static final String TITULO_PROYECTO_REQUERIDO = "PROYECTO_GRADO_TITULO_PROYECTO_REQUERIDO";
+        public static final String COORDINADOR_REQUERIDO = "PROYECTO_GRADO_COORDINADOR_REQUERIDO";
+        public static final String ESTADO_PROYECTO_REQUERIDO = "PROYECTO_GRADO_ESTADO_PROYECTO_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class Tarea {

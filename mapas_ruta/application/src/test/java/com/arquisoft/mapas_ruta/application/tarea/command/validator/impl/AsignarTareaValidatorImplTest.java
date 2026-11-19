@@ -27,7 +27,7 @@ class AsignarTareaValidatorImplTest {
 
     private static ProyectoGradoDomain proyecto(MapaRutaDomain mapa, EstadoProyectoGrado estado) {
         return ProyectoGradoDomain.reconstruir(mapa.getProyectoGrado(), estado,
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Titulo");
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Titulo", null);
     }
 
     private static TareaDomain tarea(MapaRutaDomain mapa) {
@@ -71,7 +71,7 @@ class AsignarTareaValidatorImplTest {
     void debeLanzarNoEnProceso_cuandoElProyectoNoEstaEnProceso() {
         // Arrange
         var mapa = mapa();
-        var proyecto = proyecto(mapa, EstadoProyectoGrado.ATRASADO);
+        var proyecto = proyecto(mapa, EstadoProyectoGrado.FINALIZADO);
         var tarea = tarea(mapa);
 
         // Act & Assert
@@ -96,17 +96,28 @@ class AsignarTareaValidatorImplTest {
         // Arrange
         var mapa = mapa();
         var enProceso = proyecto(mapa, EstadoProyectoGrado.EN_PROCESO);
-        var atrasado = proyecto(mapa, EstadoProyectoGrado.ATRASADO);
+        var finalizado = proyecto(mapa, EstadoProyectoGrado.FINALIZADO);
         var tarea = tarea(mapa);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(tarea, MapaRutaDomain.VACIO, ProyectoGradoDomain.VACIO,
                 true, false)).isInstanceOf(MapaRutaNoEncontradoException.class);
-        assertThatThrownBy(() -> validator.validar(tarea, mapa, atrasado, true, false))
+        assertThatThrownBy(() -> validator.validar(tarea, mapa, finalizado, true, false))
                 .isInstanceOf(TareaDuplicadaException.class);
-        assertThatThrownBy(() -> validator.validar(tarea, mapa, atrasado, false, false))
+        assertThatThrownBy(() -> validator.validar(tarea, mapa, finalizado, false, false))
                 .isInstanceOf(ProyectoGradoNoEnProcesoException.class);
         assertThatThrownBy(() -> validator.validar(tarea, mapa, enProceso, false, false))
                 .isInstanceOf(AsesorNoAsignadoProyectoGradoException.class);
+    }
+
+    @Test
+    void debeAceptar_cuandoProyectoAtrasado() {
+        // Arrange
+        var mapa = mapa();
+        var proyecto = proyecto(mapa, EstadoProyectoGrado.ATRASADO);
+        var tarea = tarea(mapa);
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(tarea, mapa, proyecto, false, true)).doesNotThrowAnyException();
     }
 }

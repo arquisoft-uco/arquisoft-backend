@@ -1,7 +1,9 @@
 package com.arquisoft.proyectos.domain.proyectogrado.event;
 
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
+import com.arquisoft.proyectos.domain.coordinador.model.ContactoCoordinador;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.model.ContactoEstudiante;
+import com.arquisoft.proyectos.domain.proyectogrado.model.DestinatariosEstadoProyectoGrado;
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.message.constant.EventTopics;
 
@@ -18,8 +20,7 @@ public class ProyectoGradoEstadoCambiadoEvent extends DomainEvent {
     private final String estadoAnterior;
     private final String estadoNuevo;
     private final String motivo;
-    private final List<ContactoEstudiante> estudiantes;
-    private final List<ContactoAsesor> asesores;
+    private final DestinatariosEstadoProyectoGrado destinatarios;
 
     public ProyectoGradoEstadoCambiadoEvent(
             UUID proyectoGradoId,
@@ -27,16 +28,14 @@ public class ProyectoGradoEstadoCambiadoEvent extends DomainEvent {
             String estadoAnterior,
             String estadoNuevo,
             String motivo,
-            List<ContactoEstudiante> estudiantes,
-            List<ContactoAsesor> asesores) {
+            DestinatariosEstadoProyectoGrado destinatarios) {
         super(EVENT_TOPIC, EVENT_TYPE);
         this.proyectoGradoId = proyectoGradoId;
         this.tituloProyecto = tituloProyecto;
         this.estadoAnterior = estadoAnterior;
         this.estadoNuevo = estadoNuevo;
         this.motivo = motivo;
-        this.estudiantes = List.copyOf(estudiantes);
-        this.asesores = List.copyOf(asesores);
+        this.destinatarios = destinatarios;
     }
 
     public UUID getProyectoGradoId() {
@@ -59,11 +58,15 @@ public class ProyectoGradoEstadoCambiadoEvent extends DomainEvent {
         return motivo;
     }
 
+    public ContactoCoordinador getCoordinador() {
+        return destinatarios.coordinador();
+    }
+
     public List<ContactoEstudiante> getEstudiantes() {
-        return estudiantes;
+        return destinatarios.estudiantes();
     }
 
     public List<ContactoAsesor> getAsesores() {
-        return asesores;
+        return destinatarios.asesores();
     }
 }

@@ -1,6 +1,7 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.usecase.impl;
 
 import com.arquisoft.proyectos.application.asesor.command.finder.AsesoresAsignadosDeProyectoGradoFinder;
+import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.EstadoProyectoGradoOutputPort;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.mapper.EstadoProyectoGradoMapper;
@@ -9,11 +10,13 @@ import com.arquisoft.proyectos.application.proyectogrado.command.finder.Proyecto
 import com.arquisoft.proyectos.application.proyectogrado.command.usecase.CancelarProyectoGradoUseCase;
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.CancelarProyectoGradoValidator;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
+import com.arquisoft.proyectos.domain.coordinador.model.ContactoCoordinador;
 import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.model.ContactoEstudiante;
 import com.arquisoft.proyectos.domain.proyectogrado.CancelacionProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.event.ProyectoGradoEstadoCambiadoEvent;
+import com.arquisoft.proyectos.domain.proyectogrado.model.DestinatariosEstadoProyectoGrado;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.ProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
@@ -27,6 +30,7 @@ public class CancelarProyectoGradoUseCaseImpl implements CancelarProyectoGradoUs
     private final EstadoProyectoGradoOutputPort estadoProyectoGradoOutputPort;
     private final ProyectoGradoBloqueadoPorIdFinder proyectoGradoBloqueadoPorIdFinder;
     private final EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
+    private final CoordinadorPorIdFinder coordinadorPorIdFinder;
     private final EstudiantesVigentesDeProyectoGradoFinder estudiantesVigentesDeProyectoGradoFinder;
     private final AsesoresAsignadosDeProyectoGradoFinder asesoresAsignadosDeProyectoGradoFinder;
     private final CancelarProyectoGradoValidator validator;
@@ -39,18 +43,21 @@ public class CancelarProyectoGradoUseCaseImpl implements CancelarProyectoGradoUs
 
         var proyecto = proyectoGradoBloqueadoPorIdFinder.obtener(entrada.getProyectoGrado());
         var estadoActual = estadoActualProyectoGradoFinder.obtener(entrada.getProyectoGrado());
+        var coordinador = coordinadorPorIdFinder.obtener(entrada.getCoordinador());
         var estudiantes = estudiantesVigentesDeProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         var asesores = asesoresAsignadosDeProyectoGradoFinder.obtener(entrada.getProyectoGrado());
 
         logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CANCELACION,
                 !proyecto.esVacio(), !estadoActual.esVacio(), estudiantes.size(), asesores.size());
 
-        validator.validar(entrada, proyecto, estadoActual);
+        validator.validar(entrada, proyecto, estadoActual, coordinador);
 
         var estadoCancelado = EstadoProyectoGradoDomain.crearCancelado(
                 entrada.getProyectoGrado(), entrada.getMotivo());
         estadoProyectoGradoOutputPort.registrar(EstadoProyectoGradoMapper.toEntity(estadoCancelado));
 
+        var contactoCoordinador = new ContactoCoordinador(
+                coordinador.getId(), coordinador.getNombre(), coordinador.getEmail());
         var contactosEstudiantes = estudiantes.stream()
                 .map(estudiante -> new ContactoEstudiante(
                         estudiante.getId(), estudiante.getNombre(), estudiante.getEmail()))
@@ -61,7 +68,7 @@ public class CancelarProyectoGradoUseCaseImpl implements CancelarProyectoGradoUs
         eventPublisher.publish(new ProyectoGradoEstadoCambiadoEvent(
                 proyecto.getId(), proyecto.getTituloProyecto(), estadoActual.getEstadoProyecto().getId(),
                 EstadoProyecto.CANCELADO.getId(), entrada.getMotivo(),
-                contactosEstudiantes, contactosAsesores));
+                new DestinatariosEstadoProyectoGrado(contactoCoordinador, contactosEstudiantes, contactosAsesores)));
 
         logger.info(ProyectoGradoKey.LOG_CANCELADO, entrada.getProyectoGrado(), entrada.getCoordinador());
     }

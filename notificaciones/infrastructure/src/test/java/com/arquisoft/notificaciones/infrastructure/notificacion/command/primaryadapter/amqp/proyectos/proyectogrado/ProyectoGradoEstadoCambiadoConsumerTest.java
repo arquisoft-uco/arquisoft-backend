@@ -12,8 +12,6 @@ import com.rabbitmq.client.Channel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,6 +35,9 @@ class ProyectoGradoEstadoCambiadoConsumerTest {
     private static final String DOS_ESTUDIANTES = """
             [{"id": "11111111-1111-1111-1111-111111111111", "nombre": "Ana Ruiz", "email": "ana.ruiz@soyuco.edu.co"},
              {"id": "22222222-2222-2222-2222-222222222222", "nombre": "Luis Diaz", "email": "luis.diaz@soyuco.edu.co"}]
+            """;
+    private static final String COORDINADOR = """
+            {"id": "33333333-3333-3333-3333-333333333333", "nombre": "Laura Mesa", "email": "laura.mesa@uco.edu.co"}
             """;
     private static final String UN_ASESOR = """
             [{"nombre": "Mario Peña", "email": "mario.pena@uco.edu.co"}]
@@ -66,6 +67,15 @@ class ProyectoGradoEstadoCambiadoConsumerTest {
     }
 
     private Message mensaje(long deliveryTag, String estadoNuevo, String estudiantes, String asesores) {
+        return mensaje(deliveryTag, estadoNuevo, estudiantes, asesores, COORDINADOR);
+    }
+
+    private Message mensajeSinCoordinador(long deliveryTag, String estadoNuevo, String estudiantes, String asesores) {
+        return mensaje(deliveryTag, estadoNuevo, estudiantes, asesores, "null");
+    }
+
+    private Message mensaje(long deliveryTag, String estadoNuevo, String estudiantes, String asesores,
+                            String coordinador) {
         var payloadJson = """
                 {
                     "idEvento": "evt-1",
@@ -75,10 +85,11 @@ class ProyectoGradoEstadoCambiadoConsumerTest {
                     "estadoAnterior": "EN_PROCESO",
                     "estadoNuevo": "%s",
                     "motivo": "Falta de avance",
+                    "coordinador": %s,
                     "estudiantes": %s,
                     "asesores": %s
                 }
-                """.formatted(PROYECTO, estadoNuevo, estudiantes, asesores);
+                """.formatted(PROYECTO, estadoNuevo, coordinador, estudiantes, asesores);
         var props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
         return MessageBuilder.withBody(payloadJson.getBytes()).andProperties(props).build();
@@ -127,16 +138,74 @@ class ProyectoGradoEstadoCambiadoConsumerTest {
         verify(channel).basicAck(2L, false);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"ATRASADO", "EN_PROCESO"})
-    void debeConfirmarSinEnviar_cuandoElEstadoNoAvisa(String estado) throws Exception {
+    @Test
+    void debeNotificarEstudiantesAsesoresYCoordinador_cuandoAtrasado() throws Exception {
         // Act
-        consumer.onProyectoGradoEstadoCambiado(mensaje(3L, estado, DOS_ESTUDIANTES, UN_ASESOR), channel);
+        consumer.onProyectoGradoEstadoCambiado(mensaje(3L, "ATRASADO", DOS_ESTUDIANTES, UN_ASESOR), channel);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
+        verify(enviarNotificacionInteractor, times(4)).ejecutar(captor.capture());
+        var comandos = captor.getAllValues();
+        assertThat(comandos).filteredOn(comando -> comando.tipo() == TipoNotificacion.PROYECTO_GRADO_ATRASADO_ESTUDIANTE)
+                .extracting(EnviarNotificacionCommand::destinatarioEmail)
+                .containsExactly("ana.ruiz@soyuco.edu.co", "luis.diaz@soyuco.edu.co");
+        assertThat(comandos).filteredOn(comando -> comando.tipo() == TipoNotificacion.PROYECTO_GRADO_ATRASADO_ASESOR)
+                .extracting(EnviarNotificacionCommand::destinatarioEmail)
+                .containsExactly("mario.pena@uco.edu.co");
+        assertThat(comandos).filteredOn(comando -> comando.tipo() == TipoNotificacion.PROYECTO_GRADO_ATRASADO_COORDINADOR)
+                .singleElement().satisfies(comando -> {
+                    assertThat(comando.destinatarioEmail()).isEqualTo("laura.mesa@uco.edu.co");
+                    assertThat(comando.destinatarioNombre()).isEqualTo("Laura Mesa");
+                    assertThat(comando.asunto()).contains("Sistema de gestión");
+                    assertThat(comando.cuerpo()).contains("Laura Mesa", "Sistema de gestión");
+                    assertThat(comando.pie()).isNotEmpty();
+                });
+        assertThat(comandos).allSatisfy(comando -> assertThat(comando.idEvento()).isEqualTo("evt-1"));
+        verify(channel).basicAck(3L, false);
+    }
+
+    @Test
+    void debeNotificarEstudiantesYAsesores_cuandoEnProceso() throws Exception {
+        // Act
+        consumer.onProyectoGradoEstadoCambiado(mensaje(6L, "EN_PROCESO", DOS_ESTUDIANTES, UN_ASESOR), channel);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
+        verify(enviarNotificacionInteractor, times(3)).ejecutar(captor.capture());
+        var comandos = captor.getAllValues();
+        assertThat(comandos).extracting(EnviarNotificacionCommand::tipo).containsExactlyInAnyOrder(
+                TipoNotificacion.PROYECTO_GRADO_REANUDADO_ESTUDIANTE,
+                TipoNotificacion.PROYECTO_GRADO_REANUDADO_ESTUDIANTE,
+                TipoNotificacion.PROYECTO_GRADO_REANUDADO_ASESOR);
+        assertThat(comandos).extracting(EnviarNotificacionCommand::destinatarioEmail)
+                .doesNotContain("laura.mesa@uco.edu.co");
+        verify(channel).basicAck(6L, false);
+    }
+
+    @Test
+    void debeNotificarSinCoordinador_cuandoAtrasadoYElPayloadNoLoTrae() throws Exception {
+        // Act
+        consumer.onProyectoGradoEstadoCambiado(
+                mensajeSinCoordinador(7L, "ATRASADO", DOS_ESTUDIANTES, UN_ASESOR), channel);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
+        verify(enviarNotificacionInteractor, times(3)).ejecutar(captor.capture());
+        assertThat(captor.getAllValues()).extracting(EnviarNotificacionCommand::tipo)
+                .doesNotContain(TipoNotificacion.PROYECTO_GRADO_ATRASADO_COORDINADOR);
+        verify(channel).basicAck(7L, false);
+    }
+
+    @Test
+    void debeConfirmarSinEnviar_cuandoElEstadoNoAvisa() throws Exception {
+        // Act
+        consumer.onProyectoGradoEstadoCambiado(mensaje(8L, "OTRO_ESTADO", DOS_ESTUDIANTES, UN_ASESOR), channel);
 
         // Assert
         verify(enviarNotificacionInteractor, never()).ejecutar(any());
-        verify(logger).info(ConsumidorKey.LOG_PROYECTO_GRADO_ESTADO_CAMBIADO_IGNORADO, PROYECTO, estado);
-        verify(channel).basicAck(3L, false);
+        verify(logger).info(ConsumidorKey.LOG_PROYECTO_GRADO_ESTADO_CAMBIADO_IGNORADO, PROYECTO, "OTRO_ESTADO");
+        verify(channel).basicAck(8L, false);
     }
 
     @Test

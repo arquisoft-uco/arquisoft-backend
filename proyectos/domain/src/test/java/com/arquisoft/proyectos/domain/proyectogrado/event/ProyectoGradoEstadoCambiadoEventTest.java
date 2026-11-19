@@ -1,7 +1,9 @@
 package com.arquisoft.proyectos.domain.proyectogrado.event;
 
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
+import com.arquisoft.proyectos.domain.coordinador.model.ContactoCoordinador;
 import com.arquisoft.proyectos.domain.estudianteproyectogrado.model.ContactoEstudiante;
+import com.arquisoft.proyectos.domain.proyectogrado.model.DestinatariosEstadoProyectoGrado;
 import com.arquisoft.shared.message.constant.EventTopics;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ class ProyectoGradoEstadoCambiadoEventTest {
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var estudiante = new ContactoEstudiante(UtilUUID.generarNuevoUUID(), "Ana Ruiz", "ana.ruiz@soyuco.edu.co");
         var asesor = new ContactoAsesor("Luis Mora", "luis.mora@uco.edu.co");
+        var coordinador = new ContactoCoordinador(UtilUUID.generarNuevoUUID(), "Laura Mesa", "laura.mesa@uco.edu.co");
         var estudiantes = new ArrayList<ContactoEstudiante>();
         estudiantes.add(estudiante);
         var asesores = new ArrayList<ContactoAsesor>();
@@ -28,7 +31,7 @@ class ProyectoGradoEstadoCambiadoEventTest {
         // Act
         var evento = new ProyectoGradoEstadoCambiadoEvent(
                 proyectoGrado, "Sistema de gestión", "ATRASADO", "CANCELADO", "Falta de avance",
-                estudiantes, asesores);
+                new DestinatariosEstadoProyectoGrado(coordinador, estudiantes, asesores));
         estudiantes.clear();
         asesores.clear();
 
@@ -38,6 +41,7 @@ class ProyectoGradoEstadoCambiadoEventTest {
         assertThat(evento.getEstadoAnterior()).isEqualTo("ATRASADO");
         assertThat(evento.getEstadoNuevo()).isEqualTo("CANCELADO");
         assertThat(evento.getMotivo()).isEqualTo("Falta de avance");
+        assertThat(evento.getCoordinador()).isEqualTo(coordinador);
         assertThat(evento.getEstudiantes()).containsExactly(estudiante);
         assertThat(evento.getAsesores()).containsExactly(asesor);
         assertThat(evento.getTemaEvento()).isEqualTo(EventTopics.Proyectos.PROYECTO_GRADO_ESTADO_CAMBIADO);
@@ -54,7 +58,8 @@ class ProyectoGradoEstadoCambiadoEventTest {
     void debeAceptarListasVacias_cuandoNoHayDestinatarios() {
         // Act
         var evento = new ProyectoGradoEstadoCambiadoEvent(
-                UtilUUID.generarNuevoUUID(), "P", "EN_PROCESO", "FINALIZADO", "", List.of(), List.of());
+                UtilUUID.generarNuevoUUID(), "P", "EN_PROCESO", "FINALIZADO", "",
+                new DestinatariosEstadoProyectoGrado(null, List.of(), List.of()));
 
         // Assert
         assertThat(evento.getEstudiantes()).isEmpty();

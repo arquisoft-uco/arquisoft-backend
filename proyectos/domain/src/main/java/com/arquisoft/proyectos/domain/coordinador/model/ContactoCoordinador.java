@@ -1,4 +1,6 @@
 package com.arquisoft.proyectos.domain.coordinador.model;
 
-public record ContactoCoordinador(String nombre, String email) {
+import java.util.UUID;
+
+public record ContactoCoordinador(UUID id, String nombre, String email) {
 }

@@ -70,7 +70,7 @@ class CambiarFechaFinMapaRutaUseCaseImplTest {
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), INICIO, FIN_ACTUAL);
         var proyecto = ProyectoGradoDomain.reconstruir(
                 mapa.getProyectoGrado(), EstadoProyectoGrado.EN_PROCESO, coordinador,
-                UtilUUID.generarNuevoUUID(), "Titulo");
+                UtilUUID.generarNuevoUUID(), "Titulo", null);
         var cambio = CambioFechaFinMapaRutaDomain.crear(mapa.getId(), FIN_NUEVA, coordinador);
         when(mapaRutaPorIdFinder.obtener(mapa.getId())).thenReturn(mapa);
         when(proyectoGradoPorIdFinder.obtener(mapa.getProyectoGrado())).thenReturn(proyecto);
@@ -105,7 +105,7 @@ class CambiarFechaFinMapaRutaUseCaseImplTest {
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), INICIO, FIN_ACTUAL);
         var proyecto = ProyectoGradoDomain.reconstruir(
                 mapa.getProyectoGrado(), EstadoProyectoGrado.EN_PROCESO, coordinador,
-                UtilUUID.generarNuevoUUID(), "Titulo");
+                UtilUUID.generarNuevoUUID(), "Titulo", null);
         var cambio = CambioFechaFinMapaRutaDomain.crear(mapa.getId(), INICIO, coordinador);
         when(mapaRutaPorIdFinder.obtener(mapa.getId())).thenReturn(mapa);
         when(proyectoGradoPorIdFinder.obtener(mapa.getProyectoGrado())).thenReturn(proyecto);
