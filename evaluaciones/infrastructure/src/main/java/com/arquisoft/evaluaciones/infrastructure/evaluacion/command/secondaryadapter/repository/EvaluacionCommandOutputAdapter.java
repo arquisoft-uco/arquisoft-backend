@@ -1,8 +1,12 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.repository;
 
 import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.EvaluacionOutputPort;
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.AvanceEvaluacionEntity;
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.ConsolidacionNotasEvaluacionEntity;
 import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.ContextoAsignacionEvaluacionEntity;
 import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.EvaluacionEntity;
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.FinalizacionEvaluacionEntity;
+import com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.mapper.AvanceEvaluacionJpaMapper;
 import com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.mapper.ContextoAsignacionEvaluacionJpaMapper;
 import com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.mapper.EvaluacionJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
@@ -41,5 +45,37 @@ public class EvaluacionCommandOutputAdapter implements EvaluacionOutputPort {
     public Optional<ContextoAsignacionEvaluacionEntity> obtenerContextoAsignacionBloqueado(UUID evaluacion) {
         return repository.buscarContextoAsignacionBloqueado(evaluacion)
                 .map(ContextoAsignacionEvaluacionJpaMapper::toEntity);
+    }
+
+    @Override
+    public void actualizarNotas(ConsolidacionNotasEvaluacionEntity consolidacion) {
+        repository.actualizarNotas(
+                consolidacion.evaluacion(),
+                consolidacion.notaAsesor(),
+                consolidacion.notaJurados(),
+                consolidacion.pesoAsesor(),
+                consolidacion.pesoJurados(),
+                consolidacion.cantidadJurados());
+        logger.debug(EvaluacionKey.LOG_NOTAS_ACTUALIZADAS, consolidacion.evaluacion());
+    }
+
+    @Override
+    public Optional<AvanceEvaluacionEntity> obtenerAvance(UUID evaluacion) {
+        return repository.buscarAvance(evaluacion).map(AvanceEvaluacionJpaMapper::toEntity);
+    }
+
+    @Override
+    public boolean existenObservaciones(UUID evaluacion) {
+        return repository.existenObservaciones(evaluacion);
+    }
+
+    @Override
+    public void finalizar(FinalizacionEvaluacionEntity finalizacion) {
+        repository.finalizar(
+                finalizacion.evaluacion(),
+                finalizacion.estado(),
+                finalizacion.notaFinal(),
+                finalizacion.resultado());
+        logger.debug(EvaluacionKey.LOG_FINALIZACION_GUARDADA, finalizacion.evaluacion(), finalizacion.resultado());
     }
 }
