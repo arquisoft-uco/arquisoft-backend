@@ -8,12 +8,14 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.prueba.CatalogoMensajesPrueba;
 import com.arquisoft.shared.redis.catalogo.CatalogoMensajesRedis;
 import com.arquisoft.shared.redis.catalogo.exception.CatalogoMensajesIncompletoException;
+import com.arquisoft.shared.redis.catalogo.messageuco.SincronizadorCatalogoMessageUco;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -23,10 +25,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -50,6 +58,9 @@ class CatalogoMensajesRedisConfigTest {
     @Mock
     private AppLogger logger;
 
+    @Mock
+    private ObjectProvider<SincronizadorCatalogoMessageUco> sincronizador;
+
     private final CatalogoMensajesRedisConfig config = new CatalogoMensajesRedisConfig();
 
     @AfterEach
@@ -66,7 +77,7 @@ class CatalogoMensajesRedisConfigTest {
         redisDevuelve(textosCoherentes());
 
         // Act
-        CatalogoMensajesRedis catalogo = config.catalogoMensajesRedis(plantilla, logger);
+        CatalogoMensajesRedis catalogo = config.catalogoMensajesRedis(plantilla, logger, sincronizador);
 
         // Assert
         assertThat(catalogo.clavesEnCache()).isEqualTo(ClavesCatalogo.TODAS.size());
@@ -79,10 +90,30 @@ class CatalogoMensajesRedisConfigTest {
         redisDevuelve(textosCoherentes());
 
         // Act
-        CatalogoMensajesRedis catalogo = config.catalogoMensajesRedis(plantilla, logger);
+        CatalogoMensajesRedis catalogo = config.catalogoMensajesRedis(plantilla, logger, sincronizador);
 
         // Assert
         assertThat(Mensajes.catalogo()).isSameAs(catalogo);
+    }
+
+    @Test
+    @DisplayName("sincroniza desde MessageUcoLab antes de validar el catálogo")
+    void debeSincronizarAntesDeValidar_cuandoHaySincronizador() {
+        // Arrange
+        redisDevuelve(textosCoherentes());
+        var sincronizadorDisponible = mock(SincronizadorCatalogoMessageUco.class);
+        doAnswer(invocacion -> {
+            invocacion.<Consumer<SincronizadorCatalogoMessageUco>>getArgument(0).accept(sincronizadorDisponible);
+            return null;
+        }).when(sincronizador).ifAvailable(any());
+
+        // Act
+        config.catalogoMensajesRedis(plantilla, logger, sincronizador);
+
+        // Assert
+        var orden = inOrder(sincronizadorDisponible, operaciones);
+        orden.verify(sincronizadorDisponible).sincronizarAlArrancar();
+        orden.verify(operaciones, atLeastOnce()).multiGet(anyCollection());
     }
 
     @Test
@@ -94,7 +125,7 @@ class CatalogoMensajesRedisConfigTest {
         redisDevuelve(textos);
 
         // Act & Assert
-        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger))
+        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger, sincronizador))
                 .isInstanceOf(CatalogoMensajesIncompletoException.class);
     }
 
@@ -108,7 +139,7 @@ class CatalogoMensajesRedisConfigTest {
         redisDevuelve(textos);
 
         // Act & Assert
-        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger))
+        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger, sincronizador))
                 .as("un fallo mudo obligaría a comparar a mano el catálogo contra Redis")
                 .hasMessageContaining(ausente.clave());
     }
@@ -122,7 +153,7 @@ class CatalogoMensajesRedisConfigTest {
         redisDevuelve(textos);
 
         // Act
-        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger));
+        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger, sincronizador));
 
         // Assert
         assertThat(Mensajes.catalogo())
@@ -138,7 +169,7 @@ class CatalogoMensajesRedisConfigTest {
         when(operaciones.multiGet(anyCollection())).thenThrow(new QueryTimeoutException("Redis caído"));
 
         // Act & Assert
-        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger))
+        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger, sincronizador))
                 .isInstanceOf(CatalogoMensajesIncompletoException.class)
                 .hasCauseInstanceOf(QueryTimeoutException.class);
     }
@@ -153,7 +184,7 @@ class CatalogoMensajesRedisConfigTest {
         redisDevuelve(textos);
 
         // Act & Assert
-        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger))
+        assertThatThrownBy(() -> config.catalogoMensajesRedis(plantilla, logger, sincronizador))
                 .as("el texto existe, así que el fail-fast de claves faltantes no lo vería; "
                         + "String.formatted lanzaría en el primer uso, construyendo la respuesta "
                         + "de un error ya ocurrido")

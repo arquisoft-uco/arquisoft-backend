@@ -1,0 +1,17 @@
+# Solo para CATALOGO_FUENTE=messageuco con el backend en contenedor (ADR-017).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.messageuco.yml up -d --build
+#
+# Conecta el backend a la red de Pulsar del kit de MessageUcoLab para recibir los avisos de cambio
+# en pulsar://pulsar:6650. Va aparte porque es una red externa: si estuviera en docker-compose.yml,
+# nadie podria levantar el backend sin tener MessageUcoLab corriendo.
+services:
+  arquisoft-backend:
+    networks:
+      - arquisoft-network
+      - messageucolab-pulsar
+
+networks:
+  messageucolab-pulsar:
+    external: true
+    name: messageucolab_pulsar-network

@@ -18,6 +18,11 @@ concurrency:
   # En develop no se cancela: cada merge debe quedar con su propio veredicto de CI.
   cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
 
+# GITHUB_TOKEN no alcanza: el paquete de MessageUcoLab está en un repositorio de otro dueño.
+env:
+  GITHUB_PACKAGES_USER: ${{ secrets.MESSAGEUCOLAB_PACKAGES_USER }}
+  GITHUB_PACKAGES_TOKEN: ${{ secrets.MESSAGEUCOLAB_PACKAGES_TOKEN }}
+
 jobs:
   # ============================================================================
   # Versionamiento Flyway — job propio: corre en segundos y sin Java, así un error

@@ -94,3 +94,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          secrets: |
+            github_packages_user=${{ secrets.MESSAGEUCOLAB_PACKAGES_USER }}
+            github_packages_token=${{ secrets.MESSAGEUCOLAB_PACKAGES_TOKEN }}

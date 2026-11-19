@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ==================== STAGE 1: BUILD ====================
 # --platform=$BUILDPLATFORM: el jar es bytecode agnóstico de arquitectura, así que
 # esta etapa siempre corre nativa en el runner (evita compilar bajo emulación QEMU
@@ -11,7 +12,10 @@ COPY . .
 # chmod + build en un solo RUN para minimizar capas.
 # find excluye el artefacto *-plain.jar que Spring Boot también genera,
 # evitando que el COPY del stage 2 falle por múltiples coincidencias.
-RUN sed -i 's/\r$//' gradlew && chmod +x gradlew && \
+# Los secretos solo existen durante este RUN: el token de GitHub Packages no queda en ninguna capa.
+RUN --mount=type=secret,id=github_packages_user,env=GITHUB_PACKAGES_USER \
+    --mount=type=secret,id=github_packages_token,env=GITHUB_PACKAGES_TOKEN \
+    sed -i 's/\r$//' gradlew && chmod +x gradlew && \
     ./gradlew build -x test --no-daemon && \
     find build/libs -maxdepth 1 -name "*.jar" ! -name "*-plain.jar" \
          -exec cp {} app.jar \;

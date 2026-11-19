@@ -9,7 +9,9 @@ import com.arquisoft.shared.redis.catalogo.CatalogoMensajesRedis;
 import com.arquisoft.shared.redis.catalogo.MonitorCatalogoRedis;
 import com.arquisoft.shared.redis.catalogo.ResultadoCarga;
 import com.arquisoft.shared.redis.catalogo.exception.CatalogoMensajesIncompletoException;
+import com.arquisoft.shared.redis.catalogo.messageuco.SincronizadorCatalogoMessageUco;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -47,7 +49,11 @@ public class CatalogoMensajesRedisConfig {
 
     @Bean
     @Primary
-    public CatalogoMensajesRedis catalogoMensajesRedis(StringRedisTemplate plantilla, AppLogger logger) {
+    public CatalogoMensajesRedis catalogoMensajesRedis(StringRedisTemplate plantilla, AppLogger logger,
+            ObjectProvider<SincronizadorCatalogoMessageUco> sincronizador) {
+        // Antes de validar: con la fuente messageuco, el fail-fast debe juzgar los textos recién traídos.
+        sincronizador.ifAvailable(SincronizadorCatalogoMessageUco::sincronizarAlArrancar);
+
         CatalogoMensajes respaldo = CatalogoMensajesRespaldo.porDefecto();
         var catalogo = new CatalogoMensajesRedis(plantilla, respaldo, logger);
 
