@@ -128,6 +128,26 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-cancelado-asesor", 1),
     CUERPO_PROYECTO_GRADO_CANCELADO_ASESOR(
             "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-cancelado-asesor", 3),
+    ASUNTO_PROYECTO_GRADO_ATRASADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-atrasado-estudiante", 1),
+    CUERPO_PROYECTO_GRADO_ATRASADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-atrasado-estudiante", 2),
+    ASUNTO_PROYECTO_GRADO_ATRASADO_ASESOR(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-atrasado-asesor", 1),
+    CUERPO_PROYECTO_GRADO_ATRASADO_ASESOR(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-atrasado-asesor", 2),
+    ASUNTO_PROYECTO_GRADO_ATRASADO_COORDINADOR(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-atrasado-coordinador", 1),
+    CUERPO_PROYECTO_GRADO_ATRASADO_COORDINADOR(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-atrasado-coordinador", 2),
+    ASUNTO_PROYECTO_GRADO_REANUDADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-reanudado-estudiante", 1),
+    CUERPO_PROYECTO_GRADO_REANUDADO_ESTUDIANTE(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-reanudado-estudiante", 2),
+    ASUNTO_PROYECTO_GRADO_REANUDADO_ASESOR(
+            "notificaciones.aplicacion.plantilla.asunto.proyecto-grado-reanudado-asesor", 1),
+    CUERPO_PROYECTO_GRADO_REANUDADO_ASESOR(
+            "notificaciones.aplicacion.plantilla.cuerpo.proyecto-grado-reanudado-asesor", 2),
     ASUNTO_ESTADO_FICHA_PERFIL_AGREGADO(
             "notificaciones.aplicacion.plantilla.asunto.estado-ficha-perfil-agregado", 2),
     CUERPO_ESTADO_FICHA_PERFIL_AGREGADO(

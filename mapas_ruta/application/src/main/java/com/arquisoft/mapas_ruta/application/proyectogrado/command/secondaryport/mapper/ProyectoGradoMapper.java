@@ -14,6 +14,17 @@ public final class ProyectoGradoMapper {
                 EstadoProyectoGrado.desde(entity.estadoProyectoGrado()),
                 entity.coordinador(),
                 entity.fichaPerfil(),
-                entity.tituloProyecto());
+                entity.tituloProyecto(),
+                entity.ocurridoEn());
+    }
+
+    public static ProyectoGradoEntity toEntity(ProyectoGradoDomain domain) {
+        return new ProyectoGradoEntity(
+                domain.getId(),
+                domain.getEstadoProyectoGrado().getId(),
+                domain.getCoordinador(),
+                domain.getFichaPerfil(),
+                domain.getTituloProyecto(),
+                domain.getOcurridoEn());
     }
 }

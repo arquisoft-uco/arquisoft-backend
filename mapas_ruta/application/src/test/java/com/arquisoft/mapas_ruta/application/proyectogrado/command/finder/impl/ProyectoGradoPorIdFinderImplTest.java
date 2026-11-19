@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +30,7 @@ class ProyectoGradoPorIdFinderImplTest {
     void debeRetornarElDomainReconstruido_cuandoElProyectoExiste() {
         // Arrange
         var entity = new ProyectoGradoEntity(UtilUUID.generarNuevoUUID(), "EN_PROCESO",
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Titulo");
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Titulo", Instant.parse("2026-11-01T10:00:00Z"));
         when(proyectoGradoOutputPort.obtenerPorId(entity.id())).thenReturn(Optional.of(entity));
 
         // Act
@@ -41,6 +42,7 @@ class ProyectoGradoPorIdFinderImplTest {
         assertThat(resultado.getCoordinador()).isEqualTo(entity.coordinador());
         assertThat(resultado.getFichaPerfil()).isEqualTo(entity.fichaPerfil());
         assertThat(resultado.getTituloProyecto()).isEqualTo("Titulo");
+        assertThat(resultado.getOcurridoEn()).isEqualTo(entity.ocurridoEn());
     }
 
     @Test

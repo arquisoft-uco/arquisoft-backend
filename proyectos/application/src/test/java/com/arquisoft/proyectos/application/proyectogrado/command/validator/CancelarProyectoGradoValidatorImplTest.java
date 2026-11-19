@@ -1,6 +1,8 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.validator;
 
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.impl.CancelarProyectoGradoValidatorImpl;
+import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
+import com.arquisoft.proyectos.domain.coordinador.exception.CoordinadorNoEncontradoException;
 import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.exception.EstadoProyectoGradoNoEncontradoException;
@@ -13,6 +15,7 @@ import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -25,6 +28,8 @@ class CancelarProyectoGradoValidatorImplTest {
     private final ProyectoGradoDomain proyecto = ProyectoGradoDomain.crear(
             UtilUUID.generarNuevoUUID(), "Sistema de gestión", UtilUUID.generarNuevoUUID());
     private final EstadoProyectoGradoDomain enProceso = EstadoProyectoGradoDomain.crear(proyecto.getId());
+    private final CoordinadorDomain coordinador = CoordinadorDomain.reconstruir(proyecto.getCoordinador(), "1020",
+            "Laura Mesa", "laura.mesa@uco.edu.co", Instant.parse("2026-09-01T10:00:00Z"), null);
     private final EstadoProyectoGradoDomain finalizado = EstadoProyectoGradoDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), proyecto.getId(), EstadoProyecto.FINALIZADO,
             UtilFecha.generarInstanteActual(), null);
@@ -36,7 +41,7 @@ class CancelarProyectoGradoValidatorImplTest {
     @Test
     void debePasar_cuandoTodasLasReglasSeCumplen() {
         // Act & Assert
-        assertThatCode(() -> validator.validar(cancelacion(proyecto.getCoordinador()), proyecto, enProceso))
+        assertThatCode(() -> validator.validar(cancelacion(proyecto.getCoordinador()), proyecto, enProceso, coordinador))
                 .doesNotThrowAnyException();
     }
 
@@ -44,7 +49,7 @@ class CancelarProyectoGradoValidatorImplTest {
     void debeLanzar_cuandoProyectoNoExiste() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cancelacion(proyecto.getCoordinador()), ProyectoGradoDomain.VACIO, enProceso))
+                cancelacion(proyecto.getCoordinador()), ProyectoGradoDomain.VACIO, enProceso, coordinador))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
 
@@ -52,21 +57,21 @@ class CancelarProyectoGradoValidatorImplTest {
     void debeLanzar_cuandoSinEstadoActual() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cancelacion(proyecto.getCoordinador()), proyecto, EstadoProyectoGradoDomain.VACIO))
+                cancelacion(proyecto.getCoordinador()), proyecto, EstadoProyectoGradoDomain.VACIO, coordinador))
                 .isInstanceOf(EstadoProyectoGradoNoEncontradoException.class);
     }
 
     @Test
     void debeLanzar_cuandoOtroCoordinador() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cancelacion(UtilUUID.generarNuevoUUID()), proyecto, enProceso))
+        assertThatThrownBy(() -> validator.validar(cancelacion(UtilUUID.generarNuevoUUID()), proyecto, enProceso, coordinador))
                 .isInstanceOf(ProyectoGradoNoPerteneceCoordinadorException.class);
     }
 
     @Test
     void debeLanzar_cuandoNoEsCancelable() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cancelacion(proyecto.getCoordinador()), proyecto, finalizado))
+        assertThatThrownBy(() -> validator.validar(cancelacion(proyecto.getCoordinador()), proyecto, finalizado, coordinador))
                 .isInstanceOf(ProyectoGradoNoCancelableException.class);
     }
 
@@ -77,11 +82,27 @@ class CancelarProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                otroCoordinador, ProyectoGradoDomain.VACIO, EstadoProyectoGradoDomain.VACIO))
+                otroCoordinador, ProyectoGradoDomain.VACIO, EstadoProyectoGradoDomain.VACIO, coordinador))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
-        assertThatThrownBy(() -> validator.validar(otroCoordinador, proyecto, EstadoProyectoGradoDomain.VACIO))
+        assertThatThrownBy(() -> validator.validar(otroCoordinador, proyecto, EstadoProyectoGradoDomain.VACIO, coordinador))
                 .isInstanceOf(EstadoProyectoGradoNoEncontradoException.class);
-        assertThatThrownBy(() -> validator.validar(otroCoordinador, proyecto, finalizado))
+        assertThatThrownBy(() -> validator.validar(otroCoordinador, proyecto, finalizado, coordinador))
+                .isInstanceOf(ProyectoGradoNoPerteneceCoordinadorException.class);
+    }
+
+    @Test
+    void debeLanzarCoordinadorNoEncontrado_cuandoElCoordinadorEsVacio() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cancelacion(proyecto.getCoordinador()), proyecto, enProceso, CoordinadorDomain.VACIO))
+                .isInstanceOf(CoordinadorNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarNoPertenece_antesQueCoordinadorNoEncontrado() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cancelacion(UtilUUID.generarNuevoUUID()), proyecto, enProceso, CoordinadorDomain.VACIO))
                 .isInstanceOf(ProyectoGradoNoPerteneceCoordinadorException.class);
     }
 }

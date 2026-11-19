@@ -161,6 +161,14 @@ public final class EstadoProyectoGradoDomain {
         return motivo;
     }
 
+    public boolean estaEnProceso() {
+        return estadoProyecto == EstadoProyecto.EN_PROCESO;
+    }
+
+    public boolean estaAtrasado() {
+        return estadoProyecto == EstadoProyecto.ATRASADO;
+    }
+
     public boolean esVacio() {
         return this == VACIO;
     }

@@ -10,6 +10,7 @@ import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilColeccion;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -18,12 +19,15 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class ProyectoGradoEstadoCambiadoConsumer extends AbstractNotificacionConsumer {
 
     private static final String ESTADO_FINALIZADO = "FINALIZADO";
     private static final String ESTADO_CANCELADO = "CANCELADO";
+    private static final String ESTADO_ATRASADO = "ATRASADO";
+    private static final String ESTADO_EN_PROCESO = "EN_PROCESO";
 
     private final EnviarNotificacionInteractor enviarNotificacionInteractor;
 
@@ -58,9 +62,64 @@ public class ProyectoGradoEstadoCambiadoConsumer extends AbstractNotificacionCon
                 return;
             }
 
+            if (ESTADO_ATRASADO.equals(payload.estadoNuevo())) {
+                notificarAtrasado(payload, estudiantes, asesores);
+                return;
+            }
+
+            if (ESTADO_EN_PROCESO.equals(payload.estadoNuevo())) {
+                notificarReanudado(payload, estudiantes, asesores);
+                return;
+            }
+
             logger.info(ConsumidorKey.LOG_PROYECTO_GRADO_ESTADO_CAMBIADO_IGNORADO,
                     payload.proyectoGradoId(), payload.estadoNuevo());
         });
+    }
+
+    private void notificarAtrasado(ProyectoGradoEstadoCambiadoPayload payload,
+                                   List<ProyectoGradoEstadoCambiadoPayload.ContactoPayload> estudiantes,
+                                   List<ProyectoGradoEstadoCambiadoPayload.ContactoPayload> asesores) {
+        estudiantes.forEach(estudiante -> notificar(payload, estudiante,
+                TipoNotificacionEvento.PROYECTO_GRADO_ATRASADO_ESTUDIANTE,
+                PlantillaKey.ASUNTO_PROYECTO_GRADO_ATRASADO_ESTUDIANTE,
+                PlantillaKey.CUERPO_PROYECTO_GRADO_ATRASADO_ESTUDIANTE));
+        asesores.forEach(asesor -> notificar(payload, asesor,
+                TipoNotificacionEvento.PROYECTO_GRADO_ATRASADO_ASESOR,
+                PlantillaKey.ASUNTO_PROYECTO_GRADO_ATRASADO_ASESOR,
+                PlantillaKey.CUERPO_PROYECTO_GRADO_ATRASADO_ASESOR));
+        if (UtilObjeto.noEsNulo(payload.coordinador())) {
+            notificar(payload, payload.coordinador(),
+                    TipoNotificacionEvento.PROYECTO_GRADO_ATRASADO_COORDINADOR,
+                    PlantillaKey.ASUNTO_PROYECTO_GRADO_ATRASADO_COORDINADOR,
+                    PlantillaKey.CUERPO_PROYECTO_GRADO_ATRASADO_COORDINADOR);
+        }
+    }
+
+    private void notificarReanudado(ProyectoGradoEstadoCambiadoPayload payload,
+                                    List<ProyectoGradoEstadoCambiadoPayload.ContactoPayload> estudiantes,
+                                    List<ProyectoGradoEstadoCambiadoPayload.ContactoPayload> asesores) {
+        estudiantes.forEach(estudiante -> notificar(payload, estudiante,
+                TipoNotificacionEvento.PROYECTO_GRADO_REANUDADO_ESTUDIANTE,
+                PlantillaKey.ASUNTO_PROYECTO_GRADO_REANUDADO_ESTUDIANTE,
+                PlantillaKey.CUERPO_PROYECTO_GRADO_REANUDADO_ESTUDIANTE));
+        asesores.forEach(asesor -> notificar(payload, asesor,
+                TipoNotificacionEvento.PROYECTO_GRADO_REANUDADO_ASESOR,
+                PlantillaKey.ASUNTO_PROYECTO_GRADO_REANUDADO_ASESOR,
+                PlantillaKey.CUERPO_PROYECTO_GRADO_REANUDADO_ASESOR));
+    }
+
+    private void notificar(ProyectoGradoEstadoCambiadoPayload payload,
+                           ProyectoGradoEstadoCambiadoPayload.ContactoPayload destinatario,
+                           TipoNotificacionEvento tipo, PlantillaKey asunto, PlantillaKey cuerpo) {
+        registrar(enviarNotificacionInteractor.ejecutar(EnviarNotificacionCommand.crear(
+                payload.idEvento(),
+                tipo.getCodigo(),
+                destinatario.nombre(),
+                destinatario.email(),
+                plantilla(asunto, payload.tituloProyecto()),
+                plantilla(cuerpo, destinatario.nombre(), payload.tituloProyecto()),
+                plantilla(PlantillaKey.PIE_GENERICO))));
     }
 
     private void notificarFinalizadoEstudiante(ProyectoGradoEstadoCambiadoPayload payload,

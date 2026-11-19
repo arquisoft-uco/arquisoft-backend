@@ -3,6 +3,7 @@ package com.arquisoft.shared.util;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -52,5 +53,19 @@ class UtilFechaTest {
         // Act & Assert
         assertThat(UtilFecha.parsearFechaDesdeTexto("2026-02-30")).isNull();
         assertThat(UtilFecha.parsearFechaDesdeTexto(null)).isNull();
+    }
+
+    @Test
+    void debeUsarLaZonaIndicada_cuandoGeneraFechaActual() {
+        // Arrange
+        var zonaAdelantada = ZoneId.of("Pacific/Kiritimati");
+        var zonaAtrasada = ZoneId.of("Pacific/Pago_Pago");
+
+        // Act
+        var fechaAdelantada = UtilFecha.generarFechaActual(zonaAdelantada);
+        var fechaAtrasada = UtilFecha.generarFechaActual(zonaAtrasada);
+
+        // Assert
+        assertThat(fechaAdelantada).isAfter(fechaAtrasada);
     }
 }

@@ -151,4 +151,21 @@ class EstadoProyectoGradoDomainTest {
         assertThat(vacio.getEstadoProyecto()).isEqualTo(EstadoProyecto.VACIO);
         assertThat(vacio.getFechaActualizacion()).isEqualTo(UtilFecha.VACIO);
     }
+
+    @Test
+    void debeIndicarElEstadoActual_cuandoSePreguntaEstaEnProcesoOEstaAtrasado() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var enProceso = EstadoProyectoGradoDomain.crearConEstado(proyectoGrado, EstadoProyecto.EN_PROCESO);
+        var atrasado = EstadoProyectoGradoDomain.crearConEstado(proyectoGrado, EstadoProyecto.ATRASADO);
+        var finalizado = EstadoProyectoGradoDomain.crearConEstado(proyectoGrado, EstadoProyecto.FINALIZADO);
+
+        // Act & Assert
+        assertThat(enProceso.estaEnProceso()).isTrue();
+        assertThat(enProceso.estaAtrasado()).isFalse();
+        assertThat(atrasado.estaEnProceso()).isFalse();
+        assertThat(atrasado.estaAtrasado()).isTrue();
+        assertThat(finalizado.estaEnProceso()).isFalse();
+        assertThat(finalizado.estaAtrasado()).isFalse();
+    }
 }

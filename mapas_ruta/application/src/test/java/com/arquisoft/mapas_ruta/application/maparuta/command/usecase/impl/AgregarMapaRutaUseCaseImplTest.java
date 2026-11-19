@@ -69,7 +69,7 @@ class AgregarMapaRutaUseCaseImplTest {
     private static ProyectoGradoDomain proyecto(AgregacionMapaRutaDomain agregacion) {
         return ProyectoGradoDomain.reconstruir(
                 agregacion.getMapaRuta().getProyectoGrado(), EstadoProyectoGrado.EN_PROCESO,
-                agregacion.getCoordinador(), UtilUUID.generarNuevoUUID(), "Titulo");
+                agregacion.getCoordinador(), UtilUUID.generarNuevoUUID(), "Titulo", null);
     }
 
     @Test
