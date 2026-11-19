@@ -41,6 +41,14 @@ class EstadoObservacionRevisionTest {
     }
 
     @Test
+    void debeExcluirVacioDelCatalogo_cuandoSeConsultaEsValidoODesde() {
+        assertThat(EstadoObservacionRevision.esValido("VACIO")).isFalse();
+        assertThat(EstadoObservacionRevision.esValido("")).isFalse();
+        assertThatThrownBy(() -> EstadoObservacionRevision.desde("VACIO"))
+                .isInstanceOf(EstadoObservacionRevisionNoEncontradoException.class);
+    }
+
+    @Test
     void debeReportarValidez_sinLanzar_cuandoSeConsultaConEsValido() {
         assertThat(EstadoObservacionRevision.esValido("EN_PROGRESO")).isTrue();
         assertThat(EstadoObservacionRevision.esValido("CERRADA")).isFalse();

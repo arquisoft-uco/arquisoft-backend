@@ -2,6 +2,7 @@ package com.arquisoft.fichas.application.observacionitem.command.finder.impl;
 
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.ObservacionItemOutputPort;
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ContextoObservacionItemEntity;
+import com.arquisoft.fichas.domain.estadoobservacionrevision.EstadoObservacionRevision;
 import com.arquisoft.fichas.domain.estadorevision.EstadoRevision;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class ContextoObservacionItemFinderImplTest {
         var fichaPerfil = UtilUUID.generarNuevoUUID();
         var asesorFicha = UtilUUID.generarNuevoUUID();
         when(observacionItemOutputPort.obtenerContexto(observacionItem)).thenReturn(Optional.of(
-                new ContextoObservacionItemEntity(revisionItem, "EN_PROGRESO", fichaPerfil, asesorFicha)));
+                new ContextoObservacionItemEntity(revisionItem, "EN_PROGRESO", fichaPerfil, asesorFicha, "EN_PROGRESO")));
 
         // Act
         var resultado = finder.obtener(observacionItem);
@@ -43,6 +44,7 @@ class ContextoObservacionItemFinderImplTest {
         assertThat(resultado.estadoRevision()).isEqualTo(EstadoRevision.EN_PROGRESO);
         assertThat(resultado.fichaPerfil()).isEqualTo(fichaPerfil);
         assertThat(resultado.asesorFicha()).isEqualTo(asesorFicha);
+        assertThat(resultado.estadoObservacion()).isEqualTo(EstadoObservacionRevision.EN_PROGRESO);
     }
 
     @Test

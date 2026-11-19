@@ -332,6 +332,18 @@ public final class FichasApiMessages {
         public static final String REMOVER_RESP_422 =
                 "Observación no encontrada, ficha no asesorada por el usuario autenticado o revisión cerrada";
 
+        public static final String CERRAR_SUMMARY = "Cerrar una observación de ítem";
+        public static final String CERRAR_DESCRIPTION =
+                "Permite al asesor asignado a la ficha cerrar una observación en progreso de una revisión "
+                        + "cuyas correcciones ya fueron enviadas. Si era la última observación sin cerrar, la "
+                        + "revisión también queda cerrada y los estudiantes de la ficha reciben un aviso por correo.";
+        public static final String CERRAR_RESP_204 = "Observación cerrada exitosamente";
+        public static final String CERRAR_RESP_400 = "Identificador mal formado";
+        public static final String CERRAR_RESP_403 = "Sin permiso para cerrar observaciones";
+        public static final String CERRAR_RESP_422 =
+                "Observación no encontrada, ficha no asesorada por el usuario autenticado, observación que no "
+                        + "está en progreso o revisión cerrada o sin correcciones enviadas";
+
         public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar observaciones de ítem elaboradas";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Permite al asesor de ficha consultar, de forma paginada y filtrable, las observaciones "

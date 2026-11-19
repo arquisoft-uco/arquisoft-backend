@@ -196,7 +196,8 @@
               "fichas:estado-ficha-perfil-asesor:create",
               "fichas:revision-item:create",
               "fichas:revision-item:delete",
-              "fichas:observacion-item:create"
+              "fichas:observacion-item:create",
+              "fichas:observacion-item-cierre:update"
             ]
           }
         },
@@ -2633,6 +2634,15 @@
         {
           "id": "21962f9e-0d38-4a51-809e-b9866363ffd1",
           "name": "fichas:revision-item-correcciones:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "4f26d7af-a12e-4736-bbd5-f67c7e4c0639",
+          "name": "fichas:observacion-item-cierre:update",
           "description": "",
           "composite": false,
           "clientRole": true,
