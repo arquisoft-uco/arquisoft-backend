@@ -14,14 +14,16 @@ public final class EntregableProyectoGradoDisponibleEvaluacionEvent extends Doma
     private final UUID proyectoGrado;
     private final String nombreProyecto;
     private final int version;
+    private final UUID asesor;
 
     public EntregableProyectoGradoDisponibleEvaluacionEvent(UUID entregableProyectoGrado, UUID proyectoGrado,
-                                                            String nombreProyecto, int version) {
+                                                            String nombreProyecto, int version, UUID asesor) {
         super(EVENT_TOPIC, EVENT_TYPE);
         this.entregableProyectoGrado = entregableProyectoGrado;
         this.proyectoGrado = proyectoGrado;
         this.nombreProyecto = nombreProyecto;
         this.version = version;
+        this.asesor = asesor;
     }
 
     public UUID getEntregableProyectoGrado() {
@@ -38,5 +40,9 @@ public final class EntregableProyectoGradoDisponibleEvaluacionEvent extends Doma
 
     public int getVersion() {
         return version;
+    }
+
+    public UUID getAsesor() {
+        return asesor;
     }
 }

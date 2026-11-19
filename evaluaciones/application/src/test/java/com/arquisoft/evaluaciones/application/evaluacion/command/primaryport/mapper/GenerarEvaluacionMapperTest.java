@@ -14,8 +14,9 @@ class GenerarEvaluacionMapperTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
         var command = GenerarEvaluacionCommand.crear(
-                entregable.toString(), proyectoGrado.toString(), "Sistema de riego", 2);
+                entregable.toString(), proyectoGrado.toString(), "Sistema de riego", 2, asesor.toString());
 
         // Act
         var generacion = GenerarEvaluacionMapper.toDomain(command);
@@ -25,5 +26,7 @@ class GenerarEvaluacionMapperTest {
         assertThat(generacion.getEntregable().getProyectoGrado()).isEqualTo(proyectoGrado);
         assertThat(generacion.getEvaluacion().getEntregable()).isEqualTo(entregable);
         assertThat(generacion.getEvaluacion().getEstado()).isEqualTo(EstadoEvaluacion.PENDIENTE);
+        assertThat(generacion.getEvaluacionAsesor().getEvaluacion()).isEqualTo(generacion.getEvaluacion().getId());
+        assertThat(generacion.getEvaluacionAsesor().getAsesor()).isEqualTo(asesor);
     }
 }

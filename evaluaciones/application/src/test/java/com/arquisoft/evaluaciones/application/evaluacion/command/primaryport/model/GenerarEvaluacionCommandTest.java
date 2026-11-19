@@ -15,22 +15,24 @@ class GenerarEvaluacionCommandTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
 
         // Act
         var command = GenerarEvaluacionCommand.crear(
-                entregable.toString(), proyectoGrado.toString(), "Sistema de riego", 2);
+                entregable.toString(), proyectoGrado.toString(), "Sistema de riego", 2, asesor.toString());
 
         // Assert
         assertThat(command.entregable().entregable()).isEqualTo(entregable);
         assertThat(command.entregable().proyectoGrado()).isEqualTo(proyectoGrado);
         assertThat(command.entregable().proyecto()).isEqualTo("Sistema de riego");
         assertThat(command.entregable().version()).isEqualTo(2);
+        assertThat(command.asesor()).isEqualTo(asesor);
     }
 
     @Test
     void debeLanzarValidacionDeEntrada_cuandoDatosInvalidos() {
         // Act & Assert
-        assertThatThrownBy(() -> GenerarEvaluacionCommand.crear("no-uuid", "tampoco", "   ", null))
+        assertThatThrownBy(() -> GenerarEvaluacionCommand.crear("no-uuid", "tampoco", "   ", null, null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, ex ->
                         assertThat(ex.getValidationResult().getErrores())
                                 .extracting("codigoError")
@@ -39,5 +41,21 @@ class GenerarEvaluacionCommandTest {
                                         EvaluacionesCodes.Entregable.PROYECTO_GRADO_REQUERIDO,
                                         EvaluacionesCodes.Entregable.PROYECTO_REQUERIDO,
                                         EvaluacionesCodes.Entregable.VERSION_REQUERIDA));
+    }
+
+    @Test
+    void debeLanzarValidacionDeEntrada_cuandoAsesorAusenteOInvalido() {
+        // Arrange
+        var entregable = UtilUUID.generarNuevoUUID().toString();
+        var proyectoGrado = UtilUUID.generarNuevoUUID().toString();
+
+        // Act & Assert
+        assertThatThrownBy(() -> GenerarEvaluacionCommand.crear(entregable, proyectoGrado, "Sistema", 1, null))
+                .isInstanceOfSatisfying(ApplicationValidationException.class, ex ->
+                        assertThat(ex.getValidationResult().getErrores())
+                                .extracting("codigoError")
+                                .containsExactly(EvaluacionesCodes.EvaluacionAsesor.ASESOR_REQUERIDO));
+        assertThatThrownBy(() -> GenerarEvaluacionCommand.crear(entregable, proyectoGrado, "Sistema", 1, "no-uuid"))
+                .isInstanceOf(ApplicationValidationException.class);
     }
 }

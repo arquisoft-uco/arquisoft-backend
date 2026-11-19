@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum EntregableKey implements ClaveMensaje {
 
-    LOG_DISPONIBLE_RECIBIDO("evaluaciones.infraestructura.entregable.log.disponible-recibido", 3),
+    LOG_DISPONIBLE_RECIBIDO("evaluaciones.infraestructura.entregable.log.disponible-recibido", 4),
     LOG_VERIFICACION_AGREGAR("evaluaciones.aplicacion.entregable.log.verificacion-agregar", 2),
     LOG_GUARDADO("evaluaciones.infraestructura.entregable.log.guardado", 1);
 
