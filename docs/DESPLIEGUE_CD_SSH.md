@@ -5,7 +5,7 @@ SSH, usando la imagen Docker publicada en GitHub Container Registry (GHCR) y
 exponiéndolo por **Traefik** en `api.<dominio>`.
 
 - **CI** → [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): lint, tests y build en cada push/PR.
-- **Build de imagen** → [`.github/workflows/docker-build.yml`](../.github/workflows/docker-build.yml): construye y publica `ghcr.io/<repo>` en cada push.
+- **Build de imagen** → [`.github/workflows/docker-build.yml`](../.github/workflows/docker-build.yml): compila el jar en el runner (con la caché de Gradle, como CI) y publica `ghcr.io/<repo>` en cada push; el `Dockerfile` solo lo empaqueta (`JAR_ORIGEN=precompilado`). En local, `docker-compose` sigue compilando dentro del `Dockerfile`.
 - **CD (despliegue)** → [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml): workflow reusable que `docker-build.yml` invoca (job `deploy`) cuando la imagen de `develop` ya está publicada; se conecta por SSH al servidor y levanta el contenedor.
 
 ---

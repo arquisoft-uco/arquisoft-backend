@@ -1,9 +1,18 @@
 # syntax=docker/dockerfile:1
-# ==================== STAGE 1: BUILD ====================
+# Origen del jar:
+#   compilado    (default) → se compila aquí desde el código. Lo usa docker-compose en local.
+#   precompilado           → se copia ./app.jar del contexto. Lo usa docker-build.yml, que
+#                            compila en el runner con la caché de Gradle: dentro de BuildKit, sin
+#                            caché, la resolución de dependencias fallaba de forma intermitente
+#                            ("Could not find spring-core…" contra Maven Central y el Plugin Portal).
+# BuildKit solo construye la etapa elegida.
+ARG JAR_ORIGEN=compilado
+
+# ==================== STAGE 1a: JAR COMPILADO AQUÍ ====================
 # --platform=$BUILDPLATFORM: el jar es bytecode agnóstico de arquitectura, así que
 # esta etapa siempre corre nativa en el runner (evita compilar bajo emulación QEMU
 # cuando el target es arm64, que sería órdenes de magnitud más lento).
-FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk-alpine AS builder
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk-alpine AS jar-compilado
 WORKDIR /build
 
 # Copiar todo el proyecto (.dockerignore excluye secretos, .git, build/, *.bat, etc.)
@@ -13,20 +22,18 @@ COPY . .
 # find excluye el artefacto *-plain.jar que Spring Boot también genera,
 # evitando que el COPY del stage 2 falle por múltiples coincidencias.
 # Los secretos solo existen durante este RUN: el token de GitHub Packages no queda en ninguna capa.
-# `gradlew help` resuelve el classpath de plugins (lo único que falla de forma transitoria, por
-# los repositorios remotos) y se reintenta hasta 3 veces; el build real corre una sola vez, para
-# que un error de compilación no se repita.
 RUN --mount=type=secret,id=github_packages_user,env=GITHUB_PACKAGES_USER \
     --mount=type=secret,id=github_packages_token,env=GITHUB_PACKAGES_TOKEN \
     sed -i 's/\r$//' gradlew && chmod +x gradlew && \
-    for intento in 1 2 3; do \
-      ./gradlew help -q --no-daemon && break; \
-      if [ "$intento" -eq 3 ]; then exit 1; fi; \
-      echo "Resolución de plugins falló (intento $intento/3), reintento en 20s..."; sleep 20; \
-    done && \
     ./gradlew build -x test --no-daemon && \
     find build/libs -maxdepth 1 -name "*.jar" ! -name "*-plain.jar" \
          -exec cp {} app.jar \;
+
+# ==================== STAGE 1b: JAR PRECOMPILADO (CI) ====================
+FROM scratch AS jar-precompilado
+COPY app.jar /build/app.jar
+
+FROM jar-${JAR_ORIGEN} AS jar
 
 # ==================== STAGE 2: RUNTIME ====================
 # JRE-only: reduce superficie de ataque al eliminar el compilador y herramientas de build
@@ -41,7 +48,7 @@ RUN addgroup -S arquisoft && \
         mkdir -p /app/logs /var/log/arquisoft && \
         chown arquisoft:arquisoft /app/logs /var/log/arquisoft
 # --chown evita un RUN chown separado (menos capas, sin ejecutar como root tras el COPY)
-COPY --chown=arquisoft:arquisoft --from=builder /build/app.jar app.jar
+COPY --chown=arquisoft:arquisoft --from=jar /build/app.jar app.jar
 
 # Ejecutar como usuario no-root (OWASP A05: Security Misconfiguration)
 USER arquisoft
