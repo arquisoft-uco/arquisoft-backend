@@ -1,5 +1,6 @@
 package com.arquisoft.mapas_ruta.application.proyectogrado.command.secondaryport.entity;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record ProyectoGradoEntity(
@@ -7,5 +8,6 @@ public record ProyectoGradoEntity(
         String estadoProyectoGrado,
         UUID coordinador,
         UUID fichaPerfil,
-        String tituloProyecto
+        String tituloProyecto,
+        Instant ocurridoEn
 ) {}

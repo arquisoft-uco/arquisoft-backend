@@ -2,6 +2,7 @@ package com.arquisoft.shared.util;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -15,6 +16,10 @@ public final class UtilFecha {
 
     public static LocalDate generarFechaActual() {
         return LocalDate.now();
+    }
+
+    public static LocalDate generarFechaActual(final ZoneId zona) {
+        return LocalDate.now(zona);
     }
 
     public static Instant generarInstanteActual() {

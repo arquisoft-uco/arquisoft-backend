@@ -573,6 +573,16 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_ASIGNADAS_RESP_200 = "Página de evaluaciones asignadas al asesor";
         public static final String CONSULTAR_ASIGNADAS_RESP_400 =
                 "El filtro u orden solicitado no es aceptado o la identidad del asesor no es válida";
+        public static final String ASIGNAR_SUMMARY = "Asignar asesor a una evaluación";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Asigna el asesor de una evaluación que no lo tiene o cambia el actual, siempre que la evaluación "
+                        + "no esté finalizada y el asesor actual no haya registrado evaluaciones. Si el asesor "
+                        + "enviado ya es el asignado, no hay cambios";
+        public static final String ASIGNAR_RESP_204 = "Asesor asignado a la evaluación";
+        public static final String ASIGNAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String ASIGNAR_RESP_422 =
+                "La evaluación o el asesor no existen, la evaluación está finalizada o el asesor actual ya "
+                        + "registró evaluaciones";
     }
 
     public static final class ObservacionItemAsesor {

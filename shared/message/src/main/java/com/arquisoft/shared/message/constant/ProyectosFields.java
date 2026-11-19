@@ -53,6 +53,8 @@ public final class ProyectosFields {
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String ESTADO_PROYECTO = "estadoProyecto";
         public static final String MOTIVO = "motivo";
+        public static final String FECHA_FIN = "fechaFin";
+        public static final String HOY = "hoy";
     }
 
     public static final class EntregableProyectoGrado {

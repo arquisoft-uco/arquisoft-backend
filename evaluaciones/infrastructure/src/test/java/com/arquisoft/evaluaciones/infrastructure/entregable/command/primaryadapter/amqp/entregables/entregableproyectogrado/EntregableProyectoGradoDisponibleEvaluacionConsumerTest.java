@@ -52,6 +52,7 @@ class EntregableProyectoGradoDisponibleEvaluacionConsumerTest {
     private UUID entregable;
     private UUID evaluacion;
     private UUID proyectoGrado;
+    private UUID asesor;
 
     @BeforeEach
     void setUp() {
@@ -63,6 +64,7 @@ class EntregableProyectoGradoDisponibleEvaluacionConsumerTest {
         entregable = UtilUUID.generarNuevoUUID();
         evaluacion = UtilUUID.generarNuevoUUID();
         proyectoGrado = UtilUUID.generarNuevoUUID();
+        asesor = UtilUUID.generarNuevoUUID();
         lenient().when(generarEvaluacionInteractor.ejecutar(any()))
                 .thenReturn(new GeneracionEvaluacionResult.Generada(evaluacion, entregable));
     }
@@ -75,9 +77,10 @@ class EntregableProyectoGradoDisponibleEvaluacionConsumerTest {
                     "entregableProyectoGrado": "%s",
                     "proyectoGrado": "%s",
                     "nombreProyecto": "Sistema de riego",
-                    "version": 2
+                    "version": 2,
+                    "asesor": "%s"
                 }
-                """.formatted(ID_EVENTO, OCURRIDO_EN, entregableId, proyectoGrado);
+                """.formatted(ID_EVENTO, OCURRIDO_EN, entregableId, proyectoGrado, asesor);
         var props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
         props.setRedelivered(reentregado);
@@ -97,8 +100,9 @@ class EntregableProyectoGradoDisponibleEvaluacionConsumerTest {
         assertThat(comando.proyectoGrado()).isEqualTo(proyectoGrado);
         assertThat(comando.proyecto()).isEqualTo("Sistema de riego");
         assertThat(comando.version()).isEqualTo(2);
+        assertThat(captor.getValue().asesor()).isEqualTo(asesor);
         verify(logger).info(eq(EntregableKey.LOG_DISPONIBLE_RECIBIDO), eq(ID_EVENTO), eq(entregable.toString()),
-                eq(proyectoGrado.toString()));
+                eq(proyectoGrado.toString()), eq(asesor.toString()));
         verify(logger).info(EvaluacionKey.LOG_GENERADA, evaluacion, entregable);
         verify(channel).basicAck(1L, false);
     }

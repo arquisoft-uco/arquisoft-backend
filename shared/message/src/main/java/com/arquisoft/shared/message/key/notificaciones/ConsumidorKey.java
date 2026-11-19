@@ -41,6 +41,10 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_REVISION_ITEM_AGREGADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.revision-item-agregado-recibido", 2),
     LOG_REVISION_ITEM_CORRECCIONES_ENVIADAS_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.revision-item-correcciones-enviadas-recibido", 2),
+    LOG_REVISION_ITEM_CERRADA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.revision-item-cerrada-recibido", 2),
+    LOG_OBSERVACION_ITEM_REABIERTA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.observacion-item-reabierta-recibido", 2),
     LOG_USUARIO_ESTADO_CAMBIADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.usuario-estado-cambiado-recibido", 3),
     LOG_FICHA_APROBADA_RECIBIDO("notificaciones.infraestructura.consumidor.log.ficha-aprobada-recibido", 3),

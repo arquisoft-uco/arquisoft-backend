@@ -2,6 +2,7 @@ package com.arquisoft.mapas_ruta.infrastructure.maparuta.command.secondaryadapte
 
 import com.arquisoft.mapas_ruta.application.maparuta.command.secondaryport.entity.MapaRutaEntity;
 import com.arquisoft.mapas_ruta.infrastructure.maparuta.command.secondaryadapter.entity.MapaRutaJpaEntity;
+import com.arquisoft.mapas_ruta.infrastructure.proyectogrado.command.secondaryadapter.entity.ProyectoGradoJpaEntity;
 import com.arquisoft.mapas_ruta.infrastructure.tarea.command.secondaryadapter.entity.TareaJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -156,5 +158,56 @@ class MapaRutaCommandOutputAdapterTest {
         // Act & Assert
         assertThat(adapter.existePorProyectoGrado(conMapa)).isTrue();
         assertThat(adapter.existePorProyectoGrado(UtilUUID.generarNuevoUUID())).isFalse();
+    }
+
+    private UUID persistirProyecto(String estado) {
+        var proyecto = entityManager.persistAndFlush(ProyectoGradoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .estadoProyectoGradoId(estado)
+                .coordinadorId(UtilUUID.generarNuevoUUID())
+                .fichaPerfilId(UtilUUID.generarNuevoUUID())
+                .tituloProyecto("Titulo")
+                .build());
+        return proyecto.getId();
+    }
+
+    private UUID persistirMapa(UUID proyectoGrado, LocalDate fechaFin) {
+        var mapa = entityManager.persistAndFlush(MapaRutaJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .proyectoGradoId(proyectoGrado)
+                .fechaInicio(LocalDate.of(2026, 8, 1))
+                .fechaFin(fechaFin)
+                .build());
+        return mapa.getId();
+    }
+
+    @Test
+    void debeIncluirMapa_cuandoFechaFinAnteriorAHoyYProyectoEnProceso() {
+        // Arrange
+        var hoy = LocalDate.of(2026, 11, 19);
+        var mapaVencido = persistirMapa(persistirProyecto("EN_PROCESO"), hoy.minusDays(1));
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerConPlazoVencido(hoy, "EN_PROCESO");
+
+        // Assert
+        assertThat(resultado).extracting(MapaRutaEntity::id).containsExactly(mapaVencido);
+    }
+
+    @Test
+    void debeExcluirMapa_cuandoFechaFinEsHoyOElProyectoNoEstaEnProceso() {
+        // Arrange
+        var hoy = LocalDate.of(2026, 11, 19);
+        persistirMapa(persistirProyecto("EN_PROCESO"), hoy);
+        persistirMapa(persistirProyecto("ATRASADO"), hoy.minusDays(5));
+        persistirMapa(persistirProyecto("FINALIZADO"), hoy.minusDays(5));
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.obtenerConPlazoVencido(hoy, "EN_PROCESO");
+
+        // Assert
+        assertThat(resultado).isEmpty();
     }
 }

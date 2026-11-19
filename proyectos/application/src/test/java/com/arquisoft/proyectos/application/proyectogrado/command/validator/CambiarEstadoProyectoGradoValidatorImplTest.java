@@ -2,6 +2,8 @@ package com.arquisoft.proyectos.application.proyectogrado.command.validator;
 
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.impl.CambiarEstadoProyectoGradoValidatorImpl;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.exception.AsesorProyectoGradoNoEncontradoException;
+import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
+import com.arquisoft.proyectos.domain.coordinador.exception.CoordinadorNoEncontradoException;
 import com.arquisoft.proyectos.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
@@ -29,6 +31,8 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     private final ProyectoGradoDomain proyecto = ProyectoGradoDomain.crear(
             UtilUUID.generarNuevoUUID(), "Sistema de gestión", UtilUUID.generarNuevoUUID());
     private final EstadoProyectoGradoDomain enProceso = EstadoProyectoGradoDomain.crear(proyecto.getId());
+    private final CoordinadorDomain coordinador = CoordinadorDomain.reconstruir(proyecto.getCoordinador(), "1020",
+            "Laura Mesa", "laura.mesa@uco.edu.co", Instant.parse("2026-09-01T10:00:00Z"), null);
     private final EstadoProyectoGradoDomain finalizado = EstadoProyectoGradoDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), proyecto.getId(), EstadoProyecto.FINALIZADO,
             UtilFecha.generarInstanteActual(), null);
@@ -46,14 +50,14 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     @Test
     void debePasar_cuandoTodasLasReglasSeCumplen() {
         // Act & Assert
-        assertThatCode(() -> validator.validar(cambio, proyecto, enProceso, true, entregable(EstadoEntregable.CERRADO)))
+        assertThatCode(() -> validator.validar(cambio, proyecto, enProceso, coordinador, true, entregable(EstadoEntregable.CERRADO)))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void debePasar_cuandoElProyectoEstaAtrasado() {
         // Act & Assert
-        assertThatCode(() -> validator.validar(cambio, proyecto, atrasado, true,
+        assertThatCode(() -> validator.validar(cambio, proyecto, atrasado, coordinador, true,
                 entregable(EstadoEntregable.CERRADO)))
                 .doesNotThrowAnyException();
     }
@@ -62,7 +66,7 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     void debeLanzarUltimoNoDefinitivo_cuandoElUltimoEstaRechazado() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, proyecto, enProceso, true, entregable(EstadoEntregable.RECHAZADO)))
+                cambio, proyecto, enProceso, coordinador, true, entregable(EstadoEntregable.RECHAZADO)))
                 .isInstanceOf(UltimoEntregableNoDefinitivoException.class);
     }
 
@@ -70,14 +74,14 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     void debeLanzarUltimoNoDefinitivo_cuandoElUltimoEstaCancelado() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cambio, proyecto, enProceso, true, entregable(EstadoEntregable.CANCELADO)))
+                cambio, proyecto, enProceso, coordinador, true, entregable(EstadoEntregable.CANCELADO)))
                 .isInstanceOf(UltimoEntregableNoDefinitivoException.class);
     }
 
     @Test
     void debeLanzarProyectoNoEncontrado_cuandoElProyectoNoExiste() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, ProyectoGradoDomain.VACIO, enProceso, true,
+        assertThatThrownBy(() -> validator.validar(cambio, ProyectoGradoDomain.VACIO, enProceso, coordinador, true,
                 entregable(EstadoEntregable.CERRADO)))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
@@ -85,7 +89,7 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     @Test
     void debeLanzarEstadoNoEncontrado_cuandoNoHayEstadoActual() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, proyecto, EstadoProyectoGradoDomain.VACIO, true,
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, EstadoProyectoGradoDomain.VACIO, coordinador, true,
                 entregable(EstadoEntregable.CERRADO)))
                 .isInstanceOf(EstadoProyectoGradoNoEncontradoException.class);
     }
@@ -93,7 +97,7 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     @Test
     void debeLanzarAsesorNoEncontrado_cuandoElAsesorNoEstaAsignado() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, false,
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, coordinador, false,
                 entregable(EstadoEntregable.CERRADO)))
                 .isInstanceOf(AsesorProyectoGradoNoEncontradoException.class);
     }
@@ -101,7 +105,7 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     @Test
     void debeLanzarTransicionNoPermitida_cuandoElProyectoYaEstaFinalizado() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, proyecto, finalizado, true,
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, finalizado, coordinador, true,
                 entregable(EstadoEntregable.CERRADO)))
                 .isInstanceOf(TransicionEstadoProyectoNoPermitidaException.class);
     }
@@ -109,7 +113,7 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     @Test
     void debeLanzarSinEntregable_cuandoNoHayUltimoEntregable() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, true,
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, coordinador, true,
                 EntregableProyectoGradoDomain.VACIO))
                 .isInstanceOf(ProyectoGradoSinEntregableException.class);
     }
@@ -117,7 +121,7 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
     @Test
     void debeLanzarUltimoNoDefinitivo_cuandoElUltimoEstaDisponibleEvaluacion() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, true,
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, coordinador, true,
                 entregable(EstadoEntregable.DISPONIBLE_EVALUACION)))
                 .isInstanceOf(UltimoEntregableNoDefinitivoException.class);
     }
@@ -129,18 +133,40 @@ class CambiarEstadoProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, ProyectoGradoDomain.VACIO,
-                EstadoProyectoGradoDomain.VACIO, false, EntregableProyectoGradoDomain.VACIO))
+                EstadoProyectoGradoDomain.VACIO, coordinador, false, EntregableProyectoGradoDomain.VACIO))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
-        assertThatThrownBy(() -> validator.validar(cambio, proyecto, EstadoProyectoGradoDomain.VACIO, false,
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, EstadoProyectoGradoDomain.VACIO, coordinador, false,
                 noTerminal))
                 .isInstanceOf(EstadoProyectoGradoNoEncontradoException.class);
-        assertThatThrownBy(() -> validator.validar(cambio, proyecto, finalizado, false, noTerminal))
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, finalizado, coordinador, false, noTerminal))
                 .isInstanceOf(AsesorProyectoGradoNoEncontradoException.class);
-        assertThatThrownBy(() -> validator.validar(cambio, proyecto, finalizado, true,
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, finalizado, coordinador, true,
                 EntregableProyectoGradoDomain.VACIO))
                 .isInstanceOf(TransicionEstadoProyectoNoPermitidaException.class);
-        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, true,
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, coordinador, true,
                 EntregableProyectoGradoDomain.VACIO))
                 .isInstanceOf(ProyectoGradoSinEntregableException.class);
+    }
+
+    @Test
+    void debeLanzarCoordinadorNoEncontrado_cuandoElCoordinadorEsVacio() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, CoordinadorDomain.VACIO, true,
+                entregable(EstadoEntregable.CERRADO)))
+                .isInstanceOf(CoordinadorNoEncontradoException.class);
+    }
+
+    @Test
+    void debeValidarCoordinadorDespuesDelEstadoYAntesDelAsesor_cuandoFallanVarias() {
+        // Arrange
+        var noTerminal = entregable(EstadoEntregable.DISPONIBLE_EVALUACION);
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, EstadoProyectoGradoDomain.VACIO,
+                CoordinadorDomain.VACIO, false, noTerminal))
+                .isInstanceOf(EstadoProyectoGradoNoEncontradoException.class);
+        assertThatThrownBy(() -> validator.validar(cambio, proyecto, enProceso, CoordinadorDomain.VACIO, false,
+                noTerminal))
+                .isInstanceOf(CoordinadorNoEncontradoException.class);
     }
 }

@@ -8,7 +8,7 @@ public class ProyectoGradoEnProcesoRuleImpl implements ProyectoGradoEnProcesoRul
 
     @Override
     public void validar(EstadoActualProyectoGrado estadoActual) {
-        if (!estadoActual.estado().estaEnProceso()) {
+        if (!estadoActual.estado().admiteCambios()) {
             throw new ProyectoGradoNoEnProcesoException(
                     estadoActual.proyectoGrado(), estadoActual.tituloProyecto(), estadoActual.estado().getNombre());
         }

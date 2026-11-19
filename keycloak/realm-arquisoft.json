@@ -77,6 +77,7 @@
               "usuarios:representante-comite-vigente:view",
               "evaluaciones:evaluacion-jurado:create",
               "evaluaciones:evaluacion-jurado:delete",
+              "evaluaciones:evaluacion-asesor:update",
               "proyectos:proyecto-grado-coordinador:view",
               "usuarios:asesor-ficha-vigente:view",
               "evaluaciones:evaluacion-coordinador:view",
@@ -196,7 +197,9 @@
               "fichas:estado-ficha-perfil-asesor:create",
               "fichas:revision-item:create",
               "fichas:revision-item:delete",
-              "fichas:observacion-item:create"
+              "fichas:observacion-item:create",
+              "fichas:observacion-item-cierre:update",
+              "fichas:observacion-item-reapertura:update"
             ]
           }
         },
@@ -2046,6 +2049,15 @@
           "attributes": {}
         },
         {
+          "id": "c1dea0eb-433b-4838-bace-c20c436df835",
+          "name": "evaluaciones:evaluacion-asesor:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "262b4b01-adda-4feb-944a-a1e6124b8f1f",
           "name": "proyectos:proyecto-grado-coordinador:view",
           "description": "",
@@ -2633,6 +2645,24 @@
         {
           "id": "21962f9e-0d38-4a51-809e-b9866363ffd1",
           "name": "fichas:revision-item-correcciones:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "4f26d7af-a12e-4736-bbd5-f67c7e4c0639",
+          "name": "fichas:observacion-item-cierre:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "958f28d1-aaff-4e8a-8457-4644b4ee1597",
+          "name": "fichas:observacion-item-reapertura:update",
           "description": "",
           "composite": false,
           "clientRole": true,

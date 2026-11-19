@@ -29,7 +29,7 @@ class CambiarFechaFinMapaRutaValidatorImplTest {
     }
 
     private static ProyectoGradoDomain proyecto(UUID id, UUID coordinador, EstadoProyectoGrado estado) {
-        return ProyectoGradoDomain.reconstruir(id, estado, coordinador, UtilUUID.generarNuevoUUID(), "Titulo");
+        return ProyectoGradoDomain.reconstruir(id, estado, coordinador, UtilUUID.generarNuevoUUID(), "Titulo", null);
     }
 
     private static CambioFechaFinMapaRutaDomain cambio(MapaRutaDomain mapa, UUID coordinador, LocalDate fechaFin) {
@@ -74,12 +74,12 @@ class CambiarFechaFinMapaRutaValidatorImplTest {
     }
 
     @Test
-    void debeLanzarNoEnProceso_cuandoElProyectoEstaAtrasado() {
+    void debeLanzarNoEnProceso_cuandoElProyectoEstaFinalizado() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var coordinador = UtilUUID.generarNuevoUUID();
         var mapa = mapa(proyectoGrado);
-        var proyecto = proyecto(proyectoGrado, coordinador, EstadoProyectoGrado.ATRASADO);
+        var proyecto = proyecto(proyectoGrado, coordinador, EstadoProyectoGrado.FINALIZADO);
         var cambio = cambio(mapa, coordinador, FIN_ACTUAL.plusDays(10));
 
         // Act & Assert
@@ -112,5 +112,18 @@ class CambiarFechaFinMapaRutaValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(cambio, MapaRutaDomain.VACIO, proyecto))
                 .isInstanceOf(MapaRutaNoEncontradoException.class);
+    }
+
+    @Test
+    void debeAceptar_cuandoProyectoAtrasado() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var coordinador = UtilUUID.generarNuevoUUID();
+        var mapa = mapa(proyectoGrado);
+        var proyecto = proyecto(proyectoGrado, coordinador, EstadoProyectoGrado.ATRASADO);
+        var cambio = cambio(mapa, coordinador, FIN_ACTUAL.plusDays(10));
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(cambio, mapa, proyecto)).doesNotThrowAnyException();
     }
 }

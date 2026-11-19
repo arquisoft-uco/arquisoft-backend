@@ -3,6 +3,7 @@ package com.arquisoft.fichas.application.observacionitem.command.usecase.impl;
 import com.arquisoft.fichas.application.observacionitem.command.finder.ContextoObservacionItemFinder;
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.ObservacionItemOutputPort;
 import com.arquisoft.fichas.application.observacionitem.command.validator.RemoverObservacionItemValidator;
+import com.arquisoft.fichas.domain.estadoobservacionrevision.EstadoObservacionRevision;
 import com.arquisoft.fichas.domain.estadorevision.EstadoRevision;
 import com.arquisoft.fichas.domain.observacionitem.RemocionObservacionItemDomain;
 import com.arquisoft.fichas.domain.observacionitem.exception.ObservacionItemNoEncontradaException;
@@ -54,7 +55,8 @@ class RemoverObservacionItemUseCaseImplTest {
         // Arrange
         var entrada = RemocionObservacionItemDomain.crear(observacionItem, asesorFicha);
         var contexto = new ContextoObservacionItem(
-                UtilUUID.generarNuevoUUID(), EstadoRevision.EN_PROGRESO, UtilUUID.generarNuevoUUID(), asesorFicha);
+                UtilUUID.generarNuevoUUID(), EstadoRevision.EN_PROGRESO, UtilUUID.generarNuevoUUID(), asesorFicha,
+                EstadoObservacionRevision.PENDIENTE);
         when(contextoObservacionItemFinder.obtener(observacionItem)).thenReturn(contexto);
 
         // Act

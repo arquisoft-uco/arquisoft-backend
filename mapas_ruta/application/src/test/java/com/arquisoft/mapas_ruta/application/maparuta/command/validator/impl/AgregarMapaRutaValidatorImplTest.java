@@ -27,7 +27,7 @@ class AgregarMapaRutaValidatorImplTest {
     }
 
     private static ProyectoGradoDomain proyecto(UUID id, UUID coordinador, EstadoProyectoGrado estado) {
-        return ProyectoGradoDomain.reconstruir(id, estado, coordinador, UtilUUID.generarNuevoUUID(), "Titulo");
+        return ProyectoGradoDomain.reconstruir(id, estado, coordinador, UtilUUID.generarNuevoUUID(), "Titulo", null);
     }
 
     @Test
@@ -65,11 +65,11 @@ class AgregarMapaRutaValidatorImplTest {
     }
 
     @Test
-    void debeLanzarNoEnProceso_cuandoElProyectoEstaAtrasadoYYaTieneMapa() {
+    void debeLanzarNoEnProceso_cuandoElProyectoEstaFinalizadoYYaTieneMapa() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var coordinador = UtilUUID.generarNuevoUUID();
-        var proyecto = proyecto(proyectoGrado, coordinador, EstadoProyectoGrado.ATRASADO);
+        var proyecto = proyecto(proyectoGrado, coordinador, EstadoProyectoGrado.FINALIZADO);
         var agregacion = agregacion(proyectoGrado, coordinador);
 
         // Act & Assert
@@ -88,5 +88,17 @@ class AgregarMapaRutaValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(agregacion, proyecto, true))
                 .isInstanceOf(MapaRutaDuplicadoException.class);
+    }
+
+    @Test
+    void debeAceptar_cuandoProyectoAtrasado() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var coordinador = UtilUUID.generarNuevoUUID();
+        var proyecto = proyecto(proyectoGrado, coordinador, EstadoProyectoGrado.ATRASADO);
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(agregacion(proyectoGrado, coordinador), proyecto, false))
+                .doesNotThrowAnyException();
     }
 }

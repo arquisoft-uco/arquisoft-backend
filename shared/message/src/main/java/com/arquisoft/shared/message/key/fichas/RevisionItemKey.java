@@ -15,6 +15,8 @@ public enum RevisionItemKey implements ClaveMensaje {
     ERROR_CERRADA_DETALLE("fichas.dominio.revisionitem.error.cerrada-detalle", 1),
     ERROR_NO_EN_PROGRESO("fichas.dominio.revisionitem.error.no-en-progreso", 0),
     ERROR_NO_EN_PROGRESO_DETALLE("fichas.dominio.revisionitem.error.no-en-progreso-detalle", 1),
+    ERROR_NO_CORRECCION_DISPONIBLE("fichas.dominio.revisionitem.error.no-correccion-disponible", 0),
+    ERROR_NO_CORRECCION_DISPONIBLE_DETALLE("fichas.dominio.revisionitem.error.no-correccion-disponible-detalle", 1),
     ERROR_SIN_OBSERVACIONES("fichas.dominio.revisionitem.error.sin-observaciones", 0),
     ERROR_SIN_OBSERVACIONES_DETALLE("fichas.dominio.revisionitem.error.sin-observaciones-detalle", 1),
     ERROR_OBSERVACIONES_PENDIENTES("fichas.dominio.revisionitem.error.observaciones-pendientes", 0),

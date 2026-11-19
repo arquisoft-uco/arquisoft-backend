@@ -34,6 +34,8 @@ rutas:
       observaciones-item-asesor: /observaciones-item/asesor
       observaciones-item-estudiante: /observaciones-item/estudiante
       observacion-item-por-id: /observaciones-item/{observacionItemId}
+      observacion-item-cierre: /observaciones-item/{observacionItemId}/cierre
+      observacion-item-reapertura: /observaciones-item/{observacionItemId}/reapertura
       revisiones-item-estudiante: /revisiones-item/estudiante
       estudiantes: /{fichaPerfilId}/estudiantes
       estudiante-por-id: /{fichaPerfilId}/estudiantes/{estudianteId}

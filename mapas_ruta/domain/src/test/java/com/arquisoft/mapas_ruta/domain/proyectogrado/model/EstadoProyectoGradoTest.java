@@ -4,6 +4,8 @@ import com.arquisoft.mapas_ruta.domain.proyectogrado.exception.EstadoProyectoGra
 import com.arquisoft.shared.message.constant.MapasRutaCodes;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -36,10 +38,26 @@ class EstadoProyectoGradoTest {
     }
 
     @Test
-    void debeIndicarEnProceso_soloParaEnProceso() {
+    void debeContenerSoloLasConstantesDelMer_cuandoSeListaElCatalogo() {
+        // Act
+        var nombres = Arrays.stream(EstadoProyectoGrado.values()).map(Enum::name).toList();
+
+        // Assert
+        assertThat(nombres).containsExactly("EN_PROCESO", "ATRASADO", "FINALIZADO", "CANCELADO", "VACIO");
+    }
+
+    @Test
+    void debeAdmitirCambios_cuandoEstaEnProcesoOAtrasado() {
         // Act & Assert
-        assertThat(EstadoProyectoGrado.EN_PROCESO.estaEnProceso()).isTrue();
-        assertThat(EstadoProyectoGrado.ATRASADO.estaEnProceso()).isFalse();
-        assertThat(EstadoProyectoGrado.LISTO_PARA_REVISION.estaEnProceso()).isFalse();
+        assertThat(EstadoProyectoGrado.EN_PROCESO.admiteCambios()).isTrue();
+        assertThat(EstadoProyectoGrado.ATRASADO.admiteCambios()).isTrue();
+    }
+
+    @Test
+    void debeNoAdmitirCambios_cuandoEstaFinalizadoCanceladoOVacio() {
+        // Act & Assert
+        assertThat(EstadoProyectoGrado.FINALIZADO.admiteCambios()).isFalse();
+        assertThat(EstadoProyectoGrado.CANCELADO.admiteCambios()).isFalse();
+        assertThat(EstadoProyectoGrado.VACIO.admiteCambios()).isFalse();
     }
 }

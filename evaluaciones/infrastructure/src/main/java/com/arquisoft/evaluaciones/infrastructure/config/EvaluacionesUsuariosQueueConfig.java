@@ -17,6 +17,11 @@ public class EvaluacionesUsuariosQueueConfig {
     public static final String JURADO_REMOVIDO_QUEUE =
             EvaluacionesQueues.PREFIJO + EventTopics.Usuarios.JURADO_REMOVIDO;
 
+    public static final String ASESOR_AGREGADO_QUEUE =
+            EvaluacionesQueues.PREFIJO + EventTopics.Usuarios.ASESOR_AGREGADO;
+    public static final String ASESOR_REMOVIDO_QUEUE =
+            EvaluacionesQueues.PREFIJO + EventTopics.Usuarios.ASESOR_REMOVIDO;
+
     @Bean
     public Declarables evaluacionesJuradoAgregadoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
@@ -35,6 +40,28 @@ public class EvaluacionesUsuariosQueueConfig {
         return ColaEvento.declarar(
                 JURADO_REMOVIDO_QUEUE,
                 EventTopics.Usuarios.JURADO_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables evaluacionesAsesorAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ASESOR_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables evaluacionesAsesorRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ASESOR_REMOVIDO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

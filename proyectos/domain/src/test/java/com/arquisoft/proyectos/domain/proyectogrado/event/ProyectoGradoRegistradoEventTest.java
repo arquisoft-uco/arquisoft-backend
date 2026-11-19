@@ -15,7 +15,7 @@ class ProyectoGradoRegistradoEventTest {
         // Arrange
         var proyectoGrado = UUID.randomUUID();
         var fichaPerfil = UUID.randomUUID();
-        var coordinador = new ContactoCoordinador("Laura Mesa", "laura.mesa@uco.edu.co");
+        var coordinador = new ContactoCoordinador(UUID.randomUUID(), "Laura Mesa", "laura.mesa@uco.edu.co");
 
         // Act
         var evento = new ProyectoGradoRegistradoEvent(proyectoGrado, fichaPerfil, "Sistema de gestión", coordinador);

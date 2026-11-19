@@ -61,7 +61,7 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
         if (cambio.getEstadoEntregable() == EstadoEntregable.DISPONIBLE_EVALUACION) {
             eventPublisher.publish(new EntregableProyectoGradoDisponibleEvaluacionEvent(
                     cambio.getEntregableProyectoGrado(), entregable.getProyectoGrado(), proyecto.getNombre(),
-                    entregable.getVersion()));
+                    entregable.getVersion(), asesorVigente));
         }
         if (cambio.getEstadoEntregable() == EstadoEntregable.CANCELADO) {
             eventPublisher.publish(new EntregableProyectoGradoCanceladoEvent(

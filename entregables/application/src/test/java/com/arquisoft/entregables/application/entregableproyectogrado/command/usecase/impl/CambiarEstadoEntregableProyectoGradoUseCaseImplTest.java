@@ -186,6 +186,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
             assertThat(evento.getProyectoGrado()).isEqualTo(proyectoId);
             assertThat(evento.getNombreProyecto()).isEqualTo("Sistema de riego");
             assertThat(evento.getVersion()).isEqualTo(3);
+            assertThat(evento.getAsesor()).isEqualTo(ASESOR_VIGENTE);
         });
     }
 

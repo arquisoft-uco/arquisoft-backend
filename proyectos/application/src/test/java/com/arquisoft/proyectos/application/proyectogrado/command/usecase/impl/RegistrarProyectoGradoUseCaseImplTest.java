@@ -109,7 +109,7 @@ class RegistrarProyectoGradoUseCaseImplTest {
             assertThat(publicado.getFichaPerfilId()).isEqualTo(proyecto.getFichaPerfil());
             assertThat(publicado.getTituloProyecto()).isEqualTo("Sistema de gestión");
             assertThat(publicado.getCoordinador())
-                    .isEqualTo(new ContactoCoordinador("Laura Mesa", "laura.mesa@uco.edu.co"));
+                    .isEqualTo(new ContactoCoordinador(coordinadorId, "Laura Mesa", "laura.mesa@uco.edu.co"));
         });
 
         var orden = inOrder(proyectoGradoDeFichaExisteFinder, coordinadorPorIdFinder, validator,

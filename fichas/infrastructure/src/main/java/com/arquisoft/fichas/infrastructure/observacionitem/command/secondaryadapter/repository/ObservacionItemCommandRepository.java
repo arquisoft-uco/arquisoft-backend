@@ -17,7 +17,7 @@ public interface ObservacionItemCommandRepository extends JpaRepository<Observac
 
     @Query("""
             SELECT new com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ContextoObservacionItemEntity(
-                r.id, r.estadoRevision.id, f.id, f.asesorFicha.id)
+                r.id, r.estadoRevision.id, f.id, f.asesorFicha.id, o.estadoObservacionRevision.id)
             FROM ObservacionItemJpaEntity o
             JOIN RevisionItemJpaEntity r ON r.id = o.revisionItemId
             JOIN ItemFichaPerfilJpaEntity i ON i.id = r.itemId
@@ -34,6 +34,25 @@ public interface ObservacionItemCommandRepository extends JpaRepository<Observac
             """)
     long contarOtrasIgualesEnRevision(@Param("observacionItem") UUID observacionItem,
                                       @Param("observacion") String observacion);
+
+    @Query("""
+            SELECT COUNT(o2)
+            FROM ObservacionItemJpaEntity o
+            JOIN ObservacionItemJpaEntity o2 ON o2.revisionItemId = o.revisionItemId
+            WHERE o.id = :observacionItem AND o2.id <> :observacionItem
+              AND o2.estadoObservacionRevision.id <> :estadoCerrado
+            """)
+    long contarOtrasSinCerrarEnRevision(@Param("observacionItem") UUID observacionItem,
+                                        @Param("estadoCerrado") String estadoCerrado);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE ObservacionItemJpaEntity o SET o.estadoObservacionRevision.id = :estadoNuevo
+            WHERE o.id = :id AND o.estadoObservacionRevision.id = :estadoActual
+            """)
+    int actualizarEstado(@Param("id") UUID id,
+                         @Param("estadoActual") String estadoActual,
+                         @Param("estadoNuevo") String estadoNuevo);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ObservacionItemJpaEntity o SET o.observacion = :observacion WHERE o.id = :id")

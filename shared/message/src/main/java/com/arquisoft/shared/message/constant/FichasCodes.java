@@ -56,6 +56,7 @@ public final class FichasCodes {
         public static final String NO_ENCONTRADA = "REVISION_ITEM_NO_ENCONTRADA";
         public static final String CERRADA = "REVISION_ITEM_CERRADA";
         public static final String NO_EN_PROGRESO = "REVISION_ITEM_NO_EN_PROGRESO";
+        public static final String NO_CORRECCION_DISPONIBLE = "REVISION_ITEM_NO_CORRECCION_DISPONIBLE";
         public static final String SIN_OBSERVACIONES = "REVISION_ITEM_SIN_OBSERVACIONES";
         public static final String CON_OBSERVACIONES_PENDIENTES = "REVISION_ITEM_CON_OBSERVACIONES_PENDIENTES";
     }
@@ -72,6 +73,8 @@ public final class FichasCodes {
         public static final String OBSERVACION_ITEM_DUPLICADA = "OBSERVACION_ITEM_DUPLICADA";
         public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_ITEM_ESTUDIANTE_REQUERIDO";
         public static final String NO_ENCONTRADA = "OBSERVACION_ITEM_NO_ENCONTRADA";
+        public static final String NO_EN_PROGRESO = "OBSERVACION_ITEM_NO_EN_PROGRESO";
+        public static final String NO_CERRADA = "OBSERVACION_ITEM_NO_CERRADA";
         public static final String ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO =
                 "ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO";
     }

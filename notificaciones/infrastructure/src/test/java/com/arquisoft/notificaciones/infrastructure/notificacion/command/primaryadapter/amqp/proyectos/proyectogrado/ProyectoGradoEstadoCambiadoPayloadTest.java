@@ -51,6 +51,10 @@ class ProyectoGradoEstadoCambiadoPayloadTest {
             return "Falta de avance";
         }
 
+        public ContactoDePrueba getCoordinador() {
+            return new ContactoDePrueba(UUID.randomUUID(), "Laura Mesa", "laura.mesa@uco.edu.co");
+        }
+
         public List<ContactoDePrueba> getEstudiantes() {
             return estudiantes;
         }
@@ -76,6 +80,8 @@ class ProyectoGradoEstadoCambiadoPayloadTest {
         assertThat(payload.estadoAnterior()).isEqualTo("ATRASADO");
         assertThat(payload.estadoNuevo()).isEqualTo("CANCELADO");
         assertThat(payload.motivo()).isEqualTo("Falta de avance");
+        assertThat(payload.coordinador()).isEqualTo(
+                new ProyectoGradoEstadoCambiadoPayload.ContactoPayload("Laura Mesa", "laura.mesa@uco.edu.co"));
         assertThat(payload.estudiantes()).containsExactly(
                 new ProyectoGradoEstadoCambiadoPayload.ContactoPayload("Ana Ruiz", "ana.ruiz@soyuco.edu.co"));
         assertThat(payload.asesores()).containsExactly(
@@ -96,6 +102,7 @@ class ProyectoGradoEstadoCambiadoPayloadTest {
         assertThat(payload.idEvento()).isEqualTo("evt-1");
         assertThat(payload.ocurridoEn()).isNull();
         assertThat(payload.estadoNuevo()).isNull();
+        assertThat(payload.coordinador()).isNull();
         assertThat(payload.estudiantes()).isNull();
         assertThat(payload.asesores()).isNull();
     }
