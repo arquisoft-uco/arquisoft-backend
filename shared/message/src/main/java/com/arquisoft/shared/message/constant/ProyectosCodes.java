@@ -15,6 +15,7 @@ public final class ProyectosCodes {
         public static final String IDENTIFICADOR_REQUERIDO = "COORDINADOR_IDENTIFICADOR_REQUERIDO";
         public static final String NOMBRE_REQUERIDO = "COORDINADOR_NOMBRE_REQUERIDO";
         public static final String EMAIL_REQUERIDO = "COORDINADOR_EMAIL_REQUERIDO";
+        public static final String NO_ENCONTRADO = "COORDINADOR_NO_ENCONTRADO";
         public static final String OCURRIDO_EN_REQUERIDO = "COORDINADOR_OCURRIDO_EN_REQUERIDO";
     }
 
@@ -66,6 +67,8 @@ public final class ProyectosCodes {
         public static final String TRANSICION_ESTADO_NO_PERMITIDA = "PROYECTO_GRADO_TRANSICION_ESTADO_NO_PERMITIDA";
         public static final String SIN_ENTREGABLE = "PROYECTO_GRADO_SIN_ENTREGABLE";
         public static final String ULTIMO_ENTREGABLE_NO_DEFINITIVO = "PROYECTO_GRADO_ULTIMO_ENTREGABLE_NO_DEFINITIVO";
+        public static final String FECHA_FIN_REQUERIDA = "PROYECTO_GRADO_FECHA_FIN_REQUERIDA";
+        public static final String HOY_REQUERIDA = "PROYECTO_GRADO_HOY_REQUERIDA";
     }
 
     public static final class EstudianteProyectoGrado {

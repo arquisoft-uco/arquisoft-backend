@@ -42,6 +42,17 @@ public class ObservacionItemCommandOutputAdapter implements ObservacionItemOutpu
     }
 
     @Override
+    public long contarOtrasSinCerrarEnRevision(UUID observacionItem, String estadoCerrado) {
+        return repository.contarOtrasSinCerrarEnRevision(observacionItem, estadoCerrado);
+    }
+
+    @Override
+    public void actualizarEstado(UUID observacionItem, String estadoActual, String estadoNuevo) {
+        repository.actualizarEstado(observacionItem, estadoActual, estadoNuevo);
+        logger.debug(ObservacionItemKey.LOG_ESTADO_OBSERVACION_ACTUALIZADO, observacionItem, estadoNuevo);
+    }
+
+    @Override
     public void actualizarObservacion(UUID observacionItem, String observacion) {
         repository.actualizarObservacion(observacionItem, observacion);
         logger.debug(ObservacionItemKey.LOG_GUARDADA, observacionItem);

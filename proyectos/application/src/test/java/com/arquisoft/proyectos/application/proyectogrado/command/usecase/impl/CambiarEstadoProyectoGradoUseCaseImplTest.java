@@ -1,6 +1,7 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.usecase.impl;
 
 import com.arquisoft.proyectos.application.asesor.command.finder.AsesoresAsignadosDeProyectoGradoFinder;
+import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
 import com.arquisoft.proyectos.application.asesorproyectogrado.command.finder.AsesorAsignadoProyectoGradoFinder;
 import com.arquisoft.proyectos.application.entregableproyectogrado.command.finder.UltimoEntregableProyectoGradoFinder;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
@@ -11,6 +12,8 @@ import com.arquisoft.proyectos.application.proyectogrado.command.finder.Proyecto
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.CambiarEstadoProyectoGradoValidator;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
+import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
+import com.arquisoft.proyectos.domain.coordinador.model.ContactoCoordinador;
 import com.arquisoft.proyectos.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
@@ -63,6 +66,9 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
     private AsesorAsignadoProyectoGradoFinder asesorAsignadoProyectoGradoFinder;
 
     @Mock
+    private CoordinadorPorIdFinder coordinadorPorIdFinder;
+
+    @Mock
     private UltimoEntregableProyectoGradoFinder ultimoEntregableProyectoGradoFinder;
 
     @Mock
@@ -86,6 +92,8 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
     private final ProyectoGradoDomain proyecto = ProyectoGradoDomain.crear(
             UtilUUID.generarNuevoUUID(), "Sistema de gestión", UtilUUID.generarNuevoUUID());
     private final EstadoProyectoGradoDomain estadoActual = EstadoProyectoGradoDomain.crear(proyecto.getId());
+    private final CoordinadorDomain coordinador = CoordinadorDomain.reconstruir(proyecto.getCoordinador(), "1020",
+            "Laura Mesa", "laura.mesa@uco.edu.co", Instant.parse("2026-09-01T10:00:00Z"), null);
     private final EntregableProyectoGradoDomain ultimoEntregable = EntregableProyectoGradoDomain.reconstruir(
             UtilUUID.generarNuevoUUID(), proyecto.getId(), 2, EstadoEntregable.CERRADO,
             Instant.parse("2026-11-01T10:00:00Z"));
@@ -110,6 +118,7 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
                              List<AsesorDomain> asesores) {
         when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
         when(estadoActualProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estado);
+        when(coordinadorPorIdFinder.obtener(proyecto.getCoordinador())).thenReturn(coordinador);
         when(asesorAsignadoProyectoGradoFinder.obtener(entrada)).thenReturn(true);
         when(ultimoEntregableProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(ultimoEntregable);
         when(estudiantesVigentesDeProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estudiantes);
@@ -141,6 +150,8 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
             assertThat(publicado.getEstadoAnterior()).isEqualTo(EstadoProyecto.EN_PROCESO.getId());
             assertThat(publicado.getEstadoNuevo()).isEqualTo(EstadoProyecto.FINALIZADO.getId());
             assertThat(publicado.getMotivo()).isEmpty();
+            assertThat(publicado.getCoordinador()).isEqualTo(
+                    new ContactoCoordinador(coordinador.getId(), "Laura Mesa", "laura.mesa@uco.edu.co"));
             assertThat(publicado.getEstudiantes()).containsExactly(
                     new ContactoEstudiante(ana.getId(), "Ana Ruiz", "ana.ruiz@soyuco.edu.co"),
                     new ContactoEstudiante(luis.getId(), "Luis Diaz", "luis.diaz@soyuco.edu.co"),
@@ -149,7 +160,7 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
                     new ContactoAsesor("Mario Peña", "mario.pena@uco.edu.co"));
         });
 
-        var orden = inOrder(proyectoGradoBloqueadoPorIdFinder, estadoActualProyectoGradoFinder,
+        var orden = inOrder(proyectoGradoBloqueadoPorIdFinder, estadoActualProyectoGradoFinder, coordinadorPorIdFinder,
                 asesorAsignadoProyectoGradoFinder, ultimoEntregableProyectoGradoFinder,
                 estudiantesVigentesDeProyectoGradoFinder, asesoresAsignadosDeProyectoGradoFinder, validator,
                 estadoProyectoGradoOutputPort, eventPublisher, logger);
@@ -157,13 +168,14 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
                 eq(proyecto.getId()), eq(entrada.getAsesor()), eq("FINALIZADO"));
         orden.verify(proyectoGradoBloqueadoPorIdFinder, times(1)).obtener(proyecto.getId());
         orden.verify(estadoActualProyectoGradoFinder, times(1)).obtener(proyecto.getId());
+        orden.verify(coordinadorPorIdFinder, times(1)).obtener(proyecto.getCoordinador());
         orden.verify(asesorAsignadoProyectoGradoFinder, times(1)).obtener(entrada);
         orden.verify(ultimoEntregableProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(estudiantesVigentesDeProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(asesoresAsignadosDeProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(logger).debug(eq(ProyectoGradoKey.LOG_VERIFICACION_CAMBIO_ESTADO),
                 eq(true), eq(true), eq(true), eq(true), eq(3), eq(1));
-        orden.verify(validator).validar(entrada, proyecto, estadoActual, true, ultimoEntregable);
+        orden.verify(validator).validar(entrada, proyecto, estadoActual, coordinador, true, ultimoEntregable);
         orden.verify(estadoProyectoGradoOutputPort).registrar(any());
         orden.verify(eventPublisher).publish(any());
         orden.verify(logger).info(eq(ProyectoGradoKey.LOG_ESTADO_CAMBIADO),
@@ -197,7 +209,7 @@ class CambiarEstadoProyectoGradoUseCaseImplTest {
         stubFinders(List.of(), List.of());
         doThrow(new TransicionEstadoProyectoNoPermitidaException(proyecto.getId(), proyecto.getTituloProyecto(),
                 EstadoProyecto.FINALIZADO, EstadoProyecto.FINALIZADO))
-                .when(validator).validar(entrada, proyecto, estadoActual, true, ultimoEntregable);
+                .when(validator).validar(entrada, proyecto, estadoActual, coordinador, true, ultimoEntregable);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))

@@ -1,6 +1,7 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.usecase.impl;
 
 import com.arquisoft.proyectos.application.asesor.command.finder.AsesoresAsignadosDeProyectoGradoFinder;
+import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.EstadoProyectoGradoOutputPort;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.entity.EstadoProyectoGradoEntity;
@@ -9,6 +10,8 @@ import com.arquisoft.proyectos.application.proyectogrado.command.finder.Proyecto
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.CancelarProyectoGradoValidator;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ContactoAsesor;
+import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
+import com.arquisoft.proyectos.domain.coordinador.model.ContactoCoordinador;
 import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estudiante.EstudianteDomain;
@@ -56,6 +59,9 @@ class CancelarProyectoGradoUseCaseImplTest {
     private EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
 
     @Mock
+    private CoordinadorPorIdFinder coordinadorPorIdFinder;
+
+    @Mock
     private EstudiantesVigentesDeProyectoGradoFinder estudiantesVigentesDeProyectoGradoFinder;
 
     @Mock
@@ -76,6 +82,8 @@ class CancelarProyectoGradoUseCaseImplTest {
     private final ProyectoGradoDomain proyecto = ProyectoGradoDomain.crear(
             UtilUUID.generarNuevoUUID(), "Sistema de gestión", UtilUUID.generarNuevoUUID());
     private final EstadoProyectoGradoDomain estadoActual = EstadoProyectoGradoDomain.crear(proyecto.getId());
+    private final CoordinadorDomain coordinador = CoordinadorDomain.reconstruir(proyecto.getCoordinador(), "1020",
+            "Laura Mesa", "laura.mesa@uco.edu.co", Instant.parse("2026-09-01T10:00:00Z"), null);
     private final CancelacionProyectoGradoDomain entrada = CancelacionProyectoGradoDomain.crear(
             proyecto.getId(), proyecto.getCoordinador(), "Falta de avance");
 
@@ -92,6 +100,7 @@ class CancelarProyectoGradoUseCaseImplTest {
     private void stubFinders(List<EstudianteDomain> estudiantes, List<AsesorDomain> asesores) {
         when(proyectoGradoBloqueadoPorIdFinder.obtener(proyecto.getId())).thenReturn(proyecto);
         when(estadoActualProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estadoActual);
+        when(coordinadorPorIdFinder.obtener(entrada.getCoordinador())).thenReturn(coordinador);
         when(estudiantesVigentesDeProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(estudiantes);
         when(asesoresAsignadosDeProyectoGradoFinder.obtener(proyecto.getId())).thenReturn(asesores);
     }
@@ -122,6 +131,8 @@ class CancelarProyectoGradoUseCaseImplTest {
             assertThat(publicado.getEstadoAnterior()).isEqualTo(EstadoProyecto.EN_PROCESO.getId());
             assertThat(publicado.getEstadoNuevo()).isEqualTo(EstadoProyecto.CANCELADO.getId());
             assertThat(publicado.getMotivo()).isEqualTo("Falta de avance");
+            assertThat(publicado.getCoordinador()).isEqualTo(
+                    new ContactoCoordinador(coordinador.getId(), "Laura Mesa", "laura.mesa@uco.edu.co"));
             assertThat(publicado.getEstudiantes()).containsExactly(
                     new ContactoEstudiante(ana.getId(), "Ana Ruiz", "ana.ruiz@soyuco.edu.co"),
                     new ContactoEstudiante(luis.getId(), "Luis Diaz", "luis.diaz@soyuco.edu.co"),
@@ -130,18 +141,19 @@ class CancelarProyectoGradoUseCaseImplTest {
                     new ContactoAsesor("Mario Peña", "mario.pena@uco.edu.co"));
         });
 
-        var orden = inOrder(proyectoGradoBloqueadoPorIdFinder, estadoActualProyectoGradoFinder,
+        var orden = inOrder(proyectoGradoBloqueadoPorIdFinder, estadoActualProyectoGradoFinder, coordinadorPorIdFinder,
                 estudiantesVigentesDeProyectoGradoFinder, asesoresAsignadosDeProyectoGradoFinder, validator,
                 estadoProyectoGradoOutputPort, eventPublisher, logger);
         orden.verify(logger).info(eq(ProyectoGradoKey.LOG_CANCELANDO),
                 eq(proyecto.getId()), eq(entrada.getCoordinador()));
         orden.verify(proyectoGradoBloqueadoPorIdFinder, times(1)).obtener(proyecto.getId());
         orden.verify(estadoActualProyectoGradoFinder, times(1)).obtener(proyecto.getId());
+        orden.verify(coordinadorPorIdFinder, times(1)).obtener(entrada.getCoordinador());
         orden.verify(estudiantesVigentesDeProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(asesoresAsignadosDeProyectoGradoFinder, times(1)).obtener(proyecto.getId());
         orden.verify(logger).debug(eq(ProyectoGradoKey.LOG_VERIFICACION_CANCELACION),
                 eq(true), eq(true), eq(3), eq(1));
-        orden.verify(validator).validar(entrada, proyecto, estadoActual);
+        orden.verify(validator).validar(entrada, proyecto, estadoActual, coordinador);
         orden.verify(estadoProyectoGradoOutputPort).registrar(any());
         orden.verify(eventPublisher).publish(any());
         orden.verify(logger).info(eq(ProyectoGradoKey.LOG_CANCELADO),
@@ -172,7 +184,7 @@ class CancelarProyectoGradoUseCaseImplTest {
         stubFinders(List.of(), List.of());
         doThrow(new ProyectoGradoNoCancelableException(
                 proyecto.getId(), proyecto.getTituloProyecto(), EstadoProyecto.FINALIZADO))
-                .when(validator).validar(entrada, proyecto, estadoActual);
+                .when(validator).validar(entrada, proyecto, estadoActual, coordinador);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada)).isInstanceOf(ProyectoGradoNoCancelableException.class);

@@ -80,7 +80,7 @@ class ModificarInformacionTareaUseCaseImplTest {
         var asesorEnProyecto = new AsesorEnProyectoGrado(mapa.getProyectoGrado(), modificacion.getAsesor());
         when(tareaPorIdFinder.obtener(tarea.getId())).thenReturn(tarea);
         var proyecto = ProyectoGradoDomain.reconstruir(mapa.getProyectoGrado(), EstadoProyectoGrado.EN_PROCESO,
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Titulo");
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Titulo", null);
         when(mapaRutaPorIdFinder.obtener(mapa.getId())).thenReturn(mapa);
         when(proyectoGradoPorIdFinder.obtener(mapa.getProyectoGrado())).thenReturn(proyecto);
         when(descripcionTareaEnUsoFinder.obtener(descripcionEnMapa)).thenReturn(false);

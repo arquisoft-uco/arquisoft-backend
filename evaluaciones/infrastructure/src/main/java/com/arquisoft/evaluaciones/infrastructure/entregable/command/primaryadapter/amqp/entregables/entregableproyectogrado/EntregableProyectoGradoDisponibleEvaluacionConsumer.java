@@ -40,11 +40,12 @@ public class EntregableProyectoGradoDisponibleEvaluacionConsumer extends Abstrac
             var payload = deserialize(message, EntregableProyectoGradoDisponibleEvaluacionPayload.class);
 
             logger.info(EntregableKey.LOG_DISPONIBLE_RECIBIDO,
-                    payload.idEvento(), payload.entregableProyectoGrado(), payload.proyectoGrado());
+                    payload.idEvento(), payload.entregableProyectoGrado(), payload.proyectoGrado(),
+                    payload.asesor());
 
             var resultado = generarEvaluacionInteractor.ejecutar(GenerarEvaluacionCommand.crear(
                     payload.entregableProyectoGrado(), payload.proyectoGrado(), payload.nombreProyecto(),
-                    payload.version()));
+                    payload.version(), payload.asesor()));
 
             switch (resultado) {
                 case GeneracionEvaluacionResult.Generada generada ->

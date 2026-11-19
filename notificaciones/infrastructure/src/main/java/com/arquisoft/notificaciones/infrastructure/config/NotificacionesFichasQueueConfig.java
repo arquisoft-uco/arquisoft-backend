@@ -84,6 +84,34 @@ public class NotificacionesFichasQueueConfig {
                 arquisoftDeadLetterExchange);
     }
 
+    public static final String REVISION_ITEM_CERRADA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Fichas.REVISION_ITEM_CERRADA;
+
+    @Bean
+    public Declarables notificacionesRevisionItemCerradaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REVISION_ITEM_CERRADA_QUEUE,
+                EventTopics.Fichas.REVISION_ITEM_CERRADA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String OBSERVACION_ITEM_REABIERTA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Fichas.OBSERVACION_ITEM_REABIERTA;
+
+    @Bean
+    public Declarables notificacionesObservacionItemReabiertaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                OBSERVACION_ITEM_REABIERTA_QUEUE,
+                EventTopics.Fichas.OBSERVACION_ITEM_REABIERTA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     public static final String FICHA_PERFIL_APROBADA_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_APROBADA;
 

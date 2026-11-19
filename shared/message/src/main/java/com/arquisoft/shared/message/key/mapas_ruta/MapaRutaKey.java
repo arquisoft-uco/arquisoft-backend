@@ -22,7 +22,11 @@ public enum MapaRutaKey implements ClaveMensaje {
     LOG_CONSULTA_PROYECTO_ASESOR_COMPLETADA(
             "mapas_ruta.aplicacion.maparuta.log.consulta-proyecto-asesor-completada", 1),
     LOG_CONSULTANDO("mapas_ruta.aplicacion.maparuta.log.consultando", 4),
-    LOG_CONSULTA_COMPLETADA("mapas_ruta.aplicacion.maparuta.log.consulta-completada", 3);
+    LOG_CONSULTA_COMPLETADA("mapas_ruta.aplicacion.maparuta.log.consulta-completada", 3),
+    LOG_DETECTANDO_PLAZOS("mapas_ruta.aplicacion.maparuta.log.detectando-plazos", 1),
+    LOG_VERIFICACION_PLAZOS("mapas_ruta.aplicacion.maparuta.log.verificacion-plazos", 1),
+    LOG_PLAZOS_DETECTADOS("mapas_ruta.aplicacion.maparuta.log.plazos-detectados", 2),
+    LOG_DETECCION_INESPERADA("mapas_ruta.infraestructura.maparuta.log.deteccion-inesperada", 1);
 
     private final String clave;
     private final int parametros;

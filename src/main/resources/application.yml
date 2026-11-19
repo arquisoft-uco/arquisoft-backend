@@ -210,6 +210,13 @@ entregables:
     bucket: ${ENTREGABLES_BUCKET:entregables}
     bucket-artefactos: ${ENTREGABLES_BUCKET_ARTEFACTOS:${ARTEFACTOS_BUCKET:artefactos}}
 
+# ==================== PLAZO DEL MAPA DE RUTA ====================
+# El job diario de mapas_ruta (cron) y el consumidor de fecha_fin_cambiada de proyectos comparten la zona:
+# ambos deben coincidir en que es "hoy".
+plazo-mapa-ruta:
+  cron: ${PLAZO_MAPA_RUTA_CRON:0 5 0 * * *}
+  zona-horaria: ${PLAZO_MAPA_RUTA_ZONA_HORARIA:America/Bogota}
+
 # ==================== DATASOURCES POR BOUNDED CONTEXT ====================
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
 # usando @ConfigurationProperties("datasource.{contexto}").

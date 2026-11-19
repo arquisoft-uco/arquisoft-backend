@@ -13,6 +13,19 @@ public final class MapasRutaFields {
         public static final String FECHA_INICIO = "fechaInicio";
         public static final String FECHA_FIN = "fechaFin";
         public static final String COORDINADOR = "coordinador";
+        public static final String HOY = "hoy";
+    }
+
+    public static final class ProyectoGrado {
+
+        private ProyectoGrado() {}
+
+        public static final String ID = "proyectoGrado";
+        public static final String FICHA_PERFIL = "fichaPerfil";
+        public static final String TITULO_PROYECTO = "tituloProyecto";
+        public static final String COORDINADOR = "coordinador";
+        public static final String ESTADO_PROYECTO = "estadoProyecto";
+        public static final String OCURRIDO_EN = "ocurridoEn";
     }
 
     public static final class Tarea {

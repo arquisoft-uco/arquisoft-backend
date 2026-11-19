@@ -23,6 +23,12 @@ public final class EventTopics {
         public static final String REVISION_ITEM_CORRECCIONES_ENVIADAS =
                 "fichas.revision_item.correcciones_enviadas";
 
+        public static final String REVISION_ITEM_CERRADA =
+                "fichas.revision_item.cerrada";
+
+        public static final String OBSERVACION_ITEM_REABIERTA =
+                "fichas.observacion_item.reabierta";
+
         public static final String FICHA_PERFIL_APROBADA =
                 "fichas.ficha_perfil.aprobada";
 
@@ -214,6 +220,8 @@ public final class EventTopics {
                 "mapas_ruta.mapa_ruta.agregado";
         public static final String MAPA_RUTA_FECHA_FIN_CAMBIADA =
                 "mapas_ruta.mapa_ruta.fecha_fin_cambiada";
+        public static final String MAPA_RUTA_PLAZO_VENCIDO =
+                "mapas_ruta.mapa_ruta.plazo_vencido";
         public static final String TAREA_FINALIZADA =
                 "mapas_ruta.tarea.finalizada";
     }

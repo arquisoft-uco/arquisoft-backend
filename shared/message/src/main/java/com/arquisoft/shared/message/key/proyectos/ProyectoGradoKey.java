@@ -49,7 +49,15 @@ public enum ProyectoGradoKey implements ClaveMensaje {
     ERROR_NO_CANCELABLE("proyectos.dominio.proyectogrado.error.no-cancelable", 2),
     ERROR_NO_CANCELABLE_DETALLE("proyectos.dominio.proyectogrado.error.no-cancelable-detalle", 2),
     ERROR_CANCELADO("proyectos.dominio.proyectogrado.error.cancelado", 1),
-    ERROR_CANCELADO_DETALLE("proyectos.dominio.proyectogrado.error.cancelado-detalle", 1);
+    ERROR_CANCELADO_DETALLE("proyectos.dominio.proyectogrado.error.cancelado-detalle", 1),
+    LOG_PLAZO_VENCIDO_RECIBIDO("proyectos.infraestructura.proyectogrado.log.plazo-vencido-recibido", 4),
+    LOG_FECHA_FIN_CAMBIADA_RECIBIDA("proyectos.infraestructura.proyectogrado.log.fecha-fin-cambiada-recibida", 4),
+    LOG_VERIFICACION_ATRASO("proyectos.aplicacion.proyectogrado.log.verificacion-atraso", 5),
+    LOG_VERIFICACION_REANUDACION("proyectos.aplicacion.proyectogrado.log.verificacion-reanudacion", 5),
+    LOG_ATRASADO("proyectos.infraestructura.proyectogrado.log.atrasado", 1),
+    LOG_ATRASO_OMITIDO("proyectos.infraestructura.proyectogrado.log.atraso-omitido", 2),
+    LOG_REANUDADO("proyectos.infraestructura.proyectogrado.log.reanudado", 1),
+    LOG_REANUDACION_OMITIDA("proyectos.infraestructura.proyectogrado.log.reanudacion-omitida", 3);
 
     private final String clave;
     private final int parametros;

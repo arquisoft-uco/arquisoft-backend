@@ -190,6 +190,65 @@ class ObservacionItemCommandRepositoryTest {
         assertThat(resultado.get().estadoRevision()).isEqualTo("EN_PROGRESO");
         assertThat(resultado.get().fichaPerfil()).isEqualTo(ficha.ficha());
         assertThat(resultado.get().asesorFicha()).isEqualTo(ficha.asesor());
+        assertThat(resultado.get().estadoObservacion()).isEqualTo("PENDIENTE");
+    }
+
+    @Test
+    void debeContarSoloOtrasSinCerrar_cuandoHayCerradasYPendientes() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "CORRECCION_DISPONIBLE");
+        var otraRevision = sembrarRevisionDelItem(ficha.item(), "CORRECCION_DISPONIBLE");
+        var observacion = sembrarObservacionDeLaRevision(revision, "Propia", "EN_PROGRESO");
+        sembrarObservacionDeLaRevision(revision, "Pendiente", "PENDIENTE");
+        sembrarObservacionDeLaRevision(revision, "En progreso", "EN_PROGRESO");
+        sembrarObservacionDeLaRevision(revision, "Cerrada", "CERRADO");
+        sembrarObservacionDeLaRevision(otraRevision, "Ajena", "PENDIENTE");
+        testEntityManager.clear();
+
+        // Act
+        var otrasSinCerrar = repository.contarOtrasSinCerrarEnRevision(observacion, "CERRADO");
+
+        // Assert
+        assertThat(otrasSinCerrar).isEqualTo(2L);
+    }
+
+    @Test
+    void debeContarCero_cuandoLasDemasEstanCerradas() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "CORRECCION_DISPONIBLE");
+        var observacion = sembrarObservacionDeLaRevision(revision, "Propia", "EN_PROGRESO");
+        sembrarObservacionDeLaRevision(revision, "Cerrada uno", "CERRADO");
+        sembrarObservacionDeLaRevision(revision, "Cerrada dos", "CERRADO");
+        testEntityManager.clear();
+
+        // Act
+        var otrasSinCerrar = repository.contarOtrasSinCerrarEnRevision(observacion, "CERRADO");
+
+        // Assert
+        assertThat(otrasSinCerrar).isZero();
+    }
+
+    @Test
+    void debeActualizarEstado_soloSiCoincideElOrigen() {
+        // Arrange
+        var ficha = sembrarFichaConItem();
+        var revision = sembrarRevisionDelItem(ficha.item(), "CORRECCION_DISPONIBLE");
+        var enProgreso = sembrarObservacionDeLaRevision(revision, "En progreso", "EN_PROGRESO");
+        var pendiente = sembrarObservacionDeLaRevision(revision, "Pendiente", "PENDIENTE");
+        sembrarObservacionDeLaRevision(revision, "Ya cerrada", "CERRADO");
+        testEntityManager.clear();
+
+        // Act
+        var filasCoincide = repository.actualizarEstado(enProgreso, "EN_PROGRESO", "CERRADO");
+        var filasNoCoincide = repository.actualizarEstado(pendiente, "EN_PROGRESO", "CERRADO");
+
+        // Assert
+        assertThat(filasCoincide).isEqualTo(1);
+        assertThat(filasNoCoincide).isZero();
+        assertThat(estadoDe(enProgreso)).isEqualTo("CERRADO");
+        assertThat(estadoDe(pendiente)).isEqualTo("PENDIENTE");
     }
 
     @Test

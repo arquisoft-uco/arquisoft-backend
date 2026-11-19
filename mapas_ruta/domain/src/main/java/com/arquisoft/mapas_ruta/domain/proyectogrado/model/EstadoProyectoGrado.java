@@ -8,9 +8,9 @@ import java.util.Optional;
 public enum EstadoProyectoGrado {
 
     EN_PROCESO("En proceso"),
-    LISTO_PARA_REVISION("Listo Para Revisión"),
     ATRASADO("Atrasado"),
     FINALIZADO("Finalizado"),
+    CANCELADO("Cancelado"),
 
     VACIO("");
 
@@ -30,8 +30,8 @@ public enum EstadoProyectoGrado {
         return nombre;
     }
 
-    public boolean estaEnProceso() {
-        return this == EN_PROCESO;
+    public boolean admiteCambios() {
+        return this == EN_PROCESO || this == ATRASADO;
     }
 
     public static EstadoProyectoGrado desde(String id) {

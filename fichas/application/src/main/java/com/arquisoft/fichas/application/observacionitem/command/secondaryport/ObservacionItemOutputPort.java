@@ -17,7 +17,11 @@ public interface ObservacionItemOutputPort {
 
     long contarOtrasIgualesEnRevision(UUID observacionItem, String observacion);
 
+    long contarOtrasSinCerrarEnRevision(UUID observacionItem, String estadoCerrado);
+
     void actualizarObservacion(UUID observacionItem, String observacion);
+
+    void actualizarEstado(UUID observacionItem, String estadoActual, String estadoNuevo);
 
     void removerObservacion(UUID observacionItem);
 

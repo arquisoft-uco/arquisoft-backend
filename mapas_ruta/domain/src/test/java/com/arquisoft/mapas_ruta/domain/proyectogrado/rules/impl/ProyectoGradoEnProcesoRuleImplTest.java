@@ -28,20 +28,33 @@ class ProyectoGradoEnProcesoRuleImplTest {
     }
 
     @Test
-    void debeLanzarNoEnProceso_cuandoElProyectoEstaAtrasado() {
+    void debePasar_cuandoElProyectoEstaAtrasado() {
         // Arrange
-        var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var estado = new EstadoActualProyectoGrado(proyectoGrado, TITULO_PROYECTO, EstadoProyectoGrado.ATRASADO);
+        var estado = new EstadoActualProyectoGrado(
+                UtilUUID.generarNuevoUUID(), TITULO_PROYECTO, EstadoProyectoGrado.ATRASADO);
 
         // Act & Assert
-        assertThatThrownBy(() -> rule.validar(estado))
+        assertThatCode(() -> rule.validar(estado)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarNoEnProceso_cuandoElProyectoEstaFinalizadoOCancelado() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var finalizado = new EstadoActualProyectoGrado(proyectoGrado, TITULO_PROYECTO, EstadoProyectoGrado.FINALIZADO);
+        var cancelado = new EstadoActualProyectoGrado(proyectoGrado, TITULO_PROYECTO, EstadoProyectoGrado.CANCELADO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(finalizado))
                 .isInstanceOfSatisfying(ProyectoGradoNoEnProcesoException.class, excepcion -> {
                     assertThat(excepcion.getCodigoError()).isEqualTo(MapasRutaCodes.ProyectoGrado.NO_EN_PROCESO);
                     assertThat(excepcion.getError().getMessage())
                             .contains(TITULO_PROYECTO)
-                            .contains(EstadoProyectoGrado.ATRASADO.getNombre())
+                            .contains(EstadoProyectoGrado.FINALIZADO.getNombre())
                             .doesNotContain(proyectoGrado.toString());
                     assertThat(excepcion.getMessage()).contains(proyectoGrado.toString());
                 });
+        assertThatThrownBy(() -> rule.validar(cancelado))
+                .isInstanceOf(ProyectoGradoNoEnProcesoException.class);
     }
 }

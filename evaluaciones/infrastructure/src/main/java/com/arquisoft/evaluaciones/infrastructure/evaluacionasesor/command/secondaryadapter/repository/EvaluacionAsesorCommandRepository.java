@@ -3,7 +3,9 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacionasesor.command.secon
 import com.arquisoft.evaluaciones.infrastructure.evaluacionasesor.command.secondaryadapter.entity.EvaluacionAsesorJpaEntity;
 import com.arquisoft.evaluaciones.infrastructure.evaluacionasesor.command.secondaryadapter.projection.ContextoRegistroEvaluacionAsesorProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.NativeQuery;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
@@ -38,4 +40,15 @@ public interface EvaluacionAsesorCommandRepository extends JpaRepository<Evaluac
             """)
     Optional<ContextoRegistroEvaluacionAsesorProjection> buscarContextoBloqueadoPorEvaluacionCualitativa(
             @Param("evaluacionCualitativa") UUID evaluacionCualitativa);
+
+    Optional<EvaluacionAsesorJpaEntity> findByEvaluacion(UUID evaluacion);
+
+    @Query("select count(ea) > 0 from EvaluacionAsesorJpaEntity ea where ea.evaluacion = :evaluacion "
+            + "and (exists (select 1 from EvaluacionCualitativaAsesorJpaEntity c where c.evaluacionAsesor = ea.id) "
+            + "or exists (select 1 from EvaluacionCuantitativaAsesorJpaEntity q where q.evaluacionAsesor = ea.id))")
+    boolean existenRegistrosPorEvaluacion(@Param("evaluacion") UUID evaluacion);
+
+    @Modifying(clearAutomatically = true)
+    @Query("update EvaluacionAsesorJpaEntity ea set ea.asesor = :asesor where ea.id = :id")
+    int actualizarAsesor(@Param("id") UUID id, @Param("asesor") UUID asesor);
 }

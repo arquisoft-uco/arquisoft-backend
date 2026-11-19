@@ -28,6 +28,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,6 +39,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ObservacionItemEstudianteQueryOutputAdapterTest {
 
     private static final int ORDEN_POR_DEFECTO_DEL_CASE = 4;
+    private static final List<EstadoObservacionRevision> ESTADOS_DEL_CATALOGO = Arrays.stream(EstadoObservacionRevision.values())
+            .filter(estado -> estado != EstadoObservacionRevision.VACIO)
+            .toList();
 
     @Autowired
     private TestEntityManager entityManager;
@@ -335,7 +339,7 @@ class ObservacionItemEstudianteQueryOutputAdapterTest {
         var ficha = persistirFicha(asesor, "Proyecto de Tomas");
         persistirVinculoEstudianteFicha(ficha, estudiante);
         var revision = persistirRevisionDeNuevoItem(ficha);
-        for (var estadoDominio : EstadoObservacionRevision.values()) {
+        for (var estadoDominio : ESTADOS_DEL_CATALOGO) {
             var estado = Optional.ofNullable(
                             entityManager.find(EstadoObservacionRevisionJpaEntity.class, estadoDominio.getId()))
                     .orElseGet(() -> entityManager.persist(EstadoObservacionRevisionJpaEntity.builder()
@@ -352,7 +356,7 @@ class ObservacionItemEstudianteQueryOutputAdapterTest {
 
         // Assert
         assertThat(ordenes)
-                .hasSize(EstadoObservacionRevision.values().length)
+                .hasSize(ESTADOS_DEL_CATALOGO.size())
                 .doesNotHaveDuplicates()
                 .doesNotContain(ORDEN_POR_DEFECTO_DEL_CASE);
     }

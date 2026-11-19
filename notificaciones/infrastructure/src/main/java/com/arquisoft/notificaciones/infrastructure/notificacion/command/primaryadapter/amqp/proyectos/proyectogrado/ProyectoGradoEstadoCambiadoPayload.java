@@ -11,6 +11,7 @@ public record ProyectoGradoEstadoCambiadoPayload(
         String estadoAnterior,
         String estadoNuevo,
         String motivo,
+        ContactoPayload coordinador,
         List<ContactoPayload> estudiantes,
         List<ContactoPayload> asesores) {
 

@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.application.observacionitem.command.secondaryport.mapper;
 
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ContextoObservacionItemEntity;
+import com.arquisoft.fichas.domain.estadoobservacionrevision.EstadoObservacionRevision;
 import com.arquisoft.fichas.domain.estadorevision.EstadoRevision;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ class ContextoObservacionItemMapperTest {
     void debeConvertirElEstadoACatalogoYCopiarLosIds_cuandoMapeaLaEntity() {
         // Arrange
         var entity = new ContextoObservacionItemEntity(
-                UtilUUID.generarNuevoUUID(), "CERRADA", UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+                UtilUUID.generarNuevoUUID(), "CERRADA", UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "EN_PROGRESO");
 
         // Act
         var contexto = ContextoObservacionItemMapper.toDomain(entity);
@@ -23,5 +24,6 @@ class ContextoObservacionItemMapperTest {
         assertThat(contexto.estadoRevision()).isEqualTo(EstadoRevision.CERRADA);
         assertThat(contexto.fichaPerfil()).isEqualTo(entity.fichaPerfil());
         assertThat(contexto.asesorFicha()).isEqualTo(entity.asesorFicha());
+        assertThat(contexto.estadoObservacion()).isEqualTo(EstadoObservacionRevision.EN_PROGRESO);
     }
 }

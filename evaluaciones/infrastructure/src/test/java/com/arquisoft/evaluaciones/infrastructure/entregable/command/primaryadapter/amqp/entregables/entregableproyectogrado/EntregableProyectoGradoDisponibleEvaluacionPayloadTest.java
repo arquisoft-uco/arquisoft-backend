@@ -21,14 +21,16 @@ class EntregableProyectoGradoDisponibleEvaluacionPayloadTest {
         private final UUID proyectoGrado;
         private final String nombreProyecto;
         private final int version;
+        private final UUID asesor;
 
-        private DisponibleEventoDePrueba(UUID entregableProyectoGrado, UUID proyectoGrado) {
+        private DisponibleEventoDePrueba(UUID entregableProyectoGrado, UUID proyectoGrado, UUID asesor) {
             super(EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_DISPONIBLE_EVALUACION,
                     "EntregableProyectoGradoDisponibleEvaluacionEvent");
             this.entregableProyectoGrado = entregableProyectoGrado;
             this.proyectoGrado = proyectoGrado;
             this.nombreProyecto = "Sistema de riego";
             this.version = 2;
+            this.asesor = asesor;
         }
 
         public UUID getEntregableProyectoGrado() {
@@ -46,12 +48,17 @@ class EntregableProyectoGradoDisponibleEvaluacionPayloadTest {
         public int getVersion() {
             return version;
         }
+
+        public UUID getAsesor() {
+            return asesor;
+        }
     }
 
     @Test
     void debeConservarTodosLosCampos_cuandoSeLeeElEventoPublicado() {
         // Arrange
-        var evento = new DisponibleEventoDePrueba(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
+        var evento = new DisponibleEventoDePrueba(
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
 
         // Act
         var payload = mapper.readValue(
@@ -64,6 +71,7 @@ class EntregableProyectoGradoDisponibleEvaluacionPayloadTest {
         assertThat(payload.proyectoGrado()).isEqualTo(evento.getProyectoGrado().toString());
         assertThat(payload.nombreProyecto()).isEqualTo(evento.getNombreProyecto());
         assertThat(payload.version()).isEqualTo(evento.getVersion());
+        assertThat(payload.asesor()).isEqualTo(evento.getAsesor().toString());
     }
 
     @Test
@@ -80,6 +88,7 @@ class EntregableProyectoGradoDisponibleEvaluacionPayloadTest {
         // Assert
         assertThat(payload.version()).isNull();
         assertThat(payload.proyectoGrado()).isNull();
+        assertThat(payload.asesor()).isNull();
         assertThat(payload.ocurridoEn()).isNull();
         assertThat(payload.idEvento()).isEqualTo("evt-1");
         assertThat(payload.nombreProyecto()).isEqualTo("Sistema");

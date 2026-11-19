@@ -8,6 +8,7 @@ rutas:
     evaluacion:
       base: /evaluaciones
       jurados: /{evaluacionId}/jurados
+      asesor: /{evaluacionId}/asesor
       evaluacion-asesor: /{evaluacionId}/evaluacion-asesor
       evaluacion-asesor-por-id: /evaluaciones-asesor/{evaluacionAsesorId}
       evaluaciones-jurado: /{evaluacionId}/evaluaciones-jurado

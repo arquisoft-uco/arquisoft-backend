@@ -4,6 +4,10 @@ import com.arquisoft.proyectos.application.proyectogrado.command.validator.Cambi
 import com.arquisoft.proyectos.domain.asesorproyectogrado.model.ExistenciaAsesorProyectoGrado;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.rules.AsesorProyectoGradoExisteRule;
 import com.arquisoft.proyectos.domain.asesorproyectogrado.rules.impl.AsesorProyectoGradoExisteRuleImpl;
+import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
+import com.arquisoft.proyectos.domain.coordinador.model.ExistenciaCoordinador;
+import com.arquisoft.proyectos.domain.coordinador.rules.CoordinadorExisteRule;
+import com.arquisoft.proyectos.domain.coordinador.rules.impl.CoordinadorExisteRuleImpl;
 import com.arquisoft.proyectos.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.model.ExistenciaEstadoProyectoGrado;
@@ -30,6 +34,7 @@ public class CambiarEstadoProyectoGradoValidatorImpl implements CambiarEstadoPro
 
     private final ProyectoGradoExisteRule proyectoGradoExisteRule;
     private final EstadoProyectoGradoExisteRule estadoProyectoGradoExisteRule;
+    private final CoordinadorExisteRule coordinadorExisteRule;
     private final AsesorProyectoGradoExisteRule asesorProyectoGradoExisteRule;
     private final TransicionEstadoProyectoPermitidaRule transicionEstadoProyectoPermitidaRule;
     private final ProyectoGradoConEntregableRule proyectoGradoConEntregableRule;
@@ -38,6 +43,7 @@ public class CambiarEstadoProyectoGradoValidatorImpl implements CambiarEstadoPro
     public CambiarEstadoProyectoGradoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
         this.estadoProyectoGradoExisteRule = new EstadoProyectoGradoExisteRuleImpl();
+        this.coordinadorExisteRule = new CoordinadorExisteRuleImpl();
         this.asesorProyectoGradoExisteRule = new AsesorProyectoGradoExisteRuleImpl();
         this.transicionEstadoProyectoPermitidaRule = new TransicionEstadoProyectoPermitidaRuleImpl();
         this.proyectoGradoConEntregableRule = new ProyectoGradoConEntregableRuleImpl();
@@ -46,11 +52,12 @@ public class CambiarEstadoProyectoGradoValidatorImpl implements CambiarEstadoPro
 
     @Override
     public void validar(CambioEstadoProyectoGradoDomain cambio, ProyectoGradoDomain proyecto,
-                        EstadoProyectoGradoDomain estadoActual, boolean asesorAsignado,
-                        EntregableProyectoGradoDomain ultimoEntregable) {
+                        EstadoProyectoGradoDomain estadoActual, CoordinadorDomain coordinador,
+                        boolean asesorAsignado, EntregableProyectoGradoDomain ultimoEntregable) {
         proyectoGradoExisteRule.validar(new ExistenciaProyectoGrado(cambio.getProyectoGrado(), !proyecto.esVacio()));
         estadoProyectoGradoExisteRule.validar(
                 new ExistenciaEstadoProyectoGrado(cambio.getProyectoGrado(), !estadoActual.esVacio()));
+        coordinadorExisteRule.validar(new ExistenciaCoordinador(proyecto.getCoordinador(), !coordinador.esVacio()));
         asesorProyectoGradoExisteRule.validar(new ExistenciaAsesorProyectoGrado(
                 cambio.getAsesor(), cambio.getProyectoGrado(), asesorAsignado));
         transicionEstadoProyectoPermitidaRule.validar(new TransicionEstadoProyecto(

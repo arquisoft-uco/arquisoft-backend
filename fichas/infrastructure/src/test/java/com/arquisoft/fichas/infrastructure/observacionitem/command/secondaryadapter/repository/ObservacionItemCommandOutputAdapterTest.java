@@ -76,7 +76,7 @@ class ObservacionItemCommandOutputAdapterTest {
         // Arrange
         var observacionItem = UtilUUID.generarNuevoUUID();
         var contexto = Optional.of(new ContextoObservacionItemEntity(
-                UtilUUID.generarNuevoUUID(), "NUEVA", UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID()));
+                UtilUUID.generarNuevoUUID(), "NUEVA", UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "PENDIENTE"));
         when(repository.obtenerContexto(observacionItem)).thenReturn(contexto);
 
         // Act
@@ -85,6 +85,33 @@ class ObservacionItemCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isSameAs(contexto);
         verify(repository, times(1)).obtenerContexto(observacionItem);
+    }
+
+    @Test
+    void debeDelegarContarOtrasSinCerrar_cuandoSeConsultaLaRevision() {
+        // Arrange
+        var observacionItem = UtilUUID.generarNuevoUUID();
+        when(repository.contarOtrasSinCerrarEnRevision(observacionItem, "CERRADO")).thenReturn(2L);
+
+        // Act
+        var resultado = adapter.contarOtrasSinCerrarEnRevision(observacionItem, "CERRADO");
+
+        // Assert
+        assertThat(resultado).isEqualTo(2L);
+        verify(repository, times(1)).contarOtrasSinCerrarEnRevision(observacionItem, "CERRADO");
+    }
+
+    @Test
+    void debeDelegarYRegistrarDebug_cuandoActualizaElEstadoDeLaObservacion() {
+        // Arrange
+        var observacionItem = UtilUUID.generarNuevoUUID();
+
+        // Act
+        adapter.actualizarEstado(observacionItem, "EN_PROGRESO", "CERRADO");
+
+        // Assert
+        verify(repository, times(1)).actualizarEstado(observacionItem, "EN_PROGRESO", "CERRADO");
+        verify(logger).debug(eq(ObservacionItemKey.LOG_ESTADO_OBSERVACION_ACTUALIZADO), eq(observacionItem), eq("CERRADO"));
     }
 
     @Test

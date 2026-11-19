@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.observacionitem.command.finder.ContextoO
 import com.arquisoft.fichas.application.observacionitem.command.finder.OtrasObservacionesIgualesEnRevisionFinder;
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.ObservacionItemOutputPort;
 import com.arquisoft.fichas.application.observacionitem.command.validator.ModificarObservacionItemValidator;
+import com.arquisoft.fichas.domain.estadoobservacionrevision.EstadoObservacionRevision;
 import com.arquisoft.fichas.domain.estadorevision.EstadoRevision;
 import com.arquisoft.fichas.domain.observacionitem.ModificacionObservacionItemDomain;
 import com.arquisoft.fichas.domain.observacionitem.exception.ObservacionItemNoEncontradaException;
@@ -59,7 +60,8 @@ class ModificarObservacionItemUseCaseImplTest {
         // Arrange
         var entrada = ModificacionObservacionItemDomain.crear(observacionItem, "  Observación nueva  ", asesorFicha);
         var contexto = new ContextoObservacionItem(
-                UtilUUID.generarNuevoUUID(), EstadoRevision.NUEVA, UtilUUID.generarNuevoUUID(), asesorFicha);
+                UtilUUID.generarNuevoUUID(), EstadoRevision.NUEVA, UtilUUID.generarNuevoUUID(), asesorFicha,
+                EstadoObservacionRevision.PENDIENTE);
         when(contextoObservacionItemFinder.obtener(observacionItem)).thenReturn(contexto);
         when(otrasObservacionesIgualesEnRevisionFinder.obtener(entrada)).thenReturn(0L);
 

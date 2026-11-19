@@ -57,7 +57,7 @@ public class RegistrarProyectoGradoUseCaseImpl implements RegistrarProyectoGrado
 
         eventPublisher.publish(new ProyectoGradoRegistradoEvent(
                 proyecto.getId(), proyecto.getFichaPerfil(), proyecto.getTituloProyecto(),
-                new ContactoCoordinador(coordinador.getNombre(), coordinador.getEmail())));
+                new ContactoCoordinador(coordinador.getId(), coordinador.getNombre(), coordinador.getEmail())));
 
         logger.info(ProyectoGradoKey.LOG_REGISTRADO_CIERRE, proyecto.getId());
 

@@ -5,6 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de Coordinador (réplica local en proyectos). */
 public enum CoordinadorKey implements ClaveMensaje {
 
+    ERROR_NO_ENCONTRADO("proyectos.dominio.coordinador.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("proyectos.dominio.coordinador.error.no-encontrado-detalle", 1),
     LOG_AGREGADO_RECIBIDO("proyectos.infraestructura.coordinador.log.agregado-recibido", 3),
     LOG_AGREGADO("proyectos.aplicacion.coordinador.log.agregado", 1),
     LOG_DUPLICADO("proyectos.aplicacion.coordinador.log.duplicado", 1),
