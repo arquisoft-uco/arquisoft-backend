@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.time.Instant;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -143,7 +144,7 @@ class ItemCualitativoAsesorCommandOutputAdapterTest {
     }
 
     @Test
-    void debeEliminarElItemYSoloEse_cuandoEliminaPorId() {
+    void debeMarcarEliminadoElItemYSoloEse_cuandoEliminaPorId() {
         // Arrange
         var aEliminar = UtilUUID.generarNuevoUUID();
         var aConservar = UtilUUID.generarNuevoUUID();
@@ -154,13 +155,16 @@ class ItemCualitativoAsesorCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        adapter.eliminar(aEliminar);
+        adapter.marcarEliminado(aEliminar, Instant.now());
         repository.flush();
         entityManager.clear();
 
         // Assert
-        assertThat(repository.findById(aEliminar)).isEmpty();
-        assertThat(repository.findById(aConservar)).isPresent();
+        assertThat(repository.findById(aEliminar))
+                .hasValueSatisfying(item -> assertThat(item.getEliminadoEn()).isNotNull());
+        assertThat(adapter.existePorId(aEliminar)).isFalse();
+        assertThat(repository.findById(aConservar))
+                .hasValueSatisfying(item -> assertThat(item.getEliminadoEn()).isNull());
         verify(logger).debug(any(ClaveMensaje.class), eq(aEliminar));
     }
 }

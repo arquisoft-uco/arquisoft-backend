@@ -9,6 +9,7 @@ import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoAsesorKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class ItemCuantitativoAsesorCommandOutputAdapter implements ItemCuantitat
 
     @Override
     public Optional<ItemCuantitativoAsesorEntity> obtenerPorId(UUID id) {
-        return repository.findById(id).map(ItemCuantitativoAsesorJpaMapper::toEntity);
+        return repository.findById(id).filter(e -> e.getEliminadoEn() == null).map(ItemCuantitativoAsesorJpaMapper::toEntity);
     }
 
     @Override
@@ -43,12 +44,12 @@ public class ItemCuantitativoAsesorCommandOutputAdapter implements ItemCuantitat
 
     @Override
     public boolean existePorNombreYCategoriaIgnorandoMayusculas(String nombre, UUID categoriaId) {
-        return repository.existsByNombreIgnoreCaseAndCategoria(nombre, categoriaId);
+        return repository.existsByNombreIgnoreCaseAndCategoriaAndEliminadoEnIsNull(nombre, categoriaId);
     }
 
     @Override
     public boolean existePorId(UUID id) {
-        return repository.existsById(id);
+        return repository.existsByIdAndEliminadoEnIsNull(id);
     }
 
     @Override
@@ -58,8 +59,8 @@ public class ItemCuantitativoAsesorCommandOutputAdapter implements ItemCuantitat
     }
 
     @Override
-    public void eliminar(UUID id) {
-        repository.deleteById(id);
+    public void marcarEliminado(UUID id, Instant eliminadoEn) {
+        repository.marcarEliminado(id, eliminadoEn);
         logger.debug(ItemCuantitativoAsesorKey.LOG_ELIMINADO, id);
     }
 }

@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoAsesorKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,12 +32,12 @@ public class ItemCualitativoAsesorCommandOutputAdapter implements ItemCualitativ
 
     @Override
     public boolean existePorNombreIgnorandoMayusculas(String nombre) {
-        return repository.existsByNombreIgnoreCase(nombre);
+        return repository.existsByNombreIgnoreCaseAndEliminadoEnIsNull(nombre);
     }
 
     @Override
     public boolean existePorId(UUID id) {
-        return repository.existsById(id);
+        return repository.existsByIdAndEliminadoEnIsNull(id);
     }
 
     @Override
@@ -46,8 +47,8 @@ public class ItemCualitativoAsesorCommandOutputAdapter implements ItemCualitativ
     }
 
     @Override
-    public void eliminar(UUID id) {
-        repository.deleteById(id);
+    public void marcarEliminado(UUID id, Instant eliminadoEn) {
+        repository.marcarEliminado(id, eliminadoEn);
         logger.debug(ItemCualitativoAsesorKey.LOG_ELIMINADO, id);
     }
 }

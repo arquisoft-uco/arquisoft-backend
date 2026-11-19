@@ -13,8 +13,6 @@ public interface EvaluacionCualitativaAsesorOutputPort {
 
     Set<UUID> consultarItemsRegistrados(UUID evaluacionAsesor, Set<UUID> items);
 
-    boolean existePorItem(UUID item);
-
     void eliminarPorItems(UUID evaluacionAsesor, Set<UUID> items);
 
     Optional<EvaluacionCualitativaAsesorEntity> obtenerPorId(UUID id);

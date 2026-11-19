@@ -2,14 +2,17 @@ package com.arquisoft.evaluaciones.domain.itemcualitativoasesor;
 
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public final class RemocionItemCualitativoAsesorDomain {
 
     private UUID itemCualitativoAsesor;
+    private Instant eliminadoEn;
 
     private RemocionItemCualitativoAsesorDomain() {}
 
@@ -18,6 +21,7 @@ public final class RemocionItemCualitativoAsesorDomain {
         var resultado = new ValidationResult();
 
         remocion.setItemCualitativoAsesor(itemCualitativoAsesor, resultado);
+        remocion.setEliminadoEn();
 
         resultado.lanzarSiTieneErrores();
         return remocion;
@@ -34,7 +38,15 @@ public final class RemocionItemCualitativoAsesorDomain {
         this.itemCualitativoAsesor = itemCualitativoAsesor;
     }
 
+    private void setEliminadoEn() {
+        this.eliminadoEn = UtilFecha.generarInstanteActual();
+    }
+
     public UUID getItemCualitativoAsesor() {
         return itemCualitativoAsesor;
+    }
+
+    public Instant getEliminadoEn() {
+        return eliminadoEn;
     }
 }

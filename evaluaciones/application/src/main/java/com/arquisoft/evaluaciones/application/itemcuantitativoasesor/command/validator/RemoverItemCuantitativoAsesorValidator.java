@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface RemoverItemCuantitativoAsesorValidator {
 
-    void validar(UUID itemCuantitativoAsesor, boolean existe, boolean enUso);
+    void validar(UUID itemCuantitativoAsesor, boolean existe);
 }

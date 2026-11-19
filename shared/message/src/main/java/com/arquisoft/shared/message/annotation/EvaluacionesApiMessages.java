@@ -36,12 +36,12 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_422 = "El ítem cualitativo no existe";
         public static final String REMOVER_SUMMARY = "Remover ítem cualitativo";
         public static final String REMOVER_DESCRIPTION =
-                "Remueve un ítem cualitativo del jurado registrado por equivocación, "
-                        + "siempre que no se haya usado en ninguna evaluación";
+                "Remueve un ítem cualitativo del jurado para que deje de evaluarse, "
+                        + "conservando su historial en las evaluaciones ya realizadas";
         public static final String REMOVER_RESP_204 = "Ítem cualitativo removido";
         public static final String REMOVER_RESP_400 = "Identificador inválido";
         public static final String REMOVER_RESP_422 =
-                "El ítem cualitativo no existe o ya fue usado en evaluaciones del jurado";
+                "El ítem cualitativo no existe o ya fue removido";
     }
 
     public static final class CriterioItemCualitativoJurado {
@@ -115,12 +115,12 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_422 = "El ítem cualitativo del asesor no existe";
         public static final String REMOVER_SUMMARY = "Remover ítem cualitativo del asesor";
         public static final String REMOVER_DESCRIPTION =
-                "Remueve un ítem cualitativo del asesor registrado por equivocación, "
-                        + "siempre que no se haya usado en ninguna evaluación de asesor";
+                "Remueve un ítem cualitativo del asesor para que deje de evaluarse, "
+                        + "conservando su historial en las evaluaciones ya realizadas";
         public static final String REMOVER_RESP_204 = "Ítem cualitativo del asesor removido";
         public static final String REMOVER_RESP_400 = "Identificador inválido";
         public static final String REMOVER_RESP_422 =
-                "El ítem cualitativo del asesor no existe o ya fue usado en evaluaciones de asesor";
+                "El ítem cualitativo del asesor no existe o ya fue removido";
     }
 
     public static final class ItemCuantitativoAsesor {
@@ -151,12 +151,12 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_422 = "El ítem cuantitativo del asesor no existe";
         public static final String REMOVER_SUMMARY = "Remover ítem cuantitativo del asesor";
         public static final String REMOVER_DESCRIPTION =
-                "Remueve un ítem cuantitativo del asesor registrado por equivocación, "
-                        + "siempre que no se haya usado en ninguna evaluación de asesor";
+                "Remueve un ítem cuantitativo del asesor para que deje de evaluarse, "
+                        + "conservando su historial en las evaluaciones ya realizadas";
         public static final String REMOVER_RESP_204 = "Ítem cuantitativo del asesor removido";
         public static final String REMOVER_RESP_400 = "Identificador inválido";
         public static final String REMOVER_RESP_422 =
-                "El ítem cuantitativo del asesor no existe o ya fue usado en evaluaciones de asesor";
+                "El ítem cuantitativo del asesor no existe o ya fue removido";
     }
 
     public static final class CategoriaItemCuantitativoJurado {
@@ -527,12 +527,12 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_422 = "El ítem cuantitativo no existe";
         public static final String REMOVER_SUMMARY = "Remover ítem cuantitativo";
         public static final String REMOVER_DESCRIPTION =
-                "Remueve un ítem cuantitativo del jurado registrado por equivocación, "
-                        + "siempre que no se haya usado en ninguna evaluación";
+                "Remueve un ítem cuantitativo del jurado para que deje de evaluarse, "
+                        + "conservando su historial en las evaluaciones ya realizadas";
         public static final String REMOVER_RESP_204 = "Ítem cuantitativo removido";
         public static final String REMOVER_RESP_400 = "Identificador inválido";
         public static final String REMOVER_RESP_422 =
-                "El ítem cuantitativo no existe o ya fue usado en evaluaciones del jurado";
+                "El ítem cuantitativo no existe o ya fue removido";
         public static final String CONSULTAR_SUMMARY = "Consultar ítems cuantitativos";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta todos los ítems cuantitativos disponibles para que el jurado evalúe un "

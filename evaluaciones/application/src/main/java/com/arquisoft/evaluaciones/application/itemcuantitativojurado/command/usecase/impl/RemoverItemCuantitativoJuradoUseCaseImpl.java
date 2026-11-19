@@ -1,6 +1,5 @@
 package com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.usecase.impl;
 
-import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.finder.EvaluacionCuantitativaJuradoPorItemExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.finder.ItemCuantitativoJuradoExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.ItemCuantitativoJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.usecase.RemoverItemCuantitativoJuradoUseCase;
@@ -18,7 +17,6 @@ public class RemoverItemCuantitativoJuradoUseCaseImpl
 
     private final ItemCuantitativoJuradoOutputPort itemCuantitativoJuradoOutputPort;
     private final ItemCuantitativoJuradoExisteFinder itemCuantitativoJuradoExisteFinder;
-    private final EvaluacionCuantitativaJuradoPorItemExisteFinder evaluacionCuantitativaJuradoPorItemExisteFinder;
     private final RemoverItemCuantitativoJuradoValidator removerItemCuantitativoJuradoValidator;
     private final AppLogger logger;
 
@@ -30,14 +28,13 @@ public class RemoverItemCuantitativoJuradoUseCaseImpl
 
         var existe = itemCuantitativoJuradoExisteFinder.obtener(
                 remocion.getItemCuantitativoJurado());
-        var enUso = evaluacionCuantitativaJuradoPorItemExisteFinder.obtener(
-                remocion.getItemCuantitativoJurado());
 
-        logger.debug(ItemCuantitativoJuradoKey.LOG_VERIFICACION_REMOVER, existe, enUso);
+        logger.debug(ItemCuantitativoJuradoKey.LOG_VERIFICACION_REMOVER, existe);
         removerItemCuantitativoJuradoValidator.validar(
-                remocion.getItemCuantitativoJurado(), existe, enUso);
+                remocion.getItemCuantitativoJurado(), existe);
 
-        itemCuantitativoJuradoOutputPort.eliminar(remocion.getItemCuantitativoJurado());
+        itemCuantitativoJuradoOutputPort.marcarEliminado(
+                remocion.getItemCuantitativoJurado(), remocion.getEliminadoEn());
 
         logger.info(
                 ItemCuantitativoJuradoKey.LOG_REMOVIDO,

@@ -20,6 +20,7 @@ import java.util.UUID;
                i.nombre      AS nombre,
                i.descripcion AS descripcion
         FROM item_cualitativo_jurado i
+        WHERE i.eliminado_en IS NULL
         """)
 @Synchronize("item_cualitativo_jurado")
 @Getter

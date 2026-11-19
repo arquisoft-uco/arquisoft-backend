@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.se
 
 import com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.secondaryport.entity.ItemCuantitativoAsesorEntity;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -21,5 +22,5 @@ public interface ItemCuantitativoAsesorOutputPort {
 
     void actualizarDescripcion(UUID id, String descripcion);
 
-    void eliminar(UUID id);
+    void marcarEliminado(UUID id, Instant eliminadoEn);
 }

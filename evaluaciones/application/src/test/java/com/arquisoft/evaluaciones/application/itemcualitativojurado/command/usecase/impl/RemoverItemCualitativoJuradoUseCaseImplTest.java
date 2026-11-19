@@ -1,11 +1,10 @@
 package com.arquisoft.evaluaciones.application.itemcualitativojurado.command.usecase.impl;
 
-import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.finder.EvaluacionCualitativaJuradoPorItemExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.finder.ItemCualitativoJuradoExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.secondaryport.ItemCualitativoJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.validator.RemoverItemCualitativoJuradoValidator;
 import com.arquisoft.evaluaciones.domain.itemcualitativojurado.RemocionItemCualitativoJuradoDomain;
-import com.arquisoft.evaluaciones.domain.itemcualitativojurado.exception.ItemCualitativoJuradoEnUsoException;
+import com.arquisoft.evaluaciones.domain.itemcualitativojurado.exception.ItemCualitativoJuradoNoEncontradoException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import org.junit.jupiter.api.Test;
@@ -14,8 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -34,9 +35,6 @@ class RemoverItemCualitativoJuradoUseCaseImplTest {
     private ItemCualitativoJuradoExisteFinder itemExisteFinder;
 
     @Mock
-    private EvaluacionCualitativaJuradoPorItemExisteFinder evaluacionPorItemExisteFinder;
-
-    @Mock
     private RemoverItemCualitativoJuradoValidator validator;
 
     @Mock
@@ -46,41 +44,50 @@ class RemoverItemCualitativoJuradoUseCaseImplTest {
     private RemoverItemCualitativoJuradoUseCaseImpl useCase;
 
     @Test
-    void debeEliminar_cuandoItemExisteYNoEstaEnUso() {
+    void debeMarcarEliminado_cuandoItemExiste() {
         // Arrange
         var itemCualitativoJurado = UUID.randomUUID();
         var remocion = RemocionItemCualitativoJuradoDomain.crear(itemCualitativoJurado);
         when(itemExisteFinder.obtener(itemCualitativoJurado)).thenReturn(true);
-        when(evaluacionPorItemExisteFinder.obtener(itemCualitativoJurado)).thenReturn(false);
 
         // Act
         useCase.ejecutar(remocion);
 
         // Assert
-        var orden = inOrder(logger, itemExisteFinder, evaluacionPorItemExisteFinder, validator, outputPort);
+        var orden = inOrder(logger, itemExisteFinder, validator, outputPort);
         orden.verify(logger).info(ItemCualitativoJuradoKey.LOG_REMOVIENDO, itemCualitativoJurado);
         orden.verify(itemExisteFinder).obtener(itemCualitativoJurado);
-        orden.verify(evaluacionPorItemExisteFinder).obtener(itemCualitativoJurado);
-        orden.verify(logger).debug(ItemCualitativoJuradoKey.LOG_VERIFICACION_REMOVER, true, false);
-        orden.verify(validator).validar(itemCualitativoJurado, true, false);
-        orden.verify(outputPort).eliminar(itemCualitativoJurado);
+        orden.verify(logger).debug(ItemCualitativoJuradoKey.LOG_VERIFICACION_REMOVER, true);
+        orden.verify(validator).validar(itemCualitativoJurado, true);
+        orden.verify(outputPort).marcarEliminado(itemCualitativoJurado, remocion.getEliminadoEn());
         orden.verify(logger).info(ItemCualitativoJuradoKey.LOG_REMOVIDO, itemCualitativoJurado);
     }
 
     @Test
-    void debeNoEliminar_cuandoValidatorLanza() {
+    void debeRegistrarFechaDeEliminacion_cuandoSeCreaLaRemocion() {
+        // Arrange
+        var antes = Instant.now();
+
+        // Act
+        var remocion = RemocionItemCualitativoJuradoDomain.crear(UUID.randomUUID());
+
+        // Assert
+        assertThat(remocion.getEliminadoEn()).isBetween(antes, Instant.now());
+    }
+
+    @Test
+    void debeNoMarcarEliminado_cuandoValidatorLanza() {
         // Arrange
         var itemCualitativoJurado = UUID.randomUUID();
         var remocion = RemocionItemCualitativoJuradoDomain.crear(itemCualitativoJurado);
-        when(itemExisteFinder.obtener(itemCualitativoJurado)).thenReturn(true);
-        when(evaluacionPorItemExisteFinder.obtener(itemCualitativoJurado)).thenReturn(true);
-        doThrow(new ItemCualitativoJuradoEnUsoException(itemCualitativoJurado))
-                .when(validator).validar(itemCualitativoJurado, true, true);
+        when(itemExisteFinder.obtener(itemCualitativoJurado)).thenReturn(false);
+        doThrow(new ItemCualitativoJuradoNoEncontradoException(itemCualitativoJurado))
+                .when(validator).validar(itemCualitativoJurado, false);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(remocion))
-                .isInstanceOf(ItemCualitativoJuradoEnUsoException.class);
-        verify(outputPort, never()).eliminar(any());
+                .isInstanceOf(ItemCualitativoJuradoNoEncontradoException.class);
+        verify(outputPort, never()).marcarEliminado(any(), any());
         verify(logger, never()).info(ItemCualitativoJuradoKey.LOG_REMOVIDO, itemCualitativoJurado);
     }
 }

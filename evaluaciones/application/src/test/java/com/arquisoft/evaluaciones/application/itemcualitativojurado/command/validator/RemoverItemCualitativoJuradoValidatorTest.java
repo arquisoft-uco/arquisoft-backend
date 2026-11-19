@@ -1,7 +1,6 @@
 package com.arquisoft.evaluaciones.application.itemcualitativojurado.command.validator;
 
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.validator.impl.RemoverItemCualitativoJuradoValidatorImpl;
-import com.arquisoft.evaluaciones.domain.itemcualitativojurado.exception.ItemCualitativoJuradoEnUsoException;
 import com.arquisoft.evaluaciones.domain.itemcualitativojurado.exception.ItemCualitativoJuradoNoEncontradoException;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import org.junit.jupiter.api.Test;
@@ -18,12 +17,12 @@ class RemoverItemCualitativoJuradoValidatorTest {
             new RemoverItemCualitativoJuradoValidatorImpl();
 
     @Test
-    void debeNoLanzar_cuandoItemExisteYNoEstaEnUso() {
+    void debeNoLanzar_cuandoItemExiste() {
         // Arrange
         var itemCualitativoJurado = UUID.randomUUID();
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(itemCualitativoJurado, true, false))
+        assertThatCode(() -> validator.validar(itemCualitativoJurado, true))
                 .doesNotThrowAnyException();
     }
 
@@ -33,33 +32,7 @@ class RemoverItemCualitativoJuradoValidatorTest {
         var itemCualitativoJurado = UUID.randomUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(itemCualitativoJurado, false, false))
-                .isInstanceOfSatisfying(
-                        ItemCualitativoJuradoNoEncontradoException.class,
-                        exception -> assertThat(exception.getCodigoError())
-                                .isEqualTo(EvaluacionesCodes.ItemCualitativoJurado.ITEM_NO_ENCONTRADO));
-    }
-
-    @Test
-    void debeLanzarEnUso_cuandoItemExisteYEstaEnUso() {
-        // Arrange
-        var itemCualitativoJurado = UUID.randomUUID();
-
-        // Act & Assert
-        assertThatThrownBy(() -> validator.validar(itemCualitativoJurado, true, true))
-                .isInstanceOfSatisfying(
-                        ItemCualitativoJuradoEnUsoException.class,
-                        exception -> assertThat(exception.getCodigoError())
-                                .isEqualTo(EvaluacionesCodes.ItemCualitativoJurado.ITEM_EN_USO));
-    }
-
-    @Test
-    void debeLanzarNoEncontradoPrimero_cuandoNoExisteYEnUsoEsVerdadero() {
-        // Arrange
-        var itemCualitativoJurado = UUID.randomUUID();
-
-        // Act & Assert
-        assertThatThrownBy(() -> validator.validar(itemCualitativoJurado, false, true))
+        assertThatThrownBy(() -> validator.validar(itemCualitativoJurado, false))
                 .isInstanceOfSatisfying(
                         ItemCualitativoJuradoNoEncontradoException.class,
                         exception -> assertThat(exception.getCodigoError())

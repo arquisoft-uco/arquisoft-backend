@@ -32,11 +32,6 @@ public class EvaluacionCuantitativaJuradoCommandOutputAdapter implements Evaluac
     }
 
     @Override
-    public boolean existePorItem(UUID item) {
-        return repository.existsByItemId(item);
-    }
-
-    @Override
     public Set<UUID> consultarIdsPorEvaluacionJurado(UUID evaluacionJurado, Set<UUID> evaluaciones) {
         return repository.findIdsPorEvaluacionJurado(evaluacionJurado, evaluaciones);
     }
