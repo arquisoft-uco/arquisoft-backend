@@ -9,11 +9,11 @@ public final class ItemCualitativoJuradoMapper {
 
     public static ItemCualitativoJuradoDomain toDomain(ItemCualitativoJuradoEntity entity) {
         return ItemCualitativoJuradoDomain.reconstruir(
-                entity.id(), entity.nombre(), entity.descripcion());
+                entity.id(), entity.nombre(), entity.descripcion(), entity.peso());
     }
 
     public static ItemCualitativoJuradoEntity toEntity(ItemCualitativoJuradoDomain domain) {
         return new ItemCualitativoJuradoEntity(
-                domain.getId(), domain.getNombre(), domain.getDescripcion());
+                domain.getId(), domain.getNombre(), domain.getDescripcion(), domain.getPeso());
     }
 }

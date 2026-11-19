@@ -41,7 +41,8 @@ class ModificarItemCualitativoAsesorControllerTest {
     private static final String BASE = "/evaluaciones/items-cualitativos-asesor";
     private static final String BODY_VALIDO = """
             {
-              "descripcion": "Descripción técnica actualizada"
+              "descripcion": "Descripción técnica actualizada",
+              "peso": 10
             }
             """;
 
@@ -85,7 +86,7 @@ class ModificarItemCualitativoAsesorControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(interactor).ejecutar(ModificarItemCualitativoAsesorCommand.crear(
-                itemId, "Descripción técnica actualizada"));
+                itemId, "Descripción técnica actualizada", 10));
     }
 
     @Test
@@ -94,7 +95,8 @@ class ModificarItemCualitativoAsesorControllerTest {
         var itemId = UtilUUID.generarNuevoUUID();
         var bodyInvalido = """
                 {
-                  "descripcion": ""
+                  "descripcion": "",
+                  "peso": 10
                 }
                 """;
 

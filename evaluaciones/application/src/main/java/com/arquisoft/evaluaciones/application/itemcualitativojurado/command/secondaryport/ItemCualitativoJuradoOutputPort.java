@@ -13,7 +13,7 @@ public interface ItemCualitativoJuradoOutputPort {
 
     boolean existePorId(UUID id);
 
-    void actualizarDescripcion(UUID id, String descripcion);
+    void actualizar(UUID id, String descripcion, int peso);
 
     void eliminar(UUID id);
 

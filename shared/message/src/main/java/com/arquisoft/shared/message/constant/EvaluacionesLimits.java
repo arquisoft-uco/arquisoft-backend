@@ -8,6 +8,9 @@ public final class EvaluacionesLimits {
 
         private ItemCualitativoJurado() {}
 
+        public static final int PESO_MIN = 1;
+        public static final int PESO_MAX = 500;
+
         public static final int NOMBRE_MAX = 100;
         public static final int DESCRIPCION_MAX = 300;
     }
@@ -15,6 +18,9 @@ public final class EvaluacionesLimits {
     public static final class ItemCualitativoAsesor {
 
         private ItemCualitativoAsesor() {}
+
+        public static final int PESO_MIN = 1;
+        public static final int PESO_MAX = 500;
 
         public static final int NOMBRE_MAX = 100;
         public static final int DESCRIPCION_MAX = 300;
@@ -82,5 +88,15 @@ public final class EvaluacionesLimits {
         private ObservacionItemAsesor() {}
 
         public static final int DESCRIPCION_MAX = 500;
+    }
+
+    public static final class Evaluacion {
+
+        private Evaluacion() {}
+
+        public static final int NOTA_MAXIMA = 5;
+        public static final int NOTA_MINIMA_APROBACION = 3;
+        public static final int DECIMALES_NOTA = 2;
+        public static final double PESO_FINALIZACION_MIN = 0.0001;
     }
 }

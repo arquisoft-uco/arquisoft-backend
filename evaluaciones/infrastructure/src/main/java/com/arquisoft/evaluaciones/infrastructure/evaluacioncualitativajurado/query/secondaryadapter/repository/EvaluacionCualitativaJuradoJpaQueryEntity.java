@@ -21,6 +21,7 @@ import java.util.UUID;
                i.id                      AS item_id,
                i.nombre                  AS item_nombre,
                i.descripcion             AS item_descripcion,
+               i.peso AS item_peso,
                c.id                      AS criterio_id,
                c.nombre                  AS criterio_nombre,
                c.descripcion             AS criterio_descripcion
@@ -52,6 +53,9 @@ public class EvaluacionCualitativaJuradoJpaQueryEntity {
 
     @Column(name = "item_descripcion")
     private String itemDescripcion;
+
+    @Column(name = "item_peso")
+    private int itemPeso;
 
     @Column(name = "criterio_id")
     private UUID criterioId;

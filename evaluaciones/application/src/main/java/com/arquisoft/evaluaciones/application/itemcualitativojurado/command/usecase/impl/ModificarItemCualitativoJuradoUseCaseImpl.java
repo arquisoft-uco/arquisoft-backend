@@ -33,8 +33,10 @@ public class ModificarItemCualitativoJuradoUseCaseImpl
         modificarItemCualitativoJuradoValidator.validar(
                 modificacion.getItemCualitativoJurado(), existe);
 
-        itemCualitativoJuradoOutputPort.actualizarDescripcion(
-                modificacion.getItemCualitativoJurado(), modificacion.getDescripcion());
+        itemCualitativoJuradoOutputPort.actualizar(
+                modificacion.getItemCualitativoJurado(),
+                modificacion.getDescripcion(),
+                modificacion.getPeso());
 
         logger.info(
                 ItemCualitativoJuradoKey.LOG_MODIFICADO,

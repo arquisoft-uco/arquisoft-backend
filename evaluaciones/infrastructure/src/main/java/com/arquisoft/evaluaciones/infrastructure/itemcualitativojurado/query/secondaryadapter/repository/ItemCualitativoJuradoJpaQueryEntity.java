@@ -18,7 +18,8 @@ import java.util.UUID;
 @Subselect("""
         SELECT i.id          AS id,
                i.nombre      AS nombre,
-               i.descripcion AS descripcion
+               i.descripcion AS descripcion,
+               i.peso          AS peso
         FROM item_cualitativo_jurado i
         """)
 @Synchronize("item_cualitativo_jurado")
@@ -37,4 +38,7 @@ public class ItemCualitativoJuradoJpaQueryEntity {
 
     @Column(name = "descripcion")
     private String descripcion;
+
+    @Column(name = "peso")
+    private int peso;
 }

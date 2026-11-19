@@ -28,7 +28,7 @@ class ConsultarItemsCualitativosJuradoInteractorImplTest {
     void debeDelegarEnElUseCase_cuandoEjecuta() {
         // Arrange
         List<ItemCualitativoJuradoReadModel> esperados = List.of(
-                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "Evalúa la claridad conceptual")
+                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "Evalúa la claridad conceptual", 1)
         );
         when(useCase.ejecutar()).thenReturn(esperados);
 

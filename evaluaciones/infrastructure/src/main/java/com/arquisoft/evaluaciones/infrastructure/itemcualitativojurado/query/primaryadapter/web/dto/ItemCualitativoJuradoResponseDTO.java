@@ -5,6 +5,7 @@ import java.util.UUID;
 public record ItemCualitativoJuradoResponseDTO(
         UUID id,
         String nombre,
-        String descripcion
+        String descripcion,
+        int peso
 ) {
 }

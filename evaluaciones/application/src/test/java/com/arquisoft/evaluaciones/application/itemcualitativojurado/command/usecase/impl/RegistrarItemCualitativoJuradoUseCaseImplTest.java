@@ -95,7 +95,7 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
     }
 
     private static ItemCualitativoJuradoDomain itemValido() {
-        return ItemCualitativoJuradoDomain.crear("Claridad", "Descripción");
+        return ItemCualitativoJuradoDomain.crear("Claridad", "Descripción", 1);
     }
 
     private static ItemCualitativoJuradoEntity entidadDe(ItemCualitativoJuradoDomain item) {

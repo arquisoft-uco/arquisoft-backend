@@ -10,6 +10,6 @@ public final class ModificarItemCualitativoAsesorMapper {
     public static ModificacionItemCualitativoAsesorDomain toDomain(
             ModificarItemCualitativoAsesorCommand command) {
         return ModificacionItemCualitativoAsesorDomain.crear(
-                command.itemCualitativoAsesor(), command.descripcion());
+                command.itemCualitativoAsesor(), command.descripcion(), command.peso());
     }
 }

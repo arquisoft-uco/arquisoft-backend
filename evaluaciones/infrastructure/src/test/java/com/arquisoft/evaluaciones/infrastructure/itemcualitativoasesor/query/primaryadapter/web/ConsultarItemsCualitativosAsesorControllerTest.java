@@ -68,9 +68,9 @@ class ConsultarItemsCualitativosAsesorControllerTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar()).thenReturn(List.of(
-                new ItemCualitativoAsesorReadModel(id, "Puntualidad", "Evalúa la puntualidad"),
+                new ItemCualitativoAsesorReadModel(id, "Puntualidad", "Evalúa la puntualidad", 1),
                 new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Vestimenta",
-                        "Evalúa la vestimenta")));
+                        "Evalúa la vestimenta", 1)));
 
         // Act & Assert
         mockMvc.perform(get(RUTA).with(SecurityMockMvcRequestPostProcessors.jwt()))

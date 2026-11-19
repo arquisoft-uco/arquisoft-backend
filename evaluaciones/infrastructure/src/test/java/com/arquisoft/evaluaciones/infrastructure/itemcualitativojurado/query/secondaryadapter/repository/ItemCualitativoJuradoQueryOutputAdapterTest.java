@@ -56,13 +56,14 @@ class ItemCualitativoJuradoQueryOutputAdapterTest {
     }
 
     @Test
-    void debeMapearIdNombreYDescripcion_deTodosLosElementos() {
+    void debeMapearIdNombreDescripcionYPeso_deTodosLosElementos() {
         // Arrange
         UUID id = UUID.randomUUID();
         ItemCualitativoJuradoJpaQueryEntity entity = ItemCualitativoJuradoJpaQueryEntity.builder()
                 .id(id)
                 .nombre("Coherencia")
                 .descripcion("Evalúa la coherencia argumentativa")
+                .peso(4)
                 .build();
         when(repository.findAllByOrderByNombreAsc()).thenReturn(List.of(entity));
 
@@ -75,6 +76,7 @@ class ItemCualitativoJuradoQueryOutputAdapterTest {
         assertThat(readModel.id()).isEqualTo(id);
         assertThat(readModel.nombre()).isEqualTo("Coherencia");
         assertThat(readModel.descripcion()).isEqualTo("Evalúa la coherencia argumentativa");
+        assertThat(readModel.peso()).isEqualTo(4);
     }
 
     @Test

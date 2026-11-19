@@ -14,7 +14,7 @@ class EvaluacionCualitativaAsesorEstudianteResponseMapperTest {
     void debeMapearRespuesta_conItemYCriterio() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        var item = new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Claridad", "Evalua la claridad");
+        var item = new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Claridad", "Evalua la claridad", 1);
         var criterio = new CriterioItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Excelente", "Cumple todo");
         var readModel = new EvaluacionCualitativaAsesorEstudianteReadModel(id, item, criterio);
 

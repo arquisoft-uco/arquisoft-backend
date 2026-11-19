@@ -5,12 +5,14 @@ import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.constant.EvaluacionesLimits;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.validation.ValidatorNumero;
 import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorTexto;
 
-public record RegistrarItemCualitativoAsesorCommand(String nombre, String descripcion) {
+public record RegistrarItemCualitativoAsesorCommand(String nombre, String descripcion, Integer peso) {
 
-    public static RegistrarItemCualitativoAsesorCommand crear(String nombre, String descripcion) {
+    public static RegistrarItemCualitativoAsesorCommand crear(String nombre, String descripcion, Integer peso) {
         var resultado = new ValidationResult();
         var nombreRecortado = UtilTexto.aplicarTrim(nombre);
         var descripcionRecortada = UtilTexto.aplicarTrim(descripcion);
@@ -41,7 +43,21 @@ public record RegistrarItemCualitativoAsesorCommand(String nombre, String descri
                     resultado);
         }
 
+        if (ValidatorObjeto.noNulo(
+                peso,
+                EvaluacionesFields.ItemCualitativoAsesor.PESO,
+                EvaluacionesCodes.ItemCualitativoAsesor.PESO_REQUERIDO,
+                resultado)) {
+            ValidatorNumero.valorEntre(
+                    peso,
+                    EvaluacionesLimits.ItemCualitativoAsesor.PESO_MIN,
+                    EvaluacionesLimits.ItemCualitativoAsesor.PESO_MAX,
+                    EvaluacionesFields.ItemCualitativoAsesor.PESO,
+                    EvaluacionesCodes.ItemCualitativoAsesor.PESO_FUERA_DE_RANGO,
+                    resultado);
+        }
+
         resultado.lanzarSiTieneErroresDeEntrada();
-        return new RegistrarItemCualitativoAsesorCommand(nombreRecortado, descripcionRecortada);
+        return new RegistrarItemCualitativoAsesorCommand(nombreRecortado, descripcionRecortada, peso);
     }
 }

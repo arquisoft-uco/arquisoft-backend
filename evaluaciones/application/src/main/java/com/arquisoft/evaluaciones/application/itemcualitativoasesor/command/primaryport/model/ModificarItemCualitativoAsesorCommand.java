@@ -5,20 +5,21 @@ import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.constant.EvaluacionesLimits;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorNumero;
 import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.util.UUID;
 
-public record ModificarItemCualitativoAsesorCommand(UUID itemCualitativoAsesor, String descripcion) {
+public record ModificarItemCualitativoAsesorCommand(UUID itemCualitativoAsesor, String descripcion, Integer peso) {
 
     public ModificarItemCualitativoAsesorCommand {
         descripcion = UtilTexto.aplicarTrim(descripcion);
     }
 
     public static ModificarItemCualitativoAsesorCommand crear(
-            UUID itemCualitativoAsesor, String descripcion) {
+            UUID itemCualitativoAsesor, String descripcion, Integer peso) {
         var resultado = new ValidationResult();
 
         ValidatorObjeto.noNulo(
@@ -40,7 +41,21 @@ public record ModificarItemCualitativoAsesorCommand(UUID itemCualitativoAsesor, 
                     resultado);
         }
 
+        if (ValidatorObjeto.noNulo(
+                peso,
+                EvaluacionesFields.ItemCualitativoAsesor.PESO,
+                EvaluacionesCodes.ItemCualitativoAsesor.PESO_REQUERIDO,
+                resultado)) {
+            ValidatorNumero.valorEntre(
+                    peso,
+                    EvaluacionesLimits.ItemCualitativoAsesor.PESO_MIN,
+                    EvaluacionesLimits.ItemCualitativoAsesor.PESO_MAX,
+                    EvaluacionesFields.ItemCualitativoAsesor.PESO,
+                    EvaluacionesCodes.ItemCualitativoAsesor.PESO_FUERA_DE_RANGO,
+                    resultado);
+        }
+
         resultado.lanzarSiTieneErroresDeEntrada();
-        return new ModificarItemCualitativoAsesorCommand(itemCualitativoAsesor, descripcion);
+        return new ModificarItemCualitativoAsesorCommand(itemCualitativoAsesor, descripcion, peso);
     }
 }

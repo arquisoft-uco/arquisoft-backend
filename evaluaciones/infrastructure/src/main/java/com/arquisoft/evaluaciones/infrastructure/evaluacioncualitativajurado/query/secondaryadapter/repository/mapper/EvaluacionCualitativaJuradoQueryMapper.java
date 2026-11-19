@@ -13,7 +13,10 @@ public final class EvaluacionCualitativaJuradoQueryMapper {
         return new EvaluacionCualitativaJuradoReadModel(
                 entity.getId(),
                 new ItemCualitativoJuradoReadModel(
-                        entity.getItemId(), entity.getItemNombre(), entity.getItemDescripcion()),
+                        entity.getItemId(),
+                        entity.getItemNombre(),
+                        entity.getItemDescripcion(),
+                        entity.getItemPeso()),
                 new CriterioItemCualitativoJuradoReadModel(
                         entity.getCriterioId(), entity.getCriterioNombre(), entity.getCriterioDescripcion()));
     }

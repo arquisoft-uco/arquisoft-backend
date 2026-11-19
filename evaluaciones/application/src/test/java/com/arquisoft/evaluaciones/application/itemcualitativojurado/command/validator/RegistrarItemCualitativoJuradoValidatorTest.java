@@ -18,7 +18,7 @@ class RegistrarItemCualitativoJuradoValidatorTest {
     void debeLanzarExcepcion_cuandoNombreYaExiste() {
         // Arrange
         ItemCualitativoJuradoDomain item =
-                ItemCualitativoJuradoDomain.crear("Claridad", "Descripción");
+                ItemCualitativoJuradoDomain.crear("Claridad", "Descripción", 1);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(item, true))

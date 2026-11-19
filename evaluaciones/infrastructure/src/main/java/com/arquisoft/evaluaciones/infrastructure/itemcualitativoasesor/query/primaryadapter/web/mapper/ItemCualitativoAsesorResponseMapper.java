@@ -11,6 +11,7 @@ public final class ItemCualitativoAsesorResponseMapper {
         return new ItemCualitativoAsesorResponseDTO(
                 readModel.id(),
                 readModel.nombre(),
-                readModel.descripcion());
+                readModel.descripcion(),
+                readModel.peso());
     }
 }

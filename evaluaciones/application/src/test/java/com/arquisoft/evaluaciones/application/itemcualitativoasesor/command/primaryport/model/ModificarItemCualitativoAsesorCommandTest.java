@@ -18,7 +18,7 @@ class ModificarItemCualitativoAsesorCommandTest {
         var item = UtilUUID.generarNuevoUUID();
 
         // Act
-        var command = ModificarItemCualitativoAsesorCommand.crear(item, "  Descripción ampliada  ");
+        var command = ModificarItemCualitativoAsesorCommand.crear(item, "  Descripción ampliada  ", 1);
 
         // Assert
         assertThat(command.itemCualitativoAsesor()).isEqualTo(item);
@@ -28,7 +28,7 @@ class ModificarItemCualitativoAsesorCommandTest {
     @Test
     void debeLanzarErrorDeEntrada_cuandoItemEsNulo() {
         // Act & Assert
-        assertThatThrownBy(() -> ModificarItemCualitativoAsesorCommand.crear(null, "Descripción"))
+        assertThatThrownBy(() -> ModificarItemCualitativoAsesorCommand.crear(null, "Descripción", 1))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -43,7 +43,7 @@ class ModificarItemCualitativoAsesorCommandTest {
         var item = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> ModificarItemCualitativoAsesorCommand.crear(item, "   "))
+        assertThatThrownBy(() -> ModificarItemCualitativoAsesorCommand.crear(item, "   ", 1))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -58,7 +58,7 @@ class ModificarItemCualitativoAsesorCommandTest {
         var item = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> ModificarItemCualitativoAsesorCommand.crear(item, "d".repeat(301)))
+        assertThatThrownBy(() -> ModificarItemCualitativoAsesorCommand.crear(item, "d".repeat(301), 1))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())

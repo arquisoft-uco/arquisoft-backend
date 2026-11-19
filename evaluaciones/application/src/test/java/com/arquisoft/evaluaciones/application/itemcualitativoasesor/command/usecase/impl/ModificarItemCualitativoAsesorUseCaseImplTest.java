@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -46,7 +47,7 @@ class ModificarItemCualitativoAsesorUseCaseImplTest {
     void debeActualizarDescripcionEnOrden_cuandoItemExiste() {
         // Arrange
         var item = UtilUUID.generarNuevoUUID();
-        var modificacion = ModificacionItemCualitativoAsesorDomain.crear(item, "Descripción ampliada");
+        var modificacion = ModificacionItemCualitativoAsesorDomain.crear(item, "Descripción ampliada", 1);
         when(finder.obtener(item)).thenReturn(true);
 
         // Act
@@ -58,7 +59,7 @@ class ModificarItemCualitativoAsesorUseCaseImplTest {
         orden.verify(finder).obtener(item);
         orden.verify(logger).debug(ItemCualitativoAsesorKey.LOG_VERIFICACION_MODIFICAR, true);
         orden.verify(validator).validar(item, true);
-        orden.verify(outputPort).actualizarDescripcion(item, "Descripción ampliada");
+        orden.verify(outputPort).actualizar(item, "Descripción ampliada", 1);
         orden.verify(logger).info(ItemCualitativoAsesorKey.LOG_MODIFICADO, item);
         verify(finder, times(1)).obtener(item);
     }
@@ -67,7 +68,7 @@ class ModificarItemCualitativoAsesorUseCaseImplTest {
     void noDebePersistirNiCerrar_cuandoElValidatorRechaza() {
         // Arrange
         var item = UtilUUID.generarNuevoUUID();
-        var modificacion = ModificacionItemCualitativoAsesorDomain.crear(item, "Descripción ampliada");
+        var modificacion = ModificacionItemCualitativoAsesorDomain.crear(item, "Descripción ampliada", 1);
         when(finder.obtener(item)).thenReturn(false);
         doThrow(new ItemCualitativoAsesorNoEncontradoException(item))
                 .when(validator).validar(item, false);
@@ -75,7 +76,7 @@ class ModificarItemCualitativoAsesorUseCaseImplTest {
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(modificacion))
                 .isInstanceOf(ItemCualitativoAsesorNoEncontradoException.class);
-        verify(outputPort, never()).actualizarDescripcion(any(), anyString());
+        verify(outputPort, never()).actualizar(any(), anyString(), anyInt());
         verify(logger, never()).info(ItemCualitativoAsesorKey.LOG_MODIFICADO, item);
     }
 }

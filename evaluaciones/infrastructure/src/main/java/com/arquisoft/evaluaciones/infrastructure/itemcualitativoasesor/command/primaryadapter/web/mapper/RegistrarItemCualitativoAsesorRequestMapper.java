@@ -9,6 +9,6 @@ public final class RegistrarItemCualitativoAsesorRequestMapper {
 
     public static RegistrarItemCualitativoAsesorCommand toCommand(
             RegistrarItemCualitativoAsesorRequestDTO dto) {
-        return RegistrarItemCualitativoAsesorCommand.crear(dto.nombre(), dto.descripcion());
+        return RegistrarItemCualitativoAsesorCommand.crear(dto.nombre(), dto.descripcion(), dto.peso());
     }
 }

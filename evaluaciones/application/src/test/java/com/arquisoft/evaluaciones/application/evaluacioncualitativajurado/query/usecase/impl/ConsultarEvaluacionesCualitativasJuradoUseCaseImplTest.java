@@ -56,7 +56,7 @@ class ConsultarEvaluacionesCualitativasJuradoUseCaseImplTest {
         EvaluacionCualitativaJuradoCriteria criteria = criteriaValido();
         List<EvaluacionCualitativaJuradoReadModel> esperado = List.of(new EvaluacionCualitativaJuradoReadModel(
                 UUID.randomUUID(),
-                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "desc"),
+                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "desc", 1),
                 new CriterioItemCualitativoJuradoReadModel(UUID.randomUUID(), "Excelente", "desc")));
         when(evaluacionJuradoExisteQueryFinder.obtener(criteria.evaluacionJuradoId())).thenReturn(true);
         when(queryOutputPort.consultar(criteria)).thenReturn(esperado);

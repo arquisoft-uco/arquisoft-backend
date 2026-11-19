@@ -19,7 +19,7 @@ class ModificacionItemCualitativoAsesorDomainTest {
         var item = UtilUUID.generarNuevoUUID();
 
         // Act
-        var modificacion = ModificacionItemCualitativoAsesorDomain.crear(item, "  Descripción ampliada  ");
+        var modificacion = ModificacionItemCualitativoAsesorDomain.crear(item, "  Descripción ampliada  ", 1);
 
         // Assert
         assertThat(modificacion.getItemCualitativoAsesor()).isEqualTo(item);
@@ -29,7 +29,7 @@ class ModificacionItemCualitativoAsesorDomainTest {
     @Test
     void debeAcumularFieldErrors_cuandoItemNuloYDescripcionVacia() {
         // Act & Assert
-        assertThatThrownBy(() -> ModificacionItemCualitativoAsesorDomain.crear(null, "   "))
+        assertThatThrownBy(() -> ModificacionItemCualitativoAsesorDomain.crear(null, "   ", 1))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -46,9 +46,9 @@ class ModificacionItemCualitativoAsesorDomainTest {
         var item = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatCode(() -> ModificacionItemCualitativoAsesorDomain.crear(item, "d".repeat(300)))
+        assertThatCode(() -> ModificacionItemCualitativoAsesorDomain.crear(item, "d".repeat(300), 1))
                 .doesNotThrowAnyException();
-        assertThatThrownBy(() -> ModificacionItemCualitativoAsesorDomain.crear(item, "d".repeat(301)))
+        assertThatThrownBy(() -> ModificacionItemCualitativoAsesorDomain.crear(item, "d".repeat(301), 1))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())

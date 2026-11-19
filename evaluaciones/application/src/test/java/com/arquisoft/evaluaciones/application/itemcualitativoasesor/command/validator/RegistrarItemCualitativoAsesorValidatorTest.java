@@ -18,7 +18,7 @@ class RegistrarItemCualitativoAsesorValidatorTest {
     @Test
     void debeLanzar_cuandoNombreYaExiste() {
         // Arrange
-        var item = ItemCualitativoAsesorDomain.crear("Claridad", "Descripción");
+        var item = ItemCualitativoAsesorDomain.crear("Claridad", "Descripción", 1);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(item, true))
@@ -31,7 +31,7 @@ class RegistrarItemCualitativoAsesorValidatorTest {
     @Test
     void noDebeLanzar_cuandoNombreDisponible() {
         // Arrange
-        var item = ItemCualitativoAsesorDomain.crear("Claridad", "Descripción");
+        var item = ItemCualitativoAsesorDomain.crear("Claridad", "Descripción", 1);
 
         // Act & Assert
         assertThatCode(() -> validator.validar(item, false)).doesNotThrowAnyException();

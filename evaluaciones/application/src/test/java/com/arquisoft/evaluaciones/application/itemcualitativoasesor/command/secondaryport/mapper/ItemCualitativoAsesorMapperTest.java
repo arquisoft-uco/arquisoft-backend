@@ -10,7 +10,7 @@ class ItemCualitativoAsesorMapperTest {
     @Test
     void debeMapearDomainAEntity_cuandoRecibeDomain() {
         // Arrange
-        var domain = ItemCualitativoAsesorDomain.crear("Claridad", "Descripción");
+        var domain = ItemCualitativoAsesorDomain.crear("Claridad", "Descripción", 1);
 
         // Act
         var entity = ItemCualitativoAsesorMapper.toEntity(domain);

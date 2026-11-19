@@ -10,7 +10,7 @@ class RegistrarItemCualitativoAsesorMapperTest {
     @Test
     void debeMapearADomain_cuandoRecibeCommand() {
         // Arrange
-        var command = new RegistrarItemCualitativoAsesorCommand("Claridad", "Descripción");
+        var command = new RegistrarItemCualitativoAsesorCommand("Claridad", "Descripción", 1);
 
         // Act
         var domain = RegistrarItemCualitativoAsesorMapper.toDomain(command);

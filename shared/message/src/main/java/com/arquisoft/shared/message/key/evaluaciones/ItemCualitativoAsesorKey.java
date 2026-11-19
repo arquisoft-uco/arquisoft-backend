@@ -20,8 +20,7 @@ public enum ItemCualitativoAsesorKey implements ClaveMensaje {
     LOG_VERIFICACION_MODIFICAR(
             "evaluaciones.aplicacion.itemcualitativoasesor.log.verificacion-modificar", 1),
     LOG_MODIFICADO("evaluaciones.aplicacion.itemcualitativoasesor.log.modificado", 1),
-    LOG_DESCRIPCION_ACTUALIZADA(
-            "evaluaciones.infraestructura.itemcualitativoasesor.log.descripcion-actualizada", 1),
+    LOG_ACTUALIZADO("evaluaciones.infraestructura.itemcualitativoasesor.log.actualizado", 1),
     LOG_REGISTRANDO(
             "evaluaciones.aplicacion.itemcualitativoasesor.log.registrando", 1),
     LOG_VERIFICACION_REGISTRAR(

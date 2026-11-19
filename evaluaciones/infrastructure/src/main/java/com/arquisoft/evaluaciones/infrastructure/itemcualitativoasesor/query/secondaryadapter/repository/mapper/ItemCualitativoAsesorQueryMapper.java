@@ -11,6 +11,7 @@ public final class ItemCualitativoAsesorQueryMapper {
         return new ItemCualitativoAsesorReadModel(
                 entity.getId(),
                 entity.getNombre(),
-                entity.getDescripcion());
+                entity.getDescripcion(),
+                entity.getPeso());
     }
 }

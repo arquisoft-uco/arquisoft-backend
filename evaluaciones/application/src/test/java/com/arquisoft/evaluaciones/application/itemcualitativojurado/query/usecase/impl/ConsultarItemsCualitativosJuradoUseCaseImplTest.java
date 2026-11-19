@@ -34,8 +34,8 @@ class ConsultarItemsCualitativosJuradoUseCaseImplTest {
     void debeRetornarTodosLosReadModel_cuandoElPuertoLosEntrega() {
         // Arrange
         List<ItemCualitativoJuradoReadModel> esperados = List.of(
-                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "Evalúa la claridad conceptual"),
-                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Rigor", "Evalúa el rigor metodológico")
+                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "Evalúa la claridad conceptual", 1),
+                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Rigor", "Evalúa el rigor metodológico", 1)
         );
         when(queryOutputPort.consultarTodos()).thenReturn(esperados);
 

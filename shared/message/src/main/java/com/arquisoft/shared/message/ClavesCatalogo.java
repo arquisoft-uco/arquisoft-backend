@@ -273,6 +273,7 @@ public final class ClavesCatalogo {
             JuradoKey.class,
             com.arquisoft.shared.message.key.evaluaciones.AsesorKey.class,
             com.arquisoft.shared.message.key.evaluaciones.EstudianteProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.evaluaciones.CoordinadorProyectoGradoKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
             ProyectoGradoKey.class,

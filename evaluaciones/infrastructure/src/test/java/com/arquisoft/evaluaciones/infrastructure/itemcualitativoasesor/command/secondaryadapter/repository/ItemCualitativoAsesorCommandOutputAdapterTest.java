@@ -61,7 +61,7 @@ class ItemCualitativoAsesorCommandOutputAdapterTest {
     void debePersistirLosCampos_cuandoRegistra() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
-        var entity = new ItemCualitativoAsesorEntity(id, "Claridad", "Evalua la claridad");
+        var entity = new ItemCualitativoAsesorEntity(id, "Claridad", "Evalua la claridad", 1);
 
         // Act
         adapter.registrar(entity);
@@ -132,7 +132,7 @@ class ItemCualitativoAsesorCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        adapter.actualizarDescripcion(id, "Descripción nueva");
+        adapter.actualizar(id, "Descripción nueva", 1);
         entityManager.clear();
 
         // Assert

@@ -35,9 +35,9 @@ class ConsultarItemsCualitativosAsesorUseCaseImplTest {
     void debeRetornarItems_cuandoExisten() {
         // Arrange
         var esperados = List.of(
-                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Actitud", "Evalúa la actitud"),
-                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Ortografía", "Evalúa la ortografía"),
-                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Redacción", "Evalúa la redacción"));
+                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Actitud", "Evalúa la actitud", 1),
+                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Ortografía", "Evalúa la ortografía", 1),
+                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Redacción", "Evalúa la redacción", 1));
         when(queryOutputPort.consultarTodos()).thenReturn(esperados);
 
         // Act
