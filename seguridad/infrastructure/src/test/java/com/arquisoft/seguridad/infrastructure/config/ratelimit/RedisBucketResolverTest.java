@@ -20,7 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -46,12 +49,17 @@ class RedisBucketResolverTest {
     @Mock
     private LettuceConnectionFactory lettuceConnectionFactory;
 
+    @Mock
+    private CuotaGlobalSolicitudes cuotaGlobal;
+
     private RedisBucketResolver resolver(boolean habilitado) {
+        lenient().when(cuotaGlobal.vigente()).thenReturn(CUOTA_GLOBAL);
         return new RedisBucketResolver(
                 logger,
                 new LimiteSolicitudesProperties(habilitado, CUOTA_GLOBAL, CUOTA_LOGIN, MAX_IPS),
                 lettuceConnectionFactory,
-                new BucketsLocales(MAX_IPS));
+                new BucketsLocales(MAX_IPS),
+                cuotaGlobal);
     }
 
     // Redis caido: el consumo distribuido revienta y el resolver tiene que degradar, no rendirse.
@@ -188,7 +196,7 @@ class RedisBucketResolverTest {
         var resolver = resolver(true);
 
         // Act
-        Bandwidth global = unicoLimite(resolver.configuracionGlobal());
+        Bandwidth global = unicoLimite(resolver.configuracionGlobal(CUOTA_GLOBAL));
         Bandwidth login = unicoLimite(resolver.configuracionLogin());
 
         // Assert
@@ -203,7 +211,7 @@ class RedisBucketResolverTest {
     @DisplayName("la cabecera de reintento cuenta lo que falta para un solo token")
     void debeRecargarDeFormaContinua_cuandoSeConstruyeUnaCuota() {
         // Act
-        Bandwidth global = unicoLimite(resolver(true).configuracionGlobal());
+        Bandwidth global = unicoLimite(resolver(true).configuracionGlobal(CUOTA_GLOBAL));
 
         // Assert
         assertThat(global.isRefillIntervally())
@@ -220,7 +228,7 @@ class RedisBucketResolverTest {
         var resolver = resolver(true);
 
         // Act
-        Bandwidth global = unicoLimite(resolver.configuracionGlobal());
+        Bandwidth global = unicoLimite(resolver.configuracionGlobal(CUOTA_GLOBAL));
         Bandwidth login = unicoLimite(resolver.configuracionLogin());
 
         // Assert
@@ -302,6 +310,96 @@ class RedisBucketResolverTest {
         // Act & Assert
         assertThat(resolver(true).estaLimiteSolicitudesHabilitado()).isTrue();
         assertThat(resolver(false).estaLimiteSolicitudesHabilitado()).isFalse();
+    }
+
+    @Test
+    @DisplayName("la clave del bucket global lleva la cuota vigente")
+    void debeIncluirLaCuotaEnLaClave_cuandoConsumeLaCuotaGlobal() {
+        // Arrange
+        var resolver = spy(resolver(true));
+        doReturn(null).when(resolver).consumirEnRedis(anyString(), any());
+
+        // Act
+        resolver.consumir(IP, GLOBAL);
+
+        // Assert
+        verify(resolver).consumirEnRedis(eq("arquisoft:ratelimit:global:60:192.168.1.10"), any());
+    }
+
+    @Test
+    @DisplayName("un valor nuevo de la cuota es otra clave")
+    void debeUsarOtraClave_cuandoCambiaLaCuotaVigente() {
+        // Arrange
+        var resolver = spy(resolver(true));
+        doReturn(null).when(resolver).consumirEnRedis(anyString(), any());
+        when(cuotaGlobal.vigente()).thenReturn(60, 80);
+
+        // Act
+        resolver.consumir(IP, GLOBAL);
+        resolver.consumir(IP, GLOBAL);
+
+        // Assert
+        verify(resolver).consumirEnRedis(eq("arquisoft:ratelimit:global:60:192.168.1.10"), any());
+        verify(resolver).consumirEnRedis(eq("arquisoft:ratelimit:global:80:192.168.1.10"), any());
+    }
+
+    @Test
+    @DisplayName("degradado aplica la cuota nueva con un bucket nuevo")
+    void debeAplicarLaCuotaNueva_cuandoEstaDegradado() {
+        // Arrange
+        var resolver = resolverConRedisCaido();
+        when(cuotaGlobal.vigente()).thenReturn(2, 2, 2, 3);
+
+        // Act
+        resolver.consumir(IP, GLOBAL);
+        resolver.consumir(IP, GLOBAL);
+        var agotado = resolver.consumir(IP, GLOBAL);
+        var conCuotaNueva = resolver.consumir(IP, GLOBAL);
+
+        // Assert
+        assertThat(agotado.isConsumed()).isFalse();
+        assertThat(conCuotaNueva.isConsumed()).isTrue();
+    }
+
+    @Test
+    @DisplayName("deshabilitado no consulta el Catálogo")
+    void debeNoConsultarElCatalogo_cuandoElLimitadorEstaDeshabilitado() {
+        // Arrange
+        var resolver = resolver(false);
+
+        // Act
+        resolver.consumir(IP, GLOBAL);
+        resolver.consumir(IP, LOGIN);
+
+        // Assert
+        verifyNoInteractions(cuotaGlobal);
+    }
+
+    @Test
+    @DisplayName("login conserva su clave y no consulta el Catálogo")
+    void debeNoConsultarElCatalogoNiCambiarLaClave_cuandoEsLogin() {
+        // Arrange
+        var resolver = spy(resolver(true));
+        doReturn(null).when(resolver).consumirEnRedis(anyString(), any());
+
+        // Act
+        resolver.consumir(IP, LOGIN);
+
+        // Assert
+        verify(resolver).consumirEnRedis(eq("arquisoft:ratelimit:login:192.168.1.10"), any());
+        verifyNoInteractions(cuotaGlobal);
+    }
+
+    @Test
+    @DisplayName("la configuración global toma la cuota recibida")
+    void debeTomarLaCuotaVigente_cuandoSeConstruyeLaConfiguracionGlobal() {
+        // Act
+        var global = unicoLimite(resolver(true).configuracionGlobal(7));
+
+        // Assert
+        assertThat(global.getCapacity()).isEqualTo(7);
+        assertThat(global.getRefillTokens()).isEqualTo(7);
+        assertThat(global.getRefillPeriodNanos()).isEqualTo(UN_MINUTO_NANOS);
     }
 
     private static Bandwidth unicoLimite(BucketConfiguration configuracion) {

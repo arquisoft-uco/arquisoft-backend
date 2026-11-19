@@ -395,7 +395,10 @@ catalogo:
     refresh-interval: ${CATALOGO_PARAMETROS_REFRESH_INTERVAL:PT5M}
     # Valor de respaldo por nombre de parametro. Para claves en mayusculas con guion bajo usar la
     # notacion defaults[NOMBRE] para que Spring no las normalice.
-    defaults: {}
+    # RATE_LIMIT_SOLICITUDES_POR_MINUTO: cuota global del limitador (HT-026); si el Catalogo no la
+    # trae, manda la propiedad del perfil activo.
+    defaults:
+      "[RATE_LIMIT_SOLICITUDES_POR_MINUTO]": ${security.rate-limit.requests-per-minute}
 
 # ==================== SERVER ====================
 # ==================== CORS Y RATE LIMITING (BASE) ====================
