@@ -47,6 +47,35 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
+      # ── Jar compilado en el runner ──
+      # Igual que CI Backend (misma caché de Gradle, red del runner). Compilar dentro de
+      # BuildKit, sin caché, fallaba de forma intermitente resolviendo dependencias.
+      - name: Setup Java 25 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Compilar jar
+        env:
+          GITHUB_PACKAGES_USER: ${{ secrets.MESSAGEUCOLAB_PACKAGES_USER }}
+          GITHUB_PACKAGES_TOKEN: ${{ secrets.MESSAGEUCOLAB_PACKAGES_TOKEN }}
+        run: |
+          chmod +x gradlew
+          ./gradlew bootJar --no-daemon
+          find build/libs -maxdepth 1 -name "*.jar" ! -name "*-plain.jar" -exec cp {} app.jar \;
+          test -s app.jar
+
       # ── Login GHCR ──
       - name: Login a GitHub Container Registry
         uses: docker/login-action@v4
@@ -92,11 +121,11 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Empaqueta el app.jar compilado arriba; no compila dentro de Docker.
+          build-args: |
+            JAR_ORIGEN=precompilado
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          secrets: |
-            github_packages_user=${{ secrets.MESSAGEUCOLAB_PACKAGES_USER }}
-            github_packages_token=${{ secrets.MESSAGEUCOLAB_PACKAGES_TOKEN }}
 
   # ── Despliegue (solo develop) ──
   # Corre cuando la imagen ya está publicada: sin carrera contra el build.
