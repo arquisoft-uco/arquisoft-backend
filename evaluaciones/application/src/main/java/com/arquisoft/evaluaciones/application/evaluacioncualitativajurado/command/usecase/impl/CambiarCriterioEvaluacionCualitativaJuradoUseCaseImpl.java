@@ -6,9 +6,12 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.secondaryport.mapper.EvaluacionCualitativaJuradoMapper;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.usecase.CambiarCriterioEvaluacionCualitativaJuradoUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.validator.CambiarCriterioEvaluacionCualitativaJuradoValidator;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoCompletaFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoEstadoFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.CambioCriterioEvaluacionCualitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.EvaluacionCualitativaJuradoDomain;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.CompletitudEvaluacionJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,8 @@ public class CambiarCriterioEvaluacionCualitativaJuradoUseCaseImpl
     private final CriteriosCualitativosJuradoExistentesFinder criteriosCualitativosJuradoExistentesFinder;
     private final CambiarCriterioEvaluacionCualitativaJuradoValidator validator;
     private final EvaluacionCualitativaJuradoOutputPort evaluacionCualitativaJuradoOutputPort;
+    private final EvaluacionJuradoCompletaFinder evaluacionJuradoCompletaFinder;
+    private final CalcularResumenEvaluacionJuradoUseCase calcularResumenEvaluacionJuradoUseCase;
     private final AppLogger logger;
 
     @Override
@@ -46,6 +51,10 @@ public class CambiarCriterioEvaluacionCualitativaJuradoUseCaseImpl
                 evaluacion.getId(), evaluacion.getEvaluacionJurado(), evaluacion.getItem(), cambio.getCriterio());
         evaluacionCualitativaJuradoOutputPort.actualizar(
                 EvaluacionCualitativaJuradoMapper.toEntity(evaluacionActualizada));
+
+        var completa = evaluacionJuradoCompletaFinder.obtener(evaluacion.getEvaluacionJurado());
+        calcularResumenEvaluacionJuradoUseCase.ejecutar(
+                CompletitudEvaluacionJuradoDomain.crear(evaluacion.getEvaluacionJurado(), completa));
 
         logger.info(EvaluacionCualitativaJuradoKey.LOG_CRITERIO_CAMBIADO,
                 cambio.getEvaluacionCualitativaJurado());

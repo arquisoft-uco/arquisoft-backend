@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.usecase.impl;
 
+import com.arquisoft.evaluaciones.domain.evaluacionasesor.CompletitudEvaluacionAsesorDomain;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.finder.ContextoEvaluacionCuantitativaAsesorFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.finder.ItemDeEvaluacionCuantitativaAsesorFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.secondaryport.EvaluacionCuantitativaAsesorOutputPort;
@@ -9,19 +10,24 @@ import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativaasesor.CambioPuntajeEvaluacionCuantitativaAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativaasesor.ContextoEvaluacionCuantitativaAsesorDomain;
 import com.arquisoft.evaluaciones.domain.itemcuantitativoasesor.ItemCuantitativoAsesorDomain;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.usecase.CalcularResumenEvaluacionAsesorUseCase;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.EvaluacionAsesorCompletaFinder;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaAsesorKey;
 import com.arquisoft.shared.util.UtilUUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +50,17 @@ class CambiarPuntajeEvaluacionCuantitativaAsesorUseCaseImplTest {
 
     @Mock
     private AppLogger logger;
+
+    @Mock
+    private CalcularResumenEvaluacionAsesorUseCase calcularResumenAsesorUseCase;
+
+    @Mock
+    private EvaluacionAsesorCompletaFinder evaluacionAsesorCompletaFinder;
+
+    @BeforeEach
+    void configurarFinderDeCompletitud() {
+        lenient().when(evaluacionAsesorCompletaFinder.obtener(any())).thenReturn(true);
+    }
 
     @InjectMocks
     private CambiarPuntajeEvaluacionCuantitativaAsesorUseCaseImpl useCase;
@@ -81,5 +98,7 @@ class CambiarPuntajeEvaluacionCuantitativaAsesorUseCaseImplTest {
         verify(contextoFinder, times(1)).obtener(any());
         verify(itemFinder, times(1)).obtener(any());
         verify(itemPorIdFinder, times(1)).obtener(any());
+
+        verify(calcularResumenAsesorUseCase).ejecutar(argThat(CompletitudEvaluacionAsesorDomain::isCompleta));
     }
 }

@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -31,4 +33,16 @@ public class EvaluacionJuradoJpaEntity {
 
     @Column(name = "estado_evaluacion_asignada_jurado_id", nullable = false, length = 60)
     private String estado;
+
+    @Column(name = "eliminado_en")
+    private Instant eliminadoEn;
+
+    @Column(name = "resumen_cualitativo", precision = 4, scale = 2)
+    private BigDecimal resumenCualitativo;
+
+    @Column(name = "resumen_cuantitativo", precision = 4, scale = 2)
+    private BigDecimal resumenCuantitativo;
+
+    @Column(name = "nota_acumulada", precision = 4, scale = 2)
+    private BigDecimal notaAcumulada;
 }

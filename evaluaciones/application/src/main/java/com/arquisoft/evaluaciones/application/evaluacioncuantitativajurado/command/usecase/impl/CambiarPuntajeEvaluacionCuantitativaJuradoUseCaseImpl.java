@@ -5,10 +5,13 @@ import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.comma
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.mapper.EvaluacionCuantitativaJuradoMapper;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.usecase.CambiarPuntajeEvaluacionCuantitativaJuradoUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.validator.CambiarPuntajeEvaluacionCuantitativaJuradoValidator;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoCompletaFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoEstadoFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.finder.ItemCuantitativoJuradoPorIdFinder;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.CambioPuntajeEvaluacionCuantitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.EvaluacionCuantitativaJuradoDomain;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.CompletitudEvaluacionJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,8 @@ public class CambiarPuntajeEvaluacionCuantitativaJuradoUseCaseImpl
     private final EvaluacionJuradoEstadoFinder evaluacionJuradoEstadoFinder;
     private final ItemCuantitativoJuradoPorIdFinder itemCuantitativoJuradoPorIdFinder;
     private final CambiarPuntajeEvaluacionCuantitativaJuradoValidator validator;
+    private final EvaluacionJuradoCompletaFinder evaluacionJuradoCompletaFinder;
+    private final CalcularResumenEvaluacionJuradoUseCase calcularResumenEvaluacionJuradoUseCase;
     private final AppLogger logger;
 
     @Override
@@ -48,6 +53,10 @@ public class CambiarPuntajeEvaluacionCuantitativaJuradoUseCaseImpl
                 evaluacion.getId(), evaluacion.getEvaluacionJurado(), evaluacion.getItem(), cambio.getNuevoPuntaje());
         evaluacionCuantitativaJuradoOutputPort.actualizar(
                 EvaluacionCuantitativaJuradoMapper.toEntity(evaluacionActualizada));
+
+        var completa = evaluacionJuradoCompletaFinder.obtener(evaluacion.getEvaluacionJurado());
+        calcularResumenEvaluacionJuradoUseCase.ejecutar(
+                CompletitudEvaluacionJuradoDomain.crear(evaluacion.getEvaluacionJurado(), completa));
 
         logger.info(EvaluacionCuantitativaJuradoKey.LOG_PUNTAJE_CAMBIADO, cambio.getEvaluacionCuantitativaJurado());
     }

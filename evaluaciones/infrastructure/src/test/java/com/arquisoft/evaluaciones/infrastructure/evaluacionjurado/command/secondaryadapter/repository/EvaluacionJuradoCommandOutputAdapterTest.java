@@ -314,7 +314,7 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     }
 
     @Test
-    void debeEliminarSoloLosJuradosIndicadosDeLaEvaluacion_conservandoLosDemas() {
+    void debeMarcarEliminadosSoloLosJuradosIndicados_conservandoLasFilasYLosDemas() {
         // Arrange
         var evaluacion = UUID.randomUUID();
         var otraEvaluacion = UUID.randomUUID();
@@ -323,6 +323,7 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         var filaRemovida = UUID.randomUUID();
         var filaConservada = UUID.randomUUID();
         var filaDeOtraEvaluacion = UUID.randomUUID();
+        var eliminadoEn = java.time.Instant.parse("2026-11-19T10:00:00Z");
         adapter.registrarTodas(List.of(
                 new EvaluacionJuradoEntity(filaRemovida, evaluacion, removido, ESTADO_PENDIENTE),
                 new EvaluacionJuradoEntity(filaConservada, evaluacion, conservado, ESTADO_PENDIENTE),
@@ -331,50 +332,43 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        adapter.eliminarPorEvaluacionYJurados(evaluacion, Set.of(removido));
+        adapter.marcarEliminadosPorEvaluacionYJurados(evaluacion, Set.of(removido), eliminadoEn);
         entityManager.flush();
         entityManager.clear();
 
         // Assert
         assertThat(repository.findAllById(List.of(filaRemovida, filaConservada, filaDeOtraEvaluacion)))
-                .extracting(fila -> fila.getId())
-                .containsExactlyInAnyOrder(filaConservada, filaDeOtraEvaluacion);
+                .extracting(fila -> fila.getId(), fila -> fila.getEliminadoEn())
+                .containsExactlyInAnyOrder(
+                        org.assertj.core.groups.Tuple.tuple(filaRemovida, eliminadoEn),
+                        org.assertj.core.groups.Tuple.tuple(filaConservada, null),
+                        org.assertj.core.groups.Tuple.tuple(filaDeOtraEvaluacion, null));
+        assertThat(adapter.consultarJuradosAsignados(evaluacion, Set.of(removido, conservado)))
+                .containsExactly(conservado);
         verify(logger).debug(EvaluacionJuradoKey.LOG_LOTE_ELIMINADO, 1);
     }
 
     @Test
-    void debeDevolverLosJuradosConEvaluacionCualitativaOCuantitativa_cuandoSeConsultan() {
+    void debeDevolverSoloLosJuradosVigentesEvaluados_cuandoSeConsultan() {
         // Arrange
         var evaluacion = UUID.randomUUID();
-        var otraEvaluacion = UUID.randomUUID();
-        var conCualitativa = UUID.randomUUID();
-        var conCuantitativa = UUID.randomUUID();
-        var sinEvaluaciones = UUID.randomUUID();
-        var conEvaluacionEnOtra = UUID.randomUUID();
-        var filaCualitativa = UUID.randomUUID();
-        var filaCuantitativa = UUID.randomUUID();
-        var filaDeOtraEvaluacion = UUID.randomUUID();
+        var evaluado = UUID.randomUUID();
+        var pendiente = UUID.randomUUID();
         adapter.registrarTodas(List.of(
-                new EvaluacionJuradoEntity(filaCualitativa, evaluacion, conCualitativa, ESTADO_PENDIENTE),
-                new EvaluacionJuradoEntity(filaCuantitativa, evaluacion, conCuantitativa, ESTADO_PENDIENTE),
-                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, sinEvaluaciones, ESTADO_PENDIENTE),
-                new EvaluacionJuradoEntity(filaDeOtraEvaluacion, otraEvaluacion, conEvaluacionEnOtra, ESTADO_PENDIENTE)));
-        sembrarEvaluacionCualitativa(filaCualitativa, UUID.randomUUID());
-        sembrarEvaluacionCuantitativa(filaCuantitativa, UUID.randomUUID());
-        sembrarEvaluacionCuantitativa(filaDeOtraEvaluacion, UUID.randomUUID());
-        testEntityManager.flush();
-        testEntityManager.clear();
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, evaluado, "EVALUADA"),
+                new EvaluacionJuradoEntity(UUID.randomUUID(), evaluacion, pendiente, ESTADO_PENDIENTE)));
+        entityManager.flush();
+        entityManager.clear();
 
         // Act
-        var conEvaluaciones = adapter.consultarJuradosConEvaluaciones(
-                evaluacion, Set.of(conCualitativa, conCuantitativa, sinEvaluaciones, conEvaluacionEnOtra));
+        var evaluados = adapter.consultarJuradosEvaluados(evaluacion, Set.of(evaluado, pendiente));
 
         // Assert
-        assertThat(conEvaluaciones).containsExactlyInAnyOrder(conCualitativa, conCuantitativa);
+        assertThat(evaluados).containsExactly(evaluado);
     }
 
     @Test
-    void debeDevolverVacio_cuandoNingunJuradoRegistroEvaluaciones() {
+    void debeDevolverVacio_cuandoNingunJuradoEstaEvaluado() {
         // Arrange
         var evaluacion = UUID.randomUUID();
         var jurado = UUID.randomUUID();
@@ -384,10 +378,10 @@ class EvaluacionJuradoCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var conEvaluaciones = adapter.consultarJuradosConEvaluaciones(evaluacion, Set.of(jurado));
+        var evaluados = adapter.consultarJuradosEvaluados(evaluacion, Set.of(jurado));
 
         // Assert
-        assertThat(conEvaluaciones).isEmpty();
+        assertThat(evaluados).isEmpty();
     }
 
     @Test

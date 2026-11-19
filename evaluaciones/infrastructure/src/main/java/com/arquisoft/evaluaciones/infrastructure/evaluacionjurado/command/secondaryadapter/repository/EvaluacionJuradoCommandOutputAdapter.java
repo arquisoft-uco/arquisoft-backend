@@ -1,5 +1,8 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.repository;
 
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.ItemCualitativoCalificadoEntity;
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.ItemCuantitativoCalificadoEntity;
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.ResumenEvaluacionEntity;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EstadoEvaluacionJuradoEntity;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EvaluacionJuradoEntity;
@@ -10,6 +13,7 @@ import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -54,13 +58,13 @@ public class EvaluacionJuradoCommandOutputAdapter implements EvaluacionJuradoOut
     }
 
     @Override
-    public Set<UUID> consultarJuradosConEvaluaciones(UUID evaluacion, Set<UUID> jurados) {
-        return repository.findJuradosConEvaluaciones(evaluacion, jurados);
+    public Set<UUID> consultarJuradosEvaluados(UUID evaluacion, Set<UUID> jurados) {
+        return repository.findJuradosEvaluados(evaluacion, jurados);
     }
 
     @Override
-    public void eliminarPorEvaluacionYJurados(UUID evaluacion, Set<UUID> jurados) {
-        repository.eliminarPorEvaluacionYJurados(evaluacion, jurados);
+    public void marcarEliminadosPorEvaluacionYJurados(UUID evaluacion, Set<UUID> jurados, Instant eliminadoEn) {
+        repository.marcarEliminadosPorEvaluacionYJurados(evaluacion, jurados, eliminadoEn);
         logger.debug(EvaluacionJuradoKey.LOG_LOTE_ELIMINADO, jurados.size());
     }
 
@@ -72,5 +76,37 @@ public class EvaluacionJuradoCommandOutputAdapter implements EvaluacionJuradoOut
     @Override
     public boolean estaFinalizadaPorObservacion(UUID observacion) {
         return repository.estaFinalizadaPorObservacion(observacion).orElse(false);
+    }
+
+    @Override
+    public List<ItemCualitativoCalificadoEntity> consultarCualitativosCalificados(UUID evaluacionJurado) {
+        return repository.findCualitativosCalificados(evaluacionJurado).stream()
+                .map(item -> new ItemCualitativoCalificadoEntity(item.getPeso(), item.getCriterio()))
+                .toList();
+    }
+
+    @Override
+    public List<ItemCuantitativoCalificadoEntity> consultarCuantitativosCalificados(UUID evaluacionJurado) {
+        return repository.findCuantitativosCalificados(evaluacionJurado).stream()
+                .map(item -> new ItemCuantitativoCalificadoEntity(item.getPuntaje(), item.getValorMaximo()))
+                .toList();
+    }
+
+    @Override
+    public void actualizarResumen(UUID evaluacionJurado, ResumenEvaluacionEntity resumen) {
+        repository.actualizarResumen(
+                evaluacionJurado,
+                resumen.resumenCualitativo(),
+                resumen.resumenCuantitativo(),
+                resumen.notaAcumulada());
+        logger.debug(EvaluacionJuradoKey.LOG_RESUMEN_ACTUALIZADO, evaluacionJurado);
+    }
+
+    @Override
+    public List<ResumenEvaluacionEntity> consultarResumenesPorEvaluacion(UUID evaluacion) {
+        return repository.findConNotaVigentesPorEvaluacion(evaluacion).stream()
+                .map(jurado -> new ResumenEvaluacionEntity(
+                        jurado.getResumenCualitativo(), jurado.getResumenCuantitativo(), jurado.getNotaAcumulada()))
+                .toList();
     }
 }
