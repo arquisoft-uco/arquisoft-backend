@@ -272,11 +272,16 @@ services:
       # ignorando el SPRING_PROFILES_ACTIVE del .env.
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       # Fuente del catalogo (ADR-017). Desde el contenedor, MessageUcoLab se alcanza por el host.
+      # La identidad de servicio y su secreto llegan del .env (ver la seccion del catalogo en .env.example).
       CATALOGO_FUENTE: ${CATALOGO_FUENTE:-redis}
       MESSAGEUCO_URL: ${MESSAGEUCO_URL_CONTENEDOR:-http://host.docker.internal:8000}
-      MESSAGEUCO_APPLICATION_ID: ${MESSAGEUCO_APPLICATION_ID:-}
-      MESSAGEUCO_ENVIRONMENT_ID: ${MESSAGEUCO_ENVIRONMENT_ID:-}
-      MESSAGEUCO_INTERVALO: ${MESSAGEUCO_INTERVALO:-PT5M}
+      MESSAGEUCO_TOKEN_URI: ${MESSAGEUCO_TOKEN_URI:-http://keycloak.localhost:19090/realms/security-baseline/protocol/openid-connect/token}
+      MESSAGEUCO_CLIENT_ID: ${MESSAGEUCO_CLIENT_ID:-}
+      MESSAGEUCO_CLIENT_SECRET: ${MESSAGEUCO_CLIENT_SECRET:-}
+      MESSAGEUCO_TIMEOUT: ${MESSAGEUCO_TIMEOUT:-PT30S}
+      # Avisos de cambio: 'pulsar' solo resuelve con la red de MessageUcoLab, que agrega
+      # docker-compose.messageuco.yml. Sin ella el backend arranca igual y reintenta la suscripcion.
+      MESSAGEUCO_PULSAR_URL: ${MESSAGEUCO_PULSAR_URL_CONTENEDOR:-pulsar://pulsar:6650}
       # Niveles de log. Los defaults de aqui son los del perfil dev, que es el que
       # docker-compose levanta: NO se puede dejar `${VAR:-}` porque Compose inyectaria
       # cadena vacia y Spring haria LogLevel.valueOf("") -> fallo de arranque.
@@ -338,6 +343,10 @@ services:
       MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
     ports:
       - "8080:8080"
+    # El Keycloak de Seguridad corre en el PC (19090). El token de la identidad de servicio se pide
+    # con keycloak.localhost porque ese host es el emisor que MessageUcoLab acepta.
+    extra_hosts:
+      - "keycloak.localhost:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy

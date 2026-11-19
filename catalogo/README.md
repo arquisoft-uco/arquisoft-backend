@@ -158,20 +158,43 @@ La aplicación siempre lee de Redis. `arquisoft.catalogo.fuente` decide quién l
 | `CATALOGO_FUENTE` | Quién escribe los textos |
 |---|---|
 | `redis` (por defecto) | Solo `cargar.sh`. No se consulta MessageUcoLab |
-| `messageuco` | MessageUcoLab, al arrancar y luego cada `MESSAGEUCO_INTERVALO` (`PT5M` por defecto) |
+| `messageuco` | MessageUcoLab: todo al arrancar y, después, solo lo que avisa por Pulsar que cambió. Sin recarga periódica |
 
-La lectura usa `messageucolab-spring-boot-starter`, que se descarga de GitHub Packages: compilar el
-proyecto exige `GITHUB_PACKAGES_USER` y `GITHUB_PACKAGES_TOKEN` (permiso `read:packages`) con
-cualquier fuente.
+La lectura usa `messageucolab-spring-boot-starter` y, para el token, `security-pep-integration-spring-boot-starter`.
+Los dos se descargan de GitHub Packages: compilar el proyecto exige `GITHUB_PACKAGES_USER` y
+`GITHUB_PACKAGES_TOKEN` (permiso `read:packages`) con cualquier fuente.
 
-Con `messageuco` hay que configurar además `MESSAGEUCO_URL`, `MESSAGEUCO_APPLICATION_ID` y
-`MESSAGEUCO_ENVIRONMENT_ID`. El **título** del mensaje debe ser la clave semántica exacta y el
-**contenido** su texto, con los mismos marcadores.
+Con `messageuco` hay que configurar además `MESSAGEUCO_URL`, `MESSAGEUCO_PULSAR_URL` y la identidad de
+servicio de arquisoft: `MESSAGEUCO_TOKEN_URI`, `MESSAGEUCO_CLIENT_ID` y `MESSAGEUCO_CLIENT_SECRET`
+(detalle en `.env.example`).
+Desde MessageUcoLab 0.3.0 ya no existen el identificador de aplicación ni el de ambiente: el ambiente
+que se lee es el que se asoció a la identidad en la consola de MessageUcoLab. El **título** del
+mensaje debe ser la clave semántica exacta y el **contenido** su texto, con los mismos marcadores.
 
 - Solo se escriben claves declaradas en `ClavesCatalogo`, y solo las que cambiaron.
 - Un texto vacío o con la aridad equivocada se rechaza, y Redis conserva el anterior.
 - Una clave que no llega no se borra: desactivar un mensaje deja su último texto en Redis.
 - Si MessageUcoLab no responde al arrancar, el fail-fast valida lo que ya tenga Redis.
+
+Avisos de cambio (topic `persistent://public/default/message-events-<MESSAGEUCO_CLIENT_ID>`, suscripción
+durable `arquisoft-catalogo`, compartida por todas las instancias):
+
+| Aviso | Qué hace el backend |
+|---|---|
+| `MessageCreated`, `MessageUpdated` | Pide ese mensaje y escribe su clave si cambió (mismas reglas de arriba) |
+| `MessagesChanged` | Recarga el catálogo completo |
+| `MessageDeleted` | Nada: Redis conserva el último texto, por la misma razón que arriba |
+
+- Si el backend está caído, Pulsar guarda los avisos y los entrega al volver.
+- Si Pulsar está caído al arrancar, el backend arranca igual y reintenta la suscripción cada 30 s.
+- Los avisos que llegan juntos (ventana de 2 s) se aplican como un lote. Con más de 20 mensajes en un
+  lote —una carga masiva— se recarga el catálogo completo con una sola consulta: pedirlos uno por uno
+  choca con el límite de solicitudes del gateway (429).
+- Al suscribirse se omiten los avisos publicados antes de que empezara la carga del arranque, que ya
+  los cubrió. Si esa carga falló, no se omite nada.
+- Si un lote falla porque MessageUcoLab no responde, Pulsar lo vuelve a entregar al minuto.
+- En contenedor, el backend necesita la red de Pulsar del kit de MessageUcoLab:
+  `docker compose -f docker-compose.yml -f docker-compose.messageuco.yml up -d --build`.
 
 `cargar.sh` sigue siendo necesario: deja el catálogo base para que la aplicación pueda arrancar con
 MessageUcoLab caído. Los textos que escribe se reemplazan en la carga inicial de la aplicación.

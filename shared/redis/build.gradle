@@ -28,6 +28,18 @@ dependencies {
     // Starter de MessageUcoLab — MessageReader, con el que se sincroniza el catálogo (ADR-017).
     implementation "co.edu.uco:messageucolab-spring-boot-starter:${messageUcoLabVersion}"
 
+    // Starter de Seguridad — solo su ServiceAccessTokenProvider: pide a Keycloak el token de la
+    // identidad de servicio que el starter de MessageUcoLab envía en cada consulta. Su filtro y su
+    // registro de PEP se apagan en application.yml; la autorización sigue en el adaptador propio.
+    // Llega sin transitivas (ver el repositorio 'Seguridad' en el build.gradle raíz): no trae su
+    // starter de WebFlux, que arquisoft —servlet— no necesita.
+    implementation "co.edu.uco:security-pep-integration-spring-boot-starter:${securityPepIntegrationVersion}"
+
+    // Cliente de Pulsar — escucha los avisos de cambio de MessageUcoLab para actualizar una clave
+    // del catálogo apenas cambia. Cliente plano y no spring-boot-starter-pulsar: así no se activa
+    // ninguna autoconfiguración y solo existe con la fuente messageuco. Versión por bomProperty.
+    implementation "org.apache.pulsar:pulsar-client"
+
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 

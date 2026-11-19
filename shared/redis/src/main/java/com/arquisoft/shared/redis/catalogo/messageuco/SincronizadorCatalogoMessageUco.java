@@ -12,16 +12,22 @@ import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Copia en Redis los textos de MessageUcoLab (ADR-017).
  *
+ * <p>Hay dos entradas: {@link #sincronizar()}, que trae todos los mensajes (al arrancar y ante un
+ * cambio masivo), y {@link #actualizar(String)}, que trae uno solo cuando llega su aviso de cambio.
+ * Ambas aplican las mismas reglas.
+ *
  * <p>{@link MessageReader} es reactivo y aquí se bloquea a propósito: esto corre en el hilo del
- * arranque y en el del planificador, nunca en un hilo de eventos.
+ * arranque y en el del listener de Pulsar, nunca en un hilo de Reactor.
  *
  * <p>Redis sigue siendo lo único que lee la aplicación: esta clase solo cambia quién lo alimenta,
  * así que la latencia, el fail-fast y la degradación de ADR-013 no se tocan.
@@ -48,13 +54,26 @@ public class SincronizadorCatalogoMessageUco {
             "MessageUcoLab trajo {} mensaje(s) cuyo título no es una clave del catálogo, se ignoran";
     private static final String LOG_FALLO_ARRANQUE =
             "No se pudo sincronizar el catálogo desde MessageUcoLab al arrancar, se validará lo que tenga Redis: {}";
+    private static final String LOG_CLAVE_ACTUALIZADA = "Clave del catálogo actualizada desde MessageUcoLab: {} ({})";
+    private static final String LOG_CLAVE_SIN_CAMBIOS = "Clave del catálogo sin cambios en MessageUcoLab: {} ({})";
+    private static final String LOG_CLAVE_IGNORADA =
+            "El mensaje {} de MessageUcoLab tiene el título '{}', que no es una clave del catálogo; se ignora";
+    private static final String LOG_CLAVE_RECHAZADA =
+            "El mensaje {} de MessageUcoLab trae un texto vacío o con aridad inválida para {}; se conserva el de Redis";
 
     private static final int TAMANIO_LOTE = 500;
     private static final int MAXIMO_A_NOMBRAR = 20;
 
+    private static final Map<String, ClaveMensaje> DECLARADAS = indexarDeclaradas();
+
     private final MessageReader lector;
     private final StringRedisTemplate plantilla;
     private final AppLogger logger;
+
+    // Cuándo empezó la última sincronización completa que terminó bien. Todo lo publicado en
+    // MessageUcoLab antes de ese instante ya está en Redis: la escucha de avisos lo usa para no
+    // volver a aplicar avisos viejos al suscribirse.
+    private volatile Instant inicioUltimaCompleta;
 
     public SincronizadorCatalogoMessageUco(
             MessageReader lector, StringRedisTemplate plantilla, AppLogger logger) {
@@ -81,6 +100,9 @@ public class SincronizadorCatalogoMessageUco {
      * @return el resultado de la sincronización
      */
     public ResultadoSincronizacion sincronizar() {
+        // Se toma antes de consultar: un cambio publicado durante la consulta queda después de este
+        // instante y su aviso se aplica, en lugar de perderse entre la consulta y la suscripción.
+        Instant comienzo = Instant.now();
         Map<String, String> recibidos = indexar(lector.getAll().block());
 
         List<ClaveMensaje> declaradas = ClavesCatalogo.TODAS;
@@ -102,7 +124,7 @@ public class SincronizadorCatalogoMessageUco {
                 }
 
                 reconocidos++;
-                if (UtilTexto.esVacioONulo(texto) || AridadClave.marcadores(clave, texto) != clave.parametros()) {
+                if (!esValido(clave, texto)) {
                     rechazadas.add(clave.clave());
                 } else if (UtilObjeto.esNulo(actuales) || !texto.equals(actuales.get(i))) {
                     cambios.put(clave.clave(), texto);
@@ -117,7 +139,66 @@ public class SincronizadorCatalogoMessageUco {
         var resultado = new ResultadoSincronizacion(
                 cambios.size(), List.copyOf(ausentes), List.copyOf(rechazadas), recibidos.size() - reconocidos);
         registrar(resultado);
+        inicioUltimaCompleta = comienzo;
         return resultado;
+    }
+
+    /**
+     * Cuándo empezó la última sincronización completa que terminó bien.
+     *
+     * @return el instante, o vacío si ninguna terminó bien (por ejemplo, MessageUcoLab caído al arrancar)
+     */
+    public Optional<Instant> inicioUltimaSincronizacionCompleta() {
+        return Optional.ofNullable(inicioUltimaCompleta);
+    }
+
+    /**
+     * Trae un solo mensaje y, si su título es una clave declarada, escribe su texto en Redis cuando
+     * cambió. Lo usa el aviso de creación o modificación de ese mensaje.
+     *
+     * <p>Los errores de MessageUcoLab se propagan: quien escucha el aviso decide si reintentarlo.
+     *
+     * @param codigo código del mensaje en MessageUcoLab ({@code MSG_...})
+     * @return qué pasó con la clave
+     */
+    public ResultadoActualizacion actualizar(String codigo) {
+        MessageDetails mensaje = lector.getDetails(codigo).block();
+        if (UtilObjeto.esNulo(mensaje)) {
+            return ResultadoActualizacion.NO_ENCONTRADO;
+        }
+
+        ClaveMensaje clave = DECLARADAS.get(mensaje.title());
+        if (UtilObjeto.esNulo(clave)) {
+            logger.warn(LOG_CLAVE_IGNORADA, codigo, mensaje.title());
+            return ResultadoActualizacion.NO_ES_CLAVE;
+        }
+
+        String texto = mensaje.content();
+        if (!esValido(clave, texto)) {
+            logger.error(LOG_CLAVE_RECHAZADA, codigo, clave.clave());
+            return ResultadoActualizacion.RECHAZADA;
+        }
+
+        if (texto.equals(plantilla.opsForValue().get(clave.clave()))) {
+            logger.debug(LOG_CLAVE_SIN_CAMBIOS, clave.clave(), codigo);
+            return ResultadoActualizacion.SIN_CAMBIOS;
+        }
+
+        plantilla.opsForValue().set(clave.clave(), texto);
+        logger.info(LOG_CLAVE_ACTUALIZADA, clave.clave(), codigo);
+        return ResultadoActualizacion.ACTUALIZADA;
+    }
+
+    private static boolean esValido(ClaveMensaje clave, String texto) {
+        return !UtilTexto.esVacioONulo(texto) && AridadClave.marcadores(clave, texto) == clave.parametros();
+    }
+
+    private static Map<String, ClaveMensaje> indexarDeclaradas() {
+        Map<String, ClaveMensaje> declaradas = new HashMap<>();
+        for (ClaveMensaje clave : ClavesCatalogo.TODAS) {
+            declaradas.put(clave.clave(), clave);
+        }
+        return Map.copyOf(declaradas);
     }
 
     private Map<String, String> indexar(MessageCollection coleccion) {

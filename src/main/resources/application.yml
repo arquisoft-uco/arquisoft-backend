@@ -356,10 +356,15 @@ arquisoft:
     reintento-intervalo: PT30S
     # Quien alimenta el catálogo en Redis (ADR-017). La aplicación siempre lee de Redis.
     #   redis:      los textos los carga catalogo/cargar.sh; no se consulta MessageUcoLab.
-    #   messageuco: los trae de MessageUcoLab al arrancar, antes de validar, y luego cada intervalo.
+    #   messageuco: los trae todos de MessageUcoLab al arrancar, antes de validar, y después solo
+    #               cuando MessageUcoLab avisa por Pulsar que un mensaje cambió. No hay recarga periódica.
     fuente: ${CATALOGO_FUENTE:redis}
     messageuco:
-      intervalo: ${MESSAGEUCO_INTERVALO:PT5M}
+      eventos:
+        # Broker de Pulsar de MessageUcoLab. El topic es el prefijo + el client-id de la identidad
+        # (security.pep.service-identity.client-id), y la suscripción durable es la misma para todas
+        # las instancias: cada aviso lo aplica una sola.
+        url: ${MESSAGEUCO_PULSAR_URL:pulsar://localhost:6800}
 
   # Limitador de peticiones. Mismo patrón que el catálogo: cuando Redis cae, el limitador degrada
   # a cuota local por instancia y este monitor es quien lo devuelve a la cuota distribuida.
@@ -368,10 +373,10 @@ arquisoft:
 
 # ==================== MESSAGEUCOLAB ====================
 # Conexion del starter. Se autoconfigura siempre, pero solo se consulta con la fuente messageuco.
+# Desde MessageUcoLab 0.3.0 no hay application-id ni environment-id: el ambiente lo fija la
+# identidad de servicio (security.pep.service-identity, mas abajo en el bloque security).
 messageucolab:
   url: ${MESSAGEUCO_URL:http://localhost:8000}
-  application-id: ${MESSAGEUCO_APPLICATION_ID:}
-  environment-id: ${MESSAGEUCO_ENVIRONMENT_ID:}
   timeout: ${MESSAGEUCO_TIMEOUT:PT30S}
 
 # ==================== SERVER ====================
@@ -386,6 +391,23 @@ security:
   # false: el filtro de autorizacion no se instala (equivale al modo none para todos los emisores);
   # la autenticacion del Bearer sigue exigida. Prohibido en el perfil prod.
   enabled: ${SECURITY_ENABLED:true}
+  # Starter de Seguridad (security-pep-integration-spring-boot-starter, ADR-017). Lee este mismo
+  # 'security.enabled': con true, y sin estas dos lineas, montaria su propio filtro de PEP y fallaria
+  # al arrancar por no tener security.pep.enforcement.*. De el solo se usa el token de la identidad
+  # de servicio; la autorizacion de arquisoft sigue en security.authorization.pep.
+  pep:
+    enforcement:
+      enabled: false
+    registration:
+      enabled: false
+    # Identidad con la que arquisoft consulta MessageUcoLab (client_credentials contra Keycloak).
+    # Encendida siempre: el token se pide en la primera consulta, asi que con la fuente redis no
+    # hace nada. Con la fuente messageuco, CatalogoMessageUcoConfig exige los tres valores.
+    service-identity:
+      enabled: true
+      token-uri: ${MESSAGEUCO_TOKEN_URI:}
+      client-id: ${MESSAGEUCO_CLIENT_ID:}
+      client-secret: ${MESSAGEUCO_CLIENT_SECRET:}
   # Defaults por perfil de los valores que viven dentro de la lista de emisores (un perfil no
   # puede sobrescribir un elemento de una lista, pero si estos escalares).
   defaults:

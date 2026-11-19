@@ -20,6 +20,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -40,6 +42,7 @@ import static org.mockito.Mockito.when;
 class SincronizadorCatalogoMessageUcoTest {
 
     private static final String TEXTO_NUEVO = "Texto editado en MessageUcoLab";
+    private static final String CODIGO = "MSG_0001";
 
     @Mock
     private MessageReader lector;
@@ -189,6 +192,99 @@ class SincronizadorCatalogoMessageUcoTest {
         // Act + Assert
         assertThatCode(sincronizador::sincronizarAlArrancar).doesNotThrowAnyException();
         verify(operaciones, never()).multiSet(anyMap());
+        assertThat(sincronizador.inicioUltimaSincronizacionCompleta()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("recuerda cuándo empezó la última sincronización completa que terminó bien")
+    void debeRecordarElInicio_cuandoLaSincronizacionTermina() {
+        // Arrange
+        Instant antes = Instant.now();
+        when(lector.getAll()).thenReturn(mensajes(redis));
+
+        // Act
+        sincronizador.sincronizar();
+
+        // Assert
+        assertThat(sincronizador.inicioUltimaSincronizacionCompleta())
+                .hasValueSatisfying(inicio -> assertThat(inicio).isBetween(antes, Instant.now()));
+    }
+
+    @Test
+    @DisplayName("aviso de un mensaje: escribe solo esa clave cuando su texto cambió")
+    void debeEscribirLaClave_cuandoActualizaUnMensajeCambiado() {
+        // Arrange
+        ClaveMensaje clave = claveSinParametros();
+        when(operaciones.get(clave.clave())).thenReturn(redis.get(clave.clave()));
+        when(lector.getDetails(CODIGO)).thenReturn(mensaje(clave.clave(), TEXTO_NUEVO));
+
+        // Act
+        ResultadoActualizacion resultado = sincronizador.actualizar(CODIGO);
+
+        // Assert
+        assertThat(resultado).isEqualTo(ResultadoActualizacion.ACTUALIZADA);
+        verify(operaciones).set(clave.clave(), TEXTO_NUEVO);
+        verify(operaciones, never()).multiSet(anyMap());
+    }
+
+    @Test
+    @DisplayName("aviso de un mensaje: no escribe cuando Redis ya tiene ese texto")
+    void debeNoEscribir_cuandoActualizaUnMensajeIgual() {
+        // Arrange
+        ClaveMensaje clave = claveSinParametros();
+        when(operaciones.get(clave.clave())).thenReturn(redis.get(clave.clave()));
+        when(lector.getDetails(CODIGO)).thenReturn(mensaje(clave.clave(), redis.get(clave.clave())));
+
+        // Act
+        ResultadoActualizacion resultado = sincronizador.actualizar(CODIGO);
+
+        // Assert
+        assertThat(resultado).isEqualTo(ResultadoActualizacion.SIN_CAMBIOS);
+        verify(operaciones, never()).set(any(), any());
+    }
+
+    @Test
+    @DisplayName("aviso de un mensaje: ignora un título que no es clave del catálogo")
+    void debeIgnorar_cuandoElTituloNoEsClave() {
+        // Arrange
+        when(lector.getDetails(CODIGO)).thenReturn(mensaje("clave.que.no.existe", TEXTO_NUEVO));
+
+        // Act
+        ResultadoActualizacion resultado = sincronizador.actualizar(CODIGO);
+
+        // Assert
+        assertThat(resultado).isEqualTo(ResultadoActualizacion.NO_ES_CLAVE);
+        verify(operaciones, never()).set(any(), any());
+    }
+
+    @Test
+    @DisplayName("aviso de un mensaje: rechaza un texto con aridad distinta y conserva el de Redis")
+    void debeRechazar_cuandoElTextoTieneAridadDistinta() {
+        // Arrange
+        ClaveMensaje clave = claveSinParametros();
+        when(lector.getDetails(CODIGO)).thenReturn(mensaje(clave.clave(), marcadoresDeMas(clave)));
+
+        // Act
+        ResultadoActualizacion resultado = sincronizador.actualizar(CODIGO);
+
+        // Assert
+        assertThat(resultado).isEqualTo(ResultadoActualizacion.RECHAZADA);
+        verify(operaciones, never()).set(any(), any());
+    }
+
+    @Test
+    @DisplayName("aviso de un mensaje: propaga el fallo de MessageUcoLab para que se reintente")
+    void debePropagarElFallo_cuandoMessageUcoCaeAlActualizar() {
+        // Arrange
+        when(lector.getDetails(CODIGO)).thenReturn(Mono.error(new IllegalStateException("sin conexión")));
+
+        // Act + Assert
+        assertThatThrownBy(() -> sincronizador.actualizar(CODIGO)).isInstanceOf(IllegalStateException.class);
+        verify(operaciones, never()).set(any(), any());
+    }
+
+    private Mono<MessageDetails> mensaje(String titulo, String contenido) {
+        return Mono.just(new MessageDetails(CODIGO, null, null, titulo, contenido, null, null, null, null, null));
     }
 
     @SuppressWarnings("unchecked")

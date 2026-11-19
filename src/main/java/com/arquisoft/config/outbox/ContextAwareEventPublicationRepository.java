@@ -352,7 +352,7 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
         }
 
         @Override
-        public boolean isPublicationCompleted() {
+        public boolean isCompleted() {
             return completionDate != null;
         }
 

@@ -10,8 +10,10 @@ plugins {
 allprojects {
     repositories {
         mavenCentral()
-        // Starter de MessageUcoLab (ADR-017). GitHub Packages exige autenticación incluso para leer.
-        // content limita este repositorio a su grupo: el resto no depende de él ni del token.
+        // Starters de MessageUcoLab y de Seguridad (ADR-017). GitHub Packages exige autenticación
+        // incluso para leer; el mismo token con read:packages sirve para los dos repositorios.
+        // Ambos publican bajo co.edu.uco, así que content fija módulo por módulo a qué repositorio
+        // se le pide cada uno: el resto de dependencias no pasa por aquí ni necesita el token.
         maven {
             name = 'MessageUcoLab'
             url = uri('https://maven.pkg.github.com/CamiloGarcia09/MessageUcolab--Backend')
@@ -20,7 +22,28 @@ allprojects {
                 password = System.getenv('GITHUB_PACKAGES_TOKEN')
             }
             content {
-                includeGroup 'co.edu.uco'
+                includeModule 'co.edu.uco', 'messageucolab-spring-boot-starter'
+                includeModule 'co.edu.uco', 'messageucolab-client-api'
+                includeModule 'co.edu.uco', 'messageucolab-java-client'
+            }
+        }
+        // Solo aporta el token de la identidad de servicio con la que se consulta MessageUcoLab.
+        maven {
+            name = 'Seguridad'
+            url = uri('https://maven.pkg.github.com/Seguridad-UCO/securityBaseline')
+            credentials {
+                username = System.getenv('GITHUB_PACKAGES_USER')
+                password = System.getenv('GITHUB_PACKAGES_TOKEN')
+            }
+            // El POM publicado de 0.1.4 declara la versión ${revision} sin resolver (0.1.0-SNAPSHOT) y
+            // Gradle lo rechaza por inconsistente. Se toma solo el jar: sus transitivas (webclient y
+            // webflux) no hacen falta, WebClient ya llega con el starter de MessageUcoLab.
+            // Quitar cuando Seguridad publique el POM aplanado.
+            metadataSources {
+                artifact()
+            }
+            content {
+                includeModule 'co.edu.uco', 'security-pep-integration-spring-boot-starter'
             }
         }
     }
@@ -92,12 +115,15 @@ repositories {
 }
 
 // ==================== DEPENDENCY MANAGEMENT (BOM + OVERRIDES PUNTUALES) ====================
-// El BOM de Spring Boot 4.0.5 gobierna la mayoria de versiones. Los overrides aqui son
+// El BOM de Spring Boot 4.1.1 gobierna la mayoria de versiones. Los overrides aqui son
 // para librerias que el BOM no gestiona o donde el equipo necesita una version especifica
 // por razones de trazabilidad/compatibilidad documentada.
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        // pulsar.version: el cliente de Pulsar va alineado con el servidor de MessageUcoLab (ver gradle.properties).
+        mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}") {
+            bomProperty "pulsar.version", pulsarVersion
+        }
         // Spring Modulith BOM: gestiona versiones de spring-modulith-* de forma consistente.
         mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
     }
@@ -145,7 +171,7 @@ dependencies {
     // es nuclear y no puede depender de que un contexto siga arrastrándolo.
     implementation project(':shared:redis')
 
-    // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
+    // Flyway — version gestionada por el BOM de Spring Boot 4.1.1.
     // flyway-database-postgresql es necesario en Flyway 11+ para soportar PostgreSQL.
     implementation "org.flywaydb:flyway-core"
     implementation "org.flywaydb:flyway-database-postgresql"
@@ -198,7 +224,9 @@ subprojects { subproject ->
     // Mismos BOM y overrides en cada subproyecto para garantizar consistencia transversal.
     dependencyManagement {
         imports {
-            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+            mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}") {
+                bomProperty "pulsar.version", pulsarVersion
+            }
             mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
         }
         dependencies {
