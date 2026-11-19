@@ -17,4 +17,6 @@ public interface AsesorOutputPort {
     Optional<AsesorEntity> obtenerPorId(UUID id);
 
     boolean existeVigentePorId(UUID id);
+
+    Optional<AsesorEntity> obtenerContactoPorEvaluacion(UUID evaluacion);
 }

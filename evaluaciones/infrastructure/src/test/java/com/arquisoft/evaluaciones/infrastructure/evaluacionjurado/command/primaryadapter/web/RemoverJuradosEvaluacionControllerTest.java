@@ -2,7 +2,7 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.prima
 
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.primaryport.interactor.RemoverJuradosEvaluacionInteractor;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.primaryport.model.RemoverJuradosEvaluacionCommand;
-import com.arquisoft.evaluaciones.domain.evaluacionjurado.exception.JuradosConEvaluacionesException;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.exception.JuradosEvaluadosException;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilUUID;
@@ -128,7 +128,7 @@ class RemoverJuradosEvaluacionControllerTest {
     @Test
     void debeRetornar422_cuandoElInteractorLanzaUnaReglaDeDominio() throws Exception {
         // Arrange
-        doThrow(new JuradosConEvaluacionesException(Set.of(JURADO)))
+        doThrow(new JuradosEvaluadosException(Set.of(JURADO)))
                 .when(interactor).ejecutar(any(RemoverJuradosEvaluacionCommand.class));
 
         // Act & Assert
@@ -137,6 +137,6 @@ class RemoverJuradosEvaluacionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.errorCode").value(EvaluacionesCodes.EvaluacionJurado.JURADOS_CON_EVALUACIONES));
+                .andExpect(jsonPath("$.errorCode").value(EvaluacionesCodes.EvaluacionJurado.JURADOS_EVALUADOS));
     }
 }

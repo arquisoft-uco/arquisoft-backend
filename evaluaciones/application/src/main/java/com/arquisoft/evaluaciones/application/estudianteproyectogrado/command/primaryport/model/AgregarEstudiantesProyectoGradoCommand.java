@@ -17,11 +17,14 @@ import java.util.UUID;
 
 public record AgregarEstudiantesProyectoGradoCommand(
         UUID proyectoGrado,
-        List<UUID> estudiantes,
+        List<Estudiante> estudiantes,
         Instant ocurridoEn
 ) {
+    public record Estudiante(String id, String nombre, String email) {
+    }
+
     public static AgregarEstudiantesProyectoGradoCommand crear(
-            String proyectoGrado, List<String> estudiantes, Instant ocurridoEn) {
+            String proyectoGrado, List<Estudiante> estudiantes, Instant ocurridoEn) {
         var result = new ValidationResult();
 
         if (ValidatorUUID.uuidValido(proyectoGrado, EvaluacionesFields.EstudianteProyectoGrado.PROYECTO_GRADO,
@@ -34,10 +37,10 @@ public record AgregarEstudiantesProyectoGradoCommand(
         var lista = UtilColeccion.aplicarPorDefecto(estudiantes);
         if (ValidatorColeccion.noVacia(lista, EvaluacionesFields.EstudianteProyectoGrado.ESTUDIANTES,
                 EvaluacionesCodes.EstudianteProyectoGrado.ESTUDIANTES_REQUERIDOS, result)) {
-            lista.forEach(estudiante -> ValidatorUUID.uuidValido(estudiante,
-                    EvaluacionesFields.EstudianteProyectoGrado.ESTUDIANTE,
-                    EvaluacionesCodes.EstudianteProyectoGrado.ESTUDIANTE_REQUERIDO, result));
-            ValidatorColeccion.sinDuplicados(lista, EvaluacionesFields.EstudianteProyectoGrado.ESTUDIANTES,
+            lista.forEach(estudiante -> validarEstudiante(estudiante, result));
+            ValidatorColeccion.sinDuplicados(
+                    lista.stream().map(Estudiante::id).toList(),
+                    EvaluacionesFields.EstudianteProyectoGrado.ESTUDIANTES,
                     EvaluacionesCodes.EstudianteProyectoGrado.ESTUDIANTE_DUPLICADO, result);
         }
         ValidatorObjeto.noNulo(ocurridoEn, EvaluacionesFields.EstudianteProyectoGrado.OCURRIDO_EN,
@@ -46,8 +49,15 @@ public record AgregarEstudiantesProyectoGradoCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new AgregarEstudiantesProyectoGradoCommand(
-                UtilUUID.generarUUIDDesdeTexto(proyectoGrado),
-                lista.stream().map(UtilUUID::generarUUIDDesdeTexto).toList(),
-                ocurridoEn);
+                UtilUUID.generarUUIDDesdeTexto(proyectoGrado), lista, ocurridoEn);
+    }
+
+    private static void validarEstudiante(Estudiante estudiante, ValidationResult result) {
+        ValidatorUUID.uuidValido(estudiante.id(), EvaluacionesFields.EstudianteProyectoGrado.ESTUDIANTE,
+                EvaluacionesCodes.EstudianteProyectoGrado.ESTUDIANTE_REQUERIDO, result);
+        ValidatorObjeto.noNulo(estudiante.nombre(), EvaluacionesFields.EstudianteProyectoGrado.NOMBRE,
+                EvaluacionesCodes.EstudianteProyectoGrado.NOMBRE_REQUERIDO, result);
+        ValidatorObjeto.noNulo(estudiante.email(), EvaluacionesFields.EstudianteProyectoGrado.EMAIL,
+                EvaluacionesCodes.EstudianteProyectoGrado.EMAIL_REQUERIDO, result);
     }
 }

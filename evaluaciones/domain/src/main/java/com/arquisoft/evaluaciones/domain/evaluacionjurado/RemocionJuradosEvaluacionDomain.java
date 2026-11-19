@@ -2,10 +2,12 @@ package com.arquisoft.evaluaciones.domain.evaluacionjurado;
 
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorColeccion;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -14,6 +16,7 @@ public final class RemocionJuradosEvaluacionDomain {
 
     private UUID evaluacion;
     private Set<UUID> jurados;
+    private Instant eliminadoEn;
 
     private RemocionJuradosEvaluacionDomain() {}
 
@@ -23,6 +26,7 @@ public final class RemocionJuradosEvaluacionDomain {
 
         remocion.setEvaluacion(evaluacion, result);
         remocion.setJurados(jurados, result);
+        remocion.setEliminadoEn();
 
         result.lanzarSiTieneErrores();
         return remocion;
@@ -51,11 +55,19 @@ public final class RemocionJuradosEvaluacionDomain {
         this.jurados = Set.copyOf(jurados);
     }
 
+    private void setEliminadoEn() {
+        this.eliminadoEn = UtilFecha.generarInstanteActual();
+    }
+
     public UUID getEvaluacion() {
         return evaluacion;
     }
 
     public Set<UUID> getJurados() {
         return jurados;
+    }
+
+    public Instant getEliminadoEn() {
+        return eliminadoEn;
     }
 }

@@ -6,6 +6,7 @@ import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
@@ -17,22 +18,30 @@ public final class EstudianteProyectoGradoDomain {
 
     public static final EstudianteProyectoGradoDomain VACIO = EstudianteProyectoGradoDomain.reconstruir(
             UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(),
-            UtilFecha.VACIO, UtilFecha.VACIO);
+            UtilTexto.VACIO, UtilTexto.VACIO, UtilFecha.VACIO, UtilFecha.VACIO);
 
     private UUID id;
     private UUID estudiante;
     private UUID proyectoGrado;
+    private String nombre;
+    private String email;
     private Instant ocurridoEn;
     private Instant eliminadoEn;
 
     private EstudianteProyectoGradoDomain() {}
 
     public static EstudianteProyectoGradoDomain crear(UUID estudiante, UUID proyectoGrado, Instant ocurridoEn) {
+        return crear(estudiante, UtilTexto.VACIO, UtilTexto.VACIO, proyectoGrado, ocurridoEn);
+    }
+
+    public static EstudianteProyectoGradoDomain crear(
+            UUID estudiante, String nombre, String email, UUID proyectoGrado, Instant ocurridoEn) {
         var vinculo = new EstudianteProyectoGradoDomain();
         var result = new ValidationResult();
 
         vinculo.setId();
         vinculo.setEstudiante(estudiante, result);
+        vinculo.setContacto(nombre, email, result);
         vinculo.setProyectoGrado(proyectoGrado, result);
         vinculo.setOcurridoEn(ocurridoEn, result);
         vinculo.setEliminadoEnInicial();
@@ -42,11 +51,14 @@ public final class EstudianteProyectoGradoDomain {
     }
 
     public static EstudianteProyectoGradoDomain reconstruir(
-            UUID id, UUID estudiante, UUID proyectoGrado, Instant ocurridoEn, Instant eliminadoEn) {
+            UUID id, UUID estudiante, UUID proyectoGrado, String nombre, String email,
+            Instant ocurridoEn, Instant eliminadoEn) {
         var vinculo = new EstudianteProyectoGradoDomain();
         vinculo.id = id;
         vinculo.estudiante = estudiante;
         vinculo.proyectoGrado = proyectoGrado;
+        vinculo.nombre = nombre;
+        vinculo.email = email;
         vinculo.ocurridoEn = ocurridoEn;
         vinculo.eliminadoEn = UtilObjeto.aplicarPorDefecto(eliminadoEn, UtilFecha.VACIO);
         return vinculo;
@@ -59,6 +71,15 @@ public final class EstudianteProyectoGradoDomain {
 
         result.lanzarSiTieneErrores();
         this.eliminadoEn = UtilFecha.VACIO;
+    }
+
+    public void refrescarContacto(Instant ocurridoEn, String nombre, String email) {
+        var result = new ValidationResult();
+
+        setOcurridoEn(ocurridoEn, result);
+        setContacto(nombre, email, result);
+
+        result.lanzarSiTieneErrores();
     }
 
     public void remover(Instant ocurridoEn) {
@@ -85,6 +106,19 @@ public final class EstudianteProyectoGradoDomain {
             return;
         }
         this.estudiante = estudiante;
+    }
+
+    private void setContacto(String nombre, String email, ValidationResult result) {
+        if (ValidatorObjeto.noNulo(nombre,
+                EvaluacionesFields.EstudianteProyectoGrado.NOMBRE,
+                EvaluacionesCodes.EstudianteProyectoGrado.NOMBRE_REQUERIDO, result)) {
+            this.nombre = nombre;
+        }
+        if (ValidatorObjeto.noNulo(email,
+                EvaluacionesFields.EstudianteProyectoGrado.EMAIL,
+                EvaluacionesCodes.EstudianteProyectoGrado.EMAIL_REQUERIDO, result)) {
+            this.email = email;
+        }
     }
 
     private void setProyectoGrado(UUID proyectoGrado, ValidationResult result) {
@@ -125,6 +159,14 @@ public final class EstudianteProyectoGradoDomain {
 
     public UUID getProyectoGrado() {
         return proyectoGrado;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public Instant getOcurridoEn() {
