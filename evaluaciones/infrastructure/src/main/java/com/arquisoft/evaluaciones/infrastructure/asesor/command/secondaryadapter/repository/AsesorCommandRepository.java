@@ -11,6 +11,8 @@ import java.util.UUID;
 
 public interface AsesorCommandRepository extends JpaRepository<AsesorJpaEntity, UUID> {
 
+    boolean existsByIdAndEliminadoEnIsNull(UUID id);
+
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE AsesorJpaEntity j

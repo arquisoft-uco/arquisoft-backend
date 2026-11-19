@@ -8,6 +8,7 @@ public record EntregableProyectoGradoDisponibleEvaluacionPayload(
         String entregableProyectoGrado,
         String proyectoGrado,
         String nombreProyecto,
-        Integer version
+        Integer version,
+        String asesor
 ) {
 }

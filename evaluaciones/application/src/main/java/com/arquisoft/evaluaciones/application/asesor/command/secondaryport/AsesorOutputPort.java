@@ -15,4 +15,6 @@ public interface AsesorOutputPort {
     void eliminarLogica(UUID id, Instant ocurridoEn);
 
     Optional<AsesorEntity> obtenerPorId(UUID id);
+
+    boolean existeVigentePorId(UUID id);
 }

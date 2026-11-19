@@ -13,9 +13,10 @@ class EntregableProyectoGradoDisponibleEvaluacionEventTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
 
         // Act
-        var evento = new EntregableProyectoGradoDisponibleEvaluacionEvent(entregable, proyecto, "Sistema de riego", 2);
+        var evento = new EntregableProyectoGradoDisponibleEvaluacionEvent(entregable, proyecto, "Sistema de riego", 2, asesor);
 
         // Assert
         assertThat(evento.getTemaEvento())
@@ -25,6 +26,7 @@ class EntregableProyectoGradoDisponibleEvaluacionEventTest {
         assertThat(evento.getProyectoGrado()).isEqualTo(proyecto);
         assertThat(evento.getNombreProyecto()).isEqualTo("Sistema de riego");
         assertThat(evento.getVersion()).isEqualTo(2);
+        assertThat(evento.getAsesor()).isEqualTo(asesor);
         assertThat(evento.getIdEvento()).isNotBlank();
         assertThat(evento.getOcurridoEn()).isNotNull();
     }

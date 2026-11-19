@@ -31,7 +31,8 @@ class GenerarEvaluacionInteractorImplTest {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
         var command = GenerarEvaluacionCommand.crear(
-                entregable.toString(), UtilUUID.generarNuevoUUID().toString(), "Sistema de riego", 1);
+                entregable.toString(), UtilUUID.generarNuevoUUID().toString(), "Sistema de riego", 1,
+                UtilUUID.generarNuevoUUID().toString());
         var esperado = new GeneracionEvaluacionResult.Duplicada(entregable);
         when(generarEvaluacionUseCase.ejecutar(any())).thenReturn(esperado);
 

@@ -285,6 +285,8 @@ public final class EvaluacionesCodes {
 
         public static final String ENTREGABLE_REQUERIDO = "GENERACION_EVALUACION_ENTREGABLE_REQUERIDO";
         public static final String EVALUACION_REQUERIDA = "GENERACION_EVALUACION_EVALUACION_REQUERIDA";
+        public static final String EVALUACION_ASESOR_REQUERIDA =
+                "GENERACION_EVALUACION_EVALUACION_ASESOR_REQUERIDA";
     }
 
     public static final class EvaluacionJurado {
@@ -312,6 +314,8 @@ public final class EvaluacionesCodes {
         public static final String NO_PERTENECE_ESTUDIANTE = "EVALUACION_ASESOR_NO_PERTENECE_ESTUDIANTE";
         public static final String EVALUACION_ASESOR_REQUERIDO = "EVALUACION_ASESOR_EVALUACION_ASESOR_REQUERIDO";
         public static final String ASESOR_REQUERIDO = "EVALUACION_ASESOR_ASESOR_REQUERIDO";
+        public static final String ASESOR_INVALIDO = "EVALUACION_ASESOR_ASESOR_INVALIDO";
+        public static final String CON_EVALUACIONES = "EVALUACION_ASESOR_CON_EVALUACIONES";
         public static final String REALIZADA_NO_DISPONIBLE = "EVALUACION_ASESOR_REALIZADA_NO_DISPONIBLE";
     }
 
@@ -403,6 +407,7 @@ public final class EvaluacionesCodes {
         public static final String NOMBRE_REQUERIDO = "ASESOR_NOMBRE_REQUERIDO";
         public static final String EMAIL_REQUERIDO = "ASESOR_EMAIL_REQUERIDO";
         public static final String OCURRIDO_EN_REQUERIDO = "ASESOR_OCURRIDO_EN_REQUERIDO";
+        public static final String NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
     }
 
     public static final class Jurado {

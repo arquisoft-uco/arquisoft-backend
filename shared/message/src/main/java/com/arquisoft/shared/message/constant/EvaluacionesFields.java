@@ -174,6 +174,7 @@ public final class EvaluacionesFields {
 
         public static final String ENTREGABLE = "entregable";
         public static final String EVALUACION = "evaluacion";
+        public static final String EVALUACION_ASESOR = "evaluacionAsesor";
     }
 
     public static final class EvaluacionJurado {

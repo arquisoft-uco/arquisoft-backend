@@ -104,6 +104,20 @@ class AsesorCommandOutputAdapterTest {
         assertThat(asesor).isEmpty();
     }
 
+    @Test
+    void debeResponderVigencia_cuandoElAsesorEstaVigenteDadoDeBajaOAusente() {
+        // Arrange
+        var vigente = sembrarAsesor(null);
+        var dadoDeBaja = sembrarAsesor(Instant.parse("2026-09-24T10:00:00Z"));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act & Assert
+        assertThat(adapter.existeVigentePorId(vigente)).isTrue();
+        assertThat(adapter.existeVigentePorId(dadoDeBaja)).isFalse();
+        assertThat(adapter.existeVigentePorId(UtilUUID.generarNuevoUUID())).isFalse();
+    }
+
     private UUID sembrarAsesor(Instant eliminadoEn) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(AsesorJpaEntity.builder()

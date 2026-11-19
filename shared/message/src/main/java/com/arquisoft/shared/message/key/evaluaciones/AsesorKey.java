@@ -5,6 +5,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de Asesor (réplica local en evaluaciones). */
 public enum AsesorKey implements ClaveMensaje {
 
+    ERROR_NO_ENCONTRADO("evaluaciones.dominio.asesor.error.no-encontrado", 0),
+    ERROR_NO_ENCONTRADO_DETALLE("evaluaciones.dominio.asesor.error.no-encontrado-detalle", 1),
     LOG_AGREGADO_RECIBIDO("evaluaciones.infraestructura.asesor.log.agregado-recibido", 3),
     LOG_VERIFICACION_AGREGAR("evaluaciones.aplicacion.asesor.log.verificacion-agregar", 2),
     LOG_AGREGADO("evaluaciones.aplicacion.asesor.log.agregado", 1),
