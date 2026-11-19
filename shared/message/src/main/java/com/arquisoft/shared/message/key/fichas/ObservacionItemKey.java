@@ -11,6 +11,8 @@ public enum ObservacionItemKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADA_DETALLE("fichas.dominio.observacionitem.error.no-encontrada-detalle", 1),
     ERROR_NO_EN_PROGRESO("fichas.dominio.observacionitem.error.no-en-progreso", 0),
     ERROR_NO_EN_PROGRESO_DETALLE("fichas.dominio.observacionitem.error.no-en-progreso-detalle", 2),
+    ERROR_NO_CERRADA("fichas.dominio.observacionitem.error.no-cerrada", 0),
+    ERROR_NO_CERRADA_DETALLE("fichas.dominio.observacionitem.error.no-cerrada-detalle", 2),
     ERROR_ESTADO_NO_ENCONTRADO("fichas.dominio.estadoobservacionrevision.error.estado-no-encontrado", 0),
     ERROR_ESTADO_NO_ENCONTRADO_DETALLE(
             "fichas.dominio.estadoobservacionrevision.error.estado-no-encontrado-detalle", 1),
@@ -26,6 +28,9 @@ public enum ObservacionItemKey implements ClaveMensaje {
     LOG_CERRANDO("fichas.aplicacion.observacionitem.log.cerrando", 2),
     LOG_VERIFICACION_CERRAR("fichas.aplicacion.observacionitem.log.verificacion-cerrar", 6),
     LOG_CERRADA("fichas.aplicacion.observacionitem.log.cerrada", 1),
+    LOG_REABRIENDO("fichas.aplicacion.observacionitem.log.reabriendo", 2),
+    LOG_VERIFICACION_REABRIR("fichas.aplicacion.observacionitem.log.verificacion-reabrir", 5),
+    LOG_REABIERTA("fichas.aplicacion.observacionitem.log.reabierta", 1),
     LOG_CONSULTANDO_ELABORADAS("fichas.aplicacion.observacionitem.log.consultando-elaboradas", 2),
     LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.observacionitem.log.consulta-elaboradas-completada", 1),
     LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.observacionitem.log.consultando-estudiante", 2),

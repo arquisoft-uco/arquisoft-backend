@@ -26,6 +26,9 @@ public final class EventTopics {
         public static final String REVISION_ITEM_CERRADA =
                 "fichas.revision_item.cerrada";
 
+        public static final String OBSERVACION_ITEM_REABIERTA =
+                "fichas.observacion_item.reabierta";
+
         public static final String FICHA_PERFIL_APROBADA =
                 "fichas.ficha_perfil.aprobada";
 

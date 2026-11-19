@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.List;
 
 @Component
 public class RevisionItemCerradaConsumer extends AbstractNotificacionConsumer {
@@ -37,11 +36,9 @@ public class RevisionItemCerradaConsumer extends AbstractNotificacionConsumer {
     @RabbitListener(queues = NotificacionesFichasQueueConfig.REVISION_ITEM_CERRADA_QUEUE)
     public void onRevisionItemCerrada(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
-            RevisionItemCerradaPayload payload =
-                    deserialize(message, RevisionItemCerradaPayload.class);
+            var payload = deserialize(message, RevisionItemCerradaPayload.class);
 
-            List<RevisionItemCerradaPayload.ContactoPayload> estudiantes =
-                    UtilColeccion.aplicarPorDefecto(payload.estudiantes());
+            var estudiantes = UtilColeccion.aplicarPorDefecto(payload.estudiantes());
 
             logger.info(
                     ConsumidorKey.LOG_REVISION_ITEM_CERRADA_RECIBIDO,

@@ -55,6 +55,7 @@ security:
         - {method: DELETE, path: "/api/fichas-perfil/observaciones-item/{observacionItemId}", role: "fichas:observacion-item:delete"}
         - {method: PATCH, path: "/api/fichas-perfil/observaciones-item/{observacionItemId}", role: "fichas:observacion-item:update"}
         - {method: PATCH, path: "/api/fichas-perfil/observaciones-item/{observacionItemId}/cierre", role: "fichas:observacion-item-cierre:update"}
+        - {method: PATCH, path: "/api/fichas-perfil/observaciones-item/{observacionItemId}/reapertura", role: "fichas:observacion-item-reapertura:update"}
         - {method: POST, path: "/api/fichas-perfil/revisiones-item/asesor", role: "fichas:revision-item-asesor:view"}
         - {method: POST, path: "/api/fichas-perfil/revisiones-item/estudiante", role: "fichas:revision-item-estudiante:view"}
         - {method: DELETE, path: "/api/fichas-perfil/revisiones/{revisionItemId}", role: "fichas:revision-item:delete"}

@@ -11,6 +11,7 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.inte
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.impl.ModificarItemFichaPerfilInteractorImpl;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.impl.RemoverItemFichaPerfilInteractorImpl;
 import com.arquisoft.fichas.application.observacionitem.command.primaryport.interactor.impl.CerrarObservacionItemInteractorImpl;
+import com.arquisoft.fichas.application.observacionitem.command.primaryport.interactor.impl.ReabrirObservacionItemInteractorImpl;
 import com.arquisoft.fichas.application.revisionitem.command.primaryport.interactor.impl.AgregarRevisionItemInteractorImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,7 +39,8 @@ class InteractoresFichasTest {
             RegistrarEvaluacionFichaPerfilInteractorImpl.class,
             AgregarEstadoEvaluacionFichaInteractorImpl.class,
             AgregarRevisionItemInteractorImpl.class,
-            CerrarObservacionItemInteractorImpl.class
+            CerrarObservacionItemInteractorImpl.class,
+            ReabrirObservacionItemInteractorImpl.class
     })
     void debeDeclararTransaccion_cuandoEsInteractorDeComando(Class<?> interactor) {
         // Arrange
