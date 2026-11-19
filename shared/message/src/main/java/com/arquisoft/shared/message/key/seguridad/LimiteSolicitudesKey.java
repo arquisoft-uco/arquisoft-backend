@@ -13,7 +13,10 @@ public enum LimiteSolicitudesKey implements ClaveMensaje {
     LOG_CLIENTE_STANDALONE_ERROR("seguridad.infraestructura.ratelimit.log.cliente-standalone-error", 1),
     LOG_DEGRADADO("seguridad.infraestructura.ratelimit.log.degradado", 1),
     LOG_SIGUE_DEGRADADO("seguridad.infraestructura.ratelimit.log.sigue-degradado", 0),
-    LOG_RECUPERADO("seguridad.infraestructura.ratelimit.log.recuperado", 1);
+    LOG_RECUPERADO("seguridad.infraestructura.ratelimit.log.recuperado", 1),
+    LOG_CUOTA_CATALOGO_INVALIDA("seguridad.infraestructura.ratelimit.log.cuota-catalogo-invalida", 3),
+    LOG_CUOTA_CATALOGO_AUSENTE("seguridad.infraestructura.ratelimit.log.cuota-catalogo-ausente", 2),
+    LOG_CUOTA_GLOBAL_ACTUALIZADA("seguridad.infraestructura.ratelimit.log.cuota-global-actualizada", 1);
 
     private final String clave;
     private final int parametros;

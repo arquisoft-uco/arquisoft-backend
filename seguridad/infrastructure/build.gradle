@@ -6,6 +6,9 @@ dependencies {
     implementation project(':shared:web-client')
     implementation project(':shared:logger')
 
+    // Cuota global del rate limit leida del Catalogo de Parametros (CuotaGlobalSolicitudes, HT-026).
+    implementation project(':shared:catalogo-parametros')
+
     // shared:tracing — el filtro de acceso enriquece la traza con el sujeto de la identidad y
     // SeguridadRestTemplateConfig propaga la correlacion en las llamadas salientes a Keycloak.
     implementation project(':shared:tracing')
