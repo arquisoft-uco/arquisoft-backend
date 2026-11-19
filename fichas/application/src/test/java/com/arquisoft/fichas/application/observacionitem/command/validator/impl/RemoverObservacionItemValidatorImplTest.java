@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.observacionitem.command.validator.impl;
 
+import com.arquisoft.fichas.domain.estadoobservacionrevision.EstadoObservacionRevision;
 import com.arquisoft.fichas.domain.estadorevision.EstadoRevision;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorException;
 import com.arquisoft.fichas.domain.observacionitem.RemocionObservacionItemDomain;
@@ -83,6 +84,7 @@ class RemoverObservacionItemValidatorImplTest {
 
     private ContextoObservacionItem contextoCon(EstadoRevision estado, UUID asesorDeLaFicha) {
         return new ContextoObservacionItem(
-                UtilUUID.generarNuevoUUID(), estado, UtilUUID.generarNuevoUUID(), asesorDeLaFicha);
+                UtilUUID.generarNuevoUUID(), estado, UtilUUID.generarNuevoUUID(), asesorDeLaFicha,
+                EstadoObservacionRevision.PENDIENTE);
     }
 }

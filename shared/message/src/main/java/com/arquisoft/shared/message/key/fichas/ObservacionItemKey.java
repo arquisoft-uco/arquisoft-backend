@@ -9,6 +9,8 @@ public enum ObservacionItemKey implements ClaveMensaje {
     ERROR_OBSERVACION_ITEM_DUPLICADA_DETALLE("fichas.dominio.observacionitem.error.duplicada-detalle", 2),
     ERROR_NO_ENCONTRADA("fichas.dominio.observacionitem.error.no-encontrada", 0),
     ERROR_NO_ENCONTRADA_DETALLE("fichas.dominio.observacionitem.error.no-encontrada-detalle", 1),
+    ERROR_NO_EN_PROGRESO("fichas.dominio.observacionitem.error.no-en-progreso", 0),
+    ERROR_NO_EN_PROGRESO_DETALLE("fichas.dominio.observacionitem.error.no-en-progreso-detalle", 2),
     ERROR_ESTADO_NO_ENCONTRADO("fichas.dominio.estadoobservacionrevision.error.estado-no-encontrado", 0),
     ERROR_ESTADO_NO_ENCONTRADO_DETALLE(
             "fichas.dominio.estadoobservacionrevision.error.estado-no-encontrado-detalle", 1),
@@ -21,13 +23,17 @@ public enum ObservacionItemKey implements ClaveMensaje {
     LOG_REMOVIENDO("fichas.aplicacion.observacionitem.log.removiendo", 2),
     LOG_VERIFICACION_REMOVER("fichas.aplicacion.observacionitem.log.verificacion-remover", 3),
     LOG_REMOVIDA("fichas.aplicacion.observacionitem.log.removida", 1),
+    LOG_CERRANDO("fichas.aplicacion.observacionitem.log.cerrando", 2),
+    LOG_VERIFICACION_CERRAR("fichas.aplicacion.observacionitem.log.verificacion-cerrar", 6),
+    LOG_CERRADA("fichas.aplicacion.observacionitem.log.cerrada", 1),
     LOG_CONSULTANDO_ELABORADAS("fichas.aplicacion.observacionitem.log.consultando-elaboradas", 2),
     LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.observacionitem.log.consulta-elaboradas-completada", 1),
     LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.observacionitem.log.consultando-estudiante", 2),
     LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.observacionitem.log.consulta-estudiante-completada", 1),
     LOG_GUARDADA("fichas.infraestructura.observacionitem.log.guardada", 1),
     LOG_ELIMINADA("fichas.infraestructura.observacionitem.log.eliminada", 1),
-    LOG_ESTADO_ACTUALIZADO("fichas.infraestructura.observacionitem.log.estado-actualizado", 2);
+    LOG_ESTADO_ACTUALIZADO("fichas.infraestructura.observacionitem.log.estado-actualizado", 2),
+    LOG_ESTADO_OBSERVACION_ACTUALIZADO("fichas.infraestructura.observacionitem.log.estado-observacion-actualizado", 2);
 
     private final String clave;
     private final int parametros;

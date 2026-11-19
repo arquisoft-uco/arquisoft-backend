@@ -2,5 +2,6 @@ package com.arquisoft.fichas.application.observacionitem.command.secondaryport.e
 
 import java.util.UUID;
 
-public record ContextoObservacionItemEntity(UUID revisionItem, String estadoRevision, UUID fichaPerfil, UUID asesorFicha) {
+public record ContextoObservacionItemEntity(UUID revisionItem, String estadoRevision, UUID fichaPerfil, UUID asesorFicha,
+                                            String estadoObservacion) {
 }
