@@ -74,6 +74,7 @@ public final class FichasCodes {
         public static final String ESTUDIANTE_REQUERIDO = "OBSERVACION_ITEM_ESTUDIANTE_REQUERIDO";
         public static final String NO_ENCONTRADA = "OBSERVACION_ITEM_NO_ENCONTRADA";
         public static final String NO_EN_PROGRESO = "OBSERVACION_ITEM_NO_EN_PROGRESO";
+        public static final String NO_CERRADA = "OBSERVACION_ITEM_NO_CERRADA";
         public static final String ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO =
                 "ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO";
     }

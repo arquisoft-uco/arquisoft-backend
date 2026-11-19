@@ -198,7 +198,8 @@
               "fichas:revision-item:create",
               "fichas:revision-item:delete",
               "fichas:observacion-item:create",
-              "fichas:observacion-item-cierre:update"
+              "fichas:observacion-item-cierre:update",
+              "fichas:observacion-item-reapertura:update"
             ]
           }
         },
@@ -2653,6 +2654,15 @@
         {
           "id": "4f26d7af-a12e-4736-bbd5-f67c7e4c0639",
           "name": "fichas:observacion-item-cierre:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "958f28d1-aaff-4e8a-8457-4644b4ee1597",
+          "name": "fichas:observacion-item-reapertura:update",
           "description": "",
           "composite": false,
           "clientRole": true,
