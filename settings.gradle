@@ -1,3 +1,14 @@
+// Maven Central antes que el Plugin Portal: el portal hace de proxy de Central para las
+// dependencias transitivas de los plugins (kotlin-reflect, gson, commons-compress…) y a ratos
+// responde "not found", lo que tumbaba el build de la imagen Docker (que arranca sin caché).
+// El portal queda para lo que solo vive ahí (marcadores de plugin).
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'arquisoft-backend'
 
 // ==================== SHARED (Commons) ====================

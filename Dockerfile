@@ -13,9 +13,17 @@ COPY . .
 # find excluye el artefacto *-plain.jar que Spring Boot también genera,
 # evitando que el COPY del stage 2 falle por múltiples coincidencias.
 # Los secretos solo existen durante este RUN: el token de GitHub Packages no queda en ninguna capa.
+# `gradlew help` resuelve el classpath de plugins (lo único que falla de forma transitoria, por
+# los repositorios remotos) y se reintenta hasta 3 veces; el build real corre una sola vez, para
+# que un error de compilación no se repita.
 RUN --mount=type=secret,id=github_packages_user,env=GITHUB_PACKAGES_USER \
     --mount=type=secret,id=github_packages_token,env=GITHUB_PACKAGES_TOKEN \
     sed -i 's/\r$//' gradlew && chmod +x gradlew && \
+    for intento in 1 2 3; do \
+      ./gradlew help -q --no-daemon && break; \
+      if [ "$intento" -eq 3 ]; then exit 1; fi; \
+      echo "Resolución de plugins falló (intento $intento/3), reintento en 20s..."; sleep 20; \
+    done && \
     ./gradlew build -x test --no-daemon && \
     find build/libs -maxdepth 1 -name "*.jar" ! -name "*-plain.jar" \
          -exec cp {} app.jar \;
