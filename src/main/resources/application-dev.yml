@@ -43,6 +43,11 @@ security:
     login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:5}
     max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:10000}
 
+# ==================== CATALOGO DE PARAMETROS (HT-024) ====================
+catalogo:
+  parametros:
+    allow-insecure-http: ${CATALOGO_PARAMETROS_ALLOW_INSECURE_HTTP:true}
+
 # ==================== LOGGING ====================
 # logback-spring.xml controla appenders y formato (texto ANSI en dev).
 # Aqui solo se ajustan niveles por paquete sobre el root INFO definido en el XML.

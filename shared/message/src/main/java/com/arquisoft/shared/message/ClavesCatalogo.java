@@ -31,6 +31,7 @@ import com.arquisoft.shared.message.key.biblioteca.DocumentacionKey;
 import com.arquisoft.shared.message.key.biblioteca.EstadoDocumentacionKey;
 import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
 import com.arquisoft.shared.message.key.entregables.EstadoEntregableKey;
+import com.arquisoft.shared.message.key.app.CatalogoParametrosKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.message.key.app.ClienteHttpKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
@@ -152,6 +153,7 @@ public final class ClavesCatalogo {
     public static final Set<Class<? extends ClaveMensaje>> ENUMS = Set.of(
             AlmacenamientoKey.class,
             ConsultaKey.class,
+            CatalogoParametrosKey.class,
             ClienteHttpKey.class,
             HttpKey.class,
             MensajeriaKey.class,

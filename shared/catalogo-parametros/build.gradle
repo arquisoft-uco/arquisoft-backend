@@ -1,0 +1,28 @@
+// Un solo modulo con capas por paquete (precedente shared:tracing): application/ e infrastructure/
+// bajo com.arquisoft.shared.catalogoparametros. Sin consumidor de negocio todavia (HT-024).
+apply plugin: 'java-library'
+
+dependencies {
+    // El Finder aparece en la firma publica que inyectaran los futuros consumidores.
+    api project(':shared:application')
+
+    implementation project(':shared:logger')
+    implementation project(':shared:tracing')
+    implementation project(':shared:web-client')
+    implementation project(':shared:message')
+    implementation project(':shared:exception')
+    implementation project(':shared:util')
+
+    implementation "org.springframework.boot:spring-boot-starter"
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.assertj:assertj-core"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-jackson"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

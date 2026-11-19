@@ -158,6 +158,10 @@ dependencies {
     // modulo no se registran y la aplicacion arranca sin trazas y sin ningun error.
     implementation project(':shared:tracing')
 
+    // Catalogo de Parametros (HT-024): sin el jar en el classpath de runtime sus @Component no se
+    // registran y nada falla. Apagado por defecto (catalogo.parametros.enabled=false).
+    implementation project(':shared:catalogo-parametros')
+
     // Catálogo de mensajes: MessageCatalogConfig lo expone como bean y publica los textos
     // de OpenAPI en el Environment. También aporta message/openapi/, donde OpenApiConfig
     // declara el esquema de seguridad (ApiSecurity.BEARER_AUTH) que referencian los
