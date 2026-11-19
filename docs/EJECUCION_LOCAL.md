@@ -62,6 +62,19 @@ Copia `.env.example` a `.env`. Las variables clave son:
 | `IDENTITY_PROVISIONING_PROVIDER=none` | Los endpoints de `usuarios` que aprovisionan identidad responden 503 |
 | `SECURITY_ENABLED=false` | Desinstala el filtro de autorizacion (solo local; el arranque en `prod` lo rechaza) |
 
+## Catálogo de Parámetros (opcional)
+
+El backend puede leer del Catálogo de Parámetros de la organización los valores que le asigna su token (aplicación + ambiente). Está **apagado por defecto** (`CATALOGO_PARAMETROS_ENABLED=false`) y mientras lo esté no hace falta nada de esto. Encendido, la carga inicial es síncrona: **el backend no arranca** si el Catálogo está caído, mal configurado o rechaza la credencial. Para desarrollar sin Catálogo, déjalo en `false`.
+
+Variables (en `.env`, secciones en `.env.example`): `CATALOGO_PARAMETROS_BASE_URL`, `CATALOGO_PARAMETROS_TOKEN_ID` (UUID), `CATALOGO_PARAMETROS_SECRETO`, `CATALOGO_PARAMETROS_REFRESH_INTERVAL` (`PT5M`), y opcionales `CATALOGO_PARAMETROS_CONNECT_TIMEOUT` (`1s`), `CATALOGO_PARAMETROS_READ_TIMEOUT` (`3s`), `CATALOGO_PARAMETROS_ALLOW_INSECURE_HTTP` (`true` por defecto solo en dev). No confundir con `CATALOGO_FUENTE`, que es del catálogo de mensajes.
+
+Para probarlo contra un Catálogo local:
+
+- **Choque de puerto 8081.** El backend del Catálogo publica `8081:8080` y este repo mapea su Keycloak en `8081:8080`. No toques nuestro Keycloak (es el `iss` de los tokens): en el lado del Catálogo crea un `docker-compose.override.yml` con `ports: !override ["8082:8080"]` (Compose ≥ 2.24; sin `!override` el puerto se concatena y el 8081 sigue ocupado) y apunta `CATALOGO_PARAMETROS_BASE_URL=http://localhost:8082/catalogo-parametros/api/v1` (desde Docker: `http://host.docker.internal:8082/...`). Los demás puertos del Catálogo no se solapan.
+- **MessageUcoLab no es prerrequisito.** Su compose exige `MESSAGEUCOLAB_APPLICATION_ID`, `MESSAGEUCOLAB_ENVIRONMENT_ID`, `ORIGIN_TO_DESTINATION_CLIENT_ID`, `ORIGIN_TO_DESTINATION_CLIENT_SECRET` y `PEP_REGISTRATION_TOKEN` aunque `GET /tokens/{id}/parametros` no los use; para levantarlo bastan valores de relleno (UUIDs ficticios y cadenas cualquiera).
+- Crear el token y los parámetros se hace en `http://localhost:4201`, que exige Security Baseline (PDP/PEP/Keycloak en 18080/18081/19090) con perfil administrativo; la alternativa es un Catálogo ya desplegado de `dev` con un token existente.
+- Verifica al encender por primera vez con un parámetro real: `activo`, la forma de `metadatos[].metadato.valor` y los 401/403; el mapper es tolerante, pero el contrato se confirma con datos reales.
+
 ## Canal de la cookie de sesión del BFF (Security Baseline 0.1.6)
 
 Con `SESSION_AUTH_ENABLED=true` el backend acepta la cookie de sesión además de Bearer. Por cada petición con cookie consulta primero al PEP (reenviando solo esa cookie) y, solo si permite, obtiene la identidad con `GET {SESSION_PDP_URL}/api/v1/session` (caché en memoria de la identidad, nunca de decisiones). El arranque falla si falta la URL, si `CORS_ALLOW_CREDENTIALS` no es `true`, si los orígenes no son explícitos o si `CORS_ALLOWED_HEADERS` no incluye `X-XSRF-TOKEN` y `X-Proveedor-Identidad`.

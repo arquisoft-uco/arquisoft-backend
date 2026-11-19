@@ -68,4 +68,13 @@ public final class AppCodes {
         public static final String SUBIDA_FALLIDA = "MINIO_SUBIDA_FALLIDA";
         public static final String URL_DESCARGA_FALLIDA = "MINIO_URL_DESCARGA_FALLIDA";
     }
+
+    public static final class CatalogoParametros {
+
+        private CatalogoParametros() {}
+
+        public static final String NO_DISPONIBLE = "CATALOGO_PARAMETROS_NO_DISPONIBLE";
+        public static final String CONFIGURACION_INVALIDA = "CATALOGO_PARAMETROS_CONFIGURACION_INVALIDA";
+        public static final String CARGA_INICIAL_FALLIDA = "CATALOGO_PARAMETROS_CARGA_INICIAL_FALLIDA";
+    }
 }

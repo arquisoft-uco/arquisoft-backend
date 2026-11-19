@@ -63,7 +63,7 @@ Guía completa: [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md).
 
 ## Architecture
 
-Arquitectura hexagonal (Ports & Adapters) con **12 bounded contexts** y **15 módulos compartidos**.
+Arquitectura hexagonal (Ports & Adapters) con **12 bounded contexts** y **16 módulos compartidos**.
 Los contextos se comunican por eventos de dominio en RabbitMQ y **nunca se importan entre sí**, con
 una única excepción acotada: una **consulta síncrona de solo lectura** a otro contexto, hecha por
 HTTP (nunca un import), para un dato que un comando debe verificar *al momento de escribir* y no
@@ -117,7 +117,7 @@ migración ya aplicada.
 
 `shared:util`, `shared:exception`, `shared:validation`, `shared:domain`, `shared:application`,
 `shared:query`, `shared:logger`, `shared:tracing`, `shared:redis`, `shared:amqp`, `shared:web`,
-`shared:minio`, `shared:jpa`, `shared:message`, `shared:web-client`
+`shared:minio`, `shared:jpa`, `shared:message`, `shared:web-client`, `shared:catalogo-parametros`
 
 Lo que hay que saber de cada uno para no romper el grafo:
 
@@ -134,12 +134,13 @@ Lo que hay que saber de cada uno para no romper el grafo:
 | `shared:message` | Códigos, campos, límites, textos Swagger, `EventTopics`, enums `{Feature}Key`, fachada `Mensajes` | — |
 | `shared:minio` | `AlmacenamientoObjetos`: formulario POST firmado con política, `statObject`, lectura en streaming, subida de un objeto de tamaño conocido, copia condicionada al ETag y borrado | Nunca crea buckets ni lista (la cuenta del backend en la nube no tiene `ListBucket`): el bucket lo crea `minio/configurar.sh`. Un objeto ausente (`NoSuchKey`) se devuelve vacío, no lanza |
 | `shared:web-client` | `ClienteHttp`/`FabricaClienteHttp` (puerto y fábrica), `SolicitudHttp`, `RespuestaHttp`, `ConfiguracionClienteHttp` (URL, tiempos, tipo de contenido) y su implementación sobre `RestClient` | Transporte, no dominio: sin tipos de ningún contexto. Un fallo de transporte sale como `ClienteHttpTransporteException` (`InfrastructureException`, 503). Quien lo consume decide qué credencial envía; nunca `RestClient`/`WebClient` inline en un adaptador |
+| `shared:catalogo-parametros` | Lectura del Catálogo de Parámetros de la organización: copia en memoria por instancia, carga inicial síncrona y refresco programado (`FuenteParametrosCatalogoOutputPort` sobre `shared:web-client`, `ParametrosCatalogoOutputPort` en memoria, `ParametroCatalogoFinder`) | Apagado por defecto (`catalogo.parametros.enabled=false`) e inerte. Un solo módulo con capas por paquete (`application/`, `infrastructure/`), como `shared:tracing`; `verificarCapasHexagonales` no lo cubre. Sin consumidor de negocio (excepción de HT-024). Ausente → copia → default de `application.yml` → 503 |
 
 **Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
 crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
 prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
 tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Existe
-desde HT-016-AJ3, sobre `RestClient`, con `seguridad` de primer consumidor. Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
+desde HT-016-AJ3, sobre `RestClient`, con `seguridad` de primer consumidor. Segunda excepción, aprobada en HT-024: `shared:catalogo-parametros` existe **sin ningún consumidor de negocio** (infraestructura lista y probada antes de decidir qué parametrizar); no es precedente, un `shared:*` nuevo sigue exigiendo dos consumidores. Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
 (`shared:web`, paquete `identidad`) traduce `IdentidadActual.roles()` a los roles de negocio de un
 contexto con un mapa que declara el propio contexto (claves de `UsuariosRoles`, valores en su
 `{Contexto}Roles`). Hoy su único consumidor es `estados-ficha`; el segundo previsto es el filtro de
