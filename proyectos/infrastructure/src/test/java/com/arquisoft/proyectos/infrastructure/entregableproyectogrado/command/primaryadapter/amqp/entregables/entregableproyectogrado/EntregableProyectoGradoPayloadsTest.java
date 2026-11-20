@@ -5,6 +5,8 @@ import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.message.constant.EventTopics;
 import org.junit.jupiter.api.Test;
 
+import com.arquisoft.shared.util.UtilUUID;
+
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -92,5 +94,73 @@ class EntregableProyectoGradoPayloadsTest {
         assertThat(payloadRechazado.proyectoGrado()).isEqualTo(proyectoGrado.toString());
         assertThat(payloadRechazado.version()).isEqualTo(2);
         assertThat(payloadRechazado.ocurridoEn()).isEqualTo(rechazado.getOcurridoEn());
+    }
+
+    private static final class EntregableAprobadoEventoDePrueba extends DomainEvent {
+
+        private final UUID entregableProyectoGrado;
+        private final UUID proyectoGrado;
+        private final int version;
+        private final String estadoEntregable;
+        private final String bucket = "bucket";
+        private final String claveObjeto = "clave";
+        private final String nombreArchivo = "entregable.zip";
+
+        private EntregableAprobadoEventoDePrueba(UUID entregableProyectoGrado, UUID proyectoGrado, int version,
+                                                 String estadoEntregable) {
+            super(EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_APROBADO, "EntregableAprobadoEventoDePrueba");
+            this.entregableProyectoGrado = entregableProyectoGrado;
+            this.proyectoGrado = proyectoGrado;
+            this.version = version;
+            this.estadoEntregable = estadoEntregable;
+        }
+
+        public UUID getEntregableProyectoGrado() {
+            return entregableProyectoGrado;
+        }
+
+        public UUID getProyectoGrado() {
+            return proyectoGrado;
+        }
+
+        public int getVersion() {
+            return version;
+        }
+
+        public String getEstadoEntregable() {
+            return estadoEntregable;
+        }
+
+        public String getBucket() {
+            return bucket;
+        }
+
+        public String getClaveObjeto() {
+            return claveObjeto;
+        }
+
+        public String getNombreArchivo() {
+            return nombreArchivo;
+        }
+    }
+
+    @Test
+    void debeLeerLosSeisCamposEIgnorarBucketClaveYNombre_cuandoSeLeeElEventoAprobado() {
+        // Arrange
+        var entregable = UtilUUID.generarNuevoUUID();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var aprobado = new EntregableAprobadoEventoDePrueba(entregable, proyectoGrado, 3, "APROBADO_CON_OBSERVACIONES");
+
+        // Act
+        var payload = mapper.readValue(
+                mapper.writeValueAsString(aprobado), EntregableProyectoGradoAprobadoPayload.class);
+
+        // Assert
+        assertThat(payload.idEvento()).isEqualTo(aprobado.getIdEvento());
+        assertThat(payload.ocurridoEn()).isEqualTo(aprobado.getOcurridoEn());
+        assertThat(payload.entregableProyectoGrado()).isEqualTo(entregable.toString());
+        assertThat(payload.proyectoGrado()).isEqualTo(proyectoGrado.toString());
+        assertThat(payload.version()).isEqualTo(3);
+        assertThat(payload.estadoEntregable()).isEqualTo("APROBADO_CON_OBSERVACIONES");
     }
 }

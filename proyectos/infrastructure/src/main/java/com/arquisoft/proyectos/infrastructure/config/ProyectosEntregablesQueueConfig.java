@@ -20,6 +20,8 @@ public class ProyectosEntregablesQueueConfig {
             ProyectosQueues.PREFIJO + EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_CERRADO;
     public static final String ENTREGABLE_CANCELADO_QUEUE =
             ProyectosQueues.PREFIJO + EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_CANCELADO;
+    public static final String ENTREGABLE_APROBADO_QUEUE =
+            ProyectosQueues.PREFIJO + EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_APROBADO;
     public static final String ENTREGABLE_RECHAZADO_QUEUE =
             ProyectosQueues.PREFIJO + EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_RECHAZADO;
 
@@ -74,6 +76,17 @@ public class ProyectosEntregablesQueueConfig {
         return ColaEvento.declarar(
                 ENTREGABLE_DISPONIBLE_EVALUACION_QUEUE,
                 EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_DISPONIBLE_EVALUACION,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables proyectosEntregableProyectoGradoAprobadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ENTREGABLE_APROBADO_QUEUE,
+                EventTopics.Entregables.ENTREGABLE_PROYECTO_GRADO_APROBADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

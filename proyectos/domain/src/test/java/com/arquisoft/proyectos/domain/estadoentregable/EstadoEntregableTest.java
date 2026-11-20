@@ -27,6 +27,19 @@ class EstadoEntregableTest {
     }
 
     @Test
+    void debeResolverAprobadoYAprobadoConObservaciones_cuandoSeConsultanPorId() {
+        // Act & Assert
+        assertThat(EstadoEntregable.desde("APROBADO")).isEqualTo(EstadoEntregable.APROBADO);
+        assertThat(EstadoEntregable.desde("APROBADO").getNombre()).isEqualTo("Aprobado");
+        assertThat(EstadoEntregable.desde("APROBADO_CON_OBSERVACIONES"))
+                .isEqualTo(EstadoEntregable.APROBADO_CON_OBSERVACIONES);
+        assertThat(EstadoEntregable.desde("APROBADO_CON_OBSERVACIONES").getNombre())
+                .isEqualTo("Aprobado Con Observaciones");
+        assertThat(EstadoEntregable.esValido("APROBADO")).isTrue();
+        assertThat(EstadoEntregable.esValido("APROBADO_CON_OBSERVACIONES")).isTrue();
+    }
+
+    @Test
     void debeRechazarElId_cuandoEsNuloDesconocidoOElCentinela() {
         // Act & Assert
         assertThatThrownBy(() -> EstadoEntregable.desde("VACIO"))

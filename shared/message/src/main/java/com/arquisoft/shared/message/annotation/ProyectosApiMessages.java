@@ -105,14 +105,16 @@ public final class ProyectosApiMessages {
         public static final String CANCELAR_SUMMARY = "Cancelar un proyecto de grado";
         public static final String CANCELAR_DESCRIPTION =
                 "Permite al coordinador del proyecto de grado darlo de baja de forma definitiva, con un motivo, "
-                        + "cuando está en proceso o atrasado. El estado cancelado es terminal: los archivos de "
+                        + "cuando está en proceso o atrasado y su último entregable no está disponible para evaluación, "
+                        + "aprobado ni cerrado. El estado cancelado es terminal: los archivos de "
                         + "artefactos se eliminan, no admite más trabajo en artefactos ni entregables y los "
                         + "estudiantes y el asesor reciben un correo de notificación";
         public static final String CANCELAR_RESP_204 = "Proyecto de grado cancelado exitosamente";
         public static final String CANCELAR_RESP_400 = "Motivo ausente, en blanco o demasiado largo";
         public static final String CANCELAR_RESP_403 = "Sin permiso para cancelar un proyecto de grado";
         public static final String CANCELAR_RESP_422 =
-                "Proyecto de grado no encontrado, asignado a otro coordinador o que no está en proceso ni atrasado";
+                "Proyecto de grado no encontrado, asignado a otro coordinador, que no está en proceso ni atrasado "
+                        + "o con un último entregable disponible para evaluación, aprobado o cerrado";
     }
 
     public static final class ConsultaAsesorProyectoGrado {
