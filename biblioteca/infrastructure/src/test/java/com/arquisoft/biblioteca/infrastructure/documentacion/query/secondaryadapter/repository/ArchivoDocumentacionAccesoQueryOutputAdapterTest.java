@@ -27,7 +27,7 @@ class ArchivoDocumentacionAccesoQueryOutputAdapterTest {
         adapter = new ArchivoDocumentacionAccesoQueryOutputAdapter(repository);
         var em = entityManager.getEntityManager();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS entregable_proyecto_grado (id UUID PRIMARY KEY, "
-                + "proyecto_grado_id UUID, version_entregable INTEGER, asesor_id UUID, "
+                + "proyecto_grado_id UUID, version_entregable INTEGER, "
                 + "estado_entregable_nombre VARCHAR(60), bucket VARCHAR(63), clave_objeto VARCHAR(2000), "
                 + "nombre_archivo VARCHAR(255))").executeUpdate();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS documentacion (id UUID PRIMARY KEY, url VARCHAR(2000), "
@@ -41,11 +41,10 @@ class ArchivoDocumentacionAccesoQueryOutputAdapterTest {
         var em = entityManager.getEntityManager();
         var entregable = UtilUUID.generarNuevoUUID();
         em.createNativeQuery("INSERT INTO entregable_proyecto_grado (id, proyecto_grado_id, version_entregable, "
-                        + "asesor_id, estado_entregable_nombre, bucket, clave_objeto, nombre_archivo) "
-                        + "VALUES (?1, ?2, 1, ?3, 'Aprobado', ?4, ?5, ?6)")
+                        + "estado_entregable_nombre, bucket, clave_objeto, nombre_archivo) "
+                        + "VALUES (?1, ?2, 1, 'Aprobado', ?3, ?4, ?5)")
                 .setParameter(1, entregable).setParameter(2, UtilUUID.generarNuevoUUID())
-                .setParameter(3, UtilUUID.generarNuevoUUID()).setParameter(4, bucket)
-                .setParameter(5, clave).setParameter(6, nombre)
+                .setParameter(3, bucket).setParameter(4, clave).setParameter(5, nombre)
                 .executeUpdate();
         var id = UtilUUID.generarNuevoUUID();
         em.createNativeQuery("INSERT INTO documentacion (id, url, fecha_publicacion, "

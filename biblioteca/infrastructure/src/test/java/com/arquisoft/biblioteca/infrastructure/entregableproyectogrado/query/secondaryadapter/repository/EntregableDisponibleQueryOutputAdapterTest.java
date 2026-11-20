@@ -61,7 +61,7 @@ class EntregableDisponibleQueryOutputAdapterTest {
     private UUID sembrarEntregable(UUID id, UUID proyecto, int version, String bucket, String clave) {
         entityManager.persist(EntregableProyectoGradoJpaEntity.builder()
                 .id(id).proyectoGradoId(proyecto).versionEntregable(version)
-                .asesorId(UtilUUID.generarNuevoUUID()).estadoEntregableNombre("Aprobado")
+                .estadoEntregableNombre("Aprobado")
                 .bucket(bucket).claveObjeto(clave).nombreArchivo("entregable-v" + version + ".zip").build());
         return id;
     }

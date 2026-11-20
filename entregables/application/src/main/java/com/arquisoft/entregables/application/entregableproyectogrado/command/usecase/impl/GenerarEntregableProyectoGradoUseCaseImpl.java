@@ -13,6 +13,7 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.sec
 import com.arquisoft.entregables.application.entregableproyectogrado.command.usecase.GenerarEntregableProyectoGradoUseCase;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.ConfirmarGeneracionEntregableProyectoGradoValidator;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.GenerarEntregableProyectoGradoValidator;
+import com.arquisoft.entregables.application.estudianteproyectogrado.command.finder.ContactosEstudiantesProyectoGradoFinder;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.EstadoEntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.mapper.EstadoEntregableProyectoGradoMapper;
 import com.arquisoft.entregables.application.paqueteentregable.command.finder.PaquetesProyectoGradoFinder;
@@ -60,6 +61,7 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
     private final UltimaVersionEntregableProyectoGradoFinder ultimaVersionEntregableProyectoGradoFinder;
     private final ArtefactosVigentesProyectoFinder artefactosVigentesProyectoFinder;
     private final PaquetesProyectoGradoFinder paquetesProyectoGradoFinder;
+    private final ContactosEstudiantesProyectoGradoFinder contactosEstudiantesProyectoGradoFinder;
     private final GenerarEntregableProyectoGradoValidator generarEntregableProyectoGradoValidator;
     private final ConfirmarGeneracionEntregableProyectoGradoValidator confirmarGeneracionValidator;
     private final AgregarArtefactosEntregableUseCase agregarArtefactosEntregableUseCase;
@@ -107,6 +109,7 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
 
         var segunda = leer(entrada, proyectoGradoBloqueadoPorIdFinder.obtener(entrada.getProyectoGrado()));
         var paquetesAnteriores = paquetesProyectoGradoFinder.obtener(entrada.getProyectoGrado());
+        var estudiantes = contactosEstudiantesProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         registrarVerificacion(segunda);
 
         generarEntregableProyectoGradoValidator.validar(entrada, segunda.proyecto(), segunda.asesorVigente(),
@@ -129,7 +132,8 @@ public class GenerarEntregableProyectoGradoUseCaseImpl implements GenerarEntrega
                 armadoPaqueteOutputPort.eliminarTrasConfirmar(anterior.getBucket(), anterior.getClaveObjeto()));
 
         eventPublisher.publish(new EntregableProyectoGradoGeneradoEvent(
-                entregable.getId(), entregable.getProyectoGrado(), entregable.getVersion()));
+                entregable.getId(), entregable.getProyectoGrado(), segunda.proyecto().getNombre(),
+                entregable.getVersion(), estudiantes));
 
         return entregable.getId();
     }

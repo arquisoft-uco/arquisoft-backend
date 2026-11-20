@@ -1,5 +1,6 @@
 package com.arquisoft.entregables.application.estudianteproyectogrado.command.primaryport.model;
 
+import com.arquisoft.entregables.application.estudianteproyectogrado.command.primaryport.model.AgregarEstudiantesProyectoGradoCommand.Estudiante;
 import com.arquisoft.shared.message.constant.EntregablesFields;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ApplicationValidationException;
@@ -15,16 +16,20 @@ class AgregarEstudiantesProyectoGradoCommandTest {
 
     private static final Instant OCURRIDO_EN = Instant.parse("2026-10-20T10:00:00Z");
 
+    private static Estudiante estudiante(String id) {
+        return new Estudiante(id, "Ana Perez", "ana@uco.edu.co");
+    }
+
     @Test
-    void debeCrearCommandConUuidsConvertidos_cuandoElPayloadEsValido() {
+    void debeCrearCommandConUuidYContactoConservados_cuandoElPayloadEsValido() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
-        var primero = UtilUUID.generarNuevoUUID();
-        var segundo = UtilUUID.generarNuevoUUID();
+        var primero = estudiante(UtilUUID.generarNuevoUUID().toString());
+        var segundo = new Estudiante(UtilUUID.generarNuevoUUID().toString(), "Luis", "luis@uco.edu.co");
 
         // Act
         var command = AgregarEstudiantesProyectoGradoCommand.crear(
-                proyectoGrado.toString(), List.of(primero.toString(), segundo.toString()), OCURRIDO_EN);
+                proyectoGrado.toString(), List.of(primero, segundo), OCURRIDO_EN);
 
         // Assert
         assertThat(command.proyectoGrado()).isEqualTo(proyectoGrado);
@@ -33,9 +38,10 @@ class AgregarEstudiantesProyectoGradoCommandTest {
     }
 
     @Test
-    void debeAcumularTodosLosErrores_cuandoProyectoEstudianteYOcurridoEnSonInvalidos() {
+    void debeAcumularTodosLosErrores_cuandoProyectoEstudianteContactoYOcurridoEnSonInvalidos() {
         // Arrange
-        var estudiantes = List.of(UtilUUID.generarNuevoUUID().toString(), "no-uuid");
+        var sinContacto = new Estudiante(UtilUUID.generarNuevoUUID().toString(), null, null);
+        var estudiantes = List.of(estudiante("no-uuid"), sinContacto);
 
         // Act & Assert
         assertThatThrownBy(() -> AgregarEstudiantesProyectoGradoCommand.crear("no-uuid", estudiantes, null))
@@ -45,6 +51,8 @@ class AgregarEstudiantesProyectoGradoCommandTest {
                         .containsExactlyInAnyOrder(
                                 EntregablesFields.EstudianteProyectoGrado.PROYECTO_GRADO,
                                 EntregablesFields.EstudianteProyectoGrado.ESTUDIANTE,
+                                EntregablesFields.EstudianteProyectoGrado.NOMBRE,
+                                EntregablesFields.EstudianteProyectoGrado.EMAIL,
                                 EntregablesFields.EstudianteProyectoGrado.OCURRIDO_EN));
     }
 
@@ -67,11 +75,11 @@ class AgregarEstudiantesProyectoGradoCommandTest {
     void debeRechazar_cuandoHayEstudiantesDuplicados() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID().toString();
-        var estudiante = UtilUUID.generarNuevoUUID().toString();
+        var id = UtilUUID.generarNuevoUUID().toString();
 
         // Act & Assert
         assertThatThrownBy(() -> AgregarEstudiantesProyectoGradoCommand.crear(
-                proyectoGrado, List.of(estudiante, estudiante), OCURRIDO_EN))
+                proyectoGrado, List.of(estudiante(id), estudiante(id)), OCURRIDO_EN))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .extracting(e -> e.campo())
@@ -81,7 +89,7 @@ class AgregarEstudiantesProyectoGradoCommandTest {
     @Test
     void debeRechazar_cuandoElProyectoEsElUuidDeCeros() {
         // Arrange
-        var estudiantes = List.of(UtilUUID.generarNuevoUUID().toString());
+        var estudiantes = List.of(estudiante(UtilUUID.generarNuevoUUID().toString()));
 
         // Act & Assert
         assertThatThrownBy(() -> AgregarEstudiantesProyectoGradoCommand.crear(

@@ -28,9 +28,19 @@ public enum EntregableProyectoGradoKey implements ClaveMensaje {
     ERROR_VIGENTE_YA_EXISTE("entregables.dominio.entregableproyectogrado.error.vigente-ya-existe", 1),
     ERROR_VIGENTE_YA_EXISTE_DETALLE(
             "entregables.dominio.entregableproyectogrado.error.vigente-ya-existe-detalle", 1),
+    ERROR_RESULTADO_EVALUACION_INVALIDO(
+            "entregables.dominio.entregableproyectogrado.error.resultado-evaluacion-invalido", 0),
+    LOG_VERIFICACION_REGISTRAR_RESULTADO(
+            "entregables.aplicacion.entregableproyectogrado.log.verificacion-registrar-resultado", 5),
+    LOG_RESULTADO_EVALUACION_RECIBIDO(
+            "entregables.infraestructura.entregableproyectogrado.log.resultado-evaluacion-recibido", 3),
+    LOG_RESULTADO_EVALUACION_REGISTRADO(
+            "entregables.infraestructura.entregableproyectogrado.log.resultado-evaluacion-registrado", 2),
+    LOG_RESULTADO_EVALUACION_DESCARTADO(
+            "entregables.infraestructura.entregableproyectogrado.log.resultado-evaluacion-descartado", 3),
     LOG_CAMBIANDO_ESTADO("entregables.aplicacion.entregableproyectogrado.log.cambiando-estado", 2),
     LOG_VERIFICACION_CAMBIAR_ESTADO(
-            "entregables.aplicacion.entregableproyectogrado.log.verificacion-cambiar-estado", 5),
+            "entregables.aplicacion.entregableproyectogrado.log.verificacion-cambiar-estado", 6),
     LOG_ESTADO_CAMBIADO("entregables.aplicacion.entregableproyectogrado.log.estado-cambiado", 3),
     LOG_GENERANDO("entregables.aplicacion.entregableproyectogrado.log.generando", 2),
     LOG_VERIFICACION_GENERAR("entregables.aplicacion.entregableproyectogrado.log.verificacion-generar", 7),

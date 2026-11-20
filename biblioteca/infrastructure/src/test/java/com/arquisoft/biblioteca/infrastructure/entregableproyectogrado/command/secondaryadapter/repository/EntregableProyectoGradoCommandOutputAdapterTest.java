@@ -1,6 +1,9 @@
 package com.arquisoft.biblioteca.infrastructure.entregableproyectogrado.command.secondaryadapter.repository;
 
+import com.arquisoft.biblioteca.application.entregableproyectogrado.command.secondaryport.entity.EntregableProyectoGradoEntity;
 import com.arquisoft.biblioteca.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.biblioteca.EntregableProyectoGradoKey;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +15,8 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @DataJpaTest
 class EntregableProyectoGradoCommandOutputAdapterTest {
@@ -22,18 +27,20 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
     @Autowired
     private TestEntityManager entityManager;
 
+    private final AppLogger logger = mock(AppLogger.class);
+
     private EntregableProyectoGradoCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EntregableProyectoGradoCommandOutputAdapter(repository);
+        adapter = new EntregableProyectoGradoCommandOutputAdapter(repository, logger);
     }
 
     private UUID sembrar(String bucket, String clave) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persistAndFlush(EntregableProyectoGradoJpaEntity.builder()
                 .id(id).proyectoGradoId(UtilUUID.generarNuevoUUID()).versionEntregable(1)
-                .asesorId(UtilUUID.generarNuevoUUID()).estadoEntregableNombre("APROBADO")
+                .estadoEntregableNombre("APROBADO")
                 .bucket(bucket).claveObjeto(clave).nombreArchivo("a.zip").build());
         entityManager.clear();
         return id;
@@ -70,5 +77,37 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
             assertThat(entity.bucket()).isEqualTo(UtilTexto.VACIO);
             assertThat(entity.claveObjeto()).isEqualTo(UtilTexto.VACIO);
         });
+    }
+
+    @Test
+    void debeInsertarConLosSieteCampos_cuandoSeGuardaUnEntregableNuevo() {
+        // Arrange
+        var entregable = new EntregableProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                3, "Aprobado Con Observaciones", "entregables", "paquetes/a.zip", "a.zip");
+
+        // Act
+        adapter.guardar(entregable);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var jpa = entityManager.find(EntregableProyectoGradoJpaEntity.class, entregable.id());
+        assertThat(jpa.getProyectoGradoId()).isEqualTo(entregable.proyectoGrado());
+        assertThat(jpa.getVersionEntregable()).isEqualTo(3);
+        assertThat(jpa.getEstadoEntregableNombre()).isEqualTo("Aprobado Con Observaciones");
+        assertThat(jpa.getBucket()).isEqualTo("entregables");
+        assertThat(jpa.getClaveObjeto()).isEqualTo("paquetes/a.zip");
+        assertThat(jpa.getNombreArchivo()).isEqualTo("a.zip");
+        verify(logger).debug(EntregableProyectoGradoKey.LOG_GUARDADO, entregable.id());
+    }
+
+    @Test
+    void debeResponderPorExistencia_cuandoElIdEstaONoEnLaReplica() {
+        // Arrange
+        var existente = sembrar("entregables", "proyectos/a.zip");
+
+        // Act & Assert
+        assertThat(adapter.existePorId(existente)).isTrue();
+        assertThat(adapter.existePorId(UtilUUID.generarNuevoUUID())).isFalse();
     }
 }

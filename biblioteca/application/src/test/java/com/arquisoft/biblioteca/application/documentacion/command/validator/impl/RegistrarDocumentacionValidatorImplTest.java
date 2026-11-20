@@ -26,9 +26,9 @@ class RegistrarDocumentacionValidatorImplTest {
     private final UUID bibliotecarioId = UtilUUID.generarNuevoUUID();
     private final RegistroDocumentacionDomain registro = RegistroDocumentacionDomain.crear(entregableId, bibliotecarioId);
     private final EntregableProyectoGradoDomain entregableConArchivo = EntregableProyectoGradoDomain.reconstruir(
-            entregableId, UtilUUID.generarNuevoUUID(), "entregables", "a/b.zip");
+            entregableId, UtilUUID.generarNuevoUUID(), 1, "Aprobado", "entregables", "a/b.zip", "b.zip");
     private final EntregableProyectoGradoDomain entregableSinArchivo = EntregableProyectoGradoDomain.reconstruir(
-            entregableId, UtilUUID.generarNuevoUUID(), null, null);
+            entregableId, UtilUUID.generarNuevoUUID(), 1, "Aprobado", null, null, null);
     private final BibliotecarioDomain bibliotecarioVigente = BibliotecarioDomain.reconstruir(
             bibliotecarioId, "123", "Ana", "ana@uco.edu.co", Instant.parse("2026-11-15T10:00:00Z"), UtilFecha.VACIO);
     private final List<AutorDeEntregable> autoresVigentes = List.of(

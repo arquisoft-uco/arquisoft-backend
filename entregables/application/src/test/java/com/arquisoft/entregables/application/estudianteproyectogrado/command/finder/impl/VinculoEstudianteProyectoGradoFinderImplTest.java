@@ -35,7 +35,7 @@ class VinculoEstudianteProyectoGradoFinderImplTest {
     void debeDevolverElVinculoMapeado_cuandoExiste() {
         // Arrange
         var entity = new EstudianteProyectoGradoEntity(UtilUUID.generarNuevoUUID(), entrada.getEstudiante(),
-                entrada.getProyectoGrado(), OCURRIDO_EN, UtilFecha.VACIO);
+                entrada.getProyectoGrado(), "Ana", "ana@uco.edu.co", OCURRIDO_EN, UtilFecha.VACIO);
         when(estudianteProyectoGradoOutputPort.obtenerPorEstudianteYProyectoGrado(
                 entrada.getEstudiante(), entrada.getProyectoGrado())).thenReturn(Optional.of(entity));
 

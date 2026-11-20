@@ -200,6 +200,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.observacion-reabierta", 2),
     CUERPO_OBSERVACION_REABIERTA(
             "notificaciones.aplicacion.plantilla.cuerpo.observacion-reabierta", 5),
+    ASUNTO_ENTREGABLE_ESTADO_CAMBIADO(
+            "notificaciones.aplicacion.plantilla.asunto.entregable-estado-cambiado", 2),
+    CUERPO_ENTREGABLE_ESTADO_CAMBIADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.entregable-estado-cambiado", 4),
     PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;

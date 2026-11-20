@@ -9,6 +9,14 @@ public final class EntregableProyectoGradoMapper {
 
     public static EntregableProyectoGradoDomain toDomain(EntregableProyectoGradoEntity entity) {
         return EntregableProyectoGradoDomain.reconstruir(
-                entity.id(), entity.proyectoGrado(), entity.bucket(), entity.claveObjeto());
+                entity.id(), entity.proyectoGrado(), entity.versionEntregable(), entity.estadoEntregableNombre(),
+                entity.bucket(), entity.claveObjeto(), entity.nombreArchivo());
+    }
+
+    public static EntregableProyectoGradoEntity toEntity(EntregableProyectoGradoDomain entregable) {
+        return new EntregableProyectoGradoEntity(
+                entregable.getId(), entregable.getProyectoGrado(), entregable.getVersionEntregable(),
+                entregable.getEstadoEntregableNombre(), entregable.getBucket(), entregable.getClaveObjeto(),
+                entregable.getNombreArchivo());
     }
 }

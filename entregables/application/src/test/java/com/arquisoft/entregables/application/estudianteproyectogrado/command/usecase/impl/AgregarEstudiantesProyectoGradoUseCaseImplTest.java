@@ -51,14 +51,16 @@ class AgregarEstudiantesProyectoGradoUseCaseImplTest {
 
     private AgregacionEstudiantesProyectoGradoDomain entrada(Instant ocurridoEn, UUID... estudiantes) {
         var vinculos = Arrays.stream(estudiantes)
-                .map(estudiante -> EstudianteProyectoGradoDomain.crear(estudiante, proyectoGrado, ocurridoEn))
+                .map(estudiante -> EstudianteProyectoGradoDomain.crear(
+                        estudiante, "Ana Nueva", "ana.nueva@uco.edu.co", proyectoGrado, ocurridoEn))
                 .toList();
         return AgregacionEstudiantesProyectoGradoDomain.crear(proyectoGrado, vinculos);
     }
 
     private EstudianteProyectoGradoDomain guardado(UUID estudiante, Instant eliminadoEn) {
         return EstudianteProyectoGradoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), estudiante, proyectoGrado, GUARDADO_EN, eliminadoEn);
+                UtilUUID.generarNuevoUUID(), estudiante, proyectoGrado, "Ana Vieja", "ana.vieja@uco.edu.co",
+                GUARDADO_EN, eliminadoEn);
     }
 
     @SuppressWarnings("unchecked")
@@ -88,7 +90,7 @@ class AgregarEstudiantesProyectoGradoUseCaseImplTest {
     }
 
     @Test
-    void debeContarDuplicado_cuandoVinculoVigente() {
+    void debeRefrescarContacto_cuandoVinculoVigenteYEventoMasNuevo() {
         // Arrange
         var estudiante = UtilUUID.generarNuevoUUID();
         when(vinculosDeProyectoGradoFinder.obtener(proyectoGrado))
@@ -99,7 +101,11 @@ class AgregarEstudiantesProyectoGradoUseCaseImplTest {
 
         // Assert
         assertThat(resultado).isEqualTo(new AgregacionEstudiantesProyectoGradoResult(proyectoGrado, 0, 0, 1, 0));
-        assertThat(guardadosCapturados()).isEmpty();
+        var guardados = guardadosCapturados();
+        assertThat(guardados).hasSize(1);
+        assertThat(guardados.getFirst().nombre()).isEqualTo("Ana Nueva");
+        assertThat(guardados.getFirst().email()).isEqualTo("ana.nueva@uco.edu.co");
+        assertThat(guardados.getFirst().ocurridoEn()).isEqualTo(NUEVO);
     }
 
     @Test
@@ -119,6 +125,7 @@ class AgregarEstudiantesProyectoGradoUseCaseImplTest {
         assertThat(guardados.getFirst().id()).isEqualTo(existente.getId());
         assertThat(guardados.getFirst().ocurridoEn()).isEqualTo(NUEVO);
         assertThat(guardados.getFirst().eliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(guardados.getFirst().email()).isEqualTo("ana.nueva@uco.edu.co");
     }
 
     @Test
@@ -128,7 +135,7 @@ class AgregarEstudiantesProyectoGradoUseCaseImplTest {
         var vigenteMasNuevo = UtilUUID.generarNuevoUUID();
         var lapidaMasNueva = UtilUUID.generarNuevoUUID();
         var lapida = EstudianteProyectoGradoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), lapidaMasNueva, proyectoGrado, NUEVO, NUEVO);
+                UtilUUID.generarNuevoUUID(), lapidaMasNueva, proyectoGrado, "Ana Vieja", "ana.vieja@uco.edu.co", NUEVO, NUEVO);
         when(vinculosDeProyectoGradoFinder.obtener(proyectoGrado)).thenReturn(List.of(
                 guardado(mismoInstante, GUARDADO_EN),
                 guardado(vigenteMasNuevo, UtilFecha.VACIO),
@@ -157,7 +164,7 @@ class AgregarEstudiantesProyectoGradoUseCaseImplTest {
         // Assert
         assertThat(resultado).isEqualTo(new AgregacionEstudiantesProyectoGradoResult(proyectoGrado, 1, 1, 1, 0));
         assertThat(guardadosCapturados()).extracting(EstudianteProyectoGradoEntity::estudiante)
-                .containsExactlyInAnyOrder(nuevo, dadoDeBaja);
+                .containsExactlyInAnyOrder(nuevo, vigente, dadoDeBaja);
     }
 
     @Test

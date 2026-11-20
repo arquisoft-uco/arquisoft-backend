@@ -4,6 +4,7 @@ import com.arquisoft.entregables.application.estudianteproyectogrado.command.sec
 import com.arquisoft.entregables.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilTexto;
 
 import java.time.Instant;
 
@@ -16,6 +17,8 @@ public final class EstudianteProyectoGradoJpaMapper {
                 jpaEntity.getId(),
                 jpaEntity.getEstudianteId(),
                 jpaEntity.getProyectoGradoId(),
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getNombre(), UtilTexto.VACIO),
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getEmail(), UtilTexto.VACIO),
                 jpaEntity.getOcurridoEn(),
                 UtilObjeto.aplicarPorDefecto(jpaEntity.getEliminadoEn(), UtilFecha.VACIO));
     }
@@ -25,6 +28,8 @@ public final class EstudianteProyectoGradoJpaMapper {
                 .id(entity.id())
                 .estudianteId(entity.estudiante())
                 .proyectoGradoId(entity.proyectoGrado())
+                .nombre(entity.nombre())
+                .email(entity.email())
                 .ocurridoEn(entity.ocurridoEn())
                 .eliminadoEn(aColumna(entity.eliminadoEn()))
                 .build();

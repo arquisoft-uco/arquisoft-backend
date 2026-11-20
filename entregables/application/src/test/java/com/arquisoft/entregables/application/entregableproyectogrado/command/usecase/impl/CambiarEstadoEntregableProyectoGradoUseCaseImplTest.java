@@ -4,6 +4,7 @@ import com.arquisoft.entregables.application.asesorproyectogrado.command.finder.
 import com.arquisoft.entregables.application.entregableproyectogrado.command.finder.EntregableProyectoGradoPorIdFinder;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.CambiarEstadoEntregableProyectoGradoValidator;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.finder.EstadoActualEntregableProyectoGradoFinder;
+import com.arquisoft.entregables.application.estudianteproyectogrado.command.finder.ContactosEstudiantesEntregableFinder;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.EstadoEntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.entity.EstadoEntregableProyectoGradoEntity;
 import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoBloqueadoDeEntregableFinder;
@@ -15,6 +16,7 @@ import com.arquisoft.entregables.domain.entregableproyectogrado.event.Entregable
 import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.entregables.domain.estadoentregableproyectogrado.EstadoEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.estadoproyecto.EstadoProyecto;
+import com.arquisoft.entregables.domain.estudianteproyectogrado.model.ContactoEstudiante;
 import com.arquisoft.entregables.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.exception.DomainException;
@@ -23,6 +25,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.key.entregables.EntregableProyectoGradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilUUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -31,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +43,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -49,6 +54,9 @@ import static org.mockito.Mockito.when;
 class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
 
     private static final UUID ASESOR_VIGENTE = UtilUUID.generarNuevoUUID();
+    private static final List<ContactoEstudiante> ESTUDIANTES = List.of(
+            new ContactoEstudiante(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co"),
+            new ContactoEstudiante(UtilUUID.generarNuevoUUID(), "Luis", "luis@uco.edu.co"));
 
     @Mock
     private EstadoEntregableProyectoGradoOutputPort estadoEntregableProyectoGradoOutputPort;
@@ -66,6 +74,9 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
     private AsesorVigenteDeEntregableFinder asesorVigenteDeEntregableFinder;
 
     @Mock
+    private ContactosEstudiantesEntregableFinder contactosEstudiantesEntregableFinder;
+
+    @Mock
     private CambiarEstadoEntregableProyectoGradoValidator cambiarEstadoEntregableProyectoGradoValidator;
 
     @Mock
@@ -76,6 +87,11 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
 
     @InjectMocks
     private CambiarEstadoEntregableProyectoGradoUseCaseImpl useCase;
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(contactosEstudiantesEntregableFinder.obtener(any())).thenReturn(List.of());
+    }
 
     private static EstadoEntregableProyectoGradoDomain estadoActual(UUID id, EstadoEntregable estado) {
         return EstadoEntregableProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(), id, estado, Instant.now());
@@ -91,7 +107,9 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         var estado = estadoActual(id, EstadoEntregable.APROBADO);
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
         when(estadoActualEntregableProyectoGradoFinder.obtener(id)).thenReturn(estado);
-        when(proyectoGradoBloqueadoDeEntregableFinder.obtener(id)).thenReturn(ProyectoGradoDomain.VACIO);
+        var proyectoGrado = ProyectoGradoDomain.reconstruir(proyecto, "Sistema de riego", EstadoProyecto.EN_PROCESO, null);
+        when(proyectoGradoBloqueadoDeEntregableFinder.obtener(id)).thenReturn(proyectoGrado);
+        when(contactosEstudiantesEntregableFinder.obtener(id)).thenReturn(ESTUDIANTES);
         when(asesorVigenteDeEntregableFinder.obtener(id)).thenReturn(ASESOR_VIGENTE);
 
         // Act
@@ -99,15 +117,17 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
 
         // Assert
         var orden = inOrder(proyectoGradoBloqueadoDeEntregableFinder, entregableProyectoGradoPorIdFinder,
-                estadoActualEntregableProyectoGradoFinder, cambiarEstadoEntregableProyectoGradoValidator,
+                estadoActualEntregableProyectoGradoFinder, contactosEstudiantesEntregableFinder,
+                cambiarEstadoEntregableProyectoGradoValidator,
                 estadoEntregableProyectoGradoOutputPort, eventPublisher, logger);
         var captor = ArgumentCaptor.forClass(EntregableProyectoGradoCerradoEvent.class);
         var captorEstado = ArgumentCaptor.forClass(EstadoEntregableProyectoGradoEntity.class);
         orden.verify(proyectoGradoBloqueadoDeEntregableFinder, times(1)).obtener(id);
         orden.verify(entregableProyectoGradoPorIdFinder, times(1)).obtener(id);
         orden.verify(estadoActualEntregableProyectoGradoFinder, times(1)).obtener(id);
+        orden.verify(contactosEstudiantesEntregableFinder, times(1)).obtener(id);
         orden.verify(cambiarEstadoEntregableProyectoGradoValidator)
-                .validar(cambio, entregable, estado, ProyectoGradoDomain.VACIO, ASESOR_VIGENTE);
+                .validar(cambio, entregable, estado, proyectoGrado, ASESOR_VIGENTE);
         orden.verify(estadoEntregableProyectoGradoOutputPort).registrar(captorEstado.capture());
         orden.verify(eventPublisher).publish(captor.capture());
         orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "APROBADO", "CERRADO");
@@ -117,6 +137,8 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         assertThat(captor.getValue().getEntregableProyectoGrado()).isEqualTo(id);
         assertThat(captor.getValue().getProyectoGrado()).isEqualTo(proyecto);
         assertThat(captor.getValue().getVersion()).isEqualTo(2);
+        assertThat(captor.getValue().getNombreProyecto()).isEqualTo("Sistema de riego");
+        assertThat(captor.getValue().getEstudiantes()).containsExactlyElementsOf(ESTUDIANTES);
     }
 
     @Test
@@ -149,6 +171,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
             assertThat(evento.getEntregableProyectoGrado()).isEqualTo(id);
             assertThat(evento.getProyectoGrado()).isEqualTo(proyecto);
             assertThat(evento.getVersion()).isEqualTo(4);
+            assertThat(evento.getEstudiantes()).isEmpty();
         });
     }
 
@@ -165,6 +188,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
         when(estadoActualEntregableProyectoGradoFinder.obtener(id)).thenReturn(estado);
         when(proyectoGradoBloqueadoDeEntregableFinder.obtener(id)).thenReturn(proyecto);
+        when(contactosEstudiantesEntregableFinder.obtener(id)).thenReturn(ESTUDIANTES);
         when(asesorVigenteDeEntregableFinder.obtener(id)).thenReturn(ASESOR_VIGENTE);
 
         // Act
@@ -175,7 +199,8 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
                 eventPublisher, logger);
         var captor = ArgumentCaptor.forClass(DomainEvent.class);
         var captorEstado = ArgumentCaptor.forClass(EstadoEntregableProyectoGradoEntity.class);
-        orden.verify(cambiarEstadoEntregableProyectoGradoValidator).validar(cambio, entregable, estado, proyecto, ASESOR_VIGENTE);
+        orden.verify(cambiarEstadoEntregableProyectoGradoValidator)
+                .validar(cambio, entregable, estado, proyecto, ASESOR_VIGENTE);
         orden.verify(estadoEntregableProyectoGradoOutputPort).registrar(captorEstado.capture());
         orden.verify(eventPublisher).publish(captor.capture());
         orden.verify(logger).info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO, id, "NUEVO", "DISPONIBLE_EVALUACION");
@@ -187,6 +212,7 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
             assertThat(evento.getNombreProyecto()).isEqualTo("Sistema de riego");
             assertThat(evento.getVersion()).isEqualTo(3);
             assertThat(evento.getAsesor()).isEqualTo(ASESOR_VIGENTE);
+            assertThat(evento.getEstudiantes()).containsExactlyElementsOf(ESTUDIANTES);
         });
     }
 
@@ -213,5 +239,30 @@ class CambiarEstadoEntregableProyectoGradoUseCaseImplTest {
         verify(estadoEntregableProyectoGradoOutputPort, never()).registrar(any());
         verifyNoInteractions(eventPublisher);
         verify(logger, never()).info(any(ClaveMensaje.class), eq(id), any(), any());
+    }
+
+    @Test
+    void debePublicarCanceladoConNombreYEstudiantes_cuandoElProyectoTieneContactos() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var proyectoId = UtilUUID.generarNuevoUUID();
+        var cambio = CambioEstadoEntregableProyectoGradoDomain.crear(id, "CANCELADO", UtilUUID.generarNuevoUUID());
+        var entregable = EntregableProyectoGradoDomain.reconstruir(id, proyectoId, 4, UtilUUID.generarNuevoUUID());
+        var proyecto = ProyectoGradoDomain.reconstruir(proyectoId, "Sistema de riego", EstadoProyecto.EN_PROCESO, null);
+        when(entregableProyectoGradoPorIdFinder.obtener(id)).thenReturn(entregable);
+        when(estadoActualEntregableProyectoGradoFinder.obtener(id))
+                .thenReturn(estadoActual(id, EstadoEntregable.NUEVO));
+        when(proyectoGradoBloqueadoDeEntregableFinder.obtener(id)).thenReturn(proyecto);
+        when(asesorVigenteDeEntregableFinder.obtener(id)).thenReturn(ASESOR_VIGENTE);
+        when(contactosEstudiantesEntregableFinder.obtener(id)).thenReturn(ESTUDIANTES);
+
+        // Act
+        useCase.ejecutar(cambio);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(EntregableProyectoGradoCanceladoEvent.class);
+        verify(eventPublisher).publish(captor.capture());
+        assertThat(captor.getValue().getNombreProyecto()).isEqualTo("Sistema de riego");
+        assertThat(captor.getValue().getEstudiantes()).containsExactlyElementsOf(ESTUDIANTES);
     }
 }

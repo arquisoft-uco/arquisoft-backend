@@ -5,6 +5,7 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.fin
 import com.arquisoft.entregables.application.entregableproyectogrado.command.usecase.CambiarEstadoEntregableProyectoGradoUseCase;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.CambiarEstadoEntregableProyectoGradoValidator;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.finder.EstadoActualEntregableProyectoGradoFinder;
+import com.arquisoft.entregables.application.estudianteproyectogrado.command.finder.ContactosEstudiantesEntregableFinder;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.EstadoEntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.mapper.EstadoEntregableProyectoGradoMapper;
 import com.arquisoft.entregables.application.proyectogrado.command.finder.ProyectoGradoBloqueadoDeEntregableFinder;
@@ -31,6 +32,7 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
     private final EstadoActualEntregableProyectoGradoFinder estadoActualEntregableProyectoGradoFinder;
     private final ProyectoGradoBloqueadoDeEntregableFinder proyectoGradoBloqueadoDeEntregableFinder;
     private final AsesorVigenteDeEntregableFinder asesorVigenteDeEntregableFinder;
+    private final ContactosEstudiantesEntregableFinder contactosEstudiantesEntregableFinder;
     private final CambiarEstadoEntregableProyectoGradoValidator cambiarEstadoEntregableProyectoGradoValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
@@ -44,9 +46,11 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
         var entregable = entregableProyectoGradoPorIdFinder.obtener(cambio.getEntregableProyectoGrado());
         var estadoActual = estadoActualEntregableProyectoGradoFinder.obtener(cambio.getEntregableProyectoGrado());
         var asesorVigente = asesorVigenteDeEntregableFinder.obtener(cambio.getEntregableProyectoGrado());
+        var estudiantes = contactosEstudiantesEntregableFinder.obtener(cambio.getEntregableProyectoGrado());
         logger.debug(EntregableProyectoGradoKey.LOG_VERIFICACION_CAMBIAR_ESTADO,
                 !entregable.esVacio(), estadoActual.getEstadoEntregable().getId(),
-                !proyecto.esVacio(), proyecto.getEstadoProyecto().getId(), !UtilUUID.esPorDefecto(asesorVigente));
+                !proyecto.esVacio(), proyecto.getEstadoProyecto().getId(), !UtilUUID.esPorDefecto(asesorVigente),
+                estudiantes.size());
 
         cambiarEstadoEntregableProyectoGradoValidator.validar(cambio, entregable, estadoActual, proyecto, asesorVigente);
 
@@ -56,16 +60,18 @@ public class CambiarEstadoEntregableProyectoGradoUseCaseImpl
 
         if (cambio.getEstadoEntregable() == EstadoEntregable.CERRADO) {
             eventPublisher.publish(new EntregableProyectoGradoCerradoEvent(
-                    cambio.getEntregableProyectoGrado(), entregable.getProyectoGrado(), entregable.getVersion()));
+                    cambio.getEntregableProyectoGrado(), entregable.getProyectoGrado(), proyecto.getNombre(),
+                    entregable.getVersion(), estudiantes));
         }
         if (cambio.getEstadoEntregable() == EstadoEntregable.DISPONIBLE_EVALUACION) {
             eventPublisher.publish(new EntregableProyectoGradoDisponibleEvaluacionEvent(
                     cambio.getEntregableProyectoGrado(), entregable.getProyectoGrado(), proyecto.getNombre(),
-                    entregable.getVersion(), asesorVigente));
+                    entregable.getVersion(), asesorVigente, estudiantes));
         }
         if (cambio.getEstadoEntregable() == EstadoEntregable.CANCELADO) {
             eventPublisher.publish(new EntregableProyectoGradoCanceladoEvent(
-                    cambio.getEntregableProyectoGrado(), entregable.getProyectoGrado(), entregable.getVersion()));
+                    cambio.getEntregableProyectoGrado(), entregable.getProyectoGrado(), proyecto.getNombre(),
+                    entregable.getVersion(), estudiantes));
         }
 
         logger.info(EntregableProyectoGradoKey.LOG_ESTADO_CAMBIADO,

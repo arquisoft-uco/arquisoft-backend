@@ -20,8 +20,8 @@ class AgregacionEstudiantesProyectoGradoDomainTest {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var vinculos = List.of(
-                EstudianteProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), proyectoGrado, OCURRIDO_EN),
-                EstudianteProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), proyectoGrado, OCURRIDO_EN));
+                EstudianteProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co", proyectoGrado, OCURRIDO_EN),
+                EstudianteProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co", proyectoGrado, OCURRIDO_EN));
 
         // Act
         var agregacion = AgregacionEstudiantesProyectoGradoDomain.crear(proyectoGrado, vinculos);

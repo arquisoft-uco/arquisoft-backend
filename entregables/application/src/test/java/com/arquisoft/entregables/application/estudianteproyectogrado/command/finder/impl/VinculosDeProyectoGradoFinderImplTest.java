@@ -31,9 +31,10 @@ class VinculosDeProyectoGradoFinderImplTest {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var vigente = new EstudianteProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                proyectoGrado, Instant.parse("2026-10-20T10:00:00Z"), UtilFecha.VACIO);
+                proyectoGrado, "Ana", "ana@uco.edu.co", Instant.parse("2026-10-20T10:00:00Z"), UtilFecha.VACIO);
         var eliminado = new EstudianteProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                proyectoGrado, Instant.parse("2026-10-20T10:00:00Z"), Instant.parse("2026-10-21T10:00:00Z"));
+                proyectoGrado, "Luis", "luis@uco.edu.co", Instant.parse("2026-10-20T10:00:00Z"),
+                Instant.parse("2026-10-21T10:00:00Z"));
         when(estudianteProyectoGradoOutputPort.consultarPorProyectoGrado(proyectoGrado))
                 .thenReturn(List.of(vigente, eliminado));
 
