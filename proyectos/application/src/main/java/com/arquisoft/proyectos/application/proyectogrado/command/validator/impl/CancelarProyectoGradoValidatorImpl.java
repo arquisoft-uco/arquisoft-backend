@@ -5,6 +5,7 @@ import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.proyectos.domain.coordinador.model.ExistenciaCoordinador;
 import com.arquisoft.proyectos.domain.coordinador.rules.CoordinadorExisteRule;
 import com.arquisoft.proyectos.domain.coordinador.rules.impl.CoordinadorExisteRuleImpl;
+import com.arquisoft.proyectos.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.model.ExistenciaEstadoProyectoGrado;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.rules.EstadoProyectoGradoExisteRule;
@@ -12,14 +13,17 @@ import com.arquisoft.proyectos.domain.estadoproyectogrado.rules.impl.EstadoProye
 import com.arquisoft.proyectos.domain.proyectogrado.CancelacionProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.model.EstadoActualProyectoGrado;
+import com.arquisoft.proyectos.domain.proyectogrado.model.EstadoUltimoEntregable;
 import com.arquisoft.proyectos.domain.proyectogrado.model.ExistenciaProyectoGrado;
 import com.arquisoft.proyectos.domain.proyectogrado.model.PropiedadCoordinadorProyectoGrado;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.CoordinadorProyectoGradoPropietarioRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoCancelableRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoExisteRule;
+import com.arquisoft.proyectos.domain.proyectogrado.rules.ProyectoGradoSinEntregableVigenteRule;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.CoordinadorProyectoGradoPropietarioRuleImpl;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoCancelableRuleImpl;
 import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoExisteRuleImpl;
+import com.arquisoft.proyectos.domain.proyectogrado.rules.impl.ProyectoGradoSinEntregableVigenteRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -30,6 +34,7 @@ public class CancelarProyectoGradoValidatorImpl implements CancelarProyectoGrado
     private final CoordinadorProyectoGradoPropietarioRule coordinadorPropietarioRule;
     private final CoordinadorExisteRule coordinadorExisteRule;
     private final ProyectoGradoCancelableRule proyectoGradoCancelableRule;
+    private final ProyectoGradoSinEntregableVigenteRule proyectoGradoSinEntregableVigenteRule;
 
     public CancelarProyectoGradoValidatorImpl() {
         this.proyectoGradoExisteRule = new ProyectoGradoExisteRuleImpl();
@@ -37,11 +42,13 @@ public class CancelarProyectoGradoValidatorImpl implements CancelarProyectoGrado
         this.coordinadorPropietarioRule = new CoordinadorProyectoGradoPropietarioRuleImpl();
         this.coordinadorExisteRule = new CoordinadorExisteRuleImpl();
         this.proyectoGradoCancelableRule = new ProyectoGradoCancelableRuleImpl();
+        this.proyectoGradoSinEntregableVigenteRule = new ProyectoGradoSinEntregableVigenteRuleImpl();
     }
 
     @Override
     public void validar(CancelacionProyectoGradoDomain cancelacion, ProyectoGradoDomain proyecto,
-                        EstadoProyectoGradoDomain estadoActual, CoordinadorDomain coordinador) {
+                        EstadoProyectoGradoDomain estadoActual, CoordinadorDomain coordinador,
+                        EntregableProyectoGradoDomain ultimoEntregable) {
         proyectoGradoExisteRule.validar(
                 new ExistenciaProyectoGrado(cancelacion.getProyectoGrado(), !proyecto.esVacio()));
         estadoProyectoGradoExisteRule.validar(
@@ -52,5 +59,8 @@ public class CancelarProyectoGradoValidatorImpl implements CancelarProyectoGrado
         proyectoGradoCancelableRule.validar(
                 new EstadoActualProyectoGrado(cancelacion.getProyectoGrado(), proyecto.getTituloProyecto(),
                         estadoActual.getEstadoProyecto()));
+        proyectoGradoSinEntregableVigenteRule.validar(
+                new EstadoUltimoEntregable(cancelacion.getProyectoGrado(), proyecto.getTituloProyecto(),
+                        ultimoEntregable.getVersion(), ultimoEntregable.getEstadoEntregable()));
     }
 }

@@ -1,6 +1,7 @@
 package com.arquisoft.proyectos.application.proyectogrado.command.validator;
 
 import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
+import com.arquisoft.proyectos.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.CancelacionProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
@@ -8,5 +9,6 @@ import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
 public interface CancelarProyectoGradoValidator {
 
     void validar(CancelacionProyectoGradoDomain cancelacion, ProyectoGradoDomain proyecto,
-                 EstadoProyectoGradoDomain estadoActual, CoordinadorDomain coordinador);
+                 EstadoProyectoGradoDomain estadoActual, CoordinadorDomain coordinador,
+                 EntregableProyectoGradoDomain ultimoEntregable);
 }
