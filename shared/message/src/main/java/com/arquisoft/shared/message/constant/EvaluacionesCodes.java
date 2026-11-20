@@ -8,6 +8,9 @@ public final class EvaluacionesCodes {
 
         private ItemCualitativoJurado() {}
 
+        public static final String PESO_REQUERIDO = "ITEM_CUALITATIVO_JURADO_PESO_REQUERIDO";
+        public static final String PESO_FUERA_DE_RANGO = "ITEM_CUALITATIVO_JURADO_PESO_FUERA_DE_RANGO";
+
         public static final String NOMBRE_REQUERIDO = "ITEM_CUALITATIVO_JURADO_NOMBRE_REQUERIDO";
         public static final String NOMBRE_DEMASIADO_LARGO =
                 "ITEM_CUALITATIVO_JURADO_NOMBRE_DEMASIADO_LARGO";
@@ -28,6 +31,9 @@ public final class EvaluacionesCodes {
     public static final class ItemCualitativoAsesor {
 
         private ItemCualitativoAsesor() {}
+
+        public static final String PESO_REQUERIDO = "ITEM_CUALITATIVO_ASESOR_PESO_REQUERIDO";
+        public static final String PESO_FUERA_DE_RANGO = "ITEM_CUALITATIVO_ASESOR_PESO_FUERA_DE_RANGO";
 
         public static final String NOMBRE_REQUERIDO = "ITEM_CUALITATIVO_ASESOR_NOMBRE_REQUERIDO";
         public static final String NOMBRE_DEMASIADO_LARGO = "ITEM_CUALITATIVO_ASESOR_NOMBRE_DEMASIADO_LARGO";
@@ -271,6 +277,8 @@ public final class EvaluacionesCodes {
         public static final String EVALUACION_REQUERIDO = "EVALUACION_EVALUACION_REQUERIDO";
         public static final String ESTADO_REQUERIDO = "EVALUACION_ESTADO_REQUERIDO";
         public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
+        public static final String DESTINATARIOS_INCOMPLETOS = "EVALUACION_DESTINATARIOS_INCOMPLETOS";
+        public static final String RESUMENES_INCOMPLETOS = "EVALUACION_RESUMENES_INCOMPLETOS";
         public static final String ASIGNACION_FINALIZADA = "EVALUACION_ASIGNACION_FINALIZADA";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
         public static final String NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
@@ -300,7 +308,7 @@ public final class EvaluacionesCodes {
         public static final String JURADOS_NO_ENCONTRADOS = "EVALUACION_JURADO_JURADOS_NO_ENCONTRADOS";
         public static final String JURADOS_YA_ASIGNADOS = "EVALUACION_JURADO_JURADOS_YA_ASIGNADOS";
         public static final String JURADOS_NO_ASIGNADOS = "EVALUACION_JURADO_JURADOS_NO_ASIGNADOS";
-        public static final String JURADOS_CON_EVALUACIONES = "EVALUACION_JURADO_JURADOS_CON_EVALUACIONES";
+        public static final String JURADOS_EVALUADOS = "EVALUACION_JURADO_JURADOS_EVALUADOS";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_JURADO_ESTADO_NO_ENCONTRADO";
     }
 
@@ -396,6 +404,8 @@ public final class EvaluacionesCodes {
         public static final String ESTUDIANTE_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_REQUERIDO";
         public static final String OCURRIDO_EN_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
         public static final String ESTUDIANTE_DUPLICADO = "ESTUDIANTE_PROYECTO_GRADO_ESTUDIANTE_DUPLICADO";
+        public static final String NOMBRE_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "ESTUDIANTE_PROYECTO_GRADO_EMAIL_REQUERIDO";
     }
 
     public static final class Asesor {
@@ -505,5 +515,34 @@ public final class EvaluacionesCodes {
                 "OBSERVACION_ITEM_ASESOR_MODIFICACION_EVALUACION_FINALIZADA";
         public static final String REMOCION_EVALUACION_FINALIZADA =
                 "OBSERVACION_ITEM_ASESOR_REMOCION_EVALUACION_FINALIZADA";
+    }
+
+    public static final class ConsolidacionNotasEvaluacion {
+
+        private ConsolidacionNotasEvaluacion() {}
+
+        public static final String EVALUACION_REQUERIDA = "CONSOLIDACION_NOTAS_EVALUACION_REQUERIDA";
+        public static final String NOTA_ASESOR_REQUERIDA = "CONSOLIDACION_NOTAS_NOTA_ASESOR_REQUERIDA";
+        public static final String NOTAS_JURADOS_REQUERIDAS = "CONSOLIDACION_NOTAS_NOTAS_JURADOS_REQUERIDAS";
+        public static final String PESO_ASESOR_INVALIDO = "CONSOLIDACION_NOTAS_PESO_ASESOR_INVALIDO";
+        public static final String PESO_JURADO_INVALIDO = "CONSOLIDACION_NOTAS_PESO_JURADO_INVALIDO";
+    }
+
+    public static final class CoordinadorProyectoGrado {
+
+        private CoordinadorProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO_REQUERIDO = "COORDINADOR_PROYECTO_GRADO_PROYECTO_GRADO_REQUERIDO";
+        public static final String COORDINADOR_REQUERIDO = "COORDINADOR_PROYECTO_GRADO_COORDINADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "COORDINADOR_PROYECTO_GRADO_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "COORDINADOR_PROYECTO_GRADO_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "COORDINADOR_PROYECTO_GRADO_OCURRIDO_EN_REQUERIDO";
+    }
+
+    public static final class ResultadoEvaluacion {
+
+        private ResultadoEvaluacion() {}
+
+        public static final String NO_ENCONTRADO = "RESULTADO_EVALUACION_NO_ENCONTRADO";
     }
 }

@@ -455,13 +455,14 @@ public final class EvaluacionesApiMessages {
         public static final String REMOVER_SUMMARY = "Remover jurados de una evaluación";
         public static final String REMOVER_DESCRIPTION =
                 "Remueve, en una sola operación, un conjunto de jurados asignados a una evaluación que no esté "
-                        + "finalizada, siempre que ninguno haya registrado evaluaciones cualitativas o cuantitativas";
+                        + "finalizada, siempre que ninguno haya terminado su evaluación. El retiro es lógico: los "
+                        + "registros parciales de un jurado pendiente se conservan";
         public static final String REMOVER_REQUEST_BODY = "Identificadores de los jurados a remover";
         public static final String REMOVER_RESP_204 = "Jurados removidos";
         public static final String REMOVER_RESP_400 = "Datos de entrada inválidos";
         public static final String REMOVER_RESP_422 =
-                "La evaluación no existe o está finalizada, algún jurado no está asignado o ya registró "
-                        + "evaluaciones, o hay jurados repetidos";
+                "La evaluación no existe o está finalizada, algún jurado no está asignado o ya terminó su "
+                        + "evaluación, o hay jurados repetidos";
     }
 
     public static final class ObservacionItemJurado {

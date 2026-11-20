@@ -6,9 +6,9 @@ import com.arquisoft.evaluaciones.domain.evaluacion.exception.EvaluacionFinaliza
 import com.arquisoft.evaluaciones.domain.evaluacion.exception.EvaluacionNoEncontradaException;
 import com.arquisoft.evaluaciones.domain.evaluacion.model.EstadoAsignacionEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacion.model.ExistenciaEvaluacion;
-import com.arquisoft.evaluaciones.domain.evaluacionjurado.exception.JuradosConEvaluacionesException;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.exception.JuradosEvaluadosException;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.exception.JuradosNoAsignadosException;
-import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.EvaluacionesRegistradasJurados;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.JuradosEvaluadosEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.JuradosAsignadosEvaluacion;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ class RemoverJuradosEvaluacionValidatorTest {
                 new ExistenciaEvaluacion(evaluacion, true),
                 new EstadoAsignacionEvaluacion(EstadoEvaluacion.EN_PROGRESO),
                 new JuradosAsignadosEvaluacion(Set.of(jurado), Set.of(jurado)),
-                new EvaluacionesRegistradasJurados(Set.of())))
+                new JuradosEvaluadosEvaluacion(Set.of())))
                 .doesNotThrowAnyException();
     }
 
@@ -44,7 +44,7 @@ class RemoverJuradosEvaluacionValidatorTest {
                 new ExistenciaEvaluacion(evaluacion, false),
                 new EstadoAsignacionEvaluacion(EstadoEvaluacion.FINALIZADA),
                 new JuradosAsignadosEvaluacion(Set.of(jurado), Set.of()),
-                new EvaluacionesRegistradasJurados(Set.of(jurado))))
+                new JuradosEvaluadosEvaluacion(Set.of(jurado))))
                 .isInstanceOf(EvaluacionNoEncontradaException.class);
     }
 
@@ -55,29 +55,29 @@ class RemoverJuradosEvaluacionValidatorTest {
                 new ExistenciaEvaluacion(evaluacion, true),
                 new EstadoAsignacionEvaluacion(EstadoEvaluacion.FINALIZADA),
                 new JuradosAsignadosEvaluacion(Set.of(jurado), Set.of()),
-                new EvaluacionesRegistradasJurados(Set.of(jurado))))
+                new JuradosEvaluadosEvaluacion(Set.of(jurado))))
                 .isInstanceOf(EvaluacionFinalizadaAsignacionException.class);
     }
 
     @Test
-    void debeGanarJuradosNoAsignados_cuandoTambienTienenEvaluaciones() {
+    void debeGanarJuradosNoAsignados_cuandoTambienEstanEvaluados() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 new ExistenciaEvaluacion(evaluacion, true),
                 new EstadoAsignacionEvaluacion(EstadoEvaluacion.PENDIENTE),
                 new JuradosAsignadosEvaluacion(Set.of(jurado), Set.of()),
-                new EvaluacionesRegistradasJurados(Set.of(jurado))))
+                new JuradosEvaluadosEvaluacion(Set.of(jurado))))
                 .isInstanceOf(JuradosNoAsignadosException.class);
     }
 
     @Test
-    void debeLanzarJuradosConEvaluaciones_cuandoSoloFallaEsaRegla() {
+    void debeLanzarJuradosEvaluados_cuandoSoloFallaEsaRegla() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 new ExistenciaEvaluacion(evaluacion, true),
                 new EstadoAsignacionEvaluacion(EstadoEvaluacion.PENDIENTE),
                 new JuradosAsignadosEvaluacion(Set.of(jurado), Set.of(jurado)),
-                new EvaluacionesRegistradasJurados(Set.of(jurado))))
-                .isInstanceOf(JuradosConEvaluacionesException.class);
+                new JuradosEvaluadosEvaluacion(Set.of(jurado))))
+                .isInstanceOf(JuradosEvaluadosException.class);
     }
 }

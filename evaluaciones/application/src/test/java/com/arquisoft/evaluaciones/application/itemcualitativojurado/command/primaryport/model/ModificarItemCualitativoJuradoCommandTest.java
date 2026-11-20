@@ -21,7 +21,7 @@ class ModificarItemCualitativoJuradoCommandTest {
 
         // Act
         ModificarItemCualitativoJuradoCommand command =
-                ModificarItemCualitativoJuradoCommand.crear(itemCualitativoJurado, descripcion);
+                ModificarItemCualitativoJuradoCommand.crear(itemCualitativoJurado, descripcion, 1);
 
         // Assert
         assertThat(command.itemCualitativoJurado()).isEqualTo(itemCualitativoJurado);
@@ -36,7 +36,7 @@ class ModificarItemCualitativoJuradoCommandTest {
 
         // Act & Assert
         assertThatThrownBy(() -> ModificarItemCualitativoJuradoCommand.crear(
-                itemCualitativoJurado, descripcion))
+                itemCualitativoJurado, descripcion, 1))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -53,7 +53,7 @@ class ModificarItemCualitativoJuradoCommandTest {
 
         // Act & Assert
         assertThatThrownBy(() -> ModificarItemCualitativoJuradoCommand.crear(
-                itemCualitativoJurado, descripcion))
+                itemCualitativoJurado, descripcion, 1))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())

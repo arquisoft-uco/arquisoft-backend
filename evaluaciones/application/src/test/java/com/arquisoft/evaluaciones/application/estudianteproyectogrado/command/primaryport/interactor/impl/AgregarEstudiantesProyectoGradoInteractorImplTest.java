@@ -35,7 +35,10 @@ class AgregarEstudiantesProyectoGradoInteractorImplTest {
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var estudiante = UtilUUID.generarNuevoUUID();
         var command = new AgregarEstudiantesProyectoGradoCommand(
-                proyectoGrado, List.of(estudiante), Instant.parse("2026-10-20T10:00:00Z"));
+                proyectoGrado,
+                List.of(new AgregarEstudiantesProyectoGradoCommand.Estudiante(
+                        estudiante.toString(), "Nombre", "correo@uco.edu.co")),
+                Instant.parse("2026-10-20T10:00:00Z"));
         var esperado = new AgregacionEstudiantesProyectoGradoResult(proyectoGrado, 1, 0, 0, 0);
         when(agregarEstudiantesProyectoGradoUseCase.ejecutar(any())).thenReturn(esperado);
 

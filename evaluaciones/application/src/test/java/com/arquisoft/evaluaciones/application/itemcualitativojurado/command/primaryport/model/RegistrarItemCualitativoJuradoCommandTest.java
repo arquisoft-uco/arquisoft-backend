@@ -19,7 +19,7 @@ class RegistrarItemCualitativoJuradoCommandTest {
 
         // Act
         RegistrarItemCualitativoJuradoCommand command =
-                RegistrarItemCualitativoJuradoCommand.crear(nombre, descripcion);
+                RegistrarItemCualitativoJuradoCommand.crear(nombre, descripcion, 1);
 
         // Assert
         assertThat(command.nombre()).isEqualTo("Claridad");
@@ -34,7 +34,7 @@ class RegistrarItemCualitativoJuradoCommandTest {
 
         // Act & Assert
         assertThatThrownBy(() -> RegistrarItemCualitativoJuradoCommand.crear(
-                nombre, descripcion))
+                nombre, descripcion, 1))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception -> {
                     assertThat(exception.getValidationResult().getErrores())
                             .extracting(

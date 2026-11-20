@@ -14,7 +14,10 @@ public final class EvaluacionCualitativaAsesorEstudianteQueryMapper {
         return new EvaluacionCualitativaAsesorEstudianteReadModel(
                 entity.getId(),
                 new ItemCualitativoAsesorReadModel(
-                        entity.getItemId(), entity.getItemNombre(), entity.getItemDescripcion()),
+                        entity.getItemId(),
+                        entity.getItemNombre(),
+                        entity.getItemDescripcion(),
+                        entity.getItemPeso()),
                 new CriterioItemCualitativoAsesorReadModel(
                         entity.getCriterioId(), entity.getCriterioNombre(), entity.getCriterioDescripcion()));
     }

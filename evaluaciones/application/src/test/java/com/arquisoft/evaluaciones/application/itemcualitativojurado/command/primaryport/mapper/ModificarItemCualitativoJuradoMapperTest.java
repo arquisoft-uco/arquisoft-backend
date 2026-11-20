@@ -15,7 +15,7 @@ class ModificarItemCualitativoJuradoMapperTest {
         // Arrange
         UUID itemCualitativoJurado = UUID.randomUUID();
         var command = ModificarItemCualitativoJuradoCommand.crear(
-                itemCualitativoJurado, "Nueva descripción");
+                itemCualitativoJurado, "Nueva descripción", 1);
 
         // Act
         ModificacionItemCualitativoJuradoDomain modificacion =

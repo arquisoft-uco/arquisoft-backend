@@ -161,6 +161,25 @@ class EvaluacionAsignadaJuradoQueryOutputAdapterTest {
     }
 
     @Test
+    void debeExcluirLaAsignacion_cuandoElJuradoFueRetiradoDeLaEvaluacion() {
+        // Arrange
+        var jurado = UtilUUID.generarNuevoUUID();
+        var retirada = sembrarAsignacion(jurado, "Alfa", 1, "PENDIENTE");
+        var vigente = sembrarAsignacion(jurado, "Beta", 1, "PENDIENTE");
+        entityManager.createNativeQuery("UPDATE evaluacion_jurado SET eliminado_en = CURRENT_TIMESTAMP WHERE id = ?")
+                .setParameter(1, retirada)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(jurado).build());
+
+        // Assert
+        assertThat(resultado.getContent()).extracting(EvaluacionAsignadaJuradoReadModel::id).containsExactly(vigente);
+    }
+
+    @Test
     void debeMapearEstadoJuradoEvaluacionYEntregable() {
         // Arrange
         var jurado = UtilUUID.generarNuevoUUID();

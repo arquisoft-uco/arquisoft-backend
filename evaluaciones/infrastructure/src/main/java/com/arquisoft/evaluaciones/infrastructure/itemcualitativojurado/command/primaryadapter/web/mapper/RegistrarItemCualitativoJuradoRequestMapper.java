@@ -9,6 +9,6 @@ public final class RegistrarItemCualitativoJuradoRequestMapper {
 
     public static RegistrarItemCualitativoJuradoCommand toCommand(
             RegistrarItemCualitativoJuradoRequestDTO dto) {
-        return RegistrarItemCualitativoJuradoCommand.crear(dto.nombre(), dto.descripcion());
+        return RegistrarItemCualitativoJuradoCommand.crear(dto.nombre(), dto.descripcion(), dto.peso());
     }
 }

@@ -11,7 +11,7 @@ class ItemCualitativoAsesorJpaMapperTest {
     @Test
     void debeMapearEntityAJpaEntity_cuandoRecibeEntity() {
         // Arrange
-        var entity = new ItemCualitativoAsesorEntity(UtilUUID.generarNuevoUUID(), "Claridad", "Descripción");
+        var entity = new ItemCualitativoAsesorEntity(UtilUUID.generarNuevoUUID(), "Claridad", "Descripción", 1);
 
         // Act
         var jpaEntity = ItemCualitativoAsesorJpaMapper.toJpaEntity(entity);

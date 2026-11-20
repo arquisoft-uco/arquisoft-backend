@@ -36,9 +36,9 @@ public class ItemCualitativoJuradoCommandOutputAdapter
     }
 
     @Override
-    public void actualizarDescripcion(UUID id, String descripcion) {
-        repository.actualizarDescripcion(id, descripcion);
-        logger.debug(ItemCualitativoJuradoKey.LOG_DESCRIPCION_ACTUALIZADA, id);
+    public void actualizar(UUID id, String descripcion, int peso) {
+        repository.actualizar(id, descripcion, peso);
+        logger.debug(ItemCualitativoJuradoKey.LOG_ACTUALIZADO, id);
     }
 
     @Override

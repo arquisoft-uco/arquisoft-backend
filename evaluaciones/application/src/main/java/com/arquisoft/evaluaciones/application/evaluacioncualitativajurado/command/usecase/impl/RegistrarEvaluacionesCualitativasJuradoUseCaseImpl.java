@@ -1,6 +1,7 @@
 package com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.usecase.impl;
 
 import com.arquisoft.evaluaciones.application.criterioitemcualitativojurado.command.finder.CriteriosCualitativosJuradoExistentesFinder;
+import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.FinalizarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.IniciarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.finder.ItemsEvaluacionCualitativaJuradoRegistradosFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.finder.model.CriterioItemsEvaluacion;
@@ -10,9 +11,11 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.validator.RegistrarEvaluacionesCualitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoCompletaFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.MarcarEvaluacionJuradoEvaluadaUseCase;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.finder.ItemsCualitativosJuradoExistentesFinder;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
+import com.arquisoft.evaluaciones.domain.evaluacion.VerificacionFinalizacionEvaluacionDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.EvaluacionCualitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.RegistroEvaluacionesCualitativasJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.event.EvaluacionesCualitativasJuradoRegistradasEvent;
@@ -45,6 +48,8 @@ public class RegistrarEvaluacionesCualitativasJuradoUseCaseImpl
     private final IniciarEvaluacionUseCase iniciarEvaluacionUseCase;
     private final EvaluacionJuradoCompletaFinder evaluacionJuradoCompletaFinder;
     private final MarcarEvaluacionJuradoEvaluadaUseCase marcarEvaluacionJuradoEvaluadaUseCase;
+    private final CalcularResumenEvaluacionJuradoUseCase calcularResumenEvaluacionJuradoUseCase;
+    private final FinalizarEvaluacionUseCase finalizarEvaluacionUseCase;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
@@ -68,8 +73,11 @@ public class RegistrarEvaluacionesCualitativasJuradoUseCaseImpl
         evaluacionCualitativaJuradoOutputPort.registrarTodas(entidades);
 
         var completa = evaluacionJuradoCompletaFinder.obtener(evaluacionJurado);
-        marcarEvaluacionJuradoEvaluadaUseCase.ejecutar(
-                CompletitudEvaluacionJuradoDomain.crear(evaluacionJurado, completa));
+        var completitud = CompletitudEvaluacionJuradoDomain.crear(evaluacionJurado, completa);
+        marcarEvaluacionJuradoEvaluadaUseCase.ejecutar(completitud);
+        calcularResumenEvaluacionJuradoUseCase.ejecutar(completitud);
+
+        finalizarEvaluacionUseCase.ejecutar(VerificacionFinalizacionEvaluacionDomain.crear(contexto.getEvaluacion()));
 
         var evento = publicarEvento(contexto);
 

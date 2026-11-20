@@ -10,7 +10,10 @@ public final class ItemCualitativoJuradoJpaMapper {
     public static ItemCualitativoJuradoEntity toEntity(
             ItemCualitativoJuradoJpaEntity jpaEntity) {
         return new ItemCualitativoJuradoEntity(
-                jpaEntity.getId(), jpaEntity.getNombre(), jpaEntity.getDescripcion());
+                jpaEntity.getId(),
+                jpaEntity.getNombre(),
+                jpaEntity.getDescripcion(),
+                jpaEntity.getPeso());
     }
 
     public static ItemCualitativoJuradoJpaEntity toJpaEntity(
@@ -19,6 +22,7 @@ public final class ItemCualitativoJuradoJpaMapper {
                 .id(entity.id())
                 .nombre(entity.nombre())
                 .descripcion(entity.descripcion())
+                .peso(entity.peso())
                 .build();
     }
 }

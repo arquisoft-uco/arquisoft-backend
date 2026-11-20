@@ -69,6 +69,8 @@ public enum ConsumidorKey implements ClaveMensaje {
             "notificaciones.infraestructura.consumidor.log.revision-asesor-estado-cambiado-ignorado", 2),
     LOG_VERSION_ARTEFACTO_GENERADA_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.version-artefacto-generada-recibido", 2),
+    LOG_EVALUACION_FINALIZADA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.evaluacion-finalizada-recibido", 3),
     LOG_ESTUDIANTES_ARTEFACTO_ASIGNADOS_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.estudiantes-artefacto-asignados-recibido", 2),
     LOG_ESTUDIANTE_ARTEFACTO_REMOVIDO_RECIBIDO(

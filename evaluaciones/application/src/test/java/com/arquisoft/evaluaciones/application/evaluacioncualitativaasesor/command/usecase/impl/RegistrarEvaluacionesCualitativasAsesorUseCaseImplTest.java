@@ -1,5 +1,7 @@
 package com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.usecase.impl;
 
+import com.arquisoft.evaluaciones.domain.evaluacion.VerificacionFinalizacionEvaluacionDomain;
+import com.arquisoft.evaluaciones.domain.evaluacionasesor.CompletitudEvaluacionAsesorDomain;
 import com.arquisoft.evaluaciones.application.criterioitemcualitativoasesor.command.finder.CriteriosCualitativosAsesorExistentesFinder;
 import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.IniciarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.ContextoRegistroEvaluacionAsesorFinder;
@@ -16,10 +18,14 @@ import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.EvaluacionC
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.RegistroEvaluacionesCualitativasAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.event.EvaluacionesCualitativasAsesorRegistradasEvent;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.exception.EvaluacionAsesorNoPerteneceAsesorException;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.usecase.CalcularResumenEvaluacionAsesorUseCase;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.EvaluacionAsesorCompletaFinder;
+import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.FinalizarEvaluacionUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilUUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -34,6 +40,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -41,6 +48,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -72,6 +80,20 @@ class RegistrarEvaluacionesCualitativasAsesorUseCaseImplTest {
 
     @Mock
     private AppLogger logger;
+
+    @Mock
+    private CalcularResumenEvaluacionAsesorUseCase calcularResumenAsesorUseCase;
+
+    @Mock
+    private EvaluacionAsesorCompletaFinder evaluacionAsesorCompletaFinder;
+
+    @Mock
+    private FinalizarEvaluacionUseCase finalizarEvaluacionUseCase;
+
+    @BeforeEach
+    void configurarFinderDeCompletitud() {
+        lenient().when(evaluacionAsesorCompletaFinder.obtener(any())).thenReturn(true);
+    }
 
     @InjectMocks
     private RegistrarEvaluacionesCualitativasAsesorUseCaseImpl useCase;
@@ -129,6 +151,9 @@ class RegistrarEvaluacionesCualitativasAsesorUseCaseImplTest {
         verify(logger).debug(any(ClaveMensaje.class), eq(evaluacionAsesor), eq(true), eq(3), eq(1), eq(0));
         verify(logger).info(any(ClaveMensaje.class), eq(evaluacionAsesor), eq(3),
                 eq(eventoCaptor.getValue().getIdEvento()));
+
+        verify(calcularResumenAsesorUseCase).ejecutar(argThat(CompletitudEvaluacionAsesorDomain::isCompleta));
+        verify(finalizarEvaluacionUseCase).ejecutar(any(VerificacionFinalizacionEvaluacionDomain.class));
     }
 
     @Test

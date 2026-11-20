@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.usecase.impl;
 
+import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.FinalizarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.IniciarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.finder.ItemsEvaluacionCuantitativaJuradoRegistradosFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.finder.model.ItemsPorEvaluacionCuantitativaJurado;
@@ -9,9 +10,11 @@ import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.comma
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.validator.RegistrarEvaluacionesCuantitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoCompletaFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.MarcarEvaluacionJuradoEvaluadaUseCase;
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.finder.ValoresMaximosItemsCuantitativosJuradoFinder;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
+import com.arquisoft.evaluaciones.domain.evaluacion.VerificacionFinalizacionEvaluacionDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.PropiedadEvaluacionJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.EvaluacionCuantitativaJuradoDomain;
@@ -40,6 +43,8 @@ public class RegistrarEvaluacionesCuantitativasJuradoUseCaseImpl
     private final IniciarEvaluacionUseCase iniciarEvaluacionUseCase;
     private final EvaluacionJuradoCompletaFinder evaluacionJuradoCompletaFinder;
     private final MarcarEvaluacionJuradoEvaluadaUseCase marcarEvaluacionJuradoEvaluadaUseCase;
+    private final CalcularResumenEvaluacionJuradoUseCase calcularResumenEvaluacionJuradoUseCase;
+    private final FinalizarEvaluacionUseCase finalizarEvaluacionUseCase;
     private final AppLogger logger;
 
     @Override
@@ -82,8 +87,11 @@ public class RegistrarEvaluacionesCuantitativasJuradoUseCaseImpl
         evaluacionCuantitativaJuradoOutputPort.registrarTodas(entidades);
 
         var completa = evaluacionJuradoCompletaFinder.obtener(evaluacionJurado);
-        marcarEvaluacionJuradoEvaluadaUseCase.ejecutar(
-                CompletitudEvaluacionJuradoDomain.crear(evaluacionJurado, completa));
+        var completitud = CompletitudEvaluacionJuradoDomain.crear(evaluacionJurado, completa);
+        marcarEvaluacionJuradoEvaluadaUseCase.ejecutar(completitud);
+        calcularResumenEvaluacionJuradoUseCase.ejecutar(completitud);
+
+        finalizarEvaluacionUseCase.ejecutar(VerificacionFinalizacionEvaluacionDomain.crear(contexto.getEvaluacion()));
 
         logger.info(EvaluacionCuantitativaJuradoKey.LOG_LOTE_REGISTRADO,
                 evaluacionJurado, entidades.size());

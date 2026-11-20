@@ -12,6 +12,7 @@ public final class ItemCualitativoAsesorJpaMapper {
                 .id(entity.id())
                 .nombre(entity.nombre())
                 .descripcion(entity.descripcion())
+                .peso(entity.peso())
                 .build();
     }
 }

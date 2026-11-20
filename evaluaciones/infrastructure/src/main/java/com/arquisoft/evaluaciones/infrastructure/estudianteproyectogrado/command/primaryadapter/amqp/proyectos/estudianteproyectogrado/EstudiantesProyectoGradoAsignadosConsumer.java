@@ -38,7 +38,8 @@ public class EstudiantesProyectoGradoAsignadosConsumer extends AbstractEventCons
         withCorrelation(message, channel, () -> {
             var payload = deserialize(message, EstudiantesProyectoGradoAsignadosPayload.class);
             var estudiantes = UtilColeccion.aplicarPorDefecto(payload.estudiantes()).stream()
-                    .map(EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload::id)
+                    .map(estudiante -> new AgregarEstudiantesProyectoGradoCommand.Estudiante(
+                            estudiante.id(), estudiante.nombre(), estudiante.email()))
                     .toList();
 
             logger.info(EstudianteProyectoGradoKey.LOG_ASIGNADOS_RECIBIDO,

@@ -10,6 +10,6 @@ public final class ModificarItemCualitativoJuradoMapper {
     public static ModificacionItemCualitativoJuradoDomain toDomain(
             ModificarItemCualitativoJuradoCommand command) {
         return ModificacionItemCualitativoJuradoDomain.crear(
-                command.itemCualitativoJurado(), command.descripcion());
+                command.itemCualitativoJurado(), command.descripcion(), command.peso());
     }
 }

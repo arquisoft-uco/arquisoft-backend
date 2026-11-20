@@ -77,7 +77,7 @@ class RegistrarItemCualitativoAsesorUseCaseImplTest {
     }
 
     private static ItemCualitativoAsesorDomain itemValido() {
-        return ItemCualitativoAsesorDomain.crear("Claridad", "Descripción");
+        return ItemCualitativoAsesorDomain.crear("Claridad", "Descripción", 1);
     }
 
     private static ItemCualitativoAsesorEntity entidadDe(ItemCualitativoAsesorDomain item) {

@@ -5,6 +5,7 @@ import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.constant.EvaluacionesLimits;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorNumero;
 import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
@@ -15,16 +16,18 @@ public final class ModificacionItemCualitativoAsesorDomain {
 
     private UUID itemCualitativoAsesor;
     private String descripcion;
+    private int peso;
 
     private ModificacionItemCualitativoAsesorDomain() {}
 
     public static ModificacionItemCualitativoAsesorDomain crear(
-            UUID itemCualitativoAsesor, String descripcion) {
+            UUID itemCualitativoAsesor, String descripcion, Integer peso) {
         var modificacion = new ModificacionItemCualitativoAsesorDomain();
         var resultado = new ValidationResult();
 
         modificacion.setItemCualitativoAsesor(itemCualitativoAsesor, resultado);
         modificacion.setDescripcion(descripcion, resultado);
+        modificacion.setPeso(peso, resultado);
 
         resultado.lanzarSiTieneErrores();
         return modificacion;
@@ -61,11 +64,35 @@ public final class ModificacionItemCualitativoAsesorDomain {
         this.descripcion = recortado;
     }
 
+    private void setPeso(Integer peso, ValidationResult resultado) {
+        if (!ValidatorObjeto.noNulo(
+                peso,
+                EvaluacionesFields.ItemCualitativoAsesor.PESO,
+                EvaluacionesCodes.ItemCualitativoAsesor.PESO_REQUERIDO,
+                resultado)) {
+            return;
+        }
+        if (!ValidatorNumero.valorEntre(
+                peso,
+                EvaluacionesLimits.ItemCualitativoAsesor.PESO_MIN,
+                EvaluacionesLimits.ItemCualitativoAsesor.PESO_MAX,
+                EvaluacionesFields.ItemCualitativoAsesor.PESO,
+                EvaluacionesCodes.ItemCualitativoAsesor.PESO_FUERA_DE_RANGO,
+                resultado)) {
+            return;
+        }
+        this.peso = peso;
+    }
+
     public UUID getItemCualitativoAsesor() {
         return itemCualitativoAsesor;
     }
 
     public String getDescripcion() {
         return descripcion;
+    }
+
+    public int getPeso() {
+        return peso;
     }
 }

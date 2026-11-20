@@ -32,6 +32,12 @@ public class EstudianteProyectoGradoJpaEntity {
     @Column(name = "proyecto_grado_id", nullable = false, columnDefinition = "uuid")
     private UUID proyectoGradoId;
 
+    @Column(name = "nombre", nullable = false, length = 50, columnDefinition = "varchar(50) default ''")
+    private String nombre;
+
+    @Column(name = "email", nullable = false, length = 50, columnDefinition = "varchar(50) default ''")
+    private String email;
+
     @Column(name = "ocurrido_en", nullable = false)
     private Instant ocurridoEn;
 

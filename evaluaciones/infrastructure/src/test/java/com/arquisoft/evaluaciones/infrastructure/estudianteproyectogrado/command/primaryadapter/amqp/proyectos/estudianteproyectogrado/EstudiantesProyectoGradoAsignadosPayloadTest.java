@@ -46,7 +46,7 @@ class EstudiantesProyectoGradoAsignadosPayloadTest {
     }
 
     @Test
-    void debeConservarIdsIgnorandoNombreYCorreo_cuandoSeLeeElEventoPublicado() {
+    void debeConservarIdNombreYCorreo_cuandoSeLeeElEventoPublicado() {
         // Arrange
         var primero = UtilUUID.generarNuevoUUID();
         var segundo = UtilUUID.generarNuevoUUID();
@@ -63,8 +63,10 @@ class EstudiantesProyectoGradoAsignadosPayloadTest {
         assertThat(payload.ocurridoEn()).isEqualTo(evento.getOcurridoEn());
         assertThat(payload.proyectoGradoId()).isEqualTo(evento.getProyectoGradoId().toString());
         assertThat(payload.estudiantes()).containsExactly(
-                new EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload(primero.toString()),
-                new EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload(segundo.toString()));
+                new EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload(
+                        primero.toString(), "Ana Gomez", "ana.gomez@soyuco.edu.co"),
+                new EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload(
+                        segundo.toString(), "Luis Diaz", "luis.diaz@soyuco.edu.co"));
     }
 
     @Test

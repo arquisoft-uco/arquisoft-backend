@@ -47,7 +47,7 @@ class ConsultarEvaluacionesCualitativasAsesorUseCaseImplTest {
     private static EvaluacionCualitativaAsesorReadModel readModel(String item, String criterio) {
         return new EvaluacionCualitativaAsesorReadModel(
                 UtilUUID.generarNuevoUUID(),
-                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), item, "desc"),
+                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), item, "desc", 1),
                 new CriterioItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), criterio, "desc"));
     }
 

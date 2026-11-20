@@ -210,6 +210,14 @@ entregables:
     bucket: ${ENTREGABLES_BUCKET:entregables}
     bucket-artefactos: ${ENTREGABLES_BUCKET_ARTEFACTOS:${ARTEFACTOS_BUCKET:artefactos}}
 
+# ==================== EVALUACIONES (finalización) ====================
+# Peso con el que cada participante entra al promedio de la nota final: el asesor pesa peso-asesor y cada jurado
+# peso-jurado. Con 1 y 1 el asesor pesa igual que un jurado. Ambos deben ser mayores que 0.
+evaluaciones:
+  finalizacion:
+    peso-asesor: ${EVALUACIONES_PESO_ASESOR:1}
+    peso-jurado: ${EVALUACIONES_PESO_JURADO:1}
+
 # ==================== PLAZO DEL MAPA DE RUTA ====================
 # El job diario de mapas_ruta (cron) y el consumidor de fecha_fin_cambiada de proyectos comparten la zona:
 # ambos deben coincidir en que es "hoy".

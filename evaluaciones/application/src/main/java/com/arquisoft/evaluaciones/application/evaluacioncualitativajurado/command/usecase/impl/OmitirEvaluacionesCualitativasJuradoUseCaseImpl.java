@@ -6,11 +6,13 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.validator.OmitirEvaluacionesCualitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
 import com.arquisoft.evaluaciones.domain.estadoevaluacionasignadajurado.EstadoEvaluacionAsignadaJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.OmisionEvaluacionesCualitativasJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.EstadoOmisionEvaluacionesCualitativasJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionesCualitativasJurado;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.CompletitudEvaluacionJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class OmitirEvaluacionesCualitativasJuradoUseCaseImpl
     private final OmitirEvaluacionesCualitativasJuradoValidator validator;
     private final EvaluacionCualitativaJuradoOutputPort evaluacionCualitativaJuradoOutputPort;
     private final EvaluacionJuradoOutputPort evaluacionJuradoOutputPort;
+    private final CalcularResumenEvaluacionJuradoUseCase calcularResumenEvaluacionJuradoUseCase;
     private final AppLogger logger;
 
     @Override
@@ -49,6 +52,8 @@ public class OmitirEvaluacionesCualitativasJuradoUseCaseImpl
         evaluacionCualitativaJuradoOutputPort.eliminarPorIds(evaluacionJurado, evaluaciones);
         evaluacionJuradoOutputPort.actualizarEstado(
                 evaluacionJurado, EstadoEvaluacionAsignadaJurado.PENDIENTE_POR_EVALUAR.getId());
+        calcularResumenEvaluacionJuradoUseCase.ejecutar(
+                CompletitudEvaluacionJuradoDomain.crear(evaluacionJurado, false));
 
         logger.info(EvaluacionCualitativaJuradoKey.LOG_LOTE_OMITIDO, evaluacionJurado, evaluaciones.size());
     }

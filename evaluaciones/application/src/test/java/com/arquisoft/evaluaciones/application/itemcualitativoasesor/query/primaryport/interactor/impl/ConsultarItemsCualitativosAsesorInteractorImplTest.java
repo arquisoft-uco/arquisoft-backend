@@ -29,7 +29,7 @@ class ConsultarItemsCualitativosAsesorInteractorImplTest {
     void debeDelegarEnElUseCase_cuandoSeEjecuta() {
         // Arrange
         var esperados = List.of(
-                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Actitud", "Evalúa la actitud"));
+                new ItemCualitativoAsesorReadModel(UtilUUID.generarNuevoUUID(), "Actitud", "Evalúa la actitud", 1));
         when(useCase.ejecutar()).thenReturn(esperados);
 
         // Act

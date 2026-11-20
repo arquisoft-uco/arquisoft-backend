@@ -1,11 +1,13 @@
 package com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.usecase.impl;
 
 import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.ContextoRegistroEvaluacionAsesorFinder;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.usecase.CalcularResumenEvaluacionAsesorUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.finder.ItemsEvaluacionCualitativaAsesorRegistradosFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.finder.model.ItemsPorEvaluacionAsesor;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.secondaryport.EvaluacionCualitativaAsesorOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.usecase.OmitirEvaluacionesCualitativasAsesorUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.validator.OmitirEvaluacionesCualitativasAsesorValidator;
+import com.arquisoft.evaluaciones.domain.evaluacionasesor.CompletitudEvaluacionAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.model.ExistenciaEvaluacionAsesor;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.model.PropiedadEvaluacionAsesor;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.OmisionEvaluacionesCualitativasAsesorDomain;
@@ -25,6 +27,7 @@ public class OmitirEvaluacionesCualitativasAsesorUseCaseImpl
     private final ItemsEvaluacionCualitativaAsesorRegistradosFinder itemsEvaluacionCualitativaAsesorRegistradosFinder;
     private final OmitirEvaluacionesCualitativasAsesorValidator validator;
     private final EvaluacionCualitativaAsesorOutputPort evaluacionCualitativaAsesorOutputPort;
+    private final CalcularResumenEvaluacionAsesorUseCase calcularResumenEvaluacionAsesorUseCase;
     private final AppLogger logger;
 
     @Override
@@ -48,6 +51,8 @@ public class OmitirEvaluacionesCualitativasAsesorUseCaseImpl
                 new ExistenciaEvaluacionesCualitativasAsesorRegistradas(evaluacionAsesor, items, itemsRegistrados));
 
         evaluacionCualitativaAsesorOutputPort.eliminarPorItems(evaluacionAsesor, items);
+        calcularResumenEvaluacionAsesorUseCase.ejecutar(
+                CompletitudEvaluacionAsesorDomain.crear(evaluacionAsesor, false));
 
         logger.info(EvaluacionCualitativaAsesorKey.LOG_LOTE_OMITIDO, evaluacionAsesor, items.size());
     }

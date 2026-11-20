@@ -78,6 +78,8 @@ class EvaluacionCuantitativaAsesorAccesoQueryOutputAdapterTest {
                 .id(UtilUUID.generarNuevoUUID())
                 .estudianteId(estudiante)
                 .proyectoGradoId(proyectoGrado)
+                .nombre("Nombre")
+                .email("correo@uco.edu.co")
                 .ocurridoEn(Instant.parse("2026-10-20T10:00:00Z"))
                 .eliminadoEn(eliminadoEn)
                 .build());

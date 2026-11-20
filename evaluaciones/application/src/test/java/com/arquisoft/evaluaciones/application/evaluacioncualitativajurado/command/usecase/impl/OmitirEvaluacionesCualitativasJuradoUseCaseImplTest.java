@@ -15,6 +15,7 @@ import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.Estad
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionesCualitativasJurado;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.ContextoRegistroEvaluacionJuradoDomain;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -59,6 +61,9 @@ class OmitirEvaluacionesCualitativasJuradoUseCaseImplTest {
 
     @Mock
     private AppLogger logger;
+
+    @Mock
+    private CalcularResumenEvaluacionJuradoUseCase calcularResumenJuradoUseCase;
 
     @InjectMocks
     private OmitirEvaluacionesCualitativasJuradoUseCaseImpl useCase;
@@ -102,6 +107,8 @@ class OmitirEvaluacionesCualitativasJuradoUseCaseImplTest {
 
         verify(logger, times(2)).info(any(ClaveMensaje.class), eq(evaluacionJurado), eq(3));
         verify(logger).debug(any(ClaveMensaje.class), eq(evaluacionJurado), eq(true), eq("EN_PROGRESO"), eq(3));
+
+        verify(calcularResumenJuradoUseCase).ejecutar(argThat(completitud -> !completitud.isCompleta()));
     }
 
     @Test

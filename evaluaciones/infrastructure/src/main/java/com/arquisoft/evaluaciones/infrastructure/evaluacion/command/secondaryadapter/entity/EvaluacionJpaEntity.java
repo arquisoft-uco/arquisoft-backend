@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -28,4 +29,25 @@ public class EvaluacionJpaEntity {
 
     @Column(name = "estado_evaluacion_id", nullable = false, length = 60)
     private String estadoEvaluacion;
+
+    @Column(name = "nota_asesor", precision = 4, scale = 2)
+    private BigDecimal notaAsesor;
+
+    @Column(name = "nota_jurados", precision = 4, scale = 2)
+    private BigDecimal notaJurados;
+
+    @Column(name = "peso_asesor", precision = 5, scale = 4)
+    private BigDecimal pesoAsesor;
+
+    @Column(name = "peso_jurados", precision = 5, scale = 4)
+    private BigDecimal pesoJurados;
+
+    @Column(name = "cantidad_jurados")
+    private Integer cantidadJurados;
+
+    @Column(name = "nota_final", precision = 4, scale = 2)
+    private BigDecimal notaFinal;
+
+    @Column(name = "resultado_evaluacion_id", length = 60)
+    private String resultadoEvaluacion;
 }

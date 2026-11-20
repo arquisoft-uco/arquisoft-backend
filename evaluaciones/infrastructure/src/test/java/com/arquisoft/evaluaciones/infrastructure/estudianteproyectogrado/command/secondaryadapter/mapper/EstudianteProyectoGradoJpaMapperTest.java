@@ -17,9 +17,9 @@ class EstudianteProyectoGradoJpaMapperTest {
         var ocurridoEn = Instant.parse("2026-10-20T10:00:00Z");
         var eliminadoEn = Instant.parse("2026-10-21T10:00:00Z");
         var vigente = new EstudianteProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), ocurridoEn, UtilFecha.VACIO);
+                UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co", ocurridoEn, UtilFecha.VACIO);
         var eliminado = new EstudianteProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), ocurridoEn, eliminadoEn);
+                UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co", ocurridoEn, eliminadoEn);
 
         // Act
         var jpaVigente = EstudianteProyectoGradoJpaMapper.toJpaEntity(vigente);
@@ -30,6 +30,8 @@ class EstudianteProyectoGradoJpaMapperTest {
         assertThat(jpaVigente.getId()).isEqualTo(vigente.id());
         assertThat(jpaVigente.getEstudianteId()).isEqualTo(vigente.estudiante());
         assertThat(jpaVigente.getProyectoGradoId()).isEqualTo(vigente.proyectoGrado());
+        assertThat(jpaVigente.getNombre()).isEqualTo("Ana");
+        assertThat(jpaVigente.getEmail()).isEqualTo("ana@uco.edu.co");
         assertThat(jpaVigente.getOcurridoEn()).isEqualTo(ocurridoEn);
         assertThat(EstudianteProyectoGradoJpaMapper.toEntity(jpaVigente)).isEqualTo(vigente);
         assertThat(jpaEliminado.getEliminadoEn()).isEqualTo(eliminadoEn);

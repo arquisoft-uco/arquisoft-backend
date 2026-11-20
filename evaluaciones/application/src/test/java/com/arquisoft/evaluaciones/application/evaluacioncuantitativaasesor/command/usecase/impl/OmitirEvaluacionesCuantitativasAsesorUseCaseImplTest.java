@@ -9,6 +9,7 @@ import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacionasesor.ContextoRegistroEvaluacionAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativaasesor.OmisionEvaluacionesCuantitativasAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativaasesor.exception.OmisionEvaluacionAsesorFinalizadaException;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.usecase.CalcularResumenEvaluacionAsesorUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.util.UtilUUID;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -48,6 +50,9 @@ class OmitirEvaluacionesCuantitativasAsesorUseCaseImplTest {
 
     @Mock
     private AppLogger logger;
+
+    @Mock
+    private CalcularResumenEvaluacionAsesorUseCase calcularResumenAsesorUseCase;
 
     @InjectMocks
     private OmitirEvaluacionesCuantitativasAsesorUseCaseImpl useCase;
@@ -84,6 +89,8 @@ class OmitirEvaluacionesCuantitativasAsesorUseCaseImplTest {
         verify(logger).debug(any(ClaveMensaje.class), eq(evaluacionAsesor), eq(true),
                 eq(EstadoEvaluacion.EN_PROGRESO.getId()), eq(3));
         verify(logger, times(2)).info(any(ClaveMensaje.class), eq(evaluacionAsesor), eq(3));
+
+        verify(calcularResumenAsesorUseCase).ejecutar(argThat(completitud -> !completitud.isCompleta()));
     }
 
     @Test

@@ -150,6 +150,26 @@ class EvaluacionDelJuradoQueryOutputAdapterTest {
     }
 
     @Test
+    void debeExcluirLaEvaluacion_cuandoElJuradoFueRetirado() {
+        // Arrange
+        sembrarEvaluacionDelJurado("Retirada", "PENDIENTE");
+        entityManager.createNativeQuery("UPDATE evaluacion_jurado SET eliminado_en = CURRENT_TIMESTAMP "
+                        + "WHERE jurado_id = ?")
+                .setParameter(1, jurado)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var resultado = adapter.consultarPorJurado(EvaluacionDelJuradoCriteria.builder()
+                .raiz(delJuradoEnEstaPrueba())
+                .build());
+
+        // Assert
+        assertThat(resultado.getContent()).isEmpty();
+    }
+
+    @Test
     void debeFiltrarPorEstadoProyectoYEntregableId_dentroDeLasEvaluacionesDelJurado() {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();

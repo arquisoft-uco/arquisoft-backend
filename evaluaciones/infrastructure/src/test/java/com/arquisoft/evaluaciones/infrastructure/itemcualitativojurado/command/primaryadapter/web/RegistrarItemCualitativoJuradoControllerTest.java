@@ -38,7 +38,8 @@ class RegistrarItemCualitativoJuradoControllerTest {
     private static final String BODY_VALIDO = """
             {
               "nombre": "Claridad",
-              "descripcion": "Evalúa la claridad conceptual"
+              "descripcion": "Evalúa la claridad conceptual",
+              "peso": 10
             }
             """;
 
@@ -90,7 +91,8 @@ class RegistrarItemCualitativoJuradoControllerTest {
         String body = """
                 {
                   "nombre": " ",
-                  "descripcion": ""
+                  "descripcion": "",
+                  "peso": 10
                 }
                 """;
 

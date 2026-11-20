@@ -2,7 +2,7 @@ package com.arquisoft.evaluaciones.application.evaluacionjurado.command.validato
 
 import com.arquisoft.evaluaciones.domain.evaluacion.model.EstadoAsignacionEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacion.model.ExistenciaEvaluacion;
-import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.EvaluacionesRegistradasJurados;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.JuradosEvaluadosEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.JuradosAsignadosEvaluacion;
 
 public interface RemoverJuradosEvaluacionValidator {
@@ -11,5 +11,5 @@ public interface RemoverJuradosEvaluacionValidator {
             ExistenciaEvaluacion evaluacion,
             EstadoAsignacionEvaluacion estado,
             JuradosAsignadosEvaluacion jurados,
-            EvaluacionesRegistradasJurados evaluaciones);
+            JuradosEvaluadosEvaluacion evaluados);
 }

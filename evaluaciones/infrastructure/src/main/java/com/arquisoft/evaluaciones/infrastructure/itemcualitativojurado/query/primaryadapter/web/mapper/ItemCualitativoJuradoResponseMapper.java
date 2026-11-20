@@ -11,6 +11,7 @@ public final class ItemCualitativoJuradoResponseMapper {
         return new ItemCualitativoJuradoResponseDTO(
                 readModel.id(),
                 readModel.nombre(),
-                readModel.descripcion());
+                readModel.descripcion(),
+                readModel.peso());
     }
 }

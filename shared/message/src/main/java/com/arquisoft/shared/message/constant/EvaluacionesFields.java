@@ -8,6 +8,7 @@ public final class EvaluacionesFields {
 
         private ItemCualitativoJurado() {}
 
+        public static final String PESO = "peso";
         public static final String NOMBRE = "nombre";
         public static final String DESCRIPCION = "descripcion";
         public static final String ITEM = "itemCualitativoJurado";
@@ -17,6 +18,7 @@ public final class EvaluacionesFields {
 
         private ItemCualitativoAsesor() {}
 
+        public static final String PESO = "peso";
         public static final String NOMBRE = "nombre";
         public static final String DESCRIPCION = "descripcion";
         public static final String ITEM = "item";
@@ -210,6 +212,8 @@ public final class EvaluacionesFields {
         public static final String ESTUDIANTES = "estudiantes";
         public static final String ESTUDIANTE = "estudiante";
         public static final String OCURRIDO_EN = "ocurridoEn";
+        public static final String NOMBRE = "nombre";
+        public static final String EMAIL = "email";
     }
 
     public static final class Asesor {
@@ -274,5 +278,27 @@ public final class EvaluacionesFields {
         public static final String ESTUDIANTE = "estudiante";
         public static final String OBSERVACION = "observacion";
         public static final String DESCRIPCION = "descripcion";
+    }
+
+    public static final class ConsolidacionNotasEvaluacion {
+
+        private ConsolidacionNotasEvaluacion() {}
+
+        public static final String EVALUACION = "evaluacion";
+        public static final String NOTA_ASESOR = "notaAsesor";
+        public static final String NOTAS_JURADOS = "notasJurados";
+        public static final String PESO_ASESOR = "pesoAsesor";
+        public static final String PESO_JURADO = "pesoJurado";
+    }
+
+    public static final class CoordinadorProyectoGrado {
+
+        private CoordinadorProyectoGrado() {}
+
+        public static final String PROYECTO_GRADO = "proyectoGrado";
+        public static final String COORDINADOR = "coordinador";
+        public static final String NOMBRE = "nombre";
+        public static final String EMAIL = "email";
+        public static final String OCURRIDO_EN = "ocurridoEn";
     }
 }

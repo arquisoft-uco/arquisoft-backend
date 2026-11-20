@@ -19,7 +19,7 @@ public enum ItemCualitativoJuradoKey implements ClaveMensaje {
     LOG_VERIFICACION_REMOVER("evaluaciones.aplicacion.itemcualitativojurado.log.verificacion-remover", 2),
     LOG_REMOVIDO("evaluaciones.aplicacion.itemcualitativojurado.log.removido", 1),
     LOG_GUARDADA("evaluaciones.infraestructura.itemcualitativojurado.log.guardada", 1),
-    LOG_DESCRIPCION_ACTUALIZADA("evaluaciones.infraestructura.itemcualitativojurado.log.descripcion-actualizada", 1),
+    LOG_ACTUALIZADO("evaluaciones.infraestructura.itemcualitativojurado.log.actualizado", 1),
     LOG_ELIMINADO("evaluaciones.infraestructura.itemcualitativojurado.log.eliminado", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.itemcualitativojurado.log.consulta-completada", 1);
 

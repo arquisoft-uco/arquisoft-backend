@@ -67,7 +67,7 @@ class EstudianteProyectoGradoDomainTest {
         // Arrange
         var eliminadoEn = Instant.parse("2026-10-19T10:00:00Z");
         var vinculo = EstudianteProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), eliminadoEn, eliminadoEn);
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Nombre", "correo@uco.edu.co", eliminadoEn, eliminadoEn);
 
         // Act
         vinculo.reactivar(OCURRIDO_EN);
@@ -75,6 +75,22 @@ class EstudianteProyectoGradoDomainTest {
         // Assert
         assertThat(vinculo.estaEliminado()).isFalse();
         assertThat(vinculo.getEliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(vinculo.getOcurridoEn()).isEqualTo(OCURRIDO_EN);
+    }
+
+    @Test
+    void debeRefrescarContactoYOcurridoEn_cuandoLlegaUnEventoMasNuevo() {
+        // Arrange
+        var vinculo = EstudianteProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "", "", Instant.parse("2026-10-01T10:00:00Z"),
+                UtilFecha.VACIO);
+
+        // Act
+        vinculo.refrescarContacto(OCURRIDO_EN, "Nuevo Nombre", "nuevo@uco.edu.co");
+
+        // Assert
+        assertThat(vinculo.getNombre()).isEqualTo("Nuevo Nombre");
+        assertThat(vinculo.getEmail()).isEqualTo("nuevo@uco.edu.co");
         assertThat(vinculo.getOcurridoEn()).isEqualTo(OCURRIDO_EN);
     }
 
@@ -92,7 +108,7 @@ class EstudianteProyectoGradoDomainTest {
     void debeReconstruirConVacioPorDefecto_cuandoEliminadoEnEsNulo() {
         // Act
         var vinculo = EstudianteProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), OCURRIDO_EN, null);
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Nombre", "correo@uco.edu.co", OCURRIDO_EN, null);
 
         // Assert
         assertThat(vinculo.getEliminadoEn()).isEqualTo(UtilFecha.VACIO);

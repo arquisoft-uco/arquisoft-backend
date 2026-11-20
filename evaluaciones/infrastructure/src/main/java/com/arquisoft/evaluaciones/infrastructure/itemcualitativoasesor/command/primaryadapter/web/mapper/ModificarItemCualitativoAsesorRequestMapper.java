@@ -11,6 +11,6 @@ public final class ModificarItemCualitativoAsesorRequestMapper {
 
     public static ModificarItemCualitativoAsesorCommand toCommand(
             ModificarItemCualitativoAsesorRequestDTO dto, UUID itemId) {
-        return ModificarItemCualitativoAsesorCommand.crear(itemId, dto.descripcion());
+        return ModificarItemCualitativoAsesorCommand.crear(itemId, dto.descripcion(), dto.peso());
     }
 }

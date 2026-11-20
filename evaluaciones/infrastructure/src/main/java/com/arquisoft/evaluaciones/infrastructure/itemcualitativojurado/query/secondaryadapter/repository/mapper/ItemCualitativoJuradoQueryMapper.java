@@ -11,6 +11,7 @@ public final class ItemCualitativoJuradoQueryMapper {
         return new ItemCualitativoJuradoReadModel(
                 entity.getId(),
                 entity.getNombre(),
-                entity.getDescripcion());
+                entity.getDescripcion(),
+                entity.getPeso());
     }
 }

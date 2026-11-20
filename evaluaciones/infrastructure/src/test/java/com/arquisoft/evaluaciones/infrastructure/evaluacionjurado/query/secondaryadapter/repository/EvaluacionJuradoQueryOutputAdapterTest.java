@@ -98,6 +98,28 @@ class EvaluacionJuradoQueryOutputAdapterTest {
     }
 
     @Test
+    void debeExcluirAlJuradoRetirado_cuandoSeListanLosJuradosDeLaEvaluacion() {
+        // Arrange
+        var evaluacion = UUID.randomUUID();
+        var vigente = sembrarJurado("Ana Ruiz", "ana@uco.edu.co");
+        var retirado = sembrarJurado("Beto Diaz", "beto@uco.edu.co");
+        sembrarEvaluacionJurado(evaluacion, vigente);
+        testEntityManager.persist(EvaluacionJuradoJpaEntity.builder()
+                .id(UUID.randomUUID()).evaluacion(evaluacion).jurado(retirado)
+                .estado("PENDIENTE_POR_EVALUAR").eliminadoEn(Instant.now()).build());
+        sincronizar();
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(evaluacion).build());
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(EvaluacionJuradoReadModel::jurado)
+                .extracting(EvaluacionJuradoReadModel.Jurado::nombre)
+                .containsExactly("Ana Ruiz");
+    }
+
+    @Test
     void debeFiltrarPorNombreDeJurado_sinSalirseDeLaEvaluacionPedida() {
         // Arrange
         var evaluacion = UUID.randomUUID();

@@ -9,12 +9,13 @@ public final class EstudianteProyectoGradoMapper {
 
     public static EstudianteProyectoGradoDomain toDomain(EstudianteProyectoGradoEntity entity) {
         return EstudianteProyectoGradoDomain.reconstruir(
-                entity.id(), entity.estudiante(), entity.proyectoGrado(), entity.ocurridoEn(), entity.eliminadoEn());
+                entity.id(), entity.estudiante(), entity.proyectoGrado(), entity.nombre(), entity.email(),
+                entity.ocurridoEn(), entity.eliminadoEn());
     }
 
     public static EstudianteProyectoGradoEntity toEntity(EstudianteProyectoGradoDomain vinculo) {
         return new EstudianteProyectoGradoEntity(
-                vinculo.getId(), vinculo.getEstudiante(), vinculo.getProyectoGrado(), vinculo.getOcurridoEn(),
-                vinculo.getEliminadoEn());
+                vinculo.getId(), vinculo.getEstudiante(), vinculo.getProyectoGrado(), vinculo.getNombre(),
+                vinculo.getEmail(), vinculo.getOcurridoEn(), vinculo.getEliminadoEn());
     }
 }

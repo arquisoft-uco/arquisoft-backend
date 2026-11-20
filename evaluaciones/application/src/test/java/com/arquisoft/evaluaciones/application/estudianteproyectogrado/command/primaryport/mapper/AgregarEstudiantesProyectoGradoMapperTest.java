@@ -20,7 +20,8 @@ class AgregarEstudiantesProyectoGradoMapperTest {
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var primero = UtilUUID.generarNuevoUUID();
         var segundo = UtilUUID.generarNuevoUUID();
-        var command = new AgregarEstudiantesProyectoGradoCommand(proyectoGrado, List.of(primero, segundo), OCURRIDO_EN);
+        var command = new AgregarEstudiantesProyectoGradoCommand(
+                proyectoGrado, List.of(contacto(primero), contacto(segundo)), OCURRIDO_EN);
 
         // Act
         var agregacion = AgregarEstudiantesProyectoGradoMapper.toDomain(command);
@@ -35,5 +36,9 @@ class AgregarEstudiantesProyectoGradoMapperTest {
                     assertThat(vinculo.getOcurridoEn()).isEqualTo(OCURRIDO_EN);
                     assertThat(vinculo.estaEliminado()).isFalse();
                 });
+    }
+
+    private static AgregarEstudiantesProyectoGradoCommand.Estudiante contacto(java.util.UUID id) {
+        return new AgregarEstudiantesProyectoGradoCommand.Estudiante(id.toString(), "Nombre", "correo@uco.edu.co");
     }
 }

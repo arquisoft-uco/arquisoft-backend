@@ -1,18 +1,20 @@
 package com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.impl;
 
 import com.arquisoft.evaluaciones.application.evaluacion.command.finder.ContextoAsignacionEvaluacionFinder;
+import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.FinalizarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.JuradosAsignadosFinder;
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.JuradosConEvaluacionesFinder;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.JuradosEvaluadosFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.model.CriterioJuradosEvaluacion;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.validator.RemoverJuradosEvaluacionValidator;
 import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacion.ContextoAsignacionEvaluacionDomain;
+import com.arquisoft.evaluaciones.domain.evaluacion.VerificacionFinalizacionEvaluacionDomain;
 import com.arquisoft.evaluaciones.domain.evaluacion.model.EstadoAsignacionEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacion.model.ExistenciaEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.RemocionJuradosEvaluacionDomain;
-import com.arquisoft.evaluaciones.domain.evaluacionjurado.exception.JuradosConEvaluacionesException;
-import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.EvaluacionesRegistradasJurados;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.exception.JuradosEvaluadosException;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.JuradosEvaluadosEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.JuradosAsignadosEvaluacion;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
@@ -47,13 +49,16 @@ class RemoverJuradosEvaluacionUseCaseImplTest {
     private JuradosAsignadosFinder asignadosFinder;
 
     @Mock
-    private JuradosConEvaluacionesFinder conEvaluacionesFinder;
+    private JuradosEvaluadosFinder evaluadosFinder;
 
     @Mock
     private RemoverJuradosEvaluacionValidator validator;
 
     @Mock
     private EvaluacionJuradoOutputPort outputPort;
+
+    @Mock
+    private FinalizarEvaluacionUseCase finalizarEvaluacionUseCase;
 
     @Mock
     private AppLogger logger;
@@ -72,25 +77,29 @@ class RemoverJuradosEvaluacionUseCaseImplTest {
         when(contextoFinder.obtener(evaluacion)).thenReturn(
                 ContextoAsignacionEvaluacionDomain.reconstruir(evaluacion, EstadoEvaluacion.EN_PROGRESO));
         when(asignadosFinder.obtener(criterio)).thenReturn(solicitados);
-        when(conEvaluacionesFinder.obtener(criterio)).thenReturn(Set.of());
+        when(evaluadosFinder.obtener(criterio)).thenReturn(Set.of());
 
         // Act
         useCase.ejecutar(remocion);
 
         // Assert
-        var orden = inOrder(logger, contextoFinder, asignadosFinder, conEvaluacionesFinder, validator, outputPort);
+        var orden = inOrder(logger, contextoFinder, asignadosFinder, evaluadosFinder, validator, outputPort, finalizarEvaluacionUseCase);
         orden.verify(logger).info(eq(EvaluacionJuradoKey.LOG_REMOVIENDO), eq(evaluacion), eq(3));
         orden.verify(contextoFinder, times(1)).obtener(evaluacion);
         orden.verify(asignadosFinder, times(1)).obtener(criterio);
-        orden.verify(conEvaluacionesFinder, times(1)).obtener(criterio);
+        orden.verify(evaluadosFinder, times(1)).obtener(criterio);
         orden.verify(validator).validar(
                 eq(new ExistenciaEvaluacion(evaluacion, true)),
                 eq(new EstadoAsignacionEvaluacion(EstadoEvaluacion.EN_PROGRESO)),
                 eq(new JuradosAsignadosEvaluacion(solicitados, solicitados)),
-                eq(new EvaluacionesRegistradasJurados(Set.of())));
-        orden.verify(outputPort).eliminarPorEvaluacionYJurados(evaluacion, solicitados);
+                eq(new JuradosEvaluadosEvaluacion(Set.of())));
+        orden.verify(outputPort).marcarEliminadosPorEvaluacionYJurados(
+                evaluacion, solicitados, remocion.getEliminadoEn());
+        orden.verify(finalizarEvaluacionUseCase).ejecutar(any(VerificacionFinalizacionEvaluacionDomain.class));
         orden.verify(logger).info(eq(EvaluacionJuradoKey.LOG_REMOVIDOS), eq(evaluacion), eq(3));
         assertThat(solicitados).hasSize(3);
+
+        verify(finalizarEvaluacionUseCase).ejecutar(any(VerificacionFinalizacionEvaluacionDomain.class));
     }
 
     @Test
@@ -102,16 +111,17 @@ class RemoverJuradosEvaluacionUseCaseImplTest {
         when(contextoFinder.obtener(evaluacion)).thenReturn(
                 ContextoAsignacionEvaluacionDomain.reconstruir(evaluacion, EstadoEvaluacion.PENDIENTE));
         when(asignadosFinder.obtener(any(CriterioJuradosEvaluacion.class))).thenReturn(Set.of(jurado));
-        when(conEvaluacionesFinder.obtener(any(CriterioJuradosEvaluacion.class))).thenReturn(Set.of(jurado));
-        doThrow(new JuradosConEvaluacionesException(Set.of(jurado))).when(validator).validar(
+        when(evaluadosFinder.obtener(any(CriterioJuradosEvaluacion.class))).thenReturn(Set.of(jurado));
+        doThrow(new JuradosEvaluadosException(Set.of(jurado))).when(validator).validar(
                 any(ExistenciaEvaluacion.class),
                 any(EstadoAsignacionEvaluacion.class),
                 any(JuradosAsignadosEvaluacion.class),
-                any(EvaluacionesRegistradasJurados.class));
+                any(JuradosEvaluadosEvaluacion.class));
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(remocion)).isInstanceOf(JuradosConEvaluacionesException.class);
-        verify(outputPort, never()).eliminarPorEvaluacionYJurados(any(), any());
+        assertThatThrownBy(() -> useCase.ejecutar(remocion)).isInstanceOf(JuradosEvaluadosException.class);
+        verify(outputPort, never()).marcarEliminadosPorEvaluacionYJurados(any(), any(), any());
+        verify(finalizarEvaluacionUseCase, never()).ejecutar(any());
         verify(logger, never()).info(eq(EvaluacionJuradoKey.LOG_REMOVIDOS), eq(evaluacion), eq(1));
     }
 }

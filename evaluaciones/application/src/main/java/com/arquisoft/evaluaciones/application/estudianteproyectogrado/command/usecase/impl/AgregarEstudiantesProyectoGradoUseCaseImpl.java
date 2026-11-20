@@ -48,9 +48,16 @@ public class AgregarEstudiantesProyectoGradoUseCaseImpl implements AgregarEstudi
             } else if (!vinculo.getOcurridoEn().isAfter(existente.getOcurridoEn())) {
                 descartados++;
             } else if (!existente.estaEliminado()) {
+                existente.refrescarContacto(vinculo.getOcurridoEn(), vinculo.getNombre(), vinculo.getEmail());
+                logger.debug(EstudianteProyectoGradoKey.LOG_CONTACTO_REFRESCADO,
+                        entrada.getProyectoGrado(), vinculo.getEstudiante());
+                paraGuardar.add(EstudianteProyectoGradoMapper.toEntity(existente));
                 duplicados++;
             } else {
                 existente.reactivar(vinculo.getOcurridoEn());
+                existente.refrescarContacto(vinculo.getOcurridoEn(), vinculo.getNombre(), vinculo.getEmail());
+                logger.debug(EstudianteProyectoGradoKey.LOG_CONTACTO_REFRESCADO,
+                        entrada.getProyectoGrado(), vinculo.getEstudiante());
                 paraGuardar.add(EstudianteProyectoGradoMapper.toEntity(existente));
                 reactivados++;
             }
