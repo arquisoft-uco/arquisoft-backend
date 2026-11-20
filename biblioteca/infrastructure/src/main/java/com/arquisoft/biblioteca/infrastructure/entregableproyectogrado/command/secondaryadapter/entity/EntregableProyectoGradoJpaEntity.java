@@ -31,9 +31,6 @@ public class EntregableProyectoGradoJpaEntity {
     @Column(name = "version_entregable", nullable = false)
     private int versionEntregable;
 
-    @Column(name = "asesor_id", nullable = false, columnDefinition = "UUID")
-    private UUID asesorId;
-
     @Column(name = "estado_entregable_nombre", nullable = false, length = 60)
     private String estadoEntregableNombre;
 

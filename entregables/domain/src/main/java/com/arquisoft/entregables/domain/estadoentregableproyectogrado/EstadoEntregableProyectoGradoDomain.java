@@ -103,6 +103,11 @@ public final class EstadoEntregableProyectoGradoDomain {
         this.fechaActualizacion = UtilFecha.generarInstanteActual();
     }
 
+    public boolean admiteResultadoEvaluacion() {
+        return estadoEntregable == EstadoEntregable.DISPONIBLE_EVALUACION
+                || estadoEntregable == EstadoEntregable.EN_EVALUACION;
+    }
+
     public UUID getId() {
         return id;
     }

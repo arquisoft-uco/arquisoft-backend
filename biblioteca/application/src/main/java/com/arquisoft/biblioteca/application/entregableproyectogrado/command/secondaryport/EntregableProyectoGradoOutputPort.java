@@ -8,4 +8,8 @@ import java.util.UUID;
 public interface EntregableProyectoGradoOutputPort {
 
     Optional<EntregableProyectoGradoEntity> obtenerBloqueadoPorId(UUID id);
+
+    boolean existePorId(UUID id);
+
+    void guardar(EntregableProyectoGradoEntity entregable);
 }

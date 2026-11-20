@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface PaqueteEntregableCommandRepository extends JpaRepository<PaqueteEntregableJpaEntity, UUID> {
@@ -17,4 +18,6 @@ public interface PaqueteEntregableCommandRepository extends JpaRepository<Paquet
             WHERE e.proyecto_grado_id = :proyectoGrado
             """)
     List<PaqueteEntregableJpaEntity> buscarPorProyectoGrado(@Param("proyectoGrado") UUID proyectoGrado);
+
+    Optional<PaqueteEntregableJpaEntity> findByEntregableProyectoGradoId(UUID entregableProyectoGradoId);
 }

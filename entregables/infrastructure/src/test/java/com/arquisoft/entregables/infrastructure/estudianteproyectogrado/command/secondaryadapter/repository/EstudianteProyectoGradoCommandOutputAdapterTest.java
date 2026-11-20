@@ -1,6 +1,7 @@
 package com.arquisoft.entregables.infrastructure.estudianteproyectogrado.command.secondaryadapter.repository;
 
 import com.arquisoft.entregables.application.estudianteproyectogrado.command.secondaryport.entity.EstudianteProyectoGradoEntity;
+import com.arquisoft.entregables.infrastructure.entregableproyectogrado.command.secondaryadapter.entity.EntregableProyectoGradoJpaEntity;
 import com.arquisoft.entregables.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.entregables.EstudianteProyectoGradoKey;
@@ -44,7 +45,7 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
 
     private EstudianteProyectoGradoEntity vinculo(UUID estudiante, UUID proyectoGrado, Instant eliminadoEn) {
         return new EstudianteProyectoGradoEntity(
-                UtilUUID.generarNuevoUUID(), estudiante, proyectoGrado, OCURRIDO_EN, eliminadoEn);
+                UtilUUID.generarNuevoUUID(), estudiante, proyectoGrado, "Ana", "ana@uco.edu.co", OCURRIDO_EN, eliminadoEn);
     }
 
     @Test
@@ -95,7 +96,7 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
         entityManager.clear();
         var removidoEn = Instant.parse("2026-10-21T10:00:00Z");
         var removido = new EstudianteProyectoGradoEntity(
-                vigente.id(), vigente.estudiante(), proyectoGrado, removidoEn, removidoEn);
+                vigente.id(), vigente.estudiante(), proyectoGrado, "Ana", "ana@uco.edu.co", removidoEn, removidoEn);
 
         // Act
         adapter.guardar(removido);
@@ -131,5 +132,73 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
             adapter.guardarTodos(List.of(repetido));
             entityManager.flush();
         }).isInstanceOf(ConstraintViolationException.class);
+    }
+
+    private EstudianteProyectoGradoEntity conContacto(UUID proyectoGrado, String nombre, String email,
+                                                      Instant eliminadoEn) {
+        return new EstudianteProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
+                proyectoGrado, nombre, email, OCURRIDO_EN, eliminadoEn);
+    }
+
+    @Test
+    void debeGuardarYLeerElContacto_cuandoSeGuardaElVinculo() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var vinculo = conContacto(proyectoGrado, "Ana Perez", "ana@uco.edu.co", UtilFecha.VACIO);
+
+        // Act
+        adapter.guardar(vinculo);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var jpa = entityManager.find(EstudianteProyectoGradoJpaEntity.class, vinculo.id());
+        assertThat(jpa.getNombre()).isEqualTo("Ana Perez");
+        assertThat(jpa.getEmail()).isEqualTo("ana@uco.edu.co");
+        assertThat(adapter.consultarPorProyectoGrado(proyectoGrado)).containsExactly(vinculo);
+    }
+
+    @Test
+    void debeDevolverSoloVigentesConEmail_cuandoConsultaContactosPorProyecto() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var vigente = conContacto(proyectoGrado, "Ana", "ana@uco.edu.co", UtilFecha.VACIO);
+        var dadoDeBaja = conContacto(proyectoGrado, "Luis", "luis@uco.edu.co", Instant.parse("2026-10-21T10:00:00Z"));
+        var sinEmail = conContacto(proyectoGrado, "Sin Correo", null, UtilFecha.VACIO);
+        var emailEnBlanco = conContacto(proyectoGrado, "Blanco", "  ", UtilFecha.VACIO);
+        var ajeno = conContacto(UtilUUID.generarNuevoUUID(), "Otro", "otro@uco.edu.co", UtilFecha.VACIO);
+        adapter.guardarTodos(List.of(vigente, dadoDeBaja, sinEmail, emailEnBlanco, ajeno));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var contactos = adapter.consultarContactosVigentesPorProyectoGrado(proyectoGrado);
+
+        // Assert
+        assertThat(contactos).containsExactly(vigente);
+    }
+
+    @Test
+    void debeDevolverSoloVigentesConEmailPorJoin_cuandoConsultaContactosPorEntregable() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+        entityManager.persist(EntregableProyectoGradoJpaEntity.builder()
+                .id(entregable).proyectoGrado(proyectoGrado).version(1).asesor(UtilUUID.generarNuevoUUID()).build());
+        var vigente = conContacto(proyectoGrado, "Ana", "ana@uco.edu.co", UtilFecha.VACIO);
+        var dadoDeBaja = conContacto(proyectoGrado, "Luis", "luis@uco.edu.co", Instant.parse("2026-10-21T10:00:00Z"));
+        var sinEmail = conContacto(proyectoGrado, "Sin Correo", null, UtilFecha.VACIO);
+        var ajeno = conContacto(UtilUUID.generarNuevoUUID(), "Otro", "otro@uco.edu.co", UtilFecha.VACIO);
+        adapter.guardarTodos(List.of(vigente, dadoDeBaja, sinEmail, ajeno));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var contactos = adapter.consultarContactosVigentesPorEntregable(entregable);
+        var deOtroEntregable = adapter.consultarContactosVigentesPorEntregable(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(contactos).containsExactly(vigente);
+        assertThat(deOtroEntregable).isEmpty();
     }
 }

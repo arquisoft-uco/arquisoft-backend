@@ -11,6 +11,7 @@ import com.arquisoft.entregables.application.entregableproyectogrado.command.sec
 import com.arquisoft.entregables.application.entregableproyectogrado.command.secondaryport.entity.EntregableProyectoGradoEntity;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.ConfirmarGeneracionEntregableProyectoGradoValidator;
 import com.arquisoft.entregables.application.entregableproyectogrado.command.validator.GenerarEntregableProyectoGradoValidator;
+import com.arquisoft.entregables.application.estudianteproyectogrado.command.finder.ContactosEstudiantesProyectoGradoFinder;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.EstadoEntregableProyectoGradoOutputPort;
 import com.arquisoft.entregables.application.estadoentregableproyectogrado.command.secondaryport.entity.EstadoEntregableProyectoGradoEntity;
 import com.arquisoft.entregables.application.paqueteentregable.command.finder.PaquetesProyectoGradoFinder;
@@ -26,6 +27,7 @@ import com.arquisoft.entregables.domain.artefactoentregable.AgregacionArtefactos
 import com.arquisoft.entregables.domain.entregableproyectogrado.GeneracionEntregableProyectoGradoDomain;
 import com.arquisoft.entregables.domain.entregableproyectogrado.event.EntregableProyectoGradoGeneradoEvent;
 import com.arquisoft.entregables.domain.estadoentregable.EstadoEntregable;
+import com.arquisoft.entregables.domain.estudianteproyectogrado.model.ContactoEstudiante;
 import com.arquisoft.entregables.domain.paqueteentregable.PaqueteEntregableDomain;
 import com.arquisoft.entregables.domain.paqueteentregable.exception.PaqueteArmadoDesactualizadoException;
 import com.arquisoft.entregables.domain.paqueteentregable.model.VigenciaPaqueteArmado;
@@ -104,6 +106,9 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
     private PaquetesProyectoGradoFinder paquetesProyectoGradoFinder;
 
     @Mock
+    private ContactosEstudiantesProyectoGradoFinder contactosEstudiantesProyectoGradoFinder;
+
+    @Mock
     private GenerarEntregableProyectoGradoValidator generarEntregableProyectoGradoValidator;
 
     @Mock
@@ -139,6 +144,7 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         when(asesorVigenteProyectoGradoFinder.obtener(proyecto)).thenReturn(asesor);
         when(ultimaVersionEntregableProyectoGradoFinder.obtener(proyecto)).thenReturn(2);
         when(artefactosVigentesProyectoFinder.obtener(proyecto)).thenReturn(List.of(artefacto));
+        lenient().when(contactosEstudiantesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
     }
 
     private static ArtefactoDomain artefacto(java.util.UUID proyecto) {
@@ -153,6 +159,21 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
                 "a.zip", 10L, Instant.now());
     }
 
+    private static void assertFoto(AgregacionArtefactosEntregableDomain foto, ArtefactoDomain artefacto) {
+        assertThat(foto.getArtefactos()).singleElement().satisfies(item -> {
+            assertThat(item.getArtefacto()).isEqualTo(artefacto.getId());
+            assertThat(item.getUriArchivo()).isEqualTo("001-Documento/v2-archivo.pdf");
+            assertThat(item.getVersionArtefacto()).isEqualTo(artefacto.getVersionArtefacto());
+        });
+    }
+
+    private static void assertEvento(
+            EntregableProyectoGradoGeneradoEvent evento, java.util.UUID id, List<ContactoEstudiante> estudiantes) {
+        assertThat(evento.getEntregableProyectoGrado()).isEqualTo(id);
+        assertThat(evento.getNombreProyecto()).isEqualTo("Sistema de gestion");
+        assertThat(evento.getEstudiantes()).containsExactlyElementsOf(estudiantes);
+    }
+
     @Test
     void debeArmarFueraDeLaTransaccionPersistirFotoYBorrarAnteriores_cuandoLasDosLecturasCoinciden() {
         // Arrange
@@ -162,8 +183,10 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         var proyectoDomain = ProyectoGradoDomain.crear(proyecto, "Sistema de gestion");
         var artefacto = artefacto(proyecto);
         var anterior = paqueteAnterior();
+        var estudiantes = List.of(new ContactoEstudiante(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co"));
         prepararLecturas(proyecto, asesor, proyectoDomain, artefacto);
         when(paquetesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of(anterior));
+        when(contactosEstudiantesProyectoGradoFinder.obtener(proyecto)).thenReturn(estudiantes);
         when(armadoPaqueteOutputPort.armar(any())).thenReturn(new ArchivoPaqueteArmado(
                 "bucket", "paquetes/nuevo.zip", "nuevo.zip", 20L,
                 List.of(new EntradaPaqueteArmada(artefacto.getId(), "001-Documento/v2-archivo.pdf"))));
@@ -176,8 +199,10 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         var captorEstado = ArgumentCaptor.forClass(EstadoEntregableProyectoGradoEntity.class);
         var captorPaquete = ArgumentCaptor.forClass(PaqueteEntregableEntity.class);
         var captorFoto = ArgumentCaptor.forClass(AgregacionArtefactosEntregableDomain.class);
+        var captorEvento = ArgumentCaptor.forClass(EntregableProyectoGradoGeneradoEvent.class);
         var orden = inOrder(ejecutorTransaccionalOutputPort, generarEntregableProyectoGradoValidator,
-                armadoPaqueteOutputPort, confirmarGeneracionValidator, entregableProyectoGradoOutputPort,
+                armadoPaqueteOutputPort, contactosEstudiantesProyectoGradoFinder, confirmarGeneracionValidator,
+                entregableProyectoGradoOutputPort,
                 estadoEntregableProyectoGradoOutputPort, paqueteEntregableOutputPort,
                 agregarArtefactosEntregableUseCase, eventPublisher);
         orden.verify(ejecutorTransaccionalOutputPort).enLectura(any());
@@ -186,6 +211,7 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         orden.verify(armadoPaqueteOutputPort).armar(any());
         orden.verify(ejecutorTransaccionalOutputPort).enEscritura(any());
         orden.verify(armadoPaqueteOutputPort).eliminarSiRevierte("bucket", "paquetes/nuevo.zip");
+        orden.verify(contactosEstudiantesProyectoGradoFinder, times(1)).obtener(proyecto);
         orden.verify(generarEntregableProyectoGradoValidator)
                 .validar(entrada, proyectoDomain, true, asesor, false, List.of(artefacto));
         orden.verify(confirmarGeneracionValidator).validar(proyectoDomain, 2, 2,
@@ -195,8 +221,9 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         orden.verify(paqueteEntregableOutputPort).guardar(captorPaquete.capture());
         orden.verify(agregarArtefactosEntregableUseCase).ejecutar(captorFoto.capture());
         orden.verify(armadoPaqueteOutputPort).eliminarTrasConfirmar("bucket", "paquetes/a.zip");
-        orden.verify(eventPublisher).publish(any(EntregableProyectoGradoGeneradoEvent.class));
+        orden.verify(eventPublisher).publish(captorEvento.capture());
         verify(armadoPaqueteOutputPort, times(1)).armar(any());
+        assertEvento(captorEvento.getValue(), id, estudiantes);
         assertThat(captorEstado.getValue().entregableProyectoGrado()).isEqualTo(id);
         assertThat(captorEstado.getValue().estadoEntregable()).isEqualTo(EstadoEntregable.NUEVO.getId());
         assertThat(captor.getValue().id()).isEqualTo(id);
@@ -205,11 +232,7 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         assertThat(captor.getValue().version()).isEqualTo(3);
         assertThat(captorPaquete.getValue().entregableProyectoGrado()).isEqualTo(id);
         assertThat(captorPaquete.getValue().claveObjeto()).isEqualTo("paquetes/nuevo.zip");
-        assertThat(captorFoto.getValue().getArtefactos()).singleElement().satisfies(foto -> {
-            assertThat(foto.getArtefacto()).isEqualTo(artefacto.getId());
-            assertThat(foto.getUriArchivo()).isEqualTo("001-Documento/v2-archivo.pdf");
-            assertThat(foto.getVersionArtefacto()).isEqualTo(artefacto.getVersionArtefacto());
-        });
+        assertFoto(captorFoto.getValue(), artefacto);
         verify(logger).info(any(ClaveMensaje.class), eq(id), eq(proyecto), eq(3));
     }
 
@@ -272,5 +295,30 @@ class GenerarEntregableProyectoGradoUseCaseImplTest {
         verify(agregarArtefactosEntregableUseCase, never()).ejecutar(any());
         verify(armadoPaqueteOutputPort, never()).eliminarTrasConfirmar(any(), any());
         verify(eventPublisher, never()).publish(any());
+    }
+
+    @Test
+    void debePublicarGeneradoConListaVacia_cuandoElProyectoNoTieneEstudiantesConEmail() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        var entrada = GeneracionEntregableProyectoGradoDomain.crear(proyecto, asesor);
+        var proyectoDomain = ProyectoGradoDomain.crear(proyecto, "Sistema de gestion");
+        var artefacto = artefacto(proyecto);
+        prepararLecturas(proyecto, asesor, proyectoDomain, artefacto);
+        when(paquetesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
+        when(contactosEstudiantesProyectoGradoFinder.obtener(proyecto)).thenReturn(List.of());
+        when(armadoPaqueteOutputPort.armar(any())).thenReturn(new ArchivoPaqueteArmado(
+                "bucket", "paquetes/nuevo.zip", "nuevo.zip", 20L,
+                List.of(new EntradaPaqueteArmada(artefacto.getId(), "001-Documento/v2-archivo.pdf"))));
+
+        // Act
+        useCase.ejecutar(entrada);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(EntregableProyectoGradoGeneradoEvent.class);
+        verify(eventPublisher).publish(captor.capture());
+        assertThat(captor.getValue().getEstudiantes()).isEmpty();
+        verify(entregableProyectoGradoOutputPort).registrar(any());
     }
 }

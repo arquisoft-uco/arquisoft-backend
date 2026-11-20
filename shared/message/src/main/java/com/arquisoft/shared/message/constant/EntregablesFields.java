@@ -109,5 +109,7 @@ public final class EntregablesFields {
         public static final String ESTUDIANTES = "estudiantes";
         public static final String ESTUDIANTE = "estudiante";
         public static final String OCURRIDO_EN = "ocurridoEn";
+        public static final String NOMBRE = "nombre";
+        public static final String EMAIL = "email";
     }
 }

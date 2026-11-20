@@ -9,6 +9,6 @@ public record EstudiantesProyectoGradoAsignadosPayload(
         String proyectoGradoId,
         List<EstudiantePayload> estudiantes
 ) {
-    public record EstudiantePayload(String id) {
+    public record EstudiantePayload(String id, String nombre, String email) {
     }
 }

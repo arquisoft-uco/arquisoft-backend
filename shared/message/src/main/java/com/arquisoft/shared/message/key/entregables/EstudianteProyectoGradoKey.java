@@ -12,7 +12,8 @@ public enum EstudianteProyectoGradoKey implements ClaveMensaje {
     LOG_VERIFICACION_REMOVER("entregables.aplicacion.estudianteproyectogrado.log.verificacion-remover", 2),
     LOG_REMOVIDO("entregables.infraestructura.estudianteproyectogrado.log.removido", 2),
     LOG_LAPIDA("entregables.infraestructura.estudianteproyectogrado.log.lapida", 2),
-    LOG_REMOCION_DESCARTADA("entregables.infraestructura.estudianteproyectogrado.log.remocion-descartada", 3);
+    LOG_REMOCION_DESCARTADA("entregables.infraestructura.estudianteproyectogrado.log.remocion-descartada", 3),
+    LOG_CONTACTO_REFRESCADO("entregables.aplicacion.estudianteproyectogrado.log.contacto-refrescado", 2);
 
     private final String clave;
     private final int parametros;

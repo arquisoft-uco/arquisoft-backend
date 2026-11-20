@@ -20,7 +20,10 @@ class AgregarEstudiantesProyectoGradoMapperTest {
         var proyectoGrado = UtilUUID.generarNuevoUUID();
         var primero = UtilUUID.generarNuevoUUID();
         var segundo = UtilUUID.generarNuevoUUID();
-        var command = new AgregarEstudiantesProyectoGradoCommand(proyectoGrado, List.of(primero, segundo), OCURRIDO_EN);
+        var command = new AgregarEstudiantesProyectoGradoCommand(proyectoGrado, List.of(
+                new AgregarEstudiantesProyectoGradoCommand.Estudiante(primero.toString(), "Ana", "ana@uco.edu.co"),
+                new AgregarEstudiantesProyectoGradoCommand.Estudiante(segundo.toString(), "Luis", "luis@uco.edu.co")),
+                OCURRIDO_EN);
 
         // Act
         var agregacion = AgregarEstudiantesProyectoGradoMapper.toDomain(command);
@@ -31,6 +34,8 @@ class AgregarEstudiantesProyectoGradoMapperTest {
                 .extracting(EstudianteProyectoGradoDomain::getEstudiante).containsExactly(primero, segundo);
         assertThat(agregacion.getVinculos())
                 .allSatisfy(vinculo -> {
+                    assertThat(vinculo.getNombre()).isNotBlank();
+                    assertThat(vinculo.getEmail()).endsWith("@uco.edu.co");
                     assertThat(vinculo.getProyectoGrado()).isEqualTo(proyectoGrado);
                     assertThat(vinculo.getOcurridoEn()).isEqualTo(OCURRIDO_EN);
                     assertThat(vinculo.estaEliminado()).isFalse();

@@ -54,7 +54,7 @@ class RemoverEstudianteProyectoGradoUseCaseImplTest {
 
     private EstudianteProyectoGradoDomain guardado(Instant eliminadoEn) {
         return EstudianteProyectoGradoDomain.reconstruir(
-                UtilUUID.generarNuevoUUID(), estudiante, proyectoGrado, GUARDADO_EN, eliminadoEn);
+                UtilUUID.generarNuevoUUID(), estudiante, proyectoGrado, "Ana", "ana@uco.edu.co", GUARDADO_EN, eliminadoEn);
     }
 
     private EstudianteProyectoGradoEntity guardadoCapturado() {

@@ -30,7 +30,7 @@ class EntregableProyectoGradoBloqueadoPorIdFinderImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         when(entregableProyectoGradoOutputPort.obtenerBloqueadoPorId(id)).thenReturn(Optional.of(
-                new EntregableProyectoGradoEntity(id, proyecto, "entregables", "a/b.zip")));
+                new EntregableProyectoGradoEntity(id, proyecto, 1, "Aprobado", "entregables", "a/b.zip", "b.zip")));
 
         // Act
         var resultado = finder.obtener(id);
@@ -41,6 +41,9 @@ class EntregableProyectoGradoBloqueadoPorIdFinderImplTest {
         assertThat(resultado.getProyectoGrado()).isEqualTo(proyecto);
         assertThat(resultado.getBucket()).isEqualTo("entregables");
         assertThat(resultado.getClaveObjeto()).isEqualTo("a/b.zip");
+        assertThat(resultado.getVersionEntregable()).isEqualTo(1);
+        assertThat(resultado.getEstadoEntregableNombre()).isEqualTo("Aprobado");
+        assertThat(resultado.getNombreArchivo()).isEqualTo("b.zip");
     }
 
     @Test

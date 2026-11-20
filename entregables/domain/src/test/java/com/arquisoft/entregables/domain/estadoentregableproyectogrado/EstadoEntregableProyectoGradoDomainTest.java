@@ -99,4 +99,23 @@ class EstadoEntregableProyectoGradoDomainTest {
         assertThat(EstadoEntregableProyectoGradoDomain.VACIO.esVacio()).isTrue();
         assertThat(EstadoEntregableProyectoGradoDomain.VACIO.getEstadoEntregable()).isEqualTo(EstadoEntregable.VACIO);
     }
+
+    @Test
+    void debeAdmitirResultadoEvaluacion_soloCuandoEstaDisponibleOEnEvaluacion() {
+        // Arrange
+        var entregable = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThat(EstadoEntregableProyectoGradoDomain.crearConEstado(entregable, EstadoEntregable.DISPONIBLE_EVALUACION)
+                .admiteResultadoEvaluacion()).isTrue();
+        assertThat(EstadoEntregableProyectoGradoDomain.crearConEstado(entregable, EstadoEntregable.EN_EVALUACION)
+                .admiteResultadoEvaluacion()).isTrue();
+        assertThat(EstadoEntregableProyectoGradoDomain.crear(entregable).admiteResultadoEvaluacion()).isFalse();
+        assertThat(EstadoEntregableProyectoGradoDomain.crearConEstado(entregable, EstadoEntregable.APROBADO)
+                .admiteResultadoEvaluacion()).isFalse();
+        assertThat(EstadoEntregableProyectoGradoDomain.crearConEstado(entregable, EstadoEntregable.CANCELADO)
+                .admiteResultadoEvaluacion()).isFalse();
+        assertThat(EstadoEntregableProyectoGradoDomain.crearConEstado(entregable, EstadoEntregable.CERRADO)
+                .admiteResultadoEvaluacion()).isFalse();
+    }
 }

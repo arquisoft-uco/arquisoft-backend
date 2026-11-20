@@ -78,7 +78,7 @@ class RegistrarDocumentacionUseCaseImplTest {
         var bibliotecarioId = UtilUUID.generarNuevoUUID();
         var registro = RegistroDocumentacionDomain.crear(entregableId, bibliotecarioId);
         var entregable = EntregableProyectoGradoDomain.reconstruir(
-                entregableId, UtilUUID.generarNuevoUUID(), "entregables", "proyectos/a.zip");
+                entregableId, UtilUUID.generarNuevoUUID(), 1, "Aprobado", "entregables", "proyectos/a.zip", "a.zip");
         var bibliotecario = BibliotecarioDomain.reconstruir(bibliotecarioId, "123", "Ana", "ana@uco.edu.co",
                 Instant.parse("2026-11-15T10:00:00Z"), UtilFecha.VACIO);
         var autores = List.of(

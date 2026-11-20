@@ -48,7 +48,7 @@ class DocumentacionQueryOutputAdapterTest {
                 + "identificador VARCHAR(30), nombre VARCHAR(50), email VARCHAR(50), "
                 + "ocurrido_en TIMESTAMP WITH TIME ZONE, eliminado_en TIMESTAMP WITH TIME ZONE)").executeUpdate();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS entregable_proyecto_grado (id UUID PRIMARY KEY, "
-                + "proyecto_grado_id UUID, version_entregable INTEGER, asesor_id UUID, "
+                + "proyecto_grado_id UUID, version_entregable INTEGER, "
                 + "estado_entregable_nombre VARCHAR(60), bucket VARCHAR(63), clave_objeto VARCHAR(2000), "
                 + "nombre_archivo VARCHAR(255))").executeUpdate();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS documentacion (id UUID PRIMARY KEY, url VARCHAR(2000), "
@@ -83,9 +83,9 @@ class DocumentacionQueryOutputAdapterTest {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.getEntityManager()
                 .createNativeQuery("INSERT INTO entregable_proyecto_grado (id, proyecto_grado_id, "
-                        + "version_entregable, asesor_id, estado_entregable_nombre) VALUES (?1, ?2, ?3, ?4, ?5)")
+                        + "version_entregable, estado_entregable_nombre) VALUES (?1, ?2, ?3, ?4)")
                 .setParameter(1, id).setParameter(2, proyecto).setParameter(3, version)
-                .setParameter(4, UtilUUID.generarNuevoUUID()).setParameter(5, estado)
+                .setParameter(4, estado)
                 .executeUpdate();
         return id;
     }
