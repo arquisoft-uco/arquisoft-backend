@@ -223,7 +223,7 @@ condicionados a el. En modo `log` no existen, y la plantilla no es dependencia d
 | Cambiar el contenido | Recargar, efecto inmediato | Recargar, efecto en el siguiente ciclo |
 
 La diferencia que queda es de frecuencia, no de mecanismo, y responde a que la envoltura está en el
-camino del envío: es un blob de ~1 KB que se usaría una vez por destinatario, mientras que el texto
+camino del envío: es un blob de ~2 KB que se usaría una vez por destinatario, mientras que el texto
 son claves pequeñas. Releerla en cada correo no aportaría nada que un ciclo de minutos no dé ya.
 
 **Y conviene saber que el texto nunca estuvo congelado.** El asunto, el cuerpo y el pie salen del
@@ -253,7 +253,27 @@ sobrante.
 
 - **Texto dirigido a una persona.** Va al catálogo (`catalogo/notificaciones.properties`). Aquí solo
   el esqueleto y sus huecos.
-- **Imágenes.** Un `<img>` a un archivo del repositorio no llega al correo: hay que adjuntarlo como
-  recurso embebido o servirlo desde una URL pública. Hoy la plantilla no usa ninguna, a propósito.
-- **CSS externo.** Los clientes de correo no cargan hojas de estilo; el estilo va en línea, como está
-  ahora.
+- **Imágenes.** Redis guarda el HTML, no binarios, y un `<img>` a un archivo del repositorio no llega
+  al correo: hay que adjuntarlo como recurso embebido (CID) o servirlo desde una URL pública. Un
+  `data:` en base64 tampoco sirve: Gmail y Outlook lo bloquean. Por eso la plantilla no lleva el
+  logosímbolo que el Manual de diseño institucional UCO pide en toda pieza (versión de correo
+  `logos/correo/*-600.png`, 600 × 176 px); incorporarlo es un cambio del adaptador SMTP, no de este
+  archivo.
+- **CSS externo ni fuentes remotas.** Los clientes de correo no cargan hojas de estilo, y el manual
+  prohíbe servir fuentes desde una CDN: el estilo va en línea y `Montserrat`/`Poppins` se declaran
+  con respaldo de sistema (`Segoe UI`, `Helvetica`, `Arial`), que es lo que verá quien no las tenga.
+
+### Identidad visual aplicada
+
+La envoltura sigue el Manual de diseño institucional UCO. Los colores son los de la paleta y solo
+en pares de contraste verificados (WCAG 2.1 AA, medidos con la fórmula, no a ojo):
+
+| Zona | Fondo | Texto | Contraste |
+|---|---|---|---|
+| Título | verde oscuro `#024426` | blanco, Montserrat 700 | 11,31:1 |
+| Franja de acento | amarillo `#ffca00` | — (sin texto: el amarillo es acento) | — |
+| Cuerpo | blanco | gris neutro `#1f2933`, Poppins | 14,76:1 |
+| Pie | gris verdoso `#f3f6f4`, borde superior verde `#008b50` | gris neutro `#4a5550` | 7,13:1 |
+
+No hay rojo en la plantilla ni debe haberlo: la identidad no tiene rojo institucional. Blanco sobre
+verde `#008b50` no cumple para texto normal (4,37:1), por eso el título va sobre verde oscuro.
