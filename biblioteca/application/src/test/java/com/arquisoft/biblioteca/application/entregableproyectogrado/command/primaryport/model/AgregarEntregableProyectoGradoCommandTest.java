@@ -18,14 +18,13 @@ class AgregarEntregableProyectoGradoCommandTest {
 
         // Act
         var command = AgregarEntregableProyectoGradoCommand.crear(
-                entregable.toString(), proyecto.toString(), 2, "Aprobado", "entregables", "a/b.zip", "b.zip");
+                entregable.toString(), proyecto.toString(), 2, "APROBADO", "a/b.zip", "b.zip");
 
         // Assert
         assertThat(command.entregableProyectoGrado()).isEqualTo(entregable);
         assertThat(command.proyectoGrado()).isEqualTo(proyecto);
         assertThat(command.version()).isEqualTo(2);
-        assertThat(command.estadoEntregableNombre()).isEqualTo("Aprobado");
-        assertThat(command.bucket()).isEqualTo("entregables");
+        assertThat(command.estadoEntregable()).isEqualTo("APROBADO");
         assertThat(command.claveObjeto()).isEqualTo("a/b.zip");
         assertThat(command.nombreArchivo()).isEqualTo("b.zip");
     }
@@ -34,7 +33,7 @@ class AgregarEntregableProyectoGradoCommandTest {
     void debeAcumularTodosLosErrores_cuandoLosCamposSonInvalidos() {
         // Act & Assert
         assertThatThrownBy(() -> AgregarEntregableProyectoGradoCommand.crear(
-                "no-uuid", null, 0, " ", null, "", " "))
+                "no-uuid", null, 0, " ", "", " "))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, ex -> assertThat(
                         ex.getValidationResult().getErrores())
                         .extracting(e -> e.campo())
@@ -43,7 +42,6 @@ class AgregarEntregableProyectoGradoCommandTest {
                                 BibliotecaFields.EntregableProyectoGrado.PROYECTO_GRADO,
                                 BibliotecaFields.EntregableProyectoGrado.VERSION_ENTREGABLE,
                                 BibliotecaFields.EntregableProyectoGrado.ESTADO_ENTREGABLE,
-                                BibliotecaFields.EntregableProyectoGrado.BUCKET,
                                 BibliotecaFields.EntregableProyectoGrado.CLAVE_OBJETO,
                                 BibliotecaFields.EntregableProyectoGrado.NOMBRE_ARCHIVO));
     }
@@ -56,7 +54,7 @@ class AgregarEntregableProyectoGradoCommandTest {
 
         // Act & Assert
         assertThatThrownBy(() -> AgregarEntregableProyectoGradoCommand.crear(
-                entregable, proyecto, null, "Aprobado", "entregables", "a/b.zip", "b.zip"))
+                entregable, proyecto, null, "APROBADO", "a/b.zip", "b.zip"))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, ex -> assertThat(
                         ex.getValidationResult().getErrores())
                         .extracting(e -> e.campo())

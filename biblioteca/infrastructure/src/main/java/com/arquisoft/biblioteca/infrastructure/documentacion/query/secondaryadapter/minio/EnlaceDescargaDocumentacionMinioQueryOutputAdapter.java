@@ -2,6 +2,7 @@ package com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryada
 
 import com.arquisoft.biblioteca.application.documentacion.query.readmodel.EnlaceDescargaDocumentacionReadModel;
 import com.arquisoft.biblioteca.application.documentacion.query.secondaryport.EnlaceDescargaDocumentacionQueryOutputPort;
+import com.arquisoft.biblioteca.infrastructure.config.BibliotecaAlmacenamientoProperties;
 import com.arquisoft.biblioteca.infrastructure.documentacion.exception.ArchivoDocumentacionAusenteException;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
 import com.arquisoft.shared.minio.model.SolicitudEnlaceDescarga;
@@ -19,10 +20,12 @@ public class EnlaceDescargaDocumentacionMinioQueryOutputAdapter
     private static final String SEPARADOR_CLAVE = "/";
 
     private final AlmacenamientoObjetos almacenamientoObjetos;
+    private final BibliotecaAlmacenamientoProperties propiedades;
 
     @Override
     public EnlaceDescargaDocumentacionReadModel generar(
-            UUID documentacion, String bucket, String claveObjeto, String nombreArchivo) {
+            UUID documentacion, String claveObjeto, String nombreArchivo) {
+        var bucket = propiedades.getBucketEntregables();
         var objeto = almacenamientoObjetos.consultarMetadatos(bucket, claveObjeto);
         if (objeto.esVacio()) {
             throw new ArchivoDocumentacionAusenteException(documentacion, bucket, claveObjeto);

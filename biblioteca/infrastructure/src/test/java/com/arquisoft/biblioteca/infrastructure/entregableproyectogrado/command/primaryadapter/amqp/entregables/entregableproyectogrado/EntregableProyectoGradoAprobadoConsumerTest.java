@@ -92,7 +92,7 @@ class EntregableProyectoGradoAprobadoConsumerTest {
         var captor = ArgumentCaptor.forClass(AgregarEntregableProyectoGradoCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new AgregarEntregableProyectoGradoCommand(
-                entregable, proyecto, 2, "Aprobado", "entregables", "paquetes/a.zip", "a.zip"));
+                entregable, proyecto, 2, "APROBADO", "paquetes/a.zip", "a.zip"));
         verify(logger).info(EntregableProyectoGradoKey.LOG_APROBADO_RECIBIDO,
                 ID_EVENTO, entregable.toString(), proyecto.toString());
         verify(logger).info(EntregableProyectoGradoKey.LOG_AGREGADO, entregable, proyecto);

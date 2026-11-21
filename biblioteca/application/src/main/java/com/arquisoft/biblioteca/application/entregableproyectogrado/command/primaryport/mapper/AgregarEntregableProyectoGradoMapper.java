@@ -10,7 +10,6 @@ public final class AgregarEntregableProyectoGradoMapper {
     public static EntregableProyectoGradoDomain toDomain(AgregarEntregableProyectoGradoCommand command) {
         return EntregableProyectoGradoDomain.crear(
                 command.entregableProyectoGrado(), command.proyectoGrado(), command.version(),
-                command.estadoEntregableNombre(), command.bucket(), command.claveObjeto(),
-                command.nombreArchivo());
+                command.estadoEntregable(), command.claveObjeto(), command.nombreArchivo());
     }
 }

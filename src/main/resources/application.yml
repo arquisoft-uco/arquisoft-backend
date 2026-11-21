@@ -210,6 +210,12 @@ entregables:
     bucket: ${ENTREGABLES_BUCKET:entregables}
     bucket-artefactos: ${ENTREGABLES_BUCKET_ARTEFACTOS:${ARTEFACTOS_BUCKET:artefactos}}
 
+# ==================== BIBLIOTECA (almacenamiento) ====================
+# Mismo bucket donde entregables guarda los zips; biblioteca solo lo lee, nunca lo crea.
+biblioteca:
+  almacenamiento:
+    bucket-entregables: ${ENTREGABLES_BUCKET:entregables}
+
 # ==================== EVALUACIONES (finalización) ====================
 # Peso con el que cada participante entra al promedio de la nota final: el asesor pesa peso-asesor y cada jurado
 # peso-jurado. Con 1 y 1 el asesor pesa igual que un jurado. Ambos deben ser mayores que 0.

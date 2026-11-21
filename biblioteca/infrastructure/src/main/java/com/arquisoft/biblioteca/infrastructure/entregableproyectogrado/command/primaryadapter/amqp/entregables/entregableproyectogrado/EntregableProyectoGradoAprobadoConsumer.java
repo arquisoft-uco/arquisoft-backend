@@ -46,8 +46,7 @@ public class EntregableProyectoGradoAprobadoConsumer extends AbstractEventConsum
                             payload.entregableProyectoGrado(),
                             payload.proyectoGrado(),
                             payload.version(),
-                            payload.estadoEntregableNombre(),
-                            payload.bucket(),
+                            payload.estadoEntregable(),
                             payload.claveObjeto(),
                             payload.nombreArchivo()));
 

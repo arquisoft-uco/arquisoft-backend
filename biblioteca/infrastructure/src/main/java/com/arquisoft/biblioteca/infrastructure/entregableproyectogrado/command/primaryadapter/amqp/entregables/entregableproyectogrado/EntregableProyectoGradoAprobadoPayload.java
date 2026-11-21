@@ -8,8 +8,7 @@ public record EntregableProyectoGradoAprobadoPayload(
         String entregableProyectoGrado,
         String proyectoGrado,
         Integer version,
-        String estadoEntregableNombre,
-        String bucket,
+        String estadoEntregable,
         String claveObjeto,
         String nombreArchivo
 ) {

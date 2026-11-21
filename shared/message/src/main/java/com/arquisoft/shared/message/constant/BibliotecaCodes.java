@@ -26,6 +26,13 @@ public final class BibliotecaCodes {
         public static final String NO_ENCONTRADO = "ESTADO_DOCUMENTACION_NO_ENCONTRADO";
     }
 
+    public static final class EstadoEntregable {
+
+        private EstadoEntregable() {}
+
+        public static final String NO_ENCONTRADO = "ESTADO_ENTREGABLE_NO_ENCONTRADO";
+    }
+
     public static final class Documentacion {
 
         private Documentacion() {}
@@ -81,7 +88,8 @@ public final class BibliotecaCodes {
         public static final String VERSION_INVALIDA = "ENTREGABLE_PROYECTO_GRADO_VERSION_INVALIDA";
         public static final String ESTADO_ENTREGABLE_REQUERIDO =
                 "ENTREGABLE_PROYECTO_GRADO_ESTADO_ENTREGABLE_REQUERIDO";
-        public static final String BUCKET_REQUERIDO = "ENTREGABLE_PROYECTO_GRADO_BUCKET_REQUERIDO";
+        public static final String ESTADO_ENTREGABLE_INVALIDO =
+                "ENTREGABLE_PROYECTO_GRADO_ESTADO_ENTREGABLE_INVALIDO";
         public static final String CLAVE_OBJETO_REQUERIDA = "ENTREGABLE_PROYECTO_GRADO_CLAVE_OBJETO_REQUERIDA";
         public static final String NOMBRE_ARCHIVO_REQUERIDO = "ENTREGABLE_PROYECTO_GRADO_NOMBRE_ARCHIVO_REQUERIDO";
     }

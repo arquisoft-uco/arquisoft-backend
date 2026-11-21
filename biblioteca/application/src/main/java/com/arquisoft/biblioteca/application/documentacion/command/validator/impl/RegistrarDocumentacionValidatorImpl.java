@@ -54,7 +54,7 @@ public class RegistrarDocumentacionValidatorImpl implements RegistrarDocumentaci
         documentacionDelEntregableUnicaRule.validar(new UnicidadDocumentacionEntregable(
                 registro.getEntregableProyectoGrado(), tieneDocumentacion));
         archivoEntregableDisponibleRule.validar(new UbicacionArchivoEntregable(
-                registro.getEntregableProyectoGrado(), entregable.getBucket(), entregable.getClaveObjeto()));
+                registro.getEntregableProyectoGrado(), entregable.getClaveObjeto()));
         bibliotecarioVigenteRule.validar(new VigenciaBibliotecario(
                 registro.getBibliotecario(), !bibliotecario.esVacio(), bibliotecario.estaEliminado()));
         var autoresEntregable = new AutoresEntregable(registro.getEntregableProyectoGrado(), autores);

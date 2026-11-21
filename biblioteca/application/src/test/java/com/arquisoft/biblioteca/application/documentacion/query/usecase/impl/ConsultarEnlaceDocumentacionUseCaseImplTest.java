@@ -54,10 +54,10 @@ class ConsultarEnlaceDocumentacionUseCaseImplTest {
         var documentacion = UtilUUID.generarNuevoUUID();
         var criteria = new EnlaceDocumentacionCriteria(documentacion);
         var archivo = new ArchivoDocumentacion(documentacion, EstadoDocumentacion.PUBLICADO,
-                "entregables", "paquetes/a.zip", "a.zip");
+                "paquetes/a.zip", "a.zip");
         var esperado = new EnlaceDescargaDocumentacionReadModel("https://minio.test/a", Instant.now());
         when(archivoDocumentacionQueryFinder.obtener(documentacion)).thenReturn(archivo);
-        when(enlaceDescargaDocumentacionQueryOutputPort.generar(documentacion, "entregables", "paquetes/a.zip",
+        when(enlaceDescargaDocumentacionQueryOutputPort.generar(documentacion, "paquetes/a.zip",
                 "a.zip")).thenReturn(esperado);
 
         // Act
@@ -69,7 +69,7 @@ class ConsultarEnlaceDocumentacionUseCaseImplTest {
                 enlaceDescargaDocumentacionQueryOutputPort);
         orden.verify(archivoDocumentacionQueryFinder).obtener(documentacion);
         orden.verify(consultarEnlaceDocumentacionValidator).validar(criteria, archivo);
-        orden.verify(enlaceDescargaDocumentacionQueryOutputPort).generar(documentacion, "entregables",
+        orden.verify(enlaceDescargaDocumentacionQueryOutputPort).generar(documentacion,
                 "paquetes/a.zip", "a.zip");
         verify(archivoDocumentacionQueryFinder, times(1)).obtener(documentacion);
         verify(logger).debug(eq(DocumentacionKey.LOG_CONSULTANDO_ENLACE), eq(documentacion));
@@ -89,7 +89,7 @@ class ConsultarEnlaceDocumentacionUseCaseImplTest {
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(criteria))
                 .isInstanceOf(DocumentacionNoCompartibleException.class);
-        verify(enlaceDescargaDocumentacionQueryOutputPort, never()).generar(any(), any(), any(), any());
+        verify(enlaceDescargaDocumentacionQueryOutputPort, never()).generar(any(), any(), any());
         verify(logger, never()).debug(eq(DocumentacionKey.LOG_ENLACE_GENERADO), eq(documentacion), any());
     }
 }

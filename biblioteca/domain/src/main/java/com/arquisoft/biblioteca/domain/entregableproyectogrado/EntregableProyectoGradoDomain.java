@@ -1,7 +1,10 @@
 package com.arquisoft.biblioteca.domain.entregableproyectogrado;
 
+import com.arquisoft.biblioteca.domain.estadoentregable.EstadoEntregable;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.BibliotecaCodes;
 import com.arquisoft.shared.message.constant.BibliotecaFields;
+import com.arquisoft.shared.message.key.biblioteca.EstadoEntregableKey;
 import com.arquisoft.shared.util.UtilNumero;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
@@ -15,23 +18,22 @@ import java.util.UUID;
 public final class EntregableProyectoGradoDomain {
 
     public static final EntregableProyectoGradoDomain VACIO = EntregableProyectoGradoDomain.reconstruir(
-            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilNumero.CERO, UtilTexto.VACIO,
-            UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO);
+            UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), UtilNumero.CERO, EstadoEntregable.VACIO,
+            UtilTexto.VACIO, UtilTexto.VACIO);
 
     private static final int VERSION_MINIMA = 1;
 
     private UUID id;
     private UUID proyectoGrado;
     private int versionEntregable;
-    private String estadoEntregableNombre;
-    private String bucket;
+    private EstadoEntregable estadoEntregable;
     private String claveObjeto;
     private String nombreArchivo;
 
     private EntregableProyectoGradoDomain() {}
 
     public static EntregableProyectoGradoDomain crear(UUID id, UUID proyectoGrado, Integer versionEntregable,
-                                                      String estadoEntregableNombre, String bucket,
+                                                      String estadoEntregable,
                                                       String claveObjeto, String nombreArchivo) {
         var entregable = new EntregableProyectoGradoDomain();
         var result = new ValidationResult();
@@ -39,8 +41,7 @@ public final class EntregableProyectoGradoDomain {
         entregable.setId(id, result);
         entregable.setProyectoGrado(proyectoGrado, result);
         entregable.setVersionEntregable(versionEntregable, result);
-        entregable.setEstadoEntregableNombre(estadoEntregableNombre, result);
-        entregable.setBucket(bucket, result);
+        entregable.setEstadoEntregable(estadoEntregable, result);
         entregable.setClaveObjeto(claveObjeto, result);
         entregable.setNombreArchivo(nombreArchivo, result);
 
@@ -49,14 +50,13 @@ public final class EntregableProyectoGradoDomain {
     }
 
     public static EntregableProyectoGradoDomain reconstruir(UUID id, UUID proyectoGrado, int versionEntregable,
-                                                            String estadoEntregableNombre, String bucket,
+                                                            EstadoEntregable estadoEntregable,
                                                             String claveObjeto, String nombreArchivo) {
         var entregable = new EntregableProyectoGradoDomain();
         entregable.id = id;
         entregable.proyectoGrado = proyectoGrado;
         entregable.versionEntregable = versionEntregable;
-        entregable.estadoEntregableNombre = estadoEntregableNombre;
-        entregable.bucket = bucket;
+        entregable.estadoEntregable = estadoEntregable;
         entregable.claveObjeto = claveObjeto;
         entregable.nombreArchivo = nombreArchivo;
         return entregable;
@@ -94,22 +94,20 @@ public final class EntregableProyectoGradoDomain {
         this.versionEntregable = versionEntregable;
     }
 
-    private void setEstadoEntregableNombre(String estadoEntregableNombre, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(estadoEntregableNombre,
+    private void setEstadoEntregable(String estadoEntregable, ValidationResult result) {
+        if (!ValidatorTexto.noEnBlanco(estadoEntregable,
                 BibliotecaFields.EntregableProyectoGrado.ESTADO_ENTREGABLE,
                 BibliotecaCodes.EntregableProyectoGrado.ESTADO_ENTREGABLE_REQUERIDO, result)) {
             return;
         }
-        this.estadoEntregableNombre = estadoEntregableNombre;
-    }
-
-    private void setBucket(String bucket, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(bucket,
-                BibliotecaFields.EntregableProyectoGrado.BUCKET,
-                BibliotecaCodes.EntregableProyectoGrado.BUCKET_REQUERIDO, result)) {
+        if (!EstadoEntregable.esValido(estadoEntregable)) {
+            result.agregarError(
+                    BibliotecaFields.EntregableProyectoGrado.ESTADO_ENTREGABLE,
+                    BibliotecaCodes.EntregableProyectoGrado.ESTADO_ENTREGABLE_INVALIDO,
+                    Mensajes.formatear(EstadoEntregableKey.ERROR_NO_ENCONTRADO));
             return;
         }
-        this.bucket = bucket;
+        this.estadoEntregable = EstadoEntregable.desde(estadoEntregable);
     }
 
     private void setClaveObjeto(String claveObjeto, ValidationResult result) {
@@ -142,12 +140,8 @@ public final class EntregableProyectoGradoDomain {
         return versionEntregable;
     }
 
-    public String getEstadoEntregableNombre() {
-        return estadoEntregableNombre;
-    }
-
-    public String getBucket() {
-        return bucket;
+    public EstadoEntregable getEstadoEntregable() {
+        return estadoEntregable;
     }
 
     public String getClaveObjeto() {

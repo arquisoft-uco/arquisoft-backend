@@ -49,10 +49,10 @@ class DescargarDocumentacionUseCaseImplTest {
         var documentacion = UtilUUID.generarNuevoUUID();
         var criteria = new DescargaDocumentacionCriteria(documentacion, false);
         var archivo = new ArchivoDocumentacion(documentacion, EstadoDocumentacion.PUBLICADO,
-                "entregables", "paquetes/a.zip", "a.zip");
+                "paquetes/a.zip", "a.zip");
         var esperado = new EnlaceDescargaDocumentacionReadModel("https://minio.test/a", Instant.now());
         when(archivoDocumentacionQueryFinder.obtener(documentacion)).thenReturn(archivo);
-        when(enlaceDescargaDocumentacionQueryOutputPort.generar(documentacion, "entregables", "paquetes/a.zip",
+        when(enlaceDescargaDocumentacionQueryOutputPort.generar(documentacion, "paquetes/a.zip",
                 "a.zip")).thenReturn(esperado);
 
         // Act
@@ -64,7 +64,7 @@ class DescargarDocumentacionUseCaseImplTest {
                 enlaceDescargaDocumentacionQueryOutputPort);
         orden.verify(archivoDocumentacionQueryFinder).obtener(documentacion);
         orden.verify(descargarDocumentacionValidator).validar(criteria, archivo);
-        orden.verify(enlaceDescargaDocumentacionQueryOutputPort).generar(documentacion, "entregables",
+        orden.verify(enlaceDescargaDocumentacionQueryOutputPort).generar(documentacion,
                 "paquetes/a.zip", "a.zip");
         verify(archivoDocumentacionQueryFinder, times(1)).obtener(documentacion);
         verify(logger).debug(eq(DocumentacionKey.LOG_DESCARGANDO), eq(documentacion), eq(false));

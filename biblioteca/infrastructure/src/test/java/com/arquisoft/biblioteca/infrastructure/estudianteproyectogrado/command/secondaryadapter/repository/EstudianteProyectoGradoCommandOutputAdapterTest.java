@@ -60,7 +60,7 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persist(EntregableProyectoGradoJpaEntity.builder()
                 .id(id).proyectoGradoId(proyecto).versionEntregable(1)
-                .estadoEntregableNombre("APROBADO").bucket("entregables").claveObjeto("a.zip")
+                .estadoEntregableId("APROBADO").claveObjeto("a.zip")
                 .nombreArchivo("a.zip").build());
         return id;
     }

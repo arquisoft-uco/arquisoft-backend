@@ -15,16 +15,15 @@ public record AgregarEntregableProyectoGradoCommand(
         UUID entregableProyectoGrado,
         UUID proyectoGrado,
         Integer version,
-        String estadoEntregableNombre,
-        String bucket,
+        String estadoEntregable,
         String claveObjeto,
         String nombreArchivo
 ) {
     private static final int VERSION_MINIMA = 1;
 
     public static AgregarEntregableProyectoGradoCommand crear(
-            String entregableProyectoGrado, String proyectoGrado, Integer version, String estadoEntregableNombre,
-            String bucket, String claveObjeto, String nombreArchivo) {
+            String entregableProyectoGrado, String proyectoGrado, Integer version, String estadoEntregable,
+            String claveObjeto, String nombreArchivo) {
         var result = new ValidationResult();
 
         ValidatorUUID.uuidValido(entregableProyectoGrado,
@@ -40,12 +39,9 @@ public record AgregarEntregableProyectoGradoCommand(
                     BibliotecaFields.EntregableProyectoGrado.VERSION_ENTREGABLE,
                     BibliotecaCodes.EntregableProyectoGrado.VERSION_INVALIDA, result);
         }
-        ValidatorTexto.noEnBlanco(estadoEntregableNombre,
+        ValidatorTexto.noEnBlanco(estadoEntregable,
                 BibliotecaFields.EntregableProyectoGrado.ESTADO_ENTREGABLE,
                 BibliotecaCodes.EntregableProyectoGrado.ESTADO_ENTREGABLE_REQUERIDO, result);
-        ValidatorTexto.noEnBlanco(bucket,
-                BibliotecaFields.EntregableProyectoGrado.BUCKET,
-                BibliotecaCodes.EntregableProyectoGrado.BUCKET_REQUERIDO, result);
         ValidatorTexto.noEnBlanco(claveObjeto,
                 BibliotecaFields.EntregableProyectoGrado.CLAVE_OBJETO,
                 BibliotecaCodes.EntregableProyectoGrado.CLAVE_OBJETO_REQUERIDA, result);
@@ -57,6 +53,6 @@ public record AgregarEntregableProyectoGradoCommand(
         return new AgregarEntregableProyectoGradoCommand(
                 UtilUUID.generarUUIDDesdeTexto(entregableProyectoGrado),
                 UtilUUID.generarUUIDDesdeTexto(proyectoGrado),
-                version, estadoEntregableNombre, bucket, claveObjeto, nombreArchivo);
+                version, estadoEntregable, claveObjeto, nombreArchivo);
     }
 }

@@ -31,7 +31,7 @@ public class ConsultarEnlaceDocumentacionUseCaseImpl implements ConsultarEnlaceD
         consultarEnlaceDocumentacionValidator.validar(entrada, archivo);
 
         var enlace = enlaceDescargaDocumentacionQueryOutputPort.generar(
-                archivo.documentacion(), archivo.bucket(), archivo.claveObjeto(), archivo.nombreArchivo());
+                archivo.documentacion(), archivo.claveObjeto(), archivo.nombreArchivo());
 
         logger.debug(DocumentacionKey.LOG_ENLACE_GENERADO, entrada.documentacion(), enlace.expiraEn());
         return enlace;

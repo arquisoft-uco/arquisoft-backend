@@ -5,7 +5,6 @@ import java.util.UUID;
 public record ArchivoDocumentacionAccesoEntity(
         UUID documentacion,
         String estado,
-        String bucket,
         String claveObjeto,
         String nombreArchivo
 ) {}

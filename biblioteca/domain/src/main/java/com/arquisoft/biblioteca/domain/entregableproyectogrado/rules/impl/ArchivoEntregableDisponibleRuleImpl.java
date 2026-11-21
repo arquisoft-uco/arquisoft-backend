@@ -9,7 +9,7 @@ public class ArchivoEntregableDisponibleRuleImpl implements ArchivoEntregableDis
 
     @Override
     public void validar(UbicacionArchivoEntregable ubicacion) {
-        if (UtilTexto.esVacioONulo(ubicacion.bucket()) || UtilTexto.esVacioONulo(ubicacion.claveObjeto())) {
+        if (UtilTexto.esVacioONulo(ubicacion.claveObjeto())) {
             throw new ArchivoEntregableNoDisponibleException(ubicacion.entregableProyectoGrado());
         }
     }

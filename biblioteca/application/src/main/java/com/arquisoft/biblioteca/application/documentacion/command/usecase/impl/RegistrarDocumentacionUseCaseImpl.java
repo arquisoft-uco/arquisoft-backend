@@ -4,6 +4,7 @@ import com.arquisoft.biblioteca.application.autordocumentacion.command.secondary
 import com.arquisoft.biblioteca.application.autordocumentacion.command.secondaryport.mapper.AutorDocumentacionMapper;
 import com.arquisoft.biblioteca.application.bibliotecario.command.finder.BibliotecarioPorIdFinder;
 import com.arquisoft.biblioteca.application.documentacion.command.finder.DocumentacionDelEntregableExisteFinder;
+import com.arquisoft.biblioteca.application.documentacion.command.secondaryport.AlmacenamientoDocumentacionOutputPort;
 import com.arquisoft.biblioteca.application.documentacion.command.secondaryport.DocumentacionOutputPort;
 import com.arquisoft.biblioteca.application.documentacion.command.secondaryport.mapper.DocumentacionMapper;
 import com.arquisoft.biblioteca.application.documentacion.command.usecase.RegistrarDocumentacionUseCase;
@@ -31,6 +32,7 @@ public class RegistrarDocumentacionUseCaseImpl implements RegistrarDocumentacion
     private final RegistrarDocumentacionValidator registrarDocumentacionValidator;
     private final DocumentacionOutputPort documentacionOutputPort;
     private final AutorDocumentacionOutputPort autorDocumentacionOutputPort;
+    private final AlmacenamientoDocumentacionOutputPort almacenamientoDocumentacionOutputPort;
     private final AppLogger logger;
 
     @Override
@@ -50,7 +52,7 @@ public class RegistrarDocumentacionUseCaseImpl implements RegistrarDocumentacion
 
         var documentacion = DocumentacionDomain.crear(
                 registro.getEntregableProyectoGrado(), registro.getBibliotecario(),
-                entregable.getBucket(), entregable.getClaveObjeto());
+                almacenamientoDocumentacionOutputPort.bucketEntregables(), entregable.getClaveObjeto());
         var autoresDocumentacion = autores.stream()
                 .map(autor -> AutorDocumentacionDomain.crear(autor.autor(), documentacion.getId()))
                 .map(AutorDocumentacionMapper::toEntity)

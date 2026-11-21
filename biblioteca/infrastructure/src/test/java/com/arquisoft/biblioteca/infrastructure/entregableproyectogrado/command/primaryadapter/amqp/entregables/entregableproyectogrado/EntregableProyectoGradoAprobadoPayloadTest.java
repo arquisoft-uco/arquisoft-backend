@@ -77,8 +77,7 @@ class EntregableProyectoGradoAprobadoPayloadTest {
         assertThat(payload.entregableProyectoGrado()).isEqualTo(evento.getEntregableProyectoGrado().toString());
         assertThat(payload.proyectoGrado()).isEqualTo(evento.getProyectoGrado().toString());
         assertThat(payload.version()).isEqualTo(2);
-        assertThat(payload.estadoEntregableNombre()).isEqualTo("Aprobado");
-        assertThat(payload.bucket()).isEqualTo("entregables");
+        assertThat(payload.estadoEntregable()).isEqualTo("APROBADO");
         assertThat(payload.claveObjeto()).isEqualTo("paquetes/a.zip");
         assertThat(payload.nombreArchivo()).isEqualTo("a.zip");
     }
@@ -95,7 +94,7 @@ class EntregableProyectoGradoAprobadoPayloadTest {
         var payload = mapper.readValue(json, EntregableProyectoGradoAprobadoPayload.class);
 
         // Assert
-        assertThat(payload.bucket()).isNull();
+        assertThat(payload.estadoEntregable()).isNull();
         assertThat(payload.claveObjeto()).isNull();
         assertThat(payload.nombreArchivo()).isNull();
         assertThat(payload.version()).isNull();

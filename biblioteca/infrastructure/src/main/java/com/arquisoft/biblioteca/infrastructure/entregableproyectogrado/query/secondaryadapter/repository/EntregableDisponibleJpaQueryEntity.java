@@ -24,8 +24,7 @@ import java.util.UUID;
                e.nombre_archivo                     AS nombre_archivo
         FROM entregable_proyecto_grado e
                  LEFT JOIN proyecto_grado p ON p.id = e.proyecto_grado_id
-        WHERE e.bucket IS NOT NULL AND TRIM(e.bucket) <> ''
-          AND e.clave_objeto IS NOT NULL AND TRIM(e.clave_objeto) <> ''
+        WHERE e.clave_objeto IS NOT NULL AND TRIM(e.clave_objeto) <> ''
           AND NOT EXISTS (SELECT 1 FROM documentacion d WHERE d.entregable_proyecto_grado_id = e.id)
         """)
 @Synchronize({"entregable_proyecto_grado", "proyecto_grado", "documentacion"})

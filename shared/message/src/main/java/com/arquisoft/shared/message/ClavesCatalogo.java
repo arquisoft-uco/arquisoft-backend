@@ -238,6 +238,7 @@ public final class ClavesCatalogo {
             AutorKey.class,
             AutorDocumentacionKey.class,
             com.arquisoft.shared.message.key.biblioteca.EntregableProyectoGradoKey.class,
+            com.arquisoft.shared.message.key.biblioteca.EstadoEntregableKey.class,
             com.arquisoft.shared.message.key.biblioteca.ProyectoGradoKey.class,
             com.arquisoft.shared.message.key.biblioteca.EstudianteProyectoGradoKey.class,
             EstadoRevisionAsesorKey.class,
