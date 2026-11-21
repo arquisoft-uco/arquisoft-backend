@@ -9,14 +9,12 @@ import java.util.UUID;
 public record ArchivoDocumentacion(
         UUID documentacion,
         EstadoDocumentacion estado,
-        String bucket,
         String claveObjeto,
         String nombreArchivo
 ) {
 
     public static final ArchivoDocumentacion VACIO = new ArchivoDocumentacion(
-            UtilUUID.obtenerUUIDPorDefecto(), EstadoDocumentacion.VACIO,
-            UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO);
+            UtilUUID.obtenerUUIDPorDefecto(), EstadoDocumentacion.VACIO, UtilTexto.VACIO, UtilTexto.VACIO);
 
     public boolean esVacio() {
         return this == VACIO;

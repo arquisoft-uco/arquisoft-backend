@@ -31,11 +31,8 @@ public class EntregableProyectoGradoJpaEntity {
     @Column(name = "version_entregable", nullable = false)
     private int versionEntregable;
 
-    @Column(name = "estado_entregable_nombre", nullable = false, length = 60)
-    private String estadoEntregableNombre;
-
-    @Column(name = "bucket", length = 63)
-    private String bucket;
+    @Column(name = "estado_entregable_id", nullable = false, length = 60)
+    private String estadoEntregableId;
 
     @Column(name = "clave_objeto", length = 2000)
     private String claveObjeto;

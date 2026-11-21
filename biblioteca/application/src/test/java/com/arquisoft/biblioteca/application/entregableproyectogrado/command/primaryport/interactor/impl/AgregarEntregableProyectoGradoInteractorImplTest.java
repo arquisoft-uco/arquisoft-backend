@@ -4,6 +4,7 @@ import com.arquisoft.biblioteca.application.entregableproyectogrado.command.prim
 import com.arquisoft.biblioteca.application.entregableproyectogrado.command.result.AgregacionEntregableProyectoGradoResult;
 import com.arquisoft.biblioteca.application.entregableproyectogrado.command.usecase.AgregarEntregableProyectoGradoUseCase;
 import com.arquisoft.biblioteca.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
+import com.arquisoft.biblioteca.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +33,7 @@ class AgregarEntregableProyectoGradoInteractorImplTest {
         var entregable = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         var command = new AgregarEntregableProyectoGradoCommand(
-                entregable, proyecto, 3, "Aprobado", "entregables", "a/b.zip", "b.zip");
+                entregable, proyecto, 3, "APROBADO", "a/b.zip", "b.zip");
         var esperado = new AgregacionEntregableProyectoGradoResult.Agregado(entregable, proyecto);
         when(useCase.ejecutar(any())).thenReturn(esperado);
 
@@ -45,6 +46,7 @@ class AgregarEntregableProyectoGradoInteractorImplTest {
         assertThat(resultado).isSameAs(esperado);
         assertThat(captor.getValue().getId()).isEqualTo(entregable);
         assertThat(captor.getValue().getVersionEntregable()).isEqualTo(3);
+        assertThat(captor.getValue().getEstadoEntregable()).isEqualTo(EstadoEntregable.APROBADO);
         assertThat(captor.getValue().getNombreArchivo()).isEqualTo("b.zip");
     }
 }

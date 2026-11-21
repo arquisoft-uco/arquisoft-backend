@@ -3,6 +3,7 @@ package com.arquisoft.biblioteca.application.entregableproyectogrado.command.fin
 import com.arquisoft.biblioteca.application.entregableproyectogrado.command.secondaryport.EntregableProyectoGradoOutputPort;
 import com.arquisoft.biblioteca.application.entregableproyectogrado.command.secondaryport.entity.EntregableProyectoGradoEntity;
 import com.arquisoft.biblioteca.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
+import com.arquisoft.biblioteca.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +31,7 @@ class EntregableProyectoGradoBloqueadoPorIdFinderImplTest {
         var id = UtilUUID.generarNuevoUUID();
         var proyecto = UtilUUID.generarNuevoUUID();
         when(entregableProyectoGradoOutputPort.obtenerBloqueadoPorId(id)).thenReturn(Optional.of(
-                new EntregableProyectoGradoEntity(id, proyecto, 1, "Aprobado", "entregables", "a/b.zip", "b.zip")));
+                new EntregableProyectoGradoEntity(id, proyecto, 1, "APROBADO", "a/b.zip", "b.zip")));
 
         // Act
         var resultado = finder.obtener(id);
@@ -39,10 +40,9 @@ class EntregableProyectoGradoBloqueadoPorIdFinderImplTest {
         assertThat(resultado.esVacio()).isFalse();
         assertThat(resultado.getId()).isEqualTo(id);
         assertThat(resultado.getProyectoGrado()).isEqualTo(proyecto);
-        assertThat(resultado.getBucket()).isEqualTo("entregables");
         assertThat(resultado.getClaveObjeto()).isEqualTo("a/b.zip");
         assertThat(resultado.getVersionEntregable()).isEqualTo(1);
-        assertThat(resultado.getEstadoEntregableNombre()).isEqualTo("Aprobado");
+        assertThat(resultado.getEstadoEntregable()).isEqualTo(EstadoEntregable.APROBADO);
         assertThat(resultado.getNombreArchivo()).isEqualTo("b.zip");
     }
 

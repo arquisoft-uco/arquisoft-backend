@@ -14,8 +14,7 @@ public final class EntregableProyectoGradoJpaMapper {
                 jpaEntity.getId(),
                 jpaEntity.getProyectoGradoId(),
                 jpaEntity.getVersionEntregable(),
-                jpaEntity.getEstadoEntregableNombre(),
-                alVacio(jpaEntity.getBucket()),
+                jpaEntity.getEstadoEntregableId(),
                 alVacio(jpaEntity.getClaveObjeto()),
                 alVacio(jpaEntity.getNombreArchivo()));
     }
@@ -25,8 +24,7 @@ public final class EntregableProyectoGradoJpaMapper {
                 .id(entity.id())
                 .proyectoGradoId(entity.proyectoGrado())
                 .versionEntregable(entity.versionEntregable())
-                .estadoEntregableNombre(entity.estadoEntregableNombre())
-                .bucket(entity.bucket())
+                .estadoEntregableId(entity.estadoEntregable())
                 .claveObjeto(entity.claveObjeto())
                 .nombreArchivo(entity.nombreArchivo())
                 .build();

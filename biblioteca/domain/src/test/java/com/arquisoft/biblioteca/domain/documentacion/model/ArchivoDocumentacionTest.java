@@ -20,7 +20,7 @@ class ArchivoDocumentacionTest {
     void debeNoSerVacio_cuandoSeConstruyeConDatos() {
         // Arrange
         var archivo = new ArchivoDocumentacion(UtilUUID.generarNuevoUUID(), EstadoDocumentacion.PUBLICADO,
-                "artefactos", "paquetes/a.zip", "a.zip");
+                "paquetes/a.zip", "a.zip");
 
         // Act & Assert
         assertThat(archivo.esVacio()).isFalse();

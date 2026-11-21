@@ -36,20 +36,20 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         adapter = new EntregableProyectoGradoCommandOutputAdapter(repository, logger);
     }
 
-    private UUID sembrar(String bucket, String clave) {
+    private UUID sembrar(String clave) {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.persistAndFlush(EntregableProyectoGradoJpaEntity.builder()
                 .id(id).proyectoGradoId(UtilUUID.generarNuevoUUID()).versionEntregable(1)
-                .estadoEntregableNombre("APROBADO")
-                .bucket(bucket).claveObjeto(clave).nombreArchivo("a.zip").build());
+                .estadoEntregableId("APROBADO")
+                .claveObjeto(clave).nombreArchivo("a.zip").build());
         entityManager.clear();
         return id;
     }
 
     @Test
-    void debeDevolverProyectoBucketYClave_cuandoElEntregableExiste() {
+    void debeDevolverClave_cuandoElEntregableExiste() {
         // Arrange
-        var id = sembrar("entregables", "proyectos/a.zip");
+        var id = sembrar("proyectos/a.zip");
 
         // Act
         var resultado = adapter.obtenerBloqueadoPorId(id);
@@ -58,32 +58,30 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).hasValueSatisfying(entity -> {
             assertThat(entity.id()).isEqualTo(id);
-            assertThat(entity.bucket()).isEqualTo("entregables");
             assertThat(entity.claveObjeto()).isEqualTo("proyectos/a.zip");
         });
         assertThat(ausente).isEmpty();
     }
 
     @Test
-    void debeMapearBucketYClaveNulosAVacio_cuandoElArchivoAunNoEstaDisponible() {
+    void debeMapearClaveNulaAVacio_cuandoElArchivoAunNoEstaDisponible() {
         // Arrange
-        var id = sembrar(null, null);
+        var id = sembrar(null);
 
         // Act
         var resultado = adapter.obtenerBloqueadoPorId(id);
 
         // Assert
         assertThat(resultado).hasValueSatisfying(entity -> {
-            assertThat(entity.bucket()).isEqualTo(UtilTexto.VACIO);
             assertThat(entity.claveObjeto()).isEqualTo(UtilTexto.VACIO);
         });
     }
 
     @Test
-    void debeInsertarConLosSieteCampos_cuandoSeGuardaUnEntregableNuevo() {
+    void debeInsertarConLosSeisCampos_cuandoSeGuardaUnEntregableNuevo() {
         // Arrange
         var entregable = new EntregableProyectoGradoEntity(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                3, "Aprobado Con Observaciones", "entregables", "paquetes/a.zip", "a.zip");
+                3, "APROBADO_CON_OBSERVACIONES", "paquetes/a.zip", "a.zip");
 
         // Act
         adapter.guardar(entregable);
@@ -94,8 +92,7 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
         var jpa = entityManager.find(EntregableProyectoGradoJpaEntity.class, entregable.id());
         assertThat(jpa.getProyectoGradoId()).isEqualTo(entregable.proyectoGrado());
         assertThat(jpa.getVersionEntregable()).isEqualTo(3);
-        assertThat(jpa.getEstadoEntregableNombre()).isEqualTo("Aprobado Con Observaciones");
-        assertThat(jpa.getBucket()).isEqualTo("entregables");
+        assertThat(jpa.getEstadoEntregableId()).isEqualTo("APROBADO_CON_OBSERVACIONES");
         assertThat(jpa.getClaveObjeto()).isEqualTo("paquetes/a.zip");
         assertThat(jpa.getNombreArchivo()).isEqualTo("a.zip");
         verify(logger).debug(EntregableProyectoGradoKey.LOG_GUARDADO, entregable.id());
@@ -104,7 +101,7 @@ class EntregableProyectoGradoCommandOutputAdapterTest {
     @Test
     void debeResponderPorExistencia_cuandoElIdEstaONoEnLaReplica() {
         // Arrange
-        var existente = sembrar("entregables", "proyectos/a.zip");
+        var existente = sembrar("proyectos/a.zip");
 
         // Act & Assert
         assertThat(adapter.existePorId(existente)).isTrue();

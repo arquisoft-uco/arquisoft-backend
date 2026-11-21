@@ -21,7 +21,6 @@ class ConsultarEnlaceDocumentacionValidatorImplTest {
 
     private static ArchivoDocumentacion archivo(UUID documentacion, EstadoDocumentacion estado, boolean conUbicacion) {
         return new ArchivoDocumentacion(documentacion, estado,
-                conUbicacion ? "artefactos" : UtilTexto.VACIO,
                 conUbicacion ? "p/a.zip" : UtilTexto.VACIO,
                 "a.zip");
     }

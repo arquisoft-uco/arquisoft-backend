@@ -6,7 +6,8 @@ import com.arquisoft.shared.message.constant.BibliotecaCodes;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -17,20 +18,21 @@ class ArchivoEntregableDisponibleRuleImplTest {
     private final ArchivoEntregableDisponibleRuleImpl rule = new ArchivoEntregableDisponibleRuleImpl();
 
     @Test
-    void debePasar_cuandoBucketYClaveEstanPresentes() {
+    void debePasar_cuandoLaClaveEstaPresente() {
         // Arrange
-        var ubicacion = new UbicacionArchivoEntregable(UtilUUID.generarNuevoUUID(), "entregables", "a/b.zip");
+        var ubicacion = new UbicacionArchivoEntregable(UtilUUID.generarNuevoUUID(), "a/b.zip");
 
         // Act & Assert
         assertThatCode(() -> rule.validar(ubicacion)).doesNotThrowAnyException();
     }
 
     @ParameterizedTest
-    @CsvSource(value = {"NULL,a/b.zip", "entregables,NULL", "' ',a/b.zip", "entregables,''"}, nullValues = "NULL")
-    void debeLanzarNoDisponible_cuandoFaltaBucketOClave(String bucket, String clave) {
+    @NullAndEmptySource
+    @ValueSource(strings = {"   "})
+    void debeLanzarNoDisponible_cuandoFaltaLaClave(String clave) {
         // Arrange
         var entregable = UtilUUID.generarNuevoUUID();
-        var ubicacion = new UbicacionArchivoEntregable(entregable, bucket, clave);
+        var ubicacion = new UbicacionArchivoEntregable(entregable, clave);
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(ubicacion))

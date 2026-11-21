@@ -18,7 +18,6 @@ import java.util.UUID;
 @Subselect("""
         SELECT d.id                      AS id,
                d.estado_documentacion_id AS estado_id,
-               e.bucket                  AS bucket,
                e.clave_objeto            AS clave_objeto,
                e.nombre_archivo          AS nombre_archivo
         FROM documentacion d
@@ -37,9 +36,6 @@ public class ArchivoDocumentacionJpaQueryEntity {
 
     @Column(name = "estado_id")
     private String estadoId;
-
-    @Column(name = "bucket")
-    private String bucket;
 
     @Column(name = "clave_objeto")
     private String claveObjeto;

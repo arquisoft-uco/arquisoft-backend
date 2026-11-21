@@ -29,7 +29,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EntregableDisponibleQueryOutputAdapterTest {
 
     private static final Instant BASE = Instant.parse("2026-11-10T10:00:00Z");
-    private static final String BUCKET = "entregables";
 
     @Autowired
     private EntregableDisponibleQueryRepository repository;
@@ -58,16 +57,16 @@ class EntregableDisponibleQueryOutputAdapterTest {
         return id;
     }
 
-    private UUID sembrarEntregable(UUID id, UUID proyecto, int version, String bucket, String clave) {
+    private UUID sembrarEntregable(UUID id, UUID proyecto, int version, String clave) {
         entityManager.persist(EntregableProyectoGradoJpaEntity.builder()
                 .id(id).proyectoGradoId(proyecto).versionEntregable(version)
-                .estadoEntregableNombre("Aprobado")
-                .bucket(bucket).claveObjeto(clave).nombreArchivo("entregable-v" + version + ".zip").build());
+                .estadoEntregableId("APROBADO")
+                .claveObjeto(clave).nombreArchivo("entregable-v" + version + ".zip").build());
         return id;
     }
 
     private UUID sembrarEntregable(UUID proyecto, int version) {
-        return sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, version, BUCKET, "clave/" + proyecto);
+        return sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, version, "clave/" + proyecto);
     }
 
     private void sembrarDocumentacion(UUID entregable, String estado) {
@@ -126,7 +125,7 @@ class EntregableDisponibleQueryOutputAdapterTest {
         var otroProyecto = sembrarProyecto("Documentado");
         sembrarDocumentacion(sembrarEntregable(otroProyecto, 1), "PUBLICADO");
         var sinArchivo = sembrarProyecto("Sin archivo");
-        sembrarEntregable(UtilUUID.generarNuevoUUID(), sinArchivo, 1, null, null);
+        sembrarEntregable(UtilUUID.generarNuevoUUID(), sinArchivo, 1, null);
         var autor = sembrarAutor("Ana");
         vincular(proyecto, autor, null);
         confirmar();
@@ -165,16 +164,13 @@ class EntregableDisponibleQueryOutputAdapterTest {
     }
 
     @Test
-    void debeExcluirElEntregable_cuandoBucketOClaveObjetoSonNulosVaciosOEnBlanco() {
+    void debeExcluirElEntregable_cuandoLaClaveObjetoEsNulaVaciaOEnBlanco() {
         // Arrange
         var proyecto = sembrarProyecto("Proyecto");
-        var disponible = sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 1, BUCKET, "clave");
-        sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 2, null, "clave");
-        sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 3, "", "clave");
-        sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 4, "   ", "clave");
-        sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 5, BUCKET, null);
-        sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 6, BUCKET, "");
-        sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 7, BUCKET, "  ");
+        var disponible = sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 1, "clave");
+        sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 5, null);
+        sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 6, "");
+        sembrarEntregable(UtilUUID.generarNuevoUUID(), proyecto, 7, "  ");
         confirmar();
 
         // Act
@@ -347,8 +343,8 @@ class EntregableDisponibleQueryOutputAdapterTest {
         var proyectoAlfa = sembrarProyecto("Alfa");
         var alfaV2 = sembrarEntregable(proyectoAlfa, 2);
         var alfaV1 = sembrarEntregable(proyectoAlfa, 1);
-        var deltaB = sembrarEntregable(idFijo(2), sembrarProyecto("Delta"), 1, BUCKET, "clave-b");
-        var deltaA = sembrarEntregable(idFijo(1), sembrarProyecto("Delta"), 1, BUCKET, "clave-a");
+        var deltaB = sembrarEntregable(idFijo(2), sembrarProyecto("Delta"), 1, "clave-b");
+        var deltaA = sembrarEntregable(idFijo(1), sembrarProyecto("Delta"), 1, "clave-a");
         var sinTitulo = sembrarEntregable(UtilUUID.generarNuevoUUID(), 1);
         confirmar();
 

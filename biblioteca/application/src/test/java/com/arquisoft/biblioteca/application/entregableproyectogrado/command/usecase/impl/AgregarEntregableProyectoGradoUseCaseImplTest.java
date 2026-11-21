@@ -37,7 +37,7 @@ class AgregarEntregableProyectoGradoUseCaseImplTest {
     private AgregarEntregableProyectoGradoUseCaseImpl useCase;
 
     private final EntregableProyectoGradoDomain entregable = EntregableProyectoGradoDomain.crear(
-            UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2, "Aprobado", "entregables", "a/b.zip", "b.zip");
+            UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), 2, "APROBADO", "a/b.zip", "b.zip");
 
     @Test
     void debeAgregarYGuardarLaReplica_cuandoElEntregableNoExiste() {
@@ -53,7 +53,7 @@ class AgregarEntregableProyectoGradoUseCaseImplTest {
         orden.verify(entregableProyectoGradoExisteFinder, times(1)).obtener(entregable.getId());
         orden.verify(entregableProyectoGradoOutputPort).guardar(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new EntregableProyectoGradoEntity(entregable.getId(),
-                entregable.getProyectoGrado(), 2, "Aprobado", "entregables", "a/b.zip", "b.zip"));
+                entregable.getProyectoGrado(), 2, "APROBADO", "a/b.zip", "b.zip"));
         assertThat(resultado).isEqualTo(new AgregacionEntregableProyectoGradoResult.Agregado(
                 entregable.getId(), entregable.getProyectoGrado()));
         verify(logger).debug(EntregableProyectoGradoKey.LOG_VERIFICACION_AGREGAR, entregable.getId(), false);

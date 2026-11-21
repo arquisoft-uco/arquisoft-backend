@@ -14,7 +14,6 @@ public final class ArchivoDocumentacionAccesoMapper {
         return new ArchivoDocumentacion(
                 entity.documentacion(),
                 EstadoDocumentacion.desde(entity.estado()),
-                UtilObjeto.aplicarPorDefecto(entity.bucket(), UtilTexto.VACIO),
                 UtilObjeto.aplicarPorDefecto(entity.claveObjeto(), UtilTexto.VACIO),
                 UtilObjeto.aplicarPorDefecto(entity.nombreArchivo(), UtilTexto.VACIO));
     }

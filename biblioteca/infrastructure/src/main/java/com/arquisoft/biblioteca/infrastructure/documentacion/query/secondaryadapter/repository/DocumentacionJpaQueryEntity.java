@@ -23,7 +23,7 @@ import java.util.UUID;
                e.id                                 AS entregable_id,
                e.proyecto_grado_id                  AS proyecto_grado_id,
                CAST(e.version_entregable AS BIGINT) AS entregable_version,
-               e.estado_entregable_nombre           AS entregable_estado,
+               e.estado_entregable_id               AS entregable_estado_id,
                b.id                                 AS bibliotecario_id,
                b.nombre                             AS bibliotecario_nombre,
                s.id                                 AS estado_id,
@@ -61,8 +61,8 @@ public class DocumentacionJpaQueryEntity {
     @Column(name = "entregable_version")
     private Long entregableVersion;
 
-    @Column(name = "entregable_estado")
-    private String entregableEstado;
+    @Column(name = "entregable_estado_id")
+    private String entregableEstadoId;
 
     @Column(name = "bibliotecario_id", columnDefinition = "uuid")
     private UUID bibliotecarioId;

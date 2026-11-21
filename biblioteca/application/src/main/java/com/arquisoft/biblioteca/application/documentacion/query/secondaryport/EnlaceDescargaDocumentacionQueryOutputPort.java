@@ -7,5 +7,5 @@ import java.util.UUID;
 public interface EnlaceDescargaDocumentacionQueryOutputPort {
 
     EnlaceDescargaDocumentacionReadModel generar(
-            UUID documentacion, String bucket, String claveObjeto, String nombreArchivo);
+            UUID documentacion, String claveObjeto, String nombreArchivo);
 }

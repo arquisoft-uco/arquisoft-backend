@@ -59,7 +59,6 @@ public final class BibliotecaFields {
         public static final String PROYECTO_GRADO = "proyectoGrado";
         public static final String VERSION_ENTREGABLE = "versionEntregable";
         public static final String ESTADO_ENTREGABLE = "estadoEntregable";
-        public static final String BUCKET = "bucket";
         public static final String CLAVE_OBJETO = "claveObjeto";
         public static final String NOMBRE_ARCHIVO = "nombreArchivo";
     }
