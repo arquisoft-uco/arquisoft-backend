@@ -16,13 +16,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ValidadorConfiguracionCatalogoParametrosTest {
 
-    private static final String TOKEN_ID = "0b3f5c1e-5d1a-4c0a-9a55-2f7a3f2d9b11";
+    private static final String TOKEN_ID = "svc-arquisoft-catalogo-dev";
+    private static final String TOKEN_URI = "https://keycloak.test/realms/r/protocol/openid-connect/token";
     private static final String SECRETO = "secreto-de-prueba-123";
     private static final String URL = "https://catalogo.test/api/v1";
 
-    private static CatalogoParametrosProperties propiedades(String url, String tokenId, String secreto,
+    private static CatalogoParametrosProperties propiedades(String url, String clientId, String secreto,
                                                             boolean inseguro, Duration intervalo) {
-        return new CatalogoParametrosProperties(true, url, tokenId, secreto, Duration.ofSeconds(1),
+        return new CatalogoParametrosProperties(true, url, TOKEN_URI, clientId, secreto, Duration.ofSeconds(1),
                 Duration.ofSeconds(3), inseguro, intervalo, Map.of());
     }
 
@@ -43,13 +44,13 @@ class ValidadorConfiguracionCatalogoParametrosTest {
         assertThatThrownBy(validador::validar)
                 .isInstanceOfSatisfying(ConfiguracionCatalogoParametrosInvalidaException.class, e -> {
                     assertThat(e.getCodigoError()).isEqualTo(AppCodes.CatalogoParametros.CONFIGURACION_INVALIDA);
-                    assertThat(e.getMessage()).contains("catalogo.parametros.secreto");
+                    assertThat(e.getMessage()).contains("catalogo.parametros.client-secret");
                 });
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"dev", "prod"})
-    void debeAbortar_sinUrlNiTokenId(String perfil) {
+    void debeAbortar_sinUrlNiClientId(String perfil) {
         // Arrange
         var validador = validador(propiedades(null, "", SECRETO, false, Duration.ofMinutes(5)), perfil);
 
@@ -57,7 +58,7 @@ class ValidadorConfiguracionCatalogoParametrosTest {
         assertThatThrownBy(validador::validar)
                 .isInstanceOfSatisfying(ConfiguracionCatalogoParametrosInvalidaException.class,
                         e -> assertThat(e.getMessage()).contains("catalogo.parametros.base-url")
-                                .contains("catalogo.parametros.token-id"));
+                                .contains("catalogo.parametros.client-id"));
     }
 
     @Test
@@ -95,14 +96,16 @@ class ValidadorConfiguracionCatalogoParametrosTest {
     }
 
     @Test
-    void debeAbortar_cuandoTokenIdNoEsUuid() {
+    void debeAbortar_cuandoTokenUriNoEsUnaUrl() {
         // Arrange
-        var validador = validador(propiedades(URL, "no-es-uuid", SECRETO, false, Duration.ofMinutes(5)), "dev");
+        var propiedades = new CatalogoParametrosProperties(true, URL, "keycloak.test/token", TOKEN_ID, SECRETO,
+                Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5), Map.of());
+        var validador = validador(propiedades, "dev");
 
         // Act / Assert
         assertThatThrownBy(validador::validar)
                 .isInstanceOfSatisfying(ConfiguracionCatalogoParametrosInvalidaException.class,
-                        e -> assertThat(e.getMessage()).contains("catalogo.parametros.token-id"));
+                        e -> assertThat(e.getMessage()).contains("catalogo.parametros.token-uri"));
     }
 
     @Test
@@ -131,7 +134,7 @@ class ValidadorConfiguracionCatalogoParametrosTest {
     void debeNoIncluirValores_enElMensajeDeError() {
         // Arrange
         var urlConCredenciales = "http://usuario:clave-url@catalogo.test/api?q=consulta-secreta";
-        var tokenInvalido = "token-invalido-xyz";
+        var tokenInvalido = "svc\tinvalido-xyz";
         var validador = validador(propiedades(urlConCredenciales, tokenInvalido, SECRETO, true, Duration.ZERO),
                 "prod");
 

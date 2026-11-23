@@ -189,7 +189,7 @@ security:
     max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:10000}
 
 # ==================== CATALOGO DE PARAMETROS (HT-024) ====================
-# base-url, token-id y secreto NO llevan placeholder sin default: con enabled=false (por defecto) uno
+# base-url, token-uri, client-id y client-secret NO llevan placeholder sin default: con enabled=false (por defecto) uno
 # sin resolver abortaria el arranque. Con enabled=true los exige ValidadorConfiguracionCatalogoParametros.
 catalogo:
   parametros:

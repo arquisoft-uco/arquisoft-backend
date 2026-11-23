@@ -7,6 +7,7 @@ import com.arquisoft.shared.catalogoparametros.infrastructure.config.CatalogoPar
 import com.arquisoft.shared.catalogoparametros.infrastructure.config.CatalogoParametrosProperties;
 import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.webclient.dto.ParametrosCatalogoResponseDTO;
 import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.webclient.mapper.ParametrosCatalogoMapper;
+import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.webclient.model.ObtencionTokenServicio;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.webclient.ClienteHttp;
 import com.arquisoft.shared.webclient.RespuestaHttp;
@@ -22,17 +23,19 @@ public class CatalogoParametrosHttpOutputAdapter implements FuenteParametrosCata
     private static final int ESTADO_PROHIBIDO = 403;
     private static final String MOTIVO_RESPUESTA_INVALIDA = "respuesta-invalida";
     private static final String MOTIVO_ESTADO_PREFIJO = "estado-";
-    private static final String RUTA_TOKENS = "/tokens/";
-    private static final String RUTA_PARAMETROS = "/parametros";
+    private static final String RUTA_CONSULTA_M2M = "/parametros/consulta/m2m";
 
     private final ClienteHttp clienteHttp;
     private final CatalogoParametrosProperties propiedades;
+    private final CredencialServicioCatalogoParametros credencial;
 
     public CatalogoParametrosHttpOutputAdapter(
             @Qualifier(CatalogoParametrosClienteHttpConfig.CLIENTE_CATALOGO_PARAMETROS) ClienteHttp clienteHttp,
-            CatalogoParametrosProperties propiedades) {
+            CatalogoParametrosProperties propiedades,
+            CredencialServicioCatalogoParametros credencial) {
         this.clienteHttp = clienteHttp;
         this.propiedades = propiedades;
+        this.credencial = credencial;
     }
 
     @Override
@@ -40,8 +43,16 @@ public class CatalogoParametrosHttpOutputAdapter implements FuenteParametrosCata
         if (!propiedades.configurado()) {
             return new ObtencionParametrosCatalogo.SinConfigurar();
         }
-        var solicitud = ParametrosCatalogoMapper.toSolicitud(
-                RUTA_TOKENS + propiedades.tokenId() + RUTA_PARAMETROS, propiedades.secreto());
+        return switch (credencial.obtener()) {
+            case ObtencionTokenServicio.Vigente vigente -> consultar(vigente.accessToken());
+            case ObtencionTokenServicio.Rechazada rechazada -> new ObtencionParametrosCatalogo.Rechazada(rechazada.estado());
+            case ObtencionTokenServicio.NoDisponible noDisponible ->
+                    new ObtencionParametrosCatalogo.NoDisponible(noDisponible.motivo());
+        };
+    }
+
+    private ObtencionParametrosCatalogo consultar(String accessToken) {
+        var solicitud = ParametrosCatalogoMapper.toSolicitud(RUTA_CONSULTA_M2M, accessToken);
         try {
             return traducir(clienteHttp.ejecutar(solicitud, ParametrosCatalogoResponseDTO.class));
         } catch (ClienteHttpTransporteException e) {
@@ -50,6 +61,9 @@ public class CatalogoParametrosHttpOutputAdapter implements FuenteParametrosCata
     }
 
     private ObtencionParametrosCatalogo traducir(RespuestaHttp<ParametrosCatalogoResponseDTO> respuesta) {
+        if (respuesta.estado() == ESTADO_NO_AUTORIZADO) {
+            credencial.invalidar();
+        }
         if (respuesta.estado() == ESTADO_NO_AUTORIZADO || respuesta.estado() == ESTADO_PROHIBIDO) {
             return new ObtencionParametrosCatalogo.Rechazada(respuesta.estado());
         }

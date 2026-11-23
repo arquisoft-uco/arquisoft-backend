@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ParametrosCatalogoMemoriaOutputAdapterTest {
 
     private static CatalogoParametrosProperties propiedades(Map<String, String> defaults) {
-        return new CatalogoParametrosProperties(true, "https://catalogo.test", "id", "secreto",
+        return new CatalogoParametrosProperties(true, "https://catalogo.test", "https://keycloak.test/token", "id", "secreto",
                 Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5), defaults);
     }
 

@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class CatalogoParametrosClienteHttpConfig {
 
     public static final String CLIENTE_CATALOGO_PARAMETROS = "catalogoParametrosClienteHttp";
+    public static final String CLIENTE_TOKEN_CATALOGO_PARAMETROS = "catalogoParametrosTokenClienteHttp";
 
     private final CatalogoParametrosProperties propiedades;
     private final FabricaClienteHttp fabrica;
@@ -24,5 +25,11 @@ public class CatalogoParametrosClienteHttpConfig {
         return fabrica.crear(new ConfiguracionClienteHttp(
                 UtilTexto.aplicarTrim(propiedades.baseUrl()).replaceAll("/+$", ""),
                 propiedades.connectTimeout(), propiedades.readTimeout()));
+    }
+
+    @Bean(CLIENTE_TOKEN_CATALOGO_PARAMETROS)
+    public ClienteHttp catalogoParametrosTokenClienteHttp() {
+        return fabrica.crear(new ConfiguracionClienteHttp(
+                propiedades.origenTokenUri(), propiedades.connectTimeout(), propiedades.readTimeout()));
     }
 }

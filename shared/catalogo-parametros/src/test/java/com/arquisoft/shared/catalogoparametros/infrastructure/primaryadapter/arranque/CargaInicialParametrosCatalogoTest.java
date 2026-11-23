@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CargaInicialParametrosCatalogoTest {
 
-    private static final String TOKEN_ID = "0b3f5c1e-5d1a-4c0a-9a55-2f7a3f2d9b11";
+    private static final String TOKEN_ID = "svc-arquisoft-catalogo-dev";
     private static final String SECRETO = "secreto-de-prueba-123";
 
     @Mock
@@ -57,7 +57,8 @@ class CargaInicialParametrosCatalogoTest {
     void preparar() {
         alcance = mock(AlcanceTraza.class);
         when(gestorTraza.abrir(any())).thenReturn(alcance);
-        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test/api/v1", TOKEN_ID, SECRETO,
+        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test/api/v1",
+                "https://keycloak.test/realms/r/protocol/openid-connect/token", TOKEN_ID, SECRETO,
                 Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5),
                 Map.of("PARAM_X", "defecto"));
         carga = new CargaInicialParametrosCatalogo(validador, interactor, propiedades, gestorTraza, logger);

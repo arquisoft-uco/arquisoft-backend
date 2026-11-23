@@ -6,6 +6,7 @@ import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.webclient.MetodoHttp;
 import com.arquisoft.shared.webclient.SolicitudHttp;
+import com.arquisoft.shared.webclient.TipoContenido;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,12 +18,24 @@ public final class ParametrosCatalogoMapper {
     private static final String CABECERA_AUTORIZACION = "Authorization";
     private static final String TIPO_JSON = "application/json";
     private static final String ESQUEMA_BEARER = "Bearer ";
+    private static final String GRANT_TYPE = "grant_type";
+    private static final String CLIENT_ID = "client_id";
+    private static final String CLIENT_SECRET = "client_secret";
+    private static final String GRANT_CLIENT_CREDENTIALS = "client_credentials";
 
     private ParametrosCatalogoMapper() {}
 
-    public static SolicitudHttp toSolicitud(String ruta, String secreto) {
+    public static SolicitudHttp toSolicitud(String ruta, String accessToken) {
         return new SolicitudHttp(MetodoHttp.GET, ruta,
-                Map.of(CABECERA_ACCEPT, TIPO_JSON, CABECERA_AUTORIZACION, ESQUEMA_BEARER + secreto), null, null);
+                Map.of(CABECERA_ACCEPT, TIPO_JSON, CABECERA_AUTORIZACION, ESQUEMA_BEARER + accessToken), null, null);
+    }
+
+    public static SolicitudHttp toSolicitudToken(String ruta, String clientId, String clientSecret) {
+        var formulario = new LinkedHashMap<String, String>();
+        formulario.put(GRANT_TYPE, GRANT_CLIENT_CREDENTIALS);
+        formulario.put(CLIENT_ID, clientId);
+        formulario.put(CLIENT_SECRET, clientSecret);
+        return new SolicitudHttp(MetodoHttp.POST, ruta, Map.of(CABECERA_ACCEPT, TIPO_JSON), formulario, TipoContenido.FORM);
     }
 
     public static ParametrosCatalogoEntity toEntity(ParametrosCatalogoResponseDTO dto) {

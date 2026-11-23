@@ -2,7 +2,6 @@ package com.arquisoft.shared.catalogoparametros.infrastructure.config;
 
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.util.UtilUUID;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
@@ -16,8 +15,9 @@ import java.util.Map;
 public record CatalogoParametrosProperties(
         boolean enabled,
         String baseUrl,
-        String tokenId,
-        String secreto,
+        String tokenUri,
+        String clientId,
+        String clientSecret,
         @DefaultValue("1s") Duration connectTimeout,
         @DefaultValue("3s") Duration readTimeout,
         boolean allowInsecureHttp,
@@ -30,27 +30,32 @@ public record CatalogoParametrosProperties(
 
     public CatalogoParametrosProperties {
         baseUrl = UtilTexto.aplicarTrim(baseUrl);
-        tokenId = UtilTexto.aplicarTrim(tokenId);
-        secreto = UtilTexto.aplicarTrim(secreto);
+        tokenUri = UtilTexto.aplicarTrim(tokenUri);
+        clientId = UtilTexto.aplicarTrim(clientId);
+        clientSecret = UtilTexto.aplicarTrim(clientSecret);
         defaults = Map.copyOf(UtilObjeto.aplicarPorDefecto(defaults, Map.of()));
     }
 
     public boolean configurado() {
         return !UtilTexto.esVacioONulo(UtilTexto.aplicarTrim(baseUrl))
-                && !UtilTexto.esVacioONulo(UtilTexto.aplicarTrim(tokenId))
-                && !UtilTexto.esVacioONulo(UtilTexto.aplicarTrim(secreto));
+                && !UtilTexto.esVacioONulo(UtilTexto.aplicarTrim(tokenUri))
+                && !UtilTexto.esVacioONulo(UtilTexto.aplicarTrim(clientId))
+                && !UtilTexto.esVacioONulo(UtilTexto.aplicarTrim(clientSecret));
     }
 
     public List<String> problemas(boolean produccion) {
         var afectadas = new LinkedHashSet<String>();
-        if (!urlValida()) {
+        if (!urlValida(baseUrl)) {
             afectadas.add(PREFIJO + "base-url");
         }
-        if (!UtilUUID.uuidValido(UtilTexto.aplicarTrim(tokenId))) {
-            afectadas.add(PREFIJO + "token-id");
+        if (!urlValida(tokenUri)) {
+            afectadas.add(PREFIJO + "token-uri");
         }
-        if (UtilTexto.esVacioONulo(secreto) || contieneCaracterDeControl(secreto)) {
-            afectadas.add(PREFIJO + "secreto");
+        if (UtilTexto.esVacioONulo(clientId) || contieneCaracterDeControl(clientId)) {
+            afectadas.add(PREFIJO + "client-id");
+        }
+        if (UtilTexto.esVacioONulo(clientSecret) || contieneCaracterDeControl(clientSecret)) {
+            afectadas.add(PREFIJO + "client-secret");
         }
         if (noEsPositiva(connectTimeout)) {
             afectadas.add(PREFIJO + "connect-timeout");
@@ -68,7 +73,7 @@ public record CatalogoParametrosProperties(
     }
 
     public String origenBaseUrl() {
-        var uri = analizarUrl();
+        var uri = analizarUrl(baseUrl);
         if (UtilObjeto.esNulo(uri) || UtilTexto.esVacioONulo(uri.getHost())) {
             return UtilTexto.VACIO;
         }
@@ -76,8 +81,24 @@ public record CatalogoParametrosProperties(
         return uri.getScheme() + "://" + uri.getHost() + puerto;
     }
 
-    private boolean urlValida() {
-        var uri = analizarUrl();
+    public String origenTokenUri() {
+        var uri = analizarUrl(tokenUri);
+        if (UtilObjeto.esNulo(uri) || UtilObjeto.esNulo(uri.getScheme()) || UtilTexto.esVacioONulo(uri.getRawAuthority())) {
+            return UtilTexto.VACIO;
+        }
+        return uri.getScheme() + "://" + uri.getRawAuthority();
+    }
+
+    public String rutaTokenUri() {
+        var uri = analizarUrl(tokenUri);
+        if (UtilObjeto.esNulo(uri) || UtilObjeto.esNulo(uri.getRawPath())) {
+            return UtilTexto.VACIO;
+        }
+        return uri.getRawPath();
+    }
+
+    private boolean urlValida(String url) {
+        var uri = analizarUrl(url);
         if (UtilObjeto.esNulo(uri) || UtilObjeto.esNulo(uri.getScheme()) || UtilTexto.esVacioONulo(uri.getHost())) {
             return false;
         }
@@ -89,16 +110,16 @@ public record CatalogoParametrosProperties(
                 && UtilObjeto.esNulo(uri.getRawFragment());
     }
 
-    private URI analizarUrl() {
+    private static URI analizarUrl(String url) {
         try {
-            return URI.create(UtilTexto.aplicarTrim(baseUrl));
+            return URI.create(UtilTexto.aplicarTrim(url));
         } catch (IllegalArgumentException e) {
             return null;
         }
     }
 
-    // Un caracter de control no puede viajar en una cabecera HTTP y el JDK lo rechaza con una
-    // excepcion cuyo mensaje incluye el valor de la cabecera, es decir, el secreto.
+    // Un caracter de control no puede viajar en una cabecera HTTP ni en el formulario del token, y el
+    // JDK lo rechaza con una excepcion cuyo mensaje incluye el valor, es decir, el secreto.
     private static boolean contieneCaracterDeControl(String texto) {
         return texto.chars().anyMatch(Character::isISOControl);
     }
