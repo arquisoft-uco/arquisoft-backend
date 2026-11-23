@@ -387,6 +387,7 @@
               "artefactos:artefacto-participacion-estudiante:view",
               "artefactos:revision-asesor-estado:update",
               "artefactos:observacion-estado-estudiante:update",
+              "artefactos:estado-revision-asesor:view",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create",

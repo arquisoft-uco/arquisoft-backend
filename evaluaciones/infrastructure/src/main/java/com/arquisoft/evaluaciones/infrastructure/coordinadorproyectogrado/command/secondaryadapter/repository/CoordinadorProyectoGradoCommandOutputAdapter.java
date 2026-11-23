@@ -33,4 +33,9 @@ public class CoordinadorProyectoGradoCommandOutputAdapter implements Coordinador
     public Optional<CoordinadorProyectoGradoEntity> obtenerPorEvaluacion(UUID evaluacion) {
         return repository.findPorEvaluacion(evaluacion).map(CoordinadorProyectoGradoJpaMapper::toEntity);
     }
+
+    @Override
+    public Optional<CoordinadorProyectoGradoEntity> obtenerPorProyectoGrado(UUID proyectoGrado) {
+        return repository.findById(proyectoGrado).map(CoordinadorProyectoGradoJpaMapper::toEntity);
+    }
 }
