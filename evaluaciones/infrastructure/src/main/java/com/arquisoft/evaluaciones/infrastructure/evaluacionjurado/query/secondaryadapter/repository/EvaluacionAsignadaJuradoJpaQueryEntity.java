@@ -37,6 +37,7 @@ import java.util.UUID;
         JOIN evaluacion e ON e.id = ej.evaluacion_id
         JOIN estado_evaluacion ee ON ee.id = e.estado_evaluacion_id
         JOIN entregable en ON en.id = e.entregable_id
+        WHERE ej.eliminado_en IS NULL
         """)
 @Synchronize({"evaluacion_jurado", "estado_evaluacion_asignada_jurado", "evaluacion", "estado_evaluacion", "entregable",
         "evaluacion_cualitativa_jurado", "evaluacion_cuantitativa_jurado"})

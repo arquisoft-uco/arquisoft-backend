@@ -40,6 +40,9 @@ out/
 ### VS Code ###
 .vscode/
 
+### Temporales propios del backend (entregables.almacenamiento.directorio-temporal) ###
+/tmp/
+
 ### Logs ###
 logs/
 *.log
@@ -60,3 +63,6 @@ logs/
 ### Artefactos de los subagentes (planes, validaciones, cuerpos de PR) ###
 # Su sitio es arquisoft-uco/arquisoft-docs -> docs/hus/, donde los publica 4c-commit.
 .workspace/
+
+# Jar que docker-build.yml compila en el runner para empaquetarlo (JAR_ORIGEN=precompilado)
+/app.jar

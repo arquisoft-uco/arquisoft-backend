@@ -33,8 +33,10 @@ public class ModificarItemCualitativoAsesorUseCaseImpl
         modificarItemCualitativoAsesorValidator.validar(
                 modificacion.getItemCualitativoAsesor(), existe);
 
-        itemCualitativoAsesorOutputPort.actualizarDescripcion(
-                modificacion.getItemCualitativoAsesor(), modificacion.getDescripcion());
+        itemCualitativoAsesorOutputPort.actualizar(
+                modificacion.getItemCualitativoAsesor(),
+                modificacion.getDescripcion(),
+                modificacion.getPeso());
 
         logger.info(
                 ItemCualitativoAsesorKey.LOG_MODIFICADO,

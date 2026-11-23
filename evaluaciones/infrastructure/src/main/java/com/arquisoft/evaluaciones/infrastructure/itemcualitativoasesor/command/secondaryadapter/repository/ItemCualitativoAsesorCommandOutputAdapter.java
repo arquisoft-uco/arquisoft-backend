@@ -40,9 +40,9 @@ public class ItemCualitativoAsesorCommandOutputAdapter implements ItemCualitativ
     }
 
     @Override
-    public void actualizarDescripcion(UUID id, String descripcion) {
-        repository.actualizarDescripcion(id, descripcion);
-        logger.debug(ItemCualitativoAsesorKey.LOG_DESCRIPCION_ACTUALIZADA, id);
+    public void actualizar(UUID id, String descripcion, int peso) {
+        repository.actualizar(id, descripcion, peso);
+        logger.debug(ItemCualitativoAsesorKey.LOG_ACTUALIZADO, id);
     }
 
     @Override

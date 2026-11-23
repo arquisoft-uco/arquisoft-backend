@@ -86,6 +86,29 @@ class PaqueteEntregableCommandOutputAdapterTest {
         });
     }
 
+    @Test
+    void debeObtenerElPaqueteDelEntregable_cuandoExisteYVacioCuandoNo() {
+        // Arrange
+        var conPaquete = UtilUUID.generarNuevoUUID();
+        persistirPaquete(conPaquete);
+        persistirPaquete(UtilUUID.generarNuevoUUID());
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorEntregable(conPaquete);
+        var ausente = adapter.obtenerPorEntregable(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrado).get().satisfies(paquete -> {
+            assertThat(paquete.entregableProyectoGrado()).isEqualTo(conPaquete);
+            assertThat(paquete.bucket()).isEqualTo("bucket");
+            assertThat(paquete.claveObjeto()).isEqualTo("paquetes/x.zip");
+            assertThat(paquete.nombreArchivo()).isEqualTo("p.zip");
+        });
+        assertThat(ausente).isEmpty();
+    }
+
     private void persistirPaquete(java.util.UUID entregable) {
         entityManager.persist(PaqueteEntregableJpaEntity.builder()
                 .id(UtilUUID.generarNuevoUUID()).entregableProyectoGradoId(entregable).bucket("bucket")

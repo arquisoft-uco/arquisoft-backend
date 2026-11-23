@@ -15,4 +15,6 @@ public interface EstudianteProyectoGradoOutputPort {
     void guardarTodos(List<EstudianteProyectoGradoEntity> vinculos);
 
     void guardar(EstudianteProyectoGradoEntity vinculo);
+
+    List<EstudianteProyectoGradoEntity> consultarContactosVigentesPorEvaluacion(UUID evaluacion);
 }

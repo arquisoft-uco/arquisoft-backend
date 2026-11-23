@@ -24,18 +24,19 @@ class AgregarEstudiantesProyectoGradoCommandTest {
 
         // Act
         var command = AgregarEstudiantesProyectoGradoCommand.crear(
-                proyectoGrado.toString(), List.of(primero.toString(), segundo.toString()), OCURRIDO_EN);
+                proyectoGrado.toString(), List.of(contacto(primero.toString()), contacto(segundo.toString())), OCURRIDO_EN);
 
         // Assert
         assertThat(command.proyectoGrado()).isEqualTo(proyectoGrado);
-        assertThat(command.estudiantes()).containsExactly(primero, segundo);
+        assertThat(command.estudiantes()).extracting(AgregarEstudiantesProyectoGradoCommand.Estudiante::id)
+                .containsExactly(primero.toString(), segundo.toString());
         assertThat(command.ocurridoEn()).isEqualTo(OCURRIDO_EN);
     }
 
     @Test
     void debeRechazar_cuandoElProyectoNoEsUuid() {
         // Arrange
-        var estudiantes = List.of(UtilUUID.generarNuevoUUID().toString());
+        var estudiantes = List.of(contacto(UtilUUID.generarNuevoUUID().toString()));
 
         // Act & Assert
         assertThatThrownBy(() -> AgregarEstudiantesProyectoGradoCommand.crear("no-uuid", estudiantes, OCURRIDO_EN))
@@ -49,7 +50,7 @@ class AgregarEstudiantesProyectoGradoCommandTest {
     void debeRechazar_cuandoUnEstudianteNoEsUuid() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID().toString();
-        var estudiantes = List.of(UtilUUID.generarNuevoUUID().toString(), "no-uuid");
+        var estudiantes = List.of(contacto(UtilUUID.generarNuevoUUID().toString()), contacto("no-uuid"));
 
         // Act & Assert
         assertThatThrownBy(() -> AgregarEstudiantesProyectoGradoCommand.crear(proyectoGrado, estudiantes, OCURRIDO_EN))
@@ -82,7 +83,7 @@ class AgregarEstudiantesProyectoGradoCommandTest {
 
         // Act & Assert
         assertThatThrownBy(() -> AgregarEstudiantesProyectoGradoCommand.crear(
-                proyectoGrado, List.of(estudiante, estudiante), OCURRIDO_EN))
+                proyectoGrado, List.of(contacto(estudiante), contacto(estudiante)), OCURRIDO_EN))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .extracting(e -> e.campo())
@@ -93,7 +94,7 @@ class AgregarEstudiantesProyectoGradoCommandTest {
     void debeRechazar_cuandoOcurridoEnEsNulo() {
         // Arrange
         var proyectoGrado = UtilUUID.generarNuevoUUID().toString();
-        var estudiantes = List.of(UtilUUID.generarNuevoUUID().toString());
+        var estudiantes = List.of(contacto(UtilUUID.generarNuevoUUID().toString()));
 
         // Act & Assert
         assertThatThrownBy(() -> AgregarEstudiantesProyectoGradoCommand.crear(proyectoGrado, estudiantes, null))
@@ -106,7 +107,7 @@ class AgregarEstudiantesProyectoGradoCommandTest {
     @Test
     void debeRechazar_cuandoElProyectoEsElUuidDeCeros() {
         // Arrange
-        var estudiantes = List.of(UtilUUID.generarNuevoUUID().toString());
+        var estudiantes = List.of(contacto(UtilUUID.generarNuevoUUID().toString()));
 
         // Act & Assert
         assertThatThrownBy(() -> AgregarEstudiantesProyectoGradoCommand.crear(
@@ -115,5 +116,9 @@ class AgregarEstudiantesProyectoGradoCommandTest {
                 .satisfies(ex -> assertThat(((ApplicationValidationException) ex).getValidationResult().getErrores())
                         .extracting(e -> e.campo())
                         .containsExactly(EvaluacionesFields.EstudianteProyectoGrado.PROYECTO_GRADO));
+    }
+
+    private static AgregarEstudiantesProyectoGradoCommand.Estudiante contacto(String id) {
+        return new AgregarEstudiantesProyectoGradoCommand.Estudiante(id, "Nombre", "correo@uco.edu.co");
     }
 }

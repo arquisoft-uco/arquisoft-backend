@@ -24,18 +24,19 @@ class ItemCualitativoAsesorCommandRepositoryTest {
     private EntityManager entityManager;
 
     @Test
-    void debeActualizarSoloDescripcion_cuandoItemExiste() {
+    void debeActualizarDescripcionYPeso_cuandoItemExiste() {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         repository.saveAndFlush(ItemCualitativoAsesorJpaEntity.builder()
                 .id(id)
                 .nombre("Claridad conceptual")
                 .descripcion("Descripción original")
+                .peso(1)
                 .build());
         entityManager.clear();
 
         // Act
-        var filasActualizadas = repository.actualizarDescripcion(id, "Descripción nueva");
+        var filasActualizadas = repository.actualizar(id, "Descripción nueva", 7);
         entityManager.clear();
 
         // Assert
@@ -43,6 +44,7 @@ class ItemCualitativoAsesorCommandRepositoryTest {
         assertThat(repository.findById(id)).hasValueSatisfying(persistida -> {
             assertThat(persistida.getNombre()).isEqualTo("Claridad conceptual");
             assertThat(persistida.getDescripcion()).isEqualTo("Descripción nueva");
+            assertThat(persistida.getPeso()).isEqualTo(7);
         });
     }
 
@@ -52,7 +54,7 @@ class ItemCualitativoAsesorCommandRepositoryTest {
         var idInexistente = UtilUUID.generarNuevoUUID();
 
         // Act
-        var filasActualizadas = repository.actualizarDescripcion(idInexistente, "Descripción nueva");
+        var filasActualizadas = repository.actualizar(idInexistente, "Descripción nueva", 1);
 
         // Assert
         assertThat(filasActualizadas).isZero();

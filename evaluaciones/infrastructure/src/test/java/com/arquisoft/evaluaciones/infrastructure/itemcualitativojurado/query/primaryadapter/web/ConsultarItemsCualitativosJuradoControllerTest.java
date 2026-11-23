@@ -69,8 +69,8 @@ class ConsultarItemsCualitativosJuradoControllerTest {
     void debeRetornar200ConArregloDeDtos_cuandoTieneElClientRoleView() throws Exception {
         // Arrange
         List<ItemCualitativoJuradoReadModel> items = List.of(
-                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "Evalúa la claridad conceptual"),
-                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Rigor", "Evalúa el rigor metodológico")
+                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "Evalúa la claridad conceptual", 1),
+                new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Rigor", "Evalúa el rigor metodológico", 1)
         );
         when(interactor.ejecutar()).thenReturn(items);
 
@@ -86,8 +86,8 @@ class ConsultarItemsCualitativosJuradoControllerTest {
         UUID idClaridad = UUID.randomUUID();
         UUID idRigor = UUID.randomUUID();
         List<ItemCualitativoJuradoReadModel> items = List.of(
-                new ItemCualitativoJuradoReadModel(idClaridad, "Claridad", "Evalúa la claridad conceptual"),
-                new ItemCualitativoJuradoReadModel(idRigor, "Rigor", "Evalúa el rigor metodológico")
+                new ItemCualitativoJuradoReadModel(idClaridad, "Claridad", "Evalúa la claridad conceptual", 1),
+                new ItemCualitativoJuradoReadModel(idRigor, "Rigor", "Evalúa el rigor metodológico", 1)
         );
         when(interactor.ejecutar()).thenReturn(items);
 

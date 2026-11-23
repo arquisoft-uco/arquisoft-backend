@@ -7,12 +7,12 @@ import com.arquisoft.evaluaciones.domain.evaluacion.rules.EvaluacionAdmiteCambio
 import com.arquisoft.evaluaciones.domain.evaluacion.rules.EvaluacionExistenteRule;
 import com.arquisoft.evaluaciones.domain.evaluacion.rules.impl.EvaluacionAdmiteCambioAsignacionRuleImpl;
 import com.arquisoft.evaluaciones.domain.evaluacion.rules.impl.EvaluacionExistenteRuleImpl;
-import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.EvaluacionesRegistradasJurados;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.JuradosEvaluadosEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.model.JuradosAsignadosEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.rules.JuradosAsignadosRule;
-import com.arquisoft.evaluaciones.domain.evaluacionjurado.rules.JuradosSinEvaluacionesRule;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.rules.JuradosPendientesPorEvaluarRule;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.rules.impl.JuradosAsignadosRuleImpl;
-import com.arquisoft.evaluaciones.domain.evaluacionjurado.rules.impl.JuradosSinEvaluacionesRuleImpl;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.rules.impl.JuradosPendientesPorEvaluarRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,13 +21,13 @@ public class RemoverJuradosEvaluacionValidatorImpl implements RemoverJuradosEval
     private final EvaluacionExistenteRule evaluacionExistenteRule;
     private final EvaluacionAdmiteCambioAsignacionRule evaluacionAdmiteCambioAsignacionRule;
     private final JuradosAsignadosRule juradosAsignadosRule;
-    private final JuradosSinEvaluacionesRule juradosSinEvaluacionesRule;
+    private final JuradosPendientesPorEvaluarRule juradosPendientesPorEvaluarRule;
 
     public RemoverJuradosEvaluacionValidatorImpl() {
         this.evaluacionExistenteRule = new EvaluacionExistenteRuleImpl();
         this.evaluacionAdmiteCambioAsignacionRule = new EvaluacionAdmiteCambioAsignacionRuleImpl();
         this.juradosAsignadosRule = new JuradosAsignadosRuleImpl();
-        this.juradosSinEvaluacionesRule = new JuradosSinEvaluacionesRuleImpl();
+        this.juradosPendientesPorEvaluarRule = new JuradosPendientesPorEvaluarRuleImpl();
     }
 
     @Override
@@ -35,10 +35,10 @@ public class RemoverJuradosEvaluacionValidatorImpl implements RemoverJuradosEval
             ExistenciaEvaluacion evaluacion,
             EstadoAsignacionEvaluacion estado,
             JuradosAsignadosEvaluacion jurados,
-            EvaluacionesRegistradasJurados evaluaciones) {
+            JuradosEvaluadosEvaluacion evaluados) {
         evaluacionExistenteRule.validar(evaluacion);
         evaluacionAdmiteCambioAsignacionRule.validar(estado);
         juradosAsignadosRule.validar(jurados);
-        juradosSinEvaluacionesRule.validar(evaluaciones);
+        juradosPendientesPorEvaluarRule.validar(evaluados);
     }
 }

@@ -187,12 +187,12 @@ minio:
     descarga-minutos: ${MINIO_DOWNLOAD_EXPIRY_MINUTES:5}
 
 # ==================== REPOSITORIO DE ARTEFACTOS (almacenamiento) ====================
-# El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (5 MB). El limite
+# El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (50 MB). El limite
 # por archivo (50 MB) y la cuota por proyecto de grado (1 GB) de ADR-004 viven en la seccion ARTEFACTOS.
 repositorio-artefactos:
   almacenamiento:
     bucket: ${REPOSITORIO_ARTEFACTOS_BUCKET:repositorio-artefactos}
-    tamano-maximo-bytes: ${REPOSITORIO_ARTEFACTOS_TAMANO_MAXIMO_BYTES:5242880}
+    tamano-maximo-bytes: ${REPOSITORIO_ARTEFACTOS_TAMANO_MAXIMO_BYTES:52428800}
 
 # ==================== ARTEFACTOS (almacenamiento) ====================
 # Bucket propio de artefactos (lo crea minio/configurar.sh), con los prefijos pendientes/ y versiones/.
@@ -205,10 +205,28 @@ artefactos:
 # ==================== ENTREGABLES (almacenamiento) ====================
 # Bucket propio (lo crea minio/configurar.sh, nunca el backend): copia de cada artefacto cerrado bajo artefactos/ y
 # ZIP de cada entregable bajo paquetes/. bucket-artefactos es el origen de la copia (el bucket de artefactos).
+# directorio-temporal: donde se arma el ZIP antes de subirlo. Propio del backend y solo para su usuario (0700), nunca
+# el /tmp compartido del sistema; relativo al directorio de trabajo (/app en la imagen). Debe ser exclusivo de cada
+# instancia (nunca un volumen compartido entre réplicas): al arrancar se borran los temporales huérfanos que haya.
 entregables:
   almacenamiento:
     bucket: ${ENTREGABLES_BUCKET:entregables}
     bucket-artefactos: ${ENTREGABLES_BUCKET_ARTEFACTOS:${ARTEFACTOS_BUCKET:artefactos}}
+    directorio-temporal: ${ENTREGABLES_DIRECTORIO_TEMPORAL:tmp/entregables}
+
+# ==================== BIBLIOTECA (almacenamiento) ====================
+# Mismo bucket donde entregables guarda los zips; biblioteca solo lo lee, nunca lo crea.
+biblioteca:
+  almacenamiento:
+    bucket-entregables: ${ENTREGABLES_BUCKET:entregables}
+
+# ==================== EVALUACIONES (finalización) ====================
+# Peso con el que cada participante entra al promedio de la nota final: el asesor pesa peso-asesor y cada jurado
+# peso-jurado. Con 1 y 1 el asesor pesa igual que un jurado. Ambos deben ser mayores que 0.
+evaluaciones:
+  finalizacion:
+    peso-asesor: ${EVALUACIONES_PESO_ASESOR:1}
+    peso-jurado: ${EVALUACIONES_PESO_JURADO:1}
 
 # ==================== PLAZO DEL MAPA DE RUTA ====================
 # El job diario de mapas_ruta (cron) y el consumidor de fecha_fin_cambiada de proyectos comparten la zona:

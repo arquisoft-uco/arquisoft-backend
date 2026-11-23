@@ -4,6 +4,7 @@ import com.arquisoft.biblioteca.application.autordocumentacion.command.secondary
 import com.arquisoft.biblioteca.application.autordocumentacion.command.secondaryport.entity.AutorDocumentacionEntity;
 import com.arquisoft.biblioteca.application.bibliotecario.command.finder.BibliotecarioPorIdFinder;
 import com.arquisoft.biblioteca.application.documentacion.command.finder.DocumentacionDelEntregableExisteFinder;
+import com.arquisoft.biblioteca.application.documentacion.command.secondaryport.AlmacenamientoDocumentacionOutputPort;
 import com.arquisoft.biblioteca.application.documentacion.command.secondaryport.DocumentacionOutputPort;
 import com.arquisoft.biblioteca.application.documentacion.command.secondaryport.entity.DocumentacionEntity;
 import com.arquisoft.biblioteca.application.documentacion.command.validator.RegistrarDocumentacionValidator;
@@ -14,6 +15,7 @@ import com.arquisoft.biblioteca.domain.documentacion.RegistroDocumentacionDomain
 import com.arquisoft.biblioteca.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
 import com.arquisoft.biblioteca.domain.entregableproyectogrado.exception.EntregableProyectoGradoNoEncontradoException;
 import com.arquisoft.biblioteca.domain.estadodocumentacion.EstadoDocumentacion;
+import com.arquisoft.biblioteca.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.biblioteca.domain.estudianteproyectogrado.model.AutorDeEntregable;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.biblioteca.DocumentacionKey;
@@ -60,6 +62,8 @@ class RegistrarDocumentacionUseCaseImplTest {
     @Mock
     private AutorDocumentacionOutputPort autorDocumentacionOutputPort;
     @Mock
+    private AlmacenamientoDocumentacionOutputPort almacenamientoOutputPort;
+    @Mock
     private AppLogger logger;
 
     private RegistrarDocumentacionUseCaseImpl useCase;
@@ -68,7 +72,7 @@ class RegistrarDocumentacionUseCaseImplTest {
     void setUp() {
         useCase = new RegistrarDocumentacionUseCaseImpl(entregableFinder, documentacionExisteFinder,
                 bibliotecarioFinder, autoresFinder, validator, documentacionOutputPort,
-                autorDocumentacionOutputPort, logger);
+                autorDocumentacionOutputPort, almacenamientoOutputPort, logger);
     }
 
     @Test
@@ -78,7 +82,7 @@ class RegistrarDocumentacionUseCaseImplTest {
         var bibliotecarioId = UtilUUID.generarNuevoUUID();
         var registro = RegistroDocumentacionDomain.crear(entregableId, bibliotecarioId);
         var entregable = EntregableProyectoGradoDomain.reconstruir(
-                entregableId, UtilUUID.generarNuevoUUID(), "entregables", "proyectos/a.zip");
+                entregableId, UtilUUID.generarNuevoUUID(), 1, EstadoEntregable.APROBADO, "proyectos/a.zip", "a.zip");
         var bibliotecario = BibliotecarioDomain.reconstruir(bibliotecarioId, "123", "Ana", "ana@uco.edu.co",
                 Instant.parse("2026-11-15T10:00:00Z"), UtilFecha.VACIO);
         var autores = List.of(
@@ -89,13 +93,14 @@ class RegistrarDocumentacionUseCaseImplTest {
         when(documentacionExisteFinder.obtener(entregableId)).thenReturn(false);
         when(bibliotecarioFinder.obtener(bibliotecarioId)).thenReturn(bibliotecario);
         when(autoresFinder.obtener(entregableId)).thenReturn(autores);
+        when(almacenamientoOutputPort.bucketEntregables()).thenReturn("bucket-entregables");
 
         // Act
         var id = useCase.ejecutar(registro);
 
         // Assert
         var orden = inOrder(entregableFinder, documentacionExisteFinder, bibliotecarioFinder, autoresFinder,
-                validator, documentacionOutputPort, autorDocumentacionOutputPort, logger);
+                validator, documentacionOutputPort, autorDocumentacionOutputPort, almacenamientoOutputPort, logger);
         orden.verify(logger).info(DocumentacionKey.LOG_REGISTRANDO, entregableId, bibliotecarioId);
         orden.verify(entregableFinder, times(1)).obtener(entregableId);
         orden.verify(documentacionExisteFinder, times(1)).obtener(entregableId);
@@ -109,7 +114,7 @@ class RegistrarDocumentacionUseCaseImplTest {
         orden.verify(logger).info(eq(DocumentacionKey.LOG_REGISTRADA), eq(id), eq(entregableId), eq(3));
         var documentacion = documentacionCaptor.getValue();
         assertThat(documentacion.id()).isEqualTo(id);
-        assertThat(documentacion.url()).isEqualTo("entregables/proyectos/a.zip");
+        assertThat(documentacion.url()).isEqualTo("bucket-entregables/proyectos/a.zip");
         assertThat(documentacion.entregableProyectoGrado()).isEqualTo(entregableId);
         assertThat(documentacion.bibliotecario()).isEqualTo(bibliotecarioId);
         assertThat(documentacion.estadoDocumentacion()).isEqualTo(EstadoDocumentacion.PENDIENTE.getId());

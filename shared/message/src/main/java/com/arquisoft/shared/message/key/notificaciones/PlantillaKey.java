@@ -168,6 +168,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.version-artefacto-generada", 2),
     CUERPO_VERSION_ARTEFACTO_GENERADA(
             "notificaciones.aplicacion.plantilla.cuerpo.version-artefacto-generada", 3),
+    ASUNTO_EVALUACION_FINALIZADA(
+            "notificaciones.aplicacion.plantilla.asunto.evaluacion-finalizada", 1),
+    CUERPO_EVALUACION_FINALIZADA(
+            "notificaciones.aplicacion.plantilla.cuerpo.evaluacion-finalizada", 4),
     ASUNTO_ESTUDIANTES_ARTEFACTO_ASIGNADOS(
             "notificaciones.aplicacion.plantilla.asunto.estudiantes-artefacto-asignados", 1),
     CUERPO_ESTUDIANTES_ARTEFACTO_ASIGNADOS(
@@ -196,6 +200,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.observacion-reabierta", 2),
     CUERPO_OBSERVACION_REABIERTA(
             "notificaciones.aplicacion.plantilla.cuerpo.observacion-reabierta", 5),
+    ASUNTO_ENTREGABLE_ESTADO_CAMBIADO(
+            "notificaciones.aplicacion.plantilla.asunto.entregable-estado-cambiado", 2),
+    CUERPO_ENTREGABLE_ESTADO_CAMBIADO(
+            "notificaciones.aplicacion.plantilla.cuerpo.entregable-estado-cambiado", 4),
     PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;

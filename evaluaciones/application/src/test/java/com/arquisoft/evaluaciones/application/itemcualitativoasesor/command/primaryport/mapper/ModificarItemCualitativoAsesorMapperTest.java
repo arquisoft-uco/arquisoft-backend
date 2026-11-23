@@ -12,7 +12,7 @@ class ModificarItemCualitativoAsesorMapperTest {
     void debeConstruirObjetoDeAccion_cuandoCommandEsValido() {
         // Arrange
         var item = UtilUUID.generarNuevoUUID();
-        var command = ModificarItemCualitativoAsesorCommand.crear(item, "Descripción ampliada");
+        var command = ModificarItemCualitativoAsesorCommand.crear(item, "Descripción ampliada", 1);
 
         // Act
         var modificacion = ModificarItemCualitativoAsesorMapper.toDomain(command);

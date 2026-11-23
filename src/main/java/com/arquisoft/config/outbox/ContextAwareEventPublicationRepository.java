@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.modulith.events.EventPublication.Status;
 import org.springframework.modulith.events.core.EventPublicationRepository;
 import org.springframework.modulith.events.core.EventSerializer;
@@ -36,6 +37,8 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
     private static final String SQL_COLS =
             "id, listener_id, event_type, serialized_event, publication_date, "
             + "completion_date, status, completion_attempts, last_resubmission_date";
+    private static final String PARAMETRO_IDS = "ids";
+    private static final String SQL_ELIMINAR_POR_ID = "DELETE FROM event_publication WHERE id IN (:ids)";
 
     private final Map<String, DataSource> allDataSources;
     private final Map<DataSource, EntityManagerFactory> dsToEmf;
@@ -70,8 +73,7 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
         this.entries = allDataSources.entrySet().stream()
                 .filter(e -> hasEventPublicationTable(e.getValue()))
                 .peek(e -> logger.info(MensajeriaKey.LOG_OUTBOX_HABILITADO, e.getKey()))
-                .map(e -> new OutboxEntry(dsToEmf.get(e.getValue()), e.getValue(),
-                        new JdbcTemplate(e.getValue())))
+                .map(e -> OutboxEntry.de(dsToEmf.get(e.getValue()), e.getValue()))
                 .toList();
 
         if (entries.isEmpty()) {
@@ -262,11 +264,9 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
         if (identifiers.isEmpty()) {
             return;
         }
-        String placeholders = identifiers.stream().map(id -> "?").collect(Collectors.joining(","));
+        var parametros = Map.of(PARAMETRO_IDS, identifiers);
         for (OutboxEntry entry : entries) {
-            entry.template().update(
-                    "DELETE FROM event_publication WHERE id IN (" + placeholders + ")",
-                    identifiers.toArray());
+            entry.namedTemplate().update(SQL_ELIMINAR_POR_ID, parametros);
         }
     }
 
@@ -303,7 +303,14 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
                 completionTs == null ? null : completionTs.toInstant());
     }
 
-    private record OutboxEntry(EntityManagerFactory emf, DataSource dataSource, JdbcTemplate template) {}
+    private record OutboxEntry(EntityManagerFactory emf, DataSource dataSource, JdbcTemplate template,
+                               NamedParameterJdbcTemplate namedTemplate) {
+
+        static OutboxEntry de(EntityManagerFactory emf, DataSource dataSource) {
+            var template = new JdbcTemplate(dataSource);
+            return new OutboxEntry(emf, dataSource, template, new NamedParameterJdbcTemplate(template));
+        }
+    }
 
     private static class JdbcEventPublication implements TargetEventPublication {
 

@@ -13,4 +13,8 @@ public interface CriterioItemCualitativoJuradoCommandRepository
 
     @Query("select criterio.id from CriterioItemCualitativoJuradoJpaEntity criterio where criterio.id in :ids")
     Set<UUID> findIdsByIdIn(@Param("ids") Set<UUID> ids);
+
+    @Query("select count(criterio) > 0 from CriterioItemCualitativoJuradoJpaEntity criterio "
+            + "where lower(trim(criterio.nombre)) = lower(:nombre)")
+    boolean existePorNombreNormalizado(@Param("nombre") String nombre);
 }

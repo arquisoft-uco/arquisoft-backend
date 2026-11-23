@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.usecase.impl;
 
+import com.arquisoft.evaluaciones.domain.evaluacion.VerificacionFinalizacionEvaluacionDomain;
 import com.arquisoft.evaluaciones.application.criterioitemcualitativojurado.command.finder.CriteriosCualitativosJuradoExistentesFinder;
 import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.IniciarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.finder.ItemsEvaluacionCualitativaJuradoRegistradosFinder;
@@ -20,6 +21,8 @@ import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.E
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.ItemsCualitativosJuradoNoEncontradosException;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.CompletitudEvaluacionJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.ContextoRegistroEvaluacionJuradoDomain;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
+import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.FinalizarEvaluacionUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.publisher.EventPublisher;
@@ -36,6 +39,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.eq;
@@ -80,6 +84,12 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
 
     @Mock
     private AppLogger logger;
+
+    @Mock
+    private CalcularResumenEvaluacionJuradoUseCase calcularResumenJuradoUseCase;
+
+    @Mock
+    private FinalizarEvaluacionUseCase finalizarEvaluacionUseCase;
 
     @InjectMocks
     private RegistrarEvaluacionesCualitativasJuradoUseCaseImpl useCase;
@@ -141,6 +151,9 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         verify(logger).info(any(ClaveMensaje.class), eq(evaluacionJurado), eq(1));
         verify(logger).debug(any(ClaveMensaje.class), eq(evaluacionJurado), eq(1), eq(1));
         verify(logger).info(any(ClaveMensaje.class), eq(evaluacionJurado), eq(1), eq(evento.getIdEvento()));
+
+        verify(calcularResumenJuradoUseCase).ejecutar(argThat(CompletitudEvaluacionJuradoDomain::isCompleta));
+        verify(finalizarEvaluacionUseCase).ejecutar(any(VerificacionFinalizacionEvaluacionDomain.class));
     }
 
     @Test

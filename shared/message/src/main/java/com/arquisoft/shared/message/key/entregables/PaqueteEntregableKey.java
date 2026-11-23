@@ -25,7 +25,11 @@ public enum PaqueteEntregableKey implements ClaveMensaje {
     ERROR_PROYECTO_CANCELADO_DETALLE("entregables.dominio.paqueteentregable.error.proyecto-cancelado-detalle", 1),
     ERROR_DESACTUALIZADO("entregables.dominio.paqueteentregable.error.desactualizado", 1),
     ERROR_DESACTUALIZADO_DETALLE("entregables.dominio.paqueteentregable.error.desactualizado-detalle", 5),
-    LOG_EFECTO_DIFERIDO_FALLIDO("entregables.infraestructura.paqueteentregable.log.efecto-diferido-fallido", 2);
+    LOG_EFECTO_DIFERIDO_FALLIDO("entregables.infraestructura.paqueteentregable.log.efecto-diferido-fallido", 2),
+    LOG_TEMPORALES_HUERFANOS_ELIMINADOS(
+            "entregables.infraestructura.paqueteentregable.log.temporales-huerfanos-eliminados", 2),
+    LOG_TEMPORAL_HUERFANO_NO_ELIMINADO(
+            "entregables.infraestructura.paqueteentregable.log.temporal-huerfano-no-eliminado", 2);
 
     private final String clave;
     private final int parametros;

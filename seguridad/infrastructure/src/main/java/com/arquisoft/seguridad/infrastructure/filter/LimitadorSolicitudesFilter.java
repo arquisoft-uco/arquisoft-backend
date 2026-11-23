@@ -32,9 +32,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
 
-    // Oculta deliberadamente el campo heredado GenericFilterBean.logger (Commons Logging):
-    // el proyecto registra a traves del puerto AppLogger, no del logger del framework.
-    private final AppLogger logger;
+    private final AppLogger appLogger;
 
     private final GestorTraza gestorTraza;
 
@@ -108,7 +106,7 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
                     .build();
             objectMapper.writeValue(response.getWriter(), body);
 
-            logger.warn(LimiteSolicitudesKey.LOG_LIMITE_EXCEDIDO, clientIp, request.getRequestURI());
+            appLogger.warn(LimiteSolicitudesKey.LOG_LIMITE_EXCEDIDO, clientIp, request.getRequestURI());
         }
     }
 

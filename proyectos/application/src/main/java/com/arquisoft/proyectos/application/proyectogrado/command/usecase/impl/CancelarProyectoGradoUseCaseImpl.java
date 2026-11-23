@@ -2,6 +2,7 @@ package com.arquisoft.proyectos.application.proyectogrado.command.usecase.impl;
 
 import com.arquisoft.proyectos.application.asesor.command.finder.AsesoresAsignadosDeProyectoGradoFinder;
 import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
+import com.arquisoft.proyectos.application.entregableproyectogrado.command.finder.UltimoEntregableProyectoGradoFinder;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.finder.EstadoActualProyectoGradoFinder;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.EstadoProyectoGradoOutputPort;
 import com.arquisoft.proyectos.application.estadoproyectogrado.command.secondaryport.mapper.EstadoProyectoGradoMapper;
@@ -31,6 +32,7 @@ public class CancelarProyectoGradoUseCaseImpl implements CancelarProyectoGradoUs
     private final ProyectoGradoBloqueadoPorIdFinder proyectoGradoBloqueadoPorIdFinder;
     private final EstadoActualProyectoGradoFinder estadoActualProyectoGradoFinder;
     private final CoordinadorPorIdFinder coordinadorPorIdFinder;
+    private final UltimoEntregableProyectoGradoFinder ultimoEntregableProyectoGradoFinder;
     private final EstudiantesVigentesDeProyectoGradoFinder estudiantesVigentesDeProyectoGradoFinder;
     private final AsesoresAsignadosDeProyectoGradoFinder asesoresAsignadosDeProyectoGradoFinder;
     private final CancelarProyectoGradoValidator validator;
@@ -44,13 +46,15 @@ public class CancelarProyectoGradoUseCaseImpl implements CancelarProyectoGradoUs
         var proyecto = proyectoGradoBloqueadoPorIdFinder.obtener(entrada.getProyectoGrado());
         var estadoActual = estadoActualProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         var coordinador = coordinadorPorIdFinder.obtener(entrada.getCoordinador());
+        var ultimoEntregable = ultimoEntregableProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         var estudiantes = estudiantesVigentesDeProyectoGradoFinder.obtener(entrada.getProyectoGrado());
         var asesores = asesoresAsignadosDeProyectoGradoFinder.obtener(entrada.getProyectoGrado());
 
         logger.debug(ProyectoGradoKey.LOG_VERIFICACION_CANCELACION,
-                !proyecto.esVacio(), !estadoActual.esVacio(), estudiantes.size(), asesores.size());
+                !proyecto.esVacio(), !estadoActual.esVacio(), estudiantes.size(), asesores.size(),
+                ultimoEntregable.getEstadoEntregable().getId());
 
-        validator.validar(entrada, proyecto, estadoActual, coordinador);
+        validator.validar(entrada, proyecto, estadoActual, coordinador, ultimoEntregable);
 
         var estadoCancelado = EstadoProyectoGradoDomain.crearCancelado(
                 entrada.getProyectoGrado(), entrada.getMotivo());

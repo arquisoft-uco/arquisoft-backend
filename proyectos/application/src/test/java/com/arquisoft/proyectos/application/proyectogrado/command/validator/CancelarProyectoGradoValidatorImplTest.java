@@ -3,11 +3,14 @@ package com.arquisoft.proyectos.application.proyectogrado.command.validator;
 import com.arquisoft.proyectos.application.proyectogrado.command.validator.impl.CancelarProyectoGradoValidatorImpl;
 import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.proyectos.domain.coordinador.exception.CoordinadorNoEncontradoException;
+import com.arquisoft.proyectos.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
+import com.arquisoft.proyectos.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.proyectos.domain.estadoproyecto.EstadoProyecto;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.EstadoProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.estadoproyectogrado.exception.EstadoProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.proyectogrado.CancelacionProyectoGradoDomain;
 import com.arquisoft.proyectos.domain.proyectogrado.ProyectoGradoDomain;
+import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoConEntregableVigenteException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoCancelableException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoEncontradoException;
 import com.arquisoft.proyectos.domain.proyectogrado.exception.ProyectoGradoNoPerteneceCoordinadorException;
@@ -34,6 +37,11 @@ class CancelarProyectoGradoValidatorImplTest {
             UtilUUID.generarNuevoUUID(), proyecto.getId(), EstadoProyecto.FINALIZADO,
             UtilFecha.generarInstanteActual(), null);
 
+    private final EntregableProyectoGradoDomain sinEntregable = EntregableProyectoGradoDomain.VACIO;
+    private final EntregableProyectoGradoDomain entregableAprobado = EntregableProyectoGradoDomain.reconstruir(
+            UtilUUID.generarNuevoUUID(), proyecto.getId(), 2, EstadoEntregable.APROBADO,
+            Instant.parse("2026-11-01T10:00:00Z"));
+
     private CancelacionProyectoGradoDomain cancelacion(UUID coordinador) {
         return CancelacionProyectoGradoDomain.crear(proyecto.getId(), coordinador, "Falta de avance");
     }
@@ -41,7 +49,7 @@ class CancelarProyectoGradoValidatorImplTest {
     @Test
     void debePasar_cuandoTodasLasReglasSeCumplen() {
         // Act & Assert
-        assertThatCode(() -> validator.validar(cancelacion(proyecto.getCoordinador()), proyecto, enProceso, coordinador))
+        assertThatCode(() -> validator.validar(cancelacion(proyecto.getCoordinador()), proyecto, enProceso, coordinador, sinEntregable))
                 .doesNotThrowAnyException();
     }
 
@@ -49,7 +57,7 @@ class CancelarProyectoGradoValidatorImplTest {
     void debeLanzar_cuandoProyectoNoExiste() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cancelacion(proyecto.getCoordinador()), ProyectoGradoDomain.VACIO, enProceso, coordinador))
+                cancelacion(proyecto.getCoordinador()), ProyectoGradoDomain.VACIO, enProceso, coordinador, sinEntregable))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
     }
 
@@ -57,21 +65,21 @@ class CancelarProyectoGradoValidatorImplTest {
     void debeLanzar_cuandoSinEstadoActual() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cancelacion(proyecto.getCoordinador()), proyecto, EstadoProyectoGradoDomain.VACIO, coordinador))
+                cancelacion(proyecto.getCoordinador()), proyecto, EstadoProyectoGradoDomain.VACIO, coordinador, sinEntregable))
                 .isInstanceOf(EstadoProyectoGradoNoEncontradoException.class);
     }
 
     @Test
     void debeLanzar_cuandoOtroCoordinador() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cancelacion(UtilUUID.generarNuevoUUID()), proyecto, enProceso, coordinador))
+        assertThatThrownBy(() -> validator.validar(cancelacion(UtilUUID.generarNuevoUUID()), proyecto, enProceso, coordinador, sinEntregable))
                 .isInstanceOf(ProyectoGradoNoPerteneceCoordinadorException.class);
     }
 
     @Test
     void debeLanzar_cuandoNoEsCancelable() {
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(cancelacion(proyecto.getCoordinador()), proyecto, finalizado, coordinador))
+        assertThatThrownBy(() -> validator.validar(cancelacion(proyecto.getCoordinador()), proyecto, finalizado, coordinador, sinEntregable))
                 .isInstanceOf(ProyectoGradoNoCancelableException.class);
     }
 
@@ -82,11 +90,11 @@ class CancelarProyectoGradoValidatorImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                otroCoordinador, ProyectoGradoDomain.VACIO, EstadoProyectoGradoDomain.VACIO, coordinador))
+                otroCoordinador, ProyectoGradoDomain.VACIO, EstadoProyectoGradoDomain.VACIO, coordinador, sinEntregable))
                 .isInstanceOf(ProyectoGradoNoEncontradoException.class);
-        assertThatThrownBy(() -> validator.validar(otroCoordinador, proyecto, EstadoProyectoGradoDomain.VACIO, coordinador))
+        assertThatThrownBy(() -> validator.validar(otroCoordinador, proyecto, EstadoProyectoGradoDomain.VACIO, coordinador, sinEntregable))
                 .isInstanceOf(EstadoProyectoGradoNoEncontradoException.class);
-        assertThatThrownBy(() -> validator.validar(otroCoordinador, proyecto, finalizado, coordinador))
+        assertThatThrownBy(() -> validator.validar(otroCoordinador, proyecto, finalizado, coordinador, sinEntregable))
                 .isInstanceOf(ProyectoGradoNoPerteneceCoordinadorException.class);
     }
 
@@ -94,7 +102,7 @@ class CancelarProyectoGradoValidatorImplTest {
     void debeLanzarCoordinadorNoEncontrado_cuandoElCoordinadorEsVacio() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cancelacion(proyecto.getCoordinador()), proyecto, enProceso, CoordinadorDomain.VACIO))
+                cancelacion(proyecto.getCoordinador()), proyecto, enProceso, CoordinadorDomain.VACIO, sinEntregable))
                 .isInstanceOf(CoordinadorNoEncontradoException.class);
     }
 
@@ -102,7 +110,23 @@ class CancelarProyectoGradoValidatorImplTest {
     void debeLanzarNoPertenece_antesQueCoordinadorNoEncontrado() {
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                cancelacion(UtilUUID.generarNuevoUUID()), proyecto, enProceso, CoordinadorDomain.VACIO))
+                cancelacion(UtilUUID.generarNuevoUUID()), proyecto, enProceso, CoordinadorDomain.VACIO, sinEntregable))
                 .isInstanceOf(ProyectoGradoNoPerteneceCoordinadorException.class);
+    }
+
+    @Test
+    void debeLanzarConEntregableVigente_cuandoElUltimoEstaAprobado() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cancelacion(proyecto.getCoordinador()), proyecto, enProceso, coordinador, entregableAprobado))
+                .isInstanceOf(ProyectoGradoConEntregableVigenteException.class);
+    }
+
+    @Test
+    void debeAplicarLaReglaDeEntregableAlFinal_cuandoElProyectoNoEsCancelable() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                cancelacion(proyecto.getCoordinador()), proyecto, finalizado, coordinador, entregableAprobado))
+                .isInstanceOf(ProyectoGradoNoCancelableException.class);
     }
 }

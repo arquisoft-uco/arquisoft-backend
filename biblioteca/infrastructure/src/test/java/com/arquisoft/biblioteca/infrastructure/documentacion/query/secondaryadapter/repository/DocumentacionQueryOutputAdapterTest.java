@@ -48,8 +48,8 @@ class DocumentacionQueryOutputAdapterTest {
                 + "identificador VARCHAR(30), nombre VARCHAR(50), email VARCHAR(50), "
                 + "ocurrido_en TIMESTAMP WITH TIME ZONE, eliminado_en TIMESTAMP WITH TIME ZONE)").executeUpdate();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS entregable_proyecto_grado (id UUID PRIMARY KEY, "
-                + "proyecto_grado_id UUID, version_entregable INTEGER, asesor_id UUID, "
-                + "estado_entregable_nombre VARCHAR(60), bucket VARCHAR(63), clave_objeto VARCHAR(2000), "
+                + "proyecto_grado_id UUID, version_entregable INTEGER, "
+                + "estado_entregable_id VARCHAR(60), clave_objeto VARCHAR(2000), "
                 + "nombre_archivo VARCHAR(255))").executeUpdate();
         em.createNativeQuery("CREATE TABLE IF NOT EXISTS documentacion (id UUID PRIMARY KEY, url VARCHAR(2000), "
                 + "fecha_publicacion TIMESTAMP WITH TIME ZONE, entregable_proyecto_grado_id UUID, "
@@ -83,9 +83,9 @@ class DocumentacionQueryOutputAdapterTest {
         var id = UtilUUID.generarNuevoUUID();
         entityManager.getEntityManager()
                 .createNativeQuery("INSERT INTO entregable_proyecto_grado (id, proyecto_grado_id, "
-                        + "version_entregable, asesor_id, estado_entregable_nombre) VALUES (?1, ?2, ?3, ?4, ?5)")
+                        + "version_entregable, estado_entregable_id) VALUES (?1, ?2, ?3, ?4)")
                 .setParameter(1, id).setParameter(2, proyecto).setParameter(3, version)
-                .setParameter(4, UtilUUID.generarNuevoUUID()).setParameter(5, estado)
+                .setParameter(4, estado)
                 .executeUpdate();
         return id;
     }
@@ -148,7 +148,7 @@ class DocumentacionQueryOutputAdapterTest {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        var entregable = sembrarEntregable(proyecto, 3, "Aprobado");
+        var entregable = sembrarEntregable(proyecto, 3, "APROBADO");
         var id = sembrarDocumentacion(entregable, bibliotecario, "PUBLICADO", BASE);
         confirmar();
 
@@ -177,9 +177,9 @@ class DocumentacionQueryOutputAdapterTest {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        var publicada = sembrarDocumentacion(sembrarEntregable(proyecto, 1, "Aprobado"), bibliotecario,
+        var publicada = sembrarDocumentacion(sembrarEntregable(proyecto, 1, "APROBADO"), bibliotecario,
                 "PUBLICADO", BASE);
-        sembrarDocumentacion(sembrarEntregable(proyecto, 2, "Aprobado"), bibliotecario, "PENDIENTE", BASE);
+        sembrarDocumentacion(sembrarEntregable(proyecto, 2, "APROBADO"), bibliotecario, "PENDIENTE", BASE);
         confirmar();
 
         // Act
@@ -195,9 +195,9 @@ class DocumentacionQueryOutputAdapterTest {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        var entregable = sembrarEntregable(proyecto, 1, "Aprobado");
+        var entregable = sembrarEntregable(proyecto, 1, "APROBADO");
         var esperada = sembrarDocumentacion(entregable, bibliotecario, "PUBLICADO", BASE);
-        sembrarDocumentacion(sembrarEntregable(proyecto, 2, "Aprobado"), bibliotecario, "PUBLICADO", BASE);
+        sembrarDocumentacion(sembrarEntregable(proyecto, 2, "APROBADO"), bibliotecario, "PUBLICADO", BASE);
         confirmar();
 
         // Act
@@ -214,8 +214,8 @@ class DocumentacionQueryOutputAdapterTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var ana = sembrarBibliotecario("Ana", null);
         var luis = sembrarBibliotecario("Luis", null);
-        var esperada = sembrarDocumentacion(sembrarEntregable(proyecto, 1, "Aprobado"), ana, "PUBLICADO", BASE);
-        sembrarDocumentacion(sembrarEntregable(proyecto, 2, "Aprobado"), luis, "PUBLICADO", BASE);
+        var esperada = sembrarDocumentacion(sembrarEntregable(proyecto, 1, "APROBADO"), ana, "PUBLICADO", BASE);
+        sembrarDocumentacion(sembrarEntregable(proyecto, 2, "APROBADO"), luis, "PUBLICADO", BASE);
         confirmar();
 
         // Act
@@ -232,7 +232,7 @@ class DocumentacionQueryOutputAdapterTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         var bibliotecario = sembrarBibliotecario("Ana", null);
         for (var version = 1; version <= 5; version++) {
-            sembrarDocumentacion(sembrarEntregable(proyecto, version, "Aprobado"), bibliotecario, "PUBLICADO",
+            sembrarDocumentacion(sembrarEntregable(proyecto, version, "APROBADO"), bibliotecario, "PUBLICADO",
                     BASE.plusSeconds(version));
         }
         confirmar();
@@ -251,9 +251,9 @@ class DocumentacionQueryOutputAdapterTest {
         // Arrange
         var proyecto = UtilUUID.generarNuevoUUID();
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        var antigua = sembrarDocumentacion(sembrarEntregable(proyecto, 1, "Aprobado"), bibliotecario,
+        var antigua = sembrarDocumentacion(sembrarEntregable(proyecto, 1, "APROBADO"), bibliotecario,
                 "PUBLICADO", BASE);
-        var reciente = sembrarDocumentacion(sembrarEntregable(proyecto, 2, "Aprobado"), bibliotecario,
+        var reciente = sembrarDocumentacion(sembrarEntregable(proyecto, 2, "APROBADO"), bibliotecario,
                 "PUBLICADO", BASE.plusSeconds(60));
         confirmar();
 
@@ -272,7 +272,7 @@ class DocumentacionQueryOutputAdapterTest {
     void debeIncluirDocumentacionDeBibliotecarioDadoDeBaja_cuandoSeConsulta() {
         // Arrange
         var bibliotecario = sembrarBibliotecario("Ana", BASE.plusSeconds(1));
-        var id = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "Aprobado"),
+        var id = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "APROBADO"),
                 bibliotecario, "PUBLICADO", BASE);
         confirmar();
 
@@ -290,7 +290,7 @@ class DocumentacionQueryOutputAdapterTest {
         var proyecto = UtilUUID.generarNuevoUUID();
         sembrarProyecto(proyecto, "Proyecto Alfa");
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        sembrarDocumentacion(sembrarEntregable(proyecto, 1, "Aprobado"), bibliotecario, "PUBLICADO", BASE);
+        sembrarDocumentacion(sembrarEntregable(proyecto, 1, "APROBADO"), bibliotecario, "PUBLICADO", BASE);
         confirmar();
 
         // Act
@@ -305,7 +305,7 @@ class DocumentacionQueryOutputAdapterTest {
     void debeRetornarTituloNuloYLaDocumentacion_cuandoElProyectoNoEstaEnLaReplica() {
         // Arrange
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        var id = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "Aprobado"),
+        var id = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "APROBADO"),
                 bibliotecario, "PUBLICADO", BASE);
         confirmar();
 
@@ -322,7 +322,7 @@ class DocumentacionQueryOutputAdapterTest {
     void debeRetornarAutoresOrdenadosPorNombreYLuegoPorId_cuandoHayVarios() {
         // Arrange
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        var documentacion = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "Aprobado"),
+        var documentacion = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "APROBADO"),
                 bibliotecario, "PUBLICADO", BASE);
         var zoe = sembrarAutor("Zoe", null);
         var beto = sembrarAutor("Beto", null);
@@ -351,7 +351,7 @@ class DocumentacionQueryOutputAdapterTest {
     void debeIncluirAlAutorEliminado_cuandoSeConsulta() {
         // Arrange
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        var documentacion = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "Aprobado"),
+        var documentacion = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "APROBADO"),
                 bibliotecario, "PUBLICADO", BASE);
         var vigente = sembrarAutor("Beto", null);
         var eliminado = sembrarAutor("Carlos", BASE.plusSeconds(1));
@@ -371,7 +371,7 @@ class DocumentacionQueryOutputAdapterTest {
     void debeRetornarAutoresVacio_cuandoNoHayVinculos() {
         // Arrange
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "Aprobado"), bibliotecario,
+        sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "APROBADO"), bibliotecario,
                 "PUBLICADO", BASE);
         confirmar();
 
@@ -387,9 +387,9 @@ class DocumentacionQueryOutputAdapterTest {
         // Arrange
         var bibliotecario = sembrarBibliotecario("Ana", null);
         var proyecto = UtilUUID.generarNuevoUUID();
-        var docA = sembrarDocumentacion(sembrarEntregable(proyecto, 1, "Aprobado"), bibliotecario, "PUBLICADO",
+        var docA = sembrarDocumentacion(sembrarEntregable(proyecto, 1, "APROBADO"), bibliotecario, "PUBLICADO",
                 BASE);
-        var docB = sembrarDocumentacion(sembrarEntregable(proyecto, 2, "Aprobado"), bibliotecario, "PUBLICADO",
+        var docB = sembrarDocumentacion(sembrarEntregable(proyecto, 2, "APROBADO"), bibliotecario, "PUBLICADO",
                 BASE.plusSeconds(1));
         var autorA = sembrarAutor("Beto", null);
         var autorB = sembrarAutor("Carlos", null);
@@ -413,7 +413,7 @@ class DocumentacionQueryOutputAdapterTest {
         var bibliotecario = sembrarBibliotecario("Ana", null);
         var proyecto = UtilUUID.generarNuevoUUID();
         for (var version = 1; version <= 5; version++) {
-            var documentacion = sembrarDocumentacion(sembrarEntregable(proyecto, version, "Aprobado"),
+            var documentacion = sembrarDocumentacion(sembrarEntregable(proyecto, version, "APROBADO"),
                     bibliotecario, "PUBLICADO", BASE.plusSeconds(version));
             vincularAutor(sembrarAutor("Autor" + version + "a", null), documentacion);
             vincularAutor(sembrarAutor("Autor" + version + "b", null), documentacion);
@@ -443,7 +443,7 @@ class DocumentacionQueryOutputAdapterTest {
     void debeNoContarMasFilas_cuandoUnaDocumentacionTieneVariosAutores() {
         // Arrange
         var bibliotecario = sembrarBibliotecario("Ana", null);
-        var documentacion = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "Aprobado"),
+        var documentacion = sembrarDocumentacion(sembrarEntregable(UtilUUID.generarNuevoUUID(), 1, "APROBADO"),
                 bibliotecario, "PUBLICADO", BASE);
         vincularAutor(sembrarAutor("Beto", null), documentacion);
         vincularAutor(sembrarAutor("Carlos", null), documentacion);

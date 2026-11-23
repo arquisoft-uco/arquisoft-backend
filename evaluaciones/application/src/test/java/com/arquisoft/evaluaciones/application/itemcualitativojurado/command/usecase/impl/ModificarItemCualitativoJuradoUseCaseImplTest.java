@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -48,7 +49,7 @@ class ModificarItemCualitativoJuradoUseCaseImplTest {
         // Arrange
         UUID itemCualitativoJurado = UUID.randomUUID();
         var modificacion = ModificacionItemCualitativoJuradoDomain.crear(
-                itemCualitativoJurado, "Nueva descripción");
+                itemCualitativoJurado, "Nueva descripción", 1);
         when(finder.obtener(itemCualitativoJurado)).thenReturn(true);
 
         // Act
@@ -60,8 +61,8 @@ class ModificarItemCualitativoJuradoUseCaseImplTest {
         orden.verify(finder).obtener(itemCualitativoJurado);
         orden.verify(logger).debug(ItemCualitativoJuradoKey.LOG_VERIFICACION_MODIFICAR, true);
         orden.verify(validator).validar(itemCualitativoJurado, true);
-        orden.verify(outputPort).actualizarDescripcion(
-                itemCualitativoJurado, modificacion.getDescripcion());
+        orden.verify(outputPort).actualizar(
+                itemCualitativoJurado, modificacion.getDescripcion(), modificacion.getPeso());
         orden.verify(logger).info(ItemCualitativoJuradoKey.LOG_MODIFICADO, itemCualitativoJurado);
     }
 
@@ -70,7 +71,7 @@ class ModificarItemCualitativoJuradoUseCaseImplTest {
         // Arrange
         UUID itemCualitativoJurado = UUID.randomUUID();
         var modificacion = ModificacionItemCualitativoJuradoDomain.crear(
-                itemCualitativoJurado, "Nueva descripción");
+                itemCualitativoJurado, "Nueva descripción", 1);
         when(finder.obtener(itemCualitativoJurado)).thenReturn(false);
         doThrow(new ItemCualitativoJuradoNoEncontradoException(itemCualitativoJurado))
                 .when(validator).validar(itemCualitativoJurado, false);
@@ -78,7 +79,7 @@ class ModificarItemCualitativoJuradoUseCaseImplTest {
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(modificacion))
                 .isInstanceOf(ItemCualitativoJuradoNoEncontradoException.class);
-        verify(outputPort, never()).actualizarDescripcion(any(), anyString());
+        verify(outputPort, never()).actualizar(any(), anyString(), anyInt());
         verify(logger, never()).info(ItemCualitativoJuradoKey.LOG_MODIFICADO, itemCualitativoJurado);
     }
 }

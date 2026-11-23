@@ -17,6 +17,7 @@ import java.util.UUID;
 @Subselect("""
         SELECT ej.id AS id, ej.jurado_id AS jurado_id
         FROM evaluacion_jurado ej
+        WHERE ej.eliminado_en IS NULL
         """)
 @Synchronize("evaluacion_jurado")
 @Getter

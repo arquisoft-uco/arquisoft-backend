@@ -16,6 +16,8 @@ public final class EstudianteProyectoGradoJpaMapper {
                 jpaEntity.getId(),
                 jpaEntity.getEstudianteId(),
                 jpaEntity.getProyectoGradoId(),
+                jpaEntity.getNombre(),
+                jpaEntity.getEmail(),
                 jpaEntity.getOcurridoEn(),
                 UtilObjeto.aplicarPorDefecto(jpaEntity.getEliminadoEn(), UtilFecha.VACIO));
     }
@@ -25,6 +27,8 @@ public final class EstudianteProyectoGradoJpaMapper {
                 .id(entity.id())
                 .estudianteId(entity.estudiante())
                 .proyectoGradoId(entity.proyectoGrado())
+                .nombre(entity.nombre())
+                .email(entity.email())
                 .ocurridoEn(entity.ocurridoEn())
                 .eliminadoEn(aColumna(entity.eliminadoEn()))
                 .build();

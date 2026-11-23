@@ -91,7 +91,10 @@ class EstudiantesProyectoGradoAsignadosConsumerTest {
         var captor = ArgumentCaptor.forClass(AgregarEstudiantesProyectoGradoCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new AgregarEstudiantesProyectoGradoCommand(
-                proyectoGrado, List.of(primero, segundo), OCURRIDO_EN));
+                proyectoGrado, List.of(
+                new AgregarEstudiantesProyectoGradoCommand.Estudiante(primero.toString(), "Ana", "ana@uco.edu.co"),
+                new AgregarEstudiantesProyectoGradoCommand.Estudiante(segundo.toString(), "Luis", "luis@uco.edu.co")),
+                OCURRIDO_EN));
         verify(logger).info(EstudianteProyectoGradoKey.LOG_ASIGNADOS_RECIBIDO, ID_EVENTO,
                 proyectoGrado.toString(), 2);
         verify(logger).info(eq(EstudianteProyectoGradoKey.LOG_AGREGADOS), eq(proyectoGrado), eq(2), eq(0), eq(0),

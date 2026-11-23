@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PlantillaCorreoRenderTest {
@@ -42,7 +43,7 @@ class PlantillaCorreoRenderTest {
     @Test
     void debePasarLaVerificacionDeHuecos_cuandoSeUsaLaPlantillaDesplegada() {
         // Act & Assert
-        render.verificarHuecos();
+        assertThatCode(render::verificarHuecos).doesNotThrowAnyException();
     }
 
     @Test

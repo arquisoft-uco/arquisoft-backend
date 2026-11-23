@@ -1,7 +1,10 @@
 package com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.usecase.impl;
 
+import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.FinalizarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.IniciarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.ContextoRegistroEvaluacionAsesorFinder;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.EvaluacionAsesorCompletaFinder;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.usecase.CalcularResumenEvaluacionAsesorUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.finder.ItemsEvaluacionCuantitativaAsesorRegistradosFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.finder.model.ItemsPorEvaluacionCuantitativaAsesor;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.secondaryport.EvaluacionCuantitativaAsesorOutputPort;
@@ -10,6 +13,8 @@ import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.comma
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativaasesor.command.validator.RegistrarEvaluacionesCuantitativasAsesorValidator;
 import com.arquisoft.evaluaciones.application.itemcuantitativoasesor.command.finder.ValoresMaximosItemsCuantitativosAsesorFinder;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
+import com.arquisoft.evaluaciones.domain.evaluacion.VerificacionFinalizacionEvaluacionDomain;
+import com.arquisoft.evaluaciones.domain.evaluacionasesor.CompletitudEvaluacionAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.model.ExistenciaEvaluacionAsesor;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.model.PropiedadEvaluacionAsesor;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativaasesor.EvaluacionCuantitativaAsesorDomain;
@@ -37,6 +42,9 @@ public class RegistrarEvaluacionesCuantitativasAsesorUseCaseImpl
     private final RegistrarEvaluacionesCuantitativasAsesorValidator validator;
     private final EvaluacionCuantitativaAsesorOutputPort evaluacionCuantitativaAsesorOutputPort;
     private final IniciarEvaluacionUseCase iniciarEvaluacionUseCase;
+    private final EvaluacionAsesorCompletaFinder evaluacionAsesorCompletaFinder;
+    private final CalcularResumenEvaluacionAsesorUseCase calcularResumenEvaluacionAsesorUseCase;
+    private final FinalizarEvaluacionUseCase finalizarEvaluacionUseCase;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
@@ -78,6 +86,12 @@ public class RegistrarEvaluacionesCuantitativasAsesorUseCaseImpl
                 .map(EvaluacionCuantitativaAsesorMapper::toEntity)
                 .toList();
         evaluacionCuantitativaAsesorOutputPort.registrarTodas(entidades);
+
+        var completa = evaluacionAsesorCompletaFinder.obtener(evaluacionAsesor);
+        calcularResumenEvaluacionAsesorUseCase.ejecutar(
+                CompletitudEvaluacionAsesorDomain.crear(evaluacionAsesor, completa));
+
+        finalizarEvaluacionUseCase.ejecutar(VerificacionFinalizacionEvaluacionDomain.crear(contexto.getEvaluacion()));
 
         var evento = new EvaluacionesCuantitativasAsesorRegistradasEvent(contexto.getEntregable());
         eventPublisher.publish(evento);

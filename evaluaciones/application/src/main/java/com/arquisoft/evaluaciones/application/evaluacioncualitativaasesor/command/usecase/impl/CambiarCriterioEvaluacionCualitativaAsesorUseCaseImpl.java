@@ -2,11 +2,14 @@ package com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.comma
 
 import com.arquisoft.evaluaciones.application.criterioitemcualitativoasesor.command.finder.CriteriosCualitativosAsesorExistentesFinder;
 import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.ContextoRegistroEvaluacionAsesorPorEvaluacionCualitativaFinder;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.EvaluacionAsesorCompletaFinder;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.usecase.CalcularResumenEvaluacionAsesorUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.finder.EvaluacionCualitativaAsesorPorIdFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.secondaryport.EvaluacionCualitativaAsesorOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.secondaryport.mapper.EvaluacionCualitativaAsesorMapper;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.usecase.CambiarCriterioEvaluacionCualitativaAsesorUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.validator.CambiarCriterioEvaluacionCualitativaAsesorValidator;
+import com.arquisoft.evaluaciones.domain.evaluacionasesor.CompletitudEvaluacionAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.CambioCriterioEvaluacionCualitativaAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.EvaluacionCualitativaAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.model.EstadoCambioCriterioEvaluacionCualitativaAsesor;
@@ -30,6 +33,8 @@ public class CambiarCriterioEvaluacionCualitativaAsesorUseCaseImpl
     private final CriteriosCualitativosAsesorExistentesFinder criteriosCualitativosAsesorExistentesFinder;
     private final CambiarCriterioEvaluacionCualitativaAsesorValidator validator;
     private final EvaluacionCualitativaAsesorOutputPort evaluacionCualitativaAsesorOutputPort;
+    private final EvaluacionAsesorCompletaFinder evaluacionAsesorCompletaFinder;
+    private final CalcularResumenEvaluacionAsesorUseCase calcularResumenEvaluacionAsesorUseCase;
     private final AppLogger logger;
 
     @Override
@@ -58,6 +63,10 @@ public class CambiarCriterioEvaluacionCualitativaAsesorUseCaseImpl
             evaluacionCualitativaAsesorOutputPort.actualizar(
                     EvaluacionCualitativaAsesorMapper.toEntity(evaluacionActualizada));
         }
+
+        var completa = evaluacionAsesorCompletaFinder.obtener(evaluacion.getEvaluacionAsesor());
+        calcularResumenEvaluacionAsesorUseCase.ejecutar(
+                CompletitudEvaluacionAsesorDomain.crear(evaluacion.getEvaluacionAsesor(), completa));
 
         logger.info(EvaluacionCualitativaAsesorKey.LOG_CRITERIO_CAMBIADO, evaluacionCualitativa);
     }

@@ -12,4 +12,8 @@ public interface CriterioItemCualitativoAsesorCommandRepository extends JpaRepos
 
     @Query("select e.id from CriterioItemCualitativoAsesorJpaEntity e where e.id in :ids")
     Set<UUID> findIdsByIdIn(@Param("ids") Set<UUID> ids);
+
+    @Query("select count(criterio) > 0 from CriterioItemCualitativoAsesorJpaEntity criterio "
+            + "where lower(trim(criterio.nombre)) = lower(:nombre)")
+    boolean existePorNombreNormalizado(@Param("nombre") String nombre);
 }

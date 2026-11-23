@@ -28,7 +28,7 @@ class ModificarItemCualitativoJuradoInteractorImplTest {
     void debeMapearYDelegar_cuandoEjecutaCommand() {
         // Arrange
         UUID itemId = UUID.randomUUID();
-        var command = ModificarItemCualitativoJuradoCommand.crear(itemId, "Nueva descripción");
+        var command = ModificarItemCualitativoJuradoCommand.crear(itemId, "Nueva descripción", 1);
 
         // Act
         interactor.ejecutar(command);

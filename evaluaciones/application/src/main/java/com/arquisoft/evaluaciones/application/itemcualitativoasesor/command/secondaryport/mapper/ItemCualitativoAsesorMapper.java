@@ -8,6 +8,7 @@ public final class ItemCualitativoAsesorMapper {
     private ItemCualitativoAsesorMapper() {}
 
     public static ItemCualitativoAsesorEntity toEntity(ItemCualitativoAsesorDomain domain) {
-        return new ItemCualitativoAsesorEntity(domain.getId(), domain.getNombre(), domain.getDescripcion());
+        return new ItemCualitativoAsesorEntity(
+                domain.getId(), domain.getNombre(), domain.getDescripcion(), domain.getPeso());
     }
 }

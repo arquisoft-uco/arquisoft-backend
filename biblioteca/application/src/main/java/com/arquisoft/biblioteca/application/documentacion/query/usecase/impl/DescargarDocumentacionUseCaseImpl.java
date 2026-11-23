@@ -31,7 +31,7 @@ public class DescargarDocumentacionUseCaseImpl implements DescargarDocumentacion
         descargarDocumentacionValidator.validar(entrada, archivo);
 
         var enlace = enlaceDescargaDocumentacionQueryOutputPort.generar(
-                archivo.documentacion(), archivo.bucket(), archivo.claveObjeto(), archivo.nombreArchivo());
+                archivo.documentacion(), archivo.claveObjeto(), archivo.nombreArchivo());
 
         logger.debug(DocumentacionKey.LOG_DESCARGA_GENERADA, entrada.documentacion(), enlace.expiraEn());
         return enlace;

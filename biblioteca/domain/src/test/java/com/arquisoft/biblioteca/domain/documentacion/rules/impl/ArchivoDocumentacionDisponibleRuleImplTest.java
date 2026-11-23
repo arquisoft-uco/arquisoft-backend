@@ -20,14 +20,14 @@ class ArchivoDocumentacionDisponibleRuleImplTest {
 
     private final ArchivoDocumentacionDisponibleRuleImpl rule = new ArchivoDocumentacionDisponibleRuleImpl();
 
-    private static ArchivoDocumentacion archivo(UUID documentacion, String bucket, String clave) {
-        return new ArchivoDocumentacion(documentacion, EstadoDocumentacion.PUBLICADO, bucket, clave, "paquete.zip");
+    private static ArchivoDocumentacion archivo(UUID documentacion, String clave) {
+        return new ArchivoDocumentacion(documentacion, EstadoDocumentacion.PUBLICADO, clave, "paquete.zip");
     }
 
     @Test
-    void debeNoLanzar_cuandoBucketYClaveEstanInformados() {
+    void debeNoLanzar_cuandoLaClaveEstaInformada() {
         // Arrange
-        var archivo = archivo(UtilUUID.generarNuevoUUID(), "artefactos", "paquetes/a.zip");
+        var archivo = archivo(UtilUUID.generarNuevoUUID(), "paquetes/a.zip");
 
         // Act & Assert
         assertThatCode(() -> rule.validar(archivo)).doesNotThrowAnyException();
@@ -36,28 +36,16 @@ class ArchivoDocumentacionDisponibleRuleImplTest {
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"   "})
-    void debeLanzarNoDisponible_cuandoElBucketNoEstaInformado(String bucket) {
+    void debeLanzarNoDisponible_cuandoLaClaveNoEstaInformada(String clave) {
         // Arrange
         var documentacion = UtilUUID.generarNuevoUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> rule.validar(archivo(documentacion, bucket, "paquetes/a.zip")))
+        assertThatThrownBy(() -> rule.validar(archivo(documentacion, clave)))
                 .isInstanceOfSatisfying(ArchivoDocumentacionNoDisponibleException.class, ex -> {
                     assertThat(ex.getCodigoError()).isEqualTo(BibliotecaCodes.Documentacion.ARCHIVO_NO_DISPONIBLE);
                     assertThat(ex.getError().getMessage()).doesNotContain(documentacion.toString());
                     assertThat(ex.getMessage()).contains(documentacion.toString());
                 });
-    }
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {"   "})
-    void debeLanzarNoDisponible_cuandoLaClaveNoEstaInformada(String clave) {
-        // Arrange
-        var archivo = archivo(UtilUUID.generarNuevoUUID(), "artefactos", clave);
-
-        // Act & Assert
-        assertThatThrownBy(() -> rule.validar(archivo))
-                .isInstanceOf(ArchivoDocumentacionNoDisponibleException.class);
     }
 }

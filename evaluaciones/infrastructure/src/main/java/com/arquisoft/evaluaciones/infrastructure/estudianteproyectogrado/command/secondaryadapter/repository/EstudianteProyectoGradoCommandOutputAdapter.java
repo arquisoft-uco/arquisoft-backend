@@ -44,4 +44,11 @@ public class EstudianteProyectoGradoCommandOutputAdapter implements EstudiantePr
         repository.save(EstudianteProyectoGradoJpaMapper.toJpaEntity(vinculo));
         logger.debug(EstudianteProyectoGradoKey.LOG_GUARDADOS, 1);
     }
+
+    @Override
+    public List<EstudianteProyectoGradoEntity> consultarContactosVigentesPorEvaluacion(UUID evaluacion) {
+        return repository.findContactosVigentesPorEvaluacion(evaluacion).stream()
+                .map(EstudianteProyectoGradoJpaMapper::toEntity)
+                .toList();
+    }
 }

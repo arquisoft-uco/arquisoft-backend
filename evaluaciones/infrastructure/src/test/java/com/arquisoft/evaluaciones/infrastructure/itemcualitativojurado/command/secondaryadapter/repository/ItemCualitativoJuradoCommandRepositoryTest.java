@@ -64,18 +64,19 @@ class ItemCualitativoJuradoCommandRepositoryTest {
     }
 
     @Test
-    void debeActualizarSoloDescripcion_cuandoItemExiste() {
+    void debeActualizarDescripcionYPeso_cuandoItemExiste() {
         // Arrange
         UUID id = UUID.randomUUID();
         repository.saveAndFlush(ItemCualitativoJuradoJpaEntity.builder()
                 .id(id)
                 .nombre("Claridad")
                 .descripcion("Descripción original")
+                .peso(1)
                 .build());
         entityManager.clear();
 
         // Act
-        int filasActualizadas = repository.actualizarDescripcion(id, "Descripción nueva");
+        int filasActualizadas = repository.actualizar(id, "Descripción nueva", 7);
         entityManager.clear();
 
         // Assert
@@ -83,6 +84,7 @@ class ItemCualitativoJuradoCommandRepositoryTest {
         assertThat(repository.findById(id)).hasValueSatisfying(persistida -> {
             assertThat(persistida.getNombre()).isEqualTo("Claridad");
             assertThat(persistida.getDescripcion()).isEqualTo("Descripción nueva");
+            assertThat(persistida.getPeso()).isEqualTo(7);
         });
     }
 
@@ -92,7 +94,7 @@ class ItemCualitativoJuradoCommandRepositoryTest {
         UUID idInexistente = UUID.randomUUID();
 
         // Act
-        int filasActualizadas = repository.actualizarDescripcion(idInexistente, "Descripción nueva");
+        int filasActualizadas = repository.actualizar(idInexistente, "Descripción nueva", 1);
 
         // Assert
         assertThat(filasActualizadas).isZero();

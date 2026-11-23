@@ -9,6 +9,6 @@ public final class RegistrarItemCualitativoJuradoMapper {
 
     public static ItemCualitativoJuradoDomain toDomain(
             RegistrarItemCualitativoJuradoCommand command) {
-        return ItemCualitativoJuradoDomain.crear(command.nombre(), command.descripcion());
+        return ItemCualitativoJuradoDomain.crear(command.nombre(), command.descripcion(), command.peso());
     }
 }

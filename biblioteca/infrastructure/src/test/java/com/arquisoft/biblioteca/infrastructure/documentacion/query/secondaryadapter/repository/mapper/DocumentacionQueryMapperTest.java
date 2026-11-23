@@ -19,7 +19,7 @@ class DocumentacionQueryMapperTest {
         var entity = DocumentacionJpaQueryEntity.builder()
                 .id(UtilUUID.generarNuevoUUID()).tituloProyecto("Proyecto").fechaPublicacion(fecha)
                 .entregableId(UtilUUID.generarNuevoUUID()).proyectoGradoId(UtilUUID.generarNuevoUUID())
-                .entregableVersion(4L).entregableEstado("Aprobado")
+                .entregableVersion(4L).entregableEstadoId("APROBADO")
                 .bibliotecarioId(UtilUUID.generarNuevoUUID()).bibliotecarioNombre("Ana")
                 .estadoId("PUBLICADO").estadoNombre("Publicado").build();
 
@@ -47,7 +47,7 @@ class DocumentacionQueryMapperTest {
         var entity = DocumentacionJpaQueryEntity.builder()
                 .id(UtilUUID.generarNuevoUUID()).tituloProyecto(null)
                 .entregableId(UtilUUID.generarNuevoUUID()).proyectoGradoId(UtilUUID.generarNuevoUUID())
-                .entregableVersion(1L).entregableEstado("Aprobado")
+                .entregableVersion(1L).entregableEstadoId("APROBADO")
                 .bibliotecarioId(UtilUUID.generarNuevoUUID()).bibliotecarioNombre("Ana")
                 .estadoId("PUBLICADO").estadoNombre("Publicado").build();
         var autorUno = AutorDeDocumentacionJpaQueryEntity.builder()

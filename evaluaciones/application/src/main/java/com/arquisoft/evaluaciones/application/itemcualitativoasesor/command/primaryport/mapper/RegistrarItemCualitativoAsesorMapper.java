@@ -8,6 +8,6 @@ public final class RegistrarItemCualitativoAsesorMapper {
     private RegistrarItemCualitativoAsesorMapper() {}
 
     public static ItemCualitativoAsesorDomain toDomain(RegistrarItemCualitativoAsesorCommand command) {
-        return ItemCualitativoAsesorDomain.crear(command.nombre(), command.descripcion());
+        return ItemCualitativoAsesorDomain.crear(command.nombre(), command.descripcion(), command.peso());
     }
 }

@@ -18,7 +18,7 @@ class ItemCualitativoAsesorDomainTest {
         var descripcion = "  Evalúa la claridad del trabajo  ";
 
         // Act
-        var item = ItemCualitativoAsesorDomain.crear(nombre, descripcion);
+        var item = ItemCualitativoAsesorDomain.crear(nombre, descripcion, 1);
 
         // Assert
         assertThat(item.getId()).isNotNull();
@@ -33,7 +33,7 @@ class ItemCualitativoAsesorDomainTest {
         String descripcion = null;
 
         // Act & Assert
-        assertThatThrownBy(() -> ItemCualitativoAsesorDomain.crear(nombre, descripcion))
+        assertThatThrownBy(() -> ItemCualitativoAsesorDomain.crear(nombre, descripcion, 1))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -53,7 +53,7 @@ class ItemCualitativoAsesorDomainTest {
         var descripcion = "d".repeat(301);
 
         // Act & Assert
-        assertThatThrownBy(() -> ItemCualitativoAsesorDomain.crear(nombre, descripcion))
+        assertThatThrownBy(() -> ItemCualitativoAsesorDomain.crear(nombre, descripcion, 1))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())

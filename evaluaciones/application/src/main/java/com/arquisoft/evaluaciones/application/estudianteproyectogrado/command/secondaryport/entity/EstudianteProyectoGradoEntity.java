@@ -3,6 +3,6 @@ package com.arquisoft.evaluaciones.application.estudianteproyectogrado.command.s
 import java.time.Instant;
 import java.util.UUID;
 
-public record EstudianteProyectoGradoEntity(UUID id, UUID estudiante, UUID proyectoGrado, Instant ocurridoEn,
-                                            Instant eliminadoEn) {
+public record EstudianteProyectoGradoEntity(UUID id, UUID estudiante, UUID proyectoGrado, String nombre,
+                                            String email, Instant ocurridoEn, Instant eliminadoEn) {
 }

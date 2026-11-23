@@ -3,6 +3,7 @@ package com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryada
 import com.arquisoft.biblioteca.application.documentacion.query.readmodel.DocumentacionReadModel;
 import com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.repository.AutorDeDocumentacionJpaQueryEntity;
 import com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.repository.DocumentacionJpaQueryEntity;
+import com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.repository.EstadoEntregablePersistencia;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public final class DocumentacionQueryMapper {
                         entity.getEntregableId(),
                         entity.getProyectoGradoId(),
                         entity.getEntregableVersion().intValue(),
-                        entity.getEntregableEstado()),
+                        EstadoEntregablePersistencia.nombreDe(entity.getEntregableEstadoId())),
                 new DocumentacionReadModel.BibliotecarioResumen(
                         entity.getBibliotecarioId(),
                         entity.getBibliotecarioNombre()),

@@ -6,15 +6,21 @@
 #
 # Flujo:
 #   1. push a develop  →  docker-build.yml construye y publica ghcr.io/<repo>:sha-<short>
-#   2. este workflow se conecta por SSH al servidor, espera a que la imagen
-#      sha-<short> esté disponible, escribe el .env (descargado de Doppler en el
-#      propio servidor) y levanta el contenedor con `docker run --env-file`.
+#   2. cuando ese build termina con éxito, docker-build.yml invoca este workflow
+#      (workflow_call, job `deploy` con `needs: build-and-push`). Se conecta por
+#      SSH al servidor, escribe el .env (descargado de Doppler en el propio
+#      servidor) y levanta el contenedor con `docker run --env-file`.
+#   Manual: workflow_dispatch con image_tag (vacío = sha-<short> del commit).
+#
+# Por qué se encadena al build y no se dispara por `push` en paralelo:
+#   El build multi-arquitectura (arm64 bajo QEMU) tarda 6-7 min y el deploy
+#   sondeaba GHCR solo 5 min: la carrera fallaba con "not found" y obligaba a
+#   re-ejecutar. Con `needs` el deploy arranca cuando la imagen ya existe, y
+#   re-ejecutar un build fallido vuelve a desplegar solo. El pull conserva unos
+#   reintentos cortos como red ante latencia del registry.
 #
 # Por qué se despliega por SHA (sha-<short>) y no por el tag de rama (develop):
-#   El tag `develop` es mutable y podría apuntar a una imagen vieja si el deploy
-#   corre antes de que termine el build. El tag sha-<short> es inmutable y único
-#   por commit: el pull se reintenta hasta que ese tag exista, lo que serializa
-#   "build terminó" → "deploy" sin condiciones de carrera.
+#   El tag `develop` es mutable; sha-<short> es inmutable y único por commit.
 #
 # Secretos requeridos (Settings → Secrets and variables → Actions):
 #   SSH_HOST          IP o dominio del servidor              (ej. 203.0.113.10)
@@ -37,11 +43,14 @@
 name: CD Deploy (SSH)
 
 on:
-  push:
-    # NOTA TEMPORAL DE PRUEBA: la rama feature está incluida para validar el
-    # despliegue desde ella antes de fusionar. ⚠️ Revertir a `branches: [develop]`
-    # ANTES del merge (workflow_run/workflow_dispatch no corren desde ramas no-default).
-    branches: [develop]
+  # Invocado por docker-build.yml tras publicar la imagen de un push a develop.
+  workflow_call:
+    inputs:
+      image_tag:
+        description: 'Tag de imagen GHCR a desplegar (vacío = sha-<short> del commit)'
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       image_tag:
@@ -49,17 +58,17 @@ on:
         required: false
         default: ''
 
-# Un despliegue a la vez por rama; NO cancelar uno en curso (evita dejar el
-# servidor a mitad de un reemplazo de contenedor).
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   deploy:
     name: Deploy a servidor remoto
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Un despliegue a la vez por rama; NO cancelar uno en curso (evita dejar el
+    # servidor a mitad de un reemplazo de contenedor). A nivel de job porque el
+    # workflow también corre como reusable.
+    concurrency:
+      group: deploy-${{ github.ref }}
+      cancel-in-progress: false
 
     steps:
       # ── Resolver imagen a desplegar ──
@@ -68,8 +77,8 @@ jobs:
         run: |
           set -euo pipefail
           REPO_LC="$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
-          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
-            TAG="${{ github.event.inputs.image_tag }}"
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            TAG="${{ inputs.image_tag }}"
           else
             TAG="sha-$(echo '${{ github.sha }}' | cut -c1-7)"
           fi
@@ -141,12 +150,13 @@ jobs:
               echo "✔ Login GHCR realizado"
             fi
 
-            # 3) Esperar a que la imagen (tag inmutable sha-<short>) esté publicada
-            echo "Esperando imagen $IMAGE ..."
+            # 3) Descargar la imagen (tag inmutable sha-<short>). El build ya terminó
+            #    (needs en docker-build.yml); los reintentos cubren latencia del registry.
+            echo "Descargando imagen $IMAGE ..."
             PULLED=0
-            for i in $(seq 1 30); do
+            for i in $(seq 1 6); do
               if docker pull "$IMAGE"; then PULLED=1; break; fi
-              echo "  imagen aún no disponible (intento $i/30), espero 10s..."
+              echo "  imagen aún no disponible (intento $i/6), espero 10s..."
               sleep 10
             done
             if [ "$PULLED" -ne 1 ]; then

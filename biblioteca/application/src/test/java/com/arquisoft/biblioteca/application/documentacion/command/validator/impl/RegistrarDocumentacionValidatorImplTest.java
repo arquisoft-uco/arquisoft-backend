@@ -3,6 +3,7 @@ package com.arquisoft.biblioteca.application.documentacion.command.validator.imp
 import com.arquisoft.biblioteca.domain.bibliotecario.BibliotecarioDomain;
 import com.arquisoft.biblioteca.domain.documentacion.RegistroDocumentacionDomain;
 import com.arquisoft.biblioteca.domain.entregableproyectogrado.EntregableProyectoGradoDomain;
+import com.arquisoft.biblioteca.domain.estadoentregable.EstadoEntregable;
 import com.arquisoft.biblioteca.domain.estudianteproyectogrado.model.AutorDeEntregable;
 import com.arquisoft.shared.exception.BaseException;
 import com.arquisoft.shared.message.constant.BibliotecaCodes;
@@ -26,9 +27,9 @@ class RegistrarDocumentacionValidatorImplTest {
     private final UUID bibliotecarioId = UtilUUID.generarNuevoUUID();
     private final RegistroDocumentacionDomain registro = RegistroDocumentacionDomain.crear(entregableId, bibliotecarioId);
     private final EntregableProyectoGradoDomain entregableConArchivo = EntregableProyectoGradoDomain.reconstruir(
-            entregableId, UtilUUID.generarNuevoUUID(), "entregables", "a/b.zip");
+            entregableId, UtilUUID.generarNuevoUUID(), 1, EstadoEntregable.APROBADO, "a/b.zip", "b.zip");
     private final EntregableProyectoGradoDomain entregableSinArchivo = EntregableProyectoGradoDomain.reconstruir(
-            entregableId, UtilUUID.generarNuevoUUID(), null, null);
+            entregableId, UtilUUID.generarNuevoUUID(), 1, EstadoEntregable.APROBADO, null, null);
     private final BibliotecarioDomain bibliotecarioVigente = BibliotecarioDomain.reconstruir(
             bibliotecarioId, "123", "Ana", "ana@uco.edu.co", Instant.parse("2026-11-15T10:00:00Z"), UtilFecha.VACIO);
     private final List<AutorDeEntregable> autoresVigentes = List.of(

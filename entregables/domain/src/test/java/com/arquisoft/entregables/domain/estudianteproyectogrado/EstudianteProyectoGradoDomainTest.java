@@ -67,7 +67,8 @@ class EstudianteProyectoGradoDomainTest {
         // Arrange
         var eliminadoEn = Instant.parse("2026-10-19T10:00:00Z");
         var vinculo = EstudianteProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), eliminadoEn, eliminadoEn);
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co",
+                eliminadoEn, eliminadoEn);
 
         // Act
         vinculo.reactivar(OCURRIDO_EN);
@@ -92,7 +93,7 @@ class EstudianteProyectoGradoDomainTest {
     void debeReconstruirConVacioPorDefecto_cuandoEliminadoEnEsNulo() {
         // Act
         var vinculo = EstudianteProyectoGradoDomain.reconstruir(UtilUUID.generarNuevoUUID(),
-                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), OCURRIDO_EN, null);
+                UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co", OCURRIDO_EN, null);
 
         // Assert
         assertThat(vinculo.getEliminadoEn()).isEqualTo(UtilFecha.VACIO);
@@ -148,5 +149,64 @@ class EstudianteProyectoGradoDomainTest {
                 .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                         .extracting(e -> e.campo())
                         .containsExactly(EntregablesFields.EstudianteProyectoGrado.PROYECTO_GRADO));
+    }
+
+    @Test
+    void debeCrearConContacto_cuandoSeIndicanNombreYEmail() {
+        // Act
+        var vinculo = EstudianteProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), "Ana Perez", "ana@uco.edu.co",
+                UtilUUID.generarNuevoUUID(), OCURRIDO_EN);
+
+        // Assert
+        assertThat(vinculo.getNombre()).isEqualTo("Ana Perez");
+        assertThat(vinculo.getEmail()).isEqualTo("ana@uco.edu.co");
+    }
+
+    @Test
+    void debeAcumularFieldErrors_cuandoFaltanNombreYEmail() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> EstudianteProyectoGradoDomain.crear(estudiante, null, null, proyectoGrado, OCURRIDO_EN))
+                .isInstanceOfSatisfying(DomainValidationException.class, ex -> assertThat(
+                        ex.getValidationResult().getErrores())
+                        .extracting(e -> e.codigoError())
+                        .containsExactlyInAnyOrder(
+                                EntregablesCodes.EstudianteProyectoGrado.NOMBRE_REQUERIDO,
+                                EntregablesCodes.EstudianteProyectoGrado.EMAIL_REQUERIDO));
+    }
+
+    @Test
+    void debeActualizarContactoYOcurridoEn_cuandoSeRefresca() {
+        // Arrange
+        var vinculo = EstudianteProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co",
+                UtilUUID.generarNuevoUUID(), OCURRIDO_EN);
+        var masNuevo = OCURRIDO_EN.plusSeconds(60);
+
+        // Act
+        vinculo.refrescarContacto(masNuevo, "Ana Maria", "ana.maria@uco.edu.co");
+
+        // Assert
+        assertThat(vinculo.getNombre()).isEqualTo("Ana Maria");
+        assertThat(vinculo.getEmail()).isEqualTo("ana.maria@uco.edu.co");
+        assertThat(vinculo.getOcurridoEn()).isEqualTo(masNuevo);
+    }
+
+    @Test
+    void debeRechazarRefrescarContacto_cuandoOcurridoEnONombreSonNulos() {
+        // Arrange
+        var vinculo = EstudianteProyectoGradoDomain.crear(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co",
+                UtilUUID.generarNuevoUUID(), OCURRIDO_EN);
+
+        // Act & Assert
+        assertThatThrownBy(() -> vinculo.refrescarContacto(null, null, "ana@uco.edu.co"))
+                .isInstanceOfSatisfying(DomainValidationException.class, ex -> assertThat(
+                        ex.getValidationResult().getErrores())
+                        .extracting(e -> e.campo())
+                        .containsExactlyInAnyOrder(
+                                EntregablesFields.EstudianteProyectoGrado.OCURRIDO_EN,
+                                EntregablesFields.EstudianteProyectoGrado.NOMBRE));
     }
 }

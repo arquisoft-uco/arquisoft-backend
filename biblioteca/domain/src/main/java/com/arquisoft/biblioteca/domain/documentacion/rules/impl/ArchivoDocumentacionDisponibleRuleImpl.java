@@ -9,7 +9,7 @@ public class ArchivoDocumentacionDisponibleRuleImpl implements ArchivoDocumentac
 
     @Override
     public void validar(ArchivoDocumentacion entrada) {
-        if (UtilTexto.esVacioONulo(entrada.bucket()) || UtilTexto.esVacioONulo(entrada.claveObjeto())) {
+        if (UtilTexto.esVacioONulo(entrada.claveObjeto())) {
             throw new ArchivoDocumentacionNoDisponibleException(entrada.documentacion());
         }
     }

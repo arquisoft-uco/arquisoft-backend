@@ -38,7 +38,7 @@ class ItemCualitativoJuradoCommandOutputAdapterTest {
     void debeMapearYGuardar_cuandoEntidadEsValida() {
         // Arrange
         var entity = new ItemCualitativoJuradoEntity(
-                UUID.randomUUID(), "Claridad", "Descripción");
+                UUID.randomUUID(), "Claridad", "Descripción", 1);
 
         // Act
         adapter.registrar(entity);
@@ -88,10 +88,10 @@ class ItemCualitativoJuradoCommandOutputAdapterTest {
         String descripcion = "Descripción nueva";
 
         // Act
-        adapter.actualizarDescripcion(id, descripcion);
+        adapter.actualizar(id, descripcion, 1);
 
         // Assert
-        verify(repository).actualizarDescripcion(id, descripcion);
+        verify(repository).actualizar(id, descripcion, 1);
         verify(repository, never()).saveAndFlush(any());
         verify(logger).debug(any(ClaveMensaje.class), eq(id));
     }

@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -28,4 +29,13 @@ public class EvaluacionAsesorJpaEntity {
 
     @Column(name = "asesor_id", nullable = false, columnDefinition = "uuid")
     private UUID asesor;
+
+    @Column(name = "resumen_cualitativo", precision = 4, scale = 2)
+    private BigDecimal resumenCualitativo;
+
+    @Column(name = "resumen_cuantitativo", precision = 4, scale = 2)
+    private BigDecimal resumenCuantitativo;
+
+    @Column(name = "nota_acumulada", precision = 4, scale = 2)
+    private BigDecimal notaAcumulada;
 }

@@ -1,5 +1,6 @@
 package com.arquisoft.biblioteca.infrastructure.documentacion.query.secondaryadapter.minio;
 
+import com.arquisoft.biblioteca.infrastructure.config.BibliotecaAlmacenamientoProperties;
 import com.arquisoft.biblioteca.infrastructure.documentacion.exception.ArchivoDocumentacionAusenteException;
 import com.arquisoft.shared.message.constant.BibliotecaCodes;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
@@ -8,9 +9,9 @@ import com.arquisoft.shared.minio.model.MetadatosObjeto;
 import com.arquisoft.shared.minio.model.SolicitudEnlaceDescarga;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -33,8 +34,15 @@ class EnlaceDescargaDocumentacionMinioQueryOutputAdapterTest {
     @Mock
     private AlmacenamientoObjetos almacenamientoObjetos;
 
-    @InjectMocks
+
     private EnlaceDescargaDocumentacionMinioQueryOutputAdapter adapter;
+
+    @BeforeEach
+    void setUp() {
+        var propiedades = new BibliotecaAlmacenamientoProperties();
+        propiedades.setBucketEntregables(BUCKET);
+        adapter = new EnlaceDescargaDocumentacionMinioQueryOutputAdapter(almacenamientoObjetos, propiedades);
+    }
 
     private void objetoPresente() {
         when(almacenamientoObjetos.consultarMetadatos(BUCKET, CLAVE))
@@ -50,7 +58,7 @@ class EnlaceDescargaDocumentacionMinioQueryOutputAdapterTest {
                 .thenReturn(new EnlaceDescarga("https://minio.test/firmado", expiraEn));
 
         // Act
-        var enlace = adapter.generar(UtilUUID.generarNuevoUUID(), BUCKET, CLAVE, "entrega.zip");
+        var enlace = adapter.generar(UtilUUID.generarNuevoUUID(), CLAVE, "entrega.zip");
 
         // Assert
         assertThat(enlace.url()).isEqualTo("https://minio.test/firmado");
@@ -65,8 +73,8 @@ class EnlaceDescargaDocumentacionMinioQueryOutputAdapterTest {
                 .thenReturn(new EnlaceDescarga("https://minio.test/firmado", Instant.now()));
 
         // Act
-        var sinNombre = adapter.generar(UtilUUID.generarNuevoUUID(), BUCKET, CLAVE, UtilTexto.VACIO);
-        var nombreNulo = adapter.generar(UtilUUID.generarNuevoUUID(), BUCKET, CLAVE, null);
+        var sinNombre = adapter.generar(UtilUUID.generarNuevoUUID(), CLAVE, UtilTexto.VACIO);
+        var nombreNulo = adapter.generar(UtilUUID.generarNuevoUUID(), CLAVE, null);
 
         // Assert
         assertThat(sinNombre.url()).isEqualTo("https://minio.test/firmado");
@@ -80,7 +88,7 @@ class EnlaceDescargaDocumentacionMinioQueryOutputAdapterTest {
         when(almacenamientoObjetos.consultarMetadatos(BUCKET, CLAVE)).thenReturn(MetadatosObjeto.VACIO);
 
         // Act & Assert
-        assertThatThrownBy(() -> adapter.generar(documentacion, BUCKET, CLAVE, "entrega.zip"))
+        assertThatThrownBy(() -> adapter.generar(documentacion, CLAVE, "entrega.zip"))
                 .isInstanceOfSatisfying(ArchivoDocumentacionAusenteException.class, ex -> {
                     assertThat(ex.getCodigoError()).isEqualTo(BibliotecaCodes.Documentacion.ARCHIVO_AUSENTE);
                     assertThat(ex.getError().getMessage())

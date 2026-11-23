@@ -13,9 +13,26 @@ class EntregablesAlmacenamientoPropertiesTest {
         var propiedades = new EntregablesAlmacenamientoProperties();
         propiedades.setBucket("entregables");
         propiedades.setBucketArtefactos("artefactos");
+        propiedades.setDirectorioTemporal("tmp/entregables");
 
         // Act & Assert
         assertThatCode(propiedades::afterPropertiesSet).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeFallarElArranque_cuandoElDirectorioTemporalFaltaOEstaEnBlanco() {
+        // Arrange
+        var sinDirectorio = new EntregablesAlmacenamientoProperties();
+        sinDirectorio.setBucket("entregables");
+        sinDirectorio.setBucketArtefactos("artefactos");
+        var directorioEnBlanco = new EntregablesAlmacenamientoProperties();
+        directorioEnBlanco.setBucket("entregables");
+        directorioEnBlanco.setBucketArtefactos("artefactos");
+        directorioEnBlanco.setDirectorioTemporal("  ");
+
+        // Act & Assert
+        assertThatThrownBy(sinDirectorio::afterPropertiesSet).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(directorioEnBlanco::afterPropertiesSet).isInstanceOf(IllegalStateException.class);
     }
 
     @Test

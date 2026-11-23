@@ -27,7 +27,7 @@ class ModificarItemCualitativoAsesorInteractorImplTest {
     void debeMapearYDelegarAlUseCase_cuandoEjecutaCommand() {
         // Arrange
         var item = UtilUUID.generarNuevoUUID();
-        var command = ModificarItemCualitativoAsesorCommand.crear(item, "Descripción ampliada");
+        var command = ModificarItemCualitativoAsesorCommand.crear(item, "Descripción ampliada", 1);
 
         // Act
         interactor.ejecutar(command);

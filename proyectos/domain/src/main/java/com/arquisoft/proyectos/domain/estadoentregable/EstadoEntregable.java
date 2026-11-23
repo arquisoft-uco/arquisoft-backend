@@ -12,6 +12,8 @@ public enum EstadoEntregable {
     CANCELADO("Cancelado"),
     CERRADO("Cerrado"),
     RECHAZADO("Rechazado"),
+    APROBADO_CON_OBSERVACIONES("Aprobado Con Observaciones"),
+    APROBADO("Aprobado"),
 
     VACIO("");
 

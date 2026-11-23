@@ -18,7 +18,7 @@ class RegistrarItemCualitativoAsesorCommandTest {
         var descripcion = "  Evalúa la claridad  ";
 
         // Act
-        var command = RegistrarItemCualitativoAsesorCommand.crear(nombre, descripcion);
+        var command = RegistrarItemCualitativoAsesorCommand.crear(nombre, descripcion, 1);
 
         // Assert
         assertThat(command.nombre()).isEqualTo("Claridad");
@@ -32,7 +32,7 @@ class RegistrarItemCualitativoAsesorCommandTest {
         var descripcion = "d".repeat(301);
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistrarItemCualitativoAsesorCommand.crear(nombre, descripcion))
+        assertThatThrownBy(() -> RegistrarItemCualitativoAsesorCommand.crear(nombre, descripcion, 1))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -50,7 +50,7 @@ class RegistrarItemCualitativoAsesorCommandTest {
         String descripcion = null;
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistrarItemCualitativoAsesorCommand.crear(nombre, descripcion))
+        assertThatThrownBy(() -> RegistrarItemCualitativoAsesorCommand.crear(nombre, descripcion, 1))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())

@@ -27,6 +27,21 @@ public class EstudianteProyectoGradoCommandOutputAdapter implements EstudiantePr
     }
 
     @Override
+    public List<EstudianteProyectoGradoEntity> consultarContactosVigentesPorProyectoGrado(UUID proyectoGrado) {
+        return repository.buscarContactosVigentesPorProyectoGrado(proyectoGrado).stream()
+                .map(EstudianteProyectoGradoJpaMapper::toEntity)
+                .toList();
+    }
+
+    @Override
+    public List<EstudianteProyectoGradoEntity> consultarContactosVigentesPorEntregable(
+            UUID entregableProyectoGrado) {
+        return repository.buscarContactosVigentesPorEntregable(entregableProyectoGrado).stream()
+                .map(EstudianteProyectoGradoJpaMapper::toEntity)
+                .toList();
+    }
+
+    @Override
     public Optional<EstudianteProyectoGradoEntity> obtenerPorEstudianteYProyectoGrado(
             UUID estudiante, UUID proyectoGrado) {
         return repository.findByEstudianteIdAndProyectoGradoId(estudiante, proyectoGrado)

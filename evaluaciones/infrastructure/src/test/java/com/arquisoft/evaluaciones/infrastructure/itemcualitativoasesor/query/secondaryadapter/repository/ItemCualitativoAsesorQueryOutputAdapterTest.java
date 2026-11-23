@@ -34,6 +34,7 @@ class ItemCualitativoAsesorQueryOutputAdapterTest {
                 .id(id)
                 .nombre(nombre)
                 .descripcion("desc " + nombre)
+                .peso(nombre.length())
                 .build());
         return id;
     }
@@ -55,6 +56,7 @@ class ItemCualitativoAsesorQueryOutputAdapterTest {
         var primero = resultado.get(0);
         assertThat(primero.nombre()).isEqualTo("Alfa");
         assertThat(primero.descripcion()).isEqualTo("desc Alfa");
+        assertThat(primero.peso()).isEqualTo(4);
     }
 
     @Test

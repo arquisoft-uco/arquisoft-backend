@@ -28,4 +28,7 @@ public class ItemCualitativoAsesorJpaEntity {
 
     @Column(name = "descripcion", nullable = false, length = 300)
     private String descripcion;
+
+    @Column(name = "peso", nullable = false, columnDefinition = "integer default 1")
+    private int peso;
 }

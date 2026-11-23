@@ -32,7 +32,7 @@ class ArchivoDocumentacionQueryFinderImplTest {
         // Arrange
         var documentacion = UtilUUID.generarNuevoUUID();
         when(archivoDocumentacionAccesoQueryOutputPort.obtenerPorId(documentacion)).thenReturn(Optional.of(
-                new ArchivoDocumentacionAccesoEntity(documentacion, "PUBLICADO", "artefactos", "p/a.zip", "a.zip")));
+                new ArchivoDocumentacionAccesoEntity(documentacion, "PUBLICADO", "p/a.zip", "a.zip")));
 
         // Act
         var archivo = finder.obtener(documentacion);
@@ -40,7 +40,6 @@ class ArchivoDocumentacionQueryFinderImplTest {
         // Assert
         assertThat(archivo.documentacion()).isEqualTo(documentacion);
         assertThat(archivo.estado()).isEqualTo(EstadoDocumentacion.PUBLICADO);
-        assertThat(archivo.bucket()).isEqualTo("artefactos");
         assertThat(archivo.claveObjeto()).isEqualTo("p/a.zip");
         assertThat(archivo.nombreArchivo()).isEqualTo("a.zip");
         verify(archivoDocumentacionAccesoQueryOutputPort).obtenerPorId(documentacion);
@@ -64,14 +63,13 @@ class ArchivoDocumentacionQueryFinderImplTest {
         // Arrange
         var documentacion = UtilUUID.generarNuevoUUID();
         when(archivoDocumentacionAccesoQueryOutputPort.obtenerPorId(documentacion)).thenReturn(Optional.of(
-                new ArchivoDocumentacionAccesoEntity(documentacion, "PENDIENTE", null, null, null)));
+                new ArchivoDocumentacionAccesoEntity(documentacion, "PENDIENTE", null, null)));
 
         // Act
         var archivo = finder.obtener(documentacion);
 
         // Assert
         assertThat(archivo.esVacio()).isFalse();
-        assertThat(archivo.bucket()).isEqualTo(UtilTexto.VACIO);
         assertThat(archivo.claveObjeto()).isEqualTo(UtilTexto.VACIO);
         assertThat(archivo.nombreArchivo()).isEqualTo(UtilTexto.VACIO);
     }

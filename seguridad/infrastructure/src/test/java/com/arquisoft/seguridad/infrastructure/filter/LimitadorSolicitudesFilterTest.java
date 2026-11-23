@@ -39,7 +39,7 @@ class LimitadorSolicitudesFilterTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private AppLogger logger;
+    private AppLogger appLogger;
 
     @Mock
     private GestorTraza gestorTraza;

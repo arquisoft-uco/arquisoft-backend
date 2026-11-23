@@ -1,5 +1,7 @@
 package com.arquisoft.evaluaciones.infrastructure.estudianteproyectogrado.command.secondaryadapter.repository;
 
+import com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.entity.EvaluacionJpaEntity;
+import com.arquisoft.evaluaciones.infrastructure.entregable.command.secondaryadapter.entity.EntregableJpaEntity;
 import com.arquisoft.evaluaciones.application.estudianteproyectogrado.command.secondaryport.entity.EstudianteProyectoGradoEntity;
 import com.arquisoft.evaluaciones.infrastructure.estudianteproyectogrado.command.secondaryadapter.entity.EstudianteProyectoGradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
@@ -44,7 +46,7 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
 
     private EstudianteProyectoGradoEntity vinculo(UUID estudiante, UUID proyectoGrado, Instant eliminadoEn) {
         return new EstudianteProyectoGradoEntity(
-                UtilUUID.generarNuevoUUID(), estudiante, proyectoGrado, OCURRIDO_EN, eliminadoEn);
+                UtilUUID.generarNuevoUUID(), estudiante, proyectoGrado, "Nombre", "correo@uco.edu.co", OCURRIDO_EN, eliminadoEn);
     }
 
     @Test
@@ -64,6 +66,32 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
         assertThat(adapter.consultarPorProyectoGrado(proyectoGrado)).containsExactlyInAnyOrder(vigente, eliminado);
         assertThat(entityManager.find(EstudianteProyectoGradoJpaEntity.class, vigente.id()).getEliminadoEn()).isNull();
         verify(logger).debug(EstudianteProyectoGradoKey.LOG_GUARDADOS, 3);
+    }
+
+    @Test
+    void debeConsultarSoloLosContactosVigentesDelProyectoDeLaEvaluacion_cuandoHayBajasYOtrosProyectos() {
+        // Arrange
+        var proyectoGrado = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        entityManager.persist(EntregableJpaEntity.builder()
+                .id(entregable).proyecto("Proyecto").version(1).proyectoGrado(proyectoGrado).build());
+        entityManager.persist(EvaluacionJpaEntity.builder()
+                .id(evaluacion).entregable(entregable).estadoEvaluacion("EN_PROGRESO").build());
+        var vigente = vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, UtilFecha.VACIO);
+        var dadoDeBaja = vinculo(UtilUUID.generarNuevoUUID(), proyectoGrado, Instant.parse("2026-10-21T10:00:00Z"));
+        var ajeno = vinculo(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), UtilFecha.VACIO);
+        adapter.guardarTodos(List.of(vigente, dadoDeBaja, ajeno));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var contactos = adapter.consultarContactosVigentesPorEvaluacion(evaluacion);
+
+        // Assert
+        assertThat(contactos).containsExactly(vigente);
+        assertThat(contactos.getFirst().nombre()).isEqualTo("Nombre");
+        assertThat(contactos.getFirst().email()).isEqualTo("correo@uco.edu.co");
     }
 
     @Test
@@ -95,7 +123,7 @@ class EstudianteProyectoGradoCommandOutputAdapterTest {
         entityManager.clear();
         var removidoEn = Instant.parse("2026-10-21T10:00:00Z");
         var removido = new EstudianteProyectoGradoEntity(
-                vigente.id(), vigente.estudiante(), proyectoGrado, removidoEn, removidoEn);
+                vigente.id(), vigente.estudiante(), proyectoGrado, "Nombre", "correo@uco.edu.co", removidoEn, removidoEn);
 
         // Act
         adapter.guardar(removido);

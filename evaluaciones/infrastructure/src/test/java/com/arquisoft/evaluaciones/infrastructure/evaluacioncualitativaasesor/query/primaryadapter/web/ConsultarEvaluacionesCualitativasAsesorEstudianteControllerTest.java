@@ -93,7 +93,7 @@ class ConsultarEvaluacionesCualitativasAsesorEstudianteControllerTest {
         var idCriterio = UtilUUID.generarNuevoUUID();
         var resultado = List.of(new EvaluacionCualitativaAsesorEstudianteReadModel(
                 idCualitativa,
-                new ItemCualitativoAsesorReadModel(idItem, "Claridad", "Evalua la claridad"),
+                new ItemCualitativoAsesorReadModel(idItem, "Claridad", "Evalua la claridad", 1),
                 new CriterioItemCualitativoAsesorReadModel(idCriterio, "Excelente", "Cumple todo")));
         when(interactor.ejecutar(any())).thenReturn(resultado);
 

@@ -29,7 +29,7 @@ class RegistrarItemCualitativoJuradoInteractorImplTest {
     @Test
     void debeMapearDelegarYRetornarId_cuandoEjecutaCommand() {
         // Arrange
-        var command = new RegistrarItemCualitativoJuradoCommand("Claridad", "Descripción");
+        var command = new RegistrarItemCualitativoJuradoCommand("Claridad", "Descripción", 1);
         UUID id = UUID.randomUUID();
         when(useCase.ejecutar(any(ItemCualitativoJuradoDomain.class))).thenReturn(id);
 

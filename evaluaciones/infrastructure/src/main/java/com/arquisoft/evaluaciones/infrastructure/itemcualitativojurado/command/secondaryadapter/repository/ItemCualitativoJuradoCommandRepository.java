@@ -16,8 +16,9 @@ public interface ItemCualitativoJuradoCommandRepository
 
     @Modifying(clearAutomatically = true)
     @Query("update ItemCualitativoJuradoJpaEntity item "
-            + "set item.descripcion = :descripcion where item.id = :id")
-    int actualizarDescripcion(@Param("id") UUID id, @Param("descripcion") String descripcion);
+            + "set item.descripcion = :descripcion, item.peso = :peso where item.id = :id")
+    int actualizar(
+            @Param("id") UUID id, @Param("descripcion") String descripcion, @Param("peso") int peso);
 
     @Query("select item.id from ItemCualitativoJuradoJpaEntity item where item.id in :ids")
     Set<UUID> findIdsByIdIn(@Param("ids") Set<UUID> ids);

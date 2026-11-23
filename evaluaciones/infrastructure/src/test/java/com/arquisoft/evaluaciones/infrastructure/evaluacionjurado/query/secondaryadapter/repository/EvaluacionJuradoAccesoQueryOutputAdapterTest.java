@@ -65,6 +65,21 @@ class EvaluacionJuradoAccesoQueryOutputAdapterTest {
     }
 
     @Test
+    void debeRetornarFalseYVacio_cuandoElJuradoFueRetiradoDeLaEvaluacion() {
+        // Arrange
+        UUID evaluacionJurado = sembrarEvaluacionJurado();
+        entityManager.createNativeQuery("UPDATE evaluacion_jurado SET eliminado_en = CURRENT_TIMESTAMP WHERE id = ?")
+                .setParameter(1, evaluacionJurado)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act & Assert
+        assertThat(adapter.existePorId(evaluacionJurado)).isFalse();
+        assertThat(adapter.obtenerJuradoPorId(evaluacionJurado)).isEmpty();
+    }
+
+    @Test
     void debeRetornarFalse_cuandoLaEvaluacionJuradoNoExiste() {
         // Act & Assert
         assertThat(adapter.existePorId(UUID.randomUUID())).isFalse();

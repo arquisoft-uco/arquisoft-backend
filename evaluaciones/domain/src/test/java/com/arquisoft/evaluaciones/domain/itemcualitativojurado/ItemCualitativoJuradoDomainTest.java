@@ -20,7 +20,7 @@ class ItemCualitativoJuradoDomainTest {
 
         // Act
         ItemCualitativoJuradoDomain item =
-                ItemCualitativoJuradoDomain.crear(nombre, descripcion);
+                ItemCualitativoJuradoDomain.crear(nombre, descripcion, 1);
 
         // Assert
         assertThat(item.getId()).isNotNull();
@@ -35,7 +35,7 @@ class ItemCualitativoJuradoDomainTest {
         String descripcion = null;
 
         // Act & Assert
-        assertThatThrownBy(() -> ItemCualitativoJuradoDomain.crear(nombre, descripcion))
+        assertThatThrownBy(() -> ItemCualitativoJuradoDomain.crear(nombre, descripcion, 1))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception -> {
                     assertThat(exception.getValidationResult().getErrores())
                             .extracting(
@@ -58,7 +58,7 @@ class ItemCualitativoJuradoDomainTest {
         String descripcion = "d".repeat(301);
 
         // Act & Assert
-        assertThatThrownBy(() -> ItemCualitativoJuradoDomain.crear(nombre, descripcion))
+        assertThatThrownBy(() -> ItemCualitativoJuradoDomain.crear(nombre, descripcion, 1))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception -> {
                     assertThat(exception.getValidationResult().getErrores())
                             .extracting(error -> error.codigoError())
@@ -77,7 +77,7 @@ class ItemCualitativoJuradoDomainTest {
 
         // Act
         ItemCualitativoJuradoDomain item = ItemCualitativoJuradoDomain.reconstruir(
-                id, nombrePersistido, descripcionPersistida);
+                id, nombrePersistido, descripcionPersistida, 1);
 
         // Assert
         assertThat(item.getId()).isEqualTo(id);

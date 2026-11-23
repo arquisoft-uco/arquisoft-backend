@@ -24,17 +24,17 @@ public record KeycloakFuenteMapeoRolesProperties(
             "falta security.authorization.role-expansion.keycloak.client-uuid (KEYCLOAK_CLIENT_UUID)";
     private static final String CLIENT_UUID_INVALIDO =
             "security.authorization.role-expansion.keycloak.client-uuid no es un UUID valido";
-    private static final String SERVER_URL = "server-url";
-    private static final String REALM = "realm";
-    private static final String CLIENT_ID = "client-id";
-    private static final String CLIENT_SECRET = "client-secret";
+    private static final String PROPIEDAD_SERVER_URL = "server-url";
+    private static final String PROPIEDAD_REALM = "realm";
+    private static final String PROPIEDAD_CLIENT_ID = "client-id";
+    private static final String PROPIEDAD_CLIENT_SECRET = "client-secret";
 
     public List<String> problemas() {
         var problemas = new ArrayList<String>();
-        agregarSiVacia(problemas, serverUrl, SERVER_URL);
-        agregarSiVacia(problemas, realm, REALM);
-        agregarSiVacia(problemas, clientId, CLIENT_ID);
-        agregarSiVacia(problemas, clientSecret, CLIENT_SECRET);
+        agregarSiVacia(problemas, serverUrl, PROPIEDAD_SERVER_URL);
+        agregarSiVacia(problemas, realm, PROPIEDAD_REALM);
+        agregarSiVacia(problemas, clientId, PROPIEDAD_CLIENT_ID);
+        agregarSiVacia(problemas, clientSecret, PROPIEDAD_CLIENT_SECRET);
         if (UtilTexto.esVacioONulo(clientUuid)) {
             problemas.add(FALTA_CLIENT_UUID);
         } else if (!UtilUUID.uuidValido(UtilTexto.aplicarTrim(clientUuid))) {

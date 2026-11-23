@@ -2,5 +2,5 @@ package com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.sec
 
 import java.util.UUID;
 
-public record ItemCualitativoAsesorEntity(UUID id, String nombre, String descripcion) {
+public record ItemCualitativoAsesorEntity(UUID id, String nombre, String descripcion, int peso) {
 }

@@ -13,8 +13,21 @@ public final class EntregableProyectoGradoJpaMapper {
         return new EntregableProyectoGradoEntity(
                 jpaEntity.getId(),
                 jpaEntity.getProyectoGradoId(),
-                alVacio(jpaEntity.getBucket()),
-                alVacio(jpaEntity.getClaveObjeto()));
+                jpaEntity.getVersionEntregable(),
+                jpaEntity.getEstadoEntregableId(),
+                alVacio(jpaEntity.getClaveObjeto()),
+                alVacio(jpaEntity.getNombreArchivo()));
+    }
+
+    public static EntregableProyectoGradoJpaEntity toJpaEntity(EntregableProyectoGradoEntity entity) {
+        return EntregableProyectoGradoJpaEntity.builder()
+                .id(entity.id())
+                .proyectoGradoId(entity.proyectoGrado())
+                .versionEntregable(entity.versionEntregable())
+                .estadoEntregableId(entity.estadoEntregable())
+                .claveObjeto(entity.claveObjeto())
+                .nombreArchivo(entity.nombreArchivo())
+                .build();
     }
 
     private static String alVacio(String valor) {

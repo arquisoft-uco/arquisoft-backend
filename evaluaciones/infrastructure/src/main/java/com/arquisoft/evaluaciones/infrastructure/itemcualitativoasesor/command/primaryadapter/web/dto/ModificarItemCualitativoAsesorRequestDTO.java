@@ -1,4 +1,4 @@
 package com.arquisoft.evaluaciones.infrastructure.itemcualitativoasesor.command.primaryadapter.web.dto;
 
-public record ModificarItemCualitativoAsesorRequestDTO(String descripcion) {
+public record ModificarItemCualitativoAsesorRequestDTO(String descripcion, Integer peso) {
 }

@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.usecase.impl;
 
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.CompletitudEvaluacionJuradoDomain;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.finder.EvaluacionCuantitativaJuradoPorIdFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.EvaluacionCuantitativaJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.secondaryport.entity.EvaluacionCuantitativaJuradoEntity;
@@ -13,9 +14,12 @@ import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.exception.EvaluacionJuradoFinalizadaException;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.EstadoEvaluacionJuradoDomain;
 import com.arquisoft.evaluaciones.domain.itemcuantitativojurado.ItemCuantitativoJuradoDomain;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoCompletaFinder;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
 import com.arquisoft.shared.util.UtilUUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -26,11 +30,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +59,17 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoUseCaseImplTest {
 
     @Mock
     private AppLogger logger;
+
+    @Mock
+    private CalcularResumenEvaluacionJuradoUseCase calcularResumenJuradoUseCase;
+
+    @Mock
+    private EvaluacionJuradoCompletaFinder evaluacionJuradoCompletaFinder;
+
+    @BeforeEach
+    void configurarFinderDeCompletitud() {
+        lenient().when(evaluacionJuradoCompletaFinder.obtener(any())).thenReturn(true);
+    }
 
     @InjectMocks
     private CambiarPuntajeEvaluacionCuantitativaJuradoUseCaseImpl useCase;
@@ -93,6 +110,8 @@ class CambiarPuntajeEvaluacionCuantitativaJuradoUseCaseImplTest {
                 new EvaluacionCuantitativaJuradoEntity(evaluacionCuantitativaJurado, evaluacionJurado, item, 300));
         orden.verify(logger).info(EvaluacionCuantitativaJuradoKey.LOG_PUNTAJE_CAMBIADO,
                 evaluacionCuantitativaJurado);
+
+        verify(calcularResumenJuradoUseCase).ejecutar(argThat(CompletitudEvaluacionJuradoDomain::isCompleta));
     }
 
     @Test

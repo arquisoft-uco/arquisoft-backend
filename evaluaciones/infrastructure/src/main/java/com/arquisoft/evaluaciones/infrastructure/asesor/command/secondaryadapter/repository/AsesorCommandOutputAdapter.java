@@ -47,4 +47,9 @@ public class AsesorCommandOutputAdapter implements AsesorOutputPort {
     public boolean existeVigentePorId(UUID id) {
         return repository.existsByIdAndEliminadoEnIsNull(id);
     }
+
+    @Override
+    public Optional<AsesorEntity> obtenerContactoPorEvaluacion(UUID evaluacion) {
+        return repository.findContactoPorEvaluacion(evaluacion).map(AsesorJpaMapper::toEntity);
+    }
 }

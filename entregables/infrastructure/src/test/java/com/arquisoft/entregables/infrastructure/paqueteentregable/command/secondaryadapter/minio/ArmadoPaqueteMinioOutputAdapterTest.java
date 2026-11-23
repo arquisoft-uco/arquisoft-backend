@@ -9,6 +9,7 @@ import com.arquisoft.entregables.infrastructure.paqueteentregable.exception.Arch
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.constant.EntregablesCodes;
+import com.arquisoft.shared.message.key.entregables.PaqueteEntregableKey;
 import com.arquisoft.shared.minio.AlmacenamientoObjetos;
 import com.arquisoft.shared.minio.exception.MinioOperationException;
 import com.arquisoft.shared.minio.model.EnlaceDescarga;
@@ -22,6 +23,7 @@ import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionSynchronizationUtils;
@@ -33,6 +35,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +48,10 @@ import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class ArmadoPaqueteMinioOutputAdapterTest {
 
@@ -54,9 +60,13 @@ class ArmadoPaqueteMinioOutputAdapterTest {
     private static final String OOXML = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private static final String MARKDOWN = "text/markdown";
     private static final String PREFIJO_TEMPORAL = "paquete-entregable-";
+    private static final String CONTROL_BIDIRECCIONAL = "\u202E";
 
     private final JsonMapper mapper = JsonMapper.builder().build();
     private final AppLogger logger = mock(AppLogger.class);
+
+    @TempDir
+    Path raizTemporal;
 
     private AlmacenamientoFalso almacenamiento;
     private ArmadoPaqueteMinioOutputAdapter adapter;
@@ -67,6 +77,7 @@ class ArmadoPaqueteMinioOutputAdapterTest {
         var propiedades = new EntregablesAlmacenamientoProperties();
         propiedades.setBucket(BUCKET);
         propiedades.setBucketArtefactos("bucket-artefactos");
+        propiedades.setDirectorioTemporal(directorioPaquetes().toString());
         adapter = new ArmadoPaqueteMinioOutputAdapter(
                 almacenamiento, propiedades, new SincronizacionTransaccional(logger), logger);
     }
@@ -87,18 +98,23 @@ class ArmadoPaqueteMinioOutputAdapterTest {
     }
 
     private ZipFile abrirZip() throws IOException {
-        var temporal = Files.createTempFile("verificacion-", ".zip");
-        Files.write(temporal, almacenamiento.subido);
-        temporal.toFile().deleteOnExit();
-        return new ZipFile(temporal.toFile());
+        var verificacion = Files.write(raizTemporal.resolve("verificacion.zip"), almacenamiento.subido);
+        return new ZipFile(verificacion.toFile());
+    }
+
+    private Path directorioPaquetes() {
+        return raizTemporal.resolve("paquetes");
     }
 
     private static List<String> nombresDe(ZipFile zip) {
         return zip.stream().map(entrada -> entrada.getName()).collect(Collectors.toList());
     }
 
-    private static List<Path> temporalesDelPaquete() throws IOException {
-        try (var archivos = Files.list(Path.of(System.getProperty("java.io.tmpdir")))) {
+    private List<Path> temporalesDelPaquete() throws IOException {
+        if (!Files.isDirectory(directorioPaquetes())) {
+            return List.of();
+        }
+        try (var archivos = Files.list(directorioPaquetes())) {
             return archivos.filter(ruta -> ruta.getFileName().toString().startsWith(PREFIJO_TEMPORAL)).toList();
         }
     }
@@ -236,7 +252,8 @@ class ArmadoPaqueteMinioOutputAdapterTest {
     void noDebeGenerarRutasPeligrosas_cuandoElNombreTraeSeparadoresPuntosYControlBidireccional() throws Exception {
         // Arrange
         var traversal = incluir("..", "..\\..\\evil.pdf", PDF, repetido('a'));
-        var bidi = incluir("Doc‮fdp", "informe‮gpj.pdf", PDF, repetido('b'));
+        var bidi = incluir("Doc" + CONTROL_BIDIRECCIONAL + "fdp",
+                "informe" + CONTROL_BIDIRECCIONAL + "gpj.pdf", PDF, repetido('b'));
         var finales = incluir("Informe. . ", "final. . ", PDF, repetido('c'));
         var rutas = incluir("a/../b", "c/../d.pdf", PDF, repetido('d'));
 
@@ -250,7 +267,7 @@ class ArmadoPaqueteMinioOutputAdapterTest {
                 "003-Informe/v2-final",
                 "004-a_.._b/v2-c_.._d.pdf");
         assertThat(archivo.entradas()).allSatisfy(entrada -> {
-            assertThat(entrada.rutaEnPaquete()).doesNotContain("\\", "‮");
+            assertThat(entrada.rutaEnPaquete()).doesNotContain("\\", CONTROL_BIDIRECCIONAL);
             assertThat(entrada.rutaEnPaquete().split("/")).hasSize(2).doesNotContain("..");
         });
     }
@@ -349,6 +366,51 @@ class ArmadoPaqueteMinioOutputAdapterTest {
         var despues = new ArrayList<>(temporalesDelPaquete());
         despues.removeAll(antes);
         assertThat(despues).isEmpty();
+    }
+
+    @Test
+    void debeArmarElZipEnElDirectorioConfiguradoSoloParaElPropietario_cuandoElSistemaEsPosix() throws Exception {
+        // Arrange
+        assumeTrue(raizTemporal.getFileSystem().supportedFileAttributeViews().contains("posix"));
+        var incluido = incluir("Documento", "a.pdf", PDF, repetido('a'));
+
+        // Act
+        adapter.armar(contenido(UtilUUID.generarNuevoUUID(), "Proyecto", List.of(incluido)));
+
+        // Assert
+        assertThat(Files.getPosixFilePermissions(directorioPaquetes()))
+                .isEqualTo(PosixFilePermissions.fromString("rwx------"));
+        assertThat(temporalesDelPaquete()).isEmpty();
+    }
+
+    @Test
+    void debeEliminarSoloLosTemporalesDelPaquete_cuandoArrancaConHuerfanosDeUnaEjecucionAnterior() throws Exception {
+        // Arrange
+        Files.createDirectories(directorioPaquetes());
+        Files.write(directorioPaquetes().resolve(PREFIJO_TEMPORAL + "123.zip"), repetido('a'));
+        Files.write(directorioPaquetes().resolve(PREFIJO_TEMPORAL + "456.zip"), repetido('b'));
+        var ajeno = Files.write(directorioPaquetes().resolve("ajeno.zip"), repetido('c'));
+
+        // Act
+        adapter.eliminarTemporalesHuerfanos();
+
+        // Assert
+        assertThat(temporalesDelPaquete()).isEmpty();
+        assertThat(ajeno).exists();
+        verify(logger).info(PaqueteEntregableKey.LOG_TEMPORALES_HUERFANOS_ELIMINADOS, directorioPaquetes(), 2);
+    }
+
+    @Test
+    void noDebeCrearNiLimpiarNada_cuandoArrancaSinDirectorioTemporal() {
+        // Arrange
+        var directorio = directorioPaquetes();
+
+        // Act
+        adapter.eliminarTemporalesHuerfanos();
+
+        // Assert
+        assertThat(directorio).doesNotExist();
+        verifyNoInteractions(logger);
     }
 
     @Test

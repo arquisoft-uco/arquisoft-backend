@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.usecase.impl;
 
+import com.arquisoft.evaluaciones.domain.evaluacion.VerificacionFinalizacionEvaluacionDomain;
 import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.IniciarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.finder.ItemsEvaluacionCuantitativaJuradoRegistradosFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.finder.model.ItemsPorEvaluacionCuantitativaJurado;
@@ -22,6 +23,8 @@ import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.model.Exis
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.model.PuntajesVsValoresMaximosJurado;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.CompletitudEvaluacionJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacionjurado.ContextoRegistroEvaluacionJuradoDomain;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
+import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.FinalizarEvaluacionUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
 import com.arquisoft.shared.message.ClaveMensaje;
@@ -41,6 +44,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -79,6 +83,12 @@ class RegistrarEvaluacionesCuantitativasJuradoUseCaseImplTest {
 
     @Mock
     private AppLogger logger;
+
+    @Mock
+    private CalcularResumenEvaluacionJuradoUseCase calcularResumenJuradoUseCase;
+
+    @Mock
+    private FinalizarEvaluacionUseCase finalizarEvaluacionUseCase;
 
     @InjectMocks
     private RegistrarEvaluacionesCuantitativasJuradoUseCaseImpl useCase;
@@ -136,6 +146,9 @@ class RegistrarEvaluacionesCuantitativasJuradoUseCaseImplTest {
         verify(logger).info(EvaluacionCuantitativaJuradoKey.LOG_REGISTRANDO_LOTE, evaluacionJurado, 3);
         verify(logger).debug(any(ClaveMensaje.class), eq(evaluacionJurado), eq(true), eq(3), eq(0));
         verify(logger).info(EvaluacionCuantitativaJuradoKey.LOG_LOTE_REGISTRADO, evaluacionJurado, 3);
+
+        verify(calcularResumenJuradoUseCase).ejecutar(argThat(CompletitudEvaluacionJuradoDomain::isCompleta));
+        verify(finalizarEvaluacionUseCase).ejecutar(any(VerificacionFinalizacionEvaluacionDomain.class));
     }
 
     @Test

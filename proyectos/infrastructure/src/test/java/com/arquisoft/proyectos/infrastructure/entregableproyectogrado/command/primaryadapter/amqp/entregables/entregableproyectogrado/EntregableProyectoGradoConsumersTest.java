@@ -10,6 +10,8 @@ import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.Md
 import com.rabbitmq.client.Channel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -52,6 +54,7 @@ class EntregableProyectoGradoConsumersTest {
     private EntregableProyectoGradoCerradoConsumer cerrado;
     private EntregableProyectoGradoCanceladoConsumer cancelado;
     private EntregableProyectoGradoRechazadoConsumer rechazado;
+    private EntregableProyectoGradoAprobadoConsumer aprobado;
 
     private final UUID entregable = UUID.randomUUID();
     private final UUID proyectoGrado = UUID.randomUUID();
@@ -66,6 +69,7 @@ class EntregableProyectoGradoConsumersTest {
         cerrado = new EntregableProyectoGradoCerradoConsumer(interactor, mapper, logger, gestorTraza);
         cancelado = new EntregableProyectoGradoCanceladoConsumer(interactor, mapper, logger, gestorTraza);
         rechazado = new EntregableProyectoGradoRechazadoConsumer(interactor, mapper, logger, gestorTraza);
+        aprobado = new EntregableProyectoGradoAprobadoConsumer(interactor, mapper, logger, gestorTraza);
 
         lenient().when(interactor.ejecutar(any()))
                 .thenReturn(new ActualizacionEstadoEntregableProyectoGradoResult.Actualizado(entregable, "X"));
@@ -190,5 +194,40 @@ class EntregableProyectoGradoConsumersTest {
         verify(channel).basicNack(7L, false, false);
         verify(logger, never())
                 .info(eq(EntregableProyectoGradoKey.LOG_ACTUALIZADO), any(), any());
+    }
+
+    private Message mensajeAprobado(long deliveryTag, String estado) {
+        var payloadJson = """
+                {
+                    "idEvento": "evt-1",
+                    "ocurridoEn": "2026-11-01T10:00:00Z",
+                    "entregableProyectoGrado": "%s",
+                    "proyectoGrado": "%s",
+                    "version": 2,
+                    "estadoEntregable": "%s",
+                    "estadoEntregableNombre": "Aprobado",
+                    "bucket": "b",
+                    "claveObjeto": "c",
+                    "nombreArchivo": "a.zip"
+                }
+                """.formatted(entregable, proyectoGrado, estado);
+
+        var props = new MessageProperties();
+        props.setDeliveryTag(deliveryTag);
+        props.setRedelivered(false);
+        props.setHeader("X-Trace-Id", "trace-123");
+
+        return MessageBuilder.withBody(payloadJson.getBytes()).andProperties(props).build();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"APROBADO", "APROBADO_CON_OBSERVACIONES"})
+    void debeActualizarConElEstadoDelPayloadYConfirmar_cuandoLlegaAprobado(String estado) throws IOException {
+        // Act
+        aprobado.onEntregableProyectoGradoAprobado(mensajeAprobado(10L, estado), channel);
+
+        // Assert
+        verificarCommand(estado);
+        verify(channel).basicAck(10L, false);
     }
 }

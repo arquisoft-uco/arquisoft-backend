@@ -1,8 +1,11 @@
 package com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.usecase.impl;
 
 import com.arquisoft.evaluaciones.application.criterioitemcualitativoasesor.command.finder.CriteriosCualitativosAsesorExistentesFinder;
+import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.FinalizarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacion.command.usecase.IniciarEvaluacionUseCase;
 import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.ContextoRegistroEvaluacionAsesorFinder;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.finder.EvaluacionAsesorCompletaFinder;
+import com.arquisoft.evaluaciones.application.evaluacionasesor.command.usecase.CalcularResumenEvaluacionAsesorUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.finder.ItemsEvaluacionCualitativaAsesorRegistradosFinder;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.finder.model.ItemsPorEvaluacionAsesor;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.secondaryport.EvaluacionCualitativaAsesorOutputPort;
@@ -11,6 +14,8 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.comman
 import com.arquisoft.evaluaciones.application.evaluacioncualitativaasesor.command.validator.RegistrarEvaluacionesCualitativasAsesorValidator;
 import com.arquisoft.evaluaciones.application.itemcualitativoasesor.command.finder.ItemsCualitativosAsesorExistentesFinder;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
+import com.arquisoft.evaluaciones.domain.evaluacion.VerificacionFinalizacionEvaluacionDomain;
+import com.arquisoft.evaluaciones.domain.evaluacionasesor.CompletitudEvaluacionAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.EvaluacionCualitativaAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.RegistroEvaluacionesCualitativasAsesorDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativaasesor.event.EvaluacionesCualitativasAsesorRegistradasEvent;
@@ -39,6 +44,9 @@ public class RegistrarEvaluacionesCualitativasAsesorUseCaseImpl
     private final RegistrarEvaluacionesCualitativasAsesorValidator validator;
     private final EvaluacionCualitativaAsesorOutputPort evaluacionCualitativaAsesorOutputPort;
     private final IniciarEvaluacionUseCase iniciarEvaluacionUseCase;
+    private final EvaluacionAsesorCompletaFinder evaluacionAsesorCompletaFinder;
+    private final CalcularResumenEvaluacionAsesorUseCase calcularResumenEvaluacionAsesorUseCase;
+    private final FinalizarEvaluacionUseCase finalizarEvaluacionUseCase;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
@@ -81,6 +89,12 @@ public class RegistrarEvaluacionesCualitativasAsesorUseCaseImpl
                 .map(EvaluacionCualitativaAsesorMapper::toEntity)
                 .toList();
         evaluacionCualitativaAsesorOutputPort.registrarTodas(entidades);
+
+        var completa = evaluacionAsesorCompletaFinder.obtener(evaluacionAsesor);
+        calcularResumenEvaluacionAsesorUseCase.ejecutar(
+                CompletitudEvaluacionAsesorDomain.crear(evaluacionAsesor, completa));
+
+        finalizarEvaluacionUseCase.ejecutar(VerificacionFinalizacionEvaluacionDomain.crear(contexto.getEvaluacion()));
 
         var evento = new EvaluacionesCualitativasAsesorRegistradasEvent(contexto.getEntregable());
         eventPublisher.publish(evento);

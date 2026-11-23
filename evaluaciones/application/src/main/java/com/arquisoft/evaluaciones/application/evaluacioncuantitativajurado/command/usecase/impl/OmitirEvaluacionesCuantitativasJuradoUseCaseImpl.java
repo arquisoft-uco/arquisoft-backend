@@ -6,6 +6,7 @@ import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.comma
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.validator.OmitirEvaluacionesCuantitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.usecase.CalcularResumenEvaluacionJuradoUseCase;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.finder.ObservacionesDeEvaluacionesCuantitativasExistenFinder;
 import com.arquisoft.evaluaciones.domain.estadoevaluacionasignadajurado.EstadoEvaluacionAsignadaJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
@@ -13,6 +14,7 @@ import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.OmisionEva
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.model.EstadoOmisionEvaluacionesCuantitativasJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.model.ExistenciaEvaluacionesCuantitativasJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.model.ObservacionesEvaluacionesCuantitativasJurado;
+import com.arquisoft.evaluaciones.domain.evaluacionjurado.CompletitudEvaluacionJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCuantitativaJuradoKey;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class OmitirEvaluacionesCuantitativasJuradoUseCaseImpl
     private final OmitirEvaluacionesCuantitativasJuradoValidator validator;
     private final EvaluacionCuantitativaJuradoOutputPort evaluacionCuantitativaJuradoOutputPort;
     private final EvaluacionJuradoOutputPort evaluacionJuradoOutputPort;
+    private final CalcularResumenEvaluacionJuradoUseCase calcularResumenEvaluacionJuradoUseCase;
     private final AppLogger logger;
 
     @Override
@@ -55,6 +58,8 @@ public class OmitirEvaluacionesCuantitativasJuradoUseCaseImpl
         evaluacionCuantitativaJuradoOutputPort.eliminarPorIds(evaluacionJurado, evaluaciones);
         evaluacionJuradoOutputPort.actualizarEstado(
                 evaluacionJurado, EstadoEvaluacionAsignadaJurado.PENDIENTE_POR_EVALUAR.getId());
+        calcularResumenEvaluacionJuradoUseCase.ejecutar(
+                CompletitudEvaluacionJuradoDomain.crear(evaluacionJurado, false));
 
         logger.info(EvaluacionCuantitativaJuradoKey.LOG_LOTE_OMITIDO, evaluacionJurado, evaluaciones.size());
     }

@@ -21,7 +21,7 @@ class ModificacionItemCualitativoJuradoDomainTest {
 
         // Act
         ModificacionItemCualitativoJuradoDomain modificacion =
-                ModificacionItemCualitativoJuradoDomain.crear(itemCualitativoJurado, descripcion);
+                ModificacionItemCualitativoJuradoDomain.crear(itemCualitativoJurado, descripcion, 1);
 
         // Assert
         assertThat(modificacion.getItemCualitativoJurado()).isEqualTo(itemCualitativoJurado);
@@ -36,7 +36,7 @@ class ModificacionItemCualitativoJuradoDomainTest {
 
         // Act & Assert
         assertThatThrownBy(() -> ModificacionItemCualitativoJuradoDomain.crear(
-                itemCualitativoJurado, descripcion))
+                itemCualitativoJurado, descripcion, 1))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -58,7 +58,7 @@ class ModificacionItemCualitativoJuradoDomainTest {
 
         // Act & Assert
         assertThatThrownBy(() -> ModificacionItemCualitativoJuradoDomain.crear(
-                itemCualitativoJurado, descripcion))
+                itemCualitativoJurado, descripcion, 1))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())

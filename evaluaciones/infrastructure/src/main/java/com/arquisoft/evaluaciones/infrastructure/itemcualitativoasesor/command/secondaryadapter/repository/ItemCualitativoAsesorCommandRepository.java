@@ -17,6 +17,8 @@ public interface ItemCualitativoAsesorCommandRepository extends JpaRepository<It
     boolean existsByNombreIgnoreCase(String nombre);
 
     @Modifying(clearAutomatically = true)
-    @Query("update ItemCualitativoAsesorJpaEntity item set item.descripcion = :descripcion where item.id = :id")
-    int actualizarDescripcion(@Param("id") UUID id, @Param("descripcion") String descripcion);
+    @Query("update ItemCualitativoAsesorJpaEntity item "
+            + "set item.descripcion = :descripcion, item.peso = :peso where item.id = :id")
+    int actualizar(
+            @Param("id") UUID id, @Param("descripcion") String descripcion, @Param("peso") int peso);
 }

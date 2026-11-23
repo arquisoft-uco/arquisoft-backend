@@ -28,7 +28,7 @@ class RegistrarItemCualitativoAsesorInteractorImplTest {
     @Test
     void debeDelegarEnElUseCase_conElDomainMapeado() {
         // Arrange
-        var command = new RegistrarItemCualitativoAsesorCommand("Claridad", "Descripción");
+        var command = new RegistrarItemCualitativoAsesorCommand("Claridad", "Descripción", 1);
         var id = UtilUUID.generarNuevoUUID();
         when(useCase.ejecutar(any(ItemCualitativoAsesorDomain.class))).thenReturn(id);
 

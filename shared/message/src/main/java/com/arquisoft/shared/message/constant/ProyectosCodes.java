@@ -56,6 +56,7 @@ public final class ProyectosCodes {
         public static final String FINALIZADO = "PROYECTO_GRADO_FINALIZADO";
         public static final String CANCELADO = "PROYECTO_GRADO_CANCELADO";
         public static final String NO_CANCELABLE = "PROYECTO_GRADO_NO_CANCELABLE";
+        public static final String CON_ENTREGABLE_VIGENTE = "PROYECTO_GRADO_CON_ENTREGABLE_VIGENTE";
         public static final String MOTIVO_REQUERIDO = "PROYECTO_GRADO_MOTIVO_REQUERIDO";
         public static final String MOTIVO_LONGITUD_MAXIMA = "PROYECTO_GRADO_MOTIVO_LONGITUD_MAXIMA";
         public static final String NO_PERTENECE_COORDINADOR = "PROYECTO_GRADO_NO_PERTENECE_COORDINADOR";

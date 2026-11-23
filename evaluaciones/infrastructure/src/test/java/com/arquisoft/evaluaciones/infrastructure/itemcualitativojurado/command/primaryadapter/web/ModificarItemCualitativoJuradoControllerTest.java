@@ -40,7 +40,8 @@ class ModificarItemCualitativoJuradoControllerTest {
     private static final String BASE = "/evaluaciones/items-cualitativos-jurado";
     private static final String BODY_VALIDO = """
             {
-              "descripcion": "Descripción institucional actualizada"
+              "descripcion": "Descripción institucional actualizada",
+              "peso": 10
             }
             """;
 
@@ -84,7 +85,7 @@ class ModificarItemCualitativoJuradoControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(interactor).ejecutar(ModificarItemCualitativoJuradoCommand.crear(
-                itemId, "Descripción institucional actualizada"));
+                itemId, "Descripción institucional actualizada", 10));
     }
 
     @Test
@@ -93,7 +94,8 @@ class ModificarItemCualitativoJuradoControllerTest {
         UUID itemId = UUID.randomUUID();
         String bodyInvalido = """
                 {
-                  "descripcion": ""
+                  "descripcion": "",
+                  "peso": 10
                 }
                 """;
 

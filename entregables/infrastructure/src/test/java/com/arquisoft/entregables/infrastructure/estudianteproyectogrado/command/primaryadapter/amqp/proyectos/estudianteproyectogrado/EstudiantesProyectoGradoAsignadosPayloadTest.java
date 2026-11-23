@@ -46,7 +46,7 @@ class EstudiantesProyectoGradoAsignadosPayloadTest {
     }
 
     @Test
-    void debeConservarIdsIgnorandoNombreYCorreo_cuandoSeLeeElEventoPublicado() {
+    void debeConservarIdNombreYCorreo_cuandoSeLeeElEventoPublicado() {
         // Arrange
         var primero = UtilUUID.generarNuevoUUID();
         var segundo = UtilUUID.generarNuevoUUID();
@@ -63,8 +63,10 @@ class EstudiantesProyectoGradoAsignadosPayloadTest {
         assertThat(payload.ocurridoEn()).isEqualTo(evento.getOcurridoEn());
         assertThat(payload.proyectoGradoId()).isEqualTo(evento.getProyectoGradoId().toString());
         assertThat(payload.estudiantes()).containsExactly(
-                new EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload(primero.toString()),
-                new EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload(segundo.toString()));
+                new EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload(
+                        primero.toString(), "Ana Gomez", "ana.gomez@soyuco.edu.co"),
+                new EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload(
+                        segundo.toString(), "Luis Diaz", "luis.diaz@soyuco.edu.co"));
     }
 
     @Test
@@ -82,5 +84,22 @@ class EstudiantesProyectoGradoAsignadosPayloadTest {
         assertThat(payload.estudiantes()).isNull();
         assertThat(payload.ocurridoEn()).isNull();
         assertThat(payload.idEvento()).isEqualTo("evt-1");
+    }
+
+    @Test
+    void debeDeserializarContactoConNull_cuandoElEstudianteSoloTraeId() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var json = """
+                {"idEvento":"evt-1","proyectoGradoId":"44444444-4444-4444-4444-444444444444",
+                 "estudiantes":[{"id":"%s"}]}
+                """.formatted(id);
+
+        // Act
+        var payload = mapper.readValue(json, EstudiantesProyectoGradoAsignadosPayload.class);
+
+        // Assert
+        assertThat(payload.estudiantes()).containsExactly(
+                new EstudiantesProyectoGradoAsignadosPayload.EstudiantePayload(id.toString(), null, null));
     }
 }

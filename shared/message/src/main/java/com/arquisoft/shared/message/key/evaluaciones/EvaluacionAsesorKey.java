@@ -4,6 +4,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum EvaluacionAsesorKey implements ClaveMensaje {
 
+    LOG_RESUMEN_CALCULADO("evaluaciones.aplicacion.evaluacionasesor.log.resumen-calculado", 2),
+    LOG_RESUMEN_LIMPIADO("evaluaciones.aplicacion.evaluacionasesor.log.resumen-limpiado", 1),
     ERROR_SIN_EVALUACION_ASESOR("evaluaciones.dominio.evaluacionasesor.error.sin-evaluacion-asesor", 0),
     ERROR_SIN_EVALUACION_ASESOR_DETALLE(
             "evaluaciones.dominio.evaluacionasesor.error.sin-evaluacion-asesor-detalle", 1),
@@ -19,6 +21,7 @@ public enum EvaluacionAsesorKey implements ClaveMensaje {
     LOG_ASIGNADA("evaluaciones.aplicacion.evaluacionasesor.log.asignada", 2),
     LOG_SIN_CAMBIOS("evaluaciones.aplicacion.evaluacionasesor.log.sin-cambios", 2),
     LOG_GUARDADA("evaluaciones.infraestructura.evaluacionasesor.log.guardada", 1),
+    LOG_RESUMEN_ACTUALIZADO("evaluaciones.infraestructura.evaluacionasesor.log.resumen-actualizado", 1),
     LOG_ASESOR_ACTUALIZADO("evaluaciones.infraestructura.evaluacionasesor.log.asesor-actualizado", 2),
     LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacionasesor.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacionasesor.log.consulta-completada", 1),

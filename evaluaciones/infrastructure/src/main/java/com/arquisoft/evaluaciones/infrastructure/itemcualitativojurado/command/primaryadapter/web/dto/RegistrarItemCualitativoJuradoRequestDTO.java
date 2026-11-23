@@ -2,5 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.
 
 public record RegistrarItemCualitativoJuradoRequestDTO(
         String nombre,
-        String descripcion) {
+        String descripcion,
+        Integer peso) {
 }

@@ -5,8 +5,8 @@ SSH, usando la imagen Docker publicada en GitHub Container Registry (GHCR) y
 exponiéndolo por **Traefik** en `api.<dominio>`.
 
 - **CI** → [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): lint, tests y build en cada push/PR.
-- **Build de imagen** → [`.github/workflows/docker-build.yml`](../.github/workflows/docker-build.yml): construye y publica `ghcr.io/<repo>` en cada push.
-- **CD (despliegue)** → [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml): se conecta por SSH al servidor y levanta el contenedor.
+- **Build de imagen** → [`.github/workflows/docker-build.yml`](../.github/workflows/docker-build.yml): compila el jar en el runner (con la caché de Gradle, como CI) y publica `ghcr.io/<repo>` en cada push; el `Dockerfile` solo lo empaqueta (`JAR_ORIGEN=precompilado`). En local, `docker-compose` sigue compilando dentro del `Dockerfile`.
+- **CD (despliegue)** → [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml): workflow reusable que `docker-build.yml` invoca (job `deploy`) cuando la imagen de `develop` ya está publicada; se conecta por SSH al servidor y levanta el contenedor.
 
 ---
 
@@ -17,23 +17,25 @@ push a develop
    │
    ├─► ci.yml            (lint + tests + build)
    │
-   ├─► docker-build.yml  (publica ghcr.io/<repo>:develop  y  :sha-<short>)
-   │
-   └─► deploy.yml ──SSH──► servidor:
-                              1. escribe $HOME/arquisoft/.env  (descargado de Doppler)
-                              2. espera y hace `docker pull` de :sha-<short>
-                              3. reemplaza el contenedor, unido a la red arquisoft-network
-                              4. le pone labels de Traefik → expone api.<BASE_DOMAIN> (443/TLS)
-                              5. verifica /api/actuator/health (en 127.0.0.1:8080)
+   └─► docker-build.yml  (publica ghcr.io/<repo>:develop  y  :sha-<short>)
+          │
+          └─► job deploy (needs: build-and-push) → deploy.yml ──SSH──► servidor:
+                   1. escribe $HOME/arquisoft/.env  (descargado de Doppler)
+                   2. `docker pull` de :sha-<short> (ya publicada)
+                   3. reemplaza el contenedor, unido a la red arquisoft-network
+                   4. le pone labels de Traefik → expone api.<BASE_DOMAIN> (443/TLS)
+                   5. verifica /api/actuator/health (en 127.0.0.1:8080)
 ```
 
 **Solo se despliega el backend.** PostgreSQL, RabbitMQ, Redis, Keycloak y MinIO
 viven **aparte** (otro stack) en la red Docker **`arquisoft-network`**. El backend
 se une a esa red y los alcanza por **nombre de contenedor** (ver §3).
 
-**Se despliega por el tag inmutable `sha-<short>`** (no por `develop`): el pull
-se reintenta hasta que ese tag exista, lo que serializa "build terminó → deploy"
-y evita desplegar una imagen vieja por una condición de carrera.
+**El deploy está encadenado al build** (`needs`), no corre en paralelo: el build
+multi-arquitectura tarda 6-7 min y antes el deploy sondeaba GHCR solo 5 min, así
+que fallaba con `not found`. Si el build falla, el deploy queda *skipped*; al
+re-ejecutar el build, el deploy corre solo. Se despliega por el tag inmutable
+`sha-<short>` (no por `develop`, que es mutable).
 
 **Exposición:** el puerto `8080` se publica **solo en loopback** (`127.0.0.1:8080`)
 para el health check local; el tráfico externo entra por **Traefik** (HTTPS/443,
@@ -191,7 +193,7 @@ El workflow no tiene nada "hardcodeado" del entorno: todo viene de secretos.
    - `BASE_DOMAIN` → el nuevo dominio base (el backend quedará en `api.<nuevo>`).
    - En Doppler (`arquisoft-backend`): hosts/credenciales de la infra del nuevo servidor, y configura su token en el servidor (§3).
    - `DOCKER_NETWORK` → solo si la red no se llama `arquisoft-network`.
-3. Vuelve a desplegar: push a `develop`, o **Actions → CD Deploy (SSH) → Run workflow**.
+3. Vuelve a desplegar: push a `develop`, re-ejecutar el último **Docker Build & Push** de `develop`, o **Actions → CD Deploy (SSH) → Run workflow**.
 
 No hay que tocar el YAML para cambiar de servidor o dominio — solo los secretos.
 
@@ -203,25 +205,25 @@ No hay que tocar el YAML para cambiar de servidor o dominio — solo los secreto
 
 ## 6. Probar primero en una rama feature
 
-`workflow_dispatch` y `workflow_run` **solo se ejecutan desde la rama por defecto**.
-Por eso, para validar el despliegue **desde una rama feature antes de fusionar**,
-se activa temporalmente el `push` de esa rama en `deploy.yml`:
+`workflow_dispatch` **solo se ejecuta desde la rama por defecto**. Por eso, para
+validar el despliegue **desde una rama feature antes de fusionar**, se amplía
+temporalmente la condición del job `deploy` en `docker-build.yml`:
 
-1. En [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml), agrega
-   temporalmente tu rama al trigger:
+1. En [`.github/workflows/docker-build.yml`](../.github/workflows/docker-build.yml), cambia
+   temporalmente el `if` del job `deploy`:
    ```yaml
-   on:
-     push:
-       branches: [develop, feature/mi-rama]   # ← TEMPORAL para probar
+   deploy:
+     needs: build-and-push
+     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/feature/mi-rama'   # ← TEMPORAL
    ```
 2. Configura los secretos (§2, §3) y prepara el servidor (§4).
-3. Haz push. En **Actions** deberían correr `CI Backend`, `Docker Build & Push` y `CD Deploy (SSH)`.
+3. Haz push. En **Actions** deberían correr `CI Backend` y `Docker Build & Push` (con su job `CD Deploy (SSH)` al final).
 4. Verifica en el servidor:
    ```bash
    docker ps | grep arquisoft-backend
    curl -fsS http://127.0.0.1:8080/api/actuator/health
    ```
-5. **Antes de fusionar**, revierte el trigger a `branches: [develop]`.
+5. **Antes de fusionar**, revierte el `if` a `github.ref == 'refs/heads/develop'`.
 
 > ⚠️ Probar desde la feature despliega al **mismo servidor** de los secretos. Si no
 > quieres tocar producción, apunta `SSH_HOST`/`BASE_DOMAIN` (y el token de Doppler del servidor) a un entorno

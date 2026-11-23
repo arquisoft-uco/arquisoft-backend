@@ -5,6 +5,7 @@ import java.util.UUID;
 public record ItemCualitativoAsesorReadModel(
         UUID id,
         String nombre,
-        String descripcion
+        String descripcion,
+        int peso
 ) {
 }

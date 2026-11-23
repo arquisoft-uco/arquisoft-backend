@@ -11,7 +11,6 @@ public final class ArchivoDocumentacionAccesoQueryMapper {
         return new ArchivoDocumentacionAccesoEntity(
                 jpaEntity.getId(),
                 jpaEntity.getEstadoId(),
-                jpaEntity.getBucket(),
                 jpaEntity.getClaveObjeto(),
                 jpaEntity.getNombreArchivo());
     }

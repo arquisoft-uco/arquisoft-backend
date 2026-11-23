@@ -122,6 +122,8 @@ public final class EventTopics {
                 "evaluaciones.evaluacion_cualitativa_asesor.registradas";
         public static final String EVALUACIONES_CUANTITATIVAS_ASESOR_REGISTRADAS =
                 "evaluaciones.evaluacion_cuantitativa_asesor.registradas";
+        public static final String EVALUACION_FINALIZADA =
+                "evaluaciones.evaluacion.finalizada";
     }
 
     public static final class Solicitudes {
@@ -241,5 +243,7 @@ public final class EventTopics {
                 "entregables.entregable_proyecto_grado.rechazado";
         public static final String ENTREGABLE_PROYECTO_GRADO_DISPONIBLE_EVALUACION =
                 "entregables.entregable_proyecto_grado.disponible_evaluacion";
+        public static final String ENTREGABLE_PROYECTO_GRADO_APROBADO =
+                "entregables.entregable_proyecto_grado.aprobado";
     }
 }

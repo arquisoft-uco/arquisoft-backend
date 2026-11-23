@@ -1,5 +1,10 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.repository;
 
+import java.math.BigDecimal;
+import com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.projection.AvanceEvaluacionProjection;
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.AvanceEvaluacionEntity;
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.FinalizacionEvaluacionEntity;
+import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.ConsolidacionNotasEvaluacionEntity;
 import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.entity.EvaluacionEntity;
 import com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.entity.EvaluacionJpaEntity;
 import com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.projection.ContextoAsignacionEvaluacionProjection;
@@ -104,5 +109,59 @@ class EvaluacionCommandOutputAdapterTest {
 
         // Act & Assert
         assertThat(adapter.obtenerContextoAsignacionBloqueado(evaluacion)).isEmpty();
+    }
+
+    @Test
+    void debeDelegarNotasYLoguear_cuandoSeActualizanLasNotas() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var consolidacion = new ConsolidacionNotasEvaluacionEntity(evaluacion, new BigDecimal("4.00"),
+                new BigDecimal("3.00"), new BigDecimal("0.5000"), new BigDecimal("0.5000"), 1);
+
+        // Act
+        adapter.actualizarNotas(consolidacion);
+
+        // Assert
+        verify(repository).actualizarNotas(evaluacion, new BigDecimal("4.00"), new BigDecimal("3.00"),
+                new BigDecimal("0.5000"), new BigDecimal("0.5000"), 1);
+        verify(logger).debug(EvaluacionKey.LOG_NOTAS_ACTUALIZADAS, evaluacion);
+    }
+
+    @Test
+    void debeDelegarFinalizacionYLoguear_cuandoSeFinalizaLaEvaluacion() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+
+        // Act
+        adapter.finalizar(new FinalizacionEvaluacionEntity(
+                evaluacion, "FINALIZADA", new BigDecimal("3.25"), "APROBADA"));
+
+        // Assert
+        verify(repository).finalizar(evaluacion, "FINALIZADA", new BigDecimal("3.25"), "APROBADA");
+        verify(logger).debug(EvaluacionKey.LOG_FINALIZACION_GUARDADA, evaluacion, "APROBADA");
+    }
+
+    @Test
+    void debeMapearLaProyeccionDelAvance_cuandoLaEvaluacionExiste() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var entregable = UtilUUID.generarNuevoUUID();
+        var proyeccion = mock(AvanceEvaluacionProjection.class);
+        when(proyeccion.getEvaluacion()).thenReturn(evaluacion);
+        when(proyeccion.getEstado()).thenReturn("EN_PROGRESO");
+        when(proyeccion.getEntregable()).thenReturn(entregable);
+        when(proyeccion.getProyecto()).thenReturn("Proyecto");
+        when(proyeccion.getVersion()).thenReturn(2);
+        when(proyeccion.getJuradosVigentes()).thenReturn(3L);
+        when(proyeccion.getJuradosEvaluados()).thenReturn(2L);
+        when(proyeccion.getAsesorCompleto()).thenReturn(true);
+        when(repository.buscarAvance(evaluacion)).thenReturn(Optional.of(proyeccion));
+
+        // Act
+        var avance = adapter.obtenerAvance(evaluacion);
+
+        // Assert
+        assertThat(avance).contains(new AvanceEvaluacionEntity(
+                evaluacion, "EN_PROGRESO", entregable, "Proyecto", 2, 3, 2, true));
     }
 }

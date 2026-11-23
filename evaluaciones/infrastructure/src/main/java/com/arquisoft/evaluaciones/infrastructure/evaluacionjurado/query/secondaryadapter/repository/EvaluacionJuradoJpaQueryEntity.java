@@ -22,6 +22,7 @@ import java.util.UUID;
                j.email           AS jurado_email
         FROM evaluacion_jurado ej
         JOIN jurado j ON j.id = ej.jurado_id
+        WHERE ej.eliminado_en IS NULL
         """)
 @Synchronize({"evaluacion_jurado", "jurado"})
 @Getter

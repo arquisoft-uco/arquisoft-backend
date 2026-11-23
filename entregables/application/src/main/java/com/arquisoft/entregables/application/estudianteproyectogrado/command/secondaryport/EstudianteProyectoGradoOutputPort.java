@@ -10,6 +10,10 @@ public interface EstudianteProyectoGradoOutputPort {
 
     List<EstudianteProyectoGradoEntity> consultarPorProyectoGrado(UUID proyectoGrado);
 
+    List<EstudianteProyectoGradoEntity> consultarContactosVigentesPorProyectoGrado(UUID proyectoGrado);
+
+    List<EstudianteProyectoGradoEntity> consultarContactosVigentesPorEntregable(UUID entregableProyectoGrado);
+
     Optional<EstudianteProyectoGradoEntity> obtenerPorEstudianteYProyectoGrado(UUID estudiante, UUID proyectoGrado);
 
     void guardarTodos(List<EstudianteProyectoGradoEntity> vinculos);
