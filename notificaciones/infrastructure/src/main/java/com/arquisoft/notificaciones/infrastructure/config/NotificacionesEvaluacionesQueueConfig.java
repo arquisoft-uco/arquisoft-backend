@@ -15,6 +15,9 @@ public class NotificacionesEvaluacionesQueueConfig {
     public static final String EVALUACION_FINALIZADA_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Evaluaciones.EVALUACION_FINALIZADA;
 
+    public static final String EVALUACION_GENERADA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Evaluaciones.EVALUACION_GENERADA;
+
     @Bean
     public Declarables notificacionesEvaluacionFinalizadaDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
@@ -22,6 +25,17 @@ public class NotificacionesEvaluacionesQueueConfig {
         return ColaEvento.declarar(
                 EVALUACION_FINALIZADA_QUEUE,
                 EventTopics.Evaluaciones.EVALUACION_FINALIZADA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesEvaluacionGeneradaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                EVALUACION_GENERADA_QUEUE,
+                EventTopics.Evaluaciones.EVALUACION_GENERADA,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

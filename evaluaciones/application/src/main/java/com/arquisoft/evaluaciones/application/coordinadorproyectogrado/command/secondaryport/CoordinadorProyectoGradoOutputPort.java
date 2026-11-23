@@ -12,4 +12,6 @@ public interface CoordinadorProyectoGradoOutputPort {
     boolean existePorProyectoGrado(UUID proyectoGrado);
 
     Optional<CoordinadorProyectoGradoEntity> obtenerPorEvaluacion(UUID evaluacion);
+
+    Optional<CoordinadorProyectoGradoEntity> obtenerPorProyectoGrado(UUID proyectoGrado);
 }
