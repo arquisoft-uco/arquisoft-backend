@@ -3,12 +3,15 @@ package com.arquisoft.fichas.application.estadoevaluacionficha.command.validator
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.model.AsignacionEstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.model.DisponibilidadEstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.model.ExistenciaEvaluacionFicha;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.model.PropiedadEvaluacionFicha;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.model.SolicitudEstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.model.UltimoEstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEnEvaluacionNoManualRule;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionAsignableRule;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEvaluacionAsignableRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEnEvaluacionNoManualRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionEnTerminalRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEvaluacionEnTerminalRuleImpl;
@@ -28,6 +31,7 @@ public class AgregarEstadoEvaluacionFichaValidatorImpl implements AgregarEstadoE
     private final EstadoEvaluacionNoDuplicadoRule estadoEvaluacionNoDuplicadoRule;
     private final EstadoEnEvaluacionNoManualRule estadoEnEvaluacionNoManualRule;
     private final EstadoEvaluacionEnTerminalRule estadoEvaluacionEnTerminalRule;
+    private final EstadoEvaluacionAsignableRule estadoEvaluacionAsignableRule;
 
     public AgregarEstadoEvaluacionFichaValidatorImpl() {
         this.evaluacionFichaExisteRule = new EvaluacionFichaExisteRuleImpl();
@@ -35,12 +39,13 @@ public class AgregarEstadoEvaluacionFichaValidatorImpl implements AgregarEstadoE
         this.estadoEvaluacionNoDuplicadoRule = new EstadoEvaluacionNoDuplicadoRuleImpl();
         this.estadoEnEvaluacionNoManualRule = new EstadoEnEvaluacionNoManualRuleImpl();
         this.estadoEvaluacionEnTerminalRule = new EstadoEvaluacionEnTerminalRuleImpl();
+        this.estadoEvaluacionAsignableRule = new EstadoEvaluacionAsignableRuleImpl();
     }
 
     @Override
     public void validar(AgregacionEstadoEvaluacionFichaDomain entrada, boolean evaluacionExiste,
                         boolean esPropietario, boolean estadoYaExiste,
-                        EstadoEvaluacionFichaDomain ultimoEstado) {
+                        EstadoEvaluacionFichaDomain ultimoEstado, long observaciones) {
 
         evaluacionFichaExisteRule.validar(
                 new ExistenciaEvaluacionFicha(entrada.getEvaluacionFichaPerfil(), evaluacionExiste));
@@ -56,5 +61,8 @@ public class AgregarEstadoEvaluacionFichaValidatorImpl implements AgregarEstadoE
 
         estadoEvaluacionEnTerminalRule.validar(new UltimoEstadoEvaluacion(
                 entrada.getEvaluacionFichaPerfil(), ultimoEstado.getEstadoEvaluacion()));
+
+        estadoEvaluacionAsignableRule.validar(new AsignacionEstadoEvaluacion(
+                entrada.getEvaluacionFichaPerfil(), entrada.getEstadoEvaluacion(), observaciones));
     }
 }

@@ -14,6 +14,8 @@ public interface ObservacionEvaluacionCommandRepository extends JpaRepository<Ob
 
     boolean existsByEvaluacionFichaPerfilIdAndObservacion(UUID evaluacionFichaPerfilId, String observacion);
 
+    long countByEvaluacionFichaPerfilId(UUID evaluacionFichaPerfilId);
+
     @Query("""
             SELECT new com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.entity.PertenenciaObservacionEvaluacionEntity(
                 o.evaluacionFichaPerfilId,
