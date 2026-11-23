@@ -187,12 +187,12 @@ minio:
     descarga-minutos: ${MINIO_DOWNLOAD_EXPIRY_MINUTES:5}
 
 # ==================== REPOSITORIO DE ARTEFACTOS (almacenamiento) ====================
-# El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (5 MB). El limite
+# El bucket lo crea minio/configurar.sh, nunca el backend. El maximo es por plantilla (50 MB). El limite
 # por archivo (50 MB) y la cuota por proyecto de grado (1 GB) de ADR-004 viven en la seccion ARTEFACTOS.
 repositorio-artefactos:
   almacenamiento:
     bucket: ${REPOSITORIO_ARTEFACTOS_BUCKET:repositorio-artefactos}
-    tamano-maximo-bytes: ${REPOSITORIO_ARTEFACTOS_TAMANO_MAXIMO_BYTES:5242880}
+    tamano-maximo-bytes: ${REPOSITORIO_ARTEFACTOS_TAMANO_MAXIMO_BYTES:52428800}
 
 # ==================== ARTEFACTOS (almacenamiento) ====================
 # Bucket propio de artefactos (lo crea minio/configurar.sh), con los prefijos pendientes/ y versiones/.
