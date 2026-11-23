@@ -70,6 +70,8 @@ public class SeguridadConfig {
             throws Exception {
         http
                 .cors(cors -> { })
+                // El CSRF de Spring exigiria token tambien al canal Bearer, que no es vulnerable. El canal de cookie
+                // de sesion lo protege AutorizacionAccesoFilter con ProteccionCsrf (X-XSRF-TOKEN + Origin permitido).
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz

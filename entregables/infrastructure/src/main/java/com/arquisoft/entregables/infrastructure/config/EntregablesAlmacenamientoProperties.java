@@ -16,9 +16,12 @@ public class EntregablesAlmacenamientoProperties implements InitializingBean {
     static final String PREFIJO = "entregables.almacenamiento";
     private static final String MENSAJE_BUCKET_OBLIGATORIO = PREFIJO + ".bucket es obligatorio";
     private static final String MENSAJE_BUCKET_ARTEFACTOS_OBLIGATORIO = PREFIJO + ".bucket-artefactos es obligatorio";
+    private static final String MENSAJE_DIRECTORIO_TEMPORAL_OBLIGATORIO =
+            PREFIJO + ".directorio-temporal es obligatorio";
 
     private String bucket;
     private String bucketArtefactos;
+    private String directorioTemporal;
 
     @Override
     public void afterPropertiesSet() {
@@ -27,6 +30,9 @@ public class EntregablesAlmacenamientoProperties implements InitializingBean {
         }
         if (UtilTexto.esVacioONulo(bucketArtefactos)) {
             throw new IllegalStateException(MENSAJE_BUCKET_ARTEFACTOS_OBLIGATORIO);
+        }
+        if (UtilTexto.esVacioONulo(directorioTemporal)) {
+            throw new IllegalStateException(MENSAJE_DIRECTORIO_TEMPORAL_OBLIGATORIO);
         }
     }
 }
