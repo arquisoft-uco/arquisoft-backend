@@ -203,6 +203,7 @@ dependencies {
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.junit.jupiter:junit-jupiter:${jUnitVersion}"
+    testImplementation "com.h2database:h2"
 }
 
 test {
