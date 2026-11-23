@@ -205,10 +205,14 @@ artefactos:
 # ==================== ENTREGABLES (almacenamiento) ====================
 # Bucket propio (lo crea minio/configurar.sh, nunca el backend): copia de cada artefacto cerrado bajo artefactos/ y
 # ZIP de cada entregable bajo paquetes/. bucket-artefactos es el origen de la copia (el bucket de artefactos).
+# directorio-temporal: donde se arma el ZIP antes de subirlo. Propio del backend y solo para su usuario (0700), nunca
+# el /tmp compartido del sistema; relativo al directorio de trabajo (/app en la imagen). Debe ser exclusivo de cada
+# instancia (nunca un volumen compartido entre réplicas): al arrancar se borran los temporales huérfanos que haya.
 entregables:
   almacenamiento:
     bucket: ${ENTREGABLES_BUCKET:entregables}
     bucket-artefactos: ${ENTREGABLES_BUCKET_ARTEFACTOS:${ARTEFACTOS_BUCKET:artefactos}}
+    directorio-temporal: ${ENTREGABLES_DIRECTORIO_TEMPORAL:tmp/entregables}
 
 # ==================== BIBLIOTECA (almacenamiento) ====================
 # Mismo bucket donde entregables guarda los zips; biblioteca solo lo lee, nunca lo crea.

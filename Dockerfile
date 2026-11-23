@@ -43,10 +43,12 @@ WORKDIR /app
 # Crear grupo y usuario de sistema sin contraseña ni shell interactivo (OWASP A05)
 # /app/logs      → perfil dev/base (application.yml: logs/arquisoft.log)
 # /var/log/arquisoft → perfil prod  (application-prod.yml: /var/log/arquisoft/arquisoft.log)
+# /app/tmp       → temporales propios (entregables.almacenamiento.directorio-temporal), 0700: nunca el /tmp compartido
 RUN addgroup -S arquisoft && \
         adduser -S -u 1000 -G arquisoft arquisoft && \
-        mkdir -p /app/logs /var/log/arquisoft && \
-        chown arquisoft:arquisoft /app/logs /var/log/arquisoft
+        mkdir -p /app/logs /app/tmp /var/log/arquisoft && \
+        chown arquisoft:arquisoft /app/logs /app/tmp /var/log/arquisoft && \
+        chmod 700 /app/tmp
 # --chown evita un RUN chown separado (menos capas, sin ejecutar como root tras el COPY)
 COPY --chown=arquisoft:arquisoft --from=jar /build/app.jar app.jar
 

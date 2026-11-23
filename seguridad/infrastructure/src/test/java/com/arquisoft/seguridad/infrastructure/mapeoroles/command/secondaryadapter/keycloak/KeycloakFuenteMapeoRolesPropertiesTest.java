@@ -25,7 +25,21 @@ class KeycloakFuenteMapeoRolesPropertiesTest {
     @Test
     void debeReportarCadaDatoVacio() {
         // Act / Assert
-        assertThat(con("", "", "", "", "").problemas()).hasSize(5);
+        assertThat(con("", "", "", "", "").problemas()).containsExactly(
+                "falta security.authorization.role-expansion.keycloak.server-url",
+                "falta security.authorization.role-expansion.keycloak.realm",
+                "falta security.authorization.role-expansion.keycloak.client-id",
+                "falta security.authorization.role-expansion.keycloak.client-secret",
+                "falta security.authorization.role-expansion.keycloak.client-uuid (KEYCLOAK_CLIENT_UUID)");
+    }
+
+    @Test
+    void debeNombrarElRealm_cuandoEsElUnicoDatoVacio() {
+        // Act
+        var problemas = con("http://kc", "  ", "arquisoft-api", "s", UUID_CLIENTE).problemas();
+
+        // Assert
+        assertThat(problemas).containsExactly("falta security.authorization.role-expansion.keycloak.realm");
     }
 
     @Test

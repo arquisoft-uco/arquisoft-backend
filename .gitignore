@@ -40,6 +40,9 @@ out/
 ### VS Code ###
 .vscode/
 
+### Temporales propios del backend (entregables.almacenamiento.directorio-temporal) ###
+/tmp/
+
 ### Logs ###
 logs/
 *.log

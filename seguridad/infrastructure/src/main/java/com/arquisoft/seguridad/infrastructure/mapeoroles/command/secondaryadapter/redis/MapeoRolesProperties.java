@@ -21,17 +21,17 @@ public record MapeoRolesProperties(
             "security.authorization.role-expansion.ttl debe ser al menos %d veces refresh-interval";
     private static final String CHECK_INTERVAL_EXCESIVO =
             "security.authorization.role-expansion.check-interval no puede superar refresh-interval";
-    private static final String REFRESH_INTERVAL = "refresh-interval";
-    private static final String TTL = "ttl";
-    private static final String CHECK_INTERVAL = "check-interval";
-    private static final String LOCK_LEASE = "lock-lease";
+    private static final String PROPIEDAD_REFRESH_INTERVAL = "refresh-interval";
+    private static final String PROPIEDAD_TTL = "ttl";
+    private static final String PROPIEDAD_CHECK_INTERVAL = "check-interval";
+    private static final String PROPIEDAD_LOCK_LEASE = "lock-lease";
 
     public List<String> problemas() {
         var problemas = new ArrayList<String>();
-        agregarSiNoPositiva(problemas, refreshInterval, REFRESH_INTERVAL);
-        agregarSiNoPositiva(problemas, ttl, TTL);
-        agregarSiNoPositiva(problemas, checkInterval, CHECK_INTERVAL);
-        agregarSiNoPositiva(problemas, lockLease, LOCK_LEASE);
+        agregarSiNoPositiva(problemas, refreshInterval, PROPIEDAD_REFRESH_INTERVAL);
+        agregarSiNoPositiva(problemas, ttl, PROPIEDAD_TTL);
+        agregarSiNoPositiva(problemas, checkInterval, PROPIEDAD_CHECK_INTERVAL);
+        agregarSiNoPositiva(problemas, lockLease, PROPIEDAD_LOCK_LEASE);
         if (!problemas.isEmpty()) {
             return problemas;
         }

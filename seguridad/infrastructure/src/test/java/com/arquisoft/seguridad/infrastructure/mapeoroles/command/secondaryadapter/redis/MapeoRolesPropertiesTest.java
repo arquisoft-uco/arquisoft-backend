@@ -46,6 +46,18 @@ class MapeoRolesPropertiesTest {
                 .problemas();
 
         // Assert
-        assertThat(problemas).hasSize(2);
+        assertThat(problemas).containsExactly(
+                "security.authorization.role-expansion.refresh-interval debe ser positiva",
+                "security.authorization.role-expansion.lock-lease debe ser positiva");
+    }
+
+    @Test
+    void debeNombrarElTtl_cuandoElTtlNoEsPositivo() {
+        // Act
+        var problemas = con(Duration.ofMinutes(5), Duration.ZERO, Duration.ofSeconds(30), Duration.ofSeconds(60))
+                .problemas();
+
+        // Assert
+        assertThat(problemas).containsExactly("security.authorization.role-expansion.ttl debe ser positiva");
     }
 }

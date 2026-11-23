@@ -16,6 +16,8 @@ import com.arquisoft.shared.minio.exception.MinioOperationException;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -24,8 +26,12 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryIteratorException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -45,12 +51,16 @@ public class ArmadoPaqueteMinioOutputAdapter implements ArmadoPaqueteOutputPort 
     private static final String EXTENSION_ZIP = ".zip";
     private static final String TIPO_CONTENIDO_ZIP = "application/zip";
     private static final String PREFIJO_TEMPORAL = "paquete-entregable-";
+    private static final String PATRON_TEMPORAL = PREFIJO_TEMPORAL + "*" + EXTENSION_ZIP;
     private static final String NOMBRE_MANIFIESTO = "manifiesto.json";
     private static final String SIN_NOMBRE = "sin-nombre";
     private static final String REEMPLAZO = "_";
     private static final int NOMBRE_PROYECTO_MAX = 100;
     private static final String PREFIJO_OOXML = "application/vnd.openxmlformats-officedocument.";
     private static final int TAMANO_BUFFER = 8192;
+    private static final String VISTA_POSIX = "posix";
+    private static final Set<PosixFilePermission> PERMISOS_DIRECTORIO = PosixFilePermissions.fromString("rwx------");
+    private static final Set<PosixFilePermission> PERMISOS_ARCHIVO = PosixFilePermissions.fromString("rw-------");
     private static final Map<String, String> EXTENSIONES = Map.of(
             "application/pdf", ".pdf",
             "image/png", ".png",
@@ -101,6 +111,38 @@ public class ArmadoPaqueteMinioOutputAdapter implements ArmadoPaqueteOutputPort 
     @Override
     public void eliminarSiRevierte(String bucket, String claveObjeto) {
         sincronizacionTransaccional.trasReversion(() -> eliminar(bucket, claveObjeto), bucket, claveObjeto);
+    }
+
+    // Un proceso que muere a mitad del armado (OOM, SIGKILL) no llega al finally de armar(). Al arrancar no hay
+    // armado en curso en esta instancia, así que todo temporal con el prefijo es huérfano de una ejecución anterior.
+    @EventListener(ApplicationReadyEvent.class)
+    public void eliminarTemporalesHuerfanos() {
+        var directorio = directorioTemporal();
+        if (!Files.isDirectory(directorio)) {
+            return;
+        }
+        var eliminados = 0;
+        try (var huerfanos = Files.newDirectoryStream(directorio, PATRON_TEMPORAL)) {
+            for (var huerfano : huerfanos) {
+                eliminados += eliminarHuerfano(huerfano);
+            }
+        } catch (IOException | DirectoryIteratorException e) {
+            logger.warn(PaqueteEntregableKey.LOG_TEMPORAL_HUERFANO_NO_ELIMINADO, directorio, e.getMessage());
+        }
+        logger.info(PaqueteEntregableKey.LOG_TEMPORALES_HUERFANOS_ELIMINADOS, directorio, eliminados);
+    }
+
+    private int eliminarHuerfano(Path huerfano) {
+        try {
+            return Files.deleteIfExists(huerfano) ? 1 : 0;
+        } catch (IOException e) {
+            logger.warn(PaqueteEntregableKey.LOG_TEMPORAL_HUERFANO_NO_ELIMINADO, huerfano, e.getMessage());
+            return 0;
+        }
+    }
+
+    private Path directorioTemporal() {
+        return Path.of(propiedades.getDirectorioTemporal()).toAbsolutePath();
     }
 
     private List<EntradaPaquete> prepararEntradas(String bucket, ContenidoPaqueteEntity contenido) {
@@ -186,12 +228,21 @@ public class ArmadoPaqueteMinioOutputAdapter implements ArmadoPaqueteOutputPort 
         }
     }
 
-    private static Path crearTemporal() {
+    private Path crearTemporal() {
         try {
-            return Files.createTempFile(PREFIJO_TEMPORAL, EXTENSION_ZIP);
+            var directorio = directorioTemporal();
+            Files.createDirectories(directorio, soloPropietario(directorio, PERMISOS_DIRECTORIO));
+            return Files.createTempFile(
+                    directorio, PREFIJO_TEMPORAL, EXTENSION_ZIP, soloPropietario(directorio, PERMISOS_ARCHIVO));
         } catch (IOException e) {
             throw MinioOperationException.subidaFallida(e);
         }
+    }
+
+    private static FileAttribute<?>[] soloPropietario(Path ruta, Set<PosixFilePermission> permisos) {
+        return ruta.getFileSystem().supportedFileAttributeViews().contains(VISTA_POSIX)
+                ? new FileAttribute<?>[] {PosixFilePermissions.asFileAttribute(permisos)}
+                : new FileAttribute<?>[0];
     }
 
     private static long tamanoDe(Path archivo) {
