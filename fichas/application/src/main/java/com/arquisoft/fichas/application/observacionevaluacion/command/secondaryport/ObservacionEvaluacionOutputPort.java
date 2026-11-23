@@ -12,6 +12,8 @@ public interface ObservacionEvaluacionOutputPort {
 
     boolean existePorEvaluacionYObservacion(UUID evaluacionFichaPerfil, String observacion);
 
+    long contarPorEvaluacion(UUID evaluacionFichaPerfil);
+
     Optional<PertenenciaObservacionEvaluacionEntity> obtenerPertenencia(UUID observacionEvaluacion,
                                                                         UUID representanteComite);
 

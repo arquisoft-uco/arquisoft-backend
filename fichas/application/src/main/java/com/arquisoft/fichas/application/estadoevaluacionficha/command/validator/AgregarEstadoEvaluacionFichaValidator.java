@@ -6,5 +6,6 @@ import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDo
 public interface AgregarEstadoEvaluacionFichaValidator {
 
     void validar(AgregacionEstadoEvaluacionFichaDomain entrada, boolean evaluacionExiste,
-                 boolean esPropietario, boolean estadoYaExiste, EstadoEvaluacionFichaDomain ultimoEstado);
+                 boolean esPropietario, boolean estadoYaExiste, EstadoEvaluacionFichaDomain ultimoEstado,
+                 long observaciones);
 }

@@ -67,6 +67,30 @@ class ObservacionEvaluacionCommandRepositoryTest {
     }
 
     @Test
+    void debeContarSoloLasObservacionesDeLaEvaluacion_cuandoHayObservacionesEnOtras() {
+        // Arrange
+        entityManager.persist(ObservacionEvaluacionJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .evaluacionFichaPerfilId(evaluacionFichaPerfilId)
+                .observacion(OTRA_OBSERVACION)
+                .build());
+        entityManager.persist(ObservacionEvaluacionJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .evaluacionFichaPerfilId(UtilUUID.generarNuevoUUID())
+                .observacion(OBSERVACION)
+                .build());
+        entityManager.flush();
+
+        // Act
+        var observaciones = repository.countByEvaluacionFichaPerfilId(evaluacionFichaPerfilId);
+        var sinObservaciones = repository.countByEvaluacionFichaPerfilId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(observaciones).isEqualTo(2L);
+        assertThat(sinObservaciones).isZero();
+    }
+
+    @Test
     void debeRetornarFalse_cuandoElTextoCoincideEnOtraEvaluacion() {
         // Act
         var existe = repository.existsByEvaluacionFichaPerfilIdAndObservacion(
