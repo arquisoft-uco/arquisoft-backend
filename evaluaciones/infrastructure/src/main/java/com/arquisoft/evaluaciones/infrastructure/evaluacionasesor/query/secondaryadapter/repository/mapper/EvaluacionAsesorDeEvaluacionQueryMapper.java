@@ -11,6 +11,8 @@ public final class EvaluacionAsesorDeEvaluacionQueryMapper {
         return new EvaluacionAsesorReadModel(
                 entity.getId(),
                 new EvaluacionAsesorReadModel.Asesor(
-                        entity.getAsesorId(), entity.getAsesorNombre(), entity.getAsesorEmail()));
+                        entity.getAsesorId(), entity.getAsesorNombre(), entity.getAsesorEmail()),
+                new EvaluacionAsesorReadModel.Notas(
+                        entity.getResumenCualitativo(), entity.getResumenCuantitativo(), entity.getNotaAcumulada()));
     }
 }

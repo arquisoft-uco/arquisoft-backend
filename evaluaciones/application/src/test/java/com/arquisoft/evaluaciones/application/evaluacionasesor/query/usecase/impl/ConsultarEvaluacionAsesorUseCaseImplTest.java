@@ -50,7 +50,7 @@ class ConsultarEvaluacionAsesorUseCaseImplTest {
         var evaluacionAsesor = UtilUUID.generarNuevoUUID();
         var criteria = new EvaluacionAsesorDeEvaluacionCriteria(evaluacion);
         var esperado = new EvaluacionAsesorReadModel(evaluacionAsesor,
-                new EvaluacionAsesorReadModel.Asesor(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co"));
+                new EvaluacionAsesorReadModel.Asesor(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co"), null);
         when(evaluacionExisteQueryFinder.obtener(evaluacion)).thenReturn(true);
         when(evaluacionAsesorDeEvaluacionQueryFinder.obtener(evaluacion)).thenReturn(evaluacionAsesor);
         when(queryOutputPort.consultar(criteria)).thenReturn(esperado);
