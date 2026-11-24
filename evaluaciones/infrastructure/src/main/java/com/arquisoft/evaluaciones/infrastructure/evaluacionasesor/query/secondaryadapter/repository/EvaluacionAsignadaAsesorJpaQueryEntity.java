@@ -11,6 +11,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 import org.hibernate.annotations.Synchronize;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -28,7 +29,10 @@ import java.util.UUID;
                EXISTS (SELECT 1 FROM evaluacion_cualitativa_asesor eca
                        WHERE eca.evaluacion_asesor_id = ea.id) AS tiene_evaluaciones_cualitativas,
                EXISTS (SELECT 1 FROM evaluacion_cuantitativa_asesor eqa
-                       WHERE eqa.evaluacion_asesor_id = ea.id) AS tiene_evaluaciones_cuantitativas
+                       WHERE eqa.evaluacion_asesor_id = ea.id) AS tiene_evaluaciones_cuantitativas,
+               ea.resumen_cualitativo  AS resumen_cualitativo,
+               ea.resumen_cuantitativo AS resumen_cuantitativo,
+               ea.nota_acumulada       AS nota_acumulada
         FROM evaluacion_asesor ea
         JOIN evaluacion e ON e.id = ea.evaluacion_id
         JOIN estado_evaluacion ee ON ee.id = e.estado_evaluacion_id
@@ -75,4 +79,13 @@ public class EvaluacionAsignadaAsesorJpaQueryEntity {
 
     @Column(name = "tiene_evaluaciones_cuantitativas")
     private boolean tieneEvaluacionesCuantitativas;
+
+    @Column(name = "resumen_cualitativo")
+    private BigDecimal resumenCualitativo;
+
+    @Column(name = "resumen_cuantitativo")
+    private BigDecimal resumenCuantitativo;
+
+    @Column(name = "nota_acumulada")
+    private BigDecimal notaAcumulada;
 }
