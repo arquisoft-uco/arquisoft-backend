@@ -10,6 +10,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 import org.hibernate.annotations.Synchronize;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -21,14 +22,20 @@ import java.util.UUID;
                en.proyecto            AS entregable_proyecto,
                en.version_entregable  AS entregable_version,
                ee.id                  AS estado_id,
-               ee.nombre              AS estado_nombre
+               ee.nombre              AS estado_nombre,
+               e.nota_asesor          AS nota_asesor,
+               e.nota_jurados         AS nota_jurados,
+               e.nota_final           AS nota_final,
+               re.id                  AS resultado_id,
+               re.nombre              AS resultado_nombre
         FROM evaluacion e
         JOIN evaluacion_jurado ej ON ej.evaluacion_id = e.id
         JOIN entregable en        ON en.id = e.entregable_id
         JOIN estado_evaluacion ee ON ee.id = e.estado_evaluacion_id
+        LEFT JOIN resultado_evaluacion re ON re.id = e.resultado_evaluacion_id
         WHERE ej.eliminado_en IS NULL
         """)
-@Synchronize({"evaluacion", "evaluacion_jurado", "entregable", "estado_evaluacion"})
+@Synchronize({"evaluacion", "evaluacion_jurado", "entregable", "estado_evaluacion", "resultado_evaluacion"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -55,4 +62,19 @@ public class EvaluacionDelJuradoJpaQueryEntity {
 
     @Column(name = "estado_nombre")
     private String estadoNombre;
+
+    @Column(name = "nota_asesor")
+    private BigDecimal notaAsesor;
+
+    @Column(name = "nota_jurados")
+    private BigDecimal notaJurados;
+
+    @Column(name = "nota_final")
+    private BigDecimal notaFinal;
+
+    @Column(name = "resultado_id")
+    private String resultadoId;
+
+    @Column(name = "resultado_nombre")
+    private String resultadoNombre;
 }

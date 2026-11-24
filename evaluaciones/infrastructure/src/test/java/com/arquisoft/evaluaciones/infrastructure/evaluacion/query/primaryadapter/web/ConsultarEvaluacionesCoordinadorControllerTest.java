@@ -7,6 +7,7 @@ import com.arquisoft.shared.query.ConsultaCriteriaQuery;
 import com.arquisoft.shared.query.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -23,6 +24,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,6 +78,27 @@ class ConsultarEvaluacionesCoordinadorControllerTest {
     }
 
     @Test
+    void debeResponder200ConNotasYResultado_cuandoExisteConsolidada() throws Exception {
+        // Arrange
+        when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(
+                List.of(new EvaluacionReadModel(UtilUUID.generarNuevoUUID(),
+                        new EvaluacionReadModel.Entregable(UtilUUID.generarNuevoUUID(), "Robot seguidor", 2),
+                        new EvaluacionReadModel.Estado("FINALIZADA", "Finalizada"),
+                        new EvaluacionReadModel.Notas(new BigDecimal("4.5"), new BigDecimal("3.8"), new BigDecimal("4.1")),
+                        new EvaluacionReadModel.Resultado("APROBADA", "Aprobada"))),
+                0, 10, 1));
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA).with(jwtConPermisoView()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].notas.notaAsesor").value(4.5))
+                .andExpect(jsonPath("$.content[0].notas.notaJurados").value(3.8))
+                .andExpect(jsonPath("$.content[0].notas.notaFinal").value(4.1))
+                .andExpect(jsonPath("$.content[0].resultado.id").value("APROBADA"))
+                .andExpect(jsonPath("$.content[0].resultado.nombre").value("Aprobada"));
+    }
+
+    @Test
     void debeRetornar200ConElContratoExacto_yPasarLosDefaultsAlInteractor_cuandoNoHayBody() throws Exception {
         // Arrange
         var idEvaluacion = UUID.randomUUID();
@@ -83,7 +106,8 @@ class ConsultarEvaluacionesCoordinadorControllerTest {
         when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(
                 List.of(new EvaluacionReadModel(idEvaluacion,
                         new EvaluacionReadModel.Entregable(idEntregable, "Robot seguidor", 2),
-                        new EvaluacionReadModel.Estado("PENDIENTE", "Pendiente"))),
+                        new EvaluacionReadModel.Estado("PENDIENTE", "Pendiente"),
+                        new EvaluacionReadModel.Notas(null, null, null), null)),
                 0, 10, 1));
 
         // Act & Assert
