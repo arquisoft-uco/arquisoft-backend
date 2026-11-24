@@ -23,6 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -74,6 +75,28 @@ class ConsultarEvaluacionAsesorRealizadaControllerTest {
     }
 
     @Test
+    void debeResponder200ConNotas_cuandoExisteEvaluacionAsesor() throws Exception {
+        // Arrange
+        var evaluacionAsesor = UtilUUID.generarNuevoUUID();
+        var asesor = UtilUUID.generarNuevoUUID();
+        when(interactor.ejecutar(ConsultarEvaluacionAsesorRealizadaQuery.crear(evaluacionAsesor, asesor)))
+                .thenReturn(new EvaluacionAsesorRealizadaReadModel(evaluacionAsesor,
+                        new EvaluacionAsesorRealizadaReadModel.Evaluacion(UtilUUID.generarNuevoUUID(),
+                                new EvaluacionAsesorRealizadaReadModel.Entregable(
+                                        UtilUUID.generarNuevoUUID(), "Robot seguidor", 2),
+                                new EvaluacionAsesorRealizadaReadModel.Estado("FINALIZADA", "Finalizada")),
+                        new EvaluacionAsesorRealizadaReadModel.Asesor(asesor, "Ana Gomez", "ana@uco.edu.co"),
+                        new EvaluacionAsesorRealizadaReadModel.Notas(new BigDecimal("4.5"), new BigDecimal("3.8"), new BigDecimal("4.1"))));
+
+        // Act & Assert
+        mockMvc.perform(get(RUTA, evaluacionAsesor).with(jwtDelAsesor(asesor.toString())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.notas.resumenCualitativo").value(4.5))
+                .andExpect(jsonPath("$.notas.resumenCuantitativo").value(3.8))
+                .andExpect(jsonPath("$.notas.notaAcumulada").value(4.1));
+    }
+
+    @Test
     void debeResponder200_cuandoExisteYEsDelAsesor() throws Exception {
         // Arrange
         var evaluacionAsesor = UtilUUID.generarNuevoUUID();
@@ -85,7 +108,8 @@ class ConsultarEvaluacionAsesorRealizadaControllerTest {
                         new EvaluacionAsesorRealizadaReadModel.Evaluacion(evaluacion,
                                 new EvaluacionAsesorRealizadaReadModel.Entregable(entregable, "Robot seguidor", 2),
                                 new EvaluacionAsesorRealizadaReadModel.Estado("EN_PROGRESO", "En progreso")),
-                        new EvaluacionAsesorRealizadaReadModel.Asesor(asesor, "Ana Gomez", "ana@uco.edu.co")));
+                        new EvaluacionAsesorRealizadaReadModel.Asesor(asesor, "Ana Gomez", "ana@uco.edu.co"),
+                        new EvaluacionAsesorRealizadaReadModel.Notas(null, null, null)));
 
         // Act & Assert
         mockMvc.perform(get(RUTA, evaluacionAsesor).with(jwtDelAsesor(asesor.toString())))

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -111,6 +112,36 @@ class EvaluacionAsesorRealizadaQueryOutputAdapterTest {
         return new EvaluacionAsesorRealizadaCriteria(evaluacionAsesor, UtilUUID.generarNuevoUUID());
     }
 
+    private void fijarNotas(UUID fila) {
+        entityManager.createNativeQuery("""
+                        UPDATE evaluacion_asesor SET resumen_cualitativo = ?, resumen_cuantitativo = ?, nota_acumulada = ?
+                        WHERE id = ?
+                        """)
+                .setParameter(1, new BigDecimal("4.50"))
+                .setParameter(2, new BigDecimal("3.80"))
+                .setParameter(3, new BigDecimal("4.10"))
+                .setParameter(4, fila)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    @Test
+    void debeMapearNotas_desdeLosAliasDelSubselect() {
+        // Arrange
+        var sembrado = sembrar(false);
+        fijarNotas(sembrado.evaluacionAsesor());
+
+        // Act
+        var resultado = adapter.consultar(criteria(sembrado.evaluacionAsesor()));
+
+        // Assert
+        var notas = resultado.notas();
+        assertThat(notas.resumenCualitativo()).isEqualByComparingTo("4.50");
+        assertThat(notas.resumenCuantitativo()).isEqualByComparingTo("3.80");
+        assertThat(notas.notaAcumulada()).isEqualByComparingTo("4.10");
+    }
+
     @Test
     void debeDevolverEvaluacionEntregableEstadoYAsesor_cuandoExiste() {
         // Arrange
@@ -125,7 +156,8 @@ class EvaluacionAsesorRealizadaQueryOutputAdapterTest {
                 new EvaluacionAsesorRealizadaReadModel.Evaluacion(sembrado.evaluacion(),
                         new EvaluacionAsesorRealizadaReadModel.Entregable(sembrado.entregable(), "Robot seguidor", 2),
                         new EvaluacionAsesorRealizadaReadModel.Estado("EN_PROGRESO", "En progreso")),
-                new EvaluacionAsesorRealizadaReadModel.Asesor(sembrado.asesor(), "Ana Gomez", "ana@uco.edu.co")));
+                new EvaluacionAsesorRealizadaReadModel.Asesor(sembrado.asesor(), "Ana Gomez", "ana@uco.edu.co"),
+                new EvaluacionAsesorRealizadaReadModel.Notas(null, null, null)));
     }
 
     @Test
