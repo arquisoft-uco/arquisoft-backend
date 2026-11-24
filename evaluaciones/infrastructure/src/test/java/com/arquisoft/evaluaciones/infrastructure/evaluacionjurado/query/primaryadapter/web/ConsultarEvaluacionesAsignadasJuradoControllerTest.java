@@ -26,6 +26,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,6 +81,27 @@ class ConsultarEvaluacionesAsignadasJuradoControllerTest {
     }
 
     @Test
+    void debeResponder200ConNotas_cuandoHayAsignaciones() throws Exception {
+        // Arrange
+        when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(List.of(new EvaluacionAsignadaJuradoReadModel(
+                UtilUUID.generarNuevoUUID(),
+                new EvaluacionAsignadaJuradoReadModel.Estado("EVALUADA", "Evaluada"),
+                new EvaluacionAsignadaJuradoReadModel.Evaluacion(UtilUUID.generarNuevoUUID(),
+                        new EvaluacionAsignadaJuradoReadModel.Estado("FINALIZADA", "Finalizada")),
+                new EvaluacionAsignadaJuradoReadModel.Entregable(UtilUUID.generarNuevoUUID(), "Robot seguidor", 2),
+                true, true,
+                new EvaluacionAsignadaJuradoReadModel.Notas(new BigDecimal("4.5"), new BigDecimal("3.8"), new BigDecimal("4.1")))),
+                0, 10, 1));
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA).with(jwtDelJurado(UtilUUID.generarNuevoUUID().toString())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].notas.resumenCualitativo").value(4.5))
+                .andExpect(jsonPath("$.content[0].notas.resumenCuantitativo").value(3.8))
+                .andExpect(jsonPath("$.content[0].notas.notaAcumulada").value(4.1));
+    }
+
+    @Test
     void debeResponder200ConPagina_yPasarAlInteractorElJuradoDelJwtYLosDefaults_cuandoNoHayBody()
             throws Exception {
         // Arrange
@@ -93,7 +115,8 @@ class ConsultarEvaluacionesAsignadasJuradoControllerTest {
                 new EvaluacionAsignadaJuradoReadModel.Evaluacion(evaluacion,
                         new EvaluacionAsignadaJuradoReadModel.Estado("PENDIENTE", "Pendiente")),
                 new EvaluacionAsignadaJuradoReadModel.Entregable(entregable, "Robot seguidor", 2),
-                true, false)),
+                true, false,
+                new EvaluacionAsignadaJuradoReadModel.Notas(null, null, null))),
                 0, 10, 1));
 
         // Act & Assert

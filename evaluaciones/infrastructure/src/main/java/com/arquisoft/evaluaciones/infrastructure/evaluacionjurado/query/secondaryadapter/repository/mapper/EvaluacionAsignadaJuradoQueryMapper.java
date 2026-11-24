@@ -21,6 +21,8 @@ public final class EvaluacionAsignadaJuradoQueryMapper {
                         entity.getEntregableProyecto(),
                         entity.getEntregableVersion()),
                 entity.isTieneEvaluacionesCualitativas(),
-                entity.isTieneEvaluacionesCuantitativas());
+                entity.isTieneEvaluacionesCuantitativas(),
+                new EvaluacionAsignadaJuradoReadModel.Notas(
+                        entity.getResumenCualitativo(), entity.getResumenCuantitativo(), entity.getNotaAcumulada()));
     }
 }

@@ -53,7 +53,7 @@ class ConsultarEvaluacionesAsignadasJuradoUseCaseImplTest {
                 new EvaluacionAsignadaJuradoReadModel.Evaluacion(UtilUUID.generarNuevoUUID(),
                         new EvaluacionAsignadaJuradoReadModel.Estado("PENDIENTE", "Pendiente")),
                 new EvaluacionAsignadaJuradoReadModel.Entregable(UtilUUID.generarNuevoUUID(), "Proyecto", 1),
-                false, false);
+                false, false, null);
     }
 
     private static EvaluacionesAsignadasJuradoCriteria criteria(UUID jurado) {
