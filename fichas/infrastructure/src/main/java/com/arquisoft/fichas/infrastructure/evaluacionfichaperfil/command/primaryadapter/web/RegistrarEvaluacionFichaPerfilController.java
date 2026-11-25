@@ -3,6 +3,8 @@ package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.primar
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.model.RegistrarEvaluacionFichaPerfilCommand;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.interactor.RegistrarEvaluacionFichaPerfilInteractor;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.result.InicioEvaluacionFichaPerfilResult;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.primaryadapter.web.mapper.RegistrarEvaluacionFichaPerfilResponseMapper;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.primaryadapter.web.dto.RegistrarEvaluacionFichaPerfilResponseDTO;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
@@ -39,6 +41,8 @@ public class RegistrarEvaluacionFichaPerfilController {
             security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponses({
+            @ApiResponse(responseCode = ApiCodes.OK,
+                    description = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_RESP_200),
             @ApiResponse(responseCode = ApiCodes.CREATED,
                     description = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_RESP_201),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
@@ -46,7 +50,9 @@ public class RegistrarEvaluacionFichaPerfilController {
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
                     description = FichasApiMessages.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiMessages.Comun.RESP_403)
+                    description = FichasApiMessages.Comun.RESP_403),
+            @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
+                    description = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_RESP_422)
     })
     public ResponseEntity<RegistrarEvaluacionFichaPerfilResponseDTO> registrarEvaluacion(
             @PathVariable UUID fichaId,
@@ -58,9 +64,14 @@ public class RegistrarEvaluacionFichaPerfilController {
                 fichaId,
                 representanteComiteId);
 
-        UUID evaluacionId = registrarEvaluacionFichaPerfilInteractor.ejecutar(command);
+        var result = registrarEvaluacionFichaPerfilInteractor.ejecutar(command);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new RegistrarEvaluacionFichaPerfilResponseDTO(evaluacionId));
+        var status = switch (result) {
+            case InicioEvaluacionFichaPerfilResult.Registrada registrada -> HttpStatus.CREATED;
+            case InicioEvaluacionFichaPerfilResult.Reactivada reactivada -> HttpStatus.OK;
+        };
+
+        return ResponseEntity.status(status)
+                .body(RegistrarEvaluacionFichaPerfilResponseMapper.toResponse(result));
     }
 }

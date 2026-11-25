@@ -1,8 +1,13 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilDisponibleParaEvaluacionRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.DisponibilidadEvaluacionFicha;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.EvaluacionExistente;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.ExistenciaRepresentanteComite;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.EvaluacionNoDuplicadaRule;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl.EvaluacionNoDuplicadaRuleImpl;
@@ -19,16 +24,18 @@ public class RegistrarEvaluacionFichaPerfilValidatorImpl implements RegistrarEva
     private final FichaPerfilExisteRule fichaPerfilExisteRule;
     private final RepresentanteComiteExisteRule representanteComiteExisteRule;
     private final EvaluacionNoDuplicadaRule evaluacionNoDuplicadaRule;
+    private final EstadoFichaPerfilDisponibleParaEvaluacionRule estadoDisponibleParaEvaluacionRule;
 
     public RegistrarEvaluacionFichaPerfilValidatorImpl() {
         this.fichaPerfilExisteRule = new FichaPerfilExisteRuleImpl();
         this.representanteComiteExisteRule = new RepresentanteComiteExisteRuleImpl();
         this.evaluacionNoDuplicadaRule = new EvaluacionNoDuplicadaRuleImpl();
+        this.estadoDisponibleParaEvaluacionRule = new EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl();
     }
 
     @Override
     public void validar(EvaluacionFichaPerfilDomain evaluacion, boolean fichaExiste, boolean representanteExiste,
-                        boolean evaluacionYaExiste) {
+                        EvaluacionExistente existente, EstadoFichaPerfilDomain estadoFicha) {
 
         fichaPerfilExisteRule.validar(
                 new ExistenciaFichaPerfil(evaluacion.getFichaPerfilId(), fichaExiste));
@@ -37,6 +44,9 @@ public class RegistrarEvaluacionFichaPerfilValidatorImpl implements RegistrarEva
                 new ExistenciaRepresentanteComite(evaluacion.getRepresentanteComiteId(), representanteExiste));
 
         evaluacionNoDuplicadaRule.validar(new DisponibilidadEvaluacionFicha(
-                evaluacion.getRepresentanteComiteId(), evaluacion.getFichaPerfilId(), evaluacionYaExiste));
+                evaluacion.getRepresentanteComiteId(), evaluacion.getFichaPerfilId(), existente));
+
+        estadoDisponibleParaEvaluacionRule.validar(
+                new EstadoActualFicha(evaluacion.getFichaPerfilId(), estadoFicha.getEstadoFicha()));
     }
 }

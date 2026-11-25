@@ -25,9 +25,18 @@ import java.util.UUID;
                efp.fecha_actualizacion    AS fecha_actualizacion
         FROM estado_ficha_perfil efp
                  JOIN evaluacion_ficha_perfil ev ON ev.ficha_perfil_id = efp.ficha_perfil_id
+                 AND NOT EXISTS (
+                     SELECT 1 FROM estado_evaluacion_ficha d
+                     WHERE d.evaluacion_ficha_perfil_id = ev.id
+                       AND d.estado_evaluacion_id = 'DESCARTADA'
+                       AND NOT EXISTS (
+                           SELECT 1 FROM estado_evaluacion_ficha n
+                           WHERE n.evaluacion_ficha_perfil_id = d.evaluacion_ficha_perfil_id
+                             AND (n.fecha_actualizacion > d.fecha_actualizacion
+                                  OR (n.fecha_actualizacion = d.fecha_actualizacion AND n.id > d.id))))
                  JOIN estado_ficha ef ON ef.id = efp.estado_ficha_id
         """)
-@Synchronize({"estado_ficha_perfil", "evaluacion_ficha_perfil", "estado_ficha"})
+@Synchronize({"estado_ficha_perfil", "evaluacion_ficha_perfil", "estado_evaluacion_ficha", "estado_ficha"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

@@ -41,6 +41,7 @@ security:
         - {method: GET, path: "/api/fichas-perfil/estados-revision", role: "fichas:estado-revision:view"}
         - {method: GET, path: "/api/fichas-perfil/estudiante", role: "fichas:ficha-perfil-estudiante:view"}
         - {method: POST, path: "/api/fichas-perfil/evaluaciones/asesor", role: "fichas:evaluacion-ficha-perfil-asesor:view"}
+        - {method: PATCH, path: "/api/fichas-perfil/evaluaciones/{evaluacionFichaPerfilId}/descarte", role: "fichas:evaluacion-ficha-perfil-descarte:update"}
         - {method: POST, path: "/api/fichas-perfil/evaluaciones/{evaluacionFichaPerfilId}/observaciones", role: "fichas:observacion-evaluacion:create"}
         - {method: GET, path: "/api/fichas-perfil/evaluaciones/{evaluacionFichaPerfilId}/observaciones/asesor", role: "fichas:observacion-evaluacion-asesor:view"}
         - {method: GET, path: "/api/fichas-perfil/evaluaciones/{evaluacionFichaPerfilId}/observaciones/estudiante", role: "fichas:observacion-evaluacion-estudiante:view"}
