@@ -22,5 +22,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     testImplementation "org.assertj:assertj-core"
+    // Solo para probar cómo Jackson 3 deserializa los DTO de consulta; main sigue sin databind.
+    testImplementation "tools.jackson.core:jackson-databind"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
