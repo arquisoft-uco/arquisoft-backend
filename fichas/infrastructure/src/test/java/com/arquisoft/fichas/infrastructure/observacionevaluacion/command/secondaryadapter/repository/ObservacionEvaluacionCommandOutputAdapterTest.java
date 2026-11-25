@@ -87,7 +87,8 @@ class ObservacionEvaluacionCommandOutputAdapterTest {
         var observacionEvaluacion = UtilUUID.generarNuevoUUID();
         var representanteComite = UtilUUID.generarNuevoUUID();
         var pertenencia = Optional.of(new PertenenciaObservacionEvaluacionEntity(
-                UtilUUID.generarNuevoUUID(), true, "EN_EVALUACION"));
+                UtilUUID.generarNuevoUUID(), true, "EN_EVALUACION", UtilUUID.generarNuevoUUID(),
+                "DISPONIBLE_PARA_EVALUACION"));
         when(repository.obtenerPertenencia(observacionEvaluacion, representanteComite)).thenReturn(pertenencia);
 
         // Act

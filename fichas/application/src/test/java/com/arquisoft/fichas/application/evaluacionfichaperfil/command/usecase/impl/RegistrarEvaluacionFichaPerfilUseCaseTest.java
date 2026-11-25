@@ -13,6 +13,7 @@ import com.arquisoft.fichas.application.representantecomite.command.finder.Repre
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilNoDisponibleParaEvaluacionException;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.EvaluacionExistente;
@@ -151,6 +152,25 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         verify(asignarEstadoReactivadoEvaluacionUseCase, never()).ejecutar(any());
     }
 
+
+    @Test
+    void debeNoReactivarNiRegistrar_cuandoLaFichaNoEstaDisponibleYLaExistenteEstaDescartada() {
+        // Arrange
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
+        var existente = new EvaluacionExistente(UUID.randomUUID(), EstadoEvaluacion.DESCARTADA);
+        stubConsultas(evaluacion, true, true, existente);
+        doThrow(new FichaPerfilNoDisponibleParaEvaluacionException(EstadoFicha.DISPONIBLE_PARA_EVALUACION))
+                .when(registrarEvaluacionFichaPerfilValidator)
+                .validar(evaluacion, true, true, existente, estadoFicha);
+
+        // Act & Assert
+        assertThatThrownBy(() -> registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion))
+                .isInstanceOf(FichaPerfilNoDisponibleParaEvaluacionException.class);
+
+        verify(asignarEstadoReactivadoEvaluacionUseCase, never()).ejecutar(any());
+        verify(evaluacionFichaPerfilOutputPort, never()).registrarEvaluacion(any());
+        verify(asignarEstadoInicialEvaluacionUseCase, never()).ejecutar(any());
+    }
     @Test
     void debeLanzarExcepcion_cuandoRepositorioFalla() {
         // Arrange

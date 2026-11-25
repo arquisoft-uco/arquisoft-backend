@@ -7,6 +7,7 @@ import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.DecisionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EvaluacionesEnCursoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EvaluacionesFinalizadasFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.IntegrantesVigentesFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.RespaldoAprobacionFicha;
@@ -14,10 +15,12 @@ import com.arquisoft.fichas.domain.estadofichaperfil.rules.AprobacionRespaldadaP
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilDisponibleParaEvaluacionRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.FichaPerfilConEstudiantesVigentesRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.FichaPerfilConEvaluacionFinalizadaRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.FichaPerfilSinEvaluacionEnCursoRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.AprobacionRespaldadaPorEvaluacionRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.FichaPerfilConEstudiantesVigentesRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.FichaPerfilConEvaluacionFinalizadaRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.FichaPerfilSinEvaluacionEnCursoRuleImpl;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.ResumenEvaluacionesFicha;
 import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaAsesorFicha;
 import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
@@ -35,6 +38,7 @@ public class AgregarEstadoAprobacionFichaPerfilValidatorImpl implements AgregarE
     private final FichaPerfilExisteRule fichaPerfilExisteRule;
     private final AsesorFichaExisteRule asesorFichaExisteRule;
     private final EstadoFichaPerfilDisponibleParaEvaluacionRule estadoDisponibleParaEvaluacionRule;
+    private final FichaPerfilSinEvaluacionEnCursoRule sinEvaluacionEnCursoRule;
     private final FichaPerfilConEvaluacionFinalizadaRule evaluacionFinalizadaRule;
     private final AprobacionRespaldadaPorEvaluacionRule aprobacionRespaldadaRule;
     private final FichaPerfilConEstudiantesVigentesRule estudiantesVigentesRule;
@@ -43,6 +47,7 @@ public class AgregarEstadoAprobacionFichaPerfilValidatorImpl implements AgregarE
         this.fichaPerfilExisteRule = new FichaPerfilExisteRuleImpl();
         this.asesorFichaExisteRule = new AsesorFichaExisteRuleImpl();
         this.estadoDisponibleParaEvaluacionRule = new EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl();
+        this.sinEvaluacionEnCursoRule = new FichaPerfilSinEvaluacionEnCursoRuleImpl();
         this.evaluacionFinalizadaRule = new FichaPerfilConEvaluacionFinalizadaRuleImpl();
         this.aprobacionRespaldadaRule = new AprobacionRespaldadaPorEvaluacionRuleImpl();
         this.estudiantesVigentesRule = new FichaPerfilConEstudiantesVigentesRuleImpl();
@@ -57,6 +62,8 @@ public class AgregarEstadoAprobacionFichaPerfilValidatorImpl implements AgregarE
         fichaPerfilExisteRule.validar(new ExistenciaFichaPerfil(fichaPerfil, !ficha.esVacio()));
         asesorFichaExisteRule.validar(new ExistenciaAsesorFicha(ficha.getAsesorFicha(), !asesor.esVacio()));
         estadoDisponibleParaEvaluacionRule.validar(new EstadoActualFicha(fichaPerfil, estadoActual.getEstadoFicha()));
+        sinEvaluacionEnCursoRule.validar(new EvaluacionesEnCursoFicha(
+                fichaPerfil, ficha.getTituloProyecto(), estadoActual.getEstadoFicha(), resumen.enEvaluacion()));
         evaluacionFinalizadaRule.validar(new EvaluacionesFinalizadasFicha(ficha.getTituloProyecto(), resumen));
         aprobacionRespaldadaRule.validar(
                 new RespaldoAprobacionFicha(decision.isAcepta(), ficha.getTituloProyecto(), resumen));

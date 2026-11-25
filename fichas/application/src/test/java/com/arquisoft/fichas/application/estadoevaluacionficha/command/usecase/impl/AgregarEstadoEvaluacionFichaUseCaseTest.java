@@ -1,12 +1,15 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.impl;
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EstadoEnEvaluacionExisteFinder;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EstadoFichaDeEvaluacionFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EvaluacionFichaExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.ObservacionesEvaluacionCountFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.RepresentantePropietarioEvaluacionFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.UltimoEstadoEvaluacionFichaFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
@@ -18,7 +21,6 @@ import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -60,12 +62,17 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     private AgregarEstadoEvaluacionFichaValidator agregarEstadoEvaluacionFichaValidator;
 
     @Mock
+    private EstadoFichaDeEvaluacionFinder estadoFichaDeEvaluacionFinder;
+
+    @Mock
     private AppLogger logger;
     @InjectMocks
     private AgregarEstadoEvaluacionFichaUseCaseImpl agregarEstadoEvaluacionFichaUseCase;
 
     private final UUID evaluacion = UUID.randomUUID();
     private final UUID representante = UUID.randomUUID();
+    private static final EstadoActualFicha FICHA_DISPONIBLE = new EstadoActualFicha(
+            UUID.randomUUID(), EstadoFicha.DISPONIBLE_PARA_EVALUACION);
 
     @Test
     void debeAgregarElEstado_cuandoDatosValidos() {
@@ -76,7 +83,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
                 .thenReturn(EstadoEvaluacionFichaDomain.crear(evaluacion));
 
         // Act
-        UUID resultado = agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada);
+        var resultado = agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada);
 
         // Assert
         assertThat(resultado).isNotNull();
@@ -95,16 +102,18 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada);
 
         // Assert
-        InOrder inOrder = inOrder(evaluacionFichaExisteFinder, representantePropietarioEvaluacionFinder,
+        var inOrder = inOrder(evaluacionFichaExisteFinder, representantePropietarioEvaluacionFinder,
                 estadoEnEvaluacionExisteFinder, ultimoEstadoEvaluacionFichaFinder, observacionesEvaluacionCountFinder,
+                estadoFichaDeEvaluacionFinder,
                 agregarEstadoEvaluacionFichaValidator, estadoEvaluacionFichaOutputPort);
         inOrder.verify(evaluacionFichaExisteFinder).obtener(evaluacion);
         inOrder.verify(representantePropietarioEvaluacionFinder).obtener(entrada);
         inOrder.verify(estadoEnEvaluacionExisteFinder).obtener(entrada);
         inOrder.verify(ultimoEstadoEvaluacionFichaFinder).obtener(evaluacion);
         inOrder.verify(observacionesEvaluacionCountFinder).obtener(evaluacion);
+        inOrder.verify(estadoFichaDeEvaluacionFinder).obtener(evaluacion);
         inOrder.verify(agregarEstadoEvaluacionFichaValidator)
-                .validar(entrada, true, true, false, ultimoEstado, 0L);
+                .validar(entrada, true, true, false, ultimoEstado, 0L, FICHA_DISPONIBLE);
         inOrder.verify(estadoEvaluacionFichaOutputPort).agregarEstado(any());
     }
 
@@ -115,7 +124,8 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         stubConsultas(entrada, false, false, false, 0L);
         when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(EstadoEvaluacionFichaDomain.VACIO);
         doThrow(new EvaluacionFichaPerfilNoEncontradaException(evaluacion))
-                .when(agregarEstadoEvaluacionFichaValidator).validar(entrada, false, false, false, EstadoEvaluacionFichaDomain.VACIO, 0L);
+                .when(agregarEstadoEvaluacionFichaValidator)
+                .validar(entrada, false, false, false, EstadoEvaluacionFichaDomain.VACIO, 0L, FICHA_DISPONIBLE);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada))
@@ -131,7 +141,8 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         stubConsultas(entrada, true, false, false, 0L);
         when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(EstadoEvaluacionFichaDomain.VACIO);
         doThrow(new EvaluacionFichaNoPropiaException(evaluacion))
-                .when(agregarEstadoEvaluacionFichaValidator).validar(entrada, true, false, false, EstadoEvaluacionFichaDomain.VACIO, 0L);
+                .when(agregarEstadoEvaluacionFichaValidator)
+                .validar(entrada, true, false, false, EstadoEvaluacionFichaDomain.VACIO, 0L, FICHA_DISPONIBLE);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada))
@@ -147,7 +158,8 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         stubConsultas(entrada, true, true, true, 0L);
         when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(EstadoEvaluacionFichaDomain.VACIO);
         doThrow(new EstadoEvaluacionDuplicadoException(evaluacion, EstadoEvaluacion.APROBADA))
-                .when(agregarEstadoEvaluacionFichaValidator).validar(entrada, true, true, true, EstadoEvaluacionFichaDomain.VACIO, 0L);
+                .when(agregarEstadoEvaluacionFichaValidator)
+                .validar(entrada, true, true, true, EstadoEvaluacionFichaDomain.VACIO, 0L, FICHA_DISPONIBLE);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada))
@@ -177,6 +189,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         when(representantePropietarioEvaluacionFinder.obtener(entrada)).thenReturn(esPropietario);
         when(estadoEnEvaluacionExisteFinder.obtener(entrada)).thenReturn(estadoYaExiste);
         when(observacionesEvaluacionCountFinder.obtener(evaluacion)).thenReturn(observaciones);
+        when(estadoFichaDeEvaluacionFinder.obtener(evaluacion)).thenReturn(FICHA_DISPONIBLE);
     }
 
     @Test
@@ -187,7 +200,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacion)).thenReturn(EstadoEvaluacionFichaDomain.VACIO);
         doThrow(new EvaluacionAprobadaConObservacionesException(evaluacion, 2L))
                 .when(agregarEstadoEvaluacionFichaValidator)
-                .validar(entrada, true, true, false, EstadoEvaluacionFichaDomain.VACIO, 2L);
+                .validar(entrada, true, true, false, EstadoEvaluacionFichaDomain.VACIO, 2L, FICHA_DISPONIBLE);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada))

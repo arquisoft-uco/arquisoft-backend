@@ -15,6 +15,9 @@ import com.arquisoft.fichas.domain.observacionevaluacion.rules.ObservacionEvalua
 import com.arquisoft.fichas.domain.observacionevaluacion.rules.impl.EvaluacionFichaAbiertaRuleImpl;
 import com.arquisoft.fichas.domain.observacionevaluacion.rules.impl.ObservacionEvaluacionExisteRuleImpl;
 import com.arquisoft.fichas.domain.observacionevaluacion.rules.impl.ObservacionEvaluacionNoDuplicadaRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilDisponibleParaEvaluacionRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,12 +27,14 @@ public class ModificarObservacionEvaluacionValidatorImpl implements ModificarObs
     private final RepresentantePropietarioEvaluacionRule representantePropietarioEvaluacionRule;
     private final EvaluacionFichaAbiertaRule evaluacionFichaAbiertaRule;
     private final ObservacionEvaluacionNoDuplicadaRule observacionEvaluacionNoDuplicadaRule;
+    private final EstadoFichaPerfilDisponibleParaEvaluacionRule estadoFichaDisponibleRule;
 
     public ModificarObservacionEvaluacionValidatorImpl() {
         this.observacionEvaluacionExisteRule = new ObservacionEvaluacionExisteRuleImpl();
         this.representantePropietarioEvaluacionRule = new RepresentantePropietarioEvaluacionRuleImpl();
         this.evaluacionFichaAbiertaRule = new EvaluacionFichaAbiertaRuleImpl();
         this.observacionEvaluacionNoDuplicadaRule = new ObservacionEvaluacionNoDuplicadaRuleImpl();
+        this.estadoFichaDisponibleRule = new EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl();
     }
 
     @Override
@@ -43,5 +48,7 @@ public class ModificarObservacionEvaluacionValidatorImpl implements ModificarObs
                 new EstadoEvaluacionObservada(pertenencia.evaluacionFichaPerfil(), pertenencia.ultimoEstado()));
         observacionEvaluacionNoDuplicadaRule.validar(new DisponibilidadObservacionEvaluacion(
                 pertenencia.evaluacionFichaPerfil(), entrada.getObservacion(), observacionYaExiste));
+        estadoFichaDisponibleRule.validar(
+                new EstadoActualFicha(pertenencia.fichaPerfil(), pertenencia.estadoFicha()));
     }
 }

@@ -53,7 +53,8 @@ public class AgregarEstadoAprobacionFichaPerfilUseCaseImpl implements AgregarEst
 
         logger.debug(EstadoFichaPerfilKey.LOG_VERIFICACION_APROBACION,
                 !ficha.esVacio(), !asesor.esVacio(), estadoActual.getEstadoFicha(), integrantes.size(),
-                resumen.finalizadas(), resumen.aprobatorias(), resumen.tieneObservacionesVigentes());
+                resumen.finalizadas(), resumen.aprobatorias(), resumen.tieneObservacionesVigentes(),
+                resumen.enEvaluacion());
 
         validator.validar(decision, ficha, asesor, estadoActual, resumen, integrantes);
 

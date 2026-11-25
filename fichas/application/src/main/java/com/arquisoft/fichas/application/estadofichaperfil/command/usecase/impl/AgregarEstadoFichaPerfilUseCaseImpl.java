@@ -43,7 +43,7 @@ public class AgregarEstadoFichaPerfilUseCaseImpl implements AgregarEstadoFichaPe
         var integrantes = integrantesVigentesDeFichaFinder.obtener(entrada.getFichaPerfil());
 
         logger.debug(EstadoFichaPerfilKey.LOG_VERIFICACION_AGREGAR,
-                !ficha.esVacio(), estadoActual.getEstadoFicha(), resumen.enEvaluacion(), integrantes.size());
+                !ficha.esVacio(), estadoActual.getEstadoFicha(), resumen.enEvaluacion(), resumen.finalizadas(), integrantes.size());
 
         validator.validar(entrada, ficha, estadoActual, resumen, integrantes);
 

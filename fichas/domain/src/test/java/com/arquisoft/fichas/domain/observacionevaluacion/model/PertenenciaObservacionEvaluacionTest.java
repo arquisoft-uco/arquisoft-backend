@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.domain.observacionevaluacion.model;
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,8 @@ class PertenenciaObservacionEvaluacionTest {
     void debeSerVacioSoloElCentinela_cuandoOtraInstanciaTieneLosMismosValores() {
         // Arrange — esVacio compara identidad, no valores
         var igualEnValores = new PertenenciaObservacionEvaluacion(
-                UtilUUID.obtenerUUIDPorDefecto(), false, EstadoEvaluacion.VACIO);
+                UtilUUID.obtenerUUIDPorDefecto(), false, EstadoEvaluacion.VACIO,
+                UtilUUID.obtenerUUIDPorDefecto(), EstadoFicha.VACIO);
 
         // Act
         var centinelaEsVacio = PertenenciaObservacionEvaluacion.VACIO.esVacio();

@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.observacionevaluacion.command.finder.Per
 import com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.ObservacionEvaluacionOutputPort;
 import com.arquisoft.fichas.application.observacionevaluacion.command.validator.RemoverObservacionEvaluacionValidator;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.observacionevaluacion.RemocionObservacionEvaluacionDomain;
 import com.arquisoft.fichas.domain.observacionevaluacion.exception.EvaluacionFichaCerradaException;
 import com.arquisoft.fichas.domain.observacionevaluacion.exception.ObservacionEvaluacionNoEncontradaException;
@@ -54,7 +55,8 @@ class RemoverObservacionEvaluacionUseCaseImplTest {
     @Test
     void debeRemoverObservacion_cuandoValidacionPasa() {
         // Arrange
-        var pertenencia = new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.EN_EVALUACION);
+        var pertenencia = new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.EN_EVALUACION,
+                UtilUUID.generarNuevoUUID(), EstadoFicha.DISPONIBLE_PARA_EVALUACION);
         when(pertenenciaObservacionEvaluacionEnRemocionFinder.obtener(entrada)).thenReturn(pertenencia);
 
         // Act
@@ -79,7 +81,8 @@ class RemoverObservacionEvaluacionUseCaseImplTest {
     @Test
     void noDebeRemover_cuandoValidatorLanza() {
         // Arrange
-        var pertenencia = new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.APROBADA);
+        var pertenencia = new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.APROBADA,
+                UtilUUID.generarNuevoUUID(), EstadoFicha.DISPONIBLE_PARA_EVALUACION);
         when(pertenenciaObservacionEvaluacionEnRemocionFinder.obtener(entrada)).thenReturn(pertenencia);
         doThrow(new EvaluacionFichaCerradaException(evaluacionFichaPerfil, EstadoEvaluacion.APROBADA))
                 .when(removerObservacionEvaluacionValidator).validar(entrada, true, pertenencia);
