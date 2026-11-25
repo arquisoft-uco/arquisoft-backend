@@ -79,6 +79,21 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_DISPONIBLES_EVALUACION_RESP_403 =
                 "Sin permisos — se requiere rol representante del comité de currículum";
 
+        public static final String CONSULTAR_REPRESENTANTE_SUMMARY =
+                "Consultar fichas de perfil en las que participa como evaluador";
+        public static final String CONSULTAR_REPRESENTANTE_DESCRIPTION =
+                "Retorna el listado paginado de fichas de perfil en las que el Representante Comite Curriculum "
+                        + "autenticado registró una evaluación, en cualquier estado de la ficha y de la evaluación, "
+                        + "cada una con el estado actual de su evaluación. Soporta filtros dinámicos con agrupación "
+                        + "booleana (AND/OR anidados), ordenamiento multi-campo y paginación por los campos "
+                        + "tituloProyecto, asesorNombre y asesorEmail, y filtro por estadoFicha. El body es opcional. "
+                        + "Acceso exclusivo para el rol representante del comité de currículum.";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_200 = "Listado obtenido exitosamente";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_400 =
+                "Filtro, operador, campo o valor inválido";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
+                "Sin permisos — se requiere rol representante del comité de currículum";
+
         public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar las fichas de perfil del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Retorna las fichas de perfil a las que pertenece el estudiante autenticado, cada una con su "

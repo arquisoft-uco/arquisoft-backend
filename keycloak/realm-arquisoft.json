@@ -535,6 +535,7 @@
               "fichas:estado-ficha:view",
               "fichas:ficha-perfil-coordinador:view",
               "fichas:ficha-perfil-disponible-evaluacion:view",
+              "fichas:ficha-perfil-representante:view",
               "fichas:estado-evaluacion:view",
               "fichas:observacion-evaluacion-representante:view",
               "usuarios:estudiante-vigente:view",
@@ -2252,6 +2253,15 @@
         {
           "id": "6f0c2a9e-3b8d-4c57-9a41-7d2e5b1f08c3",
           "name": "fichas:ficha-perfil-disponible-evaluacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "49893a5f-7bc0-41bc-b5df-5681e83424d6",
+          "name": "fichas:ficha-perfil-representante:view",
           "description": "",
           "composite": false,
           "clientRole": true,
