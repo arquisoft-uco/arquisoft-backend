@@ -25,6 +25,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,6 +80,26 @@ class ConsultarEvaluacionesAsignadasAsesorControllerTest {
     }
 
     @Test
+    void debeResponder200ConNotas_cuandoHayAsignaciones() throws Exception {
+        // Arrange
+        when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(List.of(new EvaluacionAsignadaAsesorReadModel(
+                UtilUUID.generarNuevoUUID(),
+                new EvaluacionAsignadaAsesorReadModel.Evaluacion(UtilUUID.generarNuevoUUID(),
+                        new EvaluacionAsignadaAsesorReadModel.Estado("FINALIZADA", "Finalizada")),
+                new EvaluacionAsignadaAsesorReadModel.Entregable(UtilUUID.generarNuevoUUID(), "Robot seguidor", 2),
+                true, true,
+                new EvaluacionAsignadaAsesorReadModel.Notas(new BigDecimal("4.5"), new BigDecimal("3.8"), new BigDecimal("4.1")))),
+                0, 10, 1));
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA).with(jwtDelAsesor(UtilUUID.generarNuevoUUID().toString())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].notas.resumenCualitativo").value(4.5))
+                .andExpect(jsonPath("$.content[0].notas.resumenCuantitativo").value(3.8))
+                .andExpect(jsonPath("$.content[0].notas.notaAcumulada").value(4.1));
+    }
+
+    @Test
     void debeResponder200ConPagina_yPasarAlInteractorElAsesorDelJwt_cuandoNoHayBody() throws Exception {
         // Arrange
         var asesor = UtilUUID.generarNuevoUUID();
@@ -90,7 +111,8 @@ class ConsultarEvaluacionesAsignadasAsesorControllerTest {
                 new EvaluacionAsignadaAsesorReadModel.Evaluacion(evaluacion,
                         new EvaluacionAsignadaAsesorReadModel.Estado("PENDIENTE", "Pendiente")),
                 new EvaluacionAsignadaAsesorReadModel.Entregable(entregable, "Robot seguidor", 2),
-                true, false)),
+                true, false,
+                new EvaluacionAsignadaAsesorReadModel.Notas(null, null, null))),
                 0, 10, 1));
 
         // Act & Assert

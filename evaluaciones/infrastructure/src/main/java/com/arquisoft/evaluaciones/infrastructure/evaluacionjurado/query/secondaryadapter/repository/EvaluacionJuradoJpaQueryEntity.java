@@ -10,6 +10,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 import org.hibernate.annotations.Synchronize;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -19,7 +20,10 @@ import java.util.UUID;
                ej.evaluacion_id  AS evaluacion_id,
                j.id              AS jurado_id,
                j.nombre          AS jurado_nombre,
-               j.email           AS jurado_email
+               j.email           AS jurado_email,
+               ej.resumen_cualitativo  AS resumen_cualitativo,
+               ej.resumen_cuantitativo AS resumen_cuantitativo,
+               ej.nota_acumulada       AS nota_acumulada
         FROM evaluacion_jurado ej
         JOIN jurado j ON j.id = ej.jurado_id
         WHERE ej.eliminado_en IS NULL
@@ -45,4 +49,13 @@ public class EvaluacionJuradoJpaQueryEntity {
 
     @Column(name = "jurado_email")
     private String juradoEmail;
+
+    @Column(name = "resumen_cualitativo")
+    private BigDecimal resumenCualitativo;
+
+    @Column(name = "resumen_cuantitativo")
+    private BigDecimal resumenCuantitativo;
+
+    @Column(name = "nota_acumulada")
+    private BigDecimal notaAcumulada;
 }

@@ -31,7 +31,7 @@ class ConsultarEvaluacionAsesorInteractorImplTest {
         var query = ConsultarEvaluacionAsesorQuery.crear(evaluacion);
         var criteria = new EvaluacionAsesorDeEvaluacionCriteria(evaluacion);
         var esperado = new EvaluacionAsesorReadModel(UtilUUID.generarNuevoUUID(),
-                new EvaluacionAsesorReadModel.Asesor(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co"));
+                new EvaluacionAsesorReadModel.Asesor(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co"), null);
         when(useCase.ejecutar(criteria)).thenReturn(esperado);
 
         // Act

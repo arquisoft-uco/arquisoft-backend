@@ -4,6 +4,7 @@ import com.arquisoft.evaluaciones.application.evaluacionjurado.query.criteria.Ev
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.readmodel.EvaluacionJuradoReadModel;
 import com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.entity.EvaluacionJuradoJpaEntity;
 import com.arquisoft.evaluaciones.infrastructure.jurado.command.secondaryadapter.entity.JuradoJpaEntity;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -73,6 +75,44 @@ class EvaluacionJuradoQueryOutputAdapterTest {
         entityManager.flush();
         testEntityManager.flush();
         testEntityManager.clear();
+    }
+
+    @Test
+    void debeMapearNotas_desdeLosAliasDelSubselect() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        testEntityManager.persist(EvaluacionJuradoJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID()).evaluacion(evaluacion).jurado(sembrarJurado("Ana Ruiz", "ana@uco.edu.co"))
+                .estado("EVALUADA")
+                .resumenCualitativo(new BigDecimal("4.50"))
+                .resumenCuantitativo(new BigDecimal("3.80"))
+                .notaAcumulada(new BigDecimal("4.10"))
+                .build());
+        sincronizar();
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(evaluacion).build());
+
+        // Assert
+        var notas = resultado.getContent().getFirst().notas();
+        assertThat(notas.resumenCualitativo()).isEqualByComparingTo("4.50");
+        assertThat(notas.resumenCuantitativo()).isEqualByComparingTo("3.80");
+        assertThat(notas.notaAcumulada()).isEqualByComparingTo("4.10");
+    }
+
+    @Test
+    void debeRetornarNotasNulas_cuandoNoSeCalcularon() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        sembrarEvaluacionJurado(evaluacion, sembrarJurado("Ana Ruiz", "ana@uco.edu.co"));
+        sincronizar();
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(evaluacion).build());
+
+        // Assert
+        assertThat(resultado.getContent().getFirst().notas())
+                .isEqualTo(new EvaluacionJuradoReadModel.Notas(null, null, null));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.query.primaryadapter.web.dto;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public record EvaluacionAsignadaJuradoResponseDTO(
@@ -8,7 +9,8 @@ public record EvaluacionAsignadaJuradoResponseDTO(
         EvaluacionDTO evaluacion,
         EntregableDTO entregable,
         boolean tieneEvaluacionesCualitativas,
-        boolean tieneEvaluacionesCuantitativas
+        boolean tieneEvaluacionesCuantitativas,
+        NotasDTO notas
 ) {
 
     public record EvaluacionDTO(UUID id, EstadoDTO estado) {
@@ -19,4 +21,6 @@ public record EvaluacionAsignadaJuradoResponseDTO(
 
     public record EntregableDTO(UUID id, String proyecto, Integer version) {
     }
+
+    public record NotasDTO(BigDecimal resumenCualitativo, BigDecimal resumenCuantitativo, BigDecimal notaAcumulada) {}
 }

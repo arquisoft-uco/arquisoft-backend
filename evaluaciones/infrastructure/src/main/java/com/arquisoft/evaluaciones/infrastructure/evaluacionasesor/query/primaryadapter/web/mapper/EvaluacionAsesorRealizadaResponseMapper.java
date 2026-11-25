@@ -19,6 +19,9 @@ public final class EvaluacionAsesorRealizadaResponseMapper {
                         new EvaluacionAsesorRealizadaResponseDTO.Entregable(
                                 entregable.id(), entregable.proyecto(), entregable.version()),
                         new EvaluacionAsesorRealizadaResponseDTO.Estado(estado.id(), estado.nombre())),
-                new EvaluacionAsesorRealizadaResponseDTO.Asesor(asesor.id(), asesor.nombre(), asesor.email()));
+                new EvaluacionAsesorRealizadaResponseDTO.Asesor(asesor.id(), asesor.nombre(), asesor.email()),
+                new EvaluacionAsesorRealizadaResponseDTO.Notas(
+                        readModel.notas().resumenCualitativo(), readModel.notas().resumenCuantitativo(),
+                        readModel.notas().notaAcumulada()));
     }
 }

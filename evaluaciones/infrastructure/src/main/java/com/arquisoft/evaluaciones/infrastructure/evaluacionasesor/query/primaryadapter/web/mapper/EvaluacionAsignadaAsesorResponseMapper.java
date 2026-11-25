@@ -20,6 +20,9 @@ public final class EvaluacionAsignadaAsesorResponseMapper {
                         readModel.entregable().proyecto(),
                         readModel.entregable().version()),
                 readModel.tieneEvaluacionesCualitativas(),
-                readModel.tieneEvaluacionesCuantitativas());
+                readModel.tieneEvaluacionesCuantitativas(),
+                new EvaluacionAsignadaAsesorResponseDTO.NotasDTO(
+                        readModel.notas().resumenCualitativo(), readModel.notas().resumenCuantitativo(),
+                        readModel.notas().notaAcumulada()));
     }
 }

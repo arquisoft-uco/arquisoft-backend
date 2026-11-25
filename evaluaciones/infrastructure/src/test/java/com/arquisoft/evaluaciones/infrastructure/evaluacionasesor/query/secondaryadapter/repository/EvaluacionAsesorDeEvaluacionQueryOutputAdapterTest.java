@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,6 +72,52 @@ class EvaluacionAsesorDeEvaluacionQueryOutputAdapterTest {
         entityManager.flush();
         entityManager.clear();
         return evaluacionAsesor;
+    }
+
+    private void fijarNotas(UUID fila) {
+        entityManager.createNativeQuery("""
+                        UPDATE evaluacion_asesor SET resumen_cualitativo = ?, resumen_cuantitativo = ?, nota_acumulada = ?
+                        WHERE id = ?
+                        """)
+                .setParameter(1, new BigDecimal("4.50"))
+                .setParameter(2, new BigDecimal("3.80"))
+                .setParameter(3, new BigDecimal("4.10"))
+                .setParameter(4, fila)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    @Test
+    void debeMapearNotas_desdeLosAliasDelSubselect() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        var evaluacionAsesor = sembrarEvaluacionAsesor(evaluacion, sembrarAsesor("Ana Gomez", "ana@uco.edu.co", false));
+        fijarNotas(evaluacionAsesor);
+
+        // Act
+        var resultado = adapter.consultar(new EvaluacionAsesorDeEvaluacionCriteria(evaluacion));
+
+        // Assert
+        var notas = resultado.notas();
+        assertThat(notas.resumenCualitativo()).isEqualByComparingTo("4.50");
+        assertThat(notas.resumenCuantitativo()).isEqualByComparingTo("3.80");
+        assertThat(notas.notaAcumulada()).isEqualByComparingTo("4.10");
+    }
+
+    @Test
+    void debeRetornarNotasNulas_cuandoNoSeCalcularon() {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        sembrarEvaluacionAsesor(evaluacion, sembrarAsesor("Ana Gomez", "ana@uco.edu.co", false));
+
+        // Act
+        var resultado = adapter.consultar(new EvaluacionAsesorDeEvaluacionCriteria(evaluacion));
+
+        // Assert
+        assertThat(resultado.notas().resumenCualitativo()).isNull();
+        assertThat(resultado.notas().resumenCuantitativo()).isNull();
+        assertThat(resultado.notas().notaAcumulada()).isNull();
     }
 
     @Test

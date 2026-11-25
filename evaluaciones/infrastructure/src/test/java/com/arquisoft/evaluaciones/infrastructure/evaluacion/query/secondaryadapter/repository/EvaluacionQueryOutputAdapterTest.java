@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -59,9 +60,16 @@ class EvaluacionQueryOutputAdapterTest {
                     descripcion VARCHAR(300) NOT NULL, PRIMARY KEY (id))
                 """).executeUpdate();
         entityManager.createNativeQuery("""
+                CREATE TABLE IF NOT EXISTS resultado_evaluacion (
+                    id VARCHAR(60) NOT NULL, nombre VARCHAR(60) NOT NULL,
+                    descripcion VARCHAR(300) NOT NULL, orden INTEGER NOT NULL, PRIMARY KEY (id))
+                """).executeUpdate();
+        entityManager.createNativeQuery("""
                 CREATE TABLE IF NOT EXISTS evaluacion (
                     id UUID NOT NULL, entregable_id UUID NOT NULL,
-                    estado_evaluacion_id VARCHAR(60) NOT NULL, PRIMARY KEY (id))
+                    estado_evaluacion_id VARCHAR(60) NOT NULL,
+                    nota_asesor NUMERIC(4,2), nota_jurados NUMERIC(4,2), nota_final NUMERIC(4,2),
+                    resultado_evaluacion_id VARCHAR(60), PRIMARY KEY (id))
                 """).executeUpdate();
         sembrarEstado("PENDIENTE", "Pendiente");
         sembrarEstado("EN_PROGRESO", "En progreso");
@@ -109,6 +117,41 @@ class EvaluacionQueryOutputAdapterTest {
         return NodoFiltro.grupo(FiltroConector.AND, List.of(deEstaPrueba(), filtro));
     }
 
+    private void consolidar(UUID evaluacion) {
+        entityManager.createNativeQuery("""
+                        MERGE INTO resultado_evaluacion (id, nombre, descripcion, orden)
+                        VALUES ('APROBADA', 'Aprobada', 'Aprobada', 1)
+                        """).executeUpdate();
+        entityManager.createNativeQuery("""
+                        UPDATE evaluacion SET nota_asesor = ?, nota_jurados = ?, nota_final = ?,
+                            resultado_evaluacion_id = ? WHERE id = ?
+                        """)
+                .setParameter(1, new BigDecimal("4.50"))
+                .setParameter(2, new BigDecimal("3.80"))
+                .setParameter(3, new BigDecimal("4.10"))
+                .setParameter(4, "APROBADA")
+                .setParameter(5, evaluacion)
+                .executeUpdate();
+        entityManager.flush();
+    }
+
+    @Test
+    void debeMapearNotasYResultado_desdeLosAliasDelSubselect() {
+        // Arrange
+        var evaluacion = sembrarEvaluacion("Robot seguidor", "FINALIZADA");
+        consolidar(evaluacion);
+
+        // Act
+        var resultado = adapter.consultarTodas(EvaluacionCriteria.builder().raiz(deEstaPrueba()).build());
+
+        // Assert
+        var readModel = resultado.getContent().getFirst();
+        assertThat(readModel.notas().notaAsesor()).isEqualByComparingTo("4.50");
+        assertThat(readModel.notas().notaJurados()).isEqualByComparingTo("3.80");
+        assertThat(readModel.notas().notaFinal()).isEqualByComparingTo("4.10");
+        assertThat(readModel.resultado()).isEqualTo(new EvaluacionReadModel.Resultado("APROBADA", "Aprobada"));
+    }
+
     @Test
     void debeMapearEntregableYEstado_desdeLosAliasDelSubselect() {
         // Arrange
@@ -122,7 +165,9 @@ class EvaluacionQueryOutputAdapterTest {
         assertThat(resultado.getContent()).containsExactly(new EvaluacionReadModel(
                 evaluacion,
                 new EvaluacionReadModel.Entregable(entregable, "Robot seguidor " + sufijo, 2),
-                new EvaluacionReadModel.Estado("EN_PROGRESO", "En progreso")));
+                new EvaluacionReadModel.Estado("EN_PROGRESO", "En progreso"),
+                new EvaluacionReadModel.Notas(null, null, null),
+                null));
     }
 
     @Test

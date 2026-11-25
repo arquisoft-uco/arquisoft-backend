@@ -38,7 +38,7 @@ class ConsultarEvaluacionesAsignadasAsesorUseCaseImplTest {
                 new EvaluacionAsignadaAsesorReadModel.Evaluacion(UtilUUID.generarNuevoUUID(),
                         new EvaluacionAsignadaAsesorReadModel.Estado("PENDIENTE", "Pendiente")),
                 new EvaluacionAsignadaAsesorReadModel.Entregable(UtilUUID.generarNuevoUUID(), "Proyecto", 1),
-                false, true);
+                false, true, null);
     }
 
     @Test

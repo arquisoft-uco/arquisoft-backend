@@ -23,6 +23,9 @@ public final class EvaluacionAsignadaJuradoResponseMapper {
                         readModel.entregable().proyecto(),
                         readModel.entregable().version()),
                 readModel.tieneEvaluacionesCualitativas(),
-                readModel.tieneEvaluacionesCuantitativas());
+                readModel.tieneEvaluacionesCuantitativas(),
+                new EvaluacionAsignadaJuradoResponseDTO.NotasDTO(
+                        readModel.notas().resumenCualitativo(), readModel.notas().resumenCuantitativo(),
+                        readModel.notas().notaAcumulada()));
     }
 }

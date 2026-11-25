@@ -40,7 +40,7 @@ class ConsultarEvaluacionesDelJuradoUseCaseImplTest {
         var readModel = new EvaluacionReadModel(
                 UtilUUID.generarNuevoUUID(),
                 new EvaluacionReadModel.Entregable(UtilUUID.generarNuevoUUID(), "Robot seguidor", 1),
-                new EvaluacionReadModel.Estado("PENDIENTE", "Pendiente"));
+                new EvaluacionReadModel.Estado("PENDIENTE", "Pendiente"), null, null);
         var esperado = PaginatedResult.of(List.of(readModel), 0, 10, 1);
         when(evaluacionDelJuradoQueryOutputPort.consultarPorJurado(criteria)).thenReturn(esperado);
 

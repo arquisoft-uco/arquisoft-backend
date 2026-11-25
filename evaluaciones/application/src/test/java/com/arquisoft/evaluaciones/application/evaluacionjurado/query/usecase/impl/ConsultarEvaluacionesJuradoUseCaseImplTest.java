@@ -9,6 +9,7 @@ import com.arquisoft.evaluaciones.domain.evaluacion.exception.EvaluacionNoEncont
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionJuradoKey;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +57,7 @@ class ConsultarEvaluacionesJuradoUseCaseImplTest {
         var evaluacion = UUID.randomUUID();
         var criteria = EvaluacionJuradoCriteria.builder().evaluacion(evaluacion).pagina(0).tamanio(10).build();
         var readModel = new EvaluacionJuradoReadModel(
-                UUID.randomUUID(), new EvaluacionJuradoReadModel.Jurado(UUID.randomUUID(), "Ana", "ana@uco.edu.co"));
+                UtilUUID.generarNuevoUUID(), new EvaluacionJuradoReadModel.Jurado(UtilUUID.generarNuevoUUID(), "Ana", "ana@uco.edu.co"), null);
         var esperado = PaginatedResult.of(List.of(readModel), 0, 10, 1);
 
         when(evaluacionExisteQueryFinder.obtener(evaluacion)).thenReturn(true);

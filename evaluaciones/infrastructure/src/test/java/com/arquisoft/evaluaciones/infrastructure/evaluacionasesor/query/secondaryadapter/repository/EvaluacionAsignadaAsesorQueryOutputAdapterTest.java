@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -134,6 +135,51 @@ class EvaluacionAsignadaAsesorQueryOutputAdapterTest {
 
     private static EvaluacionesAsignadasAsesorCriteria.Builder criteria(UUID asesor) {
         return EvaluacionesAsignadasAsesorCriteria.builder().asesor(asesor);
+    }
+
+    private void fijarNotas(UUID fila) {
+        entityManager.createNativeQuery("""
+                        UPDATE evaluacion_asesor SET resumen_cualitativo = ?, resumen_cuantitativo = ?, nota_acumulada = ?
+                        WHERE id = ?
+                        """)
+                .setParameter(1, new BigDecimal("4.50"))
+                .setParameter(2, new BigDecimal("3.80"))
+                .setParameter(3, new BigDecimal("4.10"))
+                .setParameter(4, fila)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    @Test
+    void debeMapearNotas_desdeLosAliasDelSubselect() {
+        // Arrange
+        var asesor = UtilUUID.generarNuevoUUID();
+        fijarNotas(sembrarAsignacion(asesor, "Alfa", 1, "FINALIZADA"));
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(asesor).build());
+
+        // Assert
+        var notas = resultado.getContent().getFirst().notas();
+        assertThat(notas.resumenCualitativo()).isEqualByComparingTo("4.50");
+        assertThat(notas.resumenCuantitativo()).isEqualByComparingTo("3.80");
+        assertThat(notas.notaAcumulada()).isEqualByComparingTo("4.10");
+    }
+
+    @Test
+    void debeRetornarNotasNulas_cuandoNoSeCalcularon() {
+        // Arrange
+        var asesor = UtilUUID.generarNuevoUUID();
+        sembrarAsignacion(asesor, "Alfa", 1, "FINALIZADA");
+
+        // Act
+        var resultado = adapter.consultarTodas(criteria(asesor).build());
+
+        // Assert
+        assertThat(resultado.getContent().getFirst().notas().resumenCualitativo()).isNull();
+        assertThat(resultado.getContent().getFirst().notas().resumenCuantitativo()).isNull();
+        assertThat(resultado.getContent().getFirst().notas().notaAcumulada()).isNull();
     }
 
     @Test

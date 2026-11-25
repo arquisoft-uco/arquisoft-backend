@@ -11,6 +11,9 @@ public final class EvaluacionJuradoResponseMapper {
         var jurado = readModel.jurado();
         return new EvaluacionJuradoResponseDTO(
                 readModel.id(),
-                new EvaluacionJuradoResponseDTO.JuradoDTO(jurado.id(), jurado.nombre(), jurado.email()));
+                new EvaluacionJuradoResponseDTO.JuradoDTO(jurado.id(), jurado.nombre(), jurado.email()),
+                new EvaluacionJuradoResponseDTO.NotasDTO(
+                        readModel.notas().resumenCualitativo(), readModel.notas().resumenCuantitativo(),
+                        readModel.notas().notaAcumulada()));
     }
 }
