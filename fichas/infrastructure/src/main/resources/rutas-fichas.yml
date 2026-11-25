@@ -10,6 +10,7 @@ rutas:
       por-id: /{id}
       asesor-ficha: /{id}/asesor-ficha
       coordinador: /coordinador
+      disponibles-evaluacion: /disponibles-evaluacion
       asesor: /asesor
       estados-ficha: /estados-ficha
       estado-asesor: /{fichaPerfilId}/estados-ficha
