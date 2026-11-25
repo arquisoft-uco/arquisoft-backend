@@ -27,6 +27,13 @@ import java.util.UUID;
                s.nombre                           AS nombre_asesor,
                epg.estudiante_id                  AS estudiante_id,
                (a.omitido_en IS NOT NULL)         AS omitido,
+               (SELECT er.nombre
+                  FROM revision_asesor ra
+                           JOIN version_artefacto v ON v.id = ra.version_artefacto_id
+                           JOIN estado_revision_asesor er ON er.id = ra.estado_revision_asesor_id
+                 WHERE v.artefacto_id = a.id
+                 ORDER BY ra.fecha_creacion DESC
+                 FETCH FIRST 1 ROW ONLY)          AS estado_ultima_revision,
                (pg.estado_proyecto_id = 'FINALIZADO') AS proyecto_finalizado,
                (pg.estado_proyecto_id = 'CANCELADO') AS proyecto_cancelado
         FROM artefacto a
@@ -36,7 +43,8 @@ import java.util.UUID;
                  JOIN estudiante_proyecto_grado epg
                       ON epg.proyecto_grado_id = a.proyecto_grado_id AND epg.destituido_en IS NULL
         """)
-@Synchronize({"artefacto", "proyecto_grado", "version_repositorio_artefacto", "asesor", "estudiante_proyecto_grado"})
+@Synchronize({"artefacto", "proyecto_grado", "version_repositorio_artefacto", "asesor", "estudiante_proyecto_grado",
+        "version_artefacto", "revision_asesor", "estado_revision_asesor"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -76,6 +84,9 @@ public class ArtefactoEstudianteJpaQueryEntity {
 
     @Column(name = "omitido")
     private boolean omitido;
+
+    @Column(name = "estado_ultima_revision")
+    private String estadoUltimaRevision;
 
     @Column(name = "proyecto_finalizado")
     private boolean proyectoFinalizado;

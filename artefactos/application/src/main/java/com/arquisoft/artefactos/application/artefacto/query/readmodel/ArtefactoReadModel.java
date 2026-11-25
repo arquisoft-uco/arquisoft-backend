@@ -11,6 +11,7 @@ public record ArtefactoReadModel(
         int versionDocumento,
         String nombreRepositorio,
         boolean omitido,
+        String estadoUltimaRevision,
         boolean proyectoFinalizado,
         boolean proyectoCancelado
 ) {

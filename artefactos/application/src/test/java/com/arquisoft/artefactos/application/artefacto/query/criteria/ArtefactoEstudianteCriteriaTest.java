@@ -18,10 +18,11 @@ class ArtefactoEstudianteCriteriaTest {
     void debeDeclararFiltrableYOrdenable_segunLoConfiguradoPorCampo() {
         // Arrange & Act & Assert
         for (var clave : List.of("proyectoGrado", "nombreProyecto", "versionRepositorioArtefacto",
-                "nombreDocumento", "versionDocumento", "nombreRepositorio", "asesor", "nombreAsesor", "estudianteId")) {
+                "nombreDocumento", "versionDocumento", "nombreRepositorio", "asesor", "nombreAsesor", "estudianteId", "estadoUltimaRevision")) {
             assertThat(ArtefactoEstudianteCriteria.Campo.esValidoParaFiltrar(clave)).isTrue();
         }
-        for (var clave : List.of("nombreProyecto", "nombreDocumento", "versionDocumento", "nombreRepositorio", "nombreAsesor")) {
+        for (var clave : List.of("nombreProyecto", "nombreDocumento", "versionDocumento", "nombreRepositorio", "nombreAsesor",
+                "estadoUltimaRevision")) {
             assertThat(ArtefactoEstudianteCriteria.Campo.esValidoParaOrdenar(clave)).isTrue();
         }
         for (var clave : List.of("proyectoGrado", "versionRepositorioArtefacto", "asesor", "estudianteId")) {
@@ -70,5 +71,17 @@ class ArtefactoEstudianteCriteriaTest {
 
         // Act & Assert
         assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
+    }
+
+    @Test
+    void debeAceptarOrden_cuandoEsEstadoUltimaRevision() {
+        // Arrange
+        var ordenamiento = List.of(SortOrder.of("estadoUltimaRevision", SortDirection.DESC));
+
+        // Act
+        var criteria = ArtefactoEstudianteCriteria.builder().pagina(0).tamanio(10).ordenamiento(ordenamiento).build();
+
+        // Assert
+        assertThat(criteria.getOrdenamiento()).hasSize(1);
     }
 }

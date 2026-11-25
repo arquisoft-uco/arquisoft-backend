@@ -13,7 +13,7 @@ class ArtefactoResponseMapperTest {
         // Arrange
         var readModel = new ArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto Alfa",
-                UtilUUID.generarNuevoUUID(), "Documento", 3, "Repositorio", true, true, false);
+                UtilUUID.generarNuevoUUID(), "Documento", 3, "Repositorio", true, "Pendiente", true, false);
 
         // Act
         var response = ArtefactoResponseMapper.toResponse(readModel);
@@ -27,6 +27,7 @@ class ArtefactoResponseMapperTest {
         assertThat(response.versionDocumento()).isEqualTo(3);
         assertThat(response.nombreRepositorio()).isEqualTo("Repositorio");
         assertThat(response.omitido()).isTrue();
+        assertThat(response.estadoUltimaRevision()).isEqualTo("Pendiente");
         assertThat(response.proyectoFinalizado()).isTrue();
         assertThat(response.proyectoCancelado()).isFalse();
     }

@@ -14,6 +14,7 @@ public record ArtefactoResponseDTO(
         int versionDocumento,
         String nombreRepositorio,
         boolean omitido,
+        String estadoUltimaRevision,
         boolean proyectoFinalizado,
         boolean proyectoCancelado
 ) {
