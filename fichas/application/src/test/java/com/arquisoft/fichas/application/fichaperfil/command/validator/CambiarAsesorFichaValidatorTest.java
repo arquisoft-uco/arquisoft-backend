@@ -2,14 +2,18 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.CambiarAsesorFichaValidatorImpl;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.MismoAsesorFichaException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -44,10 +48,32 @@ class CambiarAsesorFichaValidatorTest {
                 .doesNotThrowAnyException();
     }
 
+
+    @ParameterizedTest
+    @EnumSource(value = EstadoFicha.class, names = {"DISPONIBLE_PARA_EVALUACION", "DESCARTADA"})
+    void debePasar_cuandoLaFichaEstaDisponibleODescartada(EstadoFicha noEnConstruccion) {
+        // Arrange
+        var estado = EstadoFichaPerfilDomain.reconstruir(UUID.randomUUID(), ficha.getId(), noEnConstruccion, Instant.now());
+
+        // Act / Assert
+        assertThatCode(() -> validator.validar(cambio(nuevoAsesor), ficha, asesor(nuevoAsesor), estado))
+                .doesNotThrowAnyException();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EstadoFicha.class, names = {"APROBADA", "APROBADA_CON_OBSERVACIONES", "NO_APROBADA"})
+    void debeLanzarEstadoTerminal_cuandoLaFichaEstaFinalizada(EstadoFicha terminal) {
+        // Arrange
+        var estado = EstadoFichaPerfilDomain.reconstruir(UUID.randomUUID(), ficha.getId(), terminal, Instant.now());
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(cambio(nuevoAsesor), ficha, asesor(nuevoAsesor), estado))
+                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+    }
     @Test
     void debeLanzarFichaNoEncontrada_cuandoLaFichaEsVacia() {
         // Arrange — VACIO es como viaja la ausencia de un agregado hasta el validator
-        UUID fichaId = UUID.randomUUID();
+        var fichaId = UUID.randomUUID();
         var cambio = CambioAsesorFichaDomain.crear(fichaId, nuevoAsesor);
 
         // Act / Assert

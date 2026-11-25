@@ -41,7 +41,7 @@ public enum EstadoFicha {
     }
 
     public boolean permiteModificacion() {
-        return !esTerminal();
+        return this == EN_CONSTRUCCION;
     }
 
     public boolean esAsignablePorAsesor() {

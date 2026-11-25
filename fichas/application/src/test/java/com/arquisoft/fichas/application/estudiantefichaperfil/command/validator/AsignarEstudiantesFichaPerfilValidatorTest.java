@@ -3,7 +3,8 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.validator
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.impl.AsignarEstudiantesFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilNoEnConstruccionException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.AgregacionEstudiantesFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
@@ -42,25 +43,23 @@ class AsignarEstudiantesFichaPerfilValidatorTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = EstadoFicha.class, names = {"DISPONIBLE_PARA_EVALUACION", "DESCARTADA"})
-    void debePasar_cuandoLaFichaEstaEnUnEstadoNoTerminal(EstadoFicha estadoNoTerminal) {
+    @EnumSource(value = EstadoFicha.class, names = {
+            "DISPONIBLE_PARA_EVALUACION", "DESCARTADA", "APROBADA", "APROBADA_CON_OBSERVACIONES", "NO_APROBADA"})
+    void debeLanzarNoEnConstruccion_cuandoLaFichaNoEstaEnConstruccion(EstadoFicha noPermitido) {
         // Arrange
-        var noTerminal = estadoFicha(estadoNoTerminal);
+        var estado = estadoFicha(noPermitido);
 
         // Act / Assert
-        assertThatCode(() -> validator.validar(entrada, ficha, noTerminal, List.of(estudiante), List.of(), 0L))
-                .doesNotThrowAnyException();
+        assertThatThrownBy(() -> validator.validar(entrada, ficha, estado, List.of(estudiante), List.of(), 0L))
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
     }
 
-    @ParameterizedTest
-    @EnumSource(value = EstadoFicha.class, names = {"APROBADA", "APROBADA_CON_OBSERVACIONES", "NO_APROBADA"})
-    void debeLanzarEstadoTerminal_cuandoLaFichaEstaFinalizada(EstadoFicha estadoTerminal) {
-        // Arrange
-        var finalizada = estadoFicha(estadoTerminal);
-
+    @Test
+    void debeLanzarEstadoNoEncontrado_cuandoLaFichaNoTieneEstado() {
         // Act / Assert
-        assertThatThrownBy(() -> validator.validar(entrada, ficha, finalizada, List.of(estudiante), List.of(), 0L))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+        assertThatThrownBy(() -> validator.validar(
+                entrada, ficha, EstadoFichaPerfilDomain.VACIO, List.of(estudiante), List.of(), 0L))
+                .isInstanceOf(EstadoFichaPerfilNoEncontradoException.class);
     }
 
     @Test
@@ -83,14 +82,14 @@ class AsignarEstudiantesFichaPerfilValidatorTest {
     }
 
     @Test
-    void debeReportarElEstadoTerminalAntesQueElCupo_cuandoAmbosFallan() {
+    void debeLanzarNoEnConstruccion_antesQueCupo() {
         // Arrange
         var finalizada = estadoFicha(EstadoFicha.NO_APROBADA);
 
         // Act / Assert
         assertThatThrownBy(() -> validator.validar(
                 entrada, ficha, finalizada, List.of(estudiante), List.of(), CUPO_COMPLETO))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
     }
 
     private EstadoFichaPerfilDomain estadoFicha(EstadoFicha estado) {

@@ -4,12 +4,15 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.R
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilNoEnConstruccionException;
+
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemConRevisionesException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -66,16 +69,18 @@ class RemoverItemFichaPerfilValidatorTest {
                 .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
     }
 
-    @Test
-    void debeLanzarEstadoTerminal_cuandoLaFichaEstaAprobada() {
+    @ParameterizedTest
+    @EnumSource(value = EstadoFicha.class, names = {
+            "DISPONIBLE_PARA_EVALUACION", "DESCARTADA", "APROBADA", "APROBADA_CON_OBSERVACIONES", "NO_APROBADA"})
+    void debeLanzarNoEnConstruccion_cuandoLaFichaNoEstaEnConstruccion(EstadoFicha noPermitido) {
         // Arrange
-        var aprobada = EstadoFichaPerfilDomain.reconstruir(
-                UUID.randomUUID(), fichaPerfil, EstadoFicha.APROBADA, Instant.now());
+        var estado = EstadoFichaPerfilDomain.reconstruir(UUID.randomUUID(), fichaPerfil, noPermitido, Instant.now());
 
         // Act / Assert
-        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, true, aprobada, 0L))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, true, estado, 0L))
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
     }
+
 
     @Test
     void debeLanzarEstadoNoEncontrado_cuandoLaFichaNoTieneEstado() {
@@ -86,13 +91,13 @@ class RemoverItemFichaPerfilValidatorTest {
     }
 
     @Test
-    void debeReportarEstadoTerminalAntesQueRevisiones_cuandoAmbasFallan() {
+    void debeLanzarNoEnConstruccion_antesQueItemConRevisiones() {
         // Arrange
         var noAprobada = EstadoFichaPerfilDomain.reconstruir(
                 UUID.randomUUID(), fichaPerfil, EstadoFicha.NO_APROBADA, Instant.now());
 
         // Act / Assert
         assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, true, noAprobada, 3L))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
     }
 }

@@ -4,11 +4,14 @@ import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.Modif
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilNoEnConstruccionException;
+
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -36,7 +39,7 @@ class ModificarFichaPerfilValidatorTest {
     @Test
     void debeLanzarNoPropietario_cuandoElEstudianteNoEsDuenoDeLaFicha() {
         // Arrange
-        UUID ficha = UUID.randomUUID();
+        var ficha = UUID.randomUUID();
         var modificacion = modificacion(ficha, UUID.randomUUID(), "Titulo nuevo");
 
         // Act / Assert
@@ -66,16 +69,31 @@ class ModificarFichaPerfilValidatorTest {
                 .isInstanceOf(FichaNoPropietarioException.class);
     }
 
-    @Test
-    void debeLanzarEstadoTerminal_cuandoLaFichaEstaAprobada() {
+    @ParameterizedTest
+    @EnumSource(value = EstadoFicha.class, names = {
+            "DISPONIBLE_PARA_EVALUACION", "DESCARTADA", "APROBADA", "APROBADA_CON_OBSERVACIONES", "NO_APROBADA"})
+    void debeLanzarNoEnConstruccion_cuandoLaFichaNoEstaEnConstruccion(EstadoFicha noPermitido) {
         // Arrange
-        UUID ficha = UUID.randomUUID();
+        var ficha = UUID.randomUUID();
         var modificacion = modificacion(ficha, UUID.randomUUID(), "Titulo nuevo");
-        var aprobada = EstadoFichaPerfilDomain.reconstruir(UUID.randomUUID(), ficha, EstadoFicha.APROBADA, Instant.now());
+        var estado = EstadoFichaPerfilDomain.reconstruir(UUID.randomUUID(), ficha, noPermitido, Instant.now());
 
         // Act / Assert
-        assertThatThrownBy(() -> validator.validar(modificacion, true, aprobada, false))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+        assertThatThrownBy(() -> validator.validar(modificacion, true, estado, false))
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
+    }
+
+    @Test
+    void debeLanzarNoEnConstruccion_antesQueTituloDuplicado() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var modificacion = modificacion(ficha, UUID.randomUUID(), "Titulo tomado");
+        var estado = EstadoFichaPerfilDomain.reconstruir(
+                UUID.randomUUID(), ficha, EstadoFicha.DISPONIBLE_PARA_EVALUACION, Instant.now());
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(modificacion, true, estado, true))
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
     }
 
     @Test

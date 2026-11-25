@@ -3,8 +3,11 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.validator
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnTerminalRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.ExistenciaEstadoFichaPerfil;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilExisteRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilExisteRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnConstruccionRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnConstruccionRuleImpl;
 import com.arquisoft.fichas.domain.estudiante.model.ExistenciaEstudiantes;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
 import com.arquisoft.fichas.domain.estudiante.rules.impl.EstudiantesExistenRuleImpl;
@@ -33,7 +36,8 @@ public class AsignarEstudiantesFichaPerfilValidatorImpl implements AsignarEstudi
     private final FichaPerfilExisteRule fichaPerfilExisteRule;
     private final EstudiantesExistenRule estudiantesExistenRule;
     private final EstudiantesNoVinculadosRule estudiantesNoVinculadosRule;
-    private final EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
+    private final EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule;
+    private final EstadoFichaPerfilEnConstruccionRule estadoFichaPerfilEnConstruccionRule;
     private final EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
 
     public AsignarEstudiantesFichaPerfilValidatorImpl() {
@@ -41,7 +45,8 @@ public class AsignarEstudiantesFichaPerfilValidatorImpl implements AsignarEstudi
         this.fichaPerfilExisteRule = new FichaPerfilExisteRuleImpl();
         this.estudiantesExistenRule = new EstudiantesExistenRuleImpl();
         this.estudiantesNoVinculadosRule = new EstudiantesNoVinculadosRuleImpl();
-        this.estadoFichaPerfilEnTerminalRule = new EstadoFichaPerfilEnTerminalRuleImpl();
+        this.estadoFichaPerfilExisteRule = new EstadoFichaPerfilExisteRuleImpl();
+        this.estadoFichaPerfilEnConstruccionRule = new EstadoFichaPerfilEnConstruccionRuleImpl();
         this.estudianteFichaPerfilCupoDisponibleRule = new EstudianteFichaPerfilCupoDisponibleRuleImpl();
     }
 
@@ -58,7 +63,9 @@ public class AsignarEstudiantesFichaPerfilValidatorImpl implements AsignarEstudi
                 new ExistenciaEstudiantes(entrada.getEstudiantes(), estudiantesExistentes));
         estudiantesNoVinculadosRule.validar(new VinculosEstudiantesFicha(yaVinculados));
 
-        estadoFichaPerfilEnTerminalRule.validar(
+        estadoFichaPerfilExisteRule.validar(
+                new ExistenciaEstadoFichaPerfil(entrada.getFichaPerfil(), !estadoActual.esVacio()));
+        estadoFichaPerfilEnConstruccionRule.validar(
                 new EstadoActualFicha(entrada.getFichaPerfil(), estadoActual.getEstadoFicha()));
         estudianteFichaPerfilCupoDisponibleRule.validar(
                 new CupoEstudiantesFicha(vinculadosActuales, entrada.getCantidad()));
