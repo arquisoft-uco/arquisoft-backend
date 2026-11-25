@@ -15,6 +15,7 @@ public final class ArtefactoEstudianteCriteria extends QueryCriteria {
         NOMBRE_DOCUMENTO              ("nombreDocumento",             true, true),
         VERSION_DOCUMENTO             ("versionDocumento",            true, true),
         NOMBRE_REPOSITORIO            ("nombreRepositorio",           true, true),
+        ESTADO_ULTIMA_REVISION        ("estadoUltimaRevision",        true, true),
         ASESOR                        ("asesor",                      true, false),
         NOMBRE_ASESOR                 ("nombreAsesor",                true, true),
         ESTUDIANTE_ID                 ("estudianteId",                true, false),

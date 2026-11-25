@@ -16,6 +16,7 @@ public record ArtefactoEstudianteResponseDTO(
         UUID asesor,
         String nombreAsesor,
         boolean omitido,
+        String estadoUltimaRevision,
         boolean proyectoFinalizado,
         boolean proyectoCancelado
 ) {

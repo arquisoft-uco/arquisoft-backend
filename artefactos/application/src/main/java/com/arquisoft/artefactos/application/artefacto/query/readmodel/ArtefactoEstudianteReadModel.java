@@ -13,6 +13,7 @@ public record ArtefactoEstudianteReadModel(
         UUID asesor,
         String nombreAsesor,
         boolean omitido,
+        String estadoUltimaRevision,
         boolean proyectoFinalizado,
         boolean proyectoCancelado
 ) {

@@ -442,10 +442,10 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
                 "Devuelve, de forma paginada, los artefactos a cargo del asesor autenticado con su proyecto "
                         + "de grado y la versión del repositorio usada como base. Se puede filtrar por proyectoGrado, "
-                        + "nombreProyecto, versionRepositorioArtefacto, nombreDocumento, versionDocumento y "
-                        + "nombreRepositorio, y ordenar por nombreProyecto, nombreDocumento, versionDocumento y "
-                        + "nombreRepositorio; por defecto, nombreProyecto y nombreDocumento ascendentes. "
-                        + "El asesor se toma del token, nunca del cuerpo." + Comun.INDICADORES_CIERRE;
+                        + "nombreProyecto, versionRepositorioArtefacto, nombreDocumento, versionDocumento, "
+                        + "nombreRepositorio y estadoUltimaRevision (ES_NULO: sin revisión), y ordenar por nombreProyecto, "
+                        + "nombreDocumento, versionDocumento, nombreRepositorio y estadoUltimaRevision; por defecto, "
+                        + "nombreProyecto y nombreDocumento ascendentes. El asesor se toma del token, nunca del cuerpo." + Comun.INDICADORES_CIERRE;
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de artefactos asignados al asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 =
                 "Filtro, operador, valor u ordenamiento inválido, o identificador de asesor inválido";
@@ -467,10 +467,10 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Devuelve, de forma paginada, los artefactos de los proyectos de grado a los que el estudiante "
                         + "autenticado está vinculado, con su proyecto, la versión del repositorio usada como base y "
-                        + "el asesor responsable. Se puede filtrar por proyectoGrado, nombreProyecto, "
-                        + "versionRepositorioArtefacto, nombreDocumento, versionDocumento, nombreRepositorio, "
-                        + "asesor y nombreAsesor, y ordenar por nombreProyecto, nombreDocumento, versionDocumento, "
-                        + "nombreRepositorio y nombreAsesor; por defecto, nombreProyecto y nombreDocumento "
+                        + "el asesor responsable. Se puede filtrar por proyectoGrado, nombreProyecto, versionRepositorioArtefacto, "
+                        + "nombreDocumento, versionDocumento, nombreRepositorio, asesor, nombreAsesor y estadoUltimaRevision "
+                        + "(ES_NULO: sin revisión), y ordenar por nombreProyecto, nombreDocumento, versionDocumento, "
+                        + "nombreRepositorio, nombreAsesor y estadoUltimaRevision; por defecto, nombreProyecto y nombreDocumento "
                         + "ascendentes. El estudiante se toma del token, nunca del cuerpo." + Comun.INDICADORES_CIERRE;
         public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Página de artefactos de los proyectos del estudiante";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
