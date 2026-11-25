@@ -2,6 +2,9 @@ package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.primar
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.interactor.RegistrarEvaluacionFichaPerfilInteractor;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.result.InicioEvaluacionFichaPerfilResult;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import com.arquisoft.shared.web.identidad.IdentidadActualTestConfig;
 import org.junit.jupiter.api.Test;
@@ -59,7 +62,7 @@ class RegistrarEvaluacionFichaPerfilControllerTest {
         UUID evaluacionId = UUID.randomUUID();
         UUID representanteId = UUID.randomUUID();
 
-        when(registrarEvaluacionFichaPerfilInteractor.ejecutar(any())).thenReturn(evaluacionId);
+        when(registrarEvaluacionFichaPerfilInteractor.ejecutar(any())).thenReturn(new InicioEvaluacionFichaPerfilResult.Registrada(evaluacionId));
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaId}/evaluaciones", fichaId)
@@ -67,6 +70,39 @@ class RegistrarEvaluacionFichaPerfilControllerTest {
                                 .jwt(jwt -> jwt.subject(representanteId.toString()))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(evaluacionId.toString()));
+    }
+
+    @Test
+    void debe200ConIdDeLaExistente_cuandoResultadoEsReactivada() throws Exception {
+        // Arrange
+        var fichaId = UtilUUID.generarNuevoUUID();
+        var evaluacionId = UtilUUID.generarNuevoUUID();
+
+        when(registrarEvaluacionFichaPerfilInteractor.ejecutar(any()))
+                .thenReturn(new InicioEvaluacionFichaPerfilResult.Reactivada(evaluacionId));
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil/{fichaId}/evaluaciones", fichaId)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .jwt(jwt -> jwt.subject(UtilUUID.generarNuevoUUID().toString()))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(evaluacionId.toString()));
+    }
+
+    @Test
+    void debe422_cuandoElInteractorLanzaUnaReglaDeDominio() throws Exception {
+        // Arrange
+        var fichaId = UtilUUID.generarNuevoUUID();
+        var representanteId = UtilUUID.generarNuevoUUID();
+
+        when(registrarEvaluacionFichaPerfilInteractor.ejecutar(any()))
+                .thenThrow(new EvaluacionFichaPerfilDuplicadaException(representanteId, fichaId));
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil/{fichaId}/evaluaciones", fichaId)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .jwt(jwt -> jwt.subject(representanteId.toString()))))
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

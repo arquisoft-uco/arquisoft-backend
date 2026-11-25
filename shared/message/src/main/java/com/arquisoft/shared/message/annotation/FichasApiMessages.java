@@ -492,11 +492,15 @@ public final class FichasApiMessages {
         public static final String TAG_NAME = "Evaluaciones de Ficha de Perfil";
         public static final String TAG_DESCRIPTION = "Gestión de evaluaciones de fichas de perfil por el comité de currículum";
 
-        public static final String REGISTRAR_SUMMARY = "Registrar nueva evaluación de ficha de perfil";
+        public static final String REGISTRAR_SUMMARY = "Iniciar evaluación de ficha de perfil";
         public static final String REGISTRAR_DESCRIPTION =
-                "Permite al representante del comité de currículum registrar una nueva evaluación sobre una ficha de perfil existente.";
+                "Permite al representante del comité de currículum iniciar la evaluación de una ficha de perfil disponible para "
+                        + "evaluación: registra una nueva o reactiva la evaluación que había descartado.";
+        public static final String REGISTRAR_RESP_200 = "Evaluación descartada reactivada exitosamente";
         public static final String REGISTRAR_RESP_201 = "Evaluación creada exitosamente";
-        public static final String REGISTRAR_RESP_400 = "Ficha no encontrada, representante no encontrado, evaluación duplicada o datos inválidos";
+        public static final String REGISTRAR_RESP_400 = "Datos inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "Ficha o representante no encontrado, ficha no disponible para evaluación o evaluación ya existente";
 
         public static final String CONSULTAR_REPRESENTANTE_SUMMARY =
                 "Consultar información de evaluación de ficha de perfil generada";
@@ -560,6 +564,16 @@ public final class FichasApiMessages {
         public static final String AGREGAR_RESP_400 = "Datos inválidos o evaluación no encontrada o estado duplicado";
         public static final String AGREGAR_RESP_403 = "No autorizado - requiere rol representante-comite";
         public static final String AGREGAR_RESP_422 = "Transición de estado inválida (estado terminal o primer estado debe ser EN_EVALUACION)";
+
+        public static final String DESCARTAR_SUMMARY = "Descartar evaluación de ficha de perfil";
+        public static final String DESCARTAR_DESCRIPTION =
+                "Descarta una evaluación en curso del representante del comité mientras la ficha siga disponible "
+                        + "para evaluación; conserva el historial y las observaciones";
+        public static final String DESCARTAR_RESP_204 = "Evaluación descartada exitosamente";
+        public static final String DESCARTAR_RESP_400 = "Identificador de evaluación inválido";
+        public static final String DESCARTAR_RESP_403 = "No autorizado - requiere rol representante-comite";
+        public static final String DESCARTAR_RESP_422 =
+                "Evaluación inexistente, ajena o no descartable, o ficha no disponible para evaluación";
     }
 
     public static final class EstadoFicha {

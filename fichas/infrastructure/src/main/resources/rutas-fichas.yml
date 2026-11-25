@@ -46,6 +46,7 @@ rutas:
       evaluaciones-coordinador: /{fichaPerfilId}/evaluaciones/coordinador
       evaluaciones-asesor: /evaluaciones/asesor
       estudiante: /estudiante
+      evaluacion-descarte: /evaluaciones/{evaluacionFichaPerfilId}/descarte
       evaluacion-observaciones: /evaluaciones/{evaluacionFichaPerfilId}/observaciones
       evaluacion-observaciones-estudiante: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/estudiante
       evaluacion-observaciones-asesor: /evaluaciones/{evaluacionFichaPerfilId}/observaciones/asesor

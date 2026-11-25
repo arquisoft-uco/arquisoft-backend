@@ -525,6 +525,7 @@
               "fichas:observacion-evaluacion:delete",
               "fichas:tipo-item:view",
               "fichas:observacion-evaluacion:update",
+              "fichas:evaluacion-ficha-perfil-descarte:update",
               "fichas:estado-evaluacion-ficha:create",
               "fichas:estado-ficha-perfil-representante:view",
               "usuarios:representante-comite-vigente:view",
@@ -1998,6 +1999,15 @@
         {
           "id": "76cb7759-4705-483d-b7b2-c5eba5377e00",
           "name": "fichas:estudiante-ficha-perfil:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "e810345f-e40c-46e2-b046-17576f5374c4",
+          "name": "fichas:evaluacion-ficha-perfil-descarte:update",
           "description": "",
           "composite": false,
           "clientRole": true,

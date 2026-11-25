@@ -113,6 +113,20 @@ class EstadoEvaluacionFichaCommandRepositoryTest {
         assertThat(cantidad).isEqualTo(2L);
     }
 
+    @Test
+    void debePersistirMismoEstadoDosVeces_enElHistorial() {
+        // Arrange
+        var ahora = Instant.now();
+        persistirEstadoEvaluacionFicha(evaluacion, enEvaluacion, ahora.minusSeconds(120));
+        persistirEstadoEvaluacionFicha(evaluacion, enEvaluacion, ahora);
+
+        // Act
+        entityManager.flush();
+
+        // Assert
+        assertThat(repository.countByEvaluacionFichaPerfilId(evaluacion.getId())).isEqualTo(2L);
+    }
+
     private EstadoEvaluacionJpaEntity persistirEstado(String id, String nombre) {
         return entityManager.persist(EstadoEvaluacionJpaEntity.builder()
                 .id(id)

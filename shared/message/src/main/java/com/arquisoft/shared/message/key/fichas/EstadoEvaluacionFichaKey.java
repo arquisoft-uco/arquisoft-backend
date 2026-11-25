@@ -30,10 +30,18 @@ public enum EstadoEvaluacionFichaKey implements ClaveMensaje {
             "fichas.dominio.estadoevaluacionficha.error.descartada-no-asignable", 0),
     ERROR_DESCARTADA_NO_ASIGNABLE_DETALLE(
             "fichas.dominio.estadoevaluacionficha.error.descartada-no-asignable-detalle", 1),
+    ERROR_EVALUACION_NO_DESCARTABLE(
+            "fichas.dominio.estadoevaluacionficha.error.evaluacion-no-descartable", 1),
+    ERROR_EVALUACION_NO_DESCARTABLE_DETALLE(
+            "fichas.dominio.estadoevaluacionficha.error.evaluacion-no-descartable-detalle", 2),
     LOG_AGREGANDO("fichas.aplicacion.estadoevaluacionficha.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.estadoevaluacionficha.log.verificacion-agregar", 4),
     LOG_AGREGADO("fichas.aplicacion.estadoevaluacionficha.log.agregado", 3),
     LOG_CREADO_AUTOMATICO("fichas.aplicacion.estadoevaluacionficha.log.creado-automatico", 3),
+    LOG_DESCARTANDO("fichas.aplicacion.estadoevaluacionficha.log.descartando", 2),
+    LOG_VERIFICACION_DESCARTAR("fichas.aplicacion.estadoevaluacionficha.log.verificacion-descartar", 4),
+    LOG_DESCARTADA("fichas.aplicacion.estadoevaluacionficha.log.descartada", 2),
+    LOG_REACTIVADA("fichas.aplicacion.estadoevaluacionficha.log.reactivada", 2),
     LOG_GUARDADO("fichas.infraestructura.estadoevaluacionficha.log.guardado", 2);
 
     private final String clave;
