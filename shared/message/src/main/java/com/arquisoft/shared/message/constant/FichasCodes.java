@@ -12,6 +12,7 @@ public final class FichasCodes {
         public static final String TITULO_REQUERIDO = "FICHA_TITULO_REQUERIDO";
         public static final String TITULO_DEMASIADO_LARGO = "FICHA_TITULO_DEMASIADO_LARGO";
         public static final String ASESOR_REQUERIDO = "FICHA_ASESOR_REQUERIDO";
+        public static final String REPRESENTANTE_REQUERIDO = "FICHA_REPRESENTANTE_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO = "FICHA_ESTUDIANTE_REQUERIDO";
         public static final String FICHA_TITULO_DUPLICADO = "FICHA_TITULO_DUPLICADO";
         public static final String ASESOR_NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
