@@ -1,10 +1,14 @@
 package com.arquisoft.artefactos.infrastructure.estudianteartefacto.query.secondaryadapter.repository;
 
+import com.arquisoft.artefactos.application.estudianteartefacto.query.criteria.ParticipacionArtefactoCriteria;
 import com.arquisoft.artefactos.application.estudianteartefacto.query.readmodel.EstudianteArtefactoReadModel;
 import com.arquisoft.artefactos.application.estudianteartefacto.query.readmodel.ParticipacionArtefactoReadModel;
 import com.arquisoft.artefactos.application.estudianteartefacto.query.secondaryport.EstudianteArtefactoQueryOutputPort;
 import com.arquisoft.artefactos.infrastructure.estudianteartefacto.query.secondaryadapter.repository.mapper.EstudianteArtefactoQueryMapper;
 import com.arquisoft.artefactos.infrastructure.estudianteartefacto.query.secondaryadapter.repository.mapper.ParticipacionArtefactoQueryMapper;
+import com.arquisoft.shared.jpa.util.PageableMapper;
+import com.arquisoft.shared.jpa.util.PaginationMapper;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +21,7 @@ public class EstudianteArtefactoQueryOutputAdapter implements EstudianteArtefact
 
     private final EstudianteArtefactoQueryRepository estudianteArtefactoQueryRepository;
     private final ParticipacionArtefactoQueryRepository participacionArtefactoQueryRepository;
+    private final ParticipacionArtefactoJpaSpecification participacionSpecification;
 
     @Override
     public List<EstudianteArtefactoReadModel> consultarPorArtefacto(UUID artefacto) {
@@ -26,11 +31,13 @@ public class EstudianteArtefactoQueryOutputAdapter implements EstudianteArtefact
     }
 
     @Override
-    public List<ParticipacionArtefactoReadModel> consultarParticipacionesPorEstudiante(UUID estudiante) {
-        return participacionArtefactoQueryRepository
-                .findByEstudianteIdOrderByNombreProyectoAscNombreDocumentoAscVersionDocumentoAscIdAsc(estudiante)
-                .stream()
-                .map(ParticipacionArtefactoQueryMapper::toReadModel)
-                .toList();
+    public PaginatedResult<ParticipacionArtefactoReadModel> consultarParticipaciones(
+            ParticipacionArtefactoCriteria criteria) {
+        var pageable = PageableMapper.toPageable(criteria, ParticipacionArtefactoSortMapper::traducir, "id");
+        var spec = participacionSpecification.desdeCriteria(criteria);
+
+        return PaginationMapper.toResult(
+                participacionArtefactoQueryRepository.findAll(spec, pageable)
+                        .map(ParticipacionArtefactoQueryMapper::toReadModel));
     }
 }

@@ -7,6 +7,9 @@ import com.arquisoft.artefactos.infrastructure.estudianteartefacto.query.primary
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ArtefactosApiMessages;
+import com.arquisoft.shared.query.dto.QueryCriteriaRequestDTO;
+import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.dto.PageResponseDTO;
 import com.arquisoft.shared.web.identidad.IdentidadActual;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,11 +21,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("${rutas.artefactos.artefactos.base:/artefactos}")
@@ -34,7 +36,7 @@ public class ConsultarParticipacionesArtefactoController {
 
     private final ConsultarParticipacionesArtefactoInteractor consultarParticipacionesArtefactoInteractor;
 
-    @GetMapping("${rutas.artefactos.artefactos.estudiante-participaciones:/estudiante/participaciones}")
+    @PostMapping("${rutas.artefactos.artefactos.estudiante-participaciones:/estudiante/participaciones}")
     @Operation(
             summary = ArtefactosApiMessages.EstudianteArtefacto.CONSULTAR_PARTICIPACION_SUMMARY,
             description = ArtefactosApiMessages.EstudianteArtefacto.CONSULTAR_PARTICIPACION_DESCRIPTION,
@@ -45,7 +47,11 @@ public class ConsultarParticipacionesArtefactoController {
                     description = ArtefactosApiMessages.EstudianteArtefacto.CONSULTAR_PARTICIPACION_RESP_200,
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ParticipacionArtefactoResponseDTO.class))),
+                            schema = @Schema(implementation = PageResponseDTO.class))),
+            @ApiResponse(
+                    responseCode = ApiCodes.BAD_REQUEST,
+                    description = ArtefactosApiMessages.EstudianteArtefacto.CONSULTAR_PARTICIPACION_RESP_400,
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
             @ApiResponse(
                     responseCode = ApiCodes.UNAUTHORIZED,
                     description = ArtefactosApiMessages.Comun.RESP_401),
@@ -53,15 +59,15 @@ public class ConsultarParticipacionesArtefactoController {
                     responseCode = ApiCodes.FORBIDDEN,
                     description = ArtefactosApiMessages.EstudianteArtefacto.CONSULTAR_PARTICIPACION_RESP_403)
     })
-    public ResponseEntity<List<ParticipacionArtefactoResponseDTO>> consultarParticipaciones(
+    public ResponseEntity<PageResponseDTO<ParticipacionArtefactoResponseDTO>> consultarParticipaciones(
+            @RequestBody(required = false) QueryCriteriaRequestDTO request,
             IdentidadActual identidad) {
 
         var estudiante = identidad.id();
-        var participaciones = consultarParticipacionesArtefactoInteractor.ejecutar(
-                ConsultarParticipacionesArtefactoRequestMapper.toQuery(estudiante));
+        var resultado = consultarParticipacionesArtefactoInteractor.ejecutar(
+                ConsultarParticipacionesArtefactoRequestMapper.toQuery(request, estudiante));
 
-        return ResponseEntity.ok(participaciones.stream()
-                .map(ParticipacionArtefactoResponseMapper::toResponse)
-                .toList());
+        return ResponseEntity.ok(PageResponseDTO.from(
+                resultado.map(ParticipacionArtefactoResponseMapper::toResponse)));
     }
 }

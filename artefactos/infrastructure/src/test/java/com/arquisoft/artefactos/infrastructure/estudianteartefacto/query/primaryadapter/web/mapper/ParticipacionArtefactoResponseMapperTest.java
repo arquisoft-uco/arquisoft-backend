@@ -14,7 +14,7 @@ class ParticipacionArtefactoResponseMapperTest {
         var asesor = UtilUUID.generarNuevoUUID();
         var readModel = new ParticipacionArtefactoReadModel(UtilUUID.generarNuevoUUID(),
                 UtilUUID.generarNuevoUUID(), "Proyecto Alfa", UtilUUID.generarNuevoUUID(), "Informe", 3, "Repo",
-                asesor, "Ana Asesora", true);
+                asesor, "Ana Asesora", true, "Pendiente", true, false);
 
         // Act
         var dto = ParticipacionArtefactoResponseMapper.toResponse(readModel);
@@ -30,5 +30,23 @@ class ParticipacionArtefactoResponseMapperTest {
         assertThat(dto.asesor()).isEqualTo(asesor);
         assertThat(dto.nombreAsesor()).isEqualTo("Ana Asesora");
         assertThat(dto.omitido()).isTrue();
+        assertThat(dto.estadoUltimaRevision()).isEqualTo("Pendiente");
+        assertThat(dto.proyectoFinalizado()).isTrue();
+        assertThat(dto.proyectoCancelado()).isFalse();
+    }
+
+    @Test
+    void debeMapearEstadoNulo_cuandoNoHayRevisiones() {
+        // Arrange
+        var readModel = new ParticipacionArtefactoReadModel(UtilUUID.generarNuevoUUID(),
+                UtilUUID.generarNuevoUUID(), "Proyecto Alfa", UtilUUID.generarNuevoUUID(), "Informe", 1, "Repo",
+                UtilUUID.generarNuevoUUID(), "Ana Asesora", false, null, false, true);
+
+        // Act
+        var dto = ParticipacionArtefactoResponseMapper.toResponse(readModel);
+
+        // Assert
+        assertThat(dto.estadoUltimaRevision()).isNull();
+        assertThat(dto.proyectoCancelado()).isTrue();
     }
 }

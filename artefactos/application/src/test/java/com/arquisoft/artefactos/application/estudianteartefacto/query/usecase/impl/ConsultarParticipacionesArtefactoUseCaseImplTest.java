@@ -5,6 +5,7 @@ import com.arquisoft.artefactos.application.estudianteartefacto.query.readmodel.
 import com.arquisoft.artefactos.application.estudianteartefacto.query.secondaryport.EstudianteArtefactoQueryOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,39 +35,41 @@ class ConsultarParticipacionesArtefactoUseCaseImplTest {
 
     private static ParticipacionArtefactoReadModel readModel(String documento) {
         return new ParticipacionArtefactoReadModel(UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(),
-                "Proyecto", UtilUUID.generarNuevoUUID(), documento, 1, "Repo", UtilUUID.generarNuevoUUID(), "Ana", false);
+                "Proyecto", UtilUUID.generarNuevoUUID(), documento, 1, "Repo", UtilUUID.generarNuevoUUID(), "Ana",
+                false, "Pendiente", false, false);
     }
 
     @Test
-    void debeRetornarLosArtefactosDelPuerto_cuandoHayVinculos() {
+    void debeRetornarLaPaginaDelPuerto_cuandoHayVinculos() {
         // Arrange
-        var estudiante = UtilUUID.generarNuevoUUID();
-        var esperado = List.of(readModel("A"), readModel("B"), readModel("C"));
-        when(estudianteArtefactoQueryOutputPort.consultarParticipacionesPorEstudiante(estudiante))
-                .thenReturn(esperado);
+        var criteria = ParticipacionArtefactoCriteria.builder().pagina(0).tamanio(10).build();
+        var esperado = PaginatedResult.of(List.of(readModel("A"), readModel("B"), readModel("C")), 0, 10, 3L);
+        when(estudianteArtefactoQueryOutputPort.consultarParticipaciones(criteria)).thenReturn(esperado);
 
         // Act
-        var resultado = useCase.ejecutar(new ParticipacionArtefactoCriteria(estudiante));
+        var resultado = useCase.ejecutar(criteria);
 
         // Assert
         assertThat(resultado).isSameAs(esperado);
-        verify(estudianteArtefactoQueryOutputPort, times(1)).consultarParticipacionesPorEstudiante(estudiante);
-        verify(logger).debug(eq(EstudianteArtefactoKey.LOG_CONSULTANDO_PARTICIPACION), eq(estudiante));
-        verify(logger).debug(eq(EstudianteArtefactoKey.LOG_CONSULTA_PARTICIPACION_COMPLETADA), eq(3));
+        verify(estudianteArtefactoQueryOutputPort, times(1)).consultarParticipaciones(criteria);
+        verify(logger).debug(eq(EstudianteArtefactoKey.LOG_CONSULTANDO_PARTICIPACION),
+                eq(criteria.getPagina()), eq(criteria.getTamanio()),
+                eq(criteria.tieneFiltros()), eq(criteria.tieneOrden()));
+        verify(logger).debug(eq(EstudianteArtefactoKey.LOG_CONSULTA_PARTICIPACION_COMPLETADA), eq(3L));
     }
 
     @Test
-    void debeRetornarListaVacia_cuandoNoHayVinculos() {
+    void debeRetornarPaginaVacia_cuandoNoHayVinculos() {
         // Arrange
-        var estudiante = UtilUUID.generarNuevoUUID();
-        when(estudianteArtefactoQueryOutputPort.consultarParticipacionesPorEstudiante(estudiante))
-                .thenReturn(List.of());
+        var criteria = ParticipacionArtefactoCriteria.builder().pagina(0).tamanio(10).build();
+        var esperado = PaginatedResult.<ParticipacionArtefactoReadModel>of(List.of(), 0, 10, 0L);
+        when(estudianteArtefactoQueryOutputPort.consultarParticipaciones(criteria)).thenReturn(esperado);
 
         // Act
-        var resultado = useCase.ejecutar(new ParticipacionArtefactoCriteria(estudiante));
+        var resultado = useCase.ejecutar(criteria);
 
         // Assert
-        assertThat(resultado).isEmpty();
-        verify(logger).debug(eq(EstudianteArtefactoKey.LOG_CONSULTA_PARTICIPACION_COMPLETADA), eq(0));
+        assertThat(resultado.getContent()).isEmpty();
+        verify(logger).debug(eq(EstudianteArtefactoKey.LOG_CONSULTA_PARTICIPACION_COMPLETADA), eq(0L));
     }
 }

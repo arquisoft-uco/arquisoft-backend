@@ -4,7 +4,7 @@ import com.arquisoft.artefactos.application.estudianteartefacto.query.criteria.P
 import com.arquisoft.artefactos.application.estudianteartefacto.query.readmodel.ParticipacionArtefactoReadModel;
 import com.arquisoft.shared.usecase.UseCase;
 
-import java.util.List;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 
 public interface ConsultarParticipacionesArtefactoUseCase
-        extends UseCase<ParticipacionArtefactoCriteria, List<ParticipacionArtefactoReadModel>> {}
+        extends UseCase<ParticipacionArtefactoCriteria, PaginatedResult<ParticipacionArtefactoReadModel>> {}
