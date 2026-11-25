@@ -6,7 +6,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloEnOtraF
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilNoEnConstruccionException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
@@ -16,7 +16,6 @@ import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -85,7 +84,7 @@ class ModificarFichaPerfilUseCaseTest {
         modificarFichaPerfilUseCase.ejecutar(modificacion);
 
         // Assert
-        InOrder inOrder = inOrder(vinculoEstudianteFichaExisteFinder, estadoActualFichaPerfilFinder,
+        var inOrder = inOrder(vinculoEstudianteFichaExisteFinder, estadoActualFichaPerfilFinder,
                 tituloEnOtraFichaExisteFinder,
                 modificarFichaPerfilValidator, fichaPerfilOutputPort);
         inOrder.verify(vinculoEstudianteFichaExisteFinder).obtener(
@@ -113,19 +112,19 @@ class ModificarFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debePropagarLaExcepcionSinActualizar_cuandoLaFichaEstaEnEstadoTerminal() {
+    void debePropagarLaExcepcionSinActualizar_cuandoLaFichaNoEstaEnConstruccion() {
         // Arrange
         var modificacion = modificacionValida();
         var aprobada = EstadoFichaPerfilDomain.reconstruir(
-                UUID.randomUUID(), modificacion.getFichaPerfil(), EstadoFicha.APROBADA, Instant.now());
+                UUID.randomUUID(), modificacion.getFichaPerfil(), EstadoFicha.DISPONIBLE_PARA_EVALUACION, Instant.now());
         stubConsultas(modificacion, true, false);
         stubEstado(aprobada);
-        doThrow(new EstadoFichaPerfilTerminalException(EstadoFicha.APROBADA))
+        doThrow(new FichaPerfilNoEnConstruccionException(EstadoFicha.DISPONIBLE_PARA_EVALUACION))
                 .when(modificarFichaPerfilValidator).validar(modificacion, true, aprobada, false);
 
         // Act & Assert
         assertThatThrownBy(() -> modificarFichaPerfilUseCase.ejecutar(modificacion))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
 
         verify(fichaPerfilOutputPort, never()).actualizarTitulo(any(), anyString());
     }

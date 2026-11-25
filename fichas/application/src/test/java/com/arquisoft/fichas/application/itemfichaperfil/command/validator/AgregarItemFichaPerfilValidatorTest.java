@@ -4,13 +4,16 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.A
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilNoEnConstruccionException;
+
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -28,9 +31,9 @@ class AgregarItemFichaPerfilValidatorTest {
     }
 
     @Test
-    void debePasar_cuandoLaFichaExisteEsPropiaYElTipoEstaLibre() {
+    void debePasar_cuandoLaFichaEstaEnConstruccionEsPropiaYElTipoEstaLibre() {
         // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
+        var fichaPerfil = UUID.randomUUID();
 
         // Act / Assert
         assertThatCode(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), true, true, enConstruccion(fichaPerfil), false))
@@ -40,7 +43,7 @@ class AgregarItemFichaPerfilValidatorTest {
     @Test
     void debeLanzarFichaNoEncontrada_cuandoLaFichaNoExiste() {
         // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
+        var fichaPerfil = UUID.randomUUID();
 
         // Act / Assert
         assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), false, true, enConstruccion(fichaPerfil), false))
@@ -51,7 +54,7 @@ class AgregarItemFichaPerfilValidatorTest {
     @Test
     void debeLanzarItemNoPropio_cuandoElEstudianteNoEsDuenoDeLaFicha() {
         // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
+        var fichaPerfil = UUID.randomUUID();
 
         // Act / Assert
         assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), true, false, enConstruccion(fichaPerfil), false))
@@ -61,7 +64,7 @@ class AgregarItemFichaPerfilValidatorTest {
     @Test
     void debeLanzarTipoDuplicado_cuandoLaFichaYaTieneEseTipoDeItem() {
         // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
+        var fichaPerfil = UUID.randomUUID();
 
         // Act / Assert
         assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), true, true, enConstruccion(fichaPerfil), true))
@@ -71,29 +74,30 @@ class AgregarItemFichaPerfilValidatorTest {
     @Test
     void debeReportarPrimeroLaAusenciaDeLaFicha_cuandoTodasLasReglasFallan() {
         // Arrange — el orden es parte del contrato: existencia, propiedad y por ultimo duplicidad
-        UUID fichaPerfil = UUID.randomUUID();
+        var fichaPerfil = UUID.randomUUID();
 
         // Act / Assert
         assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), false, false, enConstruccion(fichaPerfil), true))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class);
     }
 
-    @Test
-    void debeLanzarEstadoTerminal_cuandoLaFichaEstaAprobada() {
+    @ParameterizedTest
+    @EnumSource(value = EstadoFicha.class, names = {
+            "DISPONIBLE_PARA_EVALUACION", "DESCARTADA", "APROBADA", "APROBADA_CON_OBSERVACIONES", "NO_APROBADA"})
+    void debeLanzarNoEnConstruccion_cuandoLaFichaNoEstaEnConstruccion(EstadoFicha noPermitido) {
         // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
-        var aprobada = EstadoFichaPerfilDomain.reconstruir(
-                UUID.randomUUID(), fichaPerfil, EstadoFicha.APROBADA, Instant.now());
+        var fichaPerfil = UUID.randomUUID();
+        var estado = EstadoFichaPerfilDomain.reconstruir(UUID.randomUUID(), fichaPerfil, noPermitido, Instant.now());
 
         // Act / Assert
-        assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), true, true, aprobada, false))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+        assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), true, true, estado, false))
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
     }
 
     @Test
     void debeLanzarEstadoNoEncontrado_cuandoLaFichaNoTieneEstado() {
         // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
+        var fichaPerfil = UUID.randomUUID();
 
         // Act / Assert
         assertThatThrownBy(() -> validator.validar(
@@ -102,15 +106,15 @@ class AgregarItemFichaPerfilValidatorTest {
     }
 
     @Test
-    void debeReportarEstadoTerminalAntesQueTipoDuplicado_cuandoAmbasFallan() {
+    void debeLanzarNoEnConstruccion_antesQueTipoDuplicado() {
         // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
+        var fichaPerfil = UUID.randomUUID();
         var noAprobada = EstadoFichaPerfilDomain.reconstruir(
                 UUID.randomUUID(), fichaPerfil, EstadoFicha.NO_APROBADA, Instant.now());
 
         // Act / Assert
         assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), true, true, noAprobada, true))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
     }
 
     private EstadoFichaPerfilDomain enConstruccion(UUID fichaPerfil) {

@@ -44,7 +44,9 @@ public class ModificarFichaPerfilController {
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
                     description = FichasApiMessages.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiMessages.FichaPerfil.MODIFICAR_RESP_403)
+                    description = FichasApiMessages.FichaPerfil.MODIFICAR_RESP_403),
+            @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
+                    description = FichasApiMessages.FichaPerfil.MODIFICAR_RESP_422)
     })
     public ResponseEntity<Void> modificar(
             @PathVariable UUID id,

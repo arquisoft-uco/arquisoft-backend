@@ -25,10 +25,12 @@ public final class FichasApiMessages {
         public static final String REGISTRAR_RESP_400 = "Datos inválidos";
 
         public static final String MODIFICAR_SUMMARY = "Modificar ficha de perfil";
-        public static final String MODIFICAR_DESCRIPTION = "Permite a un estudiante modificar el título de su propia ficha de perfil.";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Permite a un estudiante modificar el título de su propia ficha de perfil. Solo mientras la ficha está en construcción.";
         public static final String MODIFICAR_RESP_204 = "Ficha modificada exitosamente";
         public static final String MODIFICAR_RESP_400 = "Título duplicado, ficha no encontrada o datos inválidos";
         public static final String MODIFICAR_RESP_403 = "Sin la autoridad requerida, o no es propietario de la ficha";
+        public static final String MODIFICAR_RESP_422 = "Título duplicado o ficha que no está en construcción";
 
         public static final String CAMBIAR_ASESOR_SUMMARY = "Cambiar asesor de ficha perfil";
         public static final String CAMBIAR_ASESOR_DESCRIPTION = "Permite al Coordinador cambiar el asesor asignado a una ficha de perfil existente";
@@ -113,26 +115,30 @@ public final class FichasApiMessages {
 
         public static final String AGREGAR_SUMMARY = "Agregar ítem a ficha de perfil";
         public static final String AGREGAR_DESCRIPTION =
-                "Permite a un estudiante agregar un ítem de contenido (objetivo, estado del arte, etc.) a su propia ficha de perfil";
+                "Permite a un estudiante agregar un ítem de contenido (objetivo, estado del arte, etc.) a su propia ficha de perfil. "
+                        + "Solo mientras la ficha está en construcción";
         public static final String AGREGAR_RESP_201 = "Ítem agregado exitosamente";
         public static final String AGREGAR_RESP_400 = "Tipo duplicado o ficha no encontrada";
         public static final String AGREGAR_RESP_403 = "Sin permiso o ficha no propia";
-        public static final String AGREGAR_RESP_422 = "Datos inválidos o tipo de ítem inválido — fieldErrors";
+        public static final String AGREGAR_RESP_422 = "Datos inválidos, tipo de ítem inválido o ficha que no está en construcción — fieldErrors";
 
         public static final String MODIFICAR_SUMMARY = "Modificar contenido de ítem";
-        public static final String MODIFICAR_DESCRIPTION = "Permite a un estudiante modificar el contenido de un ítem de su propia ficha de perfil";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Permite a un estudiante modificar el contenido de un ítem de su propia ficha de perfil. "
+                        + "Solo mientras la ficha está en construcción";
         public static final String MODIFICAR_RESP_204 = "Ítem modificado exitosamente";
         public static final String MODIFICAR_RESP_400 = "Ítem no encontrado";
         public static final String MODIFICAR_RESP_403 = "Sin permiso o estudiante no propietario de la ficha";
-        public static final String MODIFICAR_RESP_422 = "Datos inválidos o ficha en estado no modificable — fieldErrors";
+        public static final String MODIFICAR_RESP_422 = "Datos inválidos o ficha que no está en construcción — fieldErrors";
 
         public static final String REMOVER_SUMMARY = "Remover un ítem de la ficha";
         public static final String REMOVER_DESCRIPTION =
-                "Elimina físicamente un ítem de la ficha de perfil del estudiante autenticado. Solo permite eliminar ítems sin revisiones asociadas.";
+                "Elimina físicamente un ítem de la ficha de perfil del estudiante autenticado. Solo permite eliminar ítems sin revisiones asociadas. "
+                        + "Solo mientras la ficha está en construcción.";
         public static final String REMOVER_RESP_204 = "Ítem eliminado correctamente";
         public static final String REMOVER_RESP_400 = "El ítem no existe";
         public static final String REMOVER_RESP_403 = "Sin permiso o no es propietario de la ficha";
-        public static final String REMOVER_RESP_422 = "El ítem tiene revisiones y no puede eliminarse";
+        public static final String REMOVER_RESP_422 = "El ítem tiene revisiones o la ficha no está en construcción";
 
         public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar ítems de una ficha de perfil que asesora";
         public static final String CONSULTAR_ASESOR_DESCRIPTION =
@@ -510,11 +516,13 @@ public final class FichasApiMessages {
         public static final String TAG_DESCRIPTION = "Gestión de la asignación de estudiantes a fichas de perfil";
 
         public static final String ASIGNAR_SUMMARY = "Asignar estudiantes a ficha de perfil existente";
-        public static final String ASIGNAR_DESCRIPTION = "Permite al coordinador asignar entre 1 y 3 estudiantes a una ficha de perfil ya existente";
+        public static final String ASIGNAR_DESCRIPTION =
+                "Permite al coordinador asignar entre 1 y 3 estudiantes a una ficha de perfil ya existente. "
+                        + "Solo mientras la ficha está en construcción";
         public static final String ASIGNAR_RESP_204 = "Estudiantes asignados exitosamente";
         public static final String ASIGNAR_RESP_400 = "Ficha no encontrada, estudiante no encontrado, duplicado en lista o ya asignado";
         public static final String ASIGNAR_RESP_403 = "Sin permiso para asignar estudiantes";
-        public static final String ASIGNAR_RESP_422 = "Límite de estudiantes excedido";
+        public static final String ASIGNAR_RESP_422 = "Límite de estudiantes excedido o ficha que no está en construcción";
 
         public static final String REMOVER_SUMMARY = "Remover estudiante de ficha perfil";
         public static final String REMOVER_RESP_204 = "Estudiante removido exitosamente";

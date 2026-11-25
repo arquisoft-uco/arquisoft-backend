@@ -4,9 +4,9 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.validator.Agrega
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.ExistenciaEstadoFichaPerfil;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnConstruccionRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilExisteRule;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnTerminalRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnConstruccionRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilExisteRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
 import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
@@ -28,14 +28,14 @@ public class AgregarItemFichaPerfilValidatorImpl implements AgregarItemFichaPerf
     private final FichaPerfilExisteRule fichaPerfilExisteRule;
     private final ItemFichaPropiaRule itemFichaPropiaRule;
     private final EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule;
-    private final EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
+    private final EstadoFichaPerfilEnConstruccionRule estadoFichaPerfilEnConstruccionRule;
     private final ItemTipoNoDuplicadoRule itemTipoNoDuplicadoRule;
 
     public AgregarItemFichaPerfilValidatorImpl() {
         this.fichaPerfilExisteRule = new FichaPerfilExisteRuleImpl();
         this.itemFichaPropiaRule = new ItemFichaPropiaRuleImpl();
         this.estadoFichaPerfilExisteRule = new EstadoFichaPerfilExisteRuleImpl();
-        this.estadoFichaPerfilEnTerminalRule = new EstadoFichaPerfilEnTerminalRuleImpl();
+        this.estadoFichaPerfilEnConstruccionRule = new EstadoFichaPerfilEnConstruccionRuleImpl();
         this.itemTipoNoDuplicadoRule = new ItemTipoNoDuplicadoRuleImpl();
     }
 
@@ -47,7 +47,7 @@ public class AgregarItemFichaPerfilValidatorImpl implements AgregarItemFichaPerf
         itemFichaPropiaRule.validar(new PropiedadFicha(item.getFichaPerfilId(), estudiante, esPropietario));
         estadoFichaPerfilExisteRule.validar(
                 new ExistenciaEstadoFichaPerfil(item.getFichaPerfilId(), !estadoActual.esVacio()));
-        estadoFichaPerfilEnTerminalRule.validar(
+        estadoFichaPerfilEnConstruccionRule.validar(
                 new EstadoActualFicha(item.getFichaPerfilId(), estadoActual.getEstadoFicha()));
         itemTipoNoDuplicadoRule.validar(new DisponibilidadTipoItem(item.getTipoItem(), tipoYaExiste));
     }
