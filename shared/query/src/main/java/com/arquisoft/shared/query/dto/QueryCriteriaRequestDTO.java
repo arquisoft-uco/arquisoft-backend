@@ -4,6 +4,7 @@ import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
 import com.arquisoft.shared.util.UtilColeccion;
 import com.arquisoft.shared.util.UtilObjeto;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,8 +12,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+// Jackson 3 elegía el constructor completo (nombres de parámetro por -parameters) y un `pagina` o `tamanio`
+// ausente llegaba como null a un int: FAIL_ON_NULL_FOR_PRIMITIVES respondía 400. El vacío conserva los defaults.
 @Data
-@NoArgsConstructor
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryCriteriaRequestDTO {
