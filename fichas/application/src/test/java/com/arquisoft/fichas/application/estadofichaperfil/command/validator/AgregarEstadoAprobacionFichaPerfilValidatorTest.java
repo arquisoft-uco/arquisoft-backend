@@ -8,8 +8,8 @@ import com.arquisoft.fichas.domain.estadofichaperfil.DecisionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.AprobacionSinEvaluacionAprobatoriaException;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilNoDisponibleParaEvaluacionException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilConEvaluacionEnCursoException;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilSinEstudiantesVigentesException;
-import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilSinEvaluacionFinalizadaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.ContactoEstudiante;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.IntegranteFicha;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.ConteoEvaluacionesPorEstado;
@@ -18,6 +18,8 @@ import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.Instant;
 import java.util.List;
@@ -87,17 +89,6 @@ class AgregarEstadoAprobacionFichaPerfilValidatorTest {
     }
 
     @Test
-    void debeLanzarSinEvaluacionFinalizada_antesQueLaReglaAprobatoria_cuandoSoloHayEvaluacionesAbiertas() {
-        // Arrange
-        var soloAbiertas = resumen(new ConteoEvaluacionesPorEstado(EstadoEvaluacion.EN_EVALUACION, 2, 0));
-
-        // Act & Assert
-        assertThatThrownBy(() -> validator.validar(decision(true), ficha, asesor,
-                estado(EstadoFicha.DISPONIBLE_PARA_EVALUACION), soloAbiertas, List.of()))
-                .isInstanceOf(FichaPerfilSinEvaluacionFinalizadaException.class);
-    }
-
-    @Test
     void debeLanzarAprobacionSinRespaldo_cuandoAceptaYTodasLasFinalizadasSonNoAprobadas() {
         // Arrange
         var soloNoAprobadas = resumen(new ConteoEvaluacionesPorEstado(EstadoEvaluacion.NO_APROBADA, 2, 0));
@@ -125,5 +116,54 @@ class AgregarEstadoAprobacionFichaPerfilValidatorTest {
         assertThatThrownBy(() -> validator.validar(decision(true), ficha, asesor,
                 estado(EstadoFicha.DISPONIBLE_PARA_EVALUACION), resumenAprobatorio(), List.of()))
                 .isInstanceOf(FichaPerfilSinEstudiantesVigentesException.class);
+    }
+
+    @Test
+    void debeLanzarEvaluacionEnCurso_cuandoSoloHayEvaluacionesAbiertas() {
+        // Arrange
+        var soloAbiertas = resumen(new ConteoEvaluacionesPorEstado(EstadoEvaluacion.EN_EVALUACION, 2, 0));
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(decision(true), ficha, asesor,
+                estado(EstadoFicha.DISPONIBLE_PARA_EVALUACION), soloAbiertas, List.of()))
+                .isInstanceOf(FichaPerfilConEvaluacionEnCursoException.class);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void debeLanzarEvaluacionEnCurso_cuandoDecideConUnaFinalizadaYOtraEnCurso(boolean acepta) {
+        // Arrange
+        var finalizadaYEnCurso = resumen(
+                new ConteoEvaluacionesPorEstado(EstadoEvaluacion.APROBADA, 1, 0),
+                new ConteoEvaluacionesPorEstado(EstadoEvaluacion.EN_EVALUACION, 1, 0));
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(decision(acepta), ficha, asesor,
+                estado(EstadoFicha.DISPONIBLE_PARA_EVALUACION), finalizadaYEnCurso, unIntegrante))
+                .isInstanceOf(FichaPerfilConEvaluacionEnCursoException.class);
+    }
+
+    @Test
+    void debeLanzarNoDisponible_antesQueEvaluacionEnCurso_cuandoLaFichaNoEstaDisponibleYHayEnCurso() {
+        // Arrange
+        var soloAbiertas = resumen(new ConteoEvaluacionesPorEstado(EstadoEvaluacion.EN_EVALUACION, 1, 0));
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(decision(true), ficha, asesor,
+                estado(EstadoFicha.EN_CONSTRUCCION), soloAbiertas, unIntegrante))
+                .isInstanceOf(FichaPerfilNoDisponibleParaEvaluacionException.class);
+    }
+
+    @Test
+    void debePasar_cuandoSoloHayFinalizadasYDescartadas() {
+        // Arrange
+        var sinEnCurso = resumen(
+                new ConteoEvaluacionesPorEstado(EstadoEvaluacion.APROBADA, 1, 0),
+                new ConteoEvaluacionesPorEstado(EstadoEvaluacion.DESCARTADA, 1, 0));
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(decision(true), ficha, asesor,
+                estado(EstadoFicha.DISPONIBLE_PARA_EVALUACION), sinEnCurso, unIntegrante))
+                .doesNotThrowAnyException();
     }
 }

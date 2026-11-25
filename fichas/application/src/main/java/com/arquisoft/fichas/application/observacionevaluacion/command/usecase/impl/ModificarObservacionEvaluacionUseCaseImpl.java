@@ -31,7 +31,8 @@ public class ModificarObservacionEvaluacionUseCaseImpl implements ModificarObser
         var observacionYaExiste = observacionEvaluacionDuplicadaEnModificacionFinder.obtener(entrada);
 
         logger.debug(ObservacionEvaluacionKey.LOG_VERIFICACION_MODIFICAR,
-                observacionExiste, pertenencia.esPropietario(), pertenencia.ultimoEstado().getId(), observacionYaExiste);
+                observacionExiste, pertenencia.esPropietario(), pertenencia.ultimoEstado().getId(), observacionYaExiste,
+                pertenencia.estadoFicha().getId());
 
         modificarObservacionEvaluacionValidator.validar(entrada, observacionExiste, pertenencia, observacionYaExiste);
 

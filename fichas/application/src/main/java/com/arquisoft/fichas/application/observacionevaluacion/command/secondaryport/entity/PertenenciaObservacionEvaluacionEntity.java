@@ -3,5 +3,6 @@ package com.arquisoft.fichas.application.observacionevaluacion.command.secondary
 import java.util.UUID;
 
 public record PertenenciaObservacionEvaluacionEntity(
-        UUID evaluacionFichaPerfilId, boolean esPropietario, String estadoEvaluacionId) {
+        UUID evaluacionFichaPerfilId, boolean esPropietario, String estadoEvaluacionId,
+        UUID fichaPerfilId, String estadoFichaId) {
 }

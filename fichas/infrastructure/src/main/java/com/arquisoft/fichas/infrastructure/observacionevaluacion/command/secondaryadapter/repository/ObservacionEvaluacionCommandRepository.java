@@ -20,7 +20,9 @@ public interface ObservacionEvaluacionCommandRepository extends JpaRepository<Ob
             SELECT new com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.entity.PertenenciaObservacionEvaluacionEntity(
                 o.evaluacionFichaPerfilId,
                 CASE WHEN ev.representanteComiteId = :representanteComite THEN true ELSE false END,
-                e.estadoEvaluacion.id)
+                e.estadoEvaluacion.id,
+                ev.fichaPerfilId,
+                f.estadoFicha.id)
             FROM ObservacionEvaluacionJpaEntity o
             JOIN EvaluacionFichaPerfilJpaEntity ev ON ev.id = o.evaluacionFichaPerfilId
             LEFT JOIN EstadoEvaluacionFichaJpaEntity e
@@ -30,6 +32,13 @@ public interface ObservacionEvaluacionCommandRepository extends JpaRepository<Ob
                     WHERE e2.evaluacionFichaPerfil.id = o.evaluacionFichaPerfilId
                     AND (e2.fechaActualizacion > e.fechaActualizacion
                         OR (e2.fechaActualizacion = e.fechaActualizacion AND e2.id > e.id)))
+            LEFT JOIN EstadoFichaPerfilJpaEntity f
+                ON f.fichaPerfilId = ev.fichaPerfilId
+                AND NOT EXISTS (
+                    SELECT 1 FROM EstadoFichaPerfilJpaEntity f2
+                    WHERE f2.fichaPerfilId = ev.fichaPerfilId
+                    AND (f2.fechaActualizacion > f.fechaActualizacion
+                        OR (f2.fechaActualizacion = f.fechaActualizacion AND f2.id > f.id)))
             WHERE o.id = :observacionEvaluacion
             """)
     Optional<PertenenciaObservacionEvaluacionEntity> obtenerPertenencia(

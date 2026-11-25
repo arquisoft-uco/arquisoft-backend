@@ -35,7 +35,7 @@ public enum EstadoEvaluacionFichaKey implements ClaveMensaje {
     ERROR_EVALUACION_NO_DESCARTABLE_DETALLE(
             "fichas.dominio.estadoevaluacionficha.error.evaluacion-no-descartable-detalle", 2),
     LOG_AGREGANDO("fichas.aplicacion.estadoevaluacionficha.log.agregando", 2),
-    LOG_VERIFICACION_AGREGAR("fichas.aplicacion.estadoevaluacionficha.log.verificacion-agregar", 4),
+    LOG_VERIFICACION_AGREGAR("fichas.aplicacion.estadoevaluacionficha.log.verificacion-agregar", 5),
     LOG_AGREGADO("fichas.aplicacion.estadoevaluacionficha.log.agregado", 3),
     LOG_CREADO_AUTOMATICO("fichas.aplicacion.estadoevaluacionficha.log.creado-automatico", 3),
     LOG_DESCARTANDO("fichas.aplicacion.estadoevaluacionficha.log.descartando", 2),

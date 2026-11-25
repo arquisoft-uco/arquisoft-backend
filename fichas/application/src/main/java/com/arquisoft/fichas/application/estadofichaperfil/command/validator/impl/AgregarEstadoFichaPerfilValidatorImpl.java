@@ -5,6 +5,7 @@ import com.arquisoft.fichas.domain.estadofichaperfil.AgregacionEstadoFichaPerfil
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EvaluacionesEnCursoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.FichaEnEsperaDeDecision;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.ExistenciaEstadoFichaPerfil;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.IntegrantesVigentesFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.TransicionEstadoFicha;
@@ -12,12 +13,14 @@ import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTe
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilNoRepetidoRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.FichaPerfilConEstudiantesVigentesRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.FichaPerfilEnEsperaDeDecisionRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.FichaPerfilSinEvaluacionEnCursoRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.TransicionEstadoFichaPermitidaRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnTerminalRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilExisteRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilNoRepetidoRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.FichaPerfilConEstudiantesVigentesRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.FichaPerfilEnEsperaDeDecisionRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.FichaPerfilSinEvaluacionEnCursoRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.TransicionEstadoFichaPermitidaRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.IntegranteFicha;
@@ -43,6 +46,7 @@ public class AgregarEstadoFichaPerfilValidatorImpl implements AgregarEstadoFicha
     private final EstadoFichaPerfilNoRepetidoRule estadoFichaPerfilNoRepetidoRule;
     private final TransicionEstadoFichaPermitidaRule transicionEstadoFichaPermitidaRule;
     private final FichaPerfilSinEvaluacionEnCursoRule fichaPerfilSinEvaluacionEnCursoRule;
+    private final FichaPerfilEnEsperaDeDecisionRule fichaPerfilEnEsperaDeDecisionRule;
     private final FichaPerfilConEstudiantesVigentesRule fichaPerfilConEstudiantesVigentesRule;
 
     public AgregarEstadoFichaPerfilValidatorImpl() {
@@ -53,6 +57,7 @@ public class AgregarEstadoFichaPerfilValidatorImpl implements AgregarEstadoFicha
         this.estadoFichaPerfilNoRepetidoRule = new EstadoFichaPerfilNoRepetidoRuleImpl();
         this.transicionEstadoFichaPermitidaRule = new TransicionEstadoFichaPermitidaRuleImpl();
         this.fichaPerfilSinEvaluacionEnCursoRule = new FichaPerfilSinEvaluacionEnCursoRuleImpl();
+        this.fichaPerfilEnEsperaDeDecisionRule = new FichaPerfilEnEsperaDeDecisionRuleImpl();
         this.fichaPerfilConEstudiantesVigentesRule = new FichaPerfilConEstudiantesVigentesRuleImpl();
     }
 
@@ -73,6 +78,8 @@ public class AgregarEstadoFichaPerfilValidatorImpl implements AgregarEstadoFicha
         transicionEstadoFichaPermitidaRule.validar(transicion);
         fichaPerfilSinEvaluacionEnCursoRule.validar(
                 new EvaluacionesEnCursoFicha(fichaPerfil, ficha.getTituloProyecto(), actual, resumen.enEvaluacion()));
+        fichaPerfilEnEsperaDeDecisionRule.validar(new FichaEnEsperaDeDecision(
+                fichaPerfil, ficha.getTituloProyecto(), actual, resumen.finalizadas()));
         fichaPerfilConEstudiantesVigentesRule.validar(new IntegrantesVigentesFicha(fichaPerfil, ficha.getTituloProyecto(), integrantes.size()));
     }
 }

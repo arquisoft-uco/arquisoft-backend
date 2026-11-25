@@ -26,7 +26,7 @@ public enum EstadoFichaPerfilKey implements ClaveMensaje {
     ERROR_SIN_ESTUDIANTES_VIGENTES_DETALLE(
             "fichas.dominio.estadofichaperfil.error.sin-estudiantes-vigentes-detalle", 1),
     LOG_AGREGANDO_APROBACION("fichas.aplicacion.estadofichaperfil.log.agregando-aprobacion", 2),
-    LOG_VERIFICACION_APROBACION("fichas.aplicacion.estadofichaperfil.log.verificacion-aprobacion", 7),
+    LOG_VERIFICACION_APROBACION("fichas.aplicacion.estadofichaperfil.log.verificacion-aprobacion", 8),
     LOG_APROBACION_AGREGADA("fichas.aplicacion.estadofichaperfil.log.aprobacion-agregada", 3),
     ERROR_ESTADO_FICHA_INVALIDO("fichas.dominio.estadofichaperfil.error.estado-ficha-invalido", 0),
     ERROR_ESTADO_NO_ASIGNABLE_POR_ASESOR("fichas.dominio.estadofichaperfil.error.estado-no-asignable-por-asesor", 1),
@@ -34,8 +34,10 @@ public enum EstadoFichaPerfilKey implements ClaveMensaje {
     ERROR_TRANSICION_NO_PERMITIDA("fichas.dominio.estadofichaperfil.error.transicion-no-permitida", 2),
     ERROR_EVALUACION_EN_CURSO("fichas.dominio.estadofichaperfil.error.evaluacion-en-curso", 2),
     ERROR_EVALUACION_EN_CURSO_DETALLE("fichas.dominio.estadofichaperfil.error.evaluacion-en-curso-detalle", 2),
+    ERROR_EN_ESPERA_DE_DECISION("fichas.dominio.estadofichaperfil.error.en-espera-de-decision", 2),
+    ERROR_EN_ESPERA_DE_DECISION_DETALLE("fichas.dominio.estadofichaperfil.error.en-espera-de-decision-detalle", 2),
     LOG_AGREGANDO("fichas.aplicacion.estadofichaperfil.log.agregando", 2),
-    LOG_VERIFICACION_AGREGAR("fichas.aplicacion.estadofichaperfil.log.verificacion-agregar", 4),
+    LOG_VERIFICACION_AGREGAR("fichas.aplicacion.estadofichaperfil.log.verificacion-agregar", 5),
     LOG_AGREGADO("fichas.aplicacion.estadofichaperfil.log.agregado", 3),
     LOG_CONSULTANDO_REPRESENTANTE("fichas.aplicacion.estadofichaperfil.log.consultando-representante", 1),
     LOG_CONSULTA_REPRESENTANTE_COMPLETADA(

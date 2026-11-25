@@ -21,6 +21,9 @@ import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EvaluacionFichaEx
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EvaluacionFichaExisteRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.RepresentantePropietarioEvaluacionRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.RepresentantePropietarioEvaluacionRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilDisponibleParaEvaluacionRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -32,6 +35,7 @@ public class AgregarEstadoEvaluacionFichaValidatorImpl implements AgregarEstadoE
     private final EstadoEnEvaluacionNoManualRule estadoEnEvaluacionNoManualRule;
     private final EstadoEvaluacionEnTerminalRule estadoEvaluacionEnTerminalRule;
     private final EstadoEvaluacionAsignableRule estadoEvaluacionAsignableRule;
+    private final EstadoFichaPerfilDisponibleParaEvaluacionRule estadoFichaDisponibleRule;
 
     public AgregarEstadoEvaluacionFichaValidatorImpl() {
         this.evaluacionFichaExisteRule = new EvaluacionFichaExisteRuleImpl();
@@ -40,12 +44,13 @@ public class AgregarEstadoEvaluacionFichaValidatorImpl implements AgregarEstadoE
         this.estadoEnEvaluacionNoManualRule = new EstadoEnEvaluacionNoManualRuleImpl();
         this.estadoEvaluacionEnTerminalRule = new EstadoEvaluacionEnTerminalRuleImpl();
         this.estadoEvaluacionAsignableRule = new EstadoEvaluacionAsignableRuleImpl();
+        this.estadoFichaDisponibleRule = new EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl();
     }
 
     @Override
     public void validar(AgregacionEstadoEvaluacionFichaDomain entrada, boolean evaluacionExiste,
                         boolean esPropietario, boolean estadoYaExiste,
-                        EstadoEvaluacionFichaDomain ultimoEstado, long observaciones) {
+                        EstadoEvaluacionFichaDomain ultimoEstado, long observaciones, EstadoActualFicha estadoFicha) {
 
         evaluacionFichaExisteRule.validar(
                 new ExistenciaEvaluacionFicha(entrada.getEvaluacionFichaPerfil(), evaluacionExiste));
@@ -64,5 +69,7 @@ public class AgregarEstadoEvaluacionFichaValidatorImpl implements AgregarEstadoE
 
         estadoEvaluacionAsignableRule.validar(new AsignacionEstadoEvaluacion(
                 entrada.getEvaluacionFichaPerfil(), entrada.getEstadoEvaluacion(), observaciones));
+
+        estadoFichaDisponibleRule.validar(estadoFicha);
     }
 }

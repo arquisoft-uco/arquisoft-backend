@@ -10,6 +10,7 @@ import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFic
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.EvaluacionExistente;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -86,6 +87,20 @@ class RegistrarEvaluacionFichaPerfilValidatorTest {
                 .isInstanceOf(FichaPerfilNoDisponibleParaEvaluacionException.class);
     }
 
+
+    @ParameterizedTest
+    @EnumSource(value = EstadoFicha.class, names = {
+            "EN_CONSTRUCCION", "APROBADA", "APROBADA_CON_OBSERVACIONES", "NO_APROBADA", "DESCARTADA"})
+    void debeLanzarFichaNoDisponible_cuandoLaExistenteEstaDescartadaYLaFichaNoEstaDisponible(EstadoFicha estado) {
+        // Arrange
+        var descartada = new EvaluacionExistente(UtilUUID.generarNuevoUUID(), EstadoEvaluacion.DESCARTADA);
+        var estadoFicha = EstadoFichaPerfilDomain.reconstruir(
+                UtilUUID.generarNuevoUUID(), ficha, estado, Instant.now());
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(evaluacion, true, true, descartada, estadoFicha))
+                .isInstanceOf(FichaPerfilNoDisponibleParaEvaluacionException.class);
+    }
     @Test
     void debeAplicarDuplicadaAntesQueDisponibilidad_cuandoAmbasReglasFallan() {
         // Arrange

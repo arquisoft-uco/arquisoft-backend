@@ -239,15 +239,20 @@ public final class FichasApiMessages {
         public static final String AGREGAR_APROBACION_RESP_201 = "Estado de aprobación registrado; devuelve el id del nuevo estado";
         public static final String AGREGAR_APROBACION_RESP_400 = "Falta la decisión o el id de la ficha no es un UUID válido";
         public static final String AGREGAR_APROBACION_RESP_403 = "Sin el permiso para registrar la aprobación de una ficha de perfil";
-        public static final String AGREGAR_APROBACION_RESP_422 = "Ficha inexistente, no disponible o sin evaluaciones/estudiantes que la respalden";
+        public static final String AGREGAR_APROBACION_RESP_422 =
+                "Ficha inexistente, no disponible o sin evaluaciones/estudiantes que la respalden, "
+                        + "o con evaluaciones en curso";
         public static final String AGREGAR_ASESOR_SUMMARY = "Cambiar el estado de una ficha de perfil como asesor de ficha";
         public static final String AGREGAR_ASESOR_DESCRIPTION =
-                "El asesor de ficha asignado envía la ficha a evaluación, la descarta o la devuelve a construcción. El asesor se toma del token.";
+                "El asesor de ficha asignado envía la ficha a evaluación, la descarta o la devuelve a construcción. "
+                        + "No puede sacarla de Disponible mientras tenga evaluaciones en curso o finalizadas: "
+                        + "queda a la espera de la decisión del coordinador. El asesor se toma del token.";
         public static final String AGREGAR_ASESOR_RESP_201 = "Estado registrado; devuelve el id del nuevo estado";
         public static final String AGREGAR_ASESOR_RESP_400 = "Falta el estado o el cuerpo de la petición es inválido";
         public static final String AGREGAR_ASESOR_RESP_403 = "Sin el permiso para cambiar el estado de una ficha de perfil como asesor";
         public static final String AGREGAR_ASESOR_RESP_422 =
-                "Estado no asignable, transición no permitida, ficha inexistente, ajena, finalizada, sin estudiantes o con evaluaciones en curso";
+                "Estado no asignable, transición no permitida, ficha inexistente, ajena, finalizada, sin estudiantes, "
+                        + "con evaluaciones en curso o finalizadas (a la espera de la decisión del coordinador)";
     }
 
     public static final class RevisionItem {
@@ -418,34 +423,36 @@ public final class FichasApiMessages {
         public static final String AGREGAR_SUMMARY = "Agregar observación a una evaluación de ficha de perfil";
         public static final String AGREGAR_DESCRIPTION =
                 "Permite al representante del comité que registró la evaluación agregarle una observación "
-                        + "de texto. No puede agregarse si la evaluación ya alcanzó un estado terminal.";
+                        + "de texto. No puede agregarse si la evaluación ya alcanzó un estado terminal "
+                        + "ni si la ficha no está disponible para evaluación.";
         public static final String AGREGAR_RESP_201 = "Observación agregada exitosamente — retorna el UUID asignado";
         public static final String AGREGAR_RESP_400 = "Observación inválida o ausente";
         public static final String AGREGAR_RESP_403 = "Sin permiso para agregar observaciones a evaluaciones";
         public static final String AGREGAR_RESP_422 =
-                "Evaluación no encontrada, registrada por otro representante, en estado terminal "
-                        + "o texto de observación duplicado";
+                "Evaluación no encontrada, registrada por otro representante, en estado terminal, "
+                        + "texto de observación duplicado o ficha no disponible para evaluación";
 
         public static final String MODIFICAR_SUMMARY = "Modificar el texto de una observación de evaluación";
         public static final String MODIFICAR_DESCRIPTION =
                 "Permite al representante del comité que registró la evaluación reemplazar el texto de una de sus "
-                        + "observaciones. No puede modificarse si la evaluación ya alcanzó un estado terminal.";
+                        + "observaciones. No puede modificarse si la evaluación ya alcanzó un estado terminal "
+                        + "ni si la ficha no está disponible para evaluación.";
         public static final String MODIFICAR_RESP_204 = "Observación modificada exitosamente";
         public static final String MODIFICAR_RESP_400 = "Observación inválida o ausente";
         public static final String MODIFICAR_RESP_403 = "Sin permiso para modificar observaciones de evaluaciones";
         public static final String MODIFICAR_RESP_422 =
-                "Observación no encontrada, evaluación registrada por otro representante, en estado terminal "
-                        + "o texto duplicado";
+                "Observación no encontrada, evaluación registrada por otro representante, en estado terminal, "
+                        + "texto duplicado o ficha no disponible para evaluación";
 
         public static final String REMOVER_SUMMARY = "Remover una observación de evaluación";
         public static final String REMOVER_DESCRIPTION =
                 "Permite al representante del comité que registró la evaluación eliminar una de sus observaciones. "
-                        + "No puede removerse si la evaluación ya alcanzó un estado terminal.";
+                        + "No puede removerse si la evaluación ya alcanzó un estado terminal ni si la ficha no está disponible para evaluación.";
         public static final String REMOVER_RESP_204 = "Observación removida exitosamente";
         public static final String REMOVER_RESP_400 = "Identificador de observación inválido";
         public static final String REMOVER_RESP_403 = "Sin permiso para remover observaciones de evaluaciones";
         public static final String REMOVER_RESP_422 =
-                "Observación no encontrada, evaluación registrada por otro representante o en estado terminal";
+                "Observación no encontrada, evaluación registrada por otro representante, en estado terminal o ficha no disponible para evaluación";
 
         public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
                 "Consultar las observaciones de una evaluación de su ficha de perfil";
@@ -589,11 +596,15 @@ public final class FichasApiMessages {
         public static final String TAG_DESCRIPTION = "Gestión de trazabilidad de estados de evaluación de fichas de perfil";
 
         public static final String AGREGAR_SUMMARY = "Agregar estado evaluación ficha";
-        public static final String AGREGAR_DESCRIPTION = "Registra un nuevo estado en la trazabilidad de evaluación de una ficha de perfil";
+        public static final String AGREGAR_DESCRIPTION =
+                "Registra un nuevo estado en la trazabilidad de evaluación de una ficha de perfil. "
+                        + "La ficha debe estar disponible para evaluación.";
         public static final String AGREGAR_RESP_201 = "Estado agregado exitosamente";
         public static final String AGREGAR_RESP_400 = "Datos inválidos o evaluación no encontrada o estado duplicado";
         public static final String AGREGAR_RESP_403 = "No autorizado - requiere rol representante-comite";
-        public static final String AGREGAR_RESP_422 = "Transición de estado inválida (estado terminal o primer estado debe ser EN_EVALUACION)";
+        public static final String AGREGAR_RESP_422 =
+                "Transición de estado inválida (estado terminal o primer estado debe ser EN_EVALUACION) "
+                        + "o ficha no disponible para evaluación";
 
         public static final String DESCARTAR_SUMMARY = "Descartar evaluación de ficha de perfil";
         public static final String DESCARTAR_DESCRIPTION =

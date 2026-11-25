@@ -5,6 +5,7 @@ import com.arquisoft.fichas.application.observacionevaluacion.command.finder.Per
 import com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.ObservacionEvaluacionOutputPort;
 import com.arquisoft.fichas.application.observacionevaluacion.command.validator.ModificarObservacionEvaluacionValidator;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.observacionevaluacion.ModificacionObservacionEvaluacionDomain;
 import com.arquisoft.fichas.domain.observacionevaluacion.exception.ObservacionEvaluacionDuplicadaException;
 import com.arquisoft.fichas.domain.observacionevaluacion.exception.ObservacionEvaluacionNoEncontradaException;
@@ -59,7 +60,8 @@ class ModificarObservacionEvaluacionUseCaseImplTest {
     @Test
     void debeActualizarElTexto_cuandoValidacionPasa() {
         // Arrange
-        var pertenencia = new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.EN_EVALUACION);
+        var pertenencia = new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.EN_EVALUACION,
+                UtilUUID.generarNuevoUUID(), EstadoFicha.DISPONIBLE_PARA_EVALUACION);
         when(pertenenciaObservacionEvaluacionFinder.obtener(entrada)).thenReturn(pertenencia);
         when(observacionEvaluacionDuplicadaEnModificacionFinder.obtener(entrada)).thenReturn(false);
 
@@ -88,7 +90,8 @@ class ModificarObservacionEvaluacionUseCaseImplTest {
     @Test
     void noDebeActualizar_cuandoValidatorLanza() {
         // Arrange
-        var pertenencia = new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.EN_EVALUACION);
+        var pertenencia = new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.EN_EVALUACION,
+                UtilUUID.generarNuevoUUID(), EstadoFicha.DISPONIBLE_PARA_EVALUACION);
         when(pertenenciaObservacionEvaluacionFinder.obtener(entrada)).thenReturn(pertenencia);
         when(observacionEvaluacionDuplicadaEnModificacionFinder.obtener(entrada)).thenReturn(true);
         doThrow(new ObservacionEvaluacionDuplicadaException(evaluacionFichaPerfil, entrada.getObservacion()))
