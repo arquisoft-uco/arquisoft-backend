@@ -4,7 +4,7 @@ import com.arquisoft.artefactos.application.estudianteartefacto.query.primarypor
 import com.arquisoft.artefactos.application.estudianteartefacto.query.readmodel.ParticipacionArtefactoReadModel;
 import com.arquisoft.shared.interactor.Interactor;
 
-import java.util.List;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 
 public interface ConsultarParticipacionesArtefactoInteractor
-        extends Interactor<ConsultarParticipacionesArtefactoQuery, List<ParticipacionArtefactoReadModel>> {}
+        extends Interactor<ConsultarParticipacionesArtefactoQuery, PaginatedResult<ParticipacionArtefactoReadModel>> {}

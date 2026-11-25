@@ -8,10 +8,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ParticipacionArtefactoQueryMapperTest {
 
-    @Test
-    void debeMapearTodosLosCampos_cuandoEntidadCompleta() {
-        // Arrange
-        var entity = ParticipacionArtefactoJpaQueryEntity.builder()
+    private static ParticipacionArtefactoJpaQueryEntity.ParticipacionArtefactoJpaQueryEntityBuilder base() {
+        return ParticipacionArtefactoJpaQueryEntity.builder()
                 .id(UtilUUID.generarNuevoUUID())
                 .artefactoId(UtilUUID.generarNuevoUUID())
                 .estudianteId(UtilUUID.generarNuevoUUID())
@@ -22,8 +20,17 @@ class ParticipacionArtefactoQueryMapperTest {
                 .versionDocumento(2)
                 .nombreRepositorio("Repo")
                 .asesorId(UtilUUID.generarNuevoUUID())
-                .nombreAsesor("Ana Asesora")
+                .nombreAsesor("Ana Asesora");
+    }
+
+    @Test
+    void debeMapearTodosLosCampos_cuandoEntidadCompleta() {
+        // Arrange
+        var entity = base()
                 .omitido(true)
+                .estadoUltimaRevision("Pendiente")
+                .proyectoFinalizado(true)
+                .proyectoCancelado(false)
                 .build();
 
         // Act
@@ -40,5 +47,21 @@ class ParticipacionArtefactoQueryMapperTest {
         assertThat(readModel.asesor()).isEqualTo(entity.getAsesorId());
         assertThat(readModel.nombreAsesor()).isEqualTo("Ana Asesora");
         assertThat(readModel.omitido()).isTrue();
+        assertThat(readModel.estadoUltimaRevision()).isEqualTo("Pendiente");
+        assertThat(readModel.proyectoFinalizado()).isTrue();
+        assertThat(readModel.proyectoCancelado()).isFalse();
+    }
+
+    @Test
+    void debeMapearEstadoNulo_cuandoNoHayRevisiones() {
+        // Arrange
+        var entity = base().proyectoCancelado(true).build();
+
+        // Act
+        var readModel = ParticipacionArtefactoQueryMapper.toReadModel(entity);
+
+        // Assert
+        assertThat(readModel.estadoUltimaRevision()).isNull();
+        assertThat(readModel.proyectoCancelado()).isTrue();
     }
 }

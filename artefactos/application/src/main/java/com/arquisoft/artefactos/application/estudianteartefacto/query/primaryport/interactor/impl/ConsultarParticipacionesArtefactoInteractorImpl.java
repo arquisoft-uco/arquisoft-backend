@@ -5,11 +5,11 @@ import com.arquisoft.artefactos.application.estudianteartefacto.query.primarypor
 import com.arquisoft.artefactos.application.estudianteartefacto.query.primaryport.model.ConsultarParticipacionesArtefactoQuery;
 import com.arquisoft.artefactos.application.estudianteartefacto.query.readmodel.ParticipacionArtefactoReadModel;
 import com.arquisoft.artefactos.application.estudianteartefacto.query.usecase.ConsultarParticipacionesArtefactoUseCase;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class ConsultarParticipacionesArtefactoInteractorImpl implements Consulta
 
     @Override
     @Transactional(readOnly = true, transactionManager = "artefactosTransactionManager")
-    public List<ParticipacionArtefactoReadModel> ejecutar(ConsultarParticipacionesArtefactoQuery entrada) {
+    public PaginatedResult<ParticipacionArtefactoReadModel> ejecutar(ConsultarParticipacionesArtefactoQuery entrada) {
         var criteria = ConsultarParticipacionesArtefactoMapper.toCriteria(entrada);
         return consultarParticipacionesArtefactoUseCase.ejecutar(criteria);
     }

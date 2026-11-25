@@ -6,7 +6,7 @@ public enum EstudianteArtefactoKey implements ClaveMensaje {
 
     LOG_CONSULTANDO("artefactos.aplicacion.estudianteartefacto.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("artefactos.aplicacion.estudianteartefacto.log.consulta-completada", 1),
-    LOG_CONSULTANDO_PARTICIPACION("artefactos.aplicacion.estudianteartefacto.log.consultando-participacion", 1),
+    LOG_CONSULTANDO_PARTICIPACION("artefactos.aplicacion.estudianteartefacto.log.consultando-participacion", 4),
     LOG_CONSULTA_PARTICIPACION_COMPLETADA(
             "artefactos.aplicacion.estudianteartefacto.log.consulta-participacion-completada", 1),
     LOG_ASIGNANDO("artefactos.aplicacion.estudianteartefacto.log.asignando", 2),

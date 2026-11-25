@@ -249,12 +249,12 @@ public final class ArtefactosApiMessages {
         public static final String CONSULTAR_PARTICIPACION_SUMMARY =
                 "Consultar los artefactos en los que participa el estudiante";
         public static final String CONSULTAR_PARTICIPACION_DESCRIPTION =
-                "Devuelve, sin paginar y ordenados por proyecto de grado, documento y versión, los artefactos "
-                        + "a los que está vinculado el estudiante autenticado, con su proyecto de grado y su "
-                        + "documento y el asesor del artefacto (identificador y nombre). Un estudiante sin vínculos "
-                        + "recibe una lista vacía.";
-        public static final String CONSULTAR_PARTICIPACION_RESP_200 =
-                "Listado de artefactos en los que participa el estudiante";
+                "Devuelve paginados, con filtros y orden opcionales (por defecto proyecto de grado y documento), "
+                        + "los artefactos a los que está vinculado el estudiante autenticado, con su proyecto, su "
+                        + "documento, el asesor, el estado de la última revisión (ausente si no tiene revisiones) y "
+                        + "si el proyecto está finalizado o cancelado. Sin vínculos devuelve una página vacía.";
+        public static final String CONSULTAR_PARTICIPACION_RESP_200 = "Página de artefactos en los que participa el estudiante";
+        public static final String CONSULTAR_PARTICIPACION_RESP_400 = "Filtro u ordenamiento sobre un campo no permitido";
         public static final String CONSULTAR_PARTICIPACION_RESP_403 =
                 "Sin permisos para consultar los artefactos del estudiante";
         public static final String CONSULTAR_SUMMARY = "Consultar los estudiantes vinculados a un artefacto";

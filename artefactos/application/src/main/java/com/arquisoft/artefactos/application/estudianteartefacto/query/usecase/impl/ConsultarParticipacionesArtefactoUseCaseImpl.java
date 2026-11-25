@@ -6,10 +6,10 @@ import com.arquisoft.artefactos.application.estudianteartefacto.query.secondaryp
 import com.arquisoft.artefactos.application.estudianteartefacto.query.usecase.ConsultarParticipacionesArtefactoUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.artefactos.EstudianteArtefactoKey;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -19,13 +19,13 @@ public class ConsultarParticipacionesArtefactoUseCaseImpl implements ConsultarPa
     private final AppLogger logger;
 
     @Override
-    public List<ParticipacionArtefactoReadModel> ejecutar(ParticipacionArtefactoCriteria entrada) {
-        logger.debug(EstudianteArtefactoKey.LOG_CONSULTANDO_PARTICIPACION, entrada.estudiante());
+    public PaginatedResult<ParticipacionArtefactoReadModel> ejecutar(ParticipacionArtefactoCriteria entrada) {
+        logger.debug(EstudianteArtefactoKey.LOG_CONSULTANDO_PARTICIPACION,
+                entrada.getPagina(), entrada.getTamanio(), entrada.tieneFiltros(), entrada.tieneOrden());
 
-        var participaciones = estudianteArtefactoQueryOutputPort
-                .consultarParticipacionesPorEstudiante(entrada.estudiante());
+        var participaciones = estudianteArtefactoQueryOutputPort.consultarParticipaciones(entrada);
 
-        logger.debug(EstudianteArtefactoKey.LOG_CONSULTA_PARTICIPACION_COMPLETADA, participaciones.size());
+        logger.debug(EstudianteArtefactoKey.LOG_CONSULTA_PARTICIPACION_COMPLETADA, participaciones.getTotalElements());
         return participaciones;
     }
 }

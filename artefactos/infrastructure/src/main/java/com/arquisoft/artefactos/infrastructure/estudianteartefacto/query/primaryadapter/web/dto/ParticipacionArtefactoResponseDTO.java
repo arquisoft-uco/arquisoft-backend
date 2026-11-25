@@ -15,6 +15,9 @@ public record ParticipacionArtefactoResponseDTO(
         String nombreRepositorio,
         UUID asesor,
         String nombreAsesor,
-        boolean omitido
+        boolean omitido,
+        String estadoUltimaRevision,
+        boolean proyectoFinalizado,
+        boolean proyectoCancelado
 ) {
 }

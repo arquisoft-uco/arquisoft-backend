@@ -27,14 +27,24 @@ import java.util.UUID;
                vra.nombre_repositorio             AS nombre_repositorio,
                a.asesor_id                        AS asesor_id,
                s.nombre                           AS nombre_asesor,
-               (a.omitido_en IS NOT NULL)         AS omitido
+               (a.omitido_en IS NOT NULL)         AS omitido,
+               (SELECT er.nombre
+                  FROM revision_asesor ra
+                           JOIN version_artefacto v ON v.id = ra.version_artefacto_id
+                           JOIN estado_revision_asesor er ON er.id = ra.estado_revision_asesor_id
+                 WHERE v.artefacto_id = a.id
+                 ORDER BY ra.fecha_creacion DESC
+                 FETCH FIRST 1 ROW ONLY)          AS estado_ultima_revision,
+               (pg.estado_proyecto_id = 'FINALIZADO') AS proyecto_finalizado,
+               (pg.estado_proyecto_id = 'CANCELADO') AS proyecto_cancelado
         FROM estudiante_artefacto ea
                  JOIN artefacto a ON a.id = ea.artefacto_id
                  JOIN proyecto_grado pg ON pg.id = a.proyecto_grado_id
                  JOIN version_repositorio_artefacto vra ON vra.id = a.version_repositorio_artefacto_id
                  JOIN asesor s ON s.id = a.asesor_id
         """)
-@Synchronize({"estudiante_artefacto", "artefacto", "proyecto_grado", "version_repositorio_artefacto", "asesor"})
+@Synchronize({"estudiante_artefacto", "artefacto", "proyecto_grado", "version_repositorio_artefacto", "asesor",
+        "version_artefacto", "revision_asesor", "estado_revision_asesor"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -77,4 +87,13 @@ public class ParticipacionArtefactoJpaQueryEntity {
 
     @Column(name = "omitido")
     private boolean omitido;
+
+    @Column(name = "estado_ultima_revision")
+    private String estadoUltimaRevision;
+
+    @Column(name = "proyecto_finalizado")
+    private boolean proyectoFinalizado;
+
+    @Column(name = "proyecto_cancelado")
+    private boolean proyectoCancelado;
 }
