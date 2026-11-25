@@ -533,7 +533,6 @@
               "fichas:observacion-evaluacion:create",
               "usuarios:asesor-ficha-vigente:view",
               "fichas:estado-ficha:view",
-              "fichas:ficha-perfil-coordinador:view",
               "fichas:ficha-perfil-disponible-evaluacion:view",
               "fichas:ficha-perfil-representante:view",
               "fichas:estado-evaluacion:view",
