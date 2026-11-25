@@ -33,6 +33,7 @@ security:
         - {method: POST, path: "/api/fichas-perfil/asesor", role: "fichas:ficha-perfil-asesor:view"}
         - {method: POST, path: "/api/fichas-perfil/coordinador", role: "fichas:ficha-perfil-coordinador:view"}
         - {method: POST, path: "/api/fichas-perfil/disponibles-evaluacion", role: "fichas:ficha-perfil-disponible-evaluacion:view"}
+        - {method: POST, path: "/api/fichas-perfil/representante", role: "fichas:ficha-perfil-representante:view"}
         - {method: POST, path: "/api/fichas-perfil/estado-evaluacion-ficha", role: "fichas:estado-evaluacion-ficha:create"}
         - {method: GET, path: "/api/fichas-perfil/estados-evaluacion", role: "fichas:estado-evaluacion:view"}
         - {method: GET, path: "/api/fichas-perfil/estados-ficha", role: "fichas:estado-ficha:view"}
