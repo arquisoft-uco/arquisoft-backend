@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase;
 
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.result.InicioEvaluacionFichaPerfilResult;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.shared.usecase.UseCase;
 
-import java.util.UUID;
-
-public interface RegistrarEvaluacionFichaPerfilUseCase extends UseCase<EvaluacionFichaPerfilDomain, UUID> {}
+public interface RegistrarEvaluacionFichaPerfilUseCase
+        extends UseCase<EvaluacionFichaPerfilDomain, InicioEvaluacionFichaPerfilResult> {}

@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.application;
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.primaryport.interactor.impl.AgregarEstadoEvaluacionFichaInteractorImpl;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.primaryport.interactor.impl.DescartarEvaluacionFichaInteractorImpl;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.interactor.impl.AsignarEstudiantesFichaPerfilInteractorImpl;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.interactor.impl.RemoverEstudianteFichaPerfilInteractorImpl;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.interactor.impl.RegistrarEvaluacionFichaPerfilInteractorImpl;
@@ -18,7 +19,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,19 +38,20 @@ class InteractoresFichasTest {
             RemoverEstudianteFichaPerfilInteractorImpl.class,
             RegistrarEvaluacionFichaPerfilInteractorImpl.class,
             AgregarEstadoEvaluacionFichaInteractorImpl.class,
+            DescartarEvaluacionFichaInteractorImpl.class,
             AgregarRevisionItemInteractorImpl.class,
             CerrarObservacionItemInteractorImpl.class,
             ReabrirObservacionItemInteractorImpl.class
     })
     void debeDeclararTransaccion_cuandoEsInteractorDeComando(Class<?> interactor) {
         // Arrange
-        Method ejecutar = Arrays.stream(interactor.getDeclaredMethods())
+        var ejecutar = Arrays.stream(interactor.getDeclaredMethods())
                 .filter(m -> "ejecutar".equals(m.getName()) && !m.isBridge())
                 .findFirst()
                 .orElseThrow();
 
         // Act
-        Transactional transaccion = ejecutar.getAnnotation(Transactional.class);
+        var transaccion = ejecutar.getAnnotation(Transactional.class);
 
         // Assert
         assertThat(transaccion)

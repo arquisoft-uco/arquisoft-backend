@@ -96,4 +96,24 @@ class CoordinadorProyectoGradoCommandOutputAdapterTest {
         // Act & Assert
         assertThat(adapter.obtenerPorEvaluacion(evaluacion)).isEmpty();
     }
+
+    @Test
+    void debeObtenerCoordinadorYDevolverVacioDeOtro_cuandoSeConsultaPorProyectoGrado() {
+        // Arrange
+        var proyecto = UtilUUID.generarNuevoUUID();
+        var coordinador = UtilUUID.generarNuevoUUID();
+        var replica = new CoordinadorProyectoGradoEntity(
+                proyecto, coordinador, "Coordinador", "coord@uco.edu.co", OCURRIDO_EN);
+        adapter.guardar(replica);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var encontrado = adapter.obtenerPorProyectoGrado(proyecto);
+        var ausente = adapter.obtenerPorProyectoGrado(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(encontrado).contains(replica);
+        assertThat(ausente).isEmpty();
+    }
 }

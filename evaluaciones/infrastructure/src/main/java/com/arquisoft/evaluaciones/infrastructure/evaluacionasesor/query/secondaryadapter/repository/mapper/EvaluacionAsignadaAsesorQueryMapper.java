@@ -19,6 +19,8 @@ public final class EvaluacionAsignadaAsesorQueryMapper {
                         entity.getEntregableProyecto(),
                         entity.getEntregableVersion()),
                 entity.isTieneEvaluacionesCualitativas(),
-                entity.isTieneEvaluacionesCuantitativas());
+                entity.isTieneEvaluacionesCuantitativas(),
+                new EvaluacionAsignadaAsesorReadModel.Notas(
+                        entity.getResumenCualitativo(), entity.getResumenCuantitativo(), entity.getNotaAcumulada()));
     }
 }

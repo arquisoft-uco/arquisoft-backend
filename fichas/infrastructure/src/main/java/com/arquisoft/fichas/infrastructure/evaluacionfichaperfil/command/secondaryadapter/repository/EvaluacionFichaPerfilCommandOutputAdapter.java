@@ -2,6 +2,8 @@ package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.second
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.ConteoEvaluacionesPorEstadoEntity;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EstadoFichaDeEvaluacionEntity;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionExistenteEntity;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.mapper.EvaluacionFichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -33,15 +36,19 @@ public class EvaluacionFichaPerfilCommandOutputAdapter
     }
 
     @Override
-    public boolean existePorRepresentanteYFicha(UUID representanteComiteId, UUID fichaPerfilId) {
-        return repository.existsByRepresentanteComiteIdAndFichaPerfilId(
-                representanteComiteId,
-                fichaPerfilId);
+    public Optional<EvaluacionExistenteEntity> obtenerEvaluacionDeRepresentanteEnFicha(
+            UUID representanteComiteId, UUID fichaPerfilId) {
+        return repository.obtenerEvaluacionDeRepresentanteEnFicha(representanteComiteId, fichaPerfilId);
     }
 
     @Override
     public boolean esRepresentantePropietario(UUID evaluacionFichaPerfil, UUID representanteComite) {
         return repository.existsByIdAndRepresentanteComiteId(evaluacionFichaPerfil, representanteComite);
+    }
+
+    @Override
+    public Optional<EstadoFichaDeEvaluacionEntity> obtenerEstadoFichaActual(UUID evaluacionFichaPerfilId) {
+        return repository.obtenerEstadoFichaActual(evaluacionFichaPerfilId);
     }
 
     @Override

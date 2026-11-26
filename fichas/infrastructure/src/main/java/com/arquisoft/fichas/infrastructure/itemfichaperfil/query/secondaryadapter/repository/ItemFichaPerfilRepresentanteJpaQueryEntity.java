@@ -24,9 +24,18 @@ import java.util.UUID;
                i.contenido              AS contenido
         FROM item i
                  JOIN evaluacion_ficha_perfil efp ON efp.ficha_perfil_id = i.ficha_perfil_id
+                 AND NOT EXISTS (
+                     SELECT 1 FROM estado_evaluacion_ficha d
+                     WHERE d.evaluacion_ficha_perfil_id = efp.id
+                       AND d.estado_evaluacion_id = 'DESCARTADA'
+                       AND NOT EXISTS (
+                           SELECT 1 FROM estado_evaluacion_ficha n
+                           WHERE n.evaluacion_ficha_perfil_id = d.evaluacion_ficha_perfil_id
+                             AND (n.fecha_actualizacion > d.fecha_actualizacion
+                                  OR (n.fecha_actualizacion = d.fecha_actualizacion AND n.id > d.id))))
                  JOIN tipo_item t ON t.id = i.tipo_item_id
         """)
-@Synchronize({"item", "evaluacion_ficha_perfil", "tipo_item"})
+@Synchronize({"item", "evaluacion_ficha_perfil", "estado_evaluacion_ficha", "tipo_item"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

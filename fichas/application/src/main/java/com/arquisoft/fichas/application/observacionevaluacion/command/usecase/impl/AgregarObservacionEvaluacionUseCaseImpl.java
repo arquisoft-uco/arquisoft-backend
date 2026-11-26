@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.observacionevaluacion.command.usecase.impl;
 
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EstadoFichaDeEvaluacionFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EvaluacionFichaExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.UltimoEstadoEvaluacionFichaFinder;
 import com.arquisoft.fichas.application.observacionevaluacion.command.finder.ObservacionEvaluacionDuplicadaFinder;
@@ -24,6 +25,7 @@ public class AgregarObservacionEvaluacionUseCaseImpl implements AgregarObservaci
     private final RepresentantePropietarioObservacionEvaluacionFinder representantePropietarioObservacionEvaluacionFinder;
     private final UltimoEstadoEvaluacionFichaFinder ultimoEstadoEvaluacionFichaFinder;
     private final ObservacionEvaluacionDuplicadaFinder observacionEvaluacionDuplicadaFinder;
+    private final EstadoFichaDeEvaluacionFinder estadoFichaDeEvaluacionFinder;
     private final AgregarObservacionEvaluacionValidator agregarObservacionEvaluacionValidator;
     private final ObservacionEvaluacionOutputPort observacionEvaluacionOutputPort;
     private final AppLogger logger;
@@ -38,12 +40,14 @@ public class AgregarObservacionEvaluacionUseCaseImpl implements AgregarObservaci
         var ultimoEstado = ultimoEstadoEvaluacionFichaFinder.obtener(entrada.getEvaluacionFichaPerfil())
                 .getEstadoEvaluacion();
         var observacionYaExiste = observacionEvaluacionDuplicadaFinder.obtener(entrada);
+        var estadoFicha = estadoFichaDeEvaluacionFinder.obtener(entrada.getEvaluacionFichaPerfil());
 
         logger.debug(ObservacionEvaluacionKey.LOG_VERIFICACION_AGREGAR,
-                evaluacionExiste, esPropietario, ultimoEstado.getId(), observacionYaExiste);
+                evaluacionExiste, esPropietario, ultimoEstado.getId(), observacionYaExiste,
+                estadoFicha.estadoActual().getId());
 
         agregarObservacionEvaluacionValidator.validar(
-                entrada, evaluacionExiste, esPropietario, ultimoEstado, observacionYaExiste);
+                entrada, evaluacionExiste, esPropietario, ultimoEstado, observacionYaExiste, estadoFicha);
 
         var observacionEvaluacion = entrada.getObservacionEvaluacion();
         observacionEvaluacionOutputPort.registrarObservacion(ObservacionEvaluacionMapper.toEntity(observacionEvaluacion));

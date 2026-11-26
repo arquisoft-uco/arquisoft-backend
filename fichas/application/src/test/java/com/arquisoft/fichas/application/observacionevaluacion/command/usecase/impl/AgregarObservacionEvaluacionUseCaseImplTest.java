@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.observacionevaluacion.command.usecase.impl;
 
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EstadoFichaDeEvaluacionFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EvaluacionFichaExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.UltimoEstadoEvaluacionFichaFinder;
 import com.arquisoft.fichas.application.observacionevaluacion.command.finder.ObservacionEvaluacionDuplicadaFinder;
@@ -8,6 +9,8 @@ import com.arquisoft.fichas.application.observacionevaluacion.command.secondaryp
 import com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.entity.ObservacionEvaluacionEntity;
 import com.arquisoft.fichas.application.observacionevaluacion.command.validator.AgregarObservacionEvaluacionValidator;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.observacionevaluacion.AgregacionObservacionEvaluacionDomain;
@@ -56,6 +59,9 @@ class AgregarObservacionEvaluacionUseCaseImplTest {
     private AgregarObservacionEvaluacionValidator agregarObservacionEvaluacionValidator;
 
     @Mock
+    private EstadoFichaDeEvaluacionFinder estadoFichaDeEvaluacionFinder;
+
+    @Mock
     private ObservacionEvaluacionOutputPort observacionEvaluacionOutputPort;
 
     @Mock
@@ -65,6 +71,8 @@ class AgregarObservacionEvaluacionUseCaseImplTest {
     private AgregarObservacionEvaluacionUseCaseImpl agregarObservacionEvaluacionUseCase;
 
     private final UUID evaluacionFichaPerfil = UtilUUID.generarNuevoUUID();
+    private static final EstadoActualFicha FICHA_DISPONIBLE = new EstadoActualFicha(
+            UtilUUID.generarNuevoUUID(), EstadoFicha.DISPONIBLE_PARA_EVALUACION);
     private final AgregacionObservacionEvaluacionDomain entrada = AgregacionObservacionEvaluacionDomain.crear(
             ObservacionEvaluacionDomain.crear(evaluacionFichaPerfil, "Observación válida"),
             UtilUUID.generarNuevoUUID());
@@ -91,17 +99,19 @@ class AgregarObservacionEvaluacionUseCaseImplTest {
         verify(representantePropietarioObservacionEvaluacionFinder, times(1)).obtener(entrada);
         verify(ultimoEstadoEvaluacionFichaFinder, times(1)).obtener(evaluacionFichaPerfil);
         verify(observacionEvaluacionDuplicadaFinder, times(1)).obtener(entrada);
+        verify(estadoFichaDeEvaluacionFinder, times(1)).obtener(evaluacionFichaPerfil);
 
         // Assert — orden: finders -> validator -> persistencia
         var orden = inOrder(evaluacionFichaExisteFinder, representantePropietarioObservacionEvaluacionFinder,
-                ultimoEstadoEvaluacionFichaFinder, observacionEvaluacionDuplicadaFinder,
+                ultimoEstadoEvaluacionFichaFinder, observacionEvaluacionDuplicadaFinder, estadoFichaDeEvaluacionFinder,
                 agregarObservacionEvaluacionValidator, observacionEvaluacionOutputPort);
         orden.verify(evaluacionFichaExisteFinder).obtener(evaluacionFichaPerfil);
         orden.verify(representantePropietarioObservacionEvaluacionFinder).obtener(entrada);
         orden.verify(ultimoEstadoEvaluacionFichaFinder).obtener(evaluacionFichaPerfil);
         orden.verify(observacionEvaluacionDuplicadaFinder).obtener(entrada);
+        orden.verify(estadoFichaDeEvaluacionFinder).obtener(evaluacionFichaPerfil);
         orden.verify(agregarObservacionEvaluacionValidator)
-                .validar(entrada, true, true, EstadoEvaluacion.EN_EVALUACION, false);
+                .validar(entrada, true, true, EstadoEvaluacion.EN_EVALUACION, false, FICHA_DISPONIBLE);
         orden.verify(observacionEvaluacionOutputPort).registrarObservacion(any());
     }
 
@@ -111,7 +121,7 @@ class AgregarObservacionEvaluacionUseCaseImplTest {
         stubFinders(true, true, estadoActual(EstadoEvaluacion.EN_EVALUACION), true);
         doThrow(new ObservacionEvaluacionDuplicadaException(evaluacionFichaPerfil, entrada.getObservacion()))
                 .when(agregarObservacionEvaluacionValidator)
-                .validar(entrada, true, true, EstadoEvaluacion.EN_EVALUACION, true);
+                .validar(entrada, true, true, EstadoEvaluacion.EN_EVALUACION, true, FICHA_DISPONIBLE);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarObservacionEvaluacionUseCase.ejecutar(entrada))
@@ -127,7 +137,7 @@ class AgregarObservacionEvaluacionUseCaseImplTest {
         stubFinders(false, false, EstadoEvaluacionFichaDomain.VACIO, false);
         doThrow(new EvaluacionFichaPerfilNoEncontradaException(evaluacionFichaPerfil))
                 .when(agregarObservacionEvaluacionValidator)
-                .validar(entrada, false, false, EstadoEvaluacion.VACIO, false);
+                .validar(entrada, false, false, EstadoEvaluacion.VACIO, false, FICHA_DISPONIBLE);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarObservacionEvaluacionUseCase.ejecutar(entrada))
@@ -141,6 +151,7 @@ class AgregarObservacionEvaluacionUseCaseImplTest {
         when(representantePropietarioObservacionEvaluacionFinder.obtener(entrada)).thenReturn(esPropietario);
         when(ultimoEstadoEvaluacionFichaFinder.obtener(evaluacionFichaPerfil)).thenReturn(ultimoEstado);
         when(observacionEvaluacionDuplicadaFinder.obtener(entrada)).thenReturn(observacionYaExiste);
+        when(estadoFichaDeEvaluacionFinder.obtener(evaluacionFichaPerfil)).thenReturn(FICHA_DISPONIBLE);
     }
 
     private EstadoEvaluacionFichaDomain estadoActual(EstadoEvaluacion estadoEvaluacion) {

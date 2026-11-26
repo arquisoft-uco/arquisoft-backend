@@ -1,15 +1,19 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.finder.impl;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionExistenteEntity;
 import com.arquisoft.fichas.application.representantecomite.command.finder.impl.RepresentanteComiteVigenteFinderImpl;
 import com.arquisoft.fichas.application.representantecomite.command.secondaryport.RepresentanteComiteOutputPort;
+import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.EvaluacionExistente;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +29,7 @@ class EvaluacionesFinderTest {
     private RepresentanteComiteOutputPort representanteComiteOutputPort;
 
     @InjectMocks
-    private EvaluacionDeRepresentanteExisteFinderImpl evaluacionDeRepresentanteFinder;
+    private EvaluacionExistenteDeRepresentanteFinderImpl evaluacionDeRepresentanteFinder;
 
     @InjectMocks
     private RepresentanteComiteVigenteFinderImpl representanteVigenteFinder;
@@ -37,22 +41,37 @@ class EvaluacionesFinderTest {
     void debeTrasladarQueElRepresentanteYaEvaluoLaFicha_cuandoElPuertoResponde() {
         // Arrange
         var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
-        when(evaluacionFichaPerfilOutputPort.existePorRepresentanteYFicha(representante, ficha))
-                .thenReturn(true);
+        var id = UUID.randomUUID();
+        when(evaluacionFichaPerfilOutputPort.obtenerEvaluacionDeRepresentanteEnFicha(representante, ficha))
+                .thenReturn(Optional.of(new EvaluacionExistenteEntity(id, "DESCARTADA")));
 
         // Act & Assert
-        assertThat(evaluacionDeRepresentanteFinder.obtener(evaluacion)).isTrue();
+        assertThat(evaluacionDeRepresentanteFinder.obtener(evaluacion))
+                .isEqualTo(new EvaluacionExistente(id, EstadoEvaluacion.DESCARTADA));
     }
 
     @Test
     void debeTrasladarQueNoHayEvaluacionPrevia_cuandoElPuertoResponde() {
         // Arrange
         var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
-        when(evaluacionFichaPerfilOutputPort.existePorRepresentanteYFicha(representante, ficha))
-                .thenReturn(false);
+        when(evaluacionFichaPerfilOutputPort.obtenerEvaluacionDeRepresentanteEnFicha(representante, ficha))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThat(evaluacionDeRepresentanteFinder.obtener(evaluacion)).isFalse();
+        assertThat(evaluacionDeRepresentanteFinder.obtener(evaluacion)).isEqualTo(EvaluacionExistente.VACIO);
+    }
+
+    @Test
+    void debeRetornarEstadoVacio_cuandoLaEvaluacionNoTieneEstado() {
+        // Arrange
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
+        var id = UUID.randomUUID();
+        when(evaluacionFichaPerfilOutputPort.obtenerEvaluacionDeRepresentanteEnFicha(representante, ficha))
+                .thenReturn(Optional.of(new EvaluacionExistenteEntity(id, null)));
+
+        // Act & Assert
+        assertThat(evaluacionDeRepresentanteFinder.obtener(evaluacion))
+                .isEqualTo(new EvaluacionExistente(id, EstadoEvaluacion.VACIO));
     }
 
     @Test

@@ -20,6 +20,7 @@ final class ArtefactoEstudianteSortMapper {
                 case NOMBRE_DOCUMENTO   -> "nombreDocumento";
                 case VERSION_DOCUMENTO  -> "versionDocumento";
                 case NOMBRE_REPOSITORIO -> "nombreRepositorio";
+                case ESTADO_ULTIMA_REVISION -> "estadoUltimaRevision";
                 case NOMBRE_ASESOR      -> "nombreAsesor";
             };
             if (UtilObjeto.noEsNulo(ruta)) {

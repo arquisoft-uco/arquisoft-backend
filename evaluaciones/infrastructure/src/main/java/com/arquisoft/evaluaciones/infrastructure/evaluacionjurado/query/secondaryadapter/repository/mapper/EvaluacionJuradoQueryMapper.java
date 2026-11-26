@@ -11,6 +11,8 @@ public final class EvaluacionJuradoQueryMapper {
         return new EvaluacionJuradoReadModel(
                 entity.getId(),
                 new EvaluacionJuradoReadModel.Jurado(
-                        entity.getJuradoId(), entity.getJuradoNombre(), entity.getJuradoEmail()));
+                        entity.getJuradoId(), entity.getJuradoNombre(), entity.getJuradoEmail()),
+                new EvaluacionJuradoReadModel.Notas(
+                        entity.getResumenCualitativo(), entity.getResumenCuantitativo(), entity.getNotaAcumulada()));
     }
 }

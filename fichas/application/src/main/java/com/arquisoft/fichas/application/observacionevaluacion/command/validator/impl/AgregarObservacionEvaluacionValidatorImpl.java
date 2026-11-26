@@ -15,6 +15,9 @@ import com.arquisoft.fichas.domain.observacionevaluacion.rules.EvaluacionFichaAb
 import com.arquisoft.fichas.domain.observacionevaluacion.rules.ObservacionEvaluacionNoDuplicadaRule;
 import com.arquisoft.fichas.domain.observacionevaluacion.rules.impl.EvaluacionFichaAbiertaRuleImpl;
 import com.arquisoft.fichas.domain.observacionevaluacion.rules.impl.ObservacionEvaluacionNoDuplicadaRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilDisponibleParaEvaluacionRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,17 +27,20 @@ public class AgregarObservacionEvaluacionValidatorImpl implements AgregarObserva
     private final RepresentantePropietarioEvaluacionRule representantePropietarioEvaluacionRule;
     private final EvaluacionFichaAbiertaRule evaluacionFichaAbiertaRule;
     private final ObservacionEvaluacionNoDuplicadaRule observacionEvaluacionNoDuplicadaRule;
+    private final EstadoFichaPerfilDisponibleParaEvaluacionRule estadoFichaDisponibleRule;
 
     public AgregarObservacionEvaluacionValidatorImpl() {
         this.evaluacionFichaExisteRule = new EvaluacionFichaExisteRuleImpl();
         this.representantePropietarioEvaluacionRule = new RepresentantePropietarioEvaluacionRuleImpl();
         this.evaluacionFichaAbiertaRule = new EvaluacionFichaAbiertaRuleImpl();
         this.observacionEvaluacionNoDuplicadaRule = new ObservacionEvaluacionNoDuplicadaRuleImpl();
+        this.estadoFichaDisponibleRule = new EstadoFichaPerfilDisponibleParaEvaluacionRuleImpl();
     }
 
     @Override
     public void validar(AgregacionObservacionEvaluacionDomain entrada, boolean evaluacionExiste, boolean esPropietario,
-                        EstadoEvaluacion ultimoEstado, boolean observacionYaExiste) {
+                        EstadoEvaluacion ultimoEstado, boolean observacionYaExiste,
+                        EstadoActualFicha estadoFicha) {
         evaluacionFichaExisteRule.validar(
                 new ExistenciaEvaluacionFicha(entrada.getEvaluacionFichaPerfil(), evaluacionExiste));
         representantePropietarioEvaluacionRule.validar(new PropiedadEvaluacionFicha(
@@ -43,5 +49,6 @@ public class AgregarObservacionEvaluacionValidatorImpl implements AgregarObserva
                 new EstadoEvaluacionObservada(entrada.getEvaluacionFichaPerfil(), ultimoEstado));
         observacionEvaluacionNoDuplicadaRule.validar(new DisponibilidadObservacionEvaluacion(
                 entrada.getEvaluacionFichaPerfil(), entrada.getObservacion(), observacionYaExiste));
+        estadoFichaDisponibleRule.validar(estadoFicha);
     }
 }

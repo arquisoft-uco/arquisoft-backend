@@ -398,7 +398,8 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta de forma paginada todas las evaluaciones con su entregable y su estado, con "
                         + "filtro por estado, proyecto o identificador del entregable y orden por proyecto "
-                        + "(por defecto, ascendente) o estado";
+                        + "(por defecto, ascendente) o estado. Incluye las notas (asesor, jurados y final) y el "
+                        + "resultado, vacíos mientras la evaluación no se consolide";
         public static final String CONSULTAR_RESP_200 = "Página de evaluaciones";
         public static final String CONSULTAR_RESP_400 =
                 "El filtro, el orden o la paginación solicitados no son aceptados";
@@ -406,13 +407,15 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_JURADO_DESCRIPTION =
                 "Consulta de forma paginada las evaluaciones asociadas al jurado autenticado con su entregable y "
                         + "su estado, con filtro por estado, proyecto o identificador del entregable y orden por "
-                        + "proyecto (por defecto, ascendente) o estado";
+                        + "proyecto (por defecto, ascendente) o estado. Incluye las notas (asesor, jurados y final) "
+                        + "y el resultado, vacíos mientras la evaluación no se consolide";
         public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Filtrar evaluaciones (estudiante)";
         public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
                 "Consulta de forma paginada las evaluaciones de los entregables del proyecto de grado del "
                         + "estudiante autenticado con su entregable y su estado, con filtro por estado, proyecto, "
                         + "identificador del entregable o del proyecto de grado y orden por proyecto "
-                        + "(por defecto, ascendente) o estado";
+                        + "(por defecto, ascendente) o estado. Incluye las notas (asesor, jurados y final) y el "
+                        + "resultado, vacíos mientras la evaluación no se consolide";
     }
 
     public static final class EvaluacionJurado {
@@ -425,7 +428,8 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones de jurado";
         public static final String CONSULTAR_DESCRIPTION =
                 "Consulta de forma paginada las evaluaciones de jurado de una evaluación, con filtro "
-                        + "por nombre o identificador del jurado y orden por nombre (por defecto, ascendente)";
+                        + "por nombre o identificador del jurado y orden por nombre (por defecto, ascendente). Cada "
+                        + "elemento incluye las notas de la evaluación del jurado, vacías mientras no se calculen";
         public static final String CONSULTAR_RESP_200 = "Página de evaluaciones de jurado de la evaluación";
         public static final String CONSULTAR_RESP_400 =
                 "El identificador no es válido o el filtro/orden solicitado no es aceptado";
@@ -438,7 +442,8 @@ public final class EvaluacionesApiMessages {
                         + "campos y version; por defecto, primero las pendientes por evaluar. Cada elemento indica con "
                         + "tieneEvaluacionesCualitativas y tieneEvaluacionesCuantitativas si el jurado ya "
                         + "registró al menos una evaluación de ese tipo; se calculan sobre lo persistido, así "
-                        + "que al omitir todas las evaluaciones de un tipo su indicador vuelve a false";
+                        + "que al omitir todas las evaluaciones de un tipo su indicador vuelve a false. Cada elemento "
+                        + "incluye las notas de la evaluación del jurado, vacías mientras no se calculen";
         public static final String CONSULTAR_ASIGNADAS_RESP_200 =
                 "Página de evaluaciones asignadas al jurado (vacía si no tiene asignaciones)";
         public static final String CONSULTAR_ASIGNADAS_RESP_400 =
@@ -549,18 +554,21 @@ public final class EvaluacionesApiMessages {
         public static final String TAG_DESCRIPTION = "Consulta de la evaluación que el asesor hizo de una evaluación";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluación del asesor";
         public static final String CONSULTAR_DESCRIPTION =
-                "Consulta la evaluación del asesor de una evaluación con su identificador y los datos del asesor "
-                        + "(identificador, nombre y correo)";
-        public static final String CONSULTAR_RESP_200 = "Evaluación del asesor con los datos del asesor";
+                "Consulta la evaluación del asesor de una evaluación con su identificador, los datos del asesor "
+                        + "(identificador, nombre y correo) y sus notas (resumen cualitativo, resumen cuantitativo y "
+                        + "nota acumulada), vacías mientras no se calculen";
+        public static final String CONSULTAR_RESP_200 =
+                "Evaluación del asesor con los datos del asesor y sus notas";
         public static final String CONSULTAR_RESP_400 = "El identificador de la evaluación no es válido";
         public static final String CONSULTAR_RESP_422 =
                 "La evaluación no existe o aún no tiene una evaluación del asesor";
         public static final String CONSULTAR_REALIZADA_SUMMARY = "Consultar información de la evaluación del asesor";
         public static final String CONSULTAR_REALIZADA_DESCRIPTION =
                 "Consulta el detalle de una evaluación realizada por el asesor autenticado: la evaluación con su "
-                        + "entregable y estado, y los datos del asesor";
+                        + "entregable y estado, los datos del asesor y las notas de su evaluación, vacías "
+                        + "mientras no se calculen";
         public static final String CONSULTAR_REALIZADA_RESP_200 =
-                "Detalle de la evaluación del asesor con su entregable, estado y datos del asesor";
+                "Detalle de la evaluación del asesor con su entregable, estado, datos del asesor y notas";
         public static final String CONSULTAR_REALIZADA_RESP_400 =
                 "El identificador de la evaluación del asesor no es válido";
         public static final String CONSULTAR_REALIZADA_RESP_422 =
@@ -570,7 +578,8 @@ public final class EvaluacionesApiMessages {
                 "Consulta de forma paginada las evaluaciones del asesor autenticado, con el identificador de su "
                         + "evaluación, el estado, el entregable y si ya registró evaluaciones cualitativas y "
                         + "cuantitativas, con filtro por estado y proyecto y orden por estado, proyecto y versión "
-                        + "(por defecto, ascendente)";
+                        + "(por defecto, ascendente). Cada elemento incluye las notas de su evaluación, vacías "
+                        + "mientras no se calculen";
         public static final String CONSULTAR_ASIGNADAS_RESP_200 = "Página de evaluaciones asignadas al asesor";
         public static final String CONSULTAR_ASIGNADAS_RESP_400 =
                 "El filtro u orden solicitado no es aceptado o la identidad del asesor no es válida";

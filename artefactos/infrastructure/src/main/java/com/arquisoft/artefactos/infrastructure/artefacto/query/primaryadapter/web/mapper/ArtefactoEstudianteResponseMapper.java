@@ -19,6 +19,7 @@ public final class ArtefactoEstudianteResponseMapper {
                 readModel.asesor(),
                 readModel.nombreAsesor(),
                 readModel.omitido(),
+                readModel.estadoUltimaRevision(),
                 readModel.proyectoFinalizado(),
                 readModel.proyectoCancelado());
     }

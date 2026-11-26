@@ -33,4 +33,27 @@ class NotificacionesEvaluacionesQueueConfigTest {
                     .isEqualTo(NotificacionesEvaluacionesQueueConfig.EVALUACION_FINALIZADA_QUEUE);
         });
     }
+
+    @Test
+    void debeDeclararColaDerivadaDelTopicYBinding_deEvaluacionGenerada() {
+        // Arrange
+        var config = new NotificacionesEvaluacionesQueueConfig();
+
+        // Act
+        var declarables = config.notificacionesEvaluacionGeneradaDeclarables(
+                new TopicExchange("eventos"), new DirectExchange("dlx"));
+
+        // Assert
+        assertThat(NotificacionesEvaluacionesQueueConfig.EVALUACION_GENERADA_QUEUE)
+                .isEqualTo(NotificacionesQueues.PREFIJO + EventTopics.Evaluaciones.EVALUACION_GENERADA);
+        assertThat(declarables.getDeclarablesByType(Queue.class))
+                .extracting(Queue::getName)
+                .contains(NotificacionesEvaluacionesQueueConfig.EVALUACION_GENERADA_QUEUE);
+        assertThat(declarables.getDeclarablesByType(Binding.class)).anySatisfy(binding -> {
+            assertThat(binding.getExchange()).isEqualTo("eventos");
+            assertThat(binding.getRoutingKey()).isEqualTo(EventTopics.Evaluaciones.EVALUACION_GENERADA);
+            assertThat(binding.getDestination())
+                    .isEqualTo(NotificacionesEvaluacionesQueueConfig.EVALUACION_GENERADA_QUEUE);
+        });
+    }
 }

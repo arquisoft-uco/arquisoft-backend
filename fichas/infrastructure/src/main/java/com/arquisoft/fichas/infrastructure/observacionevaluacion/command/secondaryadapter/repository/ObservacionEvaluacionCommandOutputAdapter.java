@@ -31,6 +31,11 @@ public class ObservacionEvaluacionCommandOutputAdapter implements ObservacionEva
     }
 
     @Override
+    public long contarPorEvaluacion(UUID evaluacionFichaPerfil) {
+        return repository.countByEvaluacionFichaPerfilId(evaluacionFichaPerfil);
+    }
+
+    @Override
     public Optional<PertenenciaObservacionEvaluacionEntity> obtenerPertenencia(UUID observacionEvaluacion,
                                                                                UUID representanteComite) {
         return repository.obtenerPertenencia(observacionEvaluacion, representanteComite);

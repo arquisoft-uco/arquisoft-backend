@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.second
 
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.ConteoEvaluacionesPorEstadoEntity;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionExistenteEntity;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.mapper.EvaluacionFichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
@@ -12,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,20 +55,20 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarTrue_cuandoExistsByRepresentanteAndFicha() {
+    void debeRetornarLaEvaluacionExistente_cuandoElRepresentanteYaTieneUnaEnLaFicha() {
         // Arrange
         UUID representanteId = UUID.randomUUID();
         UUID fichaId = UUID.randomUUID();
 
-        when(repository.existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId))
-                .thenReturn(true);
+        var existente = new EvaluacionExistenteEntity(UUID.randomUUID(), "DESCARTADA");
+        when(repository.obtenerEvaluacionDeRepresentanteEnFicha(representanteId, fichaId))
+                .thenReturn(Optional.of(existente));
 
         // Act
-        boolean existe = adapter.existePorRepresentanteYFicha(representanteId, fichaId);
+        var resultado = adapter.obtenerEvaluacionDeRepresentanteEnFicha(representanteId, fichaId);
 
         // Assert
-        assertThat(existe).isTrue();
-        verify(repository).existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId);
+        assertThat(resultado).contains(existente);
     }
 
     @Test
@@ -84,19 +86,18 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarFalse_cuandoNoExistsByRepresentanteAndFicha() {
+    void debeRetornarVacio_cuandoElRepresentanteNoTieneEvaluacionEnLaFicha() {
         // Arrange
         UUID representanteId = UUID.randomUUID();
         UUID fichaId = UUID.randomUUID();
 
-        when(repository.existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId))
-                .thenReturn(false);
+        when(repository.obtenerEvaluacionDeRepresentanteEnFicha(representanteId, fichaId))
+                .thenReturn(Optional.empty());
 
         // Act
-        boolean existe = adapter.existePorRepresentanteYFicha(representanteId, fichaId);
+        var resultado = adapter.obtenerEvaluacionDeRepresentanteEnFicha(representanteId, fichaId);
 
         // Assert
-        assertThat(existe).isFalse();
-        verify(repository).existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId);
+        assertThat(resultado).isEmpty();
     }
 }

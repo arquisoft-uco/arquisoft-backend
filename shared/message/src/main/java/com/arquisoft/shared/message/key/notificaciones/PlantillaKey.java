@@ -170,6 +170,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.cuerpo.version-artefacto-generada", 3),
     ASUNTO_EVALUACION_FINALIZADA(
             "notificaciones.aplicacion.plantilla.asunto.evaluacion-finalizada", 1),
+    ASUNTO_EVALUACION_GENERADA(
+            "notificaciones.aplicacion.plantilla.asunto.evaluacion-generada", 1),
+    CUERPO_EVALUACION_GENERADA(
+            "notificaciones.aplicacion.plantilla.cuerpo.evaluacion-generada", 3),
     CUERPO_EVALUACION_FINALIZADA(
             "notificaciones.aplicacion.plantilla.cuerpo.evaluacion-finalizada", 4),
     ASUNTO_ESTUDIANTES_ARTEFACTO_ASIGNADOS(

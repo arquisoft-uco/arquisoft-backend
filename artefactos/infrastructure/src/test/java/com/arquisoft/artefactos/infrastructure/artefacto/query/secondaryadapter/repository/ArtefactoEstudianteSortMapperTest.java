@@ -10,12 +10,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ArtefactoEstudianteSortMapperTest {
 
     @Test
-    void debeTraducirLasCincoClavesOrdenables() {
+    void debeTraducirLasClavesOrdenables() {
         // Act & Assert
         assertThat(ArtefactoEstudianteSortMapper.traducir("nombreProyecto")).isEqualTo("nombreProyecto");
         assertThat(ArtefactoEstudianteSortMapper.traducir("nombreDocumento")).isEqualTo("nombreDocumento");
         assertThat(ArtefactoEstudianteSortMapper.traducir("versionDocumento")).isEqualTo("versionDocumento");
         assertThat(ArtefactoEstudianteSortMapper.traducir("nombreRepositorio")).isEqualTo("nombreRepositorio");
+        assertThat(ArtefactoEstudianteSortMapper.traducir("estadoUltimaRevision")).isEqualTo("estadoUltimaRevision");
         assertThat(ArtefactoEstudianteSortMapper.traducir("nombreAsesor")).isEqualTo("nombreAsesor");
     }
 

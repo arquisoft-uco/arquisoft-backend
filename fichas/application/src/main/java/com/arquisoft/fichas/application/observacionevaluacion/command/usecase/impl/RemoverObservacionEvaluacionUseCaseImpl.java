@@ -28,7 +28,7 @@ public class RemoverObservacionEvaluacionUseCaseImpl implements RemoverObservaci
         var observacionExiste = !pertenencia.esVacio();
 
         logger.debug(ObservacionEvaluacionKey.LOG_VERIFICACION_REMOVER,
-                observacionExiste, pertenencia.esPropietario(), pertenencia.ultimoEstado().getId());
+                observacionExiste, pertenencia.esPropietario(), pertenencia.ultimoEstado().getId(), pertenencia.estadoFicha().getId());
 
         removerObservacionEvaluacionValidator.validar(entrada, observacionExiste, pertenencia);
 

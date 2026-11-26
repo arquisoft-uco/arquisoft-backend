@@ -54,7 +54,7 @@ class EstadoFichaTest {
         assertThat(estado).isEqualTo(EstadoFicha.DESCARTADA);
         assertThat(EstadoFicha.esValido("DESCARTADA")).isTrue();
         assertThat(estado.esTerminal()).isFalse();
-        assertThat(estado.permiteModificacion()).isTrue();
+        assertThat(estado.permiteModificacion()).isFalse();
         assertThat(estado.getNombre()).isEqualTo("Descartada");
     }
 
@@ -64,6 +64,24 @@ class EstadoFichaTest {
         assertThat(EstadoFicha.esValido("NO_EXISTE")).isFalse();
         assertThat(EstadoFicha.esValido("VACIO")).isFalse();
         assertThat(EstadoFicha.esValido(null)).isFalse();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "EN_CONSTRUCCION,            true",
+            "DISPONIBLE_PARA_EVALUACION, false",
+            "DESCARTADA,                 false",
+            "APROBADA,                   false",
+            "APROBADA_CON_OBSERVACIONES, false",
+            "NO_APROBADA,                false",
+            "VACIO,                      false"
+    })
+    void debeIndicarSiPermiteModificacion_cuandoSeConsultaElEstado(EstadoFicha estado, boolean esperado) {
+        // Act
+        var permite = estado.permiteModificacion();
+
+        // Assert
+        assertThat(permite).isEqualTo(esperado);
     }
 
     @ParameterizedTest

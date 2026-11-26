@@ -3,6 +3,7 @@ package com.arquisoft.fichas.application.observacionevaluacion.command.finder.im
 import com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.ObservacionEvaluacionOutputPort;
 import com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.entity.PertenenciaObservacionEvaluacionEntity;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.observacionevaluacion.ModificacionObservacionEvaluacionDomain;
 import com.arquisoft.fichas.domain.observacionevaluacion.model.PertenenciaObservacionEvaluacion;
 import com.arquisoft.shared.util.UtilUUID;
@@ -33,15 +34,18 @@ class PertenenciaObservacionEvaluacionFinderImplTest {
     void debeMapearPertenenciaConSuUltimoEstado_cuandoLaObservacionExiste() {
         // Arrange
         var evaluacionFichaPerfil = UtilUUID.generarNuevoUUID();
+        var fichaPerfil = UtilUUID.generarNuevoUUID();
         stubPuerto(Optional.of(new PertenenciaObservacionEvaluacionEntity(
-                evaluacionFichaPerfil, true, EstadoEvaluacion.APROBADA.getId())));
+                evaluacionFichaPerfil, true, EstadoEvaluacion.APROBADA.getId(), fichaPerfil,
+                EstadoFicha.DISPONIBLE_PARA_EVALUACION.getId())));
 
         // Act
         var pertenencia = finder.obtener(modificacion);
 
         // Assert
         assertThat(pertenencia).isEqualTo(
-                new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.APROBADA));
+                new PertenenciaObservacionEvaluacion(evaluacionFichaPerfil, true, EstadoEvaluacion.APROBADA,
+                        fichaPerfil, EstadoFicha.DISPONIBLE_PARA_EVALUACION));
         assertThat(pertenencia.esVacio()).isFalse();
     }
 
@@ -49,13 +53,15 @@ class PertenenciaObservacionEvaluacionFinderImplTest {
     void debeMapearEstadoVacio_cuandoLaEvaluacionNoTieneEstados() {
         // Arrange
         var evaluacionFichaPerfil = UtilUUID.generarNuevoUUID();
-        stubPuerto(Optional.of(new PertenenciaObservacionEvaluacionEntity(evaluacionFichaPerfil, false, null)));
+        stubPuerto(Optional.of(new PertenenciaObservacionEvaluacionEntity(
+                evaluacionFichaPerfil, false, null, null, null)));
 
         // Act
         var pertenencia = finder.obtener(modificacion);
 
         // Assert
         assertThat(pertenencia.ultimoEstado()).isEqualTo(EstadoEvaluacion.VACIO);
+        assertThat(pertenencia.estadoFicha()).isEqualTo(EstadoFicha.VACIO);
         assertThat(pertenencia.evaluacionFichaPerfil()).isEqualTo(evaluacionFichaPerfil);
         assertThat(pertenencia.esPropietario()).isFalse();
     }

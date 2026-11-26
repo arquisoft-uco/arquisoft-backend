@@ -77,6 +77,8 @@ public enum ConsumidorKey implements ClaveMensaje {
             "notificaciones.infraestructura.consumidor.log.entregable-cancelado-recibido", 3),
     LOG_ENTREGABLE_CERRADO_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.entregable-cerrado-recibido", 3),
+    LOG_EVALUACION_GENERADA_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.evaluacion-generada-recibido", 3),
     LOG_EVALUACION_FINALIZADA_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.evaluacion-finalizada-recibido", 3),
     LOG_ESTUDIANTES_ARTEFACTO_ASIGNADOS_RECIBIDO(

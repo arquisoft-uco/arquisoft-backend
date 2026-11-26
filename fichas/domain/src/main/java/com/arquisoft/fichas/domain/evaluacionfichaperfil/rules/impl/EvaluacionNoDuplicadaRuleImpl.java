@@ -8,9 +8,13 @@ public class EvaluacionNoDuplicadaRuleImpl implements EvaluacionNoDuplicadaRule 
 
     @Override
     public void validar(DisponibilidadEvaluacionFicha disponibilidad) {
-        if (disponibilidad.yaExiste()) {
-            throw new EvaluacionFichaPerfilDuplicadaException(
-                    disponibilidad.representanteComite(), disponibilidad.fichaPerfil());
+        var existente = disponibilidad.existente();
+
+        if (existente.esVacio() || existente.estadoActual().esDescartada()) {
+            return;
         }
+
+        throw new EvaluacionFichaPerfilDuplicadaException(
+                disponibilidad.representanteComite(), disponibilidad.fichaPerfil());
     }
 }

@@ -24,6 +24,7 @@ class ArtefactoEstudianteJpaSpecification extends QueryJpaSpecification<Artefact
                 case NOMBRE_DOCUMENTO              -> CampoSpec.texto(root -> root.get("nombreDocumento"));
                 case VERSION_DOCUMENTO             -> CampoSpec.entero(root -> root.get("versionDocumento"));
                 case NOMBRE_REPOSITORIO            -> CampoSpec.texto(root -> root.get("nombreRepositorio"));
+                case ESTADO_ULTIMA_REVISION        -> CampoSpec.texto(root -> root.get("estadoUltimaRevision"));
                 case ASESOR                        -> CampoSpec.uuid(root -> root.get("asesorId"));
                 case NOMBRE_ASESOR                 -> CampoSpec.texto(root -> root.get("nombreAsesor"));
                 case ESTUDIANTE_ID                 -> CampoSpec.uuid(root -> root.get("estudianteId"));

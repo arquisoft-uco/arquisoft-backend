@@ -22,6 +22,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,6 +66,23 @@ class ConsultarEvaluacionAsesorControllerTest {
     private GestorTraza gestorTraza;
 
     @Test
+    void debeResponder200ConNotas_cuandoExisteEvaluacionAsesor() throws Exception {
+        // Arrange
+        var evaluacion = UtilUUID.generarNuevoUUID();
+        when(interactor.ejecutar(ConsultarEvaluacionAsesorQuery.crear(evaluacion))).thenReturn(
+                new EvaluacionAsesorReadModel(UtilUUID.generarNuevoUUID(),
+                        new EvaluacionAsesorReadModel.Asesor(UtilUUID.generarNuevoUUID(), "Ana Gomez", "ana@uco.edu.co"),
+                        new EvaluacionAsesorReadModel.Notas(new BigDecimal("4.5"), new BigDecimal("3.8"), new BigDecimal("4.1"))));
+
+        // Act & Assert
+        mockMvc.perform(get(RUTA, evaluacion).with(SecurityMockMvcRequestPostProcessors.jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.notas.resumenCualitativo").value(4.5))
+                .andExpect(jsonPath("$.notas.resumenCuantitativo").value(3.8))
+                .andExpect(jsonPath("$.notas.notaAcumulada").value(4.1));
+    }
+
+    @Test
     void debeResponder200_cuandoExiste() throws Exception {
         // Arrange
         var evaluacion = UtilUUID.generarNuevoUUID();
@@ -72,7 +90,8 @@ class ConsultarEvaluacionAsesorControllerTest {
         var asesor = UtilUUID.generarNuevoUUID();
         when(interactor.ejecutar(ConsultarEvaluacionAsesorQuery.crear(evaluacion))).thenReturn(
                 new EvaluacionAsesorReadModel(id,
-                        new EvaluacionAsesorReadModel.Asesor(asesor, "Ana Gomez", "ana@uco.edu.co")));
+                        new EvaluacionAsesorReadModel.Asesor(asesor, "Ana Gomez", "ana@uco.edu.co"),
+                        new EvaluacionAsesorReadModel.Notas(null, null, null)));
 
         // Act & Assert
         mockMvc.perform(get(RUTA, evaluacion).with(SecurityMockMvcRequestPostProcessors.jwt()))

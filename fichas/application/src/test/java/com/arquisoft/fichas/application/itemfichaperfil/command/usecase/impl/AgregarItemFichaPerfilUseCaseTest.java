@@ -7,7 +7,7 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.finder.TipoItemE
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.FichaPerfilNoEnConstruccionException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.ItemFichaPerfilEntity;
@@ -21,7 +21,6 @@ import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -77,7 +76,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         stubConsultas(entrada, true, true, false);
 
         // Act
-        UUID resultado = agregarItemFichaPerfilUseCase.ejecutar(entrada);
+        var resultado = agregarItemFichaPerfilUseCase.ejecutar(entrada);
 
         // Assert
         assertThat(resultado).isEqualTo(entrada.getItem().getId());
@@ -94,7 +93,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         agregarItemFichaPerfilUseCase.ejecutar(entrada);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilExisteFinder, vinculoEstudianteFichaExisteFinder,
+        var inOrder = inOrder(fichaPerfilExisteFinder, vinculoEstudianteFichaExisteFinder,
                 estadoActualFichaPerfilFinder, tipoItemEnFichaExisteFinder, agregarItemFichaPerfilValidator,
                 itemFichaPerfilOutputPort);
         inOrder.verify(fichaPerfilExisteFinder).obtener(fichaPerfil);
@@ -108,23 +107,23 @@ class AgregarItemFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debePropagarLaExcepcionSinPersistir_cuandoLaFichaEstaEnEstadoTerminal() {
+    void debePropagarLaExcepcionSinPersistir_cuandoLaFichaNoEstaEnConstruccion() {
         // Arrange
         var entrada = entrada();
         var estadoAprobada = EstadoFichaPerfilDomain.reconstruir(
-                UUID.randomUUID(), fichaPerfil, EstadoFicha.APROBADA, Instant.now());
+                UUID.randomUUID(), fichaPerfil, EstadoFicha.DISPONIBLE_PARA_EVALUACION, Instant.now());
         when(fichaPerfilExisteFinder.obtener(fichaPerfil)).thenReturn(true);
         when(vinculoEstudianteFichaExisteFinder.obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante)))
                 .thenReturn(true);
         when(estadoActualFichaPerfilFinder.obtener(fichaPerfil)).thenReturn(estadoAprobada);
         when(tipoItemEnFichaExisteFinder.obtener(entrada.getItem())).thenReturn(false);
-        doThrow(new EstadoFichaPerfilTerminalException(EstadoFicha.APROBADA))
+        doThrow(new FichaPerfilNoEnConstruccionException(EstadoFicha.DISPONIBLE_PARA_EVALUACION))
                 .when(agregarItemFichaPerfilValidator)
                 .validar(entrada.getItem(), estudiante, true, true, estadoAprobada, false);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarItemFichaPerfilUseCase.ejecutar(entrada))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+                .isInstanceOf(FichaPerfilNoEnConstruccionException.class);
 
         verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }

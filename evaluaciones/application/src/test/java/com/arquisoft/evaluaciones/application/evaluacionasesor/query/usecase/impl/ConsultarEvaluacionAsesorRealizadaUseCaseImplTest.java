@@ -49,7 +49,7 @@ class ConsultarEvaluacionAsesorRealizadaUseCaseImplTest {
         // Arrange
         var criteria = new EvaluacionAsesorRealizadaCriteria(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID());
-        var esperado = new EvaluacionAsesorRealizadaReadModel(criteria.evaluacionAsesor(), null, null);
+        var esperado = new EvaluacionAsesorRealizadaReadModel(criteria.evaluacionAsesor(), null, null, null);
         when(asesorDeEvaluacionAsesorQueryFinder.obtener(criteria.evaluacionAsesor())).thenReturn(criteria.asesor());
         when(queryOutputPort.consultar(criteria)).thenReturn(esperado);
 

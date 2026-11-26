@@ -4,9 +4,9 @@ import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarF
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.ExistenciaEstadoFichaPerfil;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnConstruccionRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilExisteRule;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnTerminalRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnConstruccionRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilExisteRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantePropietarioFichaRule;
@@ -22,13 +22,13 @@ public class ModificarFichaPerfilValidatorImpl implements ModificarFichaPerfilVa
 
     private final EstudiantePropietarioFichaRule estudiantePropietarioFichaRule;
     private final EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule;
-    private final EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
+    private final EstadoFichaPerfilEnConstruccionRule estadoFichaPerfilEnConstruccionRule;
     private final FichaPerfilTituloUnicoRule fichaPerfilTituloUnicoRule;
 
     public ModificarFichaPerfilValidatorImpl() {
         this.estudiantePropietarioFichaRule = new EstudiantePropietarioFichaRuleImpl();
         this.estadoFichaPerfilExisteRule = new EstadoFichaPerfilExisteRuleImpl();
-        this.estadoFichaPerfilEnTerminalRule = new EstadoFichaPerfilEnTerminalRuleImpl();
+        this.estadoFichaPerfilEnConstruccionRule = new EstadoFichaPerfilEnConstruccionRuleImpl();
         this.fichaPerfilTituloUnicoRule = new FichaPerfilTituloUnicoRuleImpl();
     }
 
@@ -41,7 +41,7 @@ public class ModificarFichaPerfilValidatorImpl implements ModificarFichaPerfilVa
 
         estadoFichaPerfilExisteRule.validar(
                 new ExistenciaEstadoFichaPerfil(modificacion.getFichaPerfil(), !estadoActual.esVacio()));
-        estadoFichaPerfilEnTerminalRule.validar(
+        estadoFichaPerfilEnConstruccionRule.validar(
                 new EstadoActualFicha(modificacion.getFichaPerfil(), estadoActual.getEstadoFicha()));
 
         fichaPerfilTituloUnicoRule.validar(

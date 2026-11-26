@@ -6,6 +6,7 @@ import com.arquisoft.evaluaciones.application.evaluacionjurado.query.readmodel.E
 import com.arquisoft.evaluaciones.domain.evaluacion.exception.EvaluacionNoEncontradaException;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.AppCodes;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -25,6 +26,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -79,13 +81,31 @@ class ConsultarEvaluacionesJuradoControllerTest {
     }
 
     @Test
+    void debeResponder200ConNotas_cuandoExisteLaEvaluacion() throws Exception {
+        // Arrange
+        when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(
+                List.of(new EvaluacionJuradoReadModel(UtilUUID.generarNuevoUUID(),
+                        new EvaluacionJuradoReadModel.Jurado(UtilUUID.generarNuevoUUID(), "Ana Ruiz", "ana@uco.edu.co"),
+                        new EvaluacionJuradoReadModel.Notas(new BigDecimal("4.5"), new BigDecimal("3.8"), new BigDecimal("4.1")))),
+                0, 10, 1));
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA).with(jwtConPermisoView()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].notas.resumenCualitativo").value(4.5))
+                .andExpect(jsonPath("$.content[0].notas.resumenCuantitativo").value(3.8))
+                .andExpect(jsonPath("$.content[0].notas.notaAcumulada").value(4.1));
+    }
+
+    @Test
     void debeRetornar200ConElContratoExacto_yPasarLosDefaultsAlInteractor_cuandoNoHayBody() throws Exception {
         // Arrange
         var idFila = UUID.randomUUID();
         var idJurado = UUID.randomUUID();
         when(interactor.ejecutar(any())).thenReturn(PaginatedResult.of(
                 List.of(new EvaluacionJuradoReadModel(idFila,
-                        new EvaluacionJuradoReadModel.Jurado(idJurado, "Ana Ruiz", "ana@uco.edu.co"))),
+                        new EvaluacionJuradoReadModel.Jurado(idJurado, "Ana Ruiz", "ana@uco.edu.co"),
+                        new EvaluacionJuradoReadModel.Notas(null, null, null))),
                 0, 10, 1));
 
         // Act & Assert

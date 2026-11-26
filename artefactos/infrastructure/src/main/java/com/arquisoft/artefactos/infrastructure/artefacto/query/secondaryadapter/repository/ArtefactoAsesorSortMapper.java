@@ -20,6 +20,7 @@ final class ArtefactoAsesorSortMapper {
                 case NOMBRE_DOCUMENTO   -> "nombreDocumento";
                 case VERSION_DOCUMENTO  -> "versionDocumento";
                 case NOMBRE_REPOSITORIO -> "nombreRepositorio";
+                case ESTADO_ULTIMA_REVISION -> "estadoUltimaRevision";
             };
             if (UtilObjeto.noEsNulo(ruta)) {
                 m.put(campo.getClave(), ruta);

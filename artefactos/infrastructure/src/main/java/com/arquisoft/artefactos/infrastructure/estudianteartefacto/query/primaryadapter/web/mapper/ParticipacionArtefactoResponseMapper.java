@@ -18,6 +18,9 @@ public final class ParticipacionArtefactoResponseMapper {
                 readModel.nombreRepositorio(),
                 readModel.asesor(),
                 readModel.nombreAsesor(),
-                readModel.omitido());
+                readModel.omitido(),
+                readModel.estadoUltimaRevision(),
+                readModel.proyectoFinalizado(),
+                readModel.proyectoCancelado());
     }
 }

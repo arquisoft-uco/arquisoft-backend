@@ -18,10 +18,10 @@ class ArtefactoAsesorCriteriaTest {
     void debeDeclararFiltrableYOrdenable_segunLoConfiguradoPorCampo() {
         // Arrange & Act & Assert
         for (var clave : List.of("proyectoGrado", "nombreProyecto", "versionRepositorioArtefacto",
-                "nombreDocumento", "versionDocumento", "nombreRepositorio", "asesorId")) {
+                "nombreDocumento", "versionDocumento", "nombreRepositorio", "asesorId", "estadoUltimaRevision")) {
             assertThat(ArtefactoAsesorCriteria.Campo.esValidoParaFiltrar(clave)).isTrue();
         }
-        for (var clave : List.of("nombreProyecto", "nombreDocumento", "versionDocumento", "nombreRepositorio")) {
+        for (var clave : List.of("nombreProyecto", "nombreDocumento", "versionDocumento", "nombreRepositorio", "estadoUltimaRevision")) {
             assertThat(ArtefactoAsesorCriteria.Campo.esValidoParaOrdenar(clave)).isTrue();
         }
         for (var clave : List.of("proyectoGrado", "versionRepositorioArtefacto", "asesorId")) {
@@ -70,5 +70,17 @@ class ArtefactoAsesorCriteriaTest {
 
         // Act & Assert
         assertThatThrownBy(() -> builder.ordenamiento(ordenamiento)).isInstanceOf(FiltroException.class);
+    }
+
+    @Test
+    void debeAceptarOrden_cuandoEsEstadoUltimaRevision() {
+        // Arrange
+        var ordenamiento = List.of(SortOrder.of("estadoUltimaRevision", SortDirection.DESC));
+
+        // Act
+        var criteria = ArtefactoAsesorCriteria.builder().pagina(0).tamanio(10).ordenamiento(ordenamiento).build();
+
+        // Assert
+        assertThat(criteria.getOrdenamiento()).hasSize(1);
     }
 }

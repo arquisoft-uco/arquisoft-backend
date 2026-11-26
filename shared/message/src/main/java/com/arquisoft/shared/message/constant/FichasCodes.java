@@ -12,6 +12,7 @@ public final class FichasCodes {
         public static final String TITULO_REQUERIDO = "FICHA_TITULO_REQUERIDO";
         public static final String TITULO_DEMASIADO_LARGO = "FICHA_TITULO_DEMASIADO_LARGO";
         public static final String ASESOR_REQUERIDO = "FICHA_ASESOR_REQUERIDO";
+        public static final String REPRESENTANTE_REQUERIDO = "FICHA_REPRESENTANTE_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO = "FICHA_ESTUDIANTE_REQUERIDO";
         public static final String FICHA_TITULO_DUPLICADO = "FICHA_TITULO_DUPLICADO";
         public static final String ASESOR_NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
@@ -146,6 +147,7 @@ public final class FichasCodes {
         public static final String ACEPTA_REQUERIDO = "ESTADO_FICHA_PERFIL_ACEPTA_REQUERIDO";
         public static final String COORDINADOR_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_COORDINADOR_ID_REQUERIDO";
         public static final String NO_DISPONIBLE_PARA_EVALUACION = "ESTADO_FICHA_PERFIL_NO_DISPONIBLE_PARA_EVALUACION";
+        public static final String NO_EN_CONSTRUCCION = "ESTADO_FICHA_PERFIL_NO_EN_CONSTRUCCION";
         public static final String SIN_EVALUACION_FINALIZADA = "ESTADO_FICHA_PERFIL_SIN_EVALUACION_FINALIZADA";
         public static final String APROBACION_SIN_EVALUACION_APROBATORIA =
                 "ESTADO_FICHA_PERFIL_APROBACION_SIN_EVALUACION_APROBATORIA";
@@ -155,6 +157,7 @@ public final class FichasCodes {
         public static final String ESTADO_REPETIDO = "ESTADO_FICHA_PERFIL_ESTADO_REPETIDO";
         public static final String TRANSICION_NO_PERMITIDA = "ESTADO_FICHA_PERFIL_TRANSICION_NO_PERMITIDA";
         public static final String EVALUACION_EN_CURSO = "ESTADO_FICHA_PERFIL_EVALUACION_EN_CURSO";
+        public static final String EN_ESPERA_DE_DECISION = "ESTADO_FICHA_PERFIL_EN_ESPERA_DE_DECISION";
         public static final String REPRESENTANTE_COMITE_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_REPRESENTANTE_COMITE_ID_REQUERIDO";
     }
 
@@ -203,5 +206,9 @@ public final class FichasCodes {
         public static final String ESTADO_EN_EVALUACION_NO_MANUAL = "ESTADO_EN_EVALUACION_NO_MANUAL";
         public static final String EVALUACION_NO_PROPIA = "EVALUACION_NO_PROPIA";
         public static final String REPRESENTANTE_REQUERIDO = "ESTADO_EVALUACION_REPRESENTANTE_REQUERIDO";
+        public static final String OBSERVACIONES_NO_PERMITIDAS = "ESTADO_EVALUACION_OBSERVACIONES_NO_PERMITIDAS";
+        public static final String OBSERVACIONES_REQUERIDAS = "ESTADO_EVALUACION_OBSERVACIONES_REQUERIDAS";
+        public static final String DESCARTADA_NO_ASIGNABLE = "ESTADO_EVALUACION_DESCARTADA_NO_ASIGNABLE";
+        public static final String EVALUACION_NO_DESCARTABLE = "EVALUACION_NO_DESCARTABLE";
     }
 }

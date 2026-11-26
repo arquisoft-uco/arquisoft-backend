@@ -39,7 +39,7 @@ class ConsultarEvaluacionesCoordinadorUseCaseImplTest {
         var readModel = new EvaluacionReadModel(
                 UUID.randomUUID(),
                 new EvaluacionReadModel.Entregable(UUID.randomUUID(), "Robot seguidor", 1),
-                new EvaluacionReadModel.Estado("PENDIENTE", "Pendiente"));
+                new EvaluacionReadModel.Estado("PENDIENTE", "Pendiente"), null, null);
         var esperado = PaginatedResult.of(List.of(readModel), 0, 10, 1);
         when(evaluacionQueryOutputPort.consultarTodas(criteria)).thenReturn(esperado);
 

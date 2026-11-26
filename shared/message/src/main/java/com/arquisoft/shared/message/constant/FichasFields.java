@@ -11,6 +11,7 @@ public final class FichasFields {
         public static final String ID = "fichaPerfilId";
         public static final String TITULO = "tituloProyecto";
         public static final String ASESOR_FICHA = "asesorFicha";
+        public static final String REPRESENTANTE_COMITE = "representanteComite";
         public static final String ESTUDIANTE = "estudiante";
         public static final String ESTUDIANTES = "estudiantes";
         public static final String ESTADO_FICHA = "estadoFicha";

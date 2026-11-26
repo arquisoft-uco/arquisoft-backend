@@ -1,5 +1,9 @@
 package com.arquisoft.artefactos.infrastructure.estudianteartefacto.query.secondaryadapter.repository;
 
+import com.arquisoft.artefactos.application.estudianteartefacto.query.criteria.ParticipacionArtefactoCriteria;
+import com.arquisoft.artefactos.application.estudianteartefacto.query.primaryport.mapper.ConsultarParticipacionesArtefactoMapper;
+import com.arquisoft.artefactos.application.estudianteartefacto.query.primaryport.model.ConsultarParticipacionesArtefactoQuery;
+import com.arquisoft.artefactos.application.estudianteartefacto.query.readmodel.ParticipacionArtefactoReadModel;
 import com.arquisoft.artefactos.infrastructure.artefacto.command.secondaryadapter.entity.ArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.asesor.command.secondaryadapter.entity.AsesorJpaEntity;
 import com.arquisoft.artefactos.infrastructure.estudianteartefacto.command.secondaryadapter.entity.EstudianteArtefactoJpaEntity;
@@ -8,6 +12,15 @@ import com.arquisoft.artefactos.infrastructure.proyectogrado.command.secondaryad
 import com.arquisoft.artefactos.infrastructure.versionrepositorioartefacto.command.secondaryadapter.entity.VersionRepositorioArtefactoJpaEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.ArtefactoTestEntity;
 import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstudianteArtefactoTestEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.EstadoRevisionAsesorTestEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.RevisionAsesorTestEntity;
+import com.arquisoft.artefactos.infrastructure.revisionasesor.support.VersionArtefactoTestEntity;
+import com.arquisoft.shared.query.ConsultaCriteriaQuery;
+import com.arquisoft.shared.query.FiltroOperador;
+import com.arquisoft.shared.query.NodoFiltro;
+import com.arquisoft.shared.query.SortOrder;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
+import com.arquisoft.shared.query.pagination.SortDirection;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +29,8 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +51,8 @@ class EstudianteArtefactoQueryOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new EstudianteArtefactoQueryOutputAdapter(repository, participacionRepository);
+        adapter = new EstudianteArtefactoQueryOutputAdapter(
+                repository, participacionRepository, new ParticipacionArtefactoJpaSpecification());
     }
 
     private UUID sembrarArtefacto() {
@@ -89,8 +105,40 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         return artefacto;
     }
 
+    private void sembrarEstado(String id, String nombre) {
+        entityManager.persist(new EstadoRevisionAsesorTestEntity(id, nombre));
+    }
+
+    private void sembrarRevision(UUID artefacto, String estadoId, long diasAtras) {
+        var version = UtilUUID.generarNuevoUUID();
+        var fecha = Instant.now().minus(diasAtras, ChronoUnit.DAYS);
+        entityManager.persist(new VersionArtefactoTestEntity(version, artefacto, 1, fecha, "artefactos/" + version));
+        entityManager.persist(new RevisionAsesorTestEntity(UtilUUID.generarNuevoUUID(), version, estadoId, fecha));
+    }
+
+    private UUID sembrarProyectoConEstado(String nombre, String estado) {
+        var id = UtilUUID.generarNuevoUUID();
+        entityManager.persist(new ProyectoGradoJpaEntity(id, nombre, null, estado, Instant.now()));
+        return id;
+    }
+
+    private static ParticipacionArtefactoCriteria criteria(
+            UUID estudiante, NodoFiltro raiz, List<SortOrder> orden, int pagina, int tamanio) {
+        var criterio = ConsultaCriteriaQuery.crear(pagina, tamanio, orden, raiz);
+        return ConsultarParticipacionesArtefactoMapper.toCriteria(
+                ConsultarParticipacionesArtefactoQuery.crear(estudiante, criterio));
+    }
+
+    private static ParticipacionArtefactoCriteria criteria(UUID estudiante, NodoFiltro raiz) {
+        return criteria(estudiante, raiz, List.of(), 0, 10);
+    }
+
+    private static List<UUID> ids(PaginatedResult<ParticipacionArtefactoReadModel> pagina) {
+        return pagina.getContent().stream().map(ParticipacionArtefactoReadModel::id).toList();
+    }
+
     @Test
-    void debeRetornarSoloLosArtefactosDelEstudiante_cuandoOtrosEstudiantesTambienTienenVinculos() {
+    void debeRetornarSoloLasParticipacionesDelEstudiante_cuandoOtrosTambienTienenVinculos() {
         // Arrange
         var estudiante = UtilUUID.generarNuevoUUID();
         var otro = UtilUUID.generarNuevoUUID();
@@ -102,14 +150,36 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
+        var resultado = adapter.consultarParticipaciones(criteria(estudiante, null));
 
         // Assert
-        assertThat(resultado).extracting("id").containsExactly(propio);
+        assertThat(ids(resultado)).containsExactly(propio);
+        assertThat(resultado.getTotalElements()).isEqualTo(1L);
     }
 
     @Test
-    void debeMarcarOmitidoEnLasParticipaciones_cuandoElArtefactoFueOmitido() {
+    void debeIgnorarEstudianteIdDelCliente_cuandoPasaPorElMapperDeApplication() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var otro = UtilUUID.generarNuevoUUID();
+        var proyecto = sembrarProyecto("Alfa");
+        var version = sembrarVersion("Informe", 1, "Repo");
+        var propio = sembrarParticipacion(estudiante, proyecto, version);
+        var ajeno = sembrarParticipacion(otro, proyecto, version);
+        entityManager.flush();
+        entityManager.clear();
+        var filtroAjeno = NodoFiltro.predicado("estudianteId", FiltroOperador.ES, otro.toString());
+
+        // Act
+        var resultado = adapter.consultarParticipaciones(criteria(estudiante, filtroAjeno));
+
+        // Assert
+        assertThat(ids(resultado)).doesNotContain(ajeno, propio);
+        assertThat(resultado.getTotalElements()).isZero();
+    }
+
+    @Test
+    void debeIncluirOmitidos_cuandoElArtefactoFueOmitido() {
         // Arrange
         var estudiante = UtilUUID.generarNuevoUUID();
         var proyecto = sembrarProyecto("Alfa");
@@ -123,38 +193,61 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
+        var resultado = adapter.consultarParticipaciones(criteria(estudiante, null));
 
         // Assert
-        assertThat(resultado).filteredOn(participacion -> participacion.omitido())
+        assertThat(resultado.getContent()).filteredOn(ParticipacionArtefactoReadModel::omitido)
                 .extracting("id").containsExactly(omitido);
-        assertThat(resultado).filteredOn(participacion -> !participacion.omitido())
+        assertThat(resultado.getContent()).filteredOn(participacion -> !participacion.omitido())
                 .extracting("id").containsExactly(activo);
     }
 
     @Test
-    void debeOrdenarPorProyectoDocumentoYVersion_cuandoHayVarios() {
+    void debeOrdenarPorProyectoYDocumento_porDefecto() {
         // Arrange
         var estudiante = UtilUUID.generarNuevoUUID();
         var alfa = sembrarProyecto("Alfa");
         var beta = sembrarProyecto("Beta");
         var betaDoc1 = sembrarParticipacion(estudiante, beta, sembrarVersion("Anteproyecto", 1, "Repo"));
-        var alfaInformeV2 = sembrarParticipacion(estudiante, alfa, sembrarVersion("Informe", 2, "Repo"));
-        var alfaInformeV1 = sembrarParticipacion(estudiante, alfa, sembrarVersion("Informe", 1, "Repo"));
+        var alfaInforme = sembrarParticipacion(estudiante, alfa, sembrarVersion("Informe", 2, "Repo"));
         var alfaAnteproyecto = sembrarParticipacion(estudiante, alfa, sembrarVersion("Anteproyecto", 5, "Repo"));
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
+        var resultado = adapter.consultarParticipaciones(criteria(estudiante, null));
 
         // Assert
-        assertThat(resultado).extracting("id")
-                .containsExactly(alfaAnteproyecto, alfaInformeV1, alfaInformeV2, betaDoc1);
+        assertThat(ids(resultado)).containsExactly(alfaAnteproyecto, alfaInforme, betaDoc1);
     }
 
     @Test
-    void debeIncluirNombresDeProyectoYRepositorio_cuandoUneLasTablas() {
+    void debeDesempatarPorId_cuandoPaginaConValoresIguales() {
+        // Arrange
+        var estudiante = UtilUUID.generarNuevoUUID();
+        var proyecto = sembrarProyecto("Alfa");
+        var version = sembrarVersion("Informe", 1, "Repo");
+        var asesor = sembrarAsesor("Ana");
+        var primero = sembrarParticipacion(estudiante, proyecto, version, asesor);
+        var segundo = sembrarParticipacion(estudiante, proyecto, version, asesor);
+        var tercero = sembrarParticipacion(estudiante, proyecto, version, asesor);
+        entityManager.flush();
+        entityManager.clear();
+        var orden = List.of(SortOrder.of("nombreProyecto", SortDirection.ASC));
+
+        // Act
+        var pagina0 = adapter.consultarParticipaciones(criteria(estudiante, null, orden, 0, 1));
+        var pagina1 = adapter.consultarParticipaciones(criteria(estudiante, null, orden, 1, 1));
+        var pagina2 = adapter.consultarParticipaciones(criteria(estudiante, null, orden, 2, 1));
+
+        // Assert
+        var vistos = List.of(ids(pagina0).get(0), ids(pagina1).get(0), ids(pagina2).get(0));
+        assertThat(vistos).containsExactlyInAnyOrder(primero, segundo, tercero);
+        assertThat(pagina0.getTotalElements()).isEqualTo(3L);
+    }
+
+    @Test
+    void debeIncluirNombresYAsesorDeCadaArtefacto_cuandoUneLasTablas() {
         // Arrange
         var estudiante = UtilUUID.generarNuevoUUID();
         var proyecto = sembrarProyecto("Proyecto Alfa");
@@ -165,11 +258,11 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
+        var resultado = adapter.consultarParticipaciones(criteria(estudiante, null));
 
         // Assert
-        assertThat(resultado).hasSize(1);
-        var readModel = resultado.get(0);
+        assertThat(resultado.getContent()).hasSize(1);
+        var readModel = resultado.getContent().get(0);
         assertThat(readModel.id()).isEqualTo(artefacto);
         assertThat(readModel.proyectoGrado()).isEqualTo(proyecto);
         assertThat(readModel.nombreProyecto()).isEqualTo("Proyecto Alfa");
@@ -179,31 +272,13 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         assertThat(readModel.nombreRepositorio()).isEqualTo("Repo Uno");
         assertThat(readModel.asesor()).isEqualTo(asesor);
         assertThat(readModel.nombreAsesor()).isEqualTo("Carla");
+        assertThat(readModel.estadoUltimaRevision()).isNull();
+        assertThat(readModel.proyectoFinalizado()).isFalse();
+        assertThat(readModel.proyectoCancelado()).isFalse();
     }
 
     @Test
-    void debeIncluirElAsesorDeCadaArtefacto_cuandoLosArtefactosTienenAsesoresDistintos() {
-        // Arrange
-        var estudiante = UtilUUID.generarNuevoUUID();
-        var proyecto = sembrarProyecto("Alfa");
-        var asesorUno = sembrarAsesor("Diana");
-        var asesorDos = sembrarAsesor("Elena");
-        var primero = sembrarParticipacion(estudiante, proyecto, sembrarVersion("Anteproyecto", 1, "Repo"), asesorUno);
-        var segundo = sembrarParticipacion(estudiante, proyecto, sembrarVersion("Informe", 1, "Repo"), asesorDos);
-        entityManager.flush();
-        entityManager.clear();
-
-        // Act
-        var resultado = adapter.consultarParticipacionesPorEstudiante(estudiante);
-
-        // Assert
-        assertThat(resultado).extracting("id").containsExactly(primero, segundo);
-        assertThat(resultado).extracting("asesor").containsExactly(asesorUno, asesorDos);
-        assertThat(resultado).extracting("nombreAsesor").containsExactly("Diana", "Elena");
-    }
-
-    @Test
-    void debeRetornarListaVacia_cuandoElEstudianteNoTieneVinculos() {
+    void debeRetornarPaginaVacia_cuandoElEstudianteNoTieneVinculos() {
         // Arrange
         var proyecto = sembrarProyecto("Alfa");
         var version = sembrarVersion("Informe", 1, "Repo");
@@ -212,10 +287,11 @@ class EstudianteArtefactoQueryOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        var resultado = adapter.consultarParticipacionesPorEstudiante(UtilUUID.generarNuevoUUID());
+        var resultado = adapter.consultarParticipaciones(criteria(UtilUUID.generarNuevoUUID(), null));
 
         // Assert
-        assertThat(resultado).isEmpty();
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isZero();
     }
 
     @Test

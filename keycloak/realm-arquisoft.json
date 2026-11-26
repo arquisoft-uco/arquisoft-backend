@@ -387,6 +387,7 @@
               "artefactos:artefacto-participacion-estudiante:view",
               "artefactos:revision-asesor-estado:update",
               "artefactos:observacion-estado-estudiante:update",
+              "artefactos:estado-revision-asesor:view",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create",
@@ -524,6 +525,7 @@
               "fichas:observacion-evaluacion:delete",
               "fichas:tipo-item:view",
               "fichas:observacion-evaluacion:update",
+              "fichas:evaluacion-ficha-perfil-descarte:update",
               "fichas:estado-evaluacion-ficha:create",
               "fichas:estado-ficha-perfil-representante:view",
               "usuarios:representante-comite-vigente:view",
@@ -531,7 +533,8 @@
               "fichas:observacion-evaluacion:create",
               "usuarios:asesor-ficha-vigente:view",
               "fichas:estado-ficha:view",
-              "fichas:ficha-perfil-coordinador:view",
+              "fichas:ficha-perfil-disponible-evaluacion:view",
+              "fichas:ficha-perfil-representante:view",
               "fichas:estado-evaluacion:view",
               "fichas:observacion-evaluacion-representante:view",
               "usuarios:estudiante-vigente:view",
@@ -2004,6 +2007,15 @@
           "attributes": {}
         },
         {
+          "id": "e810345f-e40c-46e2-b046-17576f5374c4",
+          "name": "fichas:evaluacion-ficha-perfil-descarte:update",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
           "id": "d316db85-8321-44e4-882e-e3e23a48ab0f",
           "name": "fichas:observacion-evaluacion:update",
           "description": "",
@@ -2231,6 +2243,24 @@
         {
           "id": "c8b4cb5f-f21a-4158-b1e5-00f12f100375",
           "name": "usuarios:asesor-ficha:delete",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "6f0c2a9e-3b8d-4c57-9a41-7d2e5b1f08c3",
+          "name": "fichas:ficha-perfil-disponible-evaluacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "49893a5f-7bc0-41bc-b5df-5681e83424d6",
+          "name": "fichas:ficha-perfil-representante:view",
           "description": "",
           "composite": false,
           "clientRole": true,

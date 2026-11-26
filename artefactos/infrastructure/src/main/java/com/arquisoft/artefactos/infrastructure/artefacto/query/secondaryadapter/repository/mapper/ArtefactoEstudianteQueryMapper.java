@@ -19,6 +19,7 @@ public final class ArtefactoEstudianteQueryMapper {
                 entity.getAsesorId(),
                 entity.getNombreAsesor(),
                 entity.isOmitido(),
+                entity.getEstadoUltimaRevision(),
                 entity.isProyectoFinalizado(),
                 entity.isProyectoCancelado());
     }

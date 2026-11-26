@@ -1,6 +1,8 @@
 package com.arquisoft.fichas.infrastructure.observacionevaluacion.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.observacionevaluacion.command.secondaryport.entity.PertenenciaObservacionEvaluacionEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.command.secondaryadapter.entity.EstadoFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.entity.EstadoFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.entity.EstadoEvaluacionJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.entity.EstadoEvaluacionFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.entity.EvaluacionFichaPerfilJpaEntity;
@@ -14,6 +16,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,6 +70,30 @@ class ObservacionEvaluacionCommandRepositoryTest {
     }
 
     @Test
+    void debeContarSoloLasObservacionesDeLaEvaluacion_cuandoHayObservacionesEnOtras() {
+        // Arrange
+        entityManager.persist(ObservacionEvaluacionJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .evaluacionFichaPerfilId(evaluacionFichaPerfilId)
+                .observacion(OTRA_OBSERVACION)
+                .build());
+        entityManager.persist(ObservacionEvaluacionJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .evaluacionFichaPerfilId(UtilUUID.generarNuevoUUID())
+                .observacion(OBSERVACION)
+                .build());
+        entityManager.flush();
+
+        // Act
+        var observaciones = repository.countByEvaluacionFichaPerfilId(evaluacionFichaPerfilId);
+        var sinObservaciones = repository.countByEvaluacionFichaPerfilId(UtilUUID.generarNuevoUUID());
+
+        // Assert
+        assertThat(observaciones).isEqualTo(2L);
+        assertThat(sinObservaciones).isZero();
+    }
+
+    @Test
     void debeRetornarFalse_cuandoElTextoCoincideEnOtraEvaluacion() {
         // Act
         var existe = repository.existsByEvaluacionFichaPerfilIdAndObservacion(
@@ -77,12 +104,15 @@ class ObservacionEvaluacionCommandRepositoryTest {
     }
 
     @Test
-    void debeRetornarPertenenciaConElUltimoEstado_cuandoElRepresentanteEsPropietario() {
+    void debeRetornarFichaYEstadoMasRecienteDeLaFicha_cuandoTieneHistorial() {
         // Arrange
         var evaluacion = persistirEvaluacion();
         var ahora = Instant.now();
         persistirEstadoEvaluacionFicha(evaluacion, persistirEstado("EN_EVALUACION"), ahora.minusSeconds(60));
         persistirEstadoEvaluacionFicha(evaluacion, persistirEstado("APROBADA"), ahora);
+        persistirEstadoFichaPerfil(evaluacion.getFichaPerfilId(), "EN_CONSTRUCCION", ahora.minusSeconds(60));
+        persistirEstadoFichaPerfil(evaluacion.getFichaPerfilId(), "DISPONIBLE_PARA_EVALUACION", ahora);
+        persistirEstadoFichaPerfil(UtilUUID.generarNuevoUUID(), "APROBADA", ahora.plusSeconds(60));
         var observacion = persistirObservacion(evaluacion.getId(), OBSERVACION);
         sincronizar();
 
@@ -91,7 +121,8 @@ class ObservacionEvaluacionCommandRepositoryTest {
 
         // Assert
         assertThat(pertenencia).contains(
-                new PertenenciaObservacionEvaluacionEntity(evaluacion.getId(), true, "APROBADA"));
+                new PertenenciaObservacionEvaluacionEntity(evaluacion.getId(), true, "APROBADA",
+                        evaluacion.getFichaPerfilId(), "DISPONIBLE_PARA_EVALUACION"));
     }
 
     @Test
@@ -107,7 +138,8 @@ class ObservacionEvaluacionCommandRepositoryTest {
 
         // Assert
         assertThat(pertenencia).contains(
-                new PertenenciaObservacionEvaluacionEntity(evaluacion.getId(), false, "EN_EVALUACION"));
+                new PertenenciaObservacionEvaluacionEntity(
+                evaluacion.getId(), false, "EN_EVALUACION", evaluacion.getFichaPerfilId(), null));
     }
 
     @Test
@@ -122,9 +154,28 @@ class ObservacionEvaluacionCommandRepositoryTest {
 
         // Assert
         assertThat(pertenencia).contains(
-                new PertenenciaObservacionEvaluacionEntity(evaluacion.getId(), true, null));
+                new PertenenciaObservacionEvaluacionEntity(
+                evaluacion.getId(), true, null, evaluacion.getFichaPerfilId(), null));
     }
 
+
+    @Test
+    void debeIgnorarEstadosDeOtraFicha_cuandoCompartenCatalogo() {
+        // Arrange
+        var evaluacion = persistirEvaluacion();
+        var otraFicha = UtilUUID.generarNuevoUUID();
+        persistirEstadoFichaPerfil(evaluacion.getFichaPerfilId(), "EN_CONSTRUCCION", Instant.now().minusSeconds(60));
+        persistirEstadoFichaPerfil(otraFicha, "DISPONIBLE_PARA_EVALUACION", Instant.now());
+        var observacion = persistirObservacion(evaluacion.getId(), OBSERVACION);
+        sincronizar();
+
+        // Act
+        var pertenencia = repository.obtenerPertenencia(observacion.getId(), evaluacion.getRepresentanteComiteId());
+
+        // Assert
+        assertThat(pertenencia).hasValueSatisfying(resultado ->
+                assertThat(resultado.estadoFichaId()).isEqualTo("EN_CONSTRUCCION"));
+    }
     @Test
     void debeRetornarVacio_cuandoLaObservacionNoExiste() {
         // Act
@@ -245,6 +296,21 @@ class ObservacionEvaluacionCommandRepositoryTest {
                 .build());
     }
 
+
+    private void persistirEstadoFichaPerfil(UUID fichaPerfil, String estadoFichaId, Instant fechaActualizacion) {
+        var estadoFicha = Optional.ofNullable(entityManager.find(EstadoFichaJpaEntity.class, estadoFichaId))
+                .orElseGet(() -> entityManager.persist(EstadoFichaJpaEntity.builder()
+                        .id(estadoFichaId)
+                        .nombre(estadoFichaId)
+                        .descripcion("")
+                        .build()));
+        entityManager.persist(EstadoFichaPerfilJpaEntity.builder()
+                .id(UtilUUID.generarNuevoUUID())
+                .fichaPerfilId(fichaPerfil)
+                .estadoFicha(estadoFicha)
+                .fechaActualizacion(fechaActualizacion)
+                .build());
+    }
     private void sincronizar() {
         entityManager.flush();
         entityManager.clear();

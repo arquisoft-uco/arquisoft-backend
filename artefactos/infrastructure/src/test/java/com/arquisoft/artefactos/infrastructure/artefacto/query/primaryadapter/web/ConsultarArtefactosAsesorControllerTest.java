@@ -76,7 +76,7 @@ class ConsultarArtefactosAsesorControllerTest {
         // Arrange
         var artefacto = new ArtefactoReadModel(
                 UtilUUID.generarNuevoUUID(), UtilUUID.generarNuevoUUID(), "Proyecto Alfa",
-                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", false, true, false);
+                UtilUUID.generarNuevoUUID(), "Documento", 2, "Repositorio", false, "Pendiente", true, false);
         when(consultarArtefactosAsesorInteractor.ejecutar(any(ConsultarArtefactosAsesorQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(artefacto), 0, 10, 1L));
         var body = """
@@ -100,6 +100,7 @@ class ConsultarArtefactosAsesorControllerTest {
                 .andExpect(jsonPath("$.content[0].nombreDocumento").value("Documento"))
                 .andExpect(jsonPath("$.content[0].versionDocumento").value(2))
                 .andExpect(jsonPath("$.content[0].nombreRepositorio").value("Repositorio"))
+                .andExpect(jsonPath("$.content[0].estadoUltimaRevision").value("Pendiente"))
                 .andExpect(jsonPath("$.content[0].proyectoFinalizado").value(true))
                 .andExpect(jsonPath("$.content[0].proyectoCancelado").value(false))
                 .andExpect(jsonPath("$.totalElements").value(1));

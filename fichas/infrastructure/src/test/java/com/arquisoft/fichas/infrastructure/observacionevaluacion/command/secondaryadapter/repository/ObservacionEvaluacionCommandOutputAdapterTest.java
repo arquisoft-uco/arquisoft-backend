@@ -68,12 +68,27 @@ class ObservacionEvaluacionCommandOutputAdapterTest {
     }
 
     @Test
+    void debeRetornarElConteoDelRepositorio_cuandoCuentaLasObservacionesDeUnaEvaluacion() {
+        // Arrange
+        var evaluacionFichaPerfil = UtilUUID.generarNuevoUUID();
+        when(repository.countByEvaluacionFichaPerfilId(evaluacionFichaPerfil)).thenReturn(2L);
+
+        // Act
+        var observaciones = adapter.contarPorEvaluacion(evaluacionFichaPerfil);
+
+        // Assert
+        assertThat(observaciones).isEqualTo(2L);
+        verifyNoInteractions(logger);
+    }
+
+    @Test
     void debeRetornarLaPertenenciaDelRepositorio_cuandoConsultaPorObservacionYRepresentante() {
         // Arrange
         var observacionEvaluacion = UtilUUID.generarNuevoUUID();
         var representanteComite = UtilUUID.generarNuevoUUID();
         var pertenencia = Optional.of(new PertenenciaObservacionEvaluacionEntity(
-                UtilUUID.generarNuevoUUID(), true, "EN_EVALUACION"));
+                UtilUUID.generarNuevoUUID(), true, "EN_EVALUACION", UtilUUID.generarNuevoUUID(),
+                "DISPONIBLE_PARA_EVALUACION"));
         when(repository.obtenerPertenencia(observacionEvaluacion, representanteComite)).thenReturn(pertenencia);
 
         // Act

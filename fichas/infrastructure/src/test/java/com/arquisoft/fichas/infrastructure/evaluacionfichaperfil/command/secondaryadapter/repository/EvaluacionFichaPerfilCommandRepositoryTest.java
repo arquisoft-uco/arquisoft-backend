@@ -1,8 +1,12 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.ConteoEvaluacionesPorEstadoEntity;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EstadoFichaDeEvaluacionEntity;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionExistenteEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.entity.EstadoEvaluacionJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.entity.EstadoEvaluacionFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.command.secondaryadapter.entity.EstadoFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.entity.EstadoFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.entity.EvaluacionFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.observacionevaluacion.command.secondaryadapter.entity.ObservacionEvaluacionJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -145,6 +149,116 @@ class EvaluacionFichaPerfilCommandRepositoryTest {
 
         // Assert
         assertThat(conteos).containsExactly(new ConteoEvaluacionesPorEstadoEntity("APROBADA", 1, 0));
+    }
+
+    @Test
+    void debeRetornarIdYEstadoMasReciente_cuandoLaEvaluacionTieneHistorial() {
+        // Arrange
+        var representante = UUID.randomUUID();
+        var evaluacion = persistirEvaluacionDe(representante, fichaPerfil);
+        persistirEstado(UUID.randomUUID(), evaluacion, enEvaluacion, T0);
+        persistirEstado(UUID.randomUUID(), evaluacion, descartada, T0.plusSeconds(60));
+        sincronizar();
+
+        // Act
+        var resultado = repository.obtenerEvaluacionDeRepresentanteEnFicha(representante, fichaPerfil);
+
+        // Assert
+        assertThat(resultado).contains(new EvaluacionExistenteEntity(evaluacion.getId(), "DESCARTADA"));
+    }
+
+    @Test
+    void debeRetornarEstadoNulo_cuandoLaEvaluacionNoTieneEstados() {
+        // Arrange
+        var representante = UUID.randomUUID();
+        var evaluacion = persistirEvaluacionDe(representante, fichaPerfil);
+        sincronizar();
+
+        // Act
+        var resultado = repository.obtenerEvaluacionDeRepresentanteEnFicha(representante, fichaPerfil);
+
+        // Assert
+        assertThat(resultado).contains(new EvaluacionExistenteEntity(evaluacion.getId(), null));
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoNoHayEvaluacionDelRepresentanteEnLaFicha() {
+        // Arrange
+        var representante = UUID.randomUUID();
+        persistirEvaluacionDe(representante, UUID.randomUUID());
+        sincronizar();
+
+        // Act
+        var resultado = repository.obtenerEvaluacionDeRepresentanteEnFicha(representante, fichaPerfil);
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeIgnorarEvaluacionDeOtroRepresentante_cuandoLaFichaEsLaMisma() {
+        // Arrange
+        var representante = UUID.randomUUID();
+        var ajena = persistirEvaluacionDe(UUID.randomUUID(), fichaPerfil);
+        persistirEstado(UUID.randomUUID(), ajena, descartada, T0);
+        sincronizar();
+
+        // Act
+        var resultado = repository.obtenerEvaluacionDeRepresentanteEnFicha(representante, fichaPerfil);
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeRetornarEstadoMasRecienteDeLaFicha_cuandoTieneVarios() {
+        // Arrange
+        var evaluacion = persistirEvaluacion(fichaPerfil);
+        persistirEstadoFicha(fichaPerfil, "EN_CONSTRUCCION", T0);
+        persistirEstadoFicha(fichaPerfil, "DISPONIBLE_PARA_EVALUACION", T0.plusSeconds(60));
+        persistirEstadoFicha(UUID.randomUUID(), "APROBADA", T0.plusSeconds(120));
+        sincronizar();
+
+        // Act
+        var resultado = repository.obtenerEstadoFichaActual(evaluacion.getId());
+
+        // Assert
+        assertThat(resultado).contains(new EstadoFichaDeEvaluacionEntity(fichaPerfil, "DISPONIBLE_PARA_EVALUACION"));
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoEvaluacionNoExiste() {
+        // Act
+        var resultado = repository.obtenerEstadoFichaActual(UUID.randomUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    private EvaluacionFichaPerfilJpaEntity persistirEvaluacionDe(UUID representante, UUID ficha) {
+        return entityManager.persist(EvaluacionFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .representanteComiteId(representante)
+                .fichaPerfilId(ficha)
+                .fechaCreacion(T0)
+                .build());
+    }
+
+    private void persistirEstadoFicha(UUID ficha, String estadoFichaId, Instant fecha) {
+        var estado = entityManager.find(EstadoFichaJpaEntity.class, estadoFichaId);
+        if (estado == null) {
+            estado = entityManager.persist(EstadoFichaJpaEntity.builder()
+                    .id(estadoFichaId)
+                    .nombre(estadoFichaId)
+                    .descripcion("")
+                    .build());
+        }
+        entityManager.persist(EstadoFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(ficha)
+                .estadoFicha(estado)
+                .fechaActualizacion(fecha)
+                .build());
     }
 
     private void sincronizar() {

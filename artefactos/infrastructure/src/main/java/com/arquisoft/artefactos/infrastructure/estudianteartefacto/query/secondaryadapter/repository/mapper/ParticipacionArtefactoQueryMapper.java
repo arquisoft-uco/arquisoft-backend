@@ -18,6 +18,9 @@ public final class ParticipacionArtefactoQueryMapper {
                 entity.getNombreRepositorio(),
                 entity.getAsesorId(),
                 entity.getNombreAsesor(),
-                entity.isOmitido());
+                entity.isOmitido(),
+                entity.getEstadoUltimaRevision(),
+                entity.isProyectoFinalizado(),
+                entity.isProyectoCancelado());
     }
 }

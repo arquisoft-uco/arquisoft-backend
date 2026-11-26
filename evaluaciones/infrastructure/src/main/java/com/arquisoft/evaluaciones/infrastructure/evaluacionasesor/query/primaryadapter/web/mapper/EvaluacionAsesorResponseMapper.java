@@ -11,6 +11,9 @@ public final class EvaluacionAsesorResponseMapper {
         var asesor = readModel.asesor();
         return new EvaluacionAsesorResponseDTO(
                 readModel.id(),
-                new EvaluacionAsesorResponseDTO.Asesor(asesor.id(), asesor.nombre(), asesor.email()));
+                new EvaluacionAsesorResponseDTO.Asesor(asesor.id(), asesor.nombre(), asesor.email()),
+                new EvaluacionAsesorResponseDTO.Notas(
+                        readModel.notas().resumenCualitativo(), readModel.notas().resumenCuantitativo(),
+                        readModel.notas().notaAcumulada()));
     }
 }
