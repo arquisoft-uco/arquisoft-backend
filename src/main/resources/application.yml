@@ -404,6 +404,24 @@ messageucolab:
   url: ${MESSAGEUCO_URL:http://localhost:8000}
   timeout: ${MESSAGEUCO_TIMEOUT:PT30S}
 
+# ==================== CATALOGO DE PARAMETROS (HT-024) ====================
+# En la RAIZ, junto a 'security:'. Apagado por defecto: sin llamadas al Catalogo, sin exigir
+# configuracion y sin scheduler. Encendido, la carga inicial es sincrona y aborta el arranque si falla.
+# Variables CATALOGO_PARAMETROS_*; no confundir con CATALOGO_FUENTE (catalogo de mensajes).
+catalogo:
+  parametros:
+    enabled: ${CATALOGO_PARAMETROS_ENABLED:false}
+    base-url: ${CATALOGO_PARAMETROS_BASE_URL:}
+    token-id: ${CATALOGO_PARAMETROS_TOKEN_ID:}
+    secreto: ${CATALOGO_PARAMETROS_SECRETO:}
+    connect-timeout: ${CATALOGO_PARAMETROS_CONNECT_TIMEOUT:1s}
+    read-timeout: ${CATALOGO_PARAMETROS_READ_TIMEOUT:3s}
+    allow-insecure-http: ${CATALOGO_PARAMETROS_ALLOW_INSECURE_HTTP:false}
+    refresh-interval: ${CATALOGO_PARAMETROS_REFRESH_INTERVAL:PT5M}
+    # Valor de respaldo por nombre de parametro. Para claves en mayusculas con guion bajo usar la
+    # notacion defaults[NOMBRE] para que Spring no las normalice.
+    defaults: {}
+
 # ==================== SERVER ====================
 # ==================== CORS Y RATE LIMITING (BASE) ====================
 # En la RAIZ, no bajo 'arquisoft:'. Quien las lee espera exactamente estos prefijos:

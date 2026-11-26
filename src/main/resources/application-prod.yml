@@ -188,6 +188,13 @@ security:
     login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:3}
     max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:10000}
 
+# ==================== CATALOGO DE PARAMETROS (HT-024) ====================
+# base-url, token-id y secreto NO llevan placeholder sin default: con enabled=false (por defecto) uno
+# sin resolver abortaria el arranque. Con enabled=true los exige ValidadorConfiguracionCatalogoParametros.
+catalogo:
+  parametros:
+    allow-insecure-http: false
+
 # ==================== LOGGING ====================
 # logback-spring.xml gestiona TODOS los appenders (ASYNC_STDOUT + ASYNC_FILE_PROD).
 # NO configurar logging.file.name aquí: Spring Boot crearía un FileAppender adicional
