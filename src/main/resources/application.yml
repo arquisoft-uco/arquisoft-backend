@@ -408,19 +408,26 @@ messageucolab:
 # En la RAIZ, junto a 'security:'. Apagado por defecto: sin llamadas al Catalogo, sin exigir
 # configuracion y sin scheduler. Encendido, la carga inicial es sincrona y aborta el arranque si falla.
 # Variables CATALOGO_PARAMETROS_*; no confundir con CATALOGO_FUENTE (catalogo de mensajes).
+# Consumo M2M: token client_credentials de una identidad de servicio de Seguridad (token-uri,
+# client-id, client-secret) y GET /parametros/consulta/m2m. El Catalogo resuelve aplicacion y
+# ambiente desde la asociacion del client-id; la identidad necesita ademas el rol tecnico de esa ruta.
 catalogo:
   parametros:
     enabled: ${CATALOGO_PARAMETROS_ENABLED:false}
     base-url: ${CATALOGO_PARAMETROS_BASE_URL:}
-    token-id: ${CATALOGO_PARAMETROS_TOKEN_ID:}
-    secreto: ${CATALOGO_PARAMETROS_SECRETO:}
+    token-uri: ${CATALOGO_PARAMETROS_TOKEN_URI:}
+    client-id: ${CATALOGO_PARAMETROS_CLIENT_ID:}
+    client-secret: ${CATALOGO_PARAMETROS_CLIENT_SECRET:}
     connect-timeout: ${CATALOGO_PARAMETROS_CONNECT_TIMEOUT:1s}
     read-timeout: ${CATALOGO_PARAMETROS_READ_TIMEOUT:3s}
     allow-insecure-http: ${CATALOGO_PARAMETROS_ALLOW_INSECURE_HTTP:false}
     refresh-interval: ${CATALOGO_PARAMETROS_REFRESH_INTERVAL:PT5M}
     # Valor de respaldo por nombre de parametro. Para claves en mayusculas con guion bajo usar la
     # notacion defaults[NOMBRE] para que Spring no las normalice.
-    defaults: {}
+    # RATE_LIMIT_SOLICITUDES_POR_MINUTO: cuota global del limitador (HT-026); si el Catalogo no la
+    # trae, manda la propiedad del perfil activo.
+    defaults:
+      "[RATE_LIMIT_SOLICITUDES_POR_MINUTO]": ${security.rate-limit.requests-per-minute}
 
 # ==================== SERVER ====================
 # ==================== CORS Y RATE LIMITING (BASE) ====================

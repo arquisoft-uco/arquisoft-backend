@@ -134,13 +134,13 @@ Lo que hay que saber de cada uno para no romper el grafo:
 | `shared:message` | Códigos, campos, límites, textos Swagger, `EventTopics`, enums `{Feature}Key`, fachada `Mensajes` | — |
 | `shared:minio` | `AlmacenamientoObjetos`: formulario POST firmado con política, `statObject`, lectura en streaming, subida de un objeto de tamaño conocido, copia condicionada al ETag y borrado | Nunca crea buckets ni lista (la cuenta del backend en la nube no tiene `ListBucket`): el bucket lo crea `minio/configurar.sh`. Un objeto ausente (`NoSuchKey`) se devuelve vacío, no lanza |
 | `shared:web-client` | `ClienteHttp`/`FabricaClienteHttp` (puerto y fábrica), `SolicitudHttp`, `RespuestaHttp`, `ConfiguracionClienteHttp` (URL, tiempos, tipo de contenido) y su implementación sobre `RestClient` | Transporte, no dominio: sin tipos de ningún contexto. Un fallo de transporte sale como `ClienteHttpTransporteException` (`InfrastructureException`, 503). Quien lo consume decide qué credencial envía; nunca `RestClient`/`WebClient` inline en un adaptador |
-| `shared:catalogo-parametros` | Lectura del Catálogo de Parámetros de la organización: copia en memoria por instancia, carga inicial síncrona y refresco programado (`FuenteParametrosCatalogoOutputPort` sobre `shared:web-client`, `ParametrosCatalogoOutputPort` en memoria, `ParametroCatalogoFinder`) | Apagado por defecto (`catalogo.parametros.enabled=false`) e inerte. Un solo módulo con capas por paquete (`application/`, `infrastructure/`), como `shared:tracing`; `verificarCapasHexagonales` no lo cubre. Sin consumidor de negocio (excepción de HT-024). Ausente → copia → default de `application.yml` → 503 |
+| `shared:catalogo-parametros` | Lectura del Catálogo de Parámetros de la organización: copia en memoria por instancia, carga inicial síncrona y refresco programado (`FuenteParametrosCatalogoOutputPort` sobre `shared:web-client`, `ParametrosCatalogoOutputPort` en memoria, `ParametroCatalogoFinder`) | Apagado por defecto (`catalogo.parametros.enabled=false`) e inerte. Un solo módulo con capas por paquete (`application/`, `infrastructure/`), como `shared:tracing`; `verificarCapasHexagonales` no lo cubre. Primer consumidor: `seguridad` (HT-026, cuota global del rate limit); sigue sin llegar a dos consumidores (excepción de HT-024, temporal). Ausente → copia → default de `application.yml` → 503 |
 
 **Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
 crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
 prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
 tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Existe
-desde HT-016-AJ3, sobre `RestClient`, con `seguridad` de primer consumidor. Segunda excepción, aprobada en HT-024: `shared:catalogo-parametros` existe **sin ningún consumidor de negocio** (infraestructura lista y probada antes de decidir qué parametrizar); no es precedente, un `shared:*` nuevo sigue exigiendo dos consumidores. Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
+desde HT-016-AJ3, sobre `RestClient`, con `seguridad` de primer consumidor. Segunda excepción, aprobada en HT-024: `shared:catalogo-parametros` existe con **un solo consumidor** (`seguridad`, HT-026), sin llegar a los dos exigidos (temporal); no es precedente, un `shared:*` nuevo sigue exigiendo dos consumidores. Otra excepción deliberada, a nivel de clase: `RolesIdentidad`
 (`shared:web`, paquete `identidad`) traduce `IdentidadActual.roles()` a los roles de negocio de un
 contexto con un mapa que declara el propio contexto (claves de `UsuariosRoles`, valores en su
 `{Contexto}Roles`). Hoy su único consumidor es `estados-ficha`; el segundo previsto es el filtro de
@@ -492,7 +492,9 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
   100 req/min global en dev, 60 en prod; 5 login/min dev, 3 prod. Ambas cuotas recargan
   **`greedily`** — con recarga por lotes, `getNanosToWaitForRefill()` reportaría el tiempo de
   reponer la ventana entera y `X-Rate-Limit-Retry-After-Seconds` diría al cliente que espere 60 s
-  cuando solo necesita un token.
+  cuando solo necesita un token. La cuota global puede venir del Catálogo de Parámetros
+  (`RATE_LIMIT_SOLICITUDES_POR_MINUTO`, vía `CuotaGlobalSolicitudes`): entra en la clave del bucket
+  (`arquisoft:ratelimit:global:{cuota}:{ip}`) y `security.rate-limit.requests-per-minute` es el respaldo.
 
   **Ante un error de Redis el limitador degrada a cuota local — no falla abierto ni cerrado.** Fallar
   cerrado convertía cualquier caída en la denegación de servicio que el limitador existe para

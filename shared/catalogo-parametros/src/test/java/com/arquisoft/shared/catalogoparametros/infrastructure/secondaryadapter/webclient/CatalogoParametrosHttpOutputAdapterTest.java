@@ -3,6 +3,7 @@ package com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.
 import com.arquisoft.shared.catalogoparametros.application.command.secondaryport.model.ObtencionParametrosCatalogo;
 import com.arquisoft.shared.catalogoparametros.infrastructure.config.CatalogoParametrosProperties;
 import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.webclient.dto.ParametrosCatalogoResponseDTO;
+import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.webclient.model.ObtencionTokenServicio;
 import com.arquisoft.shared.webclient.ClienteHttp;
 import com.arquisoft.shared.webclient.MetodoHttp;
 import com.arquisoft.shared.webclient.RespuestaHttp;
@@ -22,6 +23,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -29,21 +32,27 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CatalogoParametrosHttpOutputAdapterTest {
 
-    private static final String TOKEN_ID = "0b3f5c1e-5d1a-4c0a-9a55-2f7a3f2d9b11";
+    private static final String TOKEN_ID = "svc-arquisoft-catalogo-dev";
     private static final String SECRETO = "secreto-de-prueba-123";
+    private static final String JWT = "jwt-de-servicio";
 
     @Mock
     private ClienteHttp cliente;
+
+    @Mock
+    private CredencialServicioCatalogoParametros credencial;
 
     private CatalogoParametrosHttpOutputAdapter adaptador;
 
     @BeforeEach
     void preparar() {
-        adaptador = new CatalogoParametrosHttpOutputAdapter(cliente, propiedades(TOKEN_ID, SECRETO));
+        lenient().when(credencial.obtener()).thenReturn(new ObtencionTokenServicio.Vigente(JWT));
+        adaptador = new CatalogoParametrosHttpOutputAdapter(cliente, propiedades(TOKEN_ID, SECRETO), credencial);
     }
 
-    private static CatalogoParametrosProperties propiedades(String tokenId, String secreto) {
-        return new CatalogoParametrosProperties(true, "https://catalogo.test", tokenId, secreto,
+    private static CatalogoParametrosProperties propiedades(String clientId, String secreto) {
+        return new CatalogoParametrosProperties(true, "https://catalogo.test",
+                "https://keycloak.test/realms/r/protocol/openid-connect/token", clientId, secreto,
                 Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5), Map.of());
     }
 
@@ -149,6 +158,47 @@ class CatalogoParametrosHttpOutputAdapterTest {
         // Act / Assert
         assertThat(adaptador.obtener()).isEqualTo(new ObtencionParametrosCatalogo.Rechazada(401));
         assertThat(adaptador.obtener()).isEqualTo(new ObtencionParametrosCatalogo.Rechazada(403));
+        verify(credencial).invalidar();
+    }
+
+    @Test
+    void debeNoInvalidarElToken_cuando403() {
+        // Arrange
+        when(cliente.ejecutar(any(), eq(ParametrosCatalogoResponseDTO.class)))
+                .thenReturn(new RespuestaHttp<>(403, null));
+
+        // Act
+        var resultado = adaptador.obtener();
+
+        // Assert
+        assertThat(resultado).isEqualTo(new ObtencionParametrosCatalogo.Rechazada(403));
+        verify(credencial, never()).invalidar();
+    }
+
+    @Test
+    void debeRechazada_sinLlamarAlCatalogo_cuandoKeycloakRechazaLaCredencial() {
+        // Arrange
+        when(credencial.obtener()).thenReturn(new ObtencionTokenServicio.Rechazada(401));
+
+        // Act
+        var resultado = adaptador.obtener();
+
+        // Assert
+        assertThat(resultado).isEqualTo(new ObtencionParametrosCatalogo.Rechazada(401));
+        verifyNoInteractions(cliente);
+    }
+
+    @Test
+    void debeNoDisponible_sinLlamarAlCatalogo_cuandoKeycloakNoResponde() {
+        // Arrange
+        when(credencial.obtener()).thenReturn(new ObtencionTokenServicio.NoDisponible("ClienteHttpTransporteException"));
+
+        // Act
+        var resultado = adaptador.obtener();
+
+        // Assert
+        assertThat(resultado).isEqualTo(new ObtencionParametrosCatalogo.NoDisponible("ClienteHttpTransporteException"));
+        verifyNoInteractions(cliente);
     }
 
     @Test
@@ -169,27 +219,27 @@ class CatalogoParametrosHttpOutputAdapterTest {
         // Arrange
         when(cliente.ejecutar(any(), eq(ParametrosCatalogoResponseDTO.class)))
                 .thenThrow(new ClienteHttpTransporteException("ResourceAccessException",
-                        new RuntimeException("http://catalogo.test/tokens/" + TOKEN_ID + "/parametros " + SECRETO)));
+                        new RuntimeException("http://catalogo.test/parametros/consulta/m2m " + JWT)));
 
         // Act
         var resultado = adaptador.obtener();
 
         // Assert
         assertThat(resultado).isEqualTo(new ObtencionParametrosCatalogo.NoDisponible("ClienteHttpTransporteException"));
-        assertThat(resultado.toString()).doesNotContain(SECRETO).doesNotContain(TOKEN_ID);
+        assertThat(resultado.toString()).doesNotContain(JWT);
     }
 
     @Test
     void debeSinConfigurar_sinLlamar() {
         // Arrange
-        var sinSecreto = new CatalogoParametrosHttpOutputAdapter(cliente, propiedades(TOKEN_ID, ""));
+        var sinSecreto = new CatalogoParametrosHttpOutputAdapter(cliente, propiedades(TOKEN_ID, ""), credencial);
 
         // Act
         var resultado = sinSecreto.obtener();
 
         // Assert
         assertThat(resultado).isEqualTo(new ObtencionParametrosCatalogo.SinConfigurar());
-        verifyNoInteractions(cliente);
+        verifyNoInteractions(cliente, credencial);
     }
 
     @Test
@@ -206,8 +256,8 @@ class CatalogoParametrosHttpOutputAdapterTest {
         verify(cliente).ejecutar(captor.capture(), eq(ParametrosCatalogoResponseDTO.class));
         var solicitud = captor.getValue();
         assertThat(solicitud.metodo()).isEqualTo(MetodoHttp.GET);
-        assertThat(solicitud.ruta()).isEqualTo("/tokens/" + TOKEN_ID + "/parametros");
-        assertThat(solicitud.cabeceras()).containsEntry("Authorization", "Bearer " + SECRETO)
+        assertThat(solicitud.ruta()).isEqualTo("/parametros/consulta/m2m");
+        assertThat(solicitud.cabeceras()).containsEntry("Authorization", "Bearer " + JWT)
                 .containsEntry("Accept", "application/json");
     }
 }

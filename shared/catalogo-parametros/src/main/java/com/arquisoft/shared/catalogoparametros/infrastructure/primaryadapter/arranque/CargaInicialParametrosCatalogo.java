@@ -61,7 +61,7 @@ public class CargaInicialParametrosCatalogo {
     }
 
     // La excepcion original no se encadena como causa: su mensaje puede incluir la URL con el
-    // tokenId o la cabecera con el secreto, y Spring imprime la cadena completa al abortar.
+    // client-id o el formulario con el client-secret, y Spring imprime la cadena completa al abortar.
     private RefrescoParametrosCatalogoResult refrescar() {
         try {
             return refrescarParametrosCatalogoInteractor.ejecutar();

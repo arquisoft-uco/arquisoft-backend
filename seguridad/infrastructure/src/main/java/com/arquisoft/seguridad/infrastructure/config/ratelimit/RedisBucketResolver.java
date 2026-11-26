@@ -37,6 +37,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
 
     // Prefijos de clave en Redis: identificadores de infraestructura compartidos con cualquier
     // otra instancia del backend que lea el mismo Redis. No son texto y no van al catalogo.
+    // La clave global lleva la cuota vigente: global:{cuota}:{ip}.
     private static final String CLAVE_LIMITE_GLOBAL = "arquisoft:ratelimit:global:";
     private static final String CLAVE_LIMITE_LOGIN = "arquisoft:ratelimit:login:";
 
@@ -75,6 +76,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     private StatefulRedisConnection<String, byte[]> bucketConnection;
 
     private final BucketsLocales bucketsLocales;
+    private final CuotaGlobalSolicitudes cuotaGlobal;
 
     private final AtomicBoolean degradado = new AtomicBoolean(false);
 
@@ -128,9 +130,18 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
             return BUCKET_SIN_LIMITE.tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
         }
 
-        Supplier<BucketConfiguration> configuracion =
-                esLogin ? this::configuracionLogin : this::configuracionGlobal;
-        String clave = (esLogin ? CLAVE_LIMITE_LOGIN : CLAVE_LIMITE_GLOBAL) + ip;
+        // La cuota entra en la clave global: un valor nuevo del Catalogo es un bucket nuevo, que
+        // nace con la configuracion nueva sin escrituras extra ni estado por instancia.
+        Supplier<BucketConfiguration> configuracion;
+        String clave;
+        if (esLogin) {
+            configuracion = this::configuracionLogin;
+            clave = CLAVE_LIMITE_LOGIN + ip;
+        } else {
+            var cuota = cuotaGlobal.vigente();
+            configuracion = () -> configuracionGlobal(cuota);
+            clave = CLAVE_LIMITE_GLOBAL + cuota + ":" + ip;
+        }
 
         if (degradado.get()) {
             return consumirLocal(clave, configuracion);
@@ -160,8 +171,8 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     // X-Rate-Limit-Retry-After-Seconds que ve el cliente es el tiempo hasta que se repone la
     // ventana entera —hasta 60 s— aunque solo necesite un token. Con recarga continua la
     // cabecera dice lo que su nombre promete: cuanto falta para poder reintentar una vez.
-    BucketConfiguration configuracionGlobal() {
-        return porMinuto(properties.requestsPerMinute());
+    BucketConfiguration configuracionGlobal(int cuota) {
+        return porMinuto(cuota);
     }
 
     BucketConfiguration configuracionLogin() {

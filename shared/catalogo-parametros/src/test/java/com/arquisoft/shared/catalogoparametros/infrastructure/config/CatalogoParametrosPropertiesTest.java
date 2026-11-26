@@ -9,11 +9,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CatalogoParametrosPropertiesTest {
 
-    private static final String TOKEN_ID = "0b3f5c1e-5d1a-4c0a-9a55-2f7a3f2d9b11";
+    private static final String TOKEN_URI = "https://keycloak.test/realms/r/protocol/openid-connect/token";
+    private static final String CLIENT_ID = "svc-arquisoft-catalogo-dev";
     private static final String SECRETO = "secreto-de-prueba-123";
 
     private static CatalogoParametrosProperties validas(String url, boolean inseguro) {
-        return new CatalogoParametrosProperties(true, url, TOKEN_ID, SECRETO,
+        return new CatalogoParametrosProperties(true, url, TOKEN_URI, CLIENT_ID, SECRETO,
                 Duration.ofSeconds(1), Duration.ofSeconds(3), inseguro, Duration.ofMinutes(5), Map.of());
     }
 
@@ -27,19 +28,22 @@ class CatalogoParametrosPropertiesTest {
 
         // Assert
         assertThat(problemas).isEmpty();
+        assertThat(propiedades.configurado()).isTrue();
     }
 
     @Test
-    void debeReportarSecretoYUrl_cuandoFaltan() {
+    void debeReportarCredencialesYUrls_cuandoFaltan() {
         // Arrange
-        var propiedades = new CatalogoParametrosProperties(true, "", TOKEN_ID, null,
+        var propiedades = new CatalogoParametrosProperties(true, "", null, " ", null,
                 Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5), null);
 
         // Act
         var problemas = propiedades.problemas(false);
 
         // Assert
-        assertThat(problemas).containsExactly("catalogo.parametros.base-url", "catalogo.parametros.secreto");
+        assertThat(problemas).containsExactly("catalogo.parametros.base-url", "catalogo.parametros.token-uri",
+                "catalogo.parametros.client-id", "catalogo.parametros.client-secret");
+        assertThat(propiedades.configurado()).isFalse();
     }
 
     @Test
@@ -55,38 +59,86 @@ class CatalogoParametrosPropertiesTest {
     }
 
     @Test
-    void debeReportarTokenId_cuandoNoEsUuid() {
+    void debeReportarTokenUri_cuandoEsHttpSinPermiso() {
         // Arrange
-        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test", "no-es-uuid", SECRETO,
-                Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5), Map.of());
+        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test", "http://keycloak.test/token",
+                CLIENT_ID, SECRETO, Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5),
+                Map.of());
 
         // Act
         var problemas = propiedades.problemas(false);
 
         // Assert
-        assertThat(problemas).containsExactly("catalogo.parametros.token-id");
+        assertThat(problemas).containsExactly("catalogo.parametros.token-uri");
     }
 
     @Test
-    void debeRecortarSecretoYTokenId_cuandoTraenSaltoDeLineaFinal() {
+    void debeAceptarHttp_cuandoSePermiteFueraDeProduccion() {
         // Arrange
-        var propiedades = new CatalogoParametrosProperties(true, " https://catalogo.test ", TOKEN_ID + "\r\n",
-                SECRETO + "\n", Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5), Map.of());
+        var propiedades = new CatalogoParametrosProperties(true, "http://localhost:8083/api",
+                "http://localhost:19090/realms/r/protocol/openid-connect/token", CLIENT_ID, SECRETO,
+                Duration.ofSeconds(1), Duration.ofSeconds(3), true, Duration.ofMinutes(5), Map.of());
+
+        // Act
+        var problemas = propiedades.problemas(false);
+
+        // Assert
+        assertThat(problemas).isEmpty();
+    }
+
+    @Test
+    void debeSepararOrigenYRuta_delTokenUri() {
+        // Arrange
+        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test",
+                " http://localhost:19090/realms/r/protocol/openid-connect/token ", CLIENT_ID, SECRETO,
+                Duration.ofSeconds(1), Duration.ofSeconds(3), true, Duration.ofMinutes(5), Map.of());
+
+        // Act
+        var origen = propiedades.origenTokenUri();
+        var ruta = propiedades.rutaTokenUri();
+
+        // Assert
+        assertThat(origen).isEqualTo("http://localhost:19090");
+        assertThat(ruta).isEqualTo("/realms/r/protocol/openid-connect/token");
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoElTokenUriNoEsUnaUrl() {
+        // Arrange
+        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test", "ht tp://%%", CLIENT_ID,
+                SECRETO, Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5), Map.of());
+
+        // Act
+        var origen = propiedades.origenTokenUri();
+        var ruta = propiedades.rutaTokenUri();
+
+        // Assert
+        assertThat(origen).isEmpty();
+        assertThat(ruta).isEmpty();
+    }
+
+    @Test
+    void debeRecortarCredenciales_cuandoTraenSaltoDeLineaFinal() {
+        // Arrange
+        var propiedades = new CatalogoParametrosProperties(true, " https://catalogo.test ", TOKEN_URI + "\n",
+                CLIENT_ID + "\r\n", SECRETO + "\n", Duration.ofSeconds(1), Duration.ofSeconds(3), false,
+                Duration.ofMinutes(5), Map.of());
 
         // Act
         var problemas = propiedades.problemas(true);
 
         // Assert
         assertThat(problemas).isEmpty();
-        assertThat(propiedades.secreto()).isEqualTo(SECRETO);
-        assertThat(propiedades.tokenId()).isEqualTo(TOKEN_ID);
+        assertThat(propiedades.clientSecret()).isEqualTo(SECRETO);
+        assertThat(propiedades.clientId()).isEqualTo(CLIENT_ID);
+        assertThat(propiedades.tokenUri()).isEqualTo(TOKEN_URI);
         assertThat(propiedades.baseUrl()).isEqualTo("https://catalogo.test");
     }
 
     @Test
     void debeReportarSecreto_cuandoContieneCaracterDeControl() {
         // Arrange
-        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test", TOKEN_ID,
+        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test", TOKEN_URI, CLIENT_ID,
                 "secreto\ninterno", Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5),
                 Map.of());
 
@@ -94,12 +146,25 @@ class CatalogoParametrosPropertiesTest {
         var problemas = propiedades.problemas(false);
 
         // Assert
-        assertThat(problemas).containsExactly("catalogo.parametros.secreto");
+        assertThat(problemas).containsExactly("catalogo.parametros.client-secret");
         assertThat(String.join("|", problemas)).doesNotContain("interno");
     }
 
     @Test
-    void debeOcultarSecretoYTokenId_enToString() {
+    void debeReportarClientId_cuandoContieneCaracterDeControl() {
+        // Arrange
+        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test", TOKEN_URI, "svc\tarquisoft",
+                SECRETO, Duration.ofSeconds(1), Duration.ofSeconds(3), false, Duration.ofMinutes(5), Map.of());
+
+        // Act
+        var problemas = propiedades.problemas(false);
+
+        // Assert
+        assertThat(problemas).containsExactly("catalogo.parametros.client-id");
+    }
+
+    @Test
+    void debeOcultarCredenciales_enToString() {
         // Arrange
         var propiedades = validas("https://catalogo.test", false);
 
@@ -107,6 +172,6 @@ class CatalogoParametrosPropertiesTest {
         var texto = propiedades.toString();
 
         // Assert
-        assertThat(texto).doesNotContain(SECRETO).doesNotContain(TOKEN_ID);
+        assertThat(texto).doesNotContain(SECRETO).doesNotContain(CLIENT_ID).doesNotContain(TOKEN_URI);
     }
 }

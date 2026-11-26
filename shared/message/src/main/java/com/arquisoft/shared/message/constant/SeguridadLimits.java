@@ -41,6 +41,13 @@ public final class SeguridadLimits {
         public static final int CORRELACION_MAX = 128;
     }
 
+    public static final class LimiteSolicitudes {
+
+        private LimiteSolicitudes() {}
+
+        public static final int CUOTA_MIN = 1;
+    }
+
     public static final class CredencialSesion {
 
         private CredencialSesion() {}

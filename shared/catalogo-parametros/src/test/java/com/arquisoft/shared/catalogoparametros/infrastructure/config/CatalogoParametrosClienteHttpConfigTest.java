@@ -28,7 +28,8 @@ class CatalogoParametrosClienteHttpConfigTest {
     void debeConstruirElCliente_conLaConfiguracion() {
         // Arrange
         var propiedades = new CatalogoParametrosProperties(true, "  https://catalogo.test/api/v1//  ",
-                "0b3f5c1e-5d1a-4c0a-9a55-2f7a3f2d9b11", "secreto", Duration.ofSeconds(2), Duration.ofSeconds(7),
+                "https://keycloak.test/realms/r/protocol/openid-connect/token", "svc-arquisoft", "secreto",
+                Duration.ofSeconds(2), Duration.ofSeconds(7),
                 false, Duration.ofMinutes(5), Map.of());
         var captor = ArgumentCaptor.forClass(ConfiguracionClienteHttp.class);
         when(fabrica.crear(captor.capture())).thenReturn(cliente);
@@ -41,6 +42,26 @@ class CatalogoParametrosClienteHttpConfigTest {
         verify(fabrica).crear(captor.getValue());
         assertThat(resultado).isSameAs(cliente);
         assertThat(captor.getValue().urlBase()).isEqualTo("https://catalogo.test/api/v1");
+        assertThat(captor.getValue().connectTimeout()).isEqualTo(Duration.ofSeconds(2));
+        assertThat(captor.getValue().readTimeout()).isEqualTo(Duration.ofSeconds(7));
+    }
+
+    @Test
+    void debeConstruirElClienteDeToken_conElOrigenDelTokenUri() {
+        // Arrange
+        var propiedades = new CatalogoParametrosProperties(true, "https://catalogo.test/api/v1",
+                "https://keycloak.test:8443/realms/r/protocol/openid-connect/token", "svc-arquisoft", "secreto",
+                Duration.ofSeconds(2), Duration.ofSeconds(7), false, Duration.ofMinutes(5), Map.of());
+        var captor = ArgumentCaptor.forClass(ConfiguracionClienteHttp.class);
+        when(fabrica.crear(captor.capture())).thenReturn(cliente);
+        var config = new CatalogoParametrosClienteHttpConfig(propiedades, fabrica);
+
+        // Act
+        var resultado = config.catalogoParametrosTokenClienteHttp();
+
+        // Assert
+        assertThat(resultado).isSameAs(cliente);
+        assertThat(captor.getValue().urlBase()).isEqualTo("https://keycloak.test:8443");
         assertThat(captor.getValue().connectTimeout()).isEqualTo(Duration.ofSeconds(2));
         assertThat(captor.getValue().readTimeout()).isEqualTo(Duration.ofSeconds(7));
     }

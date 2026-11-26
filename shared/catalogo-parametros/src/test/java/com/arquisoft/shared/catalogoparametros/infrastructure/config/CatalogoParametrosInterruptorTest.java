@@ -10,7 +10,9 @@ import com.arquisoft.shared.catalogoparametros.infrastructure.primaryadapter.arr
 import com.arquisoft.shared.catalogoparametros.infrastructure.primaryadapter.scheduler.RefrescarParametrosCatalogoScheduler;
 import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.memoria.ParametrosCatalogoMemoriaOutputAdapter;
 import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.webclient.CatalogoParametrosHttpOutputAdapter;
+import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.webclient.CredencialServicioCatalogoParametros;
 import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.webclient.dto.ParametrosCatalogoResponseDTO;
+import com.arquisoft.shared.catalogoparametros.infrastructure.secondaryadapter.webclient.dto.TokenServicioCatalogoResponseDTO;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.tracing.application.traza.primaryport.AlcanceTraza;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -30,7 +32,7 @@ import static org.mockito.Mockito.when;
 
 class CatalogoParametrosInterruptorTest {
 
-    private static final String TOKEN_ID = "0b3f5c1e-5d1a-4c0a-9a55-2f7a3f2d9b11";
+    private static final String TOKEN_ID = "svc-arquisoft-catalogo-dev";
 
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withUserConfiguration(
@@ -39,6 +41,7 @@ class CatalogoParametrosInterruptorTest {
                     ValidadorConfiguracionCatalogoParametros.class,
                     ParametrosCatalogoMemoriaOutputAdapter.class,
                     ParametroCatalogoFinderImpl.class,
+                    CredencialServicioCatalogoParametros.class,
                     CatalogoParametrosHttpOutputAdapter.class,
                     RefrescarParametrosCatalogoUseCaseImpl.class,
                     RefrescarParametrosCatalogoInteractorImpl.class,
@@ -55,6 +58,8 @@ class CatalogoParametrosInterruptorTest {
                 var cliente = mock(ClienteHttp.class);
                 when(cliente.ejecutar(any(), eq(ParametrosCatalogoResponseDTO.class)))
                         .thenReturn(new RespuestaHttp<>(200, new ParametrosCatalogoResponseDTO(List.of())));
+                when(cliente.ejecutar(any(), eq(TokenServicioCatalogoResponseDTO.class)))
+                        .thenReturn(new RespuestaHttp<>(200, new TokenServicioCatalogoResponseDTO("jwt", 300)));
                 var fabrica = mock(FabricaClienteHttp.class);
                 when(fabrica.crear(any())).thenReturn(cliente);
                 return fabrica;
@@ -69,6 +74,7 @@ class CatalogoParametrosInterruptorTest {
             assertThat(contexto).doesNotHaveBean(CargaInicialParametrosCatalogo.class);
             assertThat(contexto).doesNotHaveBean(ValidadorConfiguracionCatalogoParametros.class);
             assertThat(contexto).doesNotHaveBean(CatalogoParametrosHttpOutputAdapter.class);
+            assertThat(contexto).doesNotHaveBean(CredencialServicioCatalogoParametros.class);
             assertThat(contexto).doesNotHaveBean(ClienteHttp.class);
             assertThat(contexto).doesNotHaveBean(RefrescarParametrosCatalogoUseCaseImpl.class);
             assertThat(contexto).doesNotHaveBean(RefrescarParametrosCatalogoInteractor.class);
@@ -83,13 +89,15 @@ class CatalogoParametrosInterruptorTest {
         runner.withPropertyValues(
                 "catalogo.parametros.enabled=true",
                 "catalogo.parametros.base-url=https://catalogo.test/api/v1",
-                "catalogo.parametros.token-id=" + TOKEN_ID,
-                "catalogo.parametros.secreto=secreto-de-prueba-123").run(contexto -> {
+                "catalogo.parametros.token-uri=https://keycloak.test/realms/r/protocol/openid-connect/token",
+                "catalogo.parametros.client-id=" + TOKEN_ID,
+                "catalogo.parametros.client-secret=secreto-de-prueba-123").run(contexto -> {
             assertThat(contexto).hasNotFailed();
             assertThat(contexto).hasSingleBean(RefrescarParametrosCatalogoScheduler.class);
             assertThat(contexto).hasSingleBean(CargaInicialParametrosCatalogo.class);
             assertThat(contexto).hasSingleBean(ValidadorConfiguracionCatalogoParametros.class);
             assertThat(contexto).hasSingleBean(CatalogoParametrosHttpOutputAdapter.class);
+            assertThat(contexto).hasSingleBean(CredencialServicioCatalogoParametros.class);
             assertThat(contexto).hasSingleBean(RefrescarParametrosCatalogoInteractor.class);
         });
     }
